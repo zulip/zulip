@@ -3085,21 +3085,13 @@ def do_refer_friend(user_profile, email):
     # type: (UserProfile, text_type) -> None
     content = """Referrer: "%s" <%s>
                  Realm: %s
-                 Referred: %s""" % (user_profile.full_name, user_profile.email, 
-                     user_profile.realm.domain, email)
+                 Referred: %s""" % (user_profile.full_name, user_profile.email,
+                                    user_profile.realm.domain, email)
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
-    headers = {
-        'Reply-To': '"%s" <%s>' % (user_profile.full_name,
-                                   user_profile.email,
-                                   )}
-    msg = EmailMessage(
-        subject,
-        content,
-        from_email,
-        [to_email],
-        headers=headers)
+    headers = {'Reply-To' : '"%s" <%s>' % (user_profile.full_name, user_profile.email,)}
+    msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
     msg.send()
 
     referral = Referral(user_profile=user_profile, email=email)
