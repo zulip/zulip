@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Callable, Tuple
+from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -1189,7 +1189,7 @@ def _default_all_public_streams(user_profile, all_public_streams):
         return user_profile.default_all_public_streams
 
 def _default_narrow(user_profile, narrow):
-    # type: (UserProfile, List[List[text_type]]) -> List[List[text_type]]
+    # type: (UserProfile, Iterable[Sequence[text_type]]) -> Iterable[Sequence[text_type]]
     default_stream = user_profile.default_events_register_stream
     if not narrow and user_profile.default_events_register_stream is not None:
         narrow = [['stream', default_stream.name]]
@@ -1201,7 +1201,7 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=REQ(validator=check_list(check_string), default=None),
                             narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[List[str]], List[List[text_type]], int) -> HttpResponse
+    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[Iterable[str]], Iterable[Sequence[text_type]], int) -> HttpResponse
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)
 

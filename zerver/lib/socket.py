@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from six import text_type
-from typing import Any, Union, Optional
+from typing import Any, Union, Mapping, Optional
 
 from django.conf import settings
 from django.utils.importlib import import_module
@@ -270,7 +270,7 @@ def fake_message_sender(event):
     respond_send_message(result)
 
 def respond_send_message(data):
-    # type: (Dict[str, Any]) -> None
+    # type: (Mapping[str, Any]) -> None
     log_data = data['server_meta']['log_data']
     record_request_restart_data(log_data)
 

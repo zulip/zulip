@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from contextlib import contextmanager
-from typing import cast, Any, Callable, Dict, Generator, Iterable, List, Optional, Sized, Tuple, Union
+from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
+    Sized, Tuple, Union)
 
 from django.test import TestCase
 from django.template import loader
@@ -70,7 +71,7 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
-    # type: (List[Dict[str, Any]]) -> Generator[None, None, None]
+    # type: (List[Mapping[str, Any]]) -> Generator[None, None, None]
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lst.append
     yield
