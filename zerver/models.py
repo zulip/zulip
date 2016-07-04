@@ -405,6 +405,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False) # type: bool
+    default_language = models.CharField(default='en', max_length=50) # type: text_type
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24

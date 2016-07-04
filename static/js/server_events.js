@@ -212,6 +212,11 @@ function get_events_success(events) {
                 // than requiring a reload or page resize.
                 page_params.left_side_userlist = event.left_side_userlist;
             }
+            if (event.setting_name === 'default_language') {
+                // TODO: Make this change the view immediately rather
+                // than requiring a reload or page resize.
+                page_params.default_language = event.default_language;
+            }
             break;
         }
     };
