@@ -92,7 +92,7 @@ exports.setup_mute_message_ui = function (message_area) {
         message.remove();
         muting.hide_topic_muted_alert();
     });
-    message.delay(3000).fadeOut(200, function () {
+    message.delay(5000).fadeOut(200, function () {
         $(this).remove();
         muting.hide_topic_muted_alert();
     });
