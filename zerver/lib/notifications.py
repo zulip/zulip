@@ -53,7 +53,7 @@ def hashchange_encode(string):
     # frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
     return urllib.parse.quote(
-        string.encode("utf-8"), safe="").replace(".", "%2E").replace("%", ".")
+        string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
 
 def pm_narrow_url(participants):
     # type: (List[text_type]) -> text_type
