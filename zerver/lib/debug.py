@@ -30,5 +30,5 @@ def interactive_debug(sig, frame):
 # SIGUSR2 => Print stack + open interactive debugging shell
 def interactive_debug_listen():
     # type: () -> None
-    signal.signal(signal.SIGUSR1, lambda sig, stack: traceback.print_stack(stack))
+    signal.signal(signal.SIGUSR1, lambda sig, stack: traceback.print_stack(stack)) # type: ignore # https://github.com/python/typeshed/issues/294
     signal.signal(signal.SIGUSR2, interactive_debug)
