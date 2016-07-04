@@ -19,7 +19,7 @@ from zerver.lib.str_utils import force_text
 from zerver.models import Stream, Recipient, get_user_profile_by_email, \
     get_user_profile_by_id, get_display_recipient, get_recipient, \
     Message, Realm, UserProfile
-from six import text_type
+from six import text_type, binary_type
 import six
 
 logger = logging.getLogger(__name__)
@@ -188,9 +188,10 @@ def get_message_part_by_type(message, content_type):
     for idx, part in enumerate(message.walk()):
         if part.get_content_type() == content_type:
             content = part.get_payload(decode=True)
+            assert isinstance(content, binary_type)
             if charsets[idx]:
-                content = content.decode(charsets[idx], errors="ignore")
-            return content
+                text = content.decode(charsets[idx], errors="ignore")
+            return text
 
 def extract_body(message):
     # type: (message.Message) -> text_type
@@ -232,12 +233,17 @@ def extract_and_upload_attachments(message, realm):
         content_type = part.get_content_type()
         filename = part.get_filename()
         if filename:
-            s3_url = upload_message_image(filename, content_type,
-                                          part.get_payload(decode=True),
-                                          user_profile,
-                                          target_realm=realm)
-            formatted_link = u"[%s](%s)" % (filename, s3_url)
-            attachment_links.append(formatted_link)
+            attachment = part.get_payload(decode=True)
+            if isinstance(attachment, binary_type):
+                s3_url = upload_message_image(filename, content_type,
+                                              attachment,
+                                              user_profile,
+                                              target_realm=realm)
+                formatted_link = u"[%s](%s)" % (filename, s3_url)
+                attachment_links.append(formatted_link)
+            else:
+                logger.warning("Payload is not bytes (invalid attachment %s in message from %s)." %
+                               (filename, message.get("From")))
 
     return u"\n".join(attachment_links)
 
