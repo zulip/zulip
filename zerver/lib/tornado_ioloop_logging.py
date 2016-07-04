@@ -19,7 +19,7 @@ except:
     # There isn't a good way to get at what the underlying poll implementation
     # will be without actually constructing an IOLoop, so we just assume it will
     # be epoll.
-    orig_poll_impl = select.epoll
+    orig_poll_impl = select.epoll # type: ignore # There is no stub for select.epoll on python 3
     class InstrumentedPollIOLoop(PollIOLoop):
         def initialize(self, **kwargs): # type: ignore # TODO investigate likely buggy monkey patching here
             super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
