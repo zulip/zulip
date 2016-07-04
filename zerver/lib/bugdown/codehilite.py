@@ -21,6 +21,7 @@ Dependencies:
 from six import text_type
 from typing import Any, Dict, List, Optional, Tuple, Union
 from xml.etree.ElementTree import ElementTree
+from zerver.lib.str_utils import force_text
 
 import markdown
 try:
@@ -180,8 +181,10 @@ class HiliteTreeprocessor(markdown.treeprocessors.Treeprocessor):
         blocks = root.getiterator('pre')
         for block in blocks:
             children = block.getchildren()
-            if len(children) == 1 and children[0].tag == 'code':
-                code = CodeHilite(children[0].text,
+            tag = force_text(children[0].tag)
+            if len(children) == 1 and tag == 'code':
+                text = force_text(children[0].text)
+                code = CodeHilite(text,
                             force_linenos=self.config['force_linenos'],
                             guess_lang=self.config['guess_lang'],
                             css_class=self.config['css_class'],
