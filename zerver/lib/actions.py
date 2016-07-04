@@ -2313,17 +2313,17 @@ def subscribed_to_stream(user_profile, stream):
         return False
 
 def truncate_content(content, max_length, truncation_message):
-    # type: (AnyStr, int, AnyStr) -> AnyStr
+    # type: (text_type, int, text_type) -> text_type
     if len(content) > max_length:
         content = content[:max_length - len(truncation_message)] + truncation_message
     return content
 
 def truncate_body(body):
-    # type: (AnyStr) -> AnyStr
+    # type: (text_type) -> text_type
     return truncate_content(body, MAX_MESSAGE_LENGTH, "...")
 
 def truncate_topic(topic):
-    # type: (AnyStr) -> AnyStr
+    # type: (text_type) -> text_type
     return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
 
 
