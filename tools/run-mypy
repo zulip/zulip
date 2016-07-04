@@ -42,7 +42,6 @@ exclude_py2 = []
 exclude_py3 = """
 zerver/lib/actions.py
 zerver/lib/ccache.py
-zerver/lib/email_mirror.py
 zerver/lib/notifications.py
 zerver/lib/tornado_ioloop_logging.py
 zerver/management/commands/create_stream.py
