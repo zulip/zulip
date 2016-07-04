@@ -547,7 +547,8 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = 'zerver.storage.ZulipStorage'
     STATICFILES_FINDERS = (
-        'zerver.finders.ZulipFinder',
+        'django.contrib.staticfiles.finders.FileSystemFinder',
+        'pipeline.finders.PipelineFinder',
     )
     if PRODUCTION:
         STATIC_ROOT = '/home/zulip/prod-static'
