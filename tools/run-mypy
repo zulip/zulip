@@ -40,7 +40,6 @@ zerver/tests/test_narrow.py
 exclude_py2 = []
 
 exclude_py3 = """
-zerver/decorator.py
 zerver/lib/actions.py
 zerver/lib/bugdown/__init__.py
 zerver/lib/bugdown/codehilite.py

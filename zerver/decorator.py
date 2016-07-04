@@ -348,11 +348,11 @@ def authenticated_rest_api_view(is_webhook=False):
             try:
                 # Grab the base64-encoded authentication string, decode it, and split it into
                 # the email and API key
-                auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
+                auth_type, b64encoded_credentials = request.META['HTTP_AUTHORIZATION'].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
                     return json_error(_("Only Basic authentication is supported."))
-                role, api_key = base64.b64decode(encoded_value).split(":")
+                role, api_key = base64.b64decode(b64encoded_credentials.encode('utf-8')).decode('utf-8').split(":")
             except ValueError:
                 json_error(_("Invalid authorization header for basic auth"))
             except KeyError:
