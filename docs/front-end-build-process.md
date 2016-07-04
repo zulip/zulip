@@ -55,14 +55,15 @@ add it to the appropriate place under `static/`.
     with "[third]" when adding or modifying a third-party package.
 -   Our own JS lives under `static/js`; CSS lives under `static/styles`.
 -   JavaScript and CSS files are combined and minified in production. In
-    this case all you need to do is add the filename to PIPELINE\_CSS or
-    JS\_SPECS in `zproject/settings.py`. (If you plan to only use the
-    JS/CSS within the app proper, and not on the login page or other
-    standalone pages, put it in the 'app' category.)
+    this case all you need to do is add the filename to
+    PIPELINE['STYLESHEET'] or JS\_SPECS in `zproject/settings.py`. (If
+    you plan to only use the JS/CSS within the app proper, and not on
+    the login page or other standalone pages, put it in the 'app'
+    category.)
 
 If you want to test minified files in development, look for the
-`PIPELINE =` line in `zproject/settings.py` and set it to `True` -- or
-just set `DEBUG = False`.
+`PIPELINE_ENABLED =` line in `zproject/settings.py` and set it to `True`
+-- or just set `DEBUG = False`.
 
 Note that `static/html/{400,5xx}.html` will only render properly if
 minification is enabled, since they hardcode the path
