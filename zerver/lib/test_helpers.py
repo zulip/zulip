@@ -445,7 +445,8 @@ def get_all_templates():
     isfile = os.path.isfile
     path_exists = os.path.exists
 
-    is_valid_template = lambda p, n: not n.startswith('.') and isfile(p)
+    def is_valid_template(p, n):
+        not n.startswith('.') and not n.startswith('__init__') and isfile(p)
 
     def process(template_dir, dirname, fnames):
         # type: (str, str, Iterable[str]) -> None
