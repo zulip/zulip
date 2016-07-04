@@ -66,10 +66,17 @@
             <span class="integration-label">Beanstalk</span>
          </a>
        </div>
+       <div class="integration-lozenge integration-bitbucket2">
+         <a class="integration-link integration-bitbucket2" href="#bitbucket2">
+            <img class="integration-logo" src="/static/images/integrations/logos/bitbucket.png" alt="Bitbucket logo" />
+            <span class="integration-label">Bitbucket</span>
+         </a>
+       </div>
        <div class="integration-lozenge integration-bitbucket">
          <a class="integration-link integration-bitbucket" href="#bitbucket">
             <img class="integration-logo" src="/static/images/integrations/logos/bitbucket.png" alt="Bitbucket logo" />
-            <span class="integration-label">Bitbucket</span>
+            <span class="integration-label" style="padding-top: 0px; padding-bottom: 0px;">Bitbucket</span>
+            <span class="integration-label-secondary">(Enterprise)</span>
          </a>
        </div>
        <div class="integration-lozenge integration-capistrano">
@@ -528,7 +535,9 @@
     <div id="bitbucket" class="integration-instructions">
 
 
-     <p>Zulip supports both Git and Mercurial notifications from Bitbucket.</p>
+     <p>Zulip supports both Git and Mercurial notifications from
+     Bitbucket.  This integration is for the old-style Bitbucket
+     webhooks used by Bitbucket Enterprise.</p>
 
      <p>First, create the stream you'd like to use for Bitbucket notifications,
      and subscribe all interested parties to this stream. The integration will
@@ -551,6 +560,34 @@
       <p><b>Congratulations! You're done!</b><br /> Whenever you push code to your repository,
         you'll get an automated notification that looks like this:</p>
       <img class="screenshot" src="/static/images/integrations/bitbucket/002.png" />
+    </div>
+
+    <div id="bitbucket2" class="integration-instructions">
+
+     <p>Zulip supports both Git and Mercurial notifications from
+     Bitbucket.  This integration is for the new-style Bitbucket
+     webhooks used by the Bitbucket SAAS service.</p>
+
+     <p>First, create the stream you'd like to use for Bitbucket notifications,
+     and subscribe all interested parties to this stream. The integration will
+     use the default stream <code>bitbucket</code> if no stream is supplied in the
+     hook; you still need to create the stream even if you are using this
+     default.</p>
+
+     <p>The URL you create will be in the following format:</p>
+     <p><code>{{ external_api_uri }}/v1/external/bitbucket2?api_key=abcdefgh&amp;stream=bitbucket</code></p>
+
+     <p>where <code>api_key</code> is the API key of your Zulip bot,
+       and <code>stream</code> is the stream name you want the
+       notifications sent to.</p>
+
+     <p>Next, from your repository's web page, go to the Settings page and choose Webhooks on the left-hand side.
+     Click <code>Add webhook</code>, set URL to the URL you created above. Remember to click the 'active' checkbox.
+     Click <code>Save</code>.</p>
+
+      <p><b>Congratulations! You're done!</b><br />
+      Example message:</p>
+      <img class="screenshot" src="/static/images/integrations/bitbucket/003.png" />
     </div>
 
     <div id="capistrano" class="integration-instructions">
