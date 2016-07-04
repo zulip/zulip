@@ -23,7 +23,7 @@
     {% endif %}
 
     {# We need to import jQuery before Bootstrap #}
-    {{ compressed_css('common')|safe }}
+    {% stylesheet 'common' %}
     {% block page_params %}
     {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
     <script type="text/javascript">

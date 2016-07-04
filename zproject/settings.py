@@ -236,13 +236,14 @@ TEMPLATES = [
         'DIRS': [
              os.path.join(DEPLOY_ROOT, 'templates'),
         ],
-        'APP_DIRS': False,
+        'APP_DIRS': True,
         'OPTIONS': {
             'debug': DEBUG,
             'environment': 'zproject.jinja2.environment',
             'extensions': [
                 'jinja2.ext.i18n',
                 'jinja2.ext.autoescape',
+                'pipeline.jinja2.PipelineExtension',
             ],
             'context_processors': [
                 'zerver.context_processors.add_settings',
@@ -531,14 +532,15 @@ STATIC_URL = '/static/'
 
 # This is the default behavior from Pipeline, but we set it
 # here so that urls.py can read it.
-PIPELINE = not DEBUG
+PIPELINE_ENABLED = not DEBUG
 
 if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+        'pipeline.finders.PipelineFinder',
     )
-    if PIPELINE:
+    if PIPELINE_ENABLED:
         STATIC_ROOT = os.path.abspath('prod-static/serve')
     else:
         STATIC_ROOT = os.path.abspath('static/')
@@ -558,61 +560,67 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 STATICFILES_DIRS = ['static/']
 STATIC_HEADER_FILE = 'zerver/static_header.txt'
 
-# To use minified files in dev, set PIPELINE = True.  For the full
+# To use minified files in dev, set PIPELINE_ENABLED = True.  For the full
 # cache-busting behavior, you must also set DEBUG = False.
 #
 # You will need to run update-prod-static after changing
 # static files.
 
-PIPELINE_CSS = {
-    'activity': {
-        'source_filenames': ('styles/activity.css',),
-        'output_filename':  'min/activity.css'
+PIPELINE = {
+    'PIPELINE_ENABLED': PIPELINE_ENABLED,
+    'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
+    'YUI_BINARY': '/usr/bin/env yui-compressor',
+    'STYLESHEETS': {
+        'activity': {
+            'source_filenames': ('styles/activity.css',),
+            'output_filename':  'min/activity.css'
+        },
+        'portico': {
+            'source_filenames': (
+                'third/zocial/zocial.css',
+                'styles/portico.css',
+                'styles/pygments.css',
+                'styles/thirdparty-fonts.css',
+                'styles/fonts.css',
+            ),
+            'output_filename': 'min/portico.css'
+        },
+        # Two versions of the app CSS exist because of QTBUG-3467
+        'app-fontcompat': {
+            'source_filenames': (
+                'third/bootstrap-notify/css/bootstrap-notify.css',
+                'third/spectrum/spectrum.css',
+                'styles/zulip.css',
+                'styles/settings.css',
+                'styles/pygments.css',
+                'styles/thirdparty-fonts.css',
+                # We don't want fonts.css on QtWebKit, so its omitted here
+            ),
+            'output_filename': 'min/app-fontcompat.css'
+        },
+        'app': {
+            'source_filenames': (
+                'third/bootstrap-notify/css/bootstrap-notify.css',
+                'third/spectrum/spectrum.css',
+                'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
+                'styles/zulip.css',
+                'styles/settings.css',
+                'styles/pygments.css',
+                'styles/thirdparty-fonts.css',
+                'styles/fonts.css',
+            ),
+            'output_filename': 'min/app.css'
+        },
+        'common': {
+            'source_filenames': (
+                'third/bootstrap/css/bootstrap.css',
+                'third/bootstrap/css/bootstrap-btn.css',
+                'third/bootstrap/css/bootstrap-responsive.css',
+            ),
+            'output_filename': 'min/common.css'
+        },
     },
-    'portico': {
-        'source_filenames': (
-            'third/zocial/zocial.css',
-            'styles/portico.css',
-            'styles/pygments.css',
-            'styles/thirdparty-fonts.css',
-            'styles/fonts.css',
-        ),
-        'output_filename': 'min/portico.css'
-    },
-    # Two versions of the app CSS exist because of QTBUG-3467
-    'app-fontcompat': {
-        'source_filenames': (
-            'third/bootstrap-notify/css/bootstrap-notify.css',
-            'third/spectrum/spectrum.css',
-            'styles/zulip.css',
-            'styles/settings.css',
-            'styles/pygments.css',
-            'styles/thirdparty-fonts.css',
-            # We don't want fonts.css on QtWebKit, so its omitted here
-        ),
-        'output_filename': 'min/app-fontcompat.css'
-    },
-    'app': {
-        'source_filenames': (
-            'third/bootstrap-notify/css/bootstrap-notify.css',
-            'third/spectrum/spectrum.css',
-            'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
-            'styles/zulip.css',
-            'styles/settings.css',
-            'styles/pygments.css',
-            'styles/thirdparty-fonts.css',
-            'styles/fonts.css',
-        ),
-        'output_filename': 'min/app.css'
-    },
-    'common': {
-        'source_filenames': (
-            'third/bootstrap/css/bootstrap.css',
-            'third/bootstrap/css/bootstrap-btn.css',
-            'third/bootstrap/css/bootstrap-responsive.css',
-        ),
-        'output_filename': 'min/common.css'
-    },
+    'JAVASCRIPT': {},
 }
 
 JS_SPECS = {
@@ -738,7 +746,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
-            # JS bundled by webpack is also included here if PIPELINE setting is true
+            # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
     },
@@ -755,17 +763,11 @@ JS_SPECS = {
     },
 }
 
-if PIPELINE:
+if PIPELINE_ENABLED:
     # This is also done in test_settings.py, see comment there..
     JS_SPECS['app']['source_filenames'].append('js/bundle.js')
 
 app_srcs = JS_SPECS['app']['source_filenames']
-
-PIPELINE_JS = {}  # Now handled in tools/minify-js
-PIPELINE_JS_COMPRESSOR = None
-
-PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
-PIPELINE_YUI_BINARY = '/usr/bin/env yui-compressor'
 
 ########################################################################
 # LOGGING SETTINGS

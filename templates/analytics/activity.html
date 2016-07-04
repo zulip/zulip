@@ -10,7 +10,7 @@
 {% block customhead %}
 {{ super() }}
 {{ minified_js('activity')|safe }}
-{{ compressed_css('activity')|safe }}
+{% stylesheet 'activity' %}
 {% endblock %}
 
 {% block content %}

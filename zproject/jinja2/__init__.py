@@ -8,7 +8,7 @@ from django.utils import translation
 from django.http import HttpResponse
 from jinja2 import Environment
 
-from .compressors import compressed_css, minified_js
+from .compressors import minified_js
 from zerver.templatetags.app_filters import display_list
 
 
@@ -22,7 +22,6 @@ def environment(**options):
     env.globals.update({
         'static': staticfiles_storage.url,
         'url': reverse,
-        'compressed_css': compressed_css,
         'minified_js': minified_js,
     })
 
