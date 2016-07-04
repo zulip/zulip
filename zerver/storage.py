@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+import os
+import shutil
+
 from django.conf import settings
 from django.contrib.staticfiles.storage import CachedFilesMixin, StaticFilesStorage
 from pipeline.storage import PipelineMixin
@@ -50,6 +53,28 @@ class AddHeaderMixin(object):
         return list(ret_dict.values())
 
 
-class ZulipStorage(PipelineMixin, AddHeaderMixin, CachedFilesMixin,
-        StaticFilesStorage):
+class RemoveUnminifiedFilesMixin(object):
+    def post_process(self, paths, dry_run=False, **kwargs):
+        if dry_run:
+            return []
+
+        root = settings.STATIC_ROOT
+        to_remove = ['templates', 'styles', 'js']
+
+        for tree in to_remove:
+            shutil.rmtree(os.path.join(root, tree))
+
+        is_valid = lambda p: all([not p.startswith(k) for k in to_remove])
+
+        paths = {k: v for k, v in paths.items() if is_valid(k)}
+        super_class = super(RemoveUnminifiedFilesMixin, self)  # type: ignore
+        if hasattr(super_class, 'post_process'):
+            return super_class.post_process(paths, dry_run, **kwargs)
+
+        return []
+
+
+class ZulipStorage(PipelineMixin,
+        AddHeaderMixin, RemoveUnminifiedFilesMixin,
+        CachedFilesMixin, StaticFilesStorage):
     pass
