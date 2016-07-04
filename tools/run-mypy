@@ -41,7 +41,6 @@ exclude_py2 = []
 
 exclude_py3 = """
 zerver/lib/actions.py
-zerver/lib/bugdown/__init__.py
 zerver/lib/ccache.py
 zerver/lib/debug.py
 zerver/lib/email_mirror.py

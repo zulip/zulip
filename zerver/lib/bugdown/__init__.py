@@ -14,7 +14,6 @@ import glob
 import twitter
 import platform
 import time
-import six.moves.html_parser
 import httplib2
 import itertools
 from six.moves import urllib
@@ -40,8 +39,11 @@ import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text
 import six
-from six.moves import range
+from six.moves import range, html_parser
 from six import text_type
+
+if six.PY3:
+    import html
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -54,6 +56,13 @@ _T = TypeVar('_T')
 if False:
     # mypy requires the Optional to be inside Union
     ElementStringNone = Union[Element, Optional[text_type]]
+
+def unescape(s):
+    # type: (text_type) -> (text_type)
+    if six.PY2:
+        return html_parser.HTMLParser().unescape(s)
+    else:
+        return html.unescape(s)
 
 def list_of_tlds():
     # type: () -> List[text_type]
@@ -181,7 +190,7 @@ def fetch_open_graph_image(url):
 
     # TODO: What if response content is huge? Should we get headers first?
     try:
-        content = requests.get(url, timeout=1).content
+        content = requests.get(url, timeout=1).text
     except:
         return None
 
@@ -456,9 +465,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             image_url = user.get('profile_image_url_https', user['profile_image_url'])
             profile_img.set('src', image_url)
 
-            ## TODO: unescape is an internal function, so we should
-            ## use something else if we can find it
-            text = six.moves.html_parser.HTMLParser().unescape(res['text'])
+            text = unescape(res['text'])
             urls = res.get('urls', {})
             user_mentions = res.get('user_mentions', [])
             media = res.get('media', [])
