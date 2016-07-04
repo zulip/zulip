@@ -15,6 +15,7 @@ from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
+from zerver.lib.str_utils import force_text
 from zerver.models import Stream, Recipient, get_user_profile_by_email, \
     get_user_profile_by_id, get_display_recipient, get_recipient, \
     Message, Realm, UserProfile
@@ -289,7 +290,15 @@ def process_missed_message(to, message, pre_checked):
 
 def process_message(message, rcpt_to=None, pre_checked=False):
     # type: (message.Message, Optional[text_type], bool) -> None
-    subject = decode_header(message.get("Subject", "(no subject)"))[0][0]
+    subject_header = message.get("Subject", "(no subject)")
+    encoded_subject, encoding = decode_header(subject_header)[0] # type: ignore # https://github.com/python/typeshed/pull/333
+    if encoding is None:
+        subject = force_text(encoded_subject) # encoded_subject has type str when encoding is None
+    else:
+        try:
+            subject = encoded_subject.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            subject = u"(unreadable subject)"
 
     debug_info = {}
 
