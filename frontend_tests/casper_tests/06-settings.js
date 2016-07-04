@@ -5,7 +5,7 @@ common.start_and_log_in();
 
 var form_sel = 'form[action^="/json/settings/change"]';
 
-casper.waitForSelector('a[href^="#settings"]', function () {
+casper.then(function () {
     casper.test.info('Settings page');
     casper.click('a[href^="#settings"]');
 });
@@ -120,49 +120,6 @@ casper.waitForSelector('#create_alert_word_form', function () {
     casper.click('button.remove-alert-word');
     casper.test.info('Checking that the element was deleted');
     casper.test.assertDoesntExist('div.alert-word-information-box');
-});
-
-casper.then(function change_default_language() {
-    casper.test.info('Changing the default language');
-    casper.evaluate(function () {
-        $('#default_language').val('zh_CN').change();
-    });
-});
-
-casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', '简体中文 is now the default language');
-    casper.test.info("Reloading page");
-    casper.reload(function () {
-        casper.test.info("Reloaded");
-    });
-});
-
-casper.waitForSelector("#settings-change-box", function () {
-    casper.test.info("Checking if we are on Chinese page.");
-    casper.test.assertEvalEquals(function () {
-        return document.documentElement.lang;
-    }, 'zh-cn');
-});
-
-casper.thenOpen('http://localhost:9981/de/#settings', function () {
-    casper.test.info("German page opened.");
-});
-
-casper.waitForSelector("#settings-change-box");
-
-casper.then(function check_url_preference() {
-    casper.test.info("Checking i18n url language precedence.");
-    casper.test.assertEvalEquals(function () {
-        return document.documentElement.lang;
-    }, 'de');
-    casper.test.info("Changing language back to English.");
-    casper.evaluate(function () {
-        $('#default_language').val('en').change();
-    });
-});
-
-casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', 'English is now the default language');
 });
 
 // TODO: test the "Declare Zulip Bankruptcy option"
