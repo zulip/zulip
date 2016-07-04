@@ -251,6 +251,7 @@ urls += [
     url(r'^api/v1/external/airbrake$',      'zerver.views.webhooks.airbrake.api_airbrake_webhook'),
     url(r'^api/v1/external/beanstalk$',     'zerver.views.webhooks.beanstalk.api_beanstalk_webhook'),
     url(r'^api/v1/external/bitbucket$',     'zerver.views.webhooks.bitbucket.api_bitbucket_webhook'),
+    url(r'^api/v1/external/bitbucket2$',    'zerver.views.webhooks.bitbucket2.api_bitbucket2_webhook'),
     url(r'^api/v1/external/circleci$',      'zerver.views.webhooks.circleci.api_circleci_webhook'),
     url(r'^api/v1/external/codeship$',      'zerver.views.webhooks.codeship.api_codeship_webhook'),
     url(r'^api/v1/external/crashlytics$',   'zerver.views.webhooks.crashlytics.api_crashlytics_webhook'),
