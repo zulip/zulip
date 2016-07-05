@@ -8,7 +8,8 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from six import text_type
-from typing import Optional
+from typing import AnyStr, Iterable, Optional, Tuple
+from zerver.lib.str_utils import force_bytes
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
@@ -292,14 +293,14 @@ class NarrowBuilder(object):
         cond = column("search_tsvector").op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
-def highlight_string(string, locs):
-    if isinstance(string, six.text_type):
-        string = string.encode('utf-8')
-
-    highlight_start = '<span class="highlight">'
-    highlight_stop = '</span>'
+def highlight_string(text, locs):
+    # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
+    string = force_bytes(text)
+    # Do all operations on bytes because tsearch_extras counts bytes instead of characters.
+    highlight_start = b'<span class="highlight">'
+    highlight_stop = b'</span>'
     pos = 0
-    result = ''
+    result = b''
     for loc in locs:
         (offset, length) = loc
         result += string[pos:offset]
