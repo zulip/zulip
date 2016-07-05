@@ -41,7 +41,6 @@ exclude_py2 = []
 
 exclude_py3 = """
 zerver/lib/ccache.py
-zerver/tests/test_i18n.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")

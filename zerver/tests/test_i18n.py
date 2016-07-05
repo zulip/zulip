@@ -7,7 +7,7 @@ import mock
 from django.test import TestCase
 from django.conf import settings
 from django.http import HttpResponse
-from http.cookies import SimpleCookie
+from six.moves.http_cookies import SimpleCookie
 
 from zerver.lib.test_helpers import AuthedTestCase
 
@@ -49,7 +49,7 @@ class TranslationTestCase(TestCase):
                      ]
 
         for lang, word in languages:
-            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang})
+            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang}) # type: ignore # SimpleCookie has incomplete stubs in python 3
 
             response = self.fetch('get', '/integrations/', 200)
             self.assertTrue(word in response.content)
