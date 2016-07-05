@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from six import text_type
 from typing import Any
 
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_create_stream
+from zerver.lib.str_utils import force_text
 from zerver.models import Realm, get_realm
 
 from argparse import ArgumentParser
@@ -27,13 +29,12 @@ the command."""
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         domain = options['domain']
-        stream_name = options['stream_name']
         encoding = sys.getfilesystemencoding()
+        stream_name = options['stream_name']
 
-        try:
-            realm = get_realm(domain)
-        except Realm.DoesNotExist:
+        realm = get_realm(force_text(domain, encoding))
+        if realm is None:
             print("Unknown domain %s" % (domain,))
             exit(1)
-
-        do_create_stream(realm, stream_name.decode(encoding))
+        else:
+            do_create_stream(realm, force_text(stream_name, encoding))
