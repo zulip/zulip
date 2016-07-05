@@ -37,42 +37,42 @@ from typing import Any, Mapping, Union, TypeVar
 NonBinaryStr = TypeVar('NonBinaryStr', str, text_type)
 # This is used to represent text or native strings
 
-def force_text(s):
-    # type: (Union[text_type, binary_type]) -> text_type
+def force_text(s, encoding='utf-8'):
+    # type: (Union[text_type, binary_type], str) -> text_type
     """converts a string to a text string"""
     if isinstance(s, text_type):
         return s
     elif isinstance(s, binary_type):
-        return s.decode('utf-8')
+        return s.decode(encoding)
     else:
         raise ValueError("force_text expects a string type")
 
-def force_bytes(s):
-    # type: (Union[text_type, binary_type]) -> binary_type
+def force_bytes(s, encoding='utf-8'):
+    # type: (Union[text_type, binary_type], str) -> binary_type
     """converts a string to binary string"""
     if isinstance(s, binary_type):
         return s
     elif isinstance(s, text_type):
-        return s.encode('utf-8')
+        return s.encode(encoding)
     else:
         raise ValueError("force_bytes expects a string type")
 
-def force_str(s):
-    # type: (Union[text_type, binary_type]) -> str
+def force_str(s, encoding='utf-8'):
+    # type: (Union[text_type, binary_type], str) -> str
     """converts a string to a native string"""
     if isinstance(s, str):
         return s
     elif isinstance(s, text_type):
-        return s.encode('utf-8')
+        return s.encode(encoding)
     elif isinstance(s, binary_type):
-        return s.decode('utf-8')
+        return s.decode(encoding)
     else:
         raise ValueError("force_str expects a string type")
 
-def dict_with_str_keys(dct):
-    # type: (Mapping[NonBinaryStr, Any]) -> Dict[str, Any]
+def dict_with_str_keys(dct, encoding='utf-8'):
+    # type: (Mapping[NonBinaryStr, Any], str) -> Dict[str, Any]
     """applies force_str on the keys of a dict (non-recursively)"""
-    return {force_str(key): value for key, value in six.iteritems(dct)}
+    return {force_str(key, encoding): value for key, value in six.iteritems(dct)}
 
 class ModelReprMixin(object):
     """
