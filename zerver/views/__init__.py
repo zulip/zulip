@@ -931,6 +931,7 @@ def home(request):
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
         maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
+        server_generation     = settings.SERVER_GENERATION,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
         have_initial_messages = user_has_messages,
         subbed_info           = register_ret['subscriptions'],
