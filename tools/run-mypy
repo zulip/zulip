@@ -41,7 +41,6 @@ exclude_py2 = []
 
 exclude_py3 = """
 zerver/lib/ccache.py
-zerver/management/commands/email-mirror.py
 zerver/management/commands/enqueue_file.py
 zerver/management/commands/rename_stream.py
 zerver/management/commands/runtornado.py

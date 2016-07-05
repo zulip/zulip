@@ -109,7 +109,7 @@ def examine_mailbox(result, proto, mailbox):
 
 def select_mailbox(result, proto):
     # Select which mailbox we care about.
-    mbox = filter(lambda x: settings.EMAIL_GATEWAY_IMAP_FOLDER in x[2], result)[0][2]
+    mbox = [x for x in result if settings.EMAIL_GATEWAY_IMAP_FOLDER in x[2]][0][2]
     return proto.select(mbox).addCallback(examine_mailbox, proto, result)
 
 def list_mailboxes(res, proto):
@@ -153,13 +153,13 @@ class Command(BaseCommand):
                     mark_missed_message_address_as_used(rcpt_to)
                 except ZulipEmailForwardError:
                     print("5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
-                    exit(posix.EX_NOUSER)
+                    exit(posix.EX_NOUSER) # type: ignore # There are no stubs for posix in python 3
             else:
                 try:
                     extract_and_validate(rcpt_to)
                 except ZulipEmailForwardError:
                     print("5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page.")
-                    exit(posix.EX_NOUSER)
+                    exit(posix.EX_NOUSER) # type: ignore # There are no stubs for posix in python 3
 
             # Read in the message, at most 25MiB. This is the limit enforced by
             # Gmail, which we use here as a decent metric.
@@ -168,7 +168,7 @@ class Command(BaseCommand):
             if len(sys.stdin.read(1)) != 0:
                 # We're not at EOF, reject large mail.
                 print("5.3.4 Message too big for system: Max size is 25MiB")
-                exit(posix.EX_DATAERR)
+                exit(posix.EX_DATAERR) # type: ignore # There are no stubs for posix in python 3
 
             queue_json_publish(
                     "email_mirror",
