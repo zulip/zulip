@@ -50,6 +50,7 @@ from zerver.decorator import require_post, authenticated_json_post_view, \
 from zerver.lib.avatar import avatar_url
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.str_utils import force_str
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
@@ -304,7 +305,7 @@ def webathena_kerberos_login(request, user_profile,
                                "/home/zulip/zulip/bots/process_ccache",
                                user,
                                user_profile.api_key,
-                               base64.b64encode(ccache)])
+                               force_str(base64.b64encode(ccache))])
     except Exception:
         logging.exception("Error updating the user's ccache")
         return json_error(_("We were unable to setup mirroring for you"))
