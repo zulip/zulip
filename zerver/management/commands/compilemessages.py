@@ -25,7 +25,11 @@ class Command(compilemessages.Command):
         data = {'languages': []}  # type: Dict[str, List[Dict[str, str]]]
         lang_name_re = re.compile('"Language-Team: (.*?) \(')
 
-        for locale in os.listdir(locale_path):
+        locales = os.listdir(locale_path)
+        locales.append('en')
+        locales = list(set(locales))
+
+        for locale in locales:
             info = {}
             if locale == 'en':
                 data['languages'].append({'code': 'en', 'name': 'English'})
