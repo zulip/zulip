@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any
+from typing import Any, IO
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
@@ -39,7 +39,7 @@ You can use "-" to represent stdin.
         file_name = options['file_name']
 
         if file_name == '-':
-            f = sys.stdin
+            f = sys.stdin # type: IO[str]
         else:
             f = open(file_name)
 
