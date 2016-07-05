@@ -41,7 +41,6 @@ exclude_py2 = []
 
 exclude_py3 = """
 zerver/lib/ccache.py
-zerver/management/commands/runtornado.py
 zerver/tests/test_i18n.py
 zerver/views/messages.py
 zerver/views/webhooks/beanstalk.py
