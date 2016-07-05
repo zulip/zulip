@@ -1799,6 +1799,7 @@ class HomeTest(AuthedTestCase):
             "realm_restricted_to_domain",
             "referrals",
             "save_stacktraces",
+            "server_generation",
             "share_the_love",
             "show_digest_email",
             "sounds_enabled",
