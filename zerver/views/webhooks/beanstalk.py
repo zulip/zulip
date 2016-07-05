@@ -14,6 +14,7 @@ from functools import wraps
 from .github import build_message_from_gitlog
 
 from typing import Any, Callable, Dict
+from zerver.lib.str_utils import force_str, force_bytes
 
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
@@ -25,12 +26,13 @@ def beanstalk_decoder(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         try:
-            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
+            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split() # type: str, str
             if auth_type.lower() == "basic":
-                email, api_key = base64.b64decode(encoded_value).split(":")
+                email, api_key = base64.b64decode(force_bytes(encoded_value)).decode('utf-8').split(":")
                 email = email.replace('%40', '@')
-                request.META['HTTP_AUTHORIZATION'] = "Basic %s" % (base64.b64encode("%s:%s" % (email, api_key)))
-        except:
+                credentials = u"%s:%s" % (email, api_key)
+                request.META['HTTP_AUTHORIZATION'] = "Basic " + force_str(base64.b64encode(credentials.encode('utf-8')))
+        except Exception:
             pass
 
         return view_func(request, *args, **kwargs)
