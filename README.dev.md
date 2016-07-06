@@ -1311,7 +1311,7 @@ time debugging a test failure, e.g.:
 ./tools/lint-all # Runs all the linters in parallel
 ./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-js-with-casper 09-navigation.js
-./tools/test-js-with-node # Runs all node tests but is very fast
+./tools/test-js-with-node util.js
 ```
 
 The above setup instructions include the first-time setup of test

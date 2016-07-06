@@ -10,8 +10,17 @@ NODEJS=$(which nodejs || which node)
 if [ "$1" = "cover" ]; then
   # Run a coverage test with Istanbul.
   istanbul cover "$INDEX_JS"
+
+elif [ "$1" = "-h" -o "$1" = "--help" ]; then
+  echo "Usage:
+`basename $0`                      - to run all tests
+`basename $0` util.js              - to run tests from util.js
+`basename $0` util.js activity.js  - to run tests from util.js and activity.js
+"
+  exit 0
+
 else
   # Normal testing, no coverage analysis.
   # Run the index.js test runner, which runs all the other tests.
-  "$NODEJS" --stack-trace-limit=100 "$INDEX_JS"
+  "$NODEJS" --stack-trace-limit=100 "$INDEX_JS" $@
 fi
