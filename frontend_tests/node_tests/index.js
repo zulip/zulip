@@ -10,12 +10,26 @@ var _ = global._;
 // Run all the JS scripts in our test directory.  Tests do NOT run
 // in isolation.
 
+var oneFileFilter = [];
+var testsDifference = [];
+if (process.argv[2] ) {
+    oneFileFilter = process.argv
+      .slice(2)
+      .map(function (filename) {return filename.replace(/\.js$/i, '');});
+}
+
 var tests = fs.readdirSync(__dirname)
-    .filter(function (filename) { return (/\.js$/i).test(filename); })
-    .map(function (filename) { return filename.replace(/\.js$/i, ''); });
+  .filter(function (filename) {return (/\.js$/i).test(filename);})
+  .map(function (filename) {return filename.replace(/\.js$/i, '');});
 
-
+if (oneFileFilter.length > 0) {
+    tests = tests.filter(function (filename) {
+        return oneFileFilter.indexOf(filename) !== -1;
+    });
+    testsDifference = _.difference(oneFileFilter, tests);
+}
 tests.sort();
+
 
 var dependencies = [];
 var old_builtins = {};
@@ -109,4 +123,13 @@ tests.forEach(function (filename) {
     old_builtins = {};
 });
 
-console.info("To see more output, open " + output_fn);
+if (oneFileFilter.length > 0 && testsDifference.length > 0) {
+    testsDifference.forEach(function (filename) {
+        console.log(filename + " does not exist");
+    });
+    if (oneFileFilter.length > testsDifference.length) {
+        console.info("To see more output, open " + output_fn);
+    }
+} else {
+    console.info("To see more output, open " + output_fn);
+}
