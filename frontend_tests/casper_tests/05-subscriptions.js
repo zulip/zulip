@@ -17,6 +17,41 @@ casper.waitForSelector('.sub_unsub_button.subscribed-button', function () {
 });
 casper.waitForText('Waseemio', function () {
     casper.test.assertTextExists('Create stream Waseemio', 'Modal for specifying new stream users');
+});
+casper.then(function () {
+    casper.test.assertExists('#user-checkboxes [for="cordelia@zulip.com"]', 'Original user list contains Cordelia');
+    casper.test.assertExists('#user-checkboxes [for="hamlet@zulip.com"]', 'Original user list contains King Hamlet');
+});
+casper.then(function () {
+    casper.test.info("Filtering user list with keyword 'cor'");
+    casper.fill('form#stream_creation_form', {user_list_filter: 'cor'});
+});
+casper.then(function () {
+    casper.test.assertEquals(casper.visible('#user-checkboxes [for="cordelia@zulip.com"]'),
+                             true,
+                             "Cordelia is visible"
+    );
+    casper.test.assertEquals(casper.visible('#user-checkboxes [for="hamlet@zulip.com"]'),
+                             false,
+                             "King Hamlet is not visible"
+    );
+});
+casper.then(function () {
+    casper.test.info("Clearing user filter search box");
+    casper.fill('form#stream_creation_form', {user_list_filter: ''});
+});
+casper.then(function () {
+    casper.test.assertEquals(casper.visible('#user-checkboxes [for="cordelia@zulip.com"]'),
+                             true,
+                             "Cordelia is visible again"
+    );
+    casper.test.assertEquals(casper.visible('#user-checkboxes [for="hamlet@zulip.com"]'),
+                             true,
+                             "King Hamlet is visible again"
+    );
+});
+casper.then(function () {
+    casper.test.assertTextExists('Create stream Waseemio', 'Create a new stream');
     casper.click('form#stream_creation_form button.btn.btn-primary');
 });
 casper.waitFor(function () {
