@@ -520,6 +520,10 @@ environment][using-dev].
 
 ### Troubleshooting & Common Errors
 
+Zulip's `vagrant` provisioning process logs useful debugging output to
+`/var/log/zulip_provision.log`; if you encounter a new issue, please
+attach a copy of that file to your bug report.
+
 #### The box 'ubuntu/trusty64' could not be found (Windows/Cygwin)
 
 If you see the following error when you run `vagrant up` on Windows:
