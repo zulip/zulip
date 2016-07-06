@@ -52,7 +52,7 @@ exports.initialize = function () {
     // link (in the gear menu), then focus the new stream textbox.
     subs_link.on('click', function (e) {
         $(document).one('subs_page_loaded.zulip', function (e) {
-            $('#create_stream_name').focus().select();
+            $('#create_or_filter_stream_row input[type="text"]').focus().select();
         });
     });
 

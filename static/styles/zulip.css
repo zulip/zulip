@@ -2494,7 +2494,11 @@ div.floating_recipient {
 }
 
 #add_new_subscription {
-    text-align: center;
+    text-align: left;
+}
+
+#create_or_filter_stream_row > .subscription_table_elem {
+    text-align: left;
 }
 
 #subscriptions-status {
@@ -2713,21 +2717,28 @@ button.topic_edit_cancel {
     padding: 0 15px 0 0;
 }
 
-#create_stream_row td {
+#create_or_filter_stream_row td {
     background-color: #f3f3f3;
     border-color: #BBB;
     border-bottom: 1px solid #BBB;
 }
 
-#create_stream_name {
+#create_or_filter_stream_row input[type="text"] {
     width: 220px;
-    margin-top: 10px;
+    margin: 5px 0 20px 38px;
+}
+
+form#add_new_subscription {
+    display: inline;
 }
 
 #create_stream_button {
     min-width: 140px;
-    margin-left: 15px;
-    margin-top: 10px;
+    float: right;
+    margin-top: 9px;
+    /* margin-right: 38px will align with .sub_unsub_button
+       10px will align with the right edge of #subscriptions_table */
+    margin-right: 38px;
 }
 
 .sub_settings_title {
