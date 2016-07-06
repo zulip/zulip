@@ -130,9 +130,9 @@ for a webhook named 'mywebhook'.
   integration for use in the user interface. You can add as many images as needed
   to effectively document your webhook integration. See [Documenting your
   integration](#documenting-your-integration) for details.
-* `zerver/fixtures/mywebhook/mywebhook_build.json`: Sample json payload data
-  used by tests. Can add multiple files. See [Testing and writing
-  tests](testing.html) for details.
+* `zerver/fixtures/mywebhook/mywebhook_messagetype.json`: Sample json payload data
+  used by tests. Add one fixture file per type of message supported by your
+  integration. See [Testing and writing tests](testing.html) for details.
 * `zerver/views/webhooks/mywebhook.py`: Includes the main webhook integration
   function including any needed helper functions.
 
@@ -146,30 +146,69 @@ receives in the http request.
 Use this walkthrough to learn how to write your first webhook
 integration.
 
-#### Step 1: Main webhook code
+#### Step 0: Create fixtures
+
+The first step in creating a webhook is to examine the data that the
+service you want to integrate will be sending to Zulip.
+
+You can use [requestb.in](http://requestb.in/) or a similar tool to capture
+webook payload(s) from the service you are integrating. Examining this
+data allows you to do two things:
+
+1. Determine how you will need to structure your webook code, including what
+   message types your integration should support and how; and,
+2. Create fixtures for your webook tests.
+
+Fixtures enable the testing of webhook integration code without the need to
+actually contact the service being integrated.
+
+Because `Hello World` is a very simple webhook that does one thing, it requires
+only one fixture, `zerver/fixtures/helloworld/helloworld_hello.json`:
+
+```
+{
+  "featured_title":"Marilyn Monroe",
+  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
+}
+```
+
+When writing your own webhook integration, you'll want to write one test
+function for every message type that your webhook supports. You'll also need a
+corresponding fixture for each of these tests. See [Step 3: Create
+tests](#step-3-create-tests) or [Testing](testing.html) for further details.
+
+#### Step 1: Create main webhook code
 
 The majority of the code for your webhook integration will be in a single
-python file in `zerver/views/webhooks/`. The Hello World integration is in
-`zerver/views/webhooks/helloworld.py`.
+python file in `zerver/views/webhooks/`.
+
+The Hello World integration is in `zerver/views/webhooks/helloworld.py`:
 
 ```
 from __future__ import absolute_import
+from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success
+from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.validator import check_dict, check_string
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
 def api_helloworld_webhook(request, user_profile, client,
-        payload=REQ(argument_type='body'), stream=REQ(default='test'),
-        topic=REQ(default='Hello World')):
+                           payload=REQ(argument_type='body'),
+                           stream=REQ(default='test'),
+                           topic=REQ(default='Hello World')):
 
   # construct the body of the message
   body = ('Hello! I am happy to be here! :smile: ')
 
-  # add a wikipedia link if there is one in the payload
-  if ('type' in payload and payload['type'] == 'wikipedia'):
-      body += '\nThe Wikipedia featured article for today is **[%s](%s)**' % (payload['featured_title'], payload['featured_url'])
+  # try to add the Wikipedia article of the day
+  # return appropriate error if not successful
+  try:
+      body_template = '\nThe Wikipedia featured article for today is **[%s](%s)**'
+      body += body_template % (payload['featured_title'], payload['featured_url'])
+  except KeyError as e:
+      return json_error("Missing key %s in JSON" % (e.message,))
 
   # send the message
   check_send_message(user_profile, client, 'stream', [stream], topic, body)
@@ -179,8 +218,8 @@ def api_helloworld_webhook(request, user_profile, client,
 
 ```
 
-The above code imports the required functions, defines the main webhook
-function, decorating it `api_hey_only_webhook_view` and
+The above code imports the required functions and defines the main webhook
+function `api_helloworld_webook`, decorating it with `api_key_only_webhook_view` and
 `has_request_variables`.
 
 You must pass the name of your webhook to the `api_key_only_webhook_view`
@@ -200,7 +239,10 @@ default in Zulip dev environment), and `topic` with a default of `Hello World`.
 
 In the body of the function we define the body of the message as `Hello! I am
 happy to be here! :smile: `. The `:smile:` indicates an emoji. Then we append a
-link to the Wikipedia article of the day as provided by the json payload.
+link to the Wikipedia article of the day as provided by the json payload. If
+the json payload does not include data for `featured_title` and `featured_url`
+we catch a `KeyError` and use `json_error` to return the appropriate
+information: a 400 http status code with relevant details.
 
 Then we send a public (stream) message with `check_send_message`.  Finally, we
 return `json_success()`.
@@ -227,11 +269,28 @@ This tells the Zulip api to call the `api_helloworld_webhook` function in
 `/api/v1/external/helloworld`.
 
 At this point, if you're following along and/or writing your own Hello World
-webhook, you have written enough code to test your integration.  You can do so
-by using curl on the command line:
+webhook, you have written enough code to test your integration.
+
+You can do so by using Zulip itself or curl on the command line.
+
+Using `manage.py` from within Zulip Dev environment:
 
 ```
-curl -X POST -H "Content-Type: application/json" -d '{ "type":"wikipedia", "day":"Wed, 6/1", "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+./manage.py send_webhook_fixture_message \
+> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
+> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
+```
+After which you should see something similar to:
+
+```
+2016-07-07 15:06:59,187 INFO     127.0.0.1       POST    200 143ms (mem: 6ms/13) (md: 43ms/1) (db: 20ms/9q) (+start: 147ms) /api/v1/external/helloworld (helloworld-bot@zulip.com via ZulipHelloWorldWebhook)
+```
+
+Using curl:
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
 ```
 
 After which you should see:
@@ -239,14 +298,16 @@ After which you should see:
 {"msg":"","result":"success"}
 ```
 
-And a message in Zulip. TODO: add screen shot.
+Using either method will create a message in Zulip:
 
-#### Step 3: Create tests and fixtures
+![Image of Hello World webhook message](images/helloworld-webhook.png)
+
+#### Step 3: Create tests
 
 Every webhook integraton should have a corresponding test class in
 `zerver/tests/test_hooks.py`.
 
-You should name the class <WebhookName>HookTests and this class should accept
+You should name the class `<WebhookName>HookTests` and this class should accept
 `WebhookTestCase`. For our HelloWorld webhook, we name the test class
 `HelloWorldHookTests`:
 
@@ -254,11 +315,15 @@ You should name the class <WebhookName>HookTests and this class should accept
 class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'hello'
+    FIXTURE_DIR_NAME = 'helloworld'
+
+    # Note: Include a test function per each type of message your integration supports
 
     def test_hello_message(self):
         expected_subject = u"Hello World";
         expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
+
+        # use fixture named helloworld_hello
         self.send_and_test_stream_message('hello', expected_subject, expected_message,content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
@@ -266,19 +331,16 @@ class HelloWorldHookTests(WebhookTestCase):
 
 ```
 
-And to simulate the post data of a real request, we add the fixture `zerver/fixtures/helloworld/hello_world.json` with this data:
+When writing tests for your webook, you'll want to include one function per
+each message action (and corresponding fixture) that your integration supports.
 
-```
-{
-  "type":"wikipedia",
-  "day":"Wed, 6/1",
-  "featured_title":"Marilyn Monroe",
-  "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
-}
-```
+If, for example, we added support for sending a goodbye message to our `Hello
+World` webook, we would add another test function to `HelloWorldHookTests`
+class called something like `test_goodbye_message` as well as a new fixtured
+`helloworld_goodbye.json` in `zerver/fixtures/helloworld/`.
 
-Now you can run these tests from within the Zulip dev environment with this
-command:
+Once you have written some tests, you can run just these new tests from within
+the Zulip dev environment with this command:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
@@ -338,7 +400,25 @@ Both blocks should fall alphabetically so we add these two divs between the
 blocks for Github and Hubot, respectively.
 
 See [Documenting your integration](#documenting-your-integration) for further
-details.
+details, including how to easily create the message screenshot.
+
+#### Step 5: Preparing a pull request to zulip/zulip
+
+When you have finished your webook integration and are ready for it to be
+available in the Zulip product, follow these steps to prepare your pull
+request:
+
+1. Run tests including linters and ensure you have addressed any issues they
+   report. See [Testing](testing.html) for details.
+2. Read through [Code styles and conventions](code-style.html) and take a look
+   through your code to double-check that you've followed Zulip's guidelines.
+3. Take a look at your git history to ensure your commits have been clear and
+   logical. If not, consider revising them with `git rebase --interactive`.
+4. Push code to your fork.
+5. Submit a pull request to zulip/zulip.
+
+If you would like feedback on your integration as you go, feel free to submit
+pull requests as you go, prefixing them with `[WIP]`.
 
 ## Writing Python script and plugin integrations integrations
 
