@@ -39,6 +39,7 @@ event_queues.json
 static/js/bundle.js
 static/third/gemoji/
 static/third/zxcvbn/
+static/locale/language_options.json
 tools/setup/emoji_dump/bitmaps/
 tools/setup/emoji_dump/*.ttx
 tools/phantomjs
