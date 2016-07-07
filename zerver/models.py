@@ -1014,7 +1014,7 @@ class Message(ModelReprMixin, models.Model):
             gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
             avatar_url        = avatar_url,
             client            = sending_client_name,
-            is_me_message     = is_me_message
+            is_me_message     = is_me_message,
         )
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
@@ -1192,9 +1192,9 @@ class UserMessage(ModelReprMixin, models.Model):
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
-    ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
-                 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
-                 'has_alert_word', "historical", 'is_me_message']
+    ALL_FLAGS = [u'read', u'starred', u'collapsed', u'mentioned', u'wildcard_mentioned',
+                 u'summarize_in_home', u'summarize_in_stream', u'force_expand', u'force_collapse',
+                 u'has_alert_word', u'historical']
     flags = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
 
     class Meta(object):

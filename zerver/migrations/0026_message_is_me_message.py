@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0024_realm_allow_message_editing'),
+        ('zerver', '0025_realm_message_content_edit_limit'),
     ]
 
     operations = [

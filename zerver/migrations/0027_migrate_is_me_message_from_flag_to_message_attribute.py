@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import bitfield
 from django.db import migrations, transaction
 
 
@@ -20,9 +21,14 @@ def backward_migration(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0025_message_is_me_message'),
+        ('zerver', '0026_message_is_me_message'),
     ]
 
     operations = [
         migrations.RunPython(forward_migration, backward_migration),
+        migrations.AlterField(
+            model_name='usermessage',
+            name='flags',
+            field=bitfield.models.BitField([u'read', u'starred', u'collapsed', u'mentioned', u'wildcard_mentioned', u'summarize_in_home', u'summarize_in_stream', u'force_expand', u'force_collapse', u'has_alert_word', u'historical'], default=0),
+        ),
     ]
