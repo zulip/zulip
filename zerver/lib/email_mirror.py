@@ -42,15 +42,15 @@ def report_to_zulip(error_message):
 def log_and_report(email_message, error_message, debug_info):
     # type: (message.Message, text_type, Dict[str, Any]) -> None
     scrubbed_error = u"Sender: %s\n%s" % (email_message.get("From"),
-                                         redact_stream(error_message))
+                                          redact_stream(error_message))
 
     if "to" in debug_info:
         scrubbed_error = u"Stream: %s\n%s" % (redact_stream(debug_info["to"]),
-                                             scrubbed_error)
+                                              scrubbed_error)
 
     if "stream" in debug_info:
         scrubbed_error = u"Realm: %s\n%s" % (debug_info["stream"].realm.domain,
-                                            scrubbed_error)
+                                             scrubbed_error)
 
     logger.error(scrubbed_error)
     report_to_zulip(scrubbed_error)
