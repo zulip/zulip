@@ -2473,7 +2473,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     log_event(event)
     message.save(update_fields=["subject", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
-                                "edit_history"])
+                                "edit_history", "is_me_message"])
 
     # Update the message as stored in the (deprecated) message
     # cache (for shunting the message over to Tornado in the old
