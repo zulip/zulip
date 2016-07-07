@@ -13,16 +13,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "fgrehm/trusty64-lxc"
 
   # The Zulip development environment runs on 9991 on the guest.
-  config.vm.network "forwarded_port", guest: 9991, host: 9991, host_ip: "127.0.0.1"
+  host_port = 9991
+  http_proxy = https_proxy = no_proxy = ""
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
 
-  proxy_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
-  if File.file?(proxy_config_file)
-    http_proxy = https_proxy = no_proxy = ""
-
-    IO.foreach(proxy_config_file) do |line|
+  vagrant_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
+  if File.file?(vagrant_config_file)
+    IO.foreach(vagrant_config_file) do |line|
       line.chomp!
       key, value = line.split(nil, 2)
       case key
@@ -30,19 +29,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "HTTP_PROXY"; http_proxy = value
       when "HTTPS_PROXY"; https_proxy = value
       when "NO_PROXY"; no_proxy = value
+      when "HOST_PORT"; host_port = value.to_i
       end
     end
+  end
 
-    if Vagrant.has_plugin?("vagrant-proxyconf")
-      if http_proxy != ""
-        config.proxy.http = http_proxy
-      end
-      if https_proxy != ""
-        config.proxy.https = https_proxy
-      end
-      if https_proxy != ""
-        config.proxy.no_proxy = no_proxy
-      end
+  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: "127.0.0.1"
+
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    if http_proxy != ""
+      config.proxy.http = http_proxy
+    end
+    if https_proxy != ""
+      config.proxy.https = https_proxy
+    end
+    if https_proxy != ""
+      config.proxy.no_proxy = no_proxy
     end
   end
 
