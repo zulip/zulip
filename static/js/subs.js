@@ -278,15 +278,15 @@ exports.show_settings_for = function (stream_name) {
     settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
 };
 
-function add_email_hint(row) {
+function add_email_hint(row, email_address_hint_content) {
     // Add a popover explaining stream e-mail addresses on hover.
     var hint_id = "#email-address-hint-" + row.stream_id;
     var email_address_hint = $(hint_id);
     email_address_hint.popover({"placement": "bottom",
                 "title": "Email integration",
-                "content": templates.render('email_address_hint',
-                                            { page_params: page_params }),
+                "content": email_address_hint_content,
                 "trigger": "manual"});
+
     $("body").on("mouseover", hint_id, function (e) {
         email_address_hint.popover('show');
         e.stopPropagation();
@@ -302,7 +302,8 @@ function add_sub_to_table(sub) {
     var html = templates.render('subscription', sub);
     $('#create_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
-    add_email_hint(sub);
+    var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
+    add_email_hint(sub, email_address_hint_content);
 }
 
 function format_member_list_elem(name, email) {
@@ -515,8 +516,9 @@ exports.setup_page = function () {
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
 
+        var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
         _.each(sub_rows, function (row) {
-            add_email_hint(row);
+            add_email_hint(row, email_address_hint_content);
         });
 
         loading.destroy_indicator($('#subs_page_loading_indicator'));
