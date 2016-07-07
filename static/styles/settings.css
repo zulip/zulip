@@ -330,6 +330,10 @@
     text-align: left;
 }
 
+#notification-settings .notification-reminder {
+    text-align: center;
+}
+
 form.admin-realm .control-label {
     width: 200px;
     padding-top: 3px;
