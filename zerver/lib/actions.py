@@ -1014,6 +1014,7 @@ def check_message(sender, client, message_type_name, message_to,
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject
+
     if forged and forged_timestamp is not None:
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(forged_timestamp)
@@ -1023,6 +1024,8 @@ def check_message(sender, client, message_type_name, message_to,
 
     if not message.maybe_render_content(realm.domain):
         raise JsonableError(_("Unable to render message"))
+
+    message.is_me_message = Message.is_status_message(message_content, message.rendered_content)
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
