@@ -11,7 +11,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
 import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
-    get_old_unclaimed_attachments
+    get_old_unclaimed_attachments, Message
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
@@ -188,6 +188,52 @@ class FileUploadTest(AuthedTestCase):
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
 
         self.assertEquals(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
+
+    def test_check_attachment_reference_update(self):
+        f1 = StringIO("file1")
+        f1.name = "file1.txt"
+        f2 = StringIO("file2")
+        f2.name = "file2.txt"
+        f3 = StringIO("file3")
+        f3.name = "file3.txt"
+
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/upload_file", {'file': f1})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        f1_path_id = re.sub('/user_uploads/', '', uri)
+
+        result = self.client.post("/json/upload_file", {'file': f2})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        f2_path_id = re.sub('/user_uploads/', '', uri)
+
+        self.subscribe_to_stream("hamlet@zulip.com", "test")
+        body = ("[f1.txt](http://localhost:9991/user_uploads/" + f1_path_id + ")"
+               "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
+        msg_id = self.send_message("hamlet@zulip.com", "test", Recipient.STREAM, body, "test")
+
+        result = self.client.post("/json/upload_file", {'file': f3})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        f3_path_id = re.sub('/user_uploads/', '', uri)
+
+        new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
+                   "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
+        result = self.client.post("/json/update_message", {
+            'message_id': msg_id,
+            'content': new_body
+        })
+        self.assert_json_success(result)
+
+        message = Message.objects.get(id=msg_id)
+        f1_attachment = Attachment.objects.get(path_id=f1_path_id)
+        f2_attachment = Attachment.objects.get(path_id=f2_path_id)
+        f3_attachment = Attachment.objects.get(path_id=f2_path_id)
+
+        self.assertTrue(message not in f1_attachment.messages.all())
+        self.assertTrue(message in f2_attachment.messages.all())
+        self.assertTrue(message in f3_attachment.messages.all())
 
     def tearDown(self):
         # type: () -> None
