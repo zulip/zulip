@@ -841,12 +841,18 @@ it (with the appropriate values in it for your proxy):
 HTTP_PROXY http://proxy_host:port
 HTTPS_PROXY http://proxy_host:port
 NO_PROXY localhost,127.0.0.1,.example.com
-
 ```
 
 Now run `vagrant up` in your terminal to install the development
 server. If you ran `vagrant up` before and failed, you'll need to run
 `vagrant destroy` first to clean up the failed installation.
+
+You can also change the port on the host machine that Vagrant uses by
+adding to your `~/.zulip-vagrant-config` file e.g.:
+
+```
+HOST_PORT 9971
+```
 
 Installing on Ubuntu 14.04 Trusty without Vagrant
 ----------------------------------
