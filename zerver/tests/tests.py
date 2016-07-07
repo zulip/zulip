@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from typing import Any, Callable, Dict, Iterable, List, Tuple, TypeVar
 from mock import patch, MagicMock
+import subprocess
 
 from django.http import HttpResponse
 from django.test import TestCase
@@ -1650,3 +1651,8 @@ class TestOpenRealms(AuthedTestCase):
         settings.VOYAGER = False
         mit_realm.restricted_to_domain = True
         mit_realm.save()
+
+class SkLearnTest(TestCase):
+    def test_sklearn_is_importable(self):
+        python_exe = '/srv/zulip-venv/bin/python'
+        subprocess.check_output([python_exe, '-c', 'import sklearn'])
