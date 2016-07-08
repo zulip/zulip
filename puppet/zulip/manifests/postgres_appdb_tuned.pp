@@ -9,7 +9,7 @@ class zulip::postgres_appdb_tuned {
     owner  => "postgres",
     group  => "postgres",
     mode   => 644,
-    content => template("zulip/postgresql/postgresql.conf.template.erb"),
+    content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
   # We can't use the built-in $memorysize fact because it's a string with human-readable units
