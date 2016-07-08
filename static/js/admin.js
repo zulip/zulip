@@ -143,7 +143,8 @@ function _setup_page() {
         realm_invite_required:      page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
-        realm_allow_message_editing: page_params.realm_allow_message_editing
+        realm_allow_message_editing: page_params.realm_allow_message_editing,
+        realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60)
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -340,6 +341,16 @@ function _setup_page() {
         }
     });
 
+    $("#id_realm_allow_message_editing").change(function () {
+        if (this.checked) {
+            $("#id_realm_message_content_edit_limit_minutes").removeAttr("disabled");
+            $("#id_realm_message_content_edit_limit_minutes_label").removeClass("control-label-disabled");
+        } else {
+            $("#id_realm_message_content_edit_limit_minutes").attr("disabled", true);
+            $("#id_realm_message_content_edit_limit_minutes_label").addClass("control-label-disabled");
+        }
+    });
+
     $(".administration").on("submit", "form.admin-realm-form", function (e) {
         var name_status = $("#admin-realm-name-status").expectOne();
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
@@ -363,6 +374,19 @@ function _setup_page() {
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
+        var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+
+        // If allow_message_editing is unchecked, message_content_edit_limit_minutes
+        // is irrelevant.  Hence if allow_message_editing is unchecked, and
+        // message_content_edit_limit_minutes is poorly formed, we set the latter to
+        // a default value to prevent the server from returning an error.
+        if (!new_allow_message_editing) {
+            if ((parseInt(new_message_content_edit_limit_minutes, 10).toString() !==
+                 new_message_content_edit_limit_minutes) ||
+                new_message_content_edit_limit_minutes < 0) {
+            new_message_content_edit_limit_minutes = 10; // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
+            }
+        }
 
         var url = "/json/realm";
         var data = {
@@ -371,7 +395,8 @@ function _setup_page() {
             invite_required: JSON.stringify(new_invite),
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
-            allow_message_editing: JSON.stringify(new_allow_message_editing)
+            allow_message_editing: JSON.stringify(new_allow_message_editing),
+            message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60)
         };
 
         channel.patch({
@@ -410,11 +435,23 @@ function _setup_page() {
                     }
                 }
                 if (response_data.allow_message_editing !== undefined) {
+                    // We expect message_content_edit_limit_seconds was sent in the
+                    // response as well
+                    var data_message_content_edit_limit_minutes = Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
-                        ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
+                        if (response_data.message_content_edit_limit_seconds > 0) {
+                            ui.report_success(i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
+                                                     {'num_minutes' : data_message_content_edit_limit_minutes}),
+                                              message_editing_status);
+                        } else {
+                            ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
+                        }
                     } else {
                         ui.report_success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
                     }
+                    // message_content_edit_limit_seconds could have been changed earlier
+                    // in this function, so update the field just in case
+                    $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
                 }
             },
             error: function (xhr, error) {

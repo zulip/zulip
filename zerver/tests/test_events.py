@@ -512,12 +512,16 @@ class EventsRegisterTest(AuthedTestCase):
             ('type', equals('realm')),
             ('op', equals('update_dict')),
             ('property', equals('default')),
-            ('data', check_dict([('allow_message_editing', check_bool)])),
+            ('data', check_dict([('allow_message_editing', check_bool),
+                                 ('message_content_edit_limit_seconds', check_int)])),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for allow_message_editing in [False, True, False]:
+        # Test every transition among the four possibilities {T,F} x {0, non-0}
+        for (allow_message_editing, message_content_edit_limit_seconds) in \
+            ((True, 0), (False, 0), (True, 0), (False, 1234), (True, 0), (True, 1234), (True, 0),
+             (False, 0), (False, 1234), (False, 0), (True, 1234), (False, 0),
+             (True, 1234), (True, 600), (False, 600), (False, 1234), (True, 600)):
             events = self.do_test(lambda: do_set_realm_message_editing(self.user_profile.realm,
-                                                                       allow_message_editing))
+                                      allow_message_editing, message_content_edit_limit_seconds))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
