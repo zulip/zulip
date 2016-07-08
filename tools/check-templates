@@ -174,14 +174,17 @@ def check_our_files():
     git_files = [line.strip() for line in subprocess.check_output(['git', 'ls-files'],
         universal_newlines=True).split('\n')]
 
-    # Check all our handlebars templates.
-    templates = [fn for fn in git_files if fn.endswith('.handlebars')]
-    assert len(templates) >= 10 # sanity check that we are actually doing work
-    for fn in templates:
-        validate(fn)
+    check_handlebar_templates(git_files)
 
     templates = [fn for fn in git_files if fn.endswith('.html')]
     check_django_templates(templates)
+
+def check_handlebar_templates(templates):
+    # Check all our handlebars templates.
+    templates = [fn for fn in templates if fn.endswith('.handlebars')]
+    assert len(templates) >= 10 # sanity check that we are actually doing work
+    for fn in templates:
+        validate(fn, check_indent=True)
 
 def check_django_templates(templates):
     def ok(fn):
