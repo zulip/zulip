@@ -20,7 +20,7 @@ set_global('message_store', {
 
 var stream_list = require('js/stream_list.js');
 
-global.$ = require('jQuery');
+global.$ = require('jquery');
 $.fn.expectOne = function () {
     assert(this.length === 1);
     return this;
