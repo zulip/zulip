@@ -9,7 +9,7 @@ from typing import Any, Dict, Callable, Tuple
 from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
-    Huddle, huddle_hash_cache_key
+    Huddle, huddle_hash_cache_key, to_dict_cache_key_id, stringify_message_dict
 from zerver.lib.cache import cache_with_key, cache_set, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
     get_remote_cache_time, get_remote_cache_requests, cache_set_many
@@ -40,7 +40,7 @@ def message_fetch_objects():
 
 def message_cache_items(items_for_remote_cache, message):
     # type: (Dict[text_type, Tuple[Message]], Message) -> None
-    items_for_remote_cache[message_cache_key(message.id)] = (message,)
+    items_for_remote_cache[to_dict_cache_key_id(message.id, True)] = (stringify_message_dict(message.to_dict_uncached(True)),)
 
 def user_cache_items(items_for_remote_cache, user_profile):
     # type: (Dict[text_type, Tuple[UserProfile]], UserProfile) -> None
