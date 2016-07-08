@@ -205,7 +205,6 @@ def check_handlebar_templates(templates, modified_only):
 def check_django_templates(templates, modified_only):
     def ok(fn):
         if 'templates' not in fn: return False
-        if 'api.html' in fn: return False
         if 'base.html' in fn: return False
         return True
 
