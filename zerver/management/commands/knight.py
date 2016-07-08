@@ -53,7 +53,8 @@ ONLY perform this on customer request from an authorized person.
                     do_change_is_admin(profile, True, permission=options['permission'])
                     print("Done!")
                 else:
-                    print("Would have granted %s %s rights for %s" % (email, options['permission'], profile.realm.domain))
+                    print("Would have granted %s %s rights for %s" % (
+                          email, options['permission'], profile.realm.domain))
         else:
             if profile.has_perm(options['permission'], profile.realm):
                 if options['ack']:

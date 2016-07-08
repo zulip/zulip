@@ -136,7 +136,8 @@ def accounts_register(request):
             # Other users should not already exist at all.
             user_email_is_unique(email)
     except ValidationError:
-        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email))
+        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
+                                    urllib.parse.quote_plus(email))
 
     name_validated = False
     full_name = None
@@ -319,7 +320,8 @@ def api_endpoint_docs(request):
     langs = set()
     for call in calls:
         call["endpoint"] = "%s/v1/%s" % (settings.EXTERNAL_API_URI, call["endpoint"])
-        call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com", settings.EXTERNAL_API_URI)
+        call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com",
+                                                                                  settings.EXTERNAL_API_URI)
         response = call['example_response']
         if '\n' not in response:
             # For 1-line responses, pretty-print them
@@ -732,7 +734,8 @@ def create_realm(request, creation_key=None):
     # type: (HttpRequest, Optional[text_type]) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
         if creation_key is None:
-            return render_to_response("zerver/realm_creation_failed.html", {'message': _('New organization creation disabled.')})
+            return render_to_response("zerver/realm_creation_failed.html",
+                                      {'message': _('New organization creation disabled.')})
         elif not check_key_is_valid(creation_key):
             return render_to_response("zerver/realm_creation_failed.html", {'message': _('The organization creation link has been expired or is not valid.')})
 

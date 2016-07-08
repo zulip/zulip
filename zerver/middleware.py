@@ -324,7 +324,8 @@ class RateLimitMiddleware(object):
     def process_exception(self, request, exception):
         # type: (HttpRequest, Exception) -> HttpResponse
         if isinstance(exception, RateLimited):
-            resp = json_error(_("API usage exceeded rate limit, try again in %s secs") % (request._ratelimit_secs_to_freedom,), status=429)
+            resp = json_error(_("API usage exceeded rate limit, try again in %s secs") % (
+                              request._ratelimit_secs_to_freedom,), status=429)
             resp['Retry-After'] = request._ratelimit_secs_to_freedom
             return resp
 
