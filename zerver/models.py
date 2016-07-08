@@ -870,9 +870,12 @@ class Message(ModelReprMixin, models.Model):
     @cache_with_key(to_dict_cache_key, timeout=3600*24)
     def to_dict_json(self, apply_markdown):
         # type: (bool) -> binary_type
-        return stringify_message_dict(self.to_dict_uncached(apply_markdown))
+        return self.to_dict_uncached(apply_markdown)
 
     def to_dict_uncached(self, apply_markdown):
+        return stringify_message_dict(self.to_dict_uncached_helper(apply_markdown))
+
+    def to_dict_uncached_helper(self, apply_markdown):
         # type: (bool) -> Dict[str, Any]
         return Message.build_message_dict(
                 apply_markdown = apply_markdown,

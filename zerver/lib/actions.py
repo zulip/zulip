@@ -2485,9 +2485,9 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
+            (changed_message.to_dict_uncached(apply_markdown=True),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=False)),)
+            (changed_message.to_dict_uncached(apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
 
     def user_info(um):

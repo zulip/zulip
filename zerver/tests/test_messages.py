@@ -722,7 +722,7 @@ class EditMessageTest(AuthedTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         msg = Message.objects.get(id=msg_id)
         cached = msg.to_dict(False)
-        uncached = msg.to_dict_uncached(False)
+        uncached = msg.to_dict_uncached_helper(False)
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.subject, subject)
