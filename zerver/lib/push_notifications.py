@@ -85,7 +85,8 @@ def _do_push_to_apns_service(user, message, apns_connection):
 def send_apple_push_notification(user, alert, **extra_data):
     # type: (UserProfile, text_type, **Any) -> None
     if not connection and not dbx_connection:
-        logging.error("Attempting to send push notification, but no connection was found. This may be because we could not find the APNS Certificate file.")
+        logging.error("Attempting to send push notification, but no connection was found. "
+                      "This may be because we could not find the APNS Certificate file.")
         return
 
     devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
@@ -112,7 +113,8 @@ def check_apns_feedback():
         since_date = timestamp_to_datetime(since)
         logging.info("Found unavailable token %s, unavailable since %s" % (token, since_date))
 
-        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updates__lt=since_date, type=PushDeviceToken.APNS).delete()
+        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updates__lt=since_date,
+                                       type=PushDeviceToken.APNS).delete()
     logging.info("Finished checking feedback for stale tokens")
 
 

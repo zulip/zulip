@@ -132,7 +132,8 @@ def done(_):
 def main():
     # type: () -> None
     imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
-    d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT, ssl.ClientContextFactory())
+    d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT,
+                               ssl.ClientContextFactory())
     d.addCallbacks(connected, login_failed)
     d.addBoth(done)
 
@@ -158,7 +159,8 @@ class Command(BaseCommand):
                 try:
                     extract_and_validate(rcpt_to)
                 except ZulipEmailForwardError:
-                    print("5.1.1 Bad destination mailbox address: Please use the address specified in your Streams page.")
+                    print("5.1.1 Bad destination mailbox address: Please use the address specified "
+                          "in your Streams page.")
                     exit(posix.EX_NOUSER) # type: ignore # There are no stubs for posix in python 3
 
             # Read in the message, at most 25MiB. This is the limit enforced by
@@ -183,7 +185,8 @@ class Command(BaseCommand):
             if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
                 not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
                 not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
-                print("Please configure the Email Mirror Gateway in your local_settings.py, or specify $ORIGINAL_RECIPIENT if piping a single mail.")
+                print("Please configure the Email Mirror Gateway in your local_settings.py, "
+                      "or specify $ORIGINAL_RECIPIENT if piping a single mail.")
                 exit(1)
             reactor.callLater(0, main)
             reactor.run()

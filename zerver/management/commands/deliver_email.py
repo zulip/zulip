@@ -73,7 +73,8 @@ Usage: python manage.py deliver_email
         # be careful not to run this on multiple systems.
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
-                # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(), and select with now()
+                # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(),
+                # and select with now()
                 email_jobs_to_deliver = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
                                                                 scheduled_timestamp__lte=datetime.utcnow())
                 if email_jobs_to_deliver:
