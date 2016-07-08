@@ -948,7 +948,8 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
 
-        md.inlinePatterns.add('stream_subscribe_button', StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '_begin')
+        md.inlinePatterns.add('stream_subscribe_button',
+            StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '_begin')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),

@@ -640,7 +640,8 @@ def do_send_messages(messages):
             raise ValueError('Bad recipient type')
 
         # Only deliver the message to active user recipients
-        message['active_recipients'] = [user_profile for user_profile in message['recipients'] if user_profile.is_active]
+        message['active_recipients'] = [user_profile for user_profile in message['recipients']
+                                        if user_profile.is_active]
         message['message'].maybe_render_content(None)
         message['message'].update_calculated_fields()
 
@@ -1400,7 +1401,8 @@ def do_add_subscription(user_profile, stream, no_log=False):
 
     if did_subscribe:
         emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream)}
-        notify_subscriptions_added(user_profile, [(subscription, stream)], lambda stream: emails_by_stream[stream.id], no_log)
+        notify_subscriptions_added(user_profile, [(subscription, stream)],
+                                   lambda stream: emails_by_stream[stream.id], no_log)
 
         user_ids = get_other_subscriber_ids(stream, user_profile.id)
         event = dict(type="subscription", op="peer_add",
@@ -1856,7 +1858,8 @@ def do_create_realm(domain, name, restricted_to_domain=True):
         product_name = "Zulip"
         content = """Hello, and welcome to %s!
 
-This is a message on stream `%s` with the topic `welcome`. We'll use this stream for system-generated notifications.""" % (product_name, notifications_stream.name,)
+This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
+system-generated notifications.""" % (product_name, notifications_stream.name,)
         msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
                                      notifications_stream.name, "welcome",
                                      content, realm=realm)
