@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from typing import Any, Callable, Dict, Iterable, List, Tuple, TypeVar
+from mock import patch, MagicMock
+import subprocess
 
 from django.http import HttpResponse
 from django.test import TestCase
@@ -21,6 +23,7 @@ from zerver.models import UserProfile, Recipient, \
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
+from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
@@ -37,6 +40,7 @@ from zerver.worker import queue_processors
 from django.conf import settings
 from django.core import mail
 from six import text_type
+from six.moves import range
 import datetime
 import os
 import re
@@ -1534,8 +1538,17 @@ class ExtractedRecipientsTest(TestCase):
 
 
 class TestMissedMessages(AuthedTestCase):
-    def test_extra_context_in_missed_stream_messages(self):
-        # type: () -> None
+    def normalize_string(self, s):
+        # type: (text_type) -> text_type
+        s = s.strip()
+        return re.sub(r'\s+', ' ', s)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_extra_context_in_missed_stream_messages(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = [str(i) * 4 for i in range(30)]
+        mock_random_token.side_effect = tokens
+
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
@@ -1550,19 +1563,78 @@ class TestMissedMessages(AuthedTestCase):
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
 
+        othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
 
-        def normalize_string(s):
-            # type: (text_type) -> text_type
-            s = s.strip()
-            return re.sub(r'\s+', ' ', s)
+        msg = mail.outbox[0]
+        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t)
+                              for t in tokens]
+        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
 
         self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(msg.from_email, "%s <%s>" % (othello.full_name, othello.email))
+        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
+        self.assertEqual(msg.extra_headers['Sender'], sender)
         self.assertIn(
             'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**',
-            normalize_string(mail.outbox[0].body),
+            self.normalize_string(mail.outbox[0].body),
         )
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_extra_context_in_personal_missed_stream_messages(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = [str(i) * 4 for i in range(30)]
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+                                   Recipient.PERSONAL,
+                                   'Extremely personal message!')
+
+        othello = get_user_profile_by_email('othello@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+
+        msg = mail.outbox[0]
+        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t)
+                              for t in tokens]
+        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(msg.from_email, "%s <%s>" % (othello.full_name, othello.email))
+        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
+        self.assertEqual(msg.extra_headers['Sender'], sender)
+        self.assertIn('You and Othello, the Moor of Venice Extremely personal message!',
+                      self.normalize_string(msg.body))
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_extra_context_in_huddle_missed_stream_messages(self, mock_random_token):
+        # type: (MagicMock) -> None
+        tokens = [str(i) * 4 for i in range(30)]
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com",
+                                   ["hamlet@zulip.com", "iago@zulip.com"],
+                                   Recipient.PERSONAL,
+                                   'Group personal message!')
+
+        othello = get_user_profile_by_email('othello@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+
+        msg = mail.outbox[0]
+        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t)
+                              for t in tokens]
+        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
+
+        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(msg.from_email, "%s <%s>" % (othello.full_name, othello.email))
+        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
+        self.assertEqual(msg.extra_headers['Sender'], sender)
+        body = ('You and Iago, Othello, the Moor of Venice Othello,'
+                ' the Moor of Venice Group personal message')
+
+        self.assertIn(body, self.normalize_string(msg.body))
 
 class TestOpenRealms(AuthedTestCase):
     def test_open_realm_logic(self):
@@ -1579,3 +1651,8 @@ class TestOpenRealms(AuthedTestCase):
         settings.VOYAGER = False
         mit_realm.restricted_to_domain = True
         mit_realm.save()
+
+class SkLearnTest(TestCase):
+    def test_sklearn_is_importable(self):
+        python_exe = '/srv/zulip-venv/bin/python'
+        subprocess.check_output([python_exe, '-c', 'import sklearn'])
