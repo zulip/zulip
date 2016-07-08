@@ -3,6 +3,11 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
+if $release_name == "trusty" {
+  # tools for database setup
+  $postgres_appdb_tuned_packages = ["pgtune"]
+  package { $postgres_appdb_tuned_packages: ensure => "installed" }
+
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
     require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
@@ -51,5 +56,21 @@ vm.dirty_background_ratio = 5
     refreshonly => true,
     subscribe => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
+} else {
+  file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
+    ensure => file,
+    owner  => "postgres",
+    group  => "postgres",
+    mode   => 644,
+    content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
+  }
+
+  exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
+    require => Package["postgresql-${zulip::base::postgres_version}"],
+    refreshonly => true,
+    subscribe => [ File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"] ]
+  }
+}
 
 }

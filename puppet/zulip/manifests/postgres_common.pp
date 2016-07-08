@@ -1,8 +1,6 @@
 class zulip::postgres_common {
   $postgres_packages = [# The database itself
                         "postgresql-${zulip::base::postgres_version}",
-                        # tools for database setup
-                        "pgtune",
                         # tools for database monitoring
                         "ptop",
                         # Python modules used in our monitoring/worker threads
