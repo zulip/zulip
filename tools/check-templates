@@ -180,9 +180,10 @@ def check_our_files():
     for fn in templates:
         validate(fn)
 
-    # Django templates are pretty messy now, so we do minimal checking.
     templates = [fn for fn in git_files if fn.endswith('.html')]
+    check_django_templates(templates)
 
+def check_django_templates(templates):
     def ok(fn):
         if 'templates' not in fn: return False
         if 'api.html' in fn: return False
@@ -191,9 +192,9 @@ def check_our_files():
 
     templates = sorted(list(filter(ok, templates)))
 
-
     assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
+        # Many of our Django templates have broken indentation.
         validate(fn, check_indent=False)
 
 if __name__ == '__main__':
