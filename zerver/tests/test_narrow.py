@@ -612,8 +612,8 @@ class GetOldMessagesTest(AuthedTestCase):
         m = self.get_last_message()
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
-        # Use to_dict_uncached directly to avoid having to deal with remote cache
-        d = m.to_dict_uncached(True)
+        # Use to_dict_uncached_helper directly to avoid having to deal with remote cache
+        d = m.to_dict_uncached_helper(True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
     def common_check_get_old_messages_query(self, query_params, expected):

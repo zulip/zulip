@@ -16,7 +16,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
+    to_dict_cache_key, get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
@@ -2488,9 +2488,9 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
+            (changed_message.to_dict_uncached(apply_markdown=True),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=False)),)
+            (changed_message.to_dict_uncached(apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
 
     def user_info(um):
