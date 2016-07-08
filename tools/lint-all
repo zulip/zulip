@@ -369,7 +369,10 @@ try:
 
     @lint
     def templates():
-        result = subprocess.call(['tools/check-templates'])
+        args = ['tools/check-templates']
+        if options.modified:
+            args.append('-m')
+        result = subprocess.call(args)
         return result
 
     @lint
