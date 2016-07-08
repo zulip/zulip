@@ -209,6 +209,13 @@ class Command(makemessages.Command):
             k = k.replace('\\n', '\n')
             new_strings[k] = old_strings.get(k, k)
 
+        plurals = {k: v for k, v in old_strings.items() if k.endswith('_plural')}
+        for plural_key, value in plurals.items():
+            components = plural_key.split('_')
+            singular_key = '_'.join(components[:-1])
+            if singular_key in new_strings:
+                new_strings[plural_key] = value
+
         return new_strings
 
     def write_translation_strings(self, translation_strings):
