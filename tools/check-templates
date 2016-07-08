@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 from __future__ import print_function
+import optparse
 import os
 import sys
 import subprocess
@@ -179,21 +180,29 @@ def get_html_tag(text, i):
     return s
 
 def check_our_files():
+    parser = optparse.OptionParser()
+    parser.add_option('--modified', '-m',
+        action='store_true',
+        help='Only check modified files')
+    (options, _) = parser.parse_args()
+
     by_lang = lister.list_files(
+        modified_only = options.modified,
         ftypes=['handlebars', 'html'],
         group_by_ftype=True)
 
-    check_handlebar_templates(by_lang['handlebars'])
-    check_django_templates(by_lang['html'])
+    check_handlebar_templates(by_lang['handlebars'], options.modified)
+    check_django_templates(by_lang['html'], options.modified)
 
-def check_handlebar_templates(templates):
+def check_handlebar_templates(templates, modified_only):
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.handlebars')]
-    assert len(templates) >= 10 # sanity check that we are actually doing work
+    if not modified_only:
+        assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
         validate(fn, check_indent=True)
 
-def check_django_templates(templates):
+def check_django_templates(templates, modified_only):
     def ok(fn):
         if 'templates' not in fn: return False
         if 'api.html' in fn: return False
@@ -202,7 +211,8 @@ def check_django_templates(templates):
 
     templates = sorted(list(filter(ok, templates)))
 
-    assert len(templates) >= 10 # sanity check that we are actually doing work
+    if not modified_only:
+        assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
         # Many of our Django templates have broken indentation.
         validate(fn, check_indent=False)
