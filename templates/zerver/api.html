@@ -80,7 +80,7 @@ to pull out the resulting HTML :)
     <span class="s">"to"</span><span class="p">:</span> <span class="s">"Denmark"</span><span class="p">,</span>
     <span class="s">"subject"</span><span class="p">:</span> <span class="s">"Castle"</span><span class="p">,</span>
     <span class="s">"content"</span><span class="p">:</span> <span class="s">"Something is rotten in the state of Denmark."</span>
-<span class="p">})</span></span>
+<span class="p">})</span>
 <span class="c"># Send a private message</span>
 <span class="n">client</span><span class="o">.</span><span class="n">send_message</span><span class="p">({</span>
     <span class="s">"type"</span><span class="p">:</span> <span class="s">"private"</span><span class="p">,</span>
@@ -101,7 +101,7 @@ to pull out the resulting HTML :)
 
 
       <div class="tab-pane" id="commandline">
-        <p>You can use <code>zulip-send</code> (found in <code>bin/</code> in the tarball) to easily send Zulips from the command-line, providing the message to be sent on STDIN.
+        <p>You can use <code>zulip-send</code> (found in <code>bin/</code> in the tarball) to easily send Zulips from the command-line, providing the message to be sent on STDIN.</p>
 
 <h4>Stream message</h4>
 <div class="codehilite"><pre>zulip-send --stream Denmark --subject Castle \
@@ -124,7 +124,7 @@ to pull out the resulting HTML :)
       <p>You can omit the <code>user</code>{% if api_site_required %}, <code>api-key</code>, and
       <code>site</code>{% else %} and <code>api-key</code>{% endif %} arguments if you have a
       <code>~/.zuliprc</code> file.
-      </div>
+      </p>
       <p>See also the <a href="/api/endpoints">full API endpoint documentation.</a></p>
     </div>
 
@@ -136,8 +136,8 @@ to pull out the resulting HTML :)
     <p>You can create bots on your <a href="/#settings" target="_blank">settings page</a>.
     Once you have a bot, you can use its email and API key to send messages.</p>
 
-    <p>Create a bot:
-    <img class="screenshot" src="/static/images/api/create-bot.png" /></p>
+    <p>Create a bot:</p>
+    <img class="screenshot" src="/static/images/api/create-bot.png" />
 
     <p>Look for the bot's email and API key:
     <img class="screenshot" src="/static/images/api/bot-key.png" /></p>
@@ -150,4 +150,7 @@ to pull out the resulting HTML :)
 <span class="na">key</span><span class="o">=</span><span class="s">BOT_API_KEY</span>
 <span class="na">email</span><span class="o">=</span><span class="s">BOT_EMAIL_ADDRESS</span>
 {% if api_site_required %}<span class="na">site</span><span class="o">=</span><span class="s">{{ external_api_uri }}</span>{% endif %}</pre></div>
+</div>
 {% endblock %}
+
+
