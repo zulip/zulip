@@ -18,4 +18,5 @@ class Command(BaseCommand):
         # type: (*Any, **Any) -> None
         url = generate_realm_creation_url()
         self.stdout.write("\033[1;92mOne time organization creation link generated\033[0m")
-        self.stdout.write("\033[1;92m=> Please visit \033[4m%s\033[0m \033[1;92mto create the organization\033[0m" % (url))
+        self.stdout.write("\033[1;92m=> Please visit \033[4m%s\033[0m \033[1;92mto "
+                          "create the organization\033[0m" % (url))
