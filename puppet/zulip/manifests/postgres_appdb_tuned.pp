@@ -57,6 +57,17 @@ vm.dirty_background_ratio = 5
     subscribe => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
 } else {
+  # We can't use the built-in $memorysize fact because it's a string with human-readable units
+  $total_memory = regsubst(file('/proc/meminfo'), '^.*MemTotal:\s*(\d+) kB.*$', '\1', 'M') * 1024
+  $half_memory = $total_memory / 2
+  $half_memory_pages = $half_memory / 4096
+  $total_memory_mb = $total_memory / 1024 / 1024
+
+  $work_mem = $total_memory_mb / 512
+  $shared_buffers = $total_memory_mb / 8
+  $effective_cache_size = $total_memory_mb * 10 / 32
+  $maintenance_work_mem = $total_memory_mb / 32
+
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
     require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
