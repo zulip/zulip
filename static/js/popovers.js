@@ -781,6 +781,49 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
+    $('body').on('click', '.view_edit_history', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        var row = current_msg_list.get_row(msgid);
+        var message = current_msg_list.get(rows.id(row));
+
+        popovers.hide_actions_popover();
+        $('#message-edit-history').modal("show");
+        channel.get({
+            url: "/json/messages/" + message.id + "/history",
+            data: {message_id: JSON.stringify(message.id)},
+            success: function (data) {
+                var message_history = data.message_history;
+
+                _.each(message_history, function (msg, index) {
+                    var extend_dict = {};
+                    if (index === message_history.length - 1) {
+                        msg.timestamp = message.timestamp;
+                        msg.prev_rendered_content = msg.prev_rendered_content.slice(3, -4);
+                        extend_dict.posted_or_edited = "Posted by";
+                    } else {
+                        msg.timestamp = message_history[index + 1].timestamp;
+                        extend_dict.posted_or_edited = "Edited by";
+                    }
+
+                    var time = new XDate(msg.timestamp * 1000);
+                    msg.timestamp = timerender.render_now(time)[0];
+
+                    _.extend(msg, extend_dict);
+                });
+
+                message_history = message_history.reverse();
+                $('#message-history').html(templates.render('message_edit_history', {
+                    edited_messages: message_history,
+                }));
+            },
+            error: function (xhr) {
+                ui.report_error(i18n.t("Error listing message edit history"), xhr,
+                        $("#message-history-error"));
+            },
+        });
+        e.stopPropagation();
+        e.preventDefault();
+    });
 
     $('body').on('click', '.popover_mute_topic', function (e) {
         var stream = $(e.currentTarget).data('msg-stream');

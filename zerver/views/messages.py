@@ -865,28 +865,38 @@ def json_update_message(request, user_profile, message_id):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
     return update_message_backend(request, user_profile)
 
-def highlight_message_differences(message_history):
-    # type: (List[Dict[str, Any]]) -> List[Dict[str, Any]]
+def highlight_message_differences(message_history, sender_email):
+    # type: (List[Dict[str, Any]], str) -> List[Dict[str, Any]]
     for edited_msg, prev_msg in zip(message_history, message_history[1:]):
         # Iterate over message edit history
-        rendered_content = highlight_html_differences(prev_msg['prev_rendered_content'], \
-                                                      edited_msg['prev_rendered_content'])
+        rendered_content = highlight_html_differences(prev_msg['prev_content'],
+                                                      edited_msg['prev_content'])
         edited_msg_index = message_history.index(edited_msg)
         message_history[edited_msg_index]['prev_rendered_content'] = rendered_content
+        edited_by_user = get_user_profile_by_id(message_history[edited_msg_index + 1]['edited_by'])
+        message_history[edited_msg_index]['edited_by'] = edited_by_user.email
+
+    # Add sender email as edited_by to original message
+    message_history[len(message_history)-1]['edited_by'] = sender_email
     return message_history
 
 @has_request_variables
 def get_message_edit_history(request, user_profile,
-                              message_id=REQ(converter=to_non_negative_int)):
+                             message_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    message, user_message = access_message(user_profile.id, message_id)
+    message, user_message = access_message(user_profile, message_id)
 
     # Convert message to dictionary
-    message_dict = message_to_dict(message, False)
+    message_dict = message_to_dict(message, True)
 
     # Get message edit history
     message_edit_history = message_dict['edit_history']
-    updated_message_history = highlight_message_differences(message_edit_history)
+    sender_email = message_dict['sender_email']
+
+    # Add current message in message_edit_history
+    message_edit_history.insert(0, {'prev_content': message_dict['content'],
+                                    'timestamp': message_dict['last_edit_timestamp']})
+    updated_message_history = highlight_message_differences(message_edit_history, sender_email)
     return json_success({"message_history": updated_message_history})
 
 @has_request_variables
