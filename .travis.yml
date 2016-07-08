@@ -1,3 +1,4 @@
+dist: trusty
 before_install:
    - nvm install 0.10
 install:
@@ -16,6 +17,7 @@ env:
     - COVERALLS_PARALLEL=true
     - COVERALLS_SERVICE_NAME=travis-pro
     - COVERALLS_REPO_TOKEN=hnXUEBKsORKHc8xIENGs9JjktlTb2HKlG
+    - BOTO_CONFIG=/tmp/nowhere
   matrix:
     - TEST_SUITE=frontend
     - TEST_SUITE=backend
@@ -28,6 +30,9 @@ matrix:
   include:
     - python: "3.4"
       env: TEST_SUITE=mypy
+    - python: "3.4"
+      env: TEST_SUITE=lint-all
+      sudo: required
 # command to run tests
 script:
   - ./tools/travis/$TEST_SUITE

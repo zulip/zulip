@@ -1,0 +1,26 @@
+#!/bin/bash
+
+source tools/travis/activate-venv
+
+echo "+ ./tools/lint-all"
+./tools/lint-all
+retcode="$?"
+
+echo
+if [ "$retcode" == 0 ]; then
+    echo "tools/lint-all detected no errors on Python 3!"
+else
+    echo "tools/lint-all threw some errors in python 3."
+    echo "This indicates that there is either a bug in your code or your code doesn't"
+    echo "follow our style guidelines (http://zulip.readthedocs.io/en/latest/code-style.html)."
+    echo
+    echo "To run tools/lint-all locally in python 3, you must first install"
+    echo 'the required packages.  To do that, run `python3 provision.py` then'
+    echo '`source /srv/zulip-py3-venv` and then `tools/lint-all`.'
+    echo
+    echo "You can also install tools/lint-all's dependencies manually:"
+    echo "It requires six, typing (check their versions from requirements/common.txt)."
+    echo "and pyflakes (check its version from requirements/dev.txt). It is likely that"
+    echo "you already have a python 3 virtualenv installed in /srv/zulip-py3-venv, but"
+    echo "you might still need to install the dependencies listed above."
+fi
