@@ -118,7 +118,12 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if (message && message.sent_by_me && !message.status_message && page_params.realm_allow_message_editing) {
+    var now = new XDate();
+    if (message && message.sent_by_me && !message.status_message &&
+        page_params.realm_allow_message_editing &&
+        (page_params.realm_message_content_edit_limit_seconds === 0 ||
+         page_params.realm_message_content_edit_limit_seconds + now.diffSeconds(message.timestamp * 1000) > 0))
+    {
         message_row.find('.message_content').find('p:last').append(edit_content_button);
     }
     current_message_hover = message_row;

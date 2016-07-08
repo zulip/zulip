@@ -321,6 +321,7 @@ a:hover code {
     display: inline;
 }
 
+#message_edit_tooltip,
 #streams_inline_cog,
 #streams_filter_icon {
     float: right;
@@ -331,9 +332,17 @@ a:hover code {
     opacity: 0.5;
 }
 
+#message_edit_tooltip:hover,
 #streams_inline_cog:hover,
 #streams_filter_icon:hover {
    opacity: 1.0;
+}
+
+.message-edit-tooltip-inner {
+    width: 200px;
+    position: absolute;
+    right: 7px;
+    top: -18px;
 }
 
 #streams_header a {
@@ -1404,6 +1413,22 @@ div.focused_table {
 
 .message_edit_content {
     line-height: 18px;
+}
+
+.message_edit_countdown_timer {
+    text-align: right;
+    display: inline;
+    color: #a1a1a1;
+}
+
+.message_edit_tooltip {
+    display: inline;
+    color: #a1a1a1;
+}
+
+.message-edit-timer-control-group {
+    float: right;
+    display: none;
 }
 
 .topic_edit {

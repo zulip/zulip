@@ -101,6 +101,21 @@
                     {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
                 </div>
               </div>
+              <div class="control-group">
+                <label for="realm_message_content_edit_limit_minutes"
+                  id="id_realm_message_content_edit_limit_minutes_label"
+                  title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}"
+                  class="control-label{{#unless realm_allow_message_editing}} control-label-disabled{{/unless}}">
+                  {{t 'Message edit limit in minutes (0 for no limit)' }}
+                </label>
+                <div class="controls">
+                  <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                         name="realm_message_content_edit_limit_minutes"
+                         class="admin-realm-message-content-edit-limit-minutes"
+                         value="{{ realm_message_content_edit_limit_minutes }}"
+                    {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+                </div>
+              </div>
               <div class="controls organization-submission">
               <input type="submit" class="btn btn-big btn-primary" value="{{t 'Save changes' }}" />
               </div>
