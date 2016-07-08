@@ -23,7 +23,7 @@ i18n.init({
     }
 });
 
-global.$ = require('jQuery');
+global.$ = require('jquery');
 var _ = global._;
 
 // When writing these tests, the following command might be helpful:
