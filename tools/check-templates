@@ -181,14 +181,15 @@ def check_our_files():
         validate(fn)
 
     # Django templates are pretty messy now, so we do minimal checking.
-    templates = sorted([fn for fn in git_files if fn.endswith('.html') and 'templates' in fn])
+    templates = [fn for fn in git_files if fn.endswith('.html')]
 
     def ok(fn):
+        if 'templates' not in fn: return False
         if 'api.html' in fn: return False
         if 'base.html' in fn: return False
         return True
 
-    templates = list(filter(ok, templates))
+    templates = sorted(list(filter(ok, templates)))
 
 
     assert len(templates) >= 10 # sanity check that we are actually doing work
