@@ -1141,6 +1141,13 @@ def get_context_for_message(message):
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
 
+def flush_message(sender, **kwargs):
+    # type: (Any, **Any) -> None
+    message = kwargs['instance']
+    cache_delete(to_dict_cache_key(message, False))
+    cache_delete(to_dict_cache_key(message, True))
+
+post_save.connect(flush_message, sender=Message)
 
 # Whenever a message is sent, for each user current subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
