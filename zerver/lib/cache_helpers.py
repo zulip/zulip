@@ -10,7 +10,7 @@ from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key, to_dict_cache_key_id, stringify_message_dict
-from zerver.lib.cache import cache_with_key, cache_set, message_cache_key, \
+from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
     get_remote_cache_time, get_remote_cache_requests, cache_set_many
 from django.utils.importlib import import_module
@@ -19,15 +19,6 @@ import logging
 from django.db.models import Q
 
 MESSAGE_CACHE_SIZE = 75000
-
-def cache_save_message(message):
-    # type: (Message) -> None
-    cache_set(message_cache_key(message.id), message, timeout=3600*24)
-
-@cache_with_key(message_cache_key, timeout=3600*24)
-def cache_get_message(message_id):
-    # type: (int) -> Message
-    return Message.objects.select_related().get(id=message_id)
 
 def message_fetch_objects():
     # type: () -> List[Any]

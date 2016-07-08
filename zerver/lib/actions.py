@@ -46,14 +46,13 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
-from zerver.lib.cache_helpers import cache_save_message
 from zerver.lib.queue import queue_json_publish
 from django.utils import timezone
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
-    cache_delete, cache_delete_many, message_cache_key
+    cache_delete, cache_delete_many
 from zerver.decorator import statsd_increment
 from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
@@ -683,7 +682,6 @@ def do_send_messages(messages):
                 do_claim_attachments(message)
 
     for message in messages:
-        cache_save_message(message['message'])
         # Render Markdown etc. here and store (automatically) in
         # remote cache, so that the single-threaded Tornado server
         # doesn't have to.
@@ -1796,7 +1794,6 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     # Delete cache entries for everything else, which is cheaper and
     # clearer than trying to set them. display_recipient is the out of
     # date field in all cases.
-    cache_delete_many(message_cache_key(message.id) for message in messages)
     cache_delete_many(
         to_dict_cache_key_id(message.id, True) for message in messages)
     cache_delete_many(
@@ -2490,7 +2487,6 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     event['message_ids'] = []
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
-        items_for_remote_cache[message_cache_key(changed_message.id)] = (changed_message,)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
             (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \

@@ -252,10 +252,6 @@ def cache(func):
 
     return cache_with_key(keyfunc)(func)
 
-def message_cache_key(message_id):
-    # type: (int) -> text_type
-    return u"message:%d" % (message_id,)
-
 def display_recipient_cache_key(recipient_id):
     # type: (int) -> text_type
     return u"display_recipient_dict:%d" % (recipient_id,)
