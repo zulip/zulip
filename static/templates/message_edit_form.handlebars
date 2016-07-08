@@ -14,6 +14,7 @@
         </div>
     </div>
 {{/if}}
+
     <div class="control-group">
         <div class="controls edit-controls">
             <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
@@ -23,6 +24,12 @@
         <div class="controls edit-controls">
             <button type="button" class="message_edit_save btn btn-primary btn-small">{{t "Save" }}</button>
             <button type="button" class="message_edit_cancel btn btn-default btn-small">{{t "Cancel" }}</button>
+            <div class="message-edit-timer-control-group">
+                <span class="message_edit_countdown_timer"></span>
+                <span><i id="message_edit_tooltip" class="message_edit_tooltip icon-vector-question-sign" data-toggle="tooltip"
+                         title="Message content can only be edited for {{minutes_to_edit}} minutes after it is sent."></i>
+                </span>
+            </div>
         </div>
     </div>
     <div class="alert alert-error edit_error hide"></div>

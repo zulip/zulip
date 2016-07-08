@@ -412,15 +412,17 @@ def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_onl
     )
     send_event(event, active_user_ids(realm))
 
-def do_set_realm_message_editing(realm, allow_message_editing):
-    # type: (Realm, bool) -> None
+def do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds):
+    # type: (Realm, bool, int) -> None
     realm.allow_message_editing = allow_message_editing
-    realm.save(update_fields=['allow_message_editing'])
+    realm.message_content_edit_limit_seconds = message_content_edit_limit_seconds
+    realm.save(update_fields=['allow_message_editing', 'message_content_edit_limit_seconds'])
     event = dict(
         type="realm",
         op="update_dict",
         property="default",
-        data=dict(allow_message_editing=allow_message_editing),
+        data=dict(allow_message_editing=allow_message_editing,
+                  message_content_edit_limit_seconds=message_content_edit_limit_seconds),
     )
     send_event(event, active_user_ids(realm))
 
@@ -2388,7 +2390,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     edit_history_event = {}
     changed_messages = [message]
 
-    # You can only edit a message if:
+    # You only have permission to edit a message if:
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
     # 3. This is a topic-only edit and you are an admin.
@@ -2399,6 +2401,20 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
+
+    # We already check for realm.allow_message_editing in
+    # zerver.views.messages.update_message_backend
+    # If there is a change to the content, we also need to check it hasn't been
+    # too long
+
+    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
+    # past the limit, and in case there are network issues, etc. The 15 comes
+    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+    # you change this value also change those two parameters in message_edit.js.
+    edit_limit_buffer = 20
+    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0 and \
+       (now() - message.pub_date) > datetime.timedelta(seconds=user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer):
+        raise JsonableError(_("The time limit for editing this message has past"))
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the
@@ -2708,6 +2724,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
+        state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain

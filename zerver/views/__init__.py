@@ -946,6 +946,7 @@ def home(request):
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
         realm_allow_message_editing = register_ret['realm_allow_message_editing'],
+        realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
         left_side_userlist    = register_ret['left_side_userlist'],
@@ -1103,8 +1104,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  invite_required=REQ(validator=check_bool, default=None),
                  invite_by_admins_only=REQ(validator=check_bool, default=None),
                  create_stream_by_admins_only=REQ(validator=check_bool, default=None),
-                 allow_message_editing=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
+                 allow_message_editing=REQ(validator=check_bool, default=None),
+                 message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int]) -> HttpResponse
     realm = user_profile.realm
     data = {} # type: Dict[str, Any]
     if name is not None and realm.name != name:
@@ -1122,9 +1124,15 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if create_stream_by_admins_only is not None and realm.create_stream_by_admins_only != create_stream_by_admins_only:
         do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only)
         data['create_stream_by_admins_only'] = create_stream_by_admins_only
-    if allow_message_editing is not None and realm.allow_message_editing != allow_message_editing:
-        do_set_realm_message_editing(realm, allow_message_editing)
+    if (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or \
+       (message_content_edit_limit_seconds is not None and realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
+        if allow_message_editing is None:
+            allow_message_editing = realm.allow_message_editing
+        if message_content_edit_limit_seconds is None:
+            message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
+        do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
+        data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
     return json_success(data)
 
 @csrf_exempt

@@ -779,6 +779,72 @@ class EditMessageTest(AuthedTestCase):
         })
         self.assert_json_error(result, "Content can't be empty")
 
+    def test_edit_message_content_limit(self):
+        def set_message_editing_params(allow_message_editing,
+                                       message_content_edit_limit_seconds):
+            result = self.client_patch("/json/realm", {
+                'allow_message_editing': ujson.dumps(allow_message_editing),
+                'message_content_edit_limit_seconds': message_content_edit_limit_seconds
+            })
+            self.assert_json_success(result)
+
+        def do_edit_message_assert_success(id_, unique_str, topic_only = False):
+            new_subject = 'subject' + unique_str
+            new_content = 'content' + unique_str
+            params_dict = { 'message_id': id_, 'subject': new_subject }
+            if not topic_only:
+                params_dict['content'] = new_content
+            result = self.client.post("/json/update_message", params_dict)
+            self.assert_json_success(result)
+            if topic_only:
+                self.check_message(id_, subject=new_subject)
+            else:
+                self.check_message(id_, subject=new_subject, content=new_content)
+
+        def do_edit_message_assert_error(id_, unique_str, error, topic_only = False):
+            message = Message.objects.get(id=id_)
+            old_subject = message.subject
+            old_content = message.content
+            new_subject = 'subject' + unique_str
+            new_content = 'content' + unique_str
+            params_dict = { 'message_id': id_, 'subject': new_subject }
+            if not topic_only:
+                params_dict['content'] = new_content
+            result = self.client.post("/json/update_message", params_dict)
+            message = Message.objects.get(id=id_)
+            self.assert_json_error(result, error)
+            self.check_message(id_, subject=old_subject, content=old_content)
+
+        self.login("iago@zulip.com")
+        # send a message in the past
+        id_ = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                                content="content", subject="subject")
+        message = Message.objects.get(id=id_)
+        message.pub_date = message.pub_date - datetime.timedelta(seconds=180)
+        message.save()
+
+        # test the various possible message editing settings
+        # high enough time limit, all edits allowed
+        set_message_editing_params(True, 240)
+        do_edit_message_assert_success(id_, 'A')
+
+        # out of time, only topic editing allowed
+        set_message_editing_params(True, 120)
+        do_edit_message_assert_success(id_, 'B', True)
+        do_edit_message_assert_error(id_, 'C', "The time limit for editing this message has past")
+
+        # infinite time, all edits allowed
+        set_message_editing_params(True, 0)
+        do_edit_message_assert_success(id_, 'D')
+
+        # without allow_message_editing, nothing is allowed
+        set_message_editing_params(False, 240)
+        do_edit_message_assert_error(id_, 'E', "Your organization has turned off message editing.", True)
+        set_message_editing_params(False, 120)
+        do_edit_message_assert_error(id_, 'F', "Your organization has turned off message editing.", True)
+        set_message_editing_params(False, 0)
+        do_edit_message_assert_error(id_, 'G', "Your organization has turned off message editing.", True)
+
     def test_propagate_topic_forward(self):
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
@@ -982,4 +1048,3 @@ class CheckMessageTest(AuthedTestCase):
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
-
