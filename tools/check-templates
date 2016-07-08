@@ -1,11 +1,19 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
 import subprocess
 from six.moves import filter
 from six.moves import map
 from six.moves import range
+try:
+    import lister
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip linters inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
 
 class Record(object):
     pass
@@ -171,13 +179,12 @@ def get_html_tag(text, i):
     return s
 
 def check_our_files():
-    git_files = [line.strip() for line in subprocess.check_output(['git', 'ls-files'],
-        universal_newlines=True).split('\n')]
+    by_lang = lister.list_files(
+        ftypes=['handlebars', 'html'],
+        group_by_ftype=True)
 
-    check_handlebar_templates(git_files)
-
-    templates = [fn for fn in git_files if fn.endswith('.html')]
-    check_django_templates(templates)
+    check_handlebar_templates(by_lang['handlebars'])
+    check_django_templates(by_lang['html'])
 
 def check_handlebar_templates(templates):
     # Check all our handlebars templates.
