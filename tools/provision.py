@@ -29,6 +29,7 @@ PY3_VENV_PATH = "/srv/zulip-py3-venv"
 TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
+TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 
 if PY2:
     VENV_PATH = PY2_VENV_PATH
@@ -183,6 +184,8 @@ def main():
 
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
+    # create test upload directory `var/test_upload`
+    run(["mkdir", "-p", TEST_UPLOAD_DIR_PATH])
 
     if "--travis" in sys.argv:
         run(["tools/setup/install-phantomjs", "--travis"])
