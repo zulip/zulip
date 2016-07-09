@@ -19,7 +19,8 @@ from zerver.lib.request import \
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_post_view, authenticated_json_view,
-    get_client_name, rate_limit, validate_api_key
+    authenticate_notify,
+    get_client_name, internal_notify_view, rate_limit, validate_api_key
     )
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
@@ -641,6 +642,53 @@ class TestValidateApiKey(AuthedTestCase):
         profile.is_active = value
         profile.save()
 
+class TestInternalNotifyView(TestCase):
+    BORING_RESULT = 'boring'
+
+    class Request(object):
+        def __init__(self, POST, META):
+            self.POST = POST
+            self.META = META
+            self.method = 'POST'
+
+    def internal_notify(self, req):
+        boring_view = lambda req: self.BORING_RESULT
+        return internal_notify_view(boring_view)(req)
+
+    def test_valid_internal_requests(self):
+        secret = 'random'
+        req = self.Request(
+            POST=dict(secret=secret),
+            META=dict(REMOTE_ADDR='127.0.0.1'),
+            )
+
+        req._tornado_handler = 'set'
+        with self.settings(SHARED_SECRET=secret):
+            self.assertTrue(authenticate_notify(req))
+            self.assertEqual(self.internal_notify(req), self.BORING_RESULT)
+            self.assertEqual(req._email, 'internal')
+
+    def test_internal_requests_with_broken_secret(self):
+        secret = 'random'
+        req = self.Request(
+            POST=dict(secret=secret),
+            META=dict(REMOTE_ADDR='127.0.0.1'),
+            )
+
+        with self.settings(SHARED_SECRET='broken'):
+            self.assertFalse(authenticate_notify(req))
+            self.assertEqual(self.internal_notify(req).status_code, 403)
+
+    def test_external_requests(self):
+        secret = 'random'
+        req = self.Request(
+            POST=dict(secret=secret),
+            META=dict(REMOTE_ADDR='3.3.3.3'),
+            )
+
+        with self.settings(SHARED_SECRET=secret):
+            self.assertFalse(authenticate_notify(req))
+            self.assertEqual(self.internal_notify(req).status_code, 403)
 
 class TestAuthenticatedJsonPostViewDecorator(AuthedTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self):
