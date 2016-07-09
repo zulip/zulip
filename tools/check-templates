@@ -192,7 +192,7 @@ def check_our_files():
         group_by_ftype=True)
 
     check_handlebar_templates(by_lang['handlebars'], options.modified)
-    check_django_templates(by_lang['html'], options.modified)
+    check_html_templates(by_lang['html'], options.modified)
 
 def check_handlebar_templates(templates, modified_only):
     # Check all our handlebars templates.
@@ -202,13 +202,12 @@ def check_handlebar_templates(templates, modified_only):
     for fn in templates:
         validate(fn, check_indent=True)
 
-def check_django_templates(templates, modified_only):
-    def ok(fn):
-        if 'templates' not in fn: return False
-        if 'base.html' in fn: return False
-        return True
-
-    templates = sorted(list(filter(ok, templates)))
+def check_html_templates(templates, modified_only):
+    # Our files with .html extensions are usually for Django, but we also
+    # have some for Casper tests and a few static ones.
+    # The file base.html has a bit of funny HTML that we can't parse here yet.
+    templates = filter(lambda fn: 'base.html' not in fn, templates)
+    templates = sorted(list(templates))
 
     if not modified_only:
         assert len(templates) >= 10 # sanity check that we are actually doing work
