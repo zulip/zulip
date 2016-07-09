@@ -451,6 +451,17 @@ def authenticate_notify(request):
     return (request.META['REMOTE_ADDR'] in ('127.0.0.1', '::1')
             and request.POST.get('secret') == settings.SHARED_SECRET)
 
+def client_is_exempt_from_rate_limiting(request):
+    # type: (HttpRequest) -> bool
+
+    # TODO: See if we can share code with authenticate_notify, which
+    # does similar logic.
+
+    # Don't rate limit requests from Django that come from our own servers,
+    # and don't rate-limit dev instances
+    return ((request.client and request.client.name.lower() == 'internal')
+           and (request.META['REMOTE_ADDR'] in ['::1', '127.0.0.1'] or settings.DEBUG))
+
 def internal_notify_view(view_func):
     # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
     @csrf_exempt
@@ -534,31 +545,27 @@ def rate_limit(domain='all'):
         @wraps(func)
         def wrapped_func(request, *args, **kwargs):
             # type: (HttpRequest, *Any, **Any) -> HttpResponse
-            # Don't rate limit requests from Django that come from our own servers,
-            # and don't rate-limit dev instances
-            no_limits = False
-            if request.client and request.client.name.lower() == 'internal' and \
-               (request.META['REMOTE_ADDR'] in ['::1', '127.0.0.1'] or settings.DEBUG):
-                no_limits = True
 
-            if no_limits:
+            if client_is_exempt_from_rate_limiting(request):
                 return func(request, *args, **kwargs)
 
             try:
                 user = request.user
             except:
+                # TODO: This logic is not tested, and I'm not sure we are
+                # doing the right thing here.
                 user = None
 
-            # Rate-limiting data is stored in redis
-            # We also only support rate-limiting authenticated
-            # views right now.
-            # TODO(leo) - implement per-IP non-authed rate limiting
             if not settings.RATE_LIMITING or not user:
                 if not user:
                     logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
                                      func.__name__)
                 return func(request, *args, **kwargs)
 
+            # Rate-limiting data is stored in redis
+            # We also only support rate-limiting authenticated
+            # views right now.
+            # TODO(leo) - implement per-IP non-authed rate limiting
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)
