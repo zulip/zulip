@@ -20,12 +20,14 @@
     </a>
   </li>
 
+  {{#if message.edit_history}}
   <li>
     <a href="#" class="view_edit_history" data-msgid="{{message.id}}">
       <i class="icon-vector-time"></i>
         {{t "View message history" }}
     </a>
   </li>
+  {{/if}}
 
   {{#if can_mute_topic}}
   <li>
