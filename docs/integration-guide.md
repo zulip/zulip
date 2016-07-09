@@ -93,9 +93,8 @@ Here's how we recommend doing it:
   test-backend zerver.tests.test_hooks.PagerDutyHookTests
   ```
 
-  See
-  https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite
-  for more details on the Zulip test runner.
+  See [this guide](testing.html) for more details on the Zulip test
+  runner.
 
 * Once you've gotten your webhook working and passing a test, capture
   payloads for the other common types of posts the service's webhook
