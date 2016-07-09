@@ -3282,17 +3282,6 @@ li.expanded_private_message {
     font-size: 20px;
 }
 
-#notification-docs {
-    color: #666666;
-    font-size: 11px;
-    position: relative;
-    top: -6px;
-}
-
-#notification-docs:hover {
-    color: #111111;
-}
-
 #home {
     margin-top: 41px;
 }
