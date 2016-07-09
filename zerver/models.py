@@ -765,9 +765,18 @@ def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
+class Topic(ModelReprMixin, models.Model):
+    recipient = models.ForeignKey(Recipient) # type: Recipient
+    name = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
+
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Topic: %s>" % (self.name,)
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
+    topic = models.ForeignKey(Topic, null=True)
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
     content = models.TextField() # type: text_type
     rendered_content = models.TextField(null=True) # type: Optional[text_type]
@@ -780,18 +789,30 @@ class Message(ModelReprMixin, models.Model):
     has_image = models.BooleanField(default=False, db_index=True) # type: bool
     has_link = models.BooleanField(default=False, db_index=True) # type: bool
 
-    def topic_name(self):
-        # type: () -> text_type
-        """
-        Please start using this helper to facilitate an
-        eventual switch over to a separate topic table.
-        """
-        return self.subject
-
     def __unicode__(self):
         # type: () -> text_type
         display_recipient = get_display_recipient(self.recipient)
         return u"<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)
+
+    def topic_name(self):
+        # Use this function only for automated tests and production code
+        # where we are confident that the message was written with the new
+        # new topic-writing mechanism.  Use get_legacy_topic_name() for production
+        # code that possibly touches unconverted messages.
+        if self.topic:
+            return self.topic.name
+        else:
+            return None
+
+    def get_legacy_topic_name(self):
+        # TODO: Once we are confident that all messages use self.topic
+        # properly (i.e. migration is fully complete and no bugs are known),
+        # then we should just have our code call topic_name.
+        if self.topic:
+            if 'CORRUPTED' in self.topic.name: raise Exception('seriously!!!')
+            return self.topic.name
+        else:
+            return self.subject
 
     def get_realm(self):
         # type: () -> Realm
@@ -888,7 +909,8 @@ class Message(ModelReprMixin, models.Model):
                 last_edit_time = self.last_edit_time,
                 edit_history = self.edit_history,
                 content = self.content,
-                subject = self.subject,
+                subject = self.get_legacy_topic_name(), # XXX - just for transition
+                topic_id = self.topic_id,
                 pub_date = self.pub_date,
                 rendered_content = self.rendered_content,
                 rendered_content_version = self.rendered_content_version,
@@ -906,6 +928,14 @@ class Message(ModelReprMixin, models.Model):
         )
 
     @staticmethod
+    def get_topic_name_from_raw_data(row):
+        # TODO: inline this when topic id transition finishes
+        if row['topic__name']:
+            return row['topic__name']
+        else:
+            return row['subject']
+
+    @staticmethod
     def build_dict_from_raw_db_row(row, apply_markdown):
         # type: (Dict[str, Any], bool) -> Dict[str, Any]
         '''
@@ -919,7 +949,8 @@ class Message(ModelReprMixin, models.Model):
                 last_edit_time = row['last_edit_time'],
                 edit_history = row['edit_history'],
                 content = row['content'],
-                subject = row['subject'],
+                subject = Message.get_topic_name_from_raw_data(row),
+                topic_id = row['topic_id'],
                 pub_date = row['pub_date'],
                 rendered_content = row['rendered_content'],
                 rendered_content_version = row['rendered_content_version'],
@@ -945,6 +976,7 @@ class Message(ModelReprMixin, models.Model):
             edit_history,
             content,
             subject,
+            topic_id,
             pub_date,
             rendered_content,
             rendered_content_version,
@@ -960,7 +992,8 @@ class Message(ModelReprMixin, models.Model):
             recipient_type,
             recipient_type_id,
     ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, int, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
+        if 'CORRUPTED' in subject: raise Exception('hell')
         global bugdown
         if bugdown is None:
             import zerver.lib.bugdown as bugdown
@@ -1004,6 +1037,7 @@ class Message(ModelReprMixin, models.Model):
             display_recipient = display_recipient,
             recipient_id      = recipient_id,
             subject           = subject,
+            topic_id          = topic_id,
             timestamp         = datetime_to_timestamp(pub_date),
             gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
             avatar_url        = avatar_url,
@@ -1088,6 +1122,8 @@ class Message(ModelReprMixin, models.Model):
             'sender__realm__domain',
             'sender__avatar_source',
             'sender__is_mirror_dummy',
+            'topic_id',
+            'topic__name',
         ]
         return Message.objects.filter(id__in=needed_ids).values(*fields)
 
@@ -1139,6 +1175,17 @@ class Message(ModelReprMixin, models.Model):
         self.has_image = bool(Message.content_has_image(content))
         self.has_link = bool(Message.content_has_link(content))
 
+        if self.subject and not self.topic:
+            # XXX: shim hack for develpment
+            if settings.DEVELOPMENT:
+                assert 'CORRUPTED' not in self.subject
+
+            self.topic, _ = Topic.objects.get_or_create(
+                name=self.subject,
+                recipient=self.recipient)
+            if settings.DEVELOPMENT:
+                self.subject = 'CORRUPTED by topic_id experiment'
+
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender, **kwargs):
     # type: (Any, **Any) -> None
@@ -1151,7 +1198,7 @@ def get_context_for_message(message):
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        topic_id=message.topic_id,
         id__lt=message.id,
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
