@@ -49,3 +49,4 @@ npm-debug.log
 uploads/
 test_uploads/
 *.mo
+var/*
