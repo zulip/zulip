@@ -78,7 +78,7 @@ environments).
 At this point you should [read about using the development
 environment][using-dev].
 
-[using-dev]: #using-the-development-environment
+[using-dev]: using-dev-environment.html
 
 ### Specifying a proxy
 
