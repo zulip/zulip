@@ -490,3 +490,32 @@ div.edit_bot {
 .bot_name_header {
     width: 8em;
 }
+
+
+#alert_words_list {
+    list-style-type: none;
+    margin: auto;
+}
+
+#alert_words_list li.alert-word-item:last-child {
+    background: none;
+    margin-top: 8px;
+}
+
+#alert_words_list .edit-alert-word-buttons {
+    position: absolute;
+    right: 20px;
+    top: 5px;
+}
+
+#alert_words_list .alert_word_listing .value {
+    display: block;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
