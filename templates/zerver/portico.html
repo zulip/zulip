@@ -7,7 +7,7 @@
 #}
 
     {% block customhead %}
-    {{ compressed_css('portico')|safe }}
+    {% stylesheet 'portico' %}
     {% endblock %}
 
 {% block content %}

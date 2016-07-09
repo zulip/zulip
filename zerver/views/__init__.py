@@ -1026,7 +1026,7 @@ def home(request):
                                    'avatar_url': avatar_url(user_profile),
                                    'show_debug':
                                        settings.DEBUG and ('show_debug' in request.GET),
-                                   'pipeline': settings.PIPELINE,
+                                   'pipeline': settings.PIPELINE_ENABLED,
                                    'show_invites': show_invites,
                                    'is_admin': user_profile.is_realm_admin,
                                    'show_webathena': user_profile.realm.domain == "mit.edu",
