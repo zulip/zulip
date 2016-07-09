@@ -443,24 +443,25 @@ def authenticated_json_view(view_func):
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func
 
+def is_local_addr(addr):
+    # type: (text_type) -> bool
+    return addr in ('127.0.0.1', '::1')
+
 # These views are used by the main Django server to notify the Tornado server
 # of events.  We protect them from the outside world by checking a shared
 # secret, and also the originating IP (for now).
 def authenticate_notify(request):
     # type: (HttpRequest) -> bool
-    return (request.META['REMOTE_ADDR'] in ('127.0.0.1', '::1')
+    return (is_local_addr(request.META['REMOTE_ADDR'])
             and request.POST.get('secret') == settings.SHARED_SECRET)
 
 def client_is_exempt_from_rate_limiting(request):
     # type: (HttpRequest) -> bool
 
-    # TODO: See if we can share code with authenticate_notify, which
-    # does similar logic.
-
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
     return ((request.client and request.client.name.lower() == 'internal')
-           and (request.META['REMOTE_ADDR'] in ['::1', '127.0.0.1'] or settings.DEBUG))
+           and (is_local_addr(request.META['REMOTE_ADDR']) or settings.DEBUG))
 
 def internal_notify_view(view_func):
     # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
