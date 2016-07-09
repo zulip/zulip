@@ -13,7 +13,7 @@ from zerver.lib.str_utils import force_bytes
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
-    to_non_negative_int, to_non_negative_float
+    to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
