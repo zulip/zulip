@@ -46,6 +46,7 @@ tools/setup/emoji_dump/*.ttx
 tools/phantomjs
 node_modules
 npm-debug.log
+htmlcov/
 uploads/
 test_uploads/
 *.mo
