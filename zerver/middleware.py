@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from six import text_type
-from typing import Any, Callable, Iterable, MutableMapping, Optional
+from six import text_type, binary_type
+from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -99,7 +99,7 @@ def is_slow_query(time_delta, path):
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
-    # type: (MutableMapping[str, Any], text_type, str, str, text_type, text_type, int, Optional[str], Optional[Iterable[str]]) -> None
+    # type: (MutableMapping[str, Any], text_type, str, str, text_type, text_type, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
@@ -214,10 +214,16 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
-        error_content = ''.join(error_content_iter)
-        if len(error_content) > 100:
-            error_content = "[content more than 100 characters]"
-        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_content, email))
+        error_content_list = list(error_content_iter)
+        if error_content_list:
+            error_data = u''
+        elif isinstance(error_content_list[0], text_type):
+            error_data = u''.join(error_content_list)
+        elif isinstance(error_content_list[0], binary_type):
+            error_data = repr(b''.join(error_content_list))
+        if len(error_data) > 100:
+            error_data = u"[content more than 100 characters]"
+        logger.info('status=%3d, data=%s, uid=%s' % (status_code, error_data, email))
 
 class LogRequests(object):
     # We primarily are doing logging using the process_view hook, but
