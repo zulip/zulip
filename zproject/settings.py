@@ -217,7 +217,8 @@ USE_TZ = True
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
 LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, 'locale'),)
-
+# this directory will be used to store logs for development environment
+DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, 'var', 'log')
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
 
@@ -796,7 +797,7 @@ else:
 for (var, path) in ZULIP_PATHS:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
-        path = os.path.basename(path)
+        path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
     vars()[var] = path
 
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
