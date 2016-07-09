@@ -19,7 +19,7 @@ from zerver.lib.request import \
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_post_view, authenticated_json_view,
-    rate_limit, validate_api_key
+    get_client_name, rate_limit, validate_api_key
     )
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
@@ -30,6 +30,46 @@ from zerver.models import \
 import ujson
 
 class DecoratorTestCase(TestCase):
+    def test_get_client_name(self):
+        class Request(object):
+            def __init__(self, REQUEST, META):
+                self.REQUEST = REQUEST
+                self.META = META
+
+        req = Request(
+            REQUEST=dict(),
+            META=dict(),
+            )
+
+        self.assertEqual(get_client_name(req, is_json_view=True), 'website')
+        self.assertEqual(get_client_name(req, is_json_view=False), 'Unspecified')
+
+        req = Request(
+            REQUEST=dict(),
+            META=dict(HTTP_USER_AGENT='Mozilla/bla bla bla'),
+            )
+
+        self.assertEqual(get_client_name(req, is_json_view=True), 'website')
+        self.assertEqual(get_client_name(req, is_json_view=False), 'Mozilla')
+
+
+        req = Request(
+            REQUEST=dict(),
+            META=dict(HTTP_USER_AGENT='ZulipDesktop/bla bla bla'),
+            )
+
+        self.assertEqual(get_client_name(req, is_json_view=True), 'ZulipDesktop')
+        self.assertEqual(get_client_name(req, is_json_view=False), 'ZulipDesktop')
+
+        req = Request(
+            REQUEST=dict(client='fancy phone'),
+            META=dict(),
+            )
+
+        self.assertEqual(get_client_name(req, is_json_view=True), 'fancy phone')
+        self.assertEqual(get_client_name(req, is_json_view=False), 'fancy phone')
+
+
     def test_REQ_converter(self):
 
         def my_converter(data):
