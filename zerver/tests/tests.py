@@ -1253,7 +1253,7 @@ class UserPresenceTests(AuthedTestCase):
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
-        self.assertEqual(list(json['presences'].keys()), ['hamlet@zulip.com', 'othello@zulip.com'])
+        self.assertEqual(sorted(json['presences'].keys()), ['hamlet@zulip.com', 'othello@zulip.com'])
         newer_timestamp = json['presences'][email][client]['timestamp']
         self.assertGreaterEqual(newer_timestamp, timestamp)
 
