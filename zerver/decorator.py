@@ -546,6 +546,12 @@ def rate_limit(domain='all'):
         def wrapped_func(request, *args, **kwargs):
             # type: (HttpRequest, *Any, **Any) -> HttpResponse
 
+            # It is really tempting to not even wrap our original function
+            # when settings.RATE_LIMITING is False, but it would make
+            # for awkward unit testing in some situations.
+            if not settings.RATE_LIMITING:
+                return func(request, *args, **kwargs)
+
             if client_is_exempt_from_rate_limiting(request):
                 return func(request, *args, **kwargs)
 
@@ -556,10 +562,9 @@ def rate_limit(domain='all'):
                 # doing the right thing here.
                 user = None
 
-            if not settings.RATE_LIMITING or not user:
-                if not user:
-                    logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
-                                     func.__name__)
+            if not user:
+                logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
+                                 func.__name__)
                 return func(request, *args, **kwargs)
 
             # Rate-limiting data is stored in redis
