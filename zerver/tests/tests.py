@@ -1517,23 +1517,23 @@ class ExtractedRecipientsTest(TestCase):
 
         # JSON list w/dups, empties, and trailing whitespace
         s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
-        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
         # simple string with one name
         s = 'alice@zulip.com    '
-        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com'])
+        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
 
         # JSON-encoded string
         s = '"alice@zulip.com"'
-        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com'])
+        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
 
         # bare comma-delimited string
         s = 'bob@zulip.com, alice@zulip.com'
-        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
-        self.assertItemsEqual(extract_recipients(s), ['alice@zulip.com', 'bob@zulip.com'])
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
 
 class TestMissedMessages(AuthedTestCase):
