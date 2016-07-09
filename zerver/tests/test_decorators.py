@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import mock
+
 from django.test import TestCase
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse
@@ -14,10 +16,11 @@ from zerver.lib.test_helpers import (
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
-from zerver.decorator import \
-    api_key_only_webhook_view,\
-    authenticated_json_post_view, authenticated_json_view,\
-    validate_api_key
+from zerver.decorator import (
+    api_key_only_webhook_view,
+    authenticated_json_post_view, authenticated_json_view,
+    rate_limit, validate_api_key
+    )
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
@@ -136,6 +139,104 @@ class DecoratorTestCase(TestCase):
 
         request.REQUEST['api_key'] = get_user_profile_by_email(webhook_bot_email).api_key
         self.assertEqual(get_user_profile_api_key(request), get_user_profile_by_email(webhook_bot_email).api_key)
+
+class RateLimitTestCase(TestCase):
+    def errors_disallowed(self):
+        # Due to what is probably a hack in rate_limit(),
+        # some tests will give a false positive (or succeed
+        # for the wrong reason), unless we complain
+        # about logging errors.  There might be a more elegant way
+        # make logging errors fail than what I'm doing here.
+        class TestLoggingErrorException(Exception):
+            pass
+        return mock.patch('logging.error', side_effect=TestLoggingErrorException)
+
+    def test_internal_local_clients_skip_rate_limiting(self):
+        class Client(object):
+            name = 'internal'
+        class Request(object):
+            client = Client()
+            META = {'REMOTE_ADDR': '127.0.0.1'}
+
+        req = Request()
+
+        def f(req):
+            return 'some value'
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                with self.errors_disallowed():
+                    self.assertEqual(f(req), 'some value')
+
+        self.assertFalse(rate_limit_mock.called)
+
+    def test_debug_clients_skip_rate_limiting(self):
+        class Client(object):
+            name = 'internal'
+        class Request(object):
+            client = Client()
+            META = {'REMOTE_ADDR': '3.3.3.3'}
+
+        req = Request()
+
+        def f(req):
+            return 'some value'
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                with self.errors_disallowed():
+                    with self.settings(DEBUG=True):
+                        self.assertEqual(f(req), 'some value')
+
+        self.assertFalse(rate_limit_mock.called)
+
+    def test_rate_limit_setting_of_false_bypasses_rate_limiting(self):
+        class Client(object):
+            name = 'external'
+        class Request(object):
+            client = Client()
+            META = {'REMOTE_ADDR': '3.3.3.3'}
+            user = 'stub' # any non-None value here exercises the correct code path
+
+        req = Request()
+
+        def f(req):
+            return 'some value'
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=False):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                with self.errors_disallowed():
+                    self.assertEqual(f(req), 'some value')
+
+        self.assertFalse(rate_limit_mock.called)
+
+    def test_rate_limiting_happens_in_normal_case(self):
+        class Client(object):
+            name = 'external'
+        class Request(object):
+            client = Client()
+            META = {'REMOTE_ADDR': '3.3.3.3'}
+            user = 'stub' # any non-None value here exercises the correct code path
+
+        req = Request()
+
+        def f(req):
+            return 'some value'
+
+        f = rate_limit()(f)
+
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                with self.errors_disallowed():
+                    self.assertEqual(f(req), 'some value')
+
+        self.assertTrue(rate_limit_mock.called)
 
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
