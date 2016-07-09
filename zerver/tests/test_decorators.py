@@ -20,7 +20,8 @@ from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_post_view, authenticated_json_view,
     authenticate_notify,
-    get_client_name, internal_notify_view, rate_limit, validate_api_key
+    get_client_name, internal_notify_view, is_local_addr,
+    rate_limit, validate_api_key
     )
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
@@ -689,6 +690,11 @@ class TestInternalNotifyView(TestCase):
         with self.settings(SHARED_SECRET=secret):
             self.assertFalse(authenticate_notify(req))
             self.assertEqual(self.internal_notify(req).status_code, 403)
+
+    def test_is_local_address(self):
+        self.assertTrue(is_local_addr('127.0.0.1'))
+        self.assertTrue(is_local_addr('::1'))
+        self.assertFalse(is_local_addr('42.43.44.45'))
 
 class TestAuthenticatedJsonPostViewDecorator(AuthedTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self):
