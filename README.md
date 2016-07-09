@@ -23,8 +23,8 @@ at https://www.zulip.org.
 ## Installing the Zulip Development environment
 
 The Zulip development environment is the recommended option for folks
-interested in trying out Zulip.  This is documented in
-[README.dev.md](https://github.com/zulip/zulip/blob/master/README.dev.md).
+interested in trying out Zulip.  This is documented in [the developer
+installation guide][dev-install].
 
 ## Running Zulip in production
 
@@ -78,11 +78,12 @@ PostgreSQL extension][tsearch], as separate repos.
 contributing!
 
 [cla]: https://opensource.dropbox.com/cla/
+[dev-install]: https://github.com/zulip/zulip/blob/master/README.dev.md
 [doc]: https://zulip.readthedocs.io/
 [doc-commit-style]: http://zulip.readthedocs.io/en/latest/code-style.html#commit-messages
 [doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
 [doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
-[doc-test]: https://github.com/zulip/zulip/blob/master/README.dev.md#running-the-test-suite
+[doc-test]: http://zulip.readthedocs.io/en/latest/testing.html
 [gg-devel]: https://groups.google.com/forum/#!forum/zulip-devel
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
