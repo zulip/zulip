@@ -477,13 +477,6 @@ def to_non_negative_int(x):
         raise ValueError("argument is negative")
     return x
 
-def to_non_negative_float(x):
-    # type: (float) -> float
-    x = float(x)
-    if x < 0:
-        raise ValueError("argument is negative")
-    return x
-
 def flexible_boolean(boolean):
     # type: (text_type) -> bool
     """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
