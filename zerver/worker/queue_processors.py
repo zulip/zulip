@@ -79,7 +79,7 @@ class QueueProcessingWorker(object):
             line = u'%s\t%s\n' % (time.asctime(), ujson.dumps(data))
             lock_fn = fn + '.lock'
             with lockfile(lock_fn):
-                with open(fn, 'a') as f:
+                with open(fn, 'ab') as f:
                     f.write(line.encode('utf-8'))
         reset_queries()
 
