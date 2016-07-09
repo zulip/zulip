@@ -122,8 +122,8 @@ class DecoratorTestCase(TestCase):
 
     def test_api_key_only_webhook_view(self):
         @api_key_only_webhook_view('ClientName')
-        def get_user_profile_api_key(request, user_profile, client):
-            return user_profile.api_key
+        def my_webhook(request, user_profile, client):
+            return user_profile.email
 
         class Request(object):
             REQUEST = {} # type: Dict[str, str]
@@ -131,14 +131,46 @@ class DecoratorTestCase(TestCase):
             META = {'PATH_INFO': ''}
 
         webhook_bot_email = 'webhook-bot@zulip.com'
+        webhook_bot = get_user_profile_by_email(webhook_bot_email)
+        webhook_bot_api_key = webhook_bot.api_key
+
         request = Request()
 
         request.REQUEST['api_key'] = 'not_existing_api_key'
-        with self.assertRaises(JsonableError):
-            get_user_profile_api_key(request)
+        with self.assertRaisesRegexp(JsonableError, "Invalid API key"):
+            my_webhook(request)
 
-        request.REQUEST['api_key'] = get_user_profile_by_email(webhook_bot_email).api_key
-        self.assertEqual(get_user_profile_api_key(request), get_user_profile_by_email(webhook_bot_email).api_key)
+        # Start a valid request here
+        request.REQUEST['api_key'] = webhook_bot_api_key
+        with self.settings(RATE_LIMITING=True):
+            with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
+                api_result = my_webhook(request)
+
+        # Verify rate limiting was attempted.
+        self.assertTrue(rate_limit_mock.called)
+
+        # Verify decorator set the magic _email field used by some of our back end logging.
+        self.assertEqual(request._email, webhook_bot_email)
+
+        # Verify the main purpose of the decorator, which is that it passed in the
+        # user_profile to my_webhook, allowing it return the correct
+        # email for the bot (despite the API caller only knowing the API key).
+        self.assertEqual(api_result, webhook_bot_email)
+
+        # Now deactivate the user
+        webhook_bot.is_active = False
+        webhook_bot.save()
+        with self.assertRaisesRegexp(JsonableError, "Account not active"):
+            my_webhook(request)
+
+        # Reactive the user, but deactivate their realm.
+        webhook_bot.is_active = True
+        webhook_bot.save()
+        webhook_bot.realm.deactivated = True
+        webhook_bot.realm.save()
+        with self.assertRaisesRegexp(JsonableError, "Realm for account has been deactivated"):
+            my_webhook(request)
+
 
 class RateLimitTestCase(TestCase):
     def errors_disallowed(self):
