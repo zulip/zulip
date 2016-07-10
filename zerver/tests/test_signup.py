@@ -263,7 +263,7 @@ class LoginTest(AuthedTestCase):
         # objects.
         email_recipients = [message.recipients()[0] for message in outbox]
         self.assertEqual(len(outbox), len(invitees))
-        self.assertItemsEqual(email_recipients, invitees)
+        self.assertEqual(sorted(email_recipients), sorted(invitees))
 
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(len(invitees), PreregistrationUser.objects.filter(
@@ -293,7 +293,7 @@ class InviteUserTest(AuthedTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in outbox]
-        self.assertItemsEqual(email_recipients, correct_recipients)
+        self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
 
     def test_bulk_invite_users(self):
         # type: () -> None
