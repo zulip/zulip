@@ -524,6 +524,29 @@ function render(template_name, args) {
     global.write_handlebars_output("message_group", html);
 }());
 
+(function message_edit_history() {
+    var message = {
+        content: "Let's go to lunch!",
+        edit_history: [
+            {
+                prev_content: "Let's go to dinner!",
+                prev_rendered_content: "<p>Let's go to dinner!</p>",
+                prev_rendered_content_version: 1,
+                timestamp: 1468132659,
+                edited_by: 'alice@zulip.com',
+                posted_or_edited: "Edited by",
+            },
+        ],
+    };
+    var html = render('message_edit_history', {
+            edited_messages: message.edit_history,
+        });
+    global.write_test_output("message_edit_history.handlebars", html);
+    var edited_message = $(html).find("div.messagebox-content");
+    assert.equal(edited_message.text().trim(),
+                "1468132659\n        Let's go to dinner!\n        Edited by alice@zulip.com");
+}());
+
 (function message_info_popover_content() {
     var args = {
         message: {
