@@ -815,11 +815,7 @@ class Message(ModelReprMixin, models.Model):
             domain = u"mit.edu/zephyr_mirror"
         rendered_content = bugdown.convert(content, domain, self)
 
-        # For /me syntax, JS can detect the is_me_message flag
-        # and do special rendering.
-        if content.startswith('/me ') and '\n' not in content:
-            if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
-                self.is_me_message = True
+        self.is_me_message = Message.is_status_message(content, rendered_content)
 
         return rendered_content
 
@@ -1116,6 +1112,17 @@ class Message(ModelReprMixin, models.Model):
     def content_has_link(content):
         # type: (text_type) -> bool
         return 'http://' in content or 'https://' in content or '/user_uploads' in content
+
+    @staticmethod
+    def is_status_message(content, rendered_content):
+        # type: (text_type, text_type) -> bool
+        """
+        Returns True if content and rendered_content are from 'me_message'
+        """
+        if content.startswith('/me ') and '\n' not in content:
+            if rendered_content.startswith('<p>') and rendered_content.endswith('</p>'):
+                return True
+        return False
 
     def update_calculated_fields(self):
         # type: () -> None
