@@ -222,6 +222,8 @@ python_rules = [
     {'pattern': "#type",
      'exclude': 'tools/lint-all',
      'description': 'Missing whitespace after "#" in type annotation'},
+    {'pattern': 'if[(]',
+     'description': 'Missing space between if and ('},
     {'pattern': ", [)]",
      'description': 'Unnecessary whitespace between "," and ")"'},
     {'pattern': "%  [(]",
