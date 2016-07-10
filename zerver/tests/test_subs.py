@@ -769,7 +769,7 @@ class SubscriptionAPITest(AuthedTestCase):
                 self.fail("stream does not exist")
         list_streams = [stream['name'] for stream in json["subscriptions"]]
         # also check that this matches the list of your subscriptions
-        self.assertItemsEqual(list_streams, self.streams)
+        self.assertEqual(sorted(list_streams), sorted(self.streams))
 
     def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
                                                subscribed, already_subscribed,
@@ -793,10 +793,10 @@ class SubscriptionAPITest(AuthedTestCase):
                                                   other_params, invite_only=invite_only)
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        self.assertItemsEqual(subscribed, json["subscribed"][email])
-        self.assertItemsEqual(already_subscribed, json["already_subscribed"][email])
+        self.assertEqual(sorted(subscribed), sorted(json["subscribed"][email]))
+        self.assertEqual(sorted(already_subscribed), sorted(json["already_subscribed"][email]))
         new_streams = self.get_streams(email)
-        self.assertItemsEqual(new_streams, new_subs)
+        self.assertEqual(sorted(new_streams), sorted(new_subs))
 
     def test_successful_subscriptions_add(self):
         # type: () -> None
@@ -1205,9 +1205,9 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         for key, val in six.iteritems(json_dict):
-            self.assertItemsEqual(val, json[key])  # we don't care about the order of the items
+            self.assertEqual(sorted(val), sorted(json[key]))  # we don't care about the order of the items
         new_streams = self.get_streams(email)
-        self.assertItemsEqual(new_streams, new_subs)
+        self.assertEqual(sorted(new_streams), sorted(new_subs))
 
     def test_successful_subscriptions_remove(self):
         # type: () -> None
@@ -1530,7 +1530,7 @@ class GetSubscribersTest(AuthedTestCase):
         self.assertIsInstance(result["subscribers"], list)
         true_subscribers = [user_profile.email for user_profile in self.users_subscribed_to_stream(
                 stream_name, domain)]
-        self.assertItemsEqual(result["subscribers"], true_subscribers)
+        self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(self, stream_name, email=None):
         # type: (text_type, Optional[str]) -> HttpResponse
