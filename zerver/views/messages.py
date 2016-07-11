@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from typing import Text
 from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
 from zerver.lib.str_utils import force_bytes, force_text
+from zerver.lib.html_diff import highlight_html_differences
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
@@ -32,6 +33,8 @@ from zerver.lib.message import (
     extract_message_dict,
     render_markdown,
     stringify_message_dict,
+    access_message,
+    message_to_dict
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -53,7 +56,7 @@ import re
 import ujson
 import datetime
 
-from six.moves import map
+from six.moves import map, zip
 import six
 
 class BadNarrowOperator(JsonableError):
@@ -861,6 +864,30 @@ def send_message_backend(request, user_profile,
 def json_update_message(request, user_profile, message_id):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
     return update_message_backend(request, user_profile)
+
+def highlight_message_differences(message_history):
+    # type: (List[Dict[str, Any]]) -> List[Dict[str, Any]]
+    for edited_msg, prev_msg in zip(message_history, message_history[1:]):
+        # Iterate over message edit history
+        rendered_content = highlight_html_differences(prev_msg['prev_rendered_content'], \
+                                                      edited_msg['prev_rendered_content'])
+        edited_msg_index = message_history.index(edited_msg)
+        message_history[edited_msg_index]['prev_rendered_content'] = rendered_content
+    return message_history
+
+@has_request_variables
+def get_message_edit_history(request, user_profile,
+                              message_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    message, user_message = access_message(user_profile.id, message_id)
+
+    # Convert message to dictionary
+    message_dict = message_to_dict(message, False)
+
+    # Get message edit history
+    message_edit_history = message_dict['edit_history']
+    updated_message_history = highlight_message_differences(message_edit_history)
+    return json_success({"message_history": updated_message_history})
 
 @has_request_variables
 def update_message_backend(request, user_profile,
