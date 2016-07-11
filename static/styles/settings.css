@@ -137,7 +137,7 @@
 #alert_words_list .add-new-alert-word-box,
 #alert_words_list .alert-word-information-box,
 #emoji-settings .add-new-emoji-box,
-#admin-default-streams-list .add-new-default-stream-box{
+#admin-default-streams-list .add-new-default-stream-box {
     background: #e3e3e3;
     padding: 10px;
     margin-left: 38px;
@@ -201,7 +201,7 @@
 }
 
 #settings .settings-section .api-key-note,
-#settings .settings-section .alert-word-note{
+#settings .settings-section .alert-word-note {
     padding: 0px 20px 20px 20px;
 }
 

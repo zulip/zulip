@@ -901,7 +901,7 @@ td.pointer {
     line-height: 17px;
 }
 
-.summary_row .message_header{
+.summary_row .message_header {
     padding: 5px 0px 4px 5px;
 }
 
@@ -1430,7 +1430,7 @@ div.focused_table {
     border-color: #727d84;
 }
 
-.message_edit_topic_propagate{
+.message_edit_topic_propagate {
     display: inline-block;
     width: 400px;
 }
@@ -3301,7 +3301,7 @@ li.expanded_private_message {
     right: 0px;
 }
 
-#home .alert-bar .close-alert-icon:hover{
+#home .alert-bar .close-alert-icon:hover {
     opacity: 0.7;
     cursor: pointer;
 }
