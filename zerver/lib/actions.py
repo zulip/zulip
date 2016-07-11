@@ -65,8 +65,8 @@ from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
-from zerver.lib.upload import attachment_url_re, claim_attachment, \
-    delete_message_image
+from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
+    claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr
 
 import DNS
@@ -3285,9 +3285,7 @@ def do_claim_attachments(message):
 
     results = []
     for url in attachment_url_list:
-        path_id = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
-        # Remove any extra '.' after file extension. These are probably added by the user
-        path_id = re.sub(u'[.]+$', u'', path_id, re.M)
+        path_id = attachment_url_to_path_id(url)
         user_profile = message['message'].sender
         is_message_realm_public = False
         if message['message'].recipient.type == Recipient.STREAM:
@@ -3315,9 +3313,7 @@ def check_attachment_reference_change(prev_content, message):
     to_remove = list(prev_attachments - new_attachments)
     path_ids = []
     for url in to_remove:
-        path_id = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
-        # Remove any extra '.' after file extension. These are probably added by the user
-        path_id = re.sub(u'[.]+$', u'', path_id, re.M)
+        path_id = attachment_url_to_path_id(url)
         path_ids.append(path_id)
 
     attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()

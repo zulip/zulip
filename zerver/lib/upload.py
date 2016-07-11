@@ -49,6 +49,12 @@ import logging
 
 attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
+def attachment_url_to_path_id(attachment_url):
+    # type: (text_type) -> text_type
+    path_id_raw = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', attachment_url)
+    # Remove any extra '.' after file extension. These are probably added by the user
+    return re.sub(u'[.]+$', u'', path_id_raw, re.M)
+
 def sanitize_name(raw_value):
     # type: (NonBinaryStr) -> text_type
     """
