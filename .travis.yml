@@ -31,7 +31,7 @@ matrix:
     - python: "3.4"
       env: TEST_SUITE=mypy
     - python: "3.4"
-      env: TEST_SUITE=lint-all
+      env: TEST_SUITE=py3-backend
       sudo: required
 # command to run tests
 script:
