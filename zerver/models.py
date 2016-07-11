@@ -392,7 +392,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     ###
 
     last_reminder = models.DateTimeField(default=timezone.now, null=True) # type: Optional[datetime.datetime]
-    rate_limits = models.CharField(default="", max_length=100) # type: text_type # comma-separated list of range:max pairs
+    rate_limits = models.CharField(default=u"", max_length=100) # type: text_type # comma-separated list of range:max pairs
 
     # Default streams
     default_sending_stream = models.ForeignKey('zerver.Stream', null=True, related_name='+') # type: Optional[Stream]
@@ -406,7 +406,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False) # type: bool
-    default_language = models.CharField(default='en', max_length=50) # type: text_type
+    default_language = models.CharField(default=u'en', max_length=50) # type: text_type
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
@@ -436,16 +436,16 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     #    [("step 1", true), ("step 2", false)]
     # where the second element of each tuple is if the step has been
     # completed.
-    onboarding_steps = models.TextField(default=ujson.dumps([])) # type: text_type
+    onboarding_steps = models.TextField(default=u'[]') # type: text_type
 
     invites_granted = models.IntegerField(default=0) # type: int
     invites_used = models.IntegerField(default=0) # type: int
 
-    alert_words = models.TextField(default=ujson.dumps([])) # type: text_type # json-serialized list of strings
+    alert_words = models.TextField(default=u'[]') # type: text_type # json-serialized list of strings
 
     # Contains serialized JSON of the form:
     # [["social", "mit"], ["devel", "ios"]]
-    muted_topics = models.TextField(default=ujson.dumps([])) # type: text_type
+    muted_topics = models.TextField(default=u'[]') # type: text_type
 
     objects = UserManager() # type: UserManager
 
@@ -556,7 +556,7 @@ class Stream(ModelReprMixin, models.Model):
     # have plenty of room for the token.
     email_token = models.CharField(
         max_length=32, default=generate_email_token_for_stream) # type: text_type
-    description = models.CharField(max_length=1024, default='') # type: text_type
+    description = models.CharField(max_length=1024, default=u'') # type: text_type
 
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     deactivated = models.BooleanField(default=False) # type: bool
@@ -1253,7 +1253,7 @@ class Subscription(ModelReprMixin, models.Model):
     active = models.BooleanField(default=True) # type: bool
     in_home_view = models.NullBooleanField(default=True) # type: Optional[bool]
 
-    DEFAULT_STREAM_COLOR = "#c2c2c2"
+    DEFAULT_STREAM_COLOR = u"#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR) # type: text_type
     pin_to_top = models.BooleanField(default=False) # type: bool
 
