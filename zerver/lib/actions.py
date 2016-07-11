@@ -2438,6 +2438,10 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         event["content"] = content
         event["rendered_content"] = rendered_content
 
+        prev_content = edit_history_event['prev_content']
+        if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
+            check_attachment_reference_change(prev_content, message)
+
     if subject is not None:
         orig_subject = message.subject
         subject = subject.strip()
@@ -3305,3 +3309,32 @@ def do_delete_old_unclaimed_attachments(weeks_ago):
     for attachment in old_unclaimed_attachments:
         delete_message_image(attachment.path_id)
         attachment.delete()
+
+def check_attachment_reference_change(prev_content, message):
+    new_content = message.content
+    attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+    prev_attachments = set(attachment_url_re.findall(prev_content))
+    new_attachments = set(attachment_url_re.findall(new_content))
+
+    to_remove = list(prev_attachments - new_attachments)
+    path_ids = []
+    for url in to_remove:
+        path_id = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
+        # Remove any extra '.' after file extension. These are probably added by the user
+        path_id = re.sub(u'[.]+$', u'', path_id, re.M)
+        path_ids.append(path_id)
+
+    attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()
+    for attachment in attachments_to_update:
+        try:
+            attachment = Attachment.objects.get(path_id=path_id)
+            attachment.messages.remove(message)
+            attachment.save()
+        except Attachment.DoesNotExist:
+            # The entry for this attachment does not exist. Just ignore.
+            pass
+
+    to_add = list(new_attachments - prev_attachments)
+    if len(to_add) > 1:
+        do_claim_attachments(message)
+
