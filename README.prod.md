@@ -115,9 +115,13 @@ These instructions should be followed as root.
   ```
   This will report an error if you did not fill in all the mandatory
   settings from `/etc/zulip/settings.py`.  Once this completes
-  successfully, the main installation process will be complete, and if
-  you are planning on using password authentication, you should be able
-  to visit the URL for your server and register for an account.
+  successfully, the main installation process will be complete.
+
+(6) Run
+ ```
+ ./manage.py generate_realm_creation_link
+ ```
+ This command will generate a unique link that can be used for creating your organization and admin account.
 
 (6) Subscribe to [the Zulip announcements Google Group](https://groups.google.com/forum/#!forum/zulip-announce)
   to get announcements about new releases, security issues, etc.
