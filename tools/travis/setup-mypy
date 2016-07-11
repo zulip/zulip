@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-set -x
-pip install --no-deps -r requirements/mypy.txt
