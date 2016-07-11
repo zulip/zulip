@@ -13,3 +13,5 @@ else
     cat tools/travis/py3_lint_all_error_msg.txt
     exit 1
 fi
+
+tools/test-migrations
