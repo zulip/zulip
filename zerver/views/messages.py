@@ -806,6 +806,10 @@ def update_message_backend(request, user_profile,
         subject = subject.strip()
         if subject == "":
             raise JsonableError(_("Topic can't be empty"))
+    if content is not None:
+        content = content.strip()
+        if content == "":
+            raise JsonableError(_("Content can't be empty"))
     do_update_message(user_profile, message_id, subject, propagate_mode, content)
     return json_success()
 
