@@ -769,6 +769,16 @@ class EditMessageTest(AuthedTestCase):
         })
         self.assert_json_error(result, "Topic can't be empty")
 
+    def test_edit_message_no_content(self):
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="before edit")
+        result = self.client.post("/json/update_message", {
+            'message_id': msg_id,
+            'content': ' '
+        })
+        self.assert_json_error(result, "Content can't be empty")
+
     def test_propagate_topic_forward(self):
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
