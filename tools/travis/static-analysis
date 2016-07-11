@@ -16,3 +16,5 @@ else
     echo "on mypy, how Zulip is using mypy, and how to debug common issues."
     exit "$retcode"
 fi
+
+tools/check-py3

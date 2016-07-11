@@ -22,14 +22,13 @@ env:
     - TEST_SUITE=frontend
     - TEST_SUITE=backend
     - TEST_SUITE=production
-    - TEST_SUITE=py3k
 language: python
 python:
   - "2.7"
 matrix:
   include:
     - python: "3.4"
-      env: TEST_SUITE=mypy
+      env: TEST_SUITE=static-analysis
     - python: "3.4"
       env: TEST_SUITE=lint-all
       sudo: required
