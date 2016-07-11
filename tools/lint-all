@@ -281,6 +281,8 @@ bash_rules = [
 css_rules = [
     {'pattern': '^[^:]*:\S[^:]*;$',
      'description': "Missing whitespace after : in CSS"},
+    {'pattern': '[a-z]{',
+     'description': "Missing whitespace before '{' in CSS."},
     {'pattern': '{\w',
      'description': "Missing whitespace after '{' in CSS (should be newline)."},
     ] + whitespace_rules

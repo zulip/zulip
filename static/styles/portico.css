@@ -97,7 +97,7 @@ a.title:hover {
     font-weight: bold;
 }
 
-img.screenshot{
+img.screenshot {
     /* This makes it so screenshots are still shown if they are larger than their span.*/
     max-width: 100%;
 }
