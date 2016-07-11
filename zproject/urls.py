@@ -216,6 +216,8 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.messages.render_message_backend'}),
     url(r'^messages/flags$', rest_dispatch,
         {'POST': 'zerver.views.messages.update_message_flags'}),
+    url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
+        {'GET': 'zerver.views.messages.get_message_edit_history'}),
 
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message
