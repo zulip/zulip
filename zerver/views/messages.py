@@ -802,6 +802,10 @@ def update_message_backend(request, user_profile,
         return json_error(_("Nothing to change"))
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing."))
+    if subject is not None:
+        subject = subject.strip()
+        if subject == "":
+            raise JsonableError(_("Topic can't be empty"))
     do_update_message(user_profile, message_id, subject, propagate_mode, content)
     return json_success()
 

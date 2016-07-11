@@ -2440,9 +2440,6 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
 
     if subject is not None:
         orig_subject = message.subject
-        subject = subject.strip()
-        if subject == "":
-            raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         event["propagate_mode"] = propagate_mode
