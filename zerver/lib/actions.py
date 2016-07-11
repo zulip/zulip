@@ -65,7 +65,8 @@ from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
-from zerver.lib.upload import claim_attachment, delete_message_image
+from zerver.lib.upload import attachment_url_re, claim_attachment, \
+    delete_message_image
 from zerver.lib.str_utils import NonBinaryStr
 
 import DNS
@@ -3280,7 +3281,6 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
 
 def do_claim_attachments(message):
     # type: (Mapping[str, Any]) -> List[Tuple[text_type, bool]]
-    attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
     attachment_url_list = attachment_url_re.findall(message['message'].content)
 
     results = []
@@ -3309,7 +3309,6 @@ def do_delete_old_unclaimed_attachments(weeks_ago):
 
 def check_attachment_reference_change(prev_content, message):
     new_content = message.content
-    attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
     prev_attachments = set(attachment_url_re.findall(prev_content))
     new_attachments = set(attachment_url_re.findall(new_content))
 

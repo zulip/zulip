@@ -47,6 +47,8 @@ import logging
 # "file name" is the original filename provided by the user run
 # through a sanitization function.
 
+attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+
 def sanitize_name(raw_value):
     # type: (NonBinaryStr) -> text_type
     """
