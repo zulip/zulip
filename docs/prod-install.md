@@ -92,4 +92,4 @@ These instructions should be followed as root.
 (6) Subscribe to [the Zulip announcements Google Group](https://groups.google.com/forum/#!forum/zulip-announce)
   to get announcements about new releases, security issues, etc.
 
-Congratulations! Next: [Authentication and logging into Zulip the first time](https://github.com/zulip/zulip/blob/master/README.prod.md#authentication-and-logging-into-zulip-the-first-time).
+Congratulations! Next: [Authentication and logging into Zulip the first time](https://zulip.readthedocs.io/en/latest/prod-auth-first-login.html).
