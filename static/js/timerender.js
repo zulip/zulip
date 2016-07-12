@@ -29,6 +29,10 @@ function render_now (time) {
         return ["Today", true];
     } else if (days_old === 1) {
         return ["Yesterday", true];
+    } else if (days_old >= 365) {
+        // For long running servers, searching backlog can get ambiguous
+        // without a year stamp. Only show year if message is over a year old.
+        return [time.toString("MMM\xa0dd,\xa0yyyy"), false];
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
