@@ -219,6 +219,92 @@ class PermissionTest(AuthedTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
 
+class AdminCreateUserTest(AuthedTestCase):
+    def test_create_user_backend(self):
+        # type: () -> None
+
+        # This test should give us complete coverage on
+        # create_user_backend.  It mostly exercises error
+        # conditions, and it also does a basic test of the success
+        # path.
+
+        admin_email = 'hamlet@zulip.com'
+        self.login(admin_email)
+        admin = get_user_profile_by_email(admin_email)
+        do_change_is_admin(admin, True)
+
+        result = self.client.post("/json/users", dict(
+            user_profile=admin,
+            )
+        )
+        self.assert_json_error(result, "Missing 'email' argument")
+
+        result = self.client.post("/json/users", dict(
+            user_profile=admin,
+            email='romeo@not-zulip.com',
+            )
+        )
+        self.assert_json_error(result, "Missing 'password' argument")
+
+        result = self.client.post("/json/users", dict(
+            user_profile=admin,
+            email='romeo@not-zulip.com',
+            password='xxxx',
+            )
+        )
+        self.assert_json_error(result, "Missing 'full_name' argument")
+
+        result = self.client.post("/json/users", dict(
+            user_profile=admin,
+            email='romeo@not-zulip.com',
+            password='xxxx',
+            full_name='Romeo Montague',
+            )
+        )
+        self.assert_json_error(result, "Missing 'short_name' argument")
+
+        result = self.client.post("/json/users", dict(
+            user_profile=admin,
+            email='broken',
+            password='xxxx',
+            full_name='Romeo Montague',
+            short_name='Romeo',
+            )
+        )
+        self.assert_json_error(result, "Bad name or username")
+
+        result = self.client.post("/json/users", dict(
+            user_profile=admin,
+            email='romeo@not-zulip.com',
+            password='xxxx',
+            full_name='Romeo Montague',
+            short_name='Romeo',
+            )
+        )
+        self.assert_json_error(result,
+            "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
+
+        # HAPPY PATH STARTS HERE
+        valid_params = dict(
+            user_profile=admin,
+            email='romeo@zulip.com',
+            password='xxxx',
+            full_name='Romeo Montague',
+            short_name='Romeo',
+        )
+        result = self.client.post("/json/users", valid_params)
+        self.assert_json_success(result)
+
+        new_user = get_user_profile_by_email('romeo@zulip.com')
+        self.assertEqual(new_user.full_name, 'Romeo Montague')
+        self.assertEqual(new_user.short_name, 'Romeo')
+
+        # One more error condition to test--we can't create
+        # the same user twice.
+        result = self.client.post("/json/users", valid_params)
+        self.assert_json_error(result,
+            "Email 'romeo@zulip.com' already in use")
+
 class WorkerTest(TestCase):
     class FakeClient(object):
         def __init__(self):
