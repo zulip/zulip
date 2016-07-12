@@ -52,6 +52,7 @@ Contents:
    prod-auth-first-login
    prod-health-check-debug
    prod-customize
+   prod-maintain-secure-upgrade
 
 .. _tutorial-docs:
 

@@ -93,4 +93,4 @@ everything anyone might want to know about running Zulip in
 production.
 
 Next: [Maintaining and upgrading Zulip in
-production](https://github.com/zulip/zulip/blob/master/README.prod.md#maintaining-and-upgrading-zulip-in-production).
+production](prod-maintain-secure-upgrade.html).
