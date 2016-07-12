@@ -1,10 +1,28 @@
-Remote User SSO Authentication
-==============================
+# Supported authentication methods
 
-Zulip supports integrating with a corporate Single-Sign-On solution.
-There are a few ways to do it, but this section documents how to
-configure Zulip to use an SSO solution that best supports Apache and
-will set the `REMOTE_USER` variable:
+Zulip supports several different authentications methods:
+
+* `EmailAuthBackend` - Email/password authentication.
+* `ZulipLDAPAuthBackend` - LDAP username/password authentication.
+* `GoogleMobileOauth2Backend` - Google authentication.
+* `ZulipRemoteUserBackend` - Authentication using an existing
+  Single-Sign-On (SSO) system that can set REMOTE_USER in Apache.
+* `DevAuthBackend` - Only for development, passwordless login as any user.
+* Likely more coming (e.g. there's work on [GitHub auth](https://github.com/zulip/zulip/issues/1042)).
+
+The setup documentation for most of these is simple enough that we've
+included it inline in `/etc/zulip/settings.py`, right above to the
+settings used to configure them.  The remote user authentication
+backend is more complex since it requires interfacing with a generic
+third-party authentication system, and so we've documented it in
+detail here.
+
+## Remote User SSO Authentication
+
+Zulip supports integrating with a Single-Sign-On solution.  There are
+a few ways to do it, but this section documents how to configure Zulip
+to use an SSO solution that best supports Apache and will set the
+`REMOTE_USER` variable:
 
 (0) Check that `/etc/zulip/settings.py` has
 `zproject.backends.ZulipRemoteUserBackend` as the only enabled value
@@ -104,5 +122,3 @@ understanding what's going on as you try to debug:
 Again, most issues with this setup tend to be subtle issues with the
 hostname/DNS side of the configuration.  Suggestions for how to
 improve this SSO setup documentation are very welcome!
-
-Next: [Postgres database details](prod-postgres.html).
