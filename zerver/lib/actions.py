@@ -80,6 +80,7 @@ import platform
 import logging
 import itertools
 from collections import defaultdict
+import copy
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
@@ -1375,9 +1376,19 @@ def bulk_add_subscriptions(streams, users):
 
         new_users = [user for user in users if (user.id, stream.id) in new_streams]
         new_user_ids = [user.id for user in new_users]
+        non_new_user_ids = set(active_user_ids(user_profile.realm)) - set(new_user_ids)
         all_subscribed_ids = [user.id for user in all_subs_by_stream[stream.id]]
         other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
-        if other_user_ids:
+        if not stream.invite_only:
+            # We now do "peer_add" events even for streams users were
+            # never subscribed to, in order for the neversubscribed
+            # structure to stay up-to-date.
+            for user_profile in new_users:
+                event = dict(type="subscription", op="peer_add",
+                             subscriptions=[stream.name],
+                             user_email=user_profile.email)
+                send_event(event, non_new_user_ids)
+        elif other_user_ids:
             for user_profile in new_users:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
@@ -1417,11 +1428,10 @@ def do_add_subscription(user_profile, stream, no_log=False):
         notify_subscriptions_added(user_profile, [(subscription, stream)],
                                    lambda stream: emails_by_stream[stream.id], no_log)
 
-        user_ids = get_other_subscriber_ids(stream, user_profile.id)
         event = dict(type="subscription", op="peer_add",
                      subscriptions=[stream.name],
                      user_email=user_profile.email)
-        send_event(event, user_ids)
+        send_event(event, active_user_ids(user_profile.realm))
 
     return did_subscribe
 
@@ -2550,32 +2560,42 @@ def decode_email_address(email):
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
 def gather_subscriptions_helper(user_profile):
-    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Dict[int, text_type]]
+    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[int, text_type]]
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
         "audible_notifications", "active", "pin_to_top")
 
-    stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
+    stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
+    all_streams = get_active_streams(user_profile.realm).select_related(
+        "realm").values("id", "name", "invite_only", "realm_id", \
+        "realm__domain", "email_token", "description")
 
-    stream_dicts = get_active_streams(user_profile.realm).select_related(
-        "realm").filter(id__in=stream_ids).values(
-        "id", "name", "invite_only", "realm_id", "realm__domain", "email_token", "description")
+    stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
     for stream in stream_dicts:
         stream_hash[stream["id"]] = stream
 
+    all_streams_id = [stream["id"] for stream in all_streams]
+
     subscribed = []
     unsubscribed = []
+    never_subscribed = []
 
     # Deactivated streams aren't in stream_hash.
     streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts \
                    if sub["recipient__type_id"] in stream_hash]
     streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
-    subscriber_map = bulk_get_subscriber_user_ids(streams, user_profile, streams_subscribed_map)
 
+    # Add never subscribed streams to streams_subscribed_map
+    streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
+
+    subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+
+    sub_unsub_stream_ids = set()
     for sub in sub_dicts:
+        sub_unsub_stream_ids.add(sub["recipient__type_id"])
         stream = stream_hash.get(sub["recipient__type_id"])
         if not stream:
             # This stream has been deactivated, don't include it.
@@ -2605,6 +2625,22 @@ def gather_subscriptions_helper(user_profile):
         else:
             unsubscribed.append(stream_dict)
 
+    all_streams_id_set = set(all_streams_id)
+    never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
+    never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
+                                if ns_stream_dict['id'] in never_subscribed_stream_ids]
+
+    for stream in never_subscribed_streams:
+        if not stream['invite_only']:
+            stream_dict = {'name': stream['name'],
+                           'invite_only': stream['invite_only'],
+                           'stream_id': stream['id'],
+                           'description': stream['description']}
+            subscribers = subscriber_map[stream["id"]]
+            if subscribers is not None:
+                stream_dict['subscribers'] = subscribers
+            never_subscribed.append(stream_dict)
+
     user_ids = set()
     for subs in [subscribed, unsubscribed]:
         for sub in subs:
@@ -2614,11 +2650,12 @@ def gather_subscriptions_helper(user_profile):
     email_dict = get_emails_from_user_ids(list(user_ids))
     return (sorted(subscribed, key=lambda x: x['name']),
             sorted(unsubscribed, key=lambda x: x['name']),
+            sorted(never_subscribed, key=lambda x: x['name']),
             email_dict)
 
 def gather_subscriptions(user_profile):
     # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]
-    subscribed, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
+    subscribed, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(user_profile)
     for subs in [subscribed, unsubscribed]:
         for sub in subs:
             if 'subscribers' in sub:
@@ -2707,9 +2744,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
                               'used': user_profile.invites_used}
 
     if want('subscription'):
-        subscriptions, unsubscribed, email_dict = gather_subscriptions_helper(user_profile)
+        subscriptions, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(user_profile)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
+        state['never_subscribed'] = never_subscribed
         state['email_dict'] = email_dict
 
     if want('update_message_flags'):
@@ -2786,6 +2824,20 @@ def apply_events(state, events, user_profile):
                         bot.update(event['bot'])
 
         elif event['type'] == 'stream':
+            if event['op'] == 'create':
+                for stream in event['streams']:
+                    if not stream['invite_only']:
+                        stream_data = copy.deepcopy(stream)
+                        stream_data['subscribers'] = []
+                        # Add stream to never_subscribed (if not invite_only)
+                        state['never_subscribed'].append(stream_data)
+
+            if event['op'] == 'delete':
+                deleted_stream_ids = {stream['stream_id'] for stream in event['streams']}
+                state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
+                state['never_subscribed'] = [stream for stream in state['never_subscribed'] if
+                                             stream['stream_id'] not in deleted_stream_ids]
+
             if event['op'] == 'update':
                 # For legacy reasons, we call stream data 'subscriptions' in
                 # the state var here, for the benefit of the JS code.
@@ -2833,6 +2885,9 @@ def apply_events(state, events, user_profile):
                 # remove them from unsubscribed if they had been there
                 state['unsubscribed'] = [s for s in state['unsubscribed'] if not was_added(s)]
 
+                # remove them from never_subscribed if they had been there
+                state['never_subscribed'] = [s for s in state['never_subscribed'] if not was_added(s)]
+
             elif event['op'] == "remove":
                 removed_names = set(map(name, event["subscriptions"]))
                 was_removed = lambda s: name(s) in removed_names
@@ -2858,6 +2913,10 @@ def apply_events(state, events, user_profile):
             elif event['op'] == 'peer_add':
                 user_id = get_user_profile_by_email(event['user_email']).id
                 for sub in state['subscriptions']:
+                    if (sub['name'] in event['subscriptions'] and
+                        user_id not in sub['subscribers']):
+                        sub['subscribers'].append(user_id)
+                for sub in state['never_subscribed']:
                     if (sub['name'] in event['subscriptions'] and
                         user_id not in sub['subscribers']):
                         sub['subscribers'].append(user_id)

@@ -25,6 +25,7 @@ from zerver.models import (
 from zerver.lib.actions import (
     create_stream_if_needed, do_add_default_stream, do_add_subscription, do_change_is_admin,
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
+    gather_subscriptions_helper,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription
 )
@@ -814,7 +815,7 @@ class SubscriptionAPITest(AuthedTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assert_length(events, 4, True)
+        self.assert_length(events, 6, True)
 
     def test_successful_subscriptions_notifies_pm(self):
         # type: () -> None
@@ -1023,13 +1024,19 @@ class SubscriptionAPITest(AuthedTestCase):
             )
         self.assert_length(queries, 43)
 
-        self.assert_length(events, 6, exact=True)
+        self.assert_length(events, 8, exact=True)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
-            self.assertEqual(ev['event']['op'], 'add')
-            self.assertEqual(
-                    set(ev['event']['subscriptions'][0]['subscribers']),
-                    set([email1, email2])
-            )
+            if isinstance(ev['event']['subscriptions'][0], dict):
+                self.assertEqual(ev['event']['op'], 'add')
+                self.assertEqual(
+                        set(ev['event']['subscriptions'][0]['subscribers']),
+                        set([email1, email2])
+                )
+            else:
+                # Check "peer_add" events for streams users were
+                # never subscribed to, in order for the neversubscribed
+                # structure to stay up-to-date.
+                self.assertEqual(ev['event']['op'], 'peer_add')
 
         stream = get_stream('multi_user_stream', realm)
         self.assertEqual(stream.num_subscribers(), 2)
@@ -1055,7 +1062,7 @@ class SubscriptionAPITest(AuthedTestCase):
                 set([email1, email2, self.test_email])
         )
 
-        self.assertEqual(len(add_peer_event['users']), 2)
+        self.assertEqual(len(add_peer_event['users']), 13)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], self.test_email)
@@ -1082,7 +1089,7 @@ class SubscriptionAPITest(AuthedTestCase):
                 set([email1, email2, email3, self.test_email])
         )
 
-        self.assertEqual(len(add_peer_event['users']), 3)
+        self.assertEqual(len(add_peer_event['users']), 14)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], email3)
@@ -1584,6 +1591,39 @@ class GetSubscribersTest(AuthedTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
+        self.assert_length(queries, 4, exact=True)
+
+    @slow(0.15, "common_subscribe_to_streams is slow")
+    def test_never_subscribed_streams(self):
+        # type: () -> None
+        """
+        Check never_subscribed streams are fetched correctly and not include invite_only streams.
+        """
+        realm = get_realm("zulip.com")
+        streams = ["stream_%s" % i for i in range(10)]
+        for stream in streams:
+            create_stream_if_needed(realm, stream)
+        users_to_subscribe = ["othello@zulip.com", "cordelia@zulip.com"]
+        ret = self.common_subscribe_to_streams(
+            self.email,
+            streams,
+            dict(principals=ujson.dumps(users_to_subscribe)))
+        self.assert_json_success(ret)
+        ret = self.common_subscribe_to_streams(
+            self.email,
+            ["stream_invite_only_1"],
+            dict(principals=ujson.dumps(users_to_subscribe)),
+            invite_only=True)
+        self.assert_json_success(ret)
+        with queries_captured() as queries:
+            subscribed, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(self.user_profile)
+        self.assertTrue(len(never_subscribed) >= 10)
+
+        # Invite only stream should not be there in never_subscribed streams
+        for stream_dict in never_subscribed:
+            if stream_dict["name"].startswith("stream_"):
+                self.assertFalse(stream_dict['name'] == "stream_invite_only_1")
+                self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
         self.assert_length(queries, 4, exact=True)
 
     @slow(0.15, "common_subscribe_to_streams is slow")
