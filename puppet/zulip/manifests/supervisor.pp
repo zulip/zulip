@@ -24,8 +24,10 @@ class zulip::supervisor {
     #
     # Also, to handle the case that supervisord wasn't running at all,
     # we check if it is not running and if so, start it.
+    #
+    # We use supervisor[d] as the pattern so the bash/grep commands don't match.
     hasrestart => true,
-    restart => "bash -c 'if pgrep -f supervisord >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi'"
+    restart => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi'"
   }
 
   file { "/etc/supervisor/supervisord.conf":
