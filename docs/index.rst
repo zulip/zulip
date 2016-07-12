@@ -48,6 +48,7 @@ Contents:
    :caption: Installing in production
 
    prod-requirements
+   prod-install
 
 .. _tutorial-docs:
 
