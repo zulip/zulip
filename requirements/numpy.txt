@@ -1,0 +1,5 @@
+# Currently, Scikit-Learn and Numpy cannot be installed with pip in one
+# install pass. See https://github.com/scikit-learn/scikit-learn/issues/4164
+# for further details.
+numpy==1.11.0
+scipy==0.17.1
