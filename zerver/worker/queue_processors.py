@@ -316,7 +316,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         server_meta['time_request_finished'] = time.time()
         server_meta['worker_log_data'] = request._log_data
 
-        resp_content = resp.content
+        resp_content = resp.content.decode('utf-8')
         result = {'response': ujson.loads(resp_content), 'req_id': event['req_id'],
                   'server_meta': server_meta}
 

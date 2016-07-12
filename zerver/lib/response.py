@@ -5,6 +5,7 @@ import ujson
 
 from typing import Optional, Any, Dict, List
 from six import text_type
+from zerver.lib.str_utils import force_bytes
 
 
 class HttpResponseUnauthorized(HttpResponse):
@@ -23,16 +24,16 @@ class HttpResponseUnauthorized(HttpResponse):
 def json_unauthorized(message, www_authenticate=None):
     # type: (text_type, Optional[text_type]) -> HttpResponse
     resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
-    resp.content = ujson.dumps({"result": "error",
-                                "msg": message}) + "\n"
+    resp.content = force_bytes(ujson.dumps({"result": "error",
+                                            "msg": message}) + "\n")
     return resp
 
 def json_method_not_allowed(methods):
     # type: (List[text_type]) -> text_type
     resp = HttpResponseNotAllowed(methods)
-    resp.content = ujson.dumps({"result": "error",
+    resp.content = force_bytes(ujson.dumps({"result": "error",
         "msg": "Method Not Allowed",
-        "allowed_methods": methods})
+        "allowed_methods": methods}))
     return resp
 
 def json_response(res_type="success", msg="", data=None, status=200):
