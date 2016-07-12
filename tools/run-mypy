@@ -3,12 +3,14 @@
 from __future__ import print_function
 
 import os
-from os.path import dirname, abspath
 import sys
 import lister
 import argparse
 import subprocess
 import six
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
 
 exclude_common = """
 api/integrations/asana/zulip_asana_config.py
