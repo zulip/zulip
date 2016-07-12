@@ -204,9 +204,16 @@ def check_handlebar_templates(templates, modified_only):
 
 def check_html_templates(templates, modified_only):
     # Our files with .html extensions are usually for Django, but we also
-    # have some for Casper tests and a few static ones.
+    # have a few static .html files.
     # The file base.html has a bit of funny HTML that we can't parse here yet.
-    templates = filter(lambda fn: 'base.html' not in fn, templates)
+    #
+    # We also have .html files that we vendored from Casper.
+    # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
+    # there are also cases where Casper deliberately uses invalid HTML,
+    # so we exclude them from our linter.
+    templates = filter(
+        lambda fn: ('base.html' not in fn) and ('casperjs' not in fn),
+        templates)
     templates = sorted(list(templates))
 
     if not modified_only:
