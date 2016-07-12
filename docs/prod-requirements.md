@@ -1,5 +1,4 @@
-Requirements and recommendations for installing Zulip in production
-===================================================================
+# Requirements for Zulip in production
 
 * Server running Ubuntu Trusty
 * At least 2 CPUs for production use with 100+ users
