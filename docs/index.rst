@@ -51,6 +51,7 @@ Contents:
    prod-install
    prod-auth-first-login
    prod-health-check-debug
+   prod-customize
 
 .. _tutorial-docs:
 
