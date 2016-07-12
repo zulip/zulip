@@ -20,6 +20,9 @@ WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 
+def subprocess_text_output(args):
+    return subprocess.check_output(args, universal_newlines=True).strip()
+
 def su_to_zulip():
     pwent = pwd.getpwnam("zulip")
     os.setgid(pwent.pw_gid)
