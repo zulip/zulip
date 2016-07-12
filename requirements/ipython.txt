@@ -1,4 +1,4 @@
-ipython==4.1.2
+ipython==5.0.0
 
 # Dependencies of ipython
 decorator==4.0.9
