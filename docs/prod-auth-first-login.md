@@ -3,7 +3,7 @@ Authentication and logging into Zulip the first time
 
 (As you read and follow the instructions in this section, if you run
 into trouble, check out the troubleshooting advice in [the next major
-section](https://github.com/zulip/zulip/blob/master/README.prod.md#checking-zulip-is-healthy-and-debugging-the-services-it-depends-on).)
+section](prod-health-check-debug.html).)
 
 Once you've finished installing Zulip, configuring your settings.py
 file, and initializing the database, it's time to login to your new
@@ -84,5 +84,4 @@ automatically linkified, e.g., whenever someone mentions "T1234", it
 could be auto-linkified to ticket 1234 in your team's Trac instance.
 
 Next step: [Checking that Zulip is healthy and debugging the services
-it depends
-on](https://github.com/zulip/zulip/blob/master/README.prod.md#checking-zulip-is-healthy-and-debugging-the-services-it-depends-on).
+it depends on](prod-health-check-debug.html).
