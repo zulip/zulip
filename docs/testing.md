@@ -336,8 +336,9 @@ compatibility as we continue to develop new features in zulip, we have a
 special tool, tools/check-py3, which checks all code for Python 3
 syntactic compatibility by running a subset of the automated migration
 tools and checking if they trigger any changes. tools/check-py3 is run
-automatically in Zulip's Travis CI tests to avoid any regressions, but
-is not included in test-all since it is quite slow.
+automatically in Zulip's Travis CI tests (in the 'static-analysis'
+build) to avoid any regressions, but is not included in test-all since
+it is quite slow.
 
 To run tooks/check-py3, you need to install the modernize and future
 python packages (which are included in requirements/py3k.txt, which
