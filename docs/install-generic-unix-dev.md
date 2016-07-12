@@ -4,8 +4,8 @@ Installing manually on UNIX-based platforms
 * [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
 * [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
-* [OpenBSD 5.8 (experimental)](#on-openbsd-58-experimental)
-* [Fedora/CentOS](#common-to-fedoracentos-instructions)
+* [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
+* [Fedora/CentOS](#common-to-fedora-centos-instructions)
 * [Steps for all systems](#all-systems)
 
 If you really want to install everything manually, the below instructions
@@ -145,7 +145,7 @@ host    all             all             127.0.0.1/32            md5
 host    all             all             ::1/128                 md5
 ```
 
-Now continue with the [Common to Fedora/CentOS](#common-to-fedoracentos-instructions) instructions below.
+Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
 
 ### On OpenBSD 5.8 (experimental):
 
@@ -227,8 +227,8 @@ Make sure you have followed the steps specific for your platform:
 * [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
 * [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
-* [OpenBSD 5.8 (experimental)](#on-openbsd-58-experimental)
-* [Fedora/CentOS](#common-to-fedoracentos-instructions)
+* [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
+* [Fedora/CentOS](#common-to-fedora-centos-instructions)
 
 For managing Zulip's python dependencies, we recommend using a
 [virtualenv](https://virtualenv.pypa.io/en/stable/).
