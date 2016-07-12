@@ -31,7 +31,8 @@ interested in trying out Zulip.  This is documented in
 Zulip in production only supports Ubuntu 14.04 right now, but work is
 ongoing on adding support for additional platforms. The installation
 process is documented at https://zulip.org/server.html and in more
-detail in [README.prod.md](https://github.com/zulip/zulip/blob/master/README.prod.md).
+detail in [the
+documentation](https://zulip.readthedocs.io/en/latest/prod-install.html).
 
 ## Ways to contribute
 
