@@ -431,4 +431,4 @@ Zulip security announcements will be sent to
 zulip-announce@googlegroups.com, so you should subscribe if you are
 running Zulip in production.
 
-Next: [Remote User SSO Authentication.](https://github.com/zulip/zulip/blob/master/README.prod.md#remote-user-sso-authentication)
+Next: [Remote User SSO Authentication.](prod-remote-user-sso-auth.html)
