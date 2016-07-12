@@ -1,4 +1,4 @@
-ipython==4.1.2
+ipython==5.0.0
 
 # Dependencies of ipython
 decorator==4.0.9
@@ -6,6 +6,8 @@ ipython-genutils==0.1.0
 pathlib2==2.1.0
 pexpect==4.0.1
 pickleshare==0.7.2
+prompt_toolkit==1.0.3
 ptyprocess==0.5.1
 simplegeneric==0.8.1
 traitlets==4.2.1
+wcwidth==0.1.7
