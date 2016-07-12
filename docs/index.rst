@@ -50,6 +50,7 @@ Contents:
    prod-requirements
    prod-install
    prod-auth-first-login
+   prod-health-check-debug
 
 .. _tutorial-docs:
 
