@@ -157,7 +157,7 @@ class LoginTest(AuthedTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.register("test", "test")
-        self.assertIn("has been deactivated", result.content.decode('utf-8').replace("\n", " "))
+        self.assert_in_response("has been deactivated", result)
 
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_email('test@zulip.com')
@@ -172,7 +172,7 @@ class LoginTest(AuthedTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.login_with_return("hamlet@zulip.com")
-        self.assertIn("has been deactivated", result.content.decode('utf-8').replace("\n", " "))
+        self.assert_in_response("has been deactivated", result)
 
     def test_logout(self):
         # type: () -> None
