@@ -7,6 +7,7 @@ from zerver.lib.test_helpers import (
     AuthedTestCase,
     most_recent_message,
     most_recent_usermessage,
+    skip_py3,
 )
 
 from zerver.models import (
@@ -66,6 +67,7 @@ class TestStreamEmailMessagesSuccess(AuthedTestCase):
         self.assertEqual(message.subject, incoming_valid_message['Subject'])
 
 class TestStreamEmailMessagesEmptyBody(AuthedTestCase):
+    @skip_py3
     def test_receive_stream_email_messages_empty_body(self):
 
         # build dummy messages for stream
