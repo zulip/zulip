@@ -20,11 +20,13 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 ADMIN_DOMAIN = 'example.com'
 
 # Enable at least one of the following authentication backends.
+# See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
+# for documentation on our authentication backends.
 AUTHENTICATION_BACKENDS = (
-#                           'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
-#                           'zproject.backends.ZulipRemoteUserBackend', # Local SSO
-#                           'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
-#                           'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
+#    'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
+#    'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
+#    'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
+#    'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
     )
 
 # Google Oauth requires a bit of configuration; you will need to go to
