@@ -377,40 +377,40 @@ function _setup_page() {
         channel.patch({
             url: url,
             data: data,
-            success: function (data) {
-                if (data.name !== undefined) {
+            success: function (response_data) {
+                if (response_data.name !== undefined) {
                     ui.report_success(i18n.t("Name changed!"), name_status);
                 }
-                if (data.restricted_to_domain !== undefined) {
-                    if (data.restricted_to_domain) {
+                if (response_data.restricted_to_domain !== undefined) {
+                    if (response_data.restricted_to_domain) {
                         ui.report_success(i18n.t("New users must have @__domain__ e-mails!", page_params), restricted_to_domain_status);
                     } else {
                         ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
                     }
                 }
-                if (data.invite_required !== undefined) {
-                    if (data.invite_required) {
+                if (response_data.invite_required !== undefined) {
+                    if (response_data.invite_required) {
                         ui.report_success(i18n.t("New users must be invited by e-mail!"), invite_required_status);
                     } else {
                         ui.report_success(i18n.t("New users may sign up online!"), invite_required_status);
                     }
                 }
-                if (data.invite_by_admins_only !== undefined) {
-                    if (data.invite_by_admins_only) {
+                if (response_data.invite_by_admins_only !== undefined) {
+                    if (response_data.invite_by_admins_only) {
                         ui.report_success(i18n.t("New users must be invited by an admin!"), invite_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now invite new users!"), invite_by_admins_only_status);
                     }
                 }
-                if (data.create_stream_by_admins_only !== undefined) {
-                    if (data.create_stream_by_admins_only) {
+                if (response_data.create_stream_by_admins_only !== undefined) {
+                    if (response_data.create_stream_by_admins_only) {
                         ui.report_success(i18n.t("Only Admins may now create new streams!"), create_stream_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
                     }
                 }
-                if (data.allow_message_editing !== undefined) {
-                    if (data.allow_message_editing) {
+                if (response_data.allow_message_editing !== undefined) {
+                    if (response_data.allow_message_editing) {
                         ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
                     } else {
                         ui.report_success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
