@@ -135,6 +135,8 @@ ujson==1.35
 uritemplate==0.6
 zope.interface==4.1.2
 
+-r emailmirror.txt
+
 # Django extension for static asset pipeline
 django-pipeline==1.6.8
 
