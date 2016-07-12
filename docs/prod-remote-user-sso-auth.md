@@ -105,4 +105,4 @@ Again, most issues with this setup tend to be subtle issues with the
 hostname/DNS side of the configuration.  Suggestions for how to
 improve this SSO setup documentation are very welcome!
 
-Next: [Postgres database details](https://github.com/zulip/zulip/blob/master/README.prod.md#postgres-database-details).
+Next: [Postgres database details](prod-postgres.html).
