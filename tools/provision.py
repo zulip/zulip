@@ -13,7 +13,7 @@ PY2 = sys.version_info[0] == 2
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ZULIP_PATH)
-from zulip_tools import run
+from zulip_tools import run, subprocess_text_output
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 
 SUPPORTED_PLATFORMS = {
@@ -50,8 +50,8 @@ else:
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
 subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
-vendor = subprocess.check_output(["lsb_release", "-is"], universal_newlines=True).strip()
-codename = subprocess.check_output(["lsb_release", "-cs"], universal_newlines=True).strip()
+vendor = subprocess_text_output(["lsb_release", "-is"])
+codename = subprocess_text_output(["lsb_release", "-cs"])
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
@@ -111,7 +111,7 @@ LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 def setup_node_modules():
     # type: () -> None
-    output = subprocess.check_output(['sha1sum', 'package.json'], universal_newlines=True)
+    output = subprocess_text_output(['sha1sum', 'package.json'])
     sha1sum = output.split()[0]
     success_stamp = os.path.join('node_modules', '.npm-success-stamp', sha1sum)
     if not os.path.exists(success_stamp):
@@ -126,7 +126,7 @@ def setup_node_modules():
 def install_npm():
     # type: () -> None
     if "--travis" not in sys.argv:
-        if subprocess.check_output(['npm', '--version'], universal_newlines=True).strip() != NPM_VERSION:
+        if subprocess_text_output(['npm', '--version']) != NPM_VERSION:
             run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
 
         return
@@ -134,11 +134,11 @@ def install_npm():
     run(['mkdir', '-p', TRAVIS_NODE_PATH])
 
     npm_exe = os.path.join(TRAVIS_NODE_PATH, 'bin', 'npm')
-    travis_npm = subprocess.check_output(['which', 'npm'], universal_newlines=True).strip()
+    travis_npm = subprocess_text_output(['which', 'npm'])
     if os.path.exists(npm_exe):
         run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
 
-    version = subprocess.check_output(['npm', '--version'], universal_newlines=True).strip()
+    version = subprocess_text_output(['npm', '--version'])
     if os.path.exists(npm_exe) and version == NPM_VERSION:
         print("Using cached npm")
         return
@@ -153,7 +153,7 @@ def main():
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
     if subprocess.call(['dpkg', '-s', TSEARCH_PACKAGE_NAME]):
-        temp_deb_path = subprocess.check_output(["mktemp", "package_XXXXXX.deb", "--tmpdir"], universal_newlines=True)
+        temp_deb_path = subprocess_text_output(["mktemp", "package_XXXXXX.deb", "--tmpdir"])
         run(["wget", "-O", temp_deb_path, TSEARCH_URL])
         run(["sudo", "dpkg", "--install", temp_deb_path])
 
