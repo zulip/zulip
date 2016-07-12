@@ -25,6 +25,7 @@ from zerver.lib.actions import (
     do_change_stream_description,
     do_change_subscription_property,
     do_create_user,
+    do_deactivate_stream,
     do_deactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
@@ -710,6 +711,34 @@ class EventsRegisterTest(AuthedTestCase):
             ('name', equals('old_name')),
         ])
         error = schema_checker('events[1]', events[1])
+        self.assert_on_error(error)
+
+    def test_deactivate_stream_neversubscribed(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        stream, _ = create_stream_if_needed(realm, 'old_name')
+
+        action = lambda: do_deactivate_stream(stream)
+        events = self.do_test(action)
+
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('delete')),
+            ('streams', check_list(check_dict([]))),
+        ])
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_subscribe_other_user_never_subscribed(self):
+        action = lambda: self.subscribe_to_stream("othello@zulip.com", u"test_stream")
+        events = self.do_test(action)
+        schema_checker = check_dict([
+            ('type', equals('subscription')),
+            ('op', equals('peer_add')),
+            ('user_email', check_string),
+            ('subscriptions', check_list(check_string)),
+        ])
+        error = schema_checker('events[2]', events[2])
         self.assert_on_error(error)
 
     def test_subscribe_events(self):
