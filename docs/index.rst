@@ -49,6 +49,7 @@ Contents:
 
    prod-requirements
    prod-install
+   prod-auth-first-login
 
 .. _tutorial-docs:
 
