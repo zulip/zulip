@@ -24,6 +24,7 @@ This set of documents covers installation and contribution instructions.
 Contents:
 
 * :ref:`user-docs`
+* :ref:`prod-install-docs`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
 * :ref:`system-docs`
@@ -39,6 +40,14 @@ Contents:
    directory-structure
    roadmap
    changelog
+
+.. _prod-install-docs:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Installing in production
+
+   prod-requirements
 
 .. _tutorial-docs:
 
