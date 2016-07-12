@@ -1,8 +1,7 @@
-Testing and writing tests
-=========================
+# Testing and writing tests
 
-Running tests
--------------
+## Running tests
+
 
 To run the full Zulip test suite, do this:
 ```
@@ -29,14 +28,48 @@ time debugging a test failure, e.g.:
 ./tools/test-js-with-casper 09-navigation.js
 ./tools/test-js-with-node utils.js
 ```
+The above setup instructions include the first-time setup of test
+databases, but you may need to rebuild the test database occasionally
+if you're working on new database migrations.  To do this, run:
 
-### Schema and initial data changes
+```
+./tools/do-destroy-rebuild-test-database
+```
+
+### Possible testing issues
+
+- When running the test suite, if you get an error like this:
+
+  ```
+      sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not   exist
+      LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
+                                                                   ^
+  ```
+
+  … then you need to install tsearch-extras, described
+  above. Afterwards, re-run the `init*-db` and the
+  `do-destroy-rebuild*-database` scripts.
+
+- When building the development environment using Vagrant and the LXC
+  provider, if you encounter permissions errors, you may need to
+  `chown -R 1000:$(whoami) /path/to/zulip` on the host before running
+  `vagrant up` in order to ensure that the synced directory has the
+  correct owner during provision. This issue will arise if you run `id
+  username` on the host where `username` is the user running Vagrant
+  and the output is anything but 1000.
+  This seems to be caused by Vagrant behavior; for more information,
+  see [the vagrant-lxc FAQ entry about shared folder permissions][lxc-sf].
+
+[lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
+
+
+## Schema and initial data changes
 
 If you change the database schema or change the initial test data, you
 have to regenerate the pristine test database by running
 `tools/do-destroy-rebuild-test-database`.
 
-### Wiping the test databases
+## Wiping the test databases
 
 You should first try running: `tools/do-destroy-rebuild-test-database`
 
@@ -48,7 +81,7 @@ If that fails you should try to do:
 
 and then run `tools/do-destroy-rebuild-test-database`
 
-#### Recreating the postgres cluster
+### Recreating the postgres cluster
 
 > **warning**
 >
@@ -62,12 +95,12 @@ it. On Ubuntu:
     sudo pg_dropcluster --stop 9.1 main
     sudo pg_createcluster --locale=en_US.utf8 --start 9.1 main
 
-### Backend Django tests
+## Backend Django tests
 
 These live in `zerver/tests/tests.py` and `zerver/tests/test_*.py`. Run
 them with `tools/test-backend`.
 
-### Web frontend black-box casperjs tests
+## Web frontend black-box casperjs tests
 
 These live in `frontend_tests/casper_tests/`. This is a "black box"
 test; we load the frontend in a real (headless) browser, from a real dev
@@ -161,7 +194,7 @@ asserts, the *actual* value comes first, the *expected* value second.
 The test runner (`index.js`) automatically runs all .js files in the
 frontend\_tests/node directory.
 
-#### Coverage reports
+## Coverage reports
 
 You can automatically generate coverage reports for the JavaScript unit
 tests. To do so, install istanbul:
@@ -180,8 +213,8 @@ statements and branches not tested. 100% branch coverage isn't
 necessarily possible, but getting to at least 80% branch coverage is a
 good goal.
 
-Writing tests
--------------
+## Writing tests
+
 
 ### Writing Casper tests
 
@@ -293,8 +326,7 @@ here is this:
 >         return 'office';
 >     };
 
-Manual testing (local app + web browser)
-----------------------------------------
+## Manual testing (local app + web browser)
 
 ### Clearing the manual testing database
 
@@ -325,8 +357,7 @@ Chrome's is a sampling profiler while Firebug's is an instrumenting
 profiler. Using them both can be helpful because they provide different
 information.
 
-Python 3 Compatibility
-----------------------
+## Python 3 Compatibility
 
 Zulip is working on supporting Python 3, and all new code in Zulip
 should be Python 2+3 compatible. We have converted most of the codebase
