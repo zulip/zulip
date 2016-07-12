@@ -53,6 +53,7 @@ Contents:
    prod-health-check-debug
    prod-customize
    prod-maintain-secure-upgrade
+   prod-remote-user-sso-auth
 
 .. _tutorial-docs:
 
