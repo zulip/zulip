@@ -4,6 +4,7 @@ from django.conf import settings
 from django.test import TestCase, override_settings
 from unittest import skip
 
+from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
 from zerver.lib.test_helpers import AuthedTestCase, skip_py3
 from zerver.lib.test_runner import slow
@@ -11,7 +12,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
 import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
-    get_old_unclaimed_attachments, Message
+    get_old_unclaimed_attachments, Message, UserProfile
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
@@ -241,7 +242,7 @@ class FileUploadTest(AuthedTestCase):
         # type: () -> None
         destroy_uploads()
 
-class SetAvatarTest(AuthedTestCase):
+class AvatarTest(AuthedTestCase):
 
     def test_multiple_upload_failure(self):
         # type: () -> None
@@ -271,6 +272,57 @@ class SetAvatarTest(AuthedTestCase):
         ('img.tif', 'tif_resized.png')
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
+
+    def test_get_gravatar_avatar(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+        cordelia.save()
+        with self.settings(ENABLE_GRAVATAR=True):
+            response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+            redirect_url = response['Location']
+            self.assertEqual(redirect_url, avatar_url(cordelia) + '&foo=bar')
+
+        with self.settings(ENABLE_GRAVATAR=False):
+            response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+            redirect_url = response['Location']
+            self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+
+    def test_get_user_avatar(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save()
+        response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+
+    def test_get_system_generated_avatar(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_SYSTEM
+        cordelia.save()
+        response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+
+    def test_non_valid_user_avatar(self):
+        # type: () -> None
+
+        # It's debatable whether we should generate avatars for non-users,
+        # but this test just validates the current code's behavior.
+        self.login("hamlet@zulip.com")
+
+        response = self.client.get("/avatar/nonexistent_user@zulip.com?foo=bar")
+        redirect_url = response['Location']
+        actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&foo=bar'
+        self.assertEqual(redirect_url, actual_url)
 
     @skip_py3
     def test_valid_avatars(self):
