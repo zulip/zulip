@@ -9,6 +9,9 @@ import subprocess
 import sys
 import time
 
+if False:
+    from typing import Sequence
+
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
 TIMESTAMP_FORMAT = '%Y-%m-%d-%H-%M-%S'
@@ -21,14 +24,17 @@ FAIL = '\033[91m'
 ENDC = '\033[0m'
 
 def subprocess_text_output(args):
+    # type: (Sequence[str]) -> str
     return subprocess.check_output(args, universal_newlines=True).strip()
 
 def su_to_zulip():
+    # type: () -> None
     pwent = pwd.getpwnam("zulip")
     os.setgid(pwent.pw_gid)
     os.setuid(pwent.pw_uid)
 
 def make_deploy_path():
+    # type: () -> str
     timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
@@ -38,6 +44,7 @@ if __name__ == '__main__':
         print(make_deploy_path())
 
 def mkdir_p(path):
+    # type: (str) -> None
     # Python doesn't have an analog to `mkdir -p` < Python 3.2.
     try:
         os.makedirs(path)
@@ -48,6 +55,7 @@ def mkdir_p(path):
             raise
 
 def get_deployment_lock(error_rerun_script):
+    # type: (str) -> None
     start_time = time.time()
     got_lock = False
     while time.time() - start_time < 300:
@@ -70,9 +78,11 @@ def get_deployment_lock(error_rerun_script):
         sys.exit(1)
 
 def release_deployment_lock():
+    # type: () -> None
     shutil.rmtree(LOCK_DIR)
 
 def run(args):
+    # type: (Sequence[str]) -> int
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
     process = subprocess.Popen(args)
