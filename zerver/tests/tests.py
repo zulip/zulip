@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.test import TestCase
 
 from zerver.lib.test_helpers import (
-    queries_captured, simulated_empty_cache,
+    queries_captured, simulated_empty_cache, skip_py3,
     simulated_queue_client, tornado_redirected_to_list, AuthedTestCase,
     most_recent_usermessage, most_recent_message,
 )
@@ -404,6 +404,7 @@ class ActivateTest(AuthedTestCase):
         result = self.client_delete('/json/bots/hamlet@zulip.com')
         self.assert_json_error(result, 'No such bot')
 
+@skip_py3
 class BotTest(AuthedTestCase):
     def assert_num_bots_equal(self, count):
         # type: (int) -> None

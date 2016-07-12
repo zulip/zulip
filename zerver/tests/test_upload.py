@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from unittest import skip
 
 from zerver.lib.bugdown import url_filename
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import AuthedTestCase, skip_py3
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -40,6 +40,7 @@ def destroy_uploads():
 
 class FileUploadTest(AuthedTestCase):
 
+    @skip_py3
     def test_rest_endpoint(self):
         # type: () -> None
         """
@@ -96,6 +97,7 @@ class FileUploadTest(AuthedTestCase):
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
+    @skip_py3
     def test_file_upload_authed(self):
         # type: () -> None
         """
@@ -270,6 +272,7 @@ class SetAvatarTest(AuthedTestCase):
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
+    @skip_py3
     def test_valid_avatars(self):
         # type: () -> None
         """
@@ -354,6 +357,7 @@ def use_s3_backend(method):
 
 class S3Test(AuthedTestCase):
 
+    @skip_py3
     @use_s3_backend
     def test_file_upload_s3(self):
         # type: () -> None
@@ -387,6 +391,7 @@ class S3Test(AuthedTestCase):
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
 
+    @skip_py3
     @use_s3_backend
     def test_file_upload_authed(self):
         # type: () -> None

@@ -10,7 +10,7 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    AuthedTestCase,
+    AuthedTestCase, skip_py3
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, email_to_username
@@ -233,6 +233,7 @@ class DevFetchAPIKeyTest(AuthedTestCase):
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
 class DevGetEmailsTest(AuthedTestCase):
+    @skip_py3
     def test_success(self):
         # type: () -> None
         result = self.client.get("/api/v1/dev_get_emails")

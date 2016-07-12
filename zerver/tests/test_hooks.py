@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import AuthedTestCase, skip_py3
 from zerver.lib.test_runner import slow
 from zerver.models import Message, Recipient
 
@@ -763,6 +763,7 @@ class FreshdeskHookTests(WebhookTestCase):
     STREAM_NAME = 'freshdesk'
     URL_TEMPLATE = u"/api/v1/external/freshdesk?stream={stream}"
 
+    @skip_py3
     def test_ticket_creation(self):
         # type: () -> None
         """
@@ -829,6 +830,7 @@ Priority: **High** => **Low**"""
         # type: () -> None
         self.note_change("public_note", "public")
 
+    @skip_py3
     def test_inline_image(self):
         # type: () -> None
         """
@@ -932,11 +934,13 @@ class PagerDutyHookTests(WebhookTestCase):
         expected_message = u':grinning: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical\u2119\u01b4'
         self.send_and_test_stream_message('mp_fail', u"incident 48219", expected_message)
 
+    @skip_py3
     def test_bad_message(self):
         # type: () -> None
         expected_message = 'Unknown pagerduty message\n``` py\n{u\'type\': u\'incident.triggered\'}\n```'
         self.send_and_test_stream_message('bad_message_type', u"pagerduty", expected_message)
 
+    @skip_py3
     def test_unknown_message_type(self):
         # type: () -> None
         expected_message = 'Unknown pagerduty message\n``` py\n{u\'type\': u\'foo\'}\n```'
@@ -1169,11 +1173,13 @@ class TaigaHookTests(WebhookTestCase):
         message = u':notebook: Antek updated description of user story **A newer hope**.\n'
         self.send_and_test_stream_message("userstory_changed_description", u'subject', message)
 
+    @skip_py3
     def test_taiga_userstory_changed_closed(self):
         # type: () -> None
         message = u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from New to Done.\n:checkered_flag: Antek closed user story **A newer hope**.\n'
         self.send_and_test_stream_message("userstory_changed_closed", u'subject', message)
 
+    @skip_py3
     def test_taiga_userstory_changed_reopened(self):
         # type: () -> None
         message = u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from Done to New.\n:package: Antek reopened user story **A newer hope**.\n'

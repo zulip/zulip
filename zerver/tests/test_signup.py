@@ -19,7 +19,7 @@ from zerver.lib.actions import (
 
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
-from zerver.lib.test_helpers import AuthedTestCase, find_key_by_email, queries_captured
+from zerver.lib.test_helpers import AuthedTestCase, find_key_by_email, queries_captured, skip_py3
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
 
@@ -126,6 +126,7 @@ class LoginTest(AuthedTestCase):
         self.login("hamlet@zulip.com", password="wrongpassword", fails=True)
         self.assertIsNone(get_session_dict_user(self.client.session))
 
+    @skip_py3
     def test_login_nonexist_user(self):
         # type: () -> None
         result = self.login_with_return("xxx@zulip.com", "xxx")
@@ -146,6 +147,7 @@ class LoginTest(AuthedTestCase):
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    @skip_py3
     def test_register_deactivated(self):
         # type: () -> None
         """
@@ -162,6 +164,7 @@ class LoginTest(AuthedTestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_email('test@zulip.com')
 
+    @skip_py3
     def test_login_deactivated(self):
         # type: () -> None
         """
@@ -200,6 +203,7 @@ class LoginTest(AuthedTestCase):
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    @skip_py3
     def test_register_first_user_with_invites(self):
         # type: () -> None
         """
@@ -562,6 +566,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
 class RealmCreationTest(AuthedTestCase):
 
+    @skip_py3
     def test_create_realm(self):
         # type: () -> None
         username = "user1"

@@ -7,6 +7,7 @@ from django.core.management import call_command
 from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from datetime import timedelta
+from zerver.lib.test_helpers import skip_py3
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
@@ -63,6 +64,7 @@ class TestSendWebhookFixtureMessage(TestCase):
 class TestGenerateRealmCreationLink(TestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
+    @skip_py3
     def test_generate_link_and_create_realm(self):
         username = "user1"
         domain = "test.com"
@@ -89,6 +91,7 @@ class TestGenerateRealmCreationLink(TestCase):
             self.assertEquals(result.status_code, 200)
             self.assertIn("The organization creation link has been expired or is not valid.", result.content)
 
+    @skip_py3
     def test_realm_creation_with_random_link(self):
         with self.settings(OPEN_REALM_CREATION=False):
             # Realm creation attempt with an invalid link should fail
@@ -97,6 +100,7 @@ class TestGenerateRealmCreationLink(TestCase):
             self.assertEquals(result.status_code, 200)
             self.assertIn("The organization creation link has been expired or is not valid.", result.content)
 
+    @skip_py3
     def test_realm_creation_with_expired_link(self):
         with self.settings(OPEN_REALM_CREATION=False):
             generated_link = generate_realm_creation_url()
