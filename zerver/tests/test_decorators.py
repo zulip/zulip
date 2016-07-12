@@ -11,7 +11,7 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    AuthedTestCase,
+    AuthedTestCase, skip_py3
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
@@ -455,6 +455,7 @@ class DeactivatedRealmTest(AuthedTestCase):
         result = self.client.post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
+    @skip_py3
     def test_login_deactivated_realm(self):
         """
         logging in fails in a deactivated realm
@@ -479,6 +480,7 @@ class DeactivatedRealmTest(AuthedTestCase):
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
 class LoginRequiredTest(AuthedTestCase):
+    @skip_py3
     def test_login_required(self):
         """
         Verifies the zulip_login_required decorator blocks deactivated users.
@@ -580,6 +582,7 @@ class InactiveUserTest(AuthedTestCase):
         result = self.client.post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
+    @skip_py3
     def test_login_deactivated_user(self):
         """
         logging in fails with an inactive user

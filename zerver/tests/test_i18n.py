@@ -9,7 +9,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from six.moves.http_cookies import SimpleCookie
 
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import AuthedTestCase, skip_py3
 
 
 class TranslationTestCase(TestCase):
@@ -27,6 +27,7 @@ class TranslationTestCase(TestCase):
                 expected_status, response.status_code, method, url))
         return response
 
+    @skip_py3
     def test_accept_language_header(self):
         # type: () -> None
         languages = [('en', 'Register'),
@@ -40,6 +41,7 @@ class TranslationTestCase(TestCase):
                                   HTTP_ACCEPT_LANGUAGE=lang)
             self.assertTrue(word in response.content)
 
+    @skip_py3
     def test_cookie(self):
         # type: () -> None
         languages = [('en', 'Register'),
@@ -54,6 +56,7 @@ class TranslationTestCase(TestCase):
             response = self.fetch('get', '/integrations/', 200)
             self.assertTrue(word in response.content)
 
+    @skip_py3
     def test_i18n_urls(self):
         # type: () -> None
         languages = [('en', 'Register'),
