@@ -52,6 +52,10 @@ if __name__ == "__main__":
                       action="store_true",
                       default=False,
                       help="Show detailed output")
+    parser.add_option('--no-generate-fixtures', action="store_false", default=True,
+                      dest="generate_fixtures",
+                      help=("Reduce running time by not calling generate-fixtures. "
+                            "This may cause spurious failures for some tests."))
 
     (options, args) = parser.parse_args()
     if len(args) == 0:
@@ -72,7 +76,8 @@ if __name__ == "__main__":
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()
 
-    subprocess.call(os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures'))
+    if options.generate_fixtures:
+        subprocess.call(os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures'))
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
