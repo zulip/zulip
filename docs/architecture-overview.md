@@ -51,15 +51,16 @@ and Mac OS X clients, as well as people using modern web browsers or
 dedicated Zulip API clients.
 
 A server can host multiple Zulip *realms* (organizations) at the same
-domain, each of which is a private chamber with its own users, streams,
-customizations, and so on. This means that one person might be a user of
-multiple Zulip realms. The administrators of a realm can choose whether
-to allow anyone to register an account and join, or only allow people
-who have been invited, or restrict registrations to members of
-particular groups (using email domain names or corporate single-sign-on
-login for verification). For more on scalability and security
-considerations, see [Zulip in
-production](https://github.com/zulip/zulip/blob/master/README.prod.md).
+domain, each of which is a private chamber with its own users,
+streams, customizations, and so on. This means that one person might
+be a user of multiple Zulip realms. The administrators of a realm can
+choose whether to allow anyone to register an account and join, or
+only allow people who have been invited, or restrict registrations to
+members of particular groups (using email domain names or corporate
+single-sign-on login for verification). For more on scalability and
+security considerations, see [the security section of the production
+maintenance
+instructions](prod-maintain-secure-upgrade.html#security-model).
 
 The default Zulip home screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
