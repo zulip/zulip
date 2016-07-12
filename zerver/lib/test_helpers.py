@@ -391,6 +391,14 @@ class AuthedTestCase(TestCase):
         # type: (HttpResponse, text_type, int) -> None
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
+    def assert_equals_response(self, string, response):
+        # type: (text_type, HttpResponse) -> None
+        self.assertEqual(string, response.content.decode('utf-8'))
+
+    def assert_in_response(self, substring, response):
+        # type: (text_type, HttpResponse) -> None
+        self.assertIn(substring, response.content.decode('utf-8'))
+
     def fixture_data(self, type, action, file_type='json'):
         # type: (text_type, text_type, text_type) -> text_type
         return force_text(open(os.path.join(os.path.dirname(__file__),
