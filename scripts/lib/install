@@ -13,6 +13,7 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 # zulip::voyager for an all-in-one system or zulip::dockervoyager for
 # Docker.  Use e.g. zulip::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
+VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
 apt-get install -y lsb-release
 
@@ -39,7 +40,9 @@ apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python python-six $ADDITIONAL_PACKAGES
 
 # Create and activate a virtualenv
-/root/zulip/scripts/lib/create-production-venv /root/zulip/zulip-venv
+if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
+    /root/zulip/scripts/lib/create-production-venv /root/zulip/zulip-venv
+fi
 
 # puppet apply
 mkdir -p /etc/zulip
