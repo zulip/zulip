@@ -27,4 +27,5 @@ and an authentication mechanism.  Or, you can check out the
 [developers' chatroom (a public, running Zulip
 instance)](http://zulip.tabbott.net/).
 
-For more details, see [full instructions on installing Zulip in production](https://github.com/zulip/zulip/blob/master/README.prod.md).
+For more details, see [full instructions for installing Zulip in
+production](prod-install.html).
