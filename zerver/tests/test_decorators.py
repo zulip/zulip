@@ -463,7 +463,7 @@ class DeactivatedRealmTest(AuthedTestCase):
         """
         do_deactivate_realm(get_realm("zulip.com"))
         result = self.login_with_return("hamlet@zulip.com")
-        self.assertIn("has been deactivated", result.content.replace("\n", " "))
+        self.assertIn("has been deactivated", result.content.decode('utf-8').replace("\n", " "))
 
     def test_webhook_deactivated_realm(self):
         """
@@ -495,7 +495,7 @@ class LoginRequiredTest(AuthedTestCase):
         # Verify succeeds once logged-in
         self.login(email)
         result = self.client.get('/accounts/accept_terms/')
-        self.assertIn("I agree to the", result.content)
+        self.assert_in_response("I agree to the", result)
 
         # Verify fails if user deactivated (with session still valid)
         user_profile.is_active = False
@@ -507,7 +507,7 @@ class LoginRequiredTest(AuthedTestCase):
         do_reactivate_user(user_profile)
         self.login(email)
         result = self.client.get('/accounts/accept_terms/')
-        self.assertIn("I agree to the", result.content)
+        self.assert_in_response("I agree to the", result)
 
         # Verify fails if realm deactivated
         user_profile.realm.deactivated = True
@@ -593,7 +593,7 @@ class InactiveUserTest(AuthedTestCase):
         do_deactivate_user(user_profile)
 
         result = self.login_with_return("hamlet@zulip.com")
-        self.assertIn("Please enter a correct email and password", result.content.replace("\n", " "))
+        self.assertIn("Please enter a correct email and password", result.content.decode('utf-8').replace("\n", " "))
 
     def test_webhook_deactivated_user(self):
         """
