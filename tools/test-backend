@@ -21,6 +21,7 @@ except ImportError as e:
 
 if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
