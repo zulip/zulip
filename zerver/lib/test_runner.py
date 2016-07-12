@@ -109,8 +109,8 @@ def run_test(test):
     test.setUp()
     try:
         test_method()
-    except unittest.SkipTest:
-        pass
+    except unittest.SkipTest as e:
+        print('Skipped:', e)
     except Exception:
         failed = True
         traceback.print_exc()
@@ -155,7 +155,10 @@ class Runner(DiscoverRunner):
         # type: (Iterable[TestCase], bool) -> bool
         failed = False
         for test in suite:
-            if run_test(test):
+            # The attributes __unittest_skip__ and __unittest_skip_why__ are undocumented
+            if hasattr(test, '__unittest_skip__') and test.__unittest_skip__:
+                print('Skipping', full_test_name(test), "(%s)" % (test.__unittest_skip_why__,))
+            elif run_test(test):
                 failed = True
                 if fatal_errors:
                     return failed
