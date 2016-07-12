@@ -28,6 +28,8 @@ VENV_DEPENDENCIES = [
     "python-dev",
     "python-pip",
     "python-virtualenv",
+    "libxml2-dev",          # Used for installing talon
+    "libxslt1-dev",         # Used for installing talon
 ]
 
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
@@ -67,5 +69,12 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
 
     run(["pip", "install", "--upgrade", "pip", "wheel"])
+    # Currently, Scikit-Learn and Numpy cannot be installed with pip in one
+    # install pass. See https://github.com/scikit-learn/scikit-learn/issues/4164
+    # for further details.
+    if 'dev.txt' in requirements_file or 'prod.txt' in requirements_file:
+        numpy = os.path.join(ZULIP_PATH, 'requirements', 'numpy.txt')
+        run(["pip", "install", "--no-deps", "--requirement", numpy])
+
     run(["pip", "install", "--no-deps", "--requirement", requirements_file])
     run(["sudo", "chmod", "-R", "a+rX", venv_path])
