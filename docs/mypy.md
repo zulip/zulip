@@ -28,7 +28,7 @@ You can learn more about it at:
 * [Using mypy with Python 2 code](http://mypy.readthedocs.io/en/latest/python2.html)
 
 The mypy type checker is run automatically as part of Zulip's Travis
-CI testing process.
+CI testing process in the 'static-analysis' build.
 
 ## Zulip goals
 
