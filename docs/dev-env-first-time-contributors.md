@@ -49,8 +49,8 @@ Don't see your system listed above? Check out:
 Jump to:
 
 * [OS X](#os-x)
-* [Ubuntu 14.04 Trusty](#ubuntu-1404)
-* [Ubuntu 16.04 Xenial](#ubuntu-1604)
+* [Ubuntu 14.04 Trusty](#ubuntu-14-04)
+* [Ubuntu 16.04 Xenial](#ubuntu-16-04)
 * [Windows](#windows-10)
 
 #### OS X
@@ -358,9 +358,10 @@ Now the Zulip server should be running and accessible. Verify this by
 navigating to [http://localhost:9991/](http://localhost:9991/) in your browser
 on your main machine.
 
-You should see something like this:
+You should see something like [(this screenshot of the Zulip dev
+environment)](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png).
 
-![Image of Zulip dev environment](/docs/images/zulip-dev.png)
+![Image of Zulip dev environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
 
 The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you
