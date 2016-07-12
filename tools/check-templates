@@ -219,8 +219,44 @@ def check_html_templates(templates, modified_only):
     if not modified_only:
         assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
-        # Many of our Django templates have broken indentation.
-        validate(fn, check_indent=False)
+        # Many of our Django templates have strange indentation.  The
+        # indentation errors are often harmless, even stylistically
+        # harmless, but they tend to be in files that might be old
+        # and might eventually require more scrutiny for things like
+        # localization.  See github #1236.
+        bad_files = [
+            'static/html/5xx.html',
+            'templates/500.html',
+            'templates/confirmation/confirm.html',
+            'templates/corporate/mit.html',
+            'templates/corporate/privacy.html',
+            'templates/corporate/terms-enterprise.html',
+            'templates/corporate/terms.html',
+            'templates/corporate/zephyr-mirror.html',
+            'templates/corporate/zephyr.html',
+            'templates/zerver/accounts_home.html',
+            'templates/zerver/accounts_send_confirm.html',
+            'templates/zerver/api.html',
+            'templates/zerver/api_endpoints.html',
+            'templates/zerver/apps.html',
+            'templates/zerver/compose.html',
+            'templates/zerver/create_realm.html',
+            'templates/zerver/deactivated.html',
+            'templates/zerver/emails/followup/day1.html',
+            'templates/zerver/emails/followup/day2.html',
+            'templates/zerver/features.html',
+            'templates/zerver/hello.html',
+            'templates/zerver/home.html',
+            'templates/zerver/integrations.html',
+            'templates/zerver/invite_user.html',
+            'templates/zerver/left-sidebar.html',
+            'templates/zerver/login.html',
+            'templates/zerver/markdown_help.html',
+            'templates/zerver/register.html',
+            'templates/zerver/right-sidebar.html',
+            'templates/zerver/search_operators.html',
+        ]
+        validate(fn, check_indent=(fn not in bad_files))
 
 if __name__ == '__main__':
     check_our_files()
