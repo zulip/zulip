@@ -24,6 +24,8 @@ import six
 # INITIAL SETTINGS
 ########################################################################
 
+DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
+
 config_file = six.moves.configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
 
@@ -35,7 +37,7 @@ secrets_file = six.moves.configparser.RawConfigParser()
 if PRODUCTION:
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
 else:
-    secrets_file.read("zproject/dev-secrets.conf")
+    secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
 def get_secret(key):
     if secrets_file.has_option('secrets', key):
