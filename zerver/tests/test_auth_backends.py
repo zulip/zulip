@@ -238,8 +238,8 @@ class DevGetEmailsTest(AuthedTestCase):
         # type: () -> None
         result = self.client.get("/api/v1/dev_get_emails")
         self.assert_json_success(result)
-        self.assertIn("direct_admins", result.content)
-        self.assertIn("direct_users", result.content)
+        self.assert_in_response("direct_admins", result)
+        self.assert_in_response("direct_users", result)
 
     def test_dev_auth_disabled(self):
         # type: () -> None

@@ -12,7 +12,7 @@ from six.moves.http_cookies import SimpleCookie
 from zerver.lib.test_helpers import AuthedTestCase, skip_py3
 
 
-class TranslationTestCase(TestCase):
+class TranslationTestCase(AuthedTestCase):
     """
     Tranlations strings should change with locale. URLs should be locale
     aware.
@@ -30,44 +30,44 @@ class TranslationTestCase(TestCase):
     @skip_py3
     def test_accept_language_header(self):
         # type: () -> None
-        languages = [('en', 'Register'),
-                     ('de', 'Registrieren'),
-                     ('sr', 'Региструј се'),
-                     ('zh-cn', '注册'),
+        languages = [('en', u'Register'),
+                     ('de', u'Registrieren'),
+                     ('sr', u'Региструј се'),
+                     ('zh-cn', u'注册'),
                      ]
 
         for lang, word in languages:
             response = self.fetch('get', '/integrations/', 200,
                                   HTTP_ACCEPT_LANGUAGE=lang)
-            self.assertTrue(word in response.content)
+            self.assert_in_response(word, response)
 
     @skip_py3
     def test_cookie(self):
         # type: () -> None
-        languages = [('en', 'Register'),
-                     ('de', 'Registrieren'),
-                     ('sr', 'Региструј се'),
-                     ('zh-cn', '注册'),
+        languages = [('en', u'Register'),
+                     ('de', u'Registrieren'),
+                     ('sr', u'Региструј се'),
+                     ('zh-cn', u'注册'),
                      ]
 
         for lang, word in languages:
             self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang}) # type: ignore # SimpleCookie has incomplete stubs in python 3
 
             response = self.fetch('get', '/integrations/', 200)
-            self.assertTrue(word in response.content)
+            self.assert_in_response(word, response)
 
     @skip_py3
     def test_i18n_urls(self):
         # type: () -> None
-        languages = [('en', 'Register'),
-                     ('de', 'Registrieren'),
-                     ('sr', 'Региструј се'),
-                     ('zh-cn', '注册'),
+        languages = [('en', u'Register'),
+                     ('de', u'Registrieren'),
+                     ('sr', u'Региструј се'),
+                     ('zh-cn', u'注册'),
                      ]
 
         for lang, word in languages:
             response = self.fetch('get', '/{}/integrations/'.format(lang), 200)
-            self.assertTrue(word in response.content)
+            self.assert_in_response(word, response)
 
 
 class JsonTranslationTestCase(AuthedTestCase):

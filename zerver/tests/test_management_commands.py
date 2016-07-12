@@ -7,7 +7,7 @@ from django.core.management import call_command
 from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from datetime import timedelta
-from zerver.lib.test_helpers import skip_py3
+from zerver.lib.test_helpers import AuthedTestCase, skip_py3
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
@@ -61,7 +61,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         self.assertTrue(open_mock.called)
         client.post.assert_called_once_with(self.url, {}, content_type="application/json")
 
-class TestGenerateRealmCreationLink(TestCase):
+class TestGenerateRealmCreationLink(AuthedTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
     @skip_py3
@@ -75,7 +75,7 @@ class TestGenerateRealmCreationLink(TestCase):
             # Check realm creation page is accessible
             result = self.client.get(generated_link)
             self.assertEquals(result.status_code, 200)
-            self.assertIn("Let's get started…", result.content)
+            self.assert_in_response(u"Let's get started…", result)
 
             # Create Realm with generated link
             self.assertIsNone(get_realm(domain))
@@ -84,12 +84,12 @@ class TestGenerateRealmCreationLink(TestCase):
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s@%s" % (username, domain)))
             result = self.client.get(result["Location"])
-            self.assertIn("Check your email so we can get started.", result.content)
+            self.assert_in_response("Check your email so we can get started.", result)
 
             # Generated link used for creating realm
             result = self.client.get(generated_link)
             self.assertEquals(result.status_code, 200)
-            self.assertIn("The organization creation link has been expired or is not valid.", result.content)
+            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
 
     @skip_py3
     def test_realm_creation_with_random_link(self):
@@ -98,7 +98,7 @@ class TestGenerateRealmCreationLink(TestCase):
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
             result = self.client.get(random_link)
             self.assertEquals(result.status_code, 200)
-            self.assertIn("The organization creation link has been expired or is not valid.", result.content)
+            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
 
     @skip_py3
     def test_realm_creation_with_expired_link(self):
@@ -112,4 +112,4 @@ class TestGenerateRealmCreationLink(TestCase):
 
             result = self.client.get(generated_link)
             self.assertEquals(result.status_code, 200)
-            self.assertIn("The organization creation link has been expired or is not valid.", result.content)
+            self.assert_in_response("The organization creation link has been expired or is not valid.", result)

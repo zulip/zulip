@@ -130,7 +130,7 @@ class LoginTest(AuthedTestCase):
     def test_login_nonexist_user(self):
         # type: () -> None
         result = self.login_with_return("xxx@zulip.com", "xxx")
-        self.assertIn("Please enter a correct email and password", result.content)
+        self.assert_in_response("Please enter a correct email and password", result)
 
     def test_register(self):
         # type: () -> None
@@ -159,7 +159,7 @@ class LoginTest(AuthedTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.register("test", "test")
-        self.assertIn("has been deactivated", result.content.replace("\n", " "))
+        self.assertIn("has been deactivated", result.content.decode('utf-8').replace("\n", " "))
 
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_email('test@zulip.com')
@@ -175,7 +175,7 @@ class LoginTest(AuthedTestCase):
         realm.save(update_fields=["deactivated"])
 
         result = self.login_with_return("hamlet@zulip.com")
-        self.assertIn("has been deactivated", result.content.replace("\n", " "))
+        self.assertIn("has been deactivated", result.content.decode('utf-8').replace("\n", " "))
 
     def test_logout(self):
         # type: () -> None
@@ -228,7 +228,7 @@ class LoginTest(AuthedTestCase):
         self.assertTrue(result["Location"].endswith(
                 "/accounts/send_confirm/%s@%s" % (username, domain)))
         result = self.client.get(result["Location"])
-        self.assertIn("Check your email so we can get started.", result.content)
+        self.assert_in_response("Check your email so we can get started.", result)
 
         # Visit the confirmation link.
         from django.core.mail import outbox
@@ -251,7 +251,7 @@ class LoginTest(AuthedTestCase):
 
         # Invite other users to join you.
         result = self.client.get(result["Location"])
-        self.assertIn("You're the first one here!", result.content)
+        self.assert_in_response("You're the first one here!", result)
 
         # Reset the outbox for our invites.
         outbox.pop()
@@ -584,7 +584,7 @@ class RealmCreationTest(AuthedTestCase):
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s@%s" % (username, domain)))
             result = self.client.get(result["Location"])
-            self.assertIn("Check your email so we can get started.", result.content)
+            self.assert_in_response("Check your email so we can get started.", result)
 
             # Visit the confirmation link.
             from django.core.mail import outbox
@@ -613,4 +613,4 @@ class RealmCreationTest(AuthedTestCase):
             self.assertTrue(result["Location"].endswith("/invite/"))
 
             result = self.client.get(result["Location"])
-            self.assertIn("You're the first one here!", result.content)
+            self.assert_in_response("You're the first one here!", result)
