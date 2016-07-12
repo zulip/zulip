@@ -54,6 +54,7 @@ Contents:
    prod-customize
    prod-maintain-secure-upgrade
    prod-remote-user-sso-auth
+   prod-postgres
 
 .. _tutorial-docs:
 
