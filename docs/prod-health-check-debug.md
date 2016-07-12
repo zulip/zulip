@@ -63,4 +63,4 @@ these lists!  The Zulip installation scripts logs its full output to
 `/var/log/zulip/install.log`, so please include the context for any
 tracebacks from that log.
 
-Next: [Making your Zulip instance awesome.](https://github.com/zulip/zulip/blob/master/README.prod.md#making-your-zulip-instance-awesome)
+Next: [Making your Zulip instance awesome.](prod-customize.html)
