@@ -27,7 +27,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user_profile_by_email, set_default_streams, get_subscription
+    get_user_profile_by_email, set_default_streams, get_subscription, bulk_add_subscriptions
 )
 
 from django.http import HttpResponse
@@ -415,6 +415,22 @@ class StreamAdminTest(ZulipTestCase):
             other_user_subbed=True)
         self.assert_json_error(
             result, "Cannot administer invite-only streams this way")
+
+    def test_permission_of_stream_creator(self):
+        # type: () -> None
+        """
+        A user who creates a stream should have
+        all permissions in that stream.
+        """
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+
+        stream_name = u"new_stream"
+        stream, _ = create_stream_if_needed(user_profile.realm, stream_name, ['can_read', 'can_write'])
+        bulk_add_subscriptions([stream], [user_profile], current_user=user_profile)
+        sub = get_subscription(stream_name, user_profile)
+        self.assertEqual(set(sub.permissions_list()), set(Stream.PERMISSION_FLAGS))
 
     def test_create_stream_by_admins_only_setting(self):
         # type: () -> None
