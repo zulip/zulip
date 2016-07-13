@@ -12,7 +12,9 @@
   and your team uses that feature extensively)
 * Outgoing HTTP(S) access to the public Internet.
 * SSL Certificate for the host you're putting this on
-  (e.g. zulip.example.com).
+  (e.g. zulip.example.com).  The installation instructions contain
+  documentation for how to get an SSL certificate for free using
+  [LetsEncrypt](https://letsencrypt.org/).
 * Email credentials Zulip can use to send outgoing emails to users
   (e.g. email address confirmation emails during the signup process,
   missed message notifications, password reminders if you're not using
