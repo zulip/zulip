@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.test_helpers import AuthedTestCase, skip_py3
+from zerver.lib.test_helpers import AuthedTestCase
 from zerver.lib.test_runner import slow
 from zerver.models import Message, Recipient
 
@@ -1169,13 +1169,11 @@ class TaigaHookTests(WebhookTestCase):
         message = u':notebook: Antek updated description of user story **A newer hope**.\n'
         self.send_and_test_stream_message("userstory_changed_description", u'subject', message)
 
-    @skip_py3
     def test_taiga_userstory_changed_closed(self):
         # type: () -> None
         message = u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from New to Done.\n:checkered_flag: Antek closed user story **A newer hope**.\n'
         self.send_and_test_stream_message("userstory_changed_closed", u'subject', message)
 
-    @skip_py3
     def test_taiga_userstory_changed_reopened(self):
         # type: () -> None
         message = u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from Done to New.\n:package: Antek reopened user story **A newer hope**.\n'
