@@ -88,11 +88,13 @@ def avatar(request, email):
     except UserProfile.DoesNotExist:
         avatar_source = 'G'
     url = get_avatar_url(avatar_source, email)
-    if '?' in url:
-        sep = '&'
-    else:
-        sep = '?'
-    url += sep + request.META['QUERY_STRING']
+
+    # We can rely on the url already having query parameters. Because
+    # our templates depend on being able to use the ampersand to
+    # add query parameters to our url, get_avatar_url does '?x=x'
+    # hacks to prevent us from having to jump through decode/encode hoops.
+    assert '?' in url
+    url += '&' + request.META['QUERY_STRING']
     return redirect(url)
 
 def get_stream_name(stream):
