@@ -823,8 +823,7 @@ def with_language(string, language):
     return result
 
 def get_language_list():
-    path = os.path.join(settings.DEPLOY_ROOT, 'static',
-                        'locale', 'language_options.json')
+    path = os.path.join(settings.STATIC_ROOT, 'locale', 'language_options.json')
     with open(path, 'r') as reader:
         languages = ujson.load(reader)
         lang_list = []
