@@ -602,6 +602,22 @@ class BotTest(AuthedTestCase):
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
         # TODO: check img.png was uploaded properly
 
+    def test_add_bot_with_too_many_files(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
+             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+            bot_info = dict(
+                full_name='whatever',
+                short_name='whatever',
+                file1=fp1,
+                file2=fp2,
+                )
+            result = self.client.post("/json/bots", bot_info)
+        self.assert_json_error(result, 'You may only upload one file at a time')
+        self.assert_num_bots_equal(0)
+
     def test_add_bot_with_default_sending_stream(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
