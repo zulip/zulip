@@ -150,7 +150,7 @@ While the Zulip server has a great codebase compared to most projects
 of its size, it takes work to keep it that way.
 
 * [Migrate most web routes to REST API](https://github.com/zulip/zulip/issues/611)
-* [Finish purging global variables from the Zulip javascript](https://github.com/zulip/zulip/issues/610)
+* [Finish purging global variables from the Zulip JavaScript](https://github.com/zulip/zulip/issues/610)
 * [Finish deprecating and remove the pre-REST Zulip /send_message API](https://github.com/zulip/zulip/issues/730)
 * [Split Tornado subsystem into a separate Django app](https://github.com/zulip/zulip/issues/729)
 * [Clean up clutter in the root of the zulip.git repository](https://github.com/zulip/zulip/issues/707)
@@ -186,7 +186,7 @@ of its size, it takes work to keep it that way.
 * [Overhaul new contributor documentation](https://github.com/zulip/zulip/issues/677)
 * [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
 * [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
-* [Use a javascript bundler like webpack](https://github.com/zulip/zulip/issues/695)
+* [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
 
 ## Documentation
 

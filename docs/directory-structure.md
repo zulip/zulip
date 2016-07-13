@@ -46,17 +46,17 @@ templating systems.
 
 ----------------------------------------
 
-### Javascript and other static assets
+### JavaScript and other static assets
 
-* `static/js/` Zulip's own javascript.
+* `static/js/` Zulip's own JavaScript.
 
 * `static/styles/` Zulip's own CSS.
 
 * `static/images/` Zulip's images.
 
-* `static/third/` Third-party javascript and CSS that has been vendored.
+* `static/third/` Third-party JavaScript and CSS that has been vendored.
 
-* `node_modules/` Third-party javascript installed via `npm`.
+* `node_modules/` Third-party JavaScript installed via `npm`.
 
 * `assets/` For assets not to be served to the web (e.g. the system to
             generate our favicons).

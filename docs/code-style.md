@@ -23,7 +23,7 @@ The Vagrant setup process runs this for you.
 
 `lint-all` runs many lint checks in parallel, including
 
--   Javascript ([JSLint](http://www.jslint.com/))
+-   JavaScript ([JSLint](http://www.jslint.com/))
 
     > `tools/jslint/check-all.js` contains a pretty fine-grained set of
     > JSLint options, rule exceptions, and allowed global variables. If
@@ -119,9 +119,9 @@ string, use the `id` function, as it will simplify future code changes.
 In most contexts in JavaScript where a string is needed, you can pass a
 number without any explicit conversion.
 
-### Javascript var
+### JavaScript var
 
-Always declare Javascript variables using `var`:
+Always declare JavaScript variables using `var`:
 
     var x = ...;
 
@@ -129,12 +129,12 @@ In a function, `var` is necessary or else `x` will be a global variable.
 For variables declared at global scope, this has no effect, but we do it
 for consistency.
 
-Javascript has function scope only, not block scope. This means that a
+JavaScript has function scope only, not block scope. This means that a
 `var` declaration inside a `for` or `if` acts the same as a `var`
 declaration at the beginning of the surrounding `function`. To avoid
 confusion, declare all variables at the top of a function.
 
-### Javascript `for (i in myArray)`
+### JavaScript `for (i in myArray)`
 
 Don't use it:
 [[1]](http://stackoverflow.com/questions/500504/javascript-for-in-with-arrays),
@@ -229,7 +229,7 @@ Whitespace guidelines:
     used for inline dictionaries, put no space before it and at least
     one space after. Only use more than one space for alignment.
 
-### Javascript
+### JavaScript
 
 Don't use `==` and `!=` because these operators perform type coercions,
 which can mask bugs. Always use `===` and `!==`.
