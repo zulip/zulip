@@ -76,7 +76,7 @@ os.setpgrp()
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['python', 'manage.py', 'rundjango'] +
           manage_args + ['localhost:%d' % (django_port,)],
-        ['python', 'manage.py', 'runtornado'] +
+        ['python', '-u', 'manage.py', 'runtornado'] +
           manage_args + ['localhost:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=localhost', # Force password authentication using .pgpass

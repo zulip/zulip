@@ -59,9 +59,6 @@ class Command(BaseCommand):
 
     def handle(self, addrport, **options):
         # type: (str, **bool) -> None
-        # setup unbuffered I/O
-        sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0) # type: ignore # https://github.com/python/typeshed/pull/337
-        sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0) # type: ignore # https://github.com/python/typeshed/pull/337
         interactive_debug_listen()
 
         import django
