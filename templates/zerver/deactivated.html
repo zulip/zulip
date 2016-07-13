@@ -5,8 +5,12 @@
 
 <p>{{ _('Hi there! Thank you for your interest in Zulip') }}.</p>
 
-<p>{% trans %} The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
-Please contact <a href="mailto:{{ zulip_administrator }}">{{ zulip_administrator }}</a> to reactivate
-this group{% endtrans %}.</p>
+<p>
+  {% trans %}
+  The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
+  Please contact <a href="mailto:{{ zulip_administrator }}">{{ zulip_administrator }}</a> to reactivate
+  this group
+  {% endtrans %}.
+</p>
 
 {% endblock %}
