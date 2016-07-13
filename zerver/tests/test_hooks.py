@@ -934,13 +934,12 @@ class PagerDutyHookTests(WebhookTestCase):
 
     def test_bad_message(self):
         # type: () -> None
-        expected_message = 'Unknown pagerduty message\n``` py\n{u\'type\': u\'incident.triggered\'}\n```'
+        expected_message = 'Unknown pagerduty message\n```\n{\n  "type":"incident.triggered"\n}\n```'
         self.send_and_test_stream_message('bad_message_type', u"pagerduty", expected_message)
 
-    @skip_py3
     def test_unknown_message_type(self):
         # type: () -> None
-        expected_message = 'Unknown pagerduty message\n``` py\n{u\'type\': u\'foo\'}\n```'
+        expected_message = 'Unknown pagerduty message\n```\n{\n  "type":"foo"\n}\n```'
         self.send_and_test_stream_message('unknown_message_type', u"pagerduty", expected_message)
 
 class TravisHookTests(WebhookTestCase):

@@ -75,9 +75,9 @@ def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
     subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
-        u'``` py\n'
+        u'```\n'
         u'%s\n'
-        u'```') % (pprint.pformat(message),)
+        u'```') % (ujson.dumps(message, indent=2),)
     check_send_message(user_profile, client, 'stream',
                        [stream], subject, body)
 
