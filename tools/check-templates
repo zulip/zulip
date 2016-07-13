@@ -239,7 +239,6 @@ def check_html_templates(templates, modified_only):
             'templates/zerver/api.html',
             'templates/zerver/api_endpoints.html',
             'templates/zerver/apps.html',
-            'templates/zerver/compose.html',
             'templates/zerver/create_realm.html',
             'templates/zerver/emails/followup/day1.html',
             'templates/zerver/emails/followup/day2.html',
