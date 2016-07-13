@@ -22,7 +22,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_users
+    get_old_unclaimed_attachments, get_cross_realm_users, parse_sub_permissions
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -2602,8 +2602,10 @@ def gather_subscriptions_helper(user_profile):
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "active", "pin_to_top")
+        "audible_notifications", "active", "pin_to_top", "permissions")
 
+    for sub in sub_dicts:
+        sub['permissions'] = parse_sub_permissions(sub['permissions'])
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id", \
@@ -2654,6 +2656,7 @@ def gather_subscriptions_helper(user_profile):
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
+                       'permissions': sub["permissions"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers

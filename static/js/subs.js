@@ -456,7 +456,8 @@ function populate_subscriptions(subs, subscribed) {
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
                                            subscribers: elem.subscribers,
-                                           description: elem.description});
+                                           description: elem.description,
+                                           permissions: elem.permissions});
         sub_rows.push(sub);
     });
 
