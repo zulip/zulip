@@ -910,6 +910,38 @@ class BotTest(AuthedTestCase):
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
 
+    def test_patch_bot_avatar(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+
+        # Try error case first (too many files):
+        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
+             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+            result = self.client_patch_multipart(
+                '/json/bots/hambot-bot@zulip.com',
+                dict(file1=fp1, file2=fp2))
+        self.assert_json_error(result, 'You may only upload one file at a time')
+
+        # HAPPY PATH
+        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp:
+            result = self.client_patch_multipart(
+                '/json/bots/hambot-bot@zulip.com',
+                dict(file=fp))
+        self.assert_json_success(result)
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        # TODO: check img.png was uploaded properly
+
     def test_patch_bot_to_stream(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
