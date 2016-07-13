@@ -4,6 +4,9 @@ from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mappin
     Sized, Tuple, Union)
 
 from django.test import TestCase
+from django.test.client import (
+    BOUNDARY, MULTIPART_CONTENT, encode_multipart,
+)
 from django.template import loader
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
@@ -207,6 +210,23 @@ class AuthedTestCase(TestCase):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         return self.client.patch(url, encoded, **kwargs)
+
+    def client_patch_multipart(self, url, info={}, **kwargs):
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        """
+        Use this for patch requests that have file uploads or
+        that need some sort of multi-part content.  In the future
+        Django's test client may become a bit more flexible,
+        so we can hopefully eliminate this.  (When you post
+        with the Django test client, it deals with MULTIPART_CONTENT
+        automatically, but not patch.)
+        """
+        encoded = encode_multipart(BOUNDARY, info)
+        return self.client.patch(
+            url,
+            encoded,
+            content_type=MULTIPART_CONTENT,
+            **kwargs)
 
     def client_put(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
