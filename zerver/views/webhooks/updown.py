@@ -25,7 +25,7 @@ def send_message_for_event(event, user_profile, client, stream):
         subject = SUBJECT_TEMPLATE.format(service_url=event['check']['url'])
         body = EVENT_TYPE_BODY_MAPPER[event_type](event)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(e.message))
+        return json_error(_("Missing key {} in JSON").format(str(e)))
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
 
 def get_body_for_up_event(event):

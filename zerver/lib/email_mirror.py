@@ -326,4 +326,4 @@ def process_message(message, rcpt_to=None, pre_checked=False):
             process_stream_message(to, subject, message, debug_info)
     except ZulipEmailForwardError as e:
         # TODO: notify sender of error, retry if appropriate.
-        log_and_report(message, e.message, debug_info)
+        log_and_report(message, str(e), debug_info)

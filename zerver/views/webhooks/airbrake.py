@@ -22,7 +22,7 @@ def api_airbrake_webhook(request, user_profile, client, payload=REQ(argument_typ
         subject = get_subject(payload)
         body = get_body(payload)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(e.message))
+        return json_error(_("Missing key {} in JSON").format(str(e)))
 
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
