@@ -103,8 +103,8 @@ if __name__ == "__main__":
         if options.verbose_coverage:
             print("Printing coverage data")
             cov.report(show_missing=False)
-        cov.html_report()
-        print("HTML report saved to htmlcov/")
+        cov.html_report(directory='var/coverage')
+        print("HTML report saved to var/coverage")
     if options.profile:
         prof.disable()
         prof.dump_stats("/tmp/profile.data")
