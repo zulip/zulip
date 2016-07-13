@@ -491,6 +491,16 @@ div.edit_bot {
     width: 8em;
 }
 
+#empty_alert_word_error {
+    display: none;
+    margin-left: 38px;
+    margin-right: 38px;
+    padding: 10px;
+}
+
+#empty_alert_word_error .close {
+    position: inherit;
+}
 
 #alert_words_list {
     list-style-type: none;

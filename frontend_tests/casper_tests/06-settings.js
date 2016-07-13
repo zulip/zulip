@@ -108,6 +108,16 @@ casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function
 });
 
 casper.waitForSelector('#create_alert_word_form', function () {
+    casper.test.info('Attempting to submit an empty alert word');
+    casper.click('#create_alert_word_button');
+    casper.test.info('Checking that an error is displayed');
+    casper.test.assertVisible('#empty_alert_word_error');
+
+    casper.test.info('Closing the error message');
+    casper.click('.close-empty-alert-word-error');
+    casper.test.info('Checking the error is hidden');
+    casper.test.assertNotVisible('#empty_alert_word_error');
+
     casper.test.info('Filling out the alert word input');
     casper.sendKeys('#create_alert_word_name', 'some phrase');
     casper.click('#create_alert_word_button');
