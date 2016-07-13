@@ -233,20 +233,21 @@ casper.waitWhileVisible("textarea.message_edit_content", function () {
     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 });
 
-// edit the same message, but don't hit save this time
-casper.then(function () {
-    casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
-        msg.find('.info').click();
-        $('.popover_edit_message').click();
-    });
-});
-casper.waitForSelector(".message_edit_content", function () {
-    casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
-        msg.find('.message_edit_content').val("test RE-edited");
-    });
-});
+// Commented out due to Issue #1243
+// // edit the same message, but don't hit save this time
+// casper.then(function () {
+//     casper.evaluate(function () {
+//         var msg = $('#zhome .message_row:last');
+//         msg.find('.info').click();
+//         $('.popover_edit_message').click();
+//     });
+// });
+// casper.waitForSelector(".message_edit_content", function () {
+//     casper.evaluate(function () {
+//         var msg = $('#zhome .message_row:last');
+//         msg.find('.message_edit_content').val("test RE-edited");
+//     });
+// });
 
 // go to admin page
 casper.then(function () {
@@ -271,21 +272,22 @@ casper.then(function () {
     casper.click('.global-filter[data-name="home"]');
 });
 
-// try to save the half-finished edit
-casper.waitForSelector('.message_table', function () {
-    casper.then(function () {
-        casper.evaluate(function () {
-            var msg = $('#zhome .message_row:last');
-            msg.find('.message_edit_save').click();
-        });
-    });
-});
+// Commented out due to Issue #1243
+// // try to save the half-finished edit
+// casper.waitForSelector('.message_table', function () {
+//     casper.then(function () {
+//         casper.evaluate(function () {
+//             var msg = $('#zhome .message_row:last');
+//             msg.find('.message_edit_save').click();
+//         });
+//     });
+// });
 
-// make sure we get the right error message, and that the message hasn't actually changed
-casper.waitForSelector("div.edit_error", function () {
-    casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
-    casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
-});
+// // make sure we get the right error message, and that the message hasn't actually changed
+// casper.waitForSelector("div.edit_error", function () {
+//     casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
+//     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+// });
 
 // Check that edit link no longer appears in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
@@ -317,23 +319,25 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editin
     });
 });
 
-// go back home, and save our edit
+// go back home
 casper.then(function () {
     casper.click('.global-filter[data-name="home"]');
 });
-casper.waitForSelector('.message_table', function () {
-    casper.then(function () {
-        casper.evaluate(function () {
-            var msg = $('#zhome .message_row:last');
-            msg.find('.message_edit_save').click();
-        });
-    });
-});
+// Commented out due to Issue #1243
+// // save our edit
+// casper.waitForSelector('.message_table', function () {
+//     casper.then(function () {
+//         casper.evaluate(function () {
+//             var msg = $('#zhome .message_row:last');
+//             msg.find('.message_edit_save').click();
+//         });
+//     });
+// });
 
-// check that edit went through
-casper.waitWhileVisible("textarea.message_edit_content", function () {
-    casper.test.assertSelectorHasText(".last_message .message_content", "test RE-edited");
-});
+// // check that edit went through
+// casper.waitWhileVisible("textarea.message_edit_content", function () {
+//     casper.test.assertSelectorHasText(".last_message .message_content", "test RE-edited");
+// });
 
 // check that the edit link reappears in popover menu
 // TODO check for edit icon next to message on hover
