@@ -10,7 +10,7 @@ from zerver.models import (
 )
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
 from zerver.lib.test_helpers import (
-    AuthedTestCase, POSTRequestMock, skip_py3,
+    AuthedTestCase, POSTRequestMock,
     get_user_messages, message_ids, queries_captured,
 )
 from zerver.views.messages import (
@@ -629,7 +629,6 @@ class GetOldMessagesTest(AuthedTestCase):
                 return
         self.fail("get_old_messages query not found")
 
-    @skip_py3
     def test_use_first_unread_anchor(self):
         realm = get_realm('zulip.com')
         create_stream_if_needed(realm, 'devel')
@@ -706,7 +705,6 @@ class GetOldMessagesTest(AuthedTestCase):
         self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'devel'))
         self.assertEqual(params['upper_2'], 'css')
 
-    @skip_py3
     def test_get_old_messages_queries(self):
         query_ids = self.get_query_ids()
 
@@ -722,7 +720,6 @@ class GetOldMessagesTest(AuthedTestCase):
         sql = sql_template.format(**query_ids)
         self.common_check_get_old_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 10}, sql)
 
-    @skip_py3
     def test_get_old_messages_with_narrow_queries(self):
         query_ids = self.get_query_ids()
 
@@ -775,7 +772,6 @@ class GetOldMessagesTest(AuthedTestCase):
                                                   'narrow': '[["stream", "Scotland"], ["is", "starred"]]'},
                                                  sql)
 
-    @skip_py3
     def test_get_old_messages_with_search_queries(self):
         query_ids = self.get_query_ids()
 

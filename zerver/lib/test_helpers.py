@@ -121,7 +121,7 @@ def queries_captured():
             stop = time.time()
             duration = stop - start
             queries.append({
-                'sql': self.mogrify(sql, params),
+                'sql': self.mogrify(sql, params).decode('utf-8'),
                 'time': "%.3f" % duration,
             })
 
