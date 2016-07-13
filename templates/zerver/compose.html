@@ -68,9 +68,9 @@
             </tr>
             <tr>
               <td class="messagebox" colspan="2">
-                  <textarea class="new_message_textarea" name="content" id="new_message_content"
-                            value="" placeholder="{{ _('Compose your message here') }}..." tabindex="140" maxlength="10000"></textarea>
-              <div id="below-compose-content">
+                <textarea class="new_message_textarea" name="content" id="new_message_content"
+                          value="" placeholder="{{ _('Compose your message here') }}..." tabindex="140" maxlength="10000"></textarea>
+                <div id="below-compose-content">
                   <input type="file" id="file_input" class="notvisible pull-left" multiple />
                   <a class="message-control-button icon-vector-dropbox notdisplayed"
                      id="attach_dropbox_files" href="#" title="{{ _('Attach files from Dropbox') }}"></a>
@@ -81,12 +81,11 @@
                   <a id="restore-draft" onclick="compose.restore_message();">{{ _('Restore draft') }}</a>
                   <span id="sending-indicator">{{ _('Sending') }}...</span>
                   <div id="send_controls">
-                  <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>
+                    <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>
                     <input type="checkbox" id="enter_sends" name="enter_sends" value="enter_sends" />
                     <input type="submit" value="Send" id="compose-send-button" class="btn btn-primary send_message" tabindex="150"/>
                   </div>
                 </div>
-
               </td>
             </tr>
           </tbody>
