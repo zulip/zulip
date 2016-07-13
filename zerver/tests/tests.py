@@ -74,6 +74,9 @@ def find_dict(lst, k, v):
             return dct
     raise Exception('Cannot find element in list where key %s == %s' % (k, v))
 
+# same as in test_uploads.py
+TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
+
 class SlowQueryTest(TestCase):
     def test_is_slow_query(self):
         # type: () -> None
@@ -586,6 +589,18 @@ class BotTest(AuthedTestCase):
         self.assertEqual(len(bots), 1)
         bot = bots[0]
         self.assertEqual(bot['bot_owner'], 'hamlet@zulip.com')
+
+    def test_add_bot_with_user_avatar(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp:
+            self.create_bot(file=fp)
+        self.assert_num_bots_equal(1)
+
+        profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        # TODO: check img.png was uploaded properly
 
     def test_add_bot_with_default_sending_stream(self):
         # type: () -> None
