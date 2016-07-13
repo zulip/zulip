@@ -96,7 +96,7 @@ def resize_avatar(image_data):
 
 class ZulipUploadBackend(object):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-        # type: (text_type, text_type, binary_type, UserProfile, Optional[Realm]) -> text_type
+        # type: (text_type, Optional[text_type], binary_type, UserProfile, Optional[Realm]) -> text_type
         raise NotImplementedError()
 
     def upload_avatar_image(self, user_file, user_profile, email):
@@ -129,7 +129,7 @@ def upload_image_to_s3(
         user_profile,
         contents,
     ):
-    # type: (NonBinaryStr, text_type, text_type, UserProfile, binary_type) -> None
+    # type: (NonBinaryStr, text_type, Optional[text_type], UserProfile, binary_type) -> None
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = get_bucket(conn, force_str(bucket_name))
@@ -138,7 +138,7 @@ def upload_image_to_s3(
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_metadata("realm_id", str(user_profile.realm.id))
 
-    if content_type:
+    if content_type is not None:
         headers = {'Content-Type': force_str(content_type)}
     else:
         headers = None
@@ -146,12 +146,14 @@ def upload_image_to_s3(
     key.set_contents_from_string(contents, headers=headers)
 
 def get_file_info(request, user_file):
-    # type: (HttpRequest, File) -> Tuple[text_type, text_type]
+    # type: (HttpRequest, File) -> Tuple[text_type, Optional[text_type]]
 
     uploaded_file_name = user_file.name
     content_type = request.GET.get('mimetype')
     if content_type is None:
-        content_type = force_text(guess_type(uploaded_file_name)[0])
+        guessed_type = guess_type(uploaded_file_name)[0]
+        if guessed_type is not None:
+            content_type = force_text(guessed_type)
     else:
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
 
@@ -175,7 +177,7 @@ def get_realm_for_filename(path):
 
 class S3UploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-        # type: (text_type, text_type, binary_type, UserProfile, Optional[Realm]) -> text_type
+        # type: (text_type, Optional[text_type], binary_type, UserProfile, Optional[Realm]) -> text_type
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         s3_file_name = "/".join([
             str(target_realm.id if target_realm is not None else user_profile.realm.id),
@@ -261,7 +263,7 @@ def get_local_file_path(path_id):
 
 class LocalUploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-        # type: (text_type, text_type, binary_type, UserProfile, Optional[Realm]) -> text_type
+        # type: (text_type, Optional[text_type], binary_type, UserProfile, Optional[Realm]) -> text_type
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join([
             str(user_profile.realm.id),
@@ -311,7 +313,7 @@ def upload_avatar_image(user_file, user_profile, email):
     upload_backend.upload_avatar_image(user_file, user_profile, email)
 
 def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-    # type: (text_type, text_type, binary_type, UserProfile, Optional[Realm]) -> text_type
+    # type: (text_type, Optional[text_type], binary_type, UserProfile, Optional[Realm]) -> text_type
     return upload_backend.upload_message_image(uploaded_file_name, content_type, file_data,
                                                user_profile, target_realm=target_realm)
 
