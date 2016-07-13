@@ -32,7 +32,7 @@ exports.initialize_casper = function (viewport) {
     // casper.start has been called.
 
     // Set default viewport size to something reasonable
-    casper.page.viewportSize = viewport || {width: 1280, height: 768};
+    casper.page.viewportSize = viewport || {width: 1280, height: 1024};
 
     // Fail if we get a JavaScript error in the page's context.
     // Based on the example at http://phantomjs.org/release-1.5.html
