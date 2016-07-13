@@ -2244,7 +2244,7 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     send_event(event, [user_profile.id])
 
 def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> None
+    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
@@ -2312,6 +2312,7 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
     send_event(event, [user_profile.id])
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
+    return count
 
 def subscribed_to_stream(user_profile, stream):
     # type: (UserProfile, Stream) -> bool

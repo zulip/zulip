@@ -613,8 +613,12 @@ def update_message_flags(request, user_profile,
                          all=REQ(validator=check_bool, default=False),
                          stream_name=REQ(default=None),
                          topic_name=REQ(default=None)):
-
-    request._log_data["extra"] = "[%s %s]" % (operation, flag)
+    if all:
+        target_count_str = "all"
+    else:
+        target_count_str = str(len(messages))
+    log_data_str = "[%s %s/%s]" % (operation, flag, target_count_str)
+    request._log_data["extra"] = log_data_str
     stream = None
     if stream_name is not None:
         stream = get_stream(stream_name, user_profile.realm)
@@ -627,7 +631,15 @@ def update_message_flags(request, user_profile,
                                                       message__subject__iexact=topic_name).exists()
             if not topic_exists:
                 raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
-    do_update_message_flags(user_profile, operation, flag, messages, all, stream, topic_name)
+    count = do_update_message_flags(user_profile, operation, flag, messages,
+                                    all, stream, topic_name)
+
+    # If we succeed, update log data str with the actual count for how
+    # many messages were updated.
+    if count != len(messages):
+        log_data_str = "[%s %s/%s] actually %s" % (operation, flag, target_count_str, count)
+    request._log_data["extra"] = log_data_str
+
     return json_success({'result': 'success',
                          'messages': messages,
                          'msg': ''})
