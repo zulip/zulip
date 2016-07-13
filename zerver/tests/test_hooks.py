@@ -763,7 +763,6 @@ class FreshdeskHookTests(WebhookTestCase):
     STREAM_NAME = 'freshdesk'
     URL_TEMPLATE = u"/api/v1/external/freshdesk?stream={stream}"
 
-    @skip_py3
     def test_ticket_creation(self):
         # type: () -> None
         """
@@ -830,7 +829,6 @@ Priority: **High** => **Low**"""
         # type: () -> None
         self.note_change("public_note", "public")
 
-    @skip_py3
     def test_inline_image(self):
         # type: () -> None
         """
@@ -934,7 +932,6 @@ class PagerDutyHookTests(WebhookTestCase):
         expected_message = u':grinning: Incident [48219](https://dropbox.pagerduty.com/incidents/PJKGZF9) resolved\n\n>mp_error_block_down_critical\u2119\u01b4'
         self.send_and_test_stream_message('mp_fail', u"incident 48219", expected_message)
 
-    @skip_py3
     def test_bad_message(self):
         # type: () -> None
         expected_message = 'Unknown pagerduty message\n``` py\n{u\'type\': u\'incident.triggered\'}\n```'
