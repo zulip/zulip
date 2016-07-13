@@ -46,7 +46,7 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
         type = get_type(request, payload)
         body = get_body_based_on_type(type)(payload)
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON").format(e.message))
+        return json_error(_("Missing key {} in JSON").format(str(e)))
 
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()

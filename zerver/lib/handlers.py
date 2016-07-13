@@ -41,10 +41,10 @@ def finish_handler(handler_id, event_queue_id, contents, apply_markdown):
                                   queue_id=event_queue_id),
                              request, apply_markdown=apply_markdown)
     except IOError as e:
-        if e.message != 'Stream is closed':
+        if str(e) != 'Stream is closed':
             logging.exception(err_msg)
     except AssertionError as e:
-        if e.message != 'Request closed':
+        if str(e) != 'Request closed':
             logging.exception(err_msg)
     except Exception:
         logging.exception(err_msg)
