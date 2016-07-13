@@ -41,9 +41,10 @@ def api_taiga_webhook(request, user_profile, client, message=REQ(argument_type='
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], six.text_type, six.text_type) -> HttpResponse
     parsed_events = parse_message(message)
 
-    content = ""
+    content_lines = []
     for event in parsed_events:
-        content += generate_content(event) + '\n'
+        content_lines.append(generate_content(event) + '\n')
+    content = "".join(sorted(content_lines))
 
     check_send_message(user_profile, client, 'stream', [stream], topic, content)
 
