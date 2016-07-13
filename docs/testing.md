@@ -158,7 +158,7 @@ asserts, the *actual* value comes first, the *expected* value second.
 >         assert.throws(foobar.somefeature('Invalid Input'));
 >     }());
 
-The test runner (index.js) automatically runs all .js files in the
+The test runner (`index.js`) automatically runs all .js files in the
 frontend\_tests/node directory.
 
 #### Coverage reports
@@ -213,7 +213,7 @@ for writing Casper tests in addition to the debugging notes below:
     <http://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype>
 -   Casper uses CSS3 selectors; you can often save time by testing and
     debugging your selectors on the relevant page of the Zulip
-    development app in the Chrome javascript console by using e.g.
+    development app in the Chrome JavaScript console by using e.g.
     `$$("#settings-dropdown")`.
 -   The test suite uses a smaller set of default user accounts and other
     data initialized in the database than the development environment;
@@ -310,10 +310,10 @@ return to a clean state for testing.
 
 ### JavaScript manual testing
 
-debug.js has some tools for profiling Javascript code, including:
+`debug.js` has some tools for profiling JavaScript code, including:
 
 -   \`print\_elapsed\_time\`: Wrap a function with it to print the time
-    that function takes to the javascript console.
+    that function takes to the JavaScript console.
 -   \`IterationProfiler\`: Profile part of looping constructs (like a
     for loop or \$.each). You mark sections of the iteration body and
     the IterationProfiler will sum the costs of those sections over all
@@ -332,19 +332,20 @@ Zulip is working on supporting Python 3, and all new code in Zulip
 should be Python 2+3 compatible. We have converted most of the codebase
 to be compatible with Python 3 using a suite of 2to3 conversion tools
 and some manual work. In order to avoid regressions in that
-compatibility as we continue to develop new features in zulip, we have a
-special tool, tools/check-py3, which checks all code for Python 3
+compatibility as we continue to develop new features in Zulip, we have a
+special tool, `tools/check-py3`, which checks all code for Python 3
 syntactic compatibility by running a subset of the automated migration
-tools and checking if they trigger any changes. tools/check-py3 is run
+tools and checking if they trigger any changes. `tools/check-py3` is run
 automatically in Zulip's Travis CI tests (in the 'static-analysis'
-build) to avoid any regressions, but is not included in test-all since
+build) to avoid any regressions, but is not included in `test-all` since
 it is quite slow.
 
-To run tooks/check-py3, you need to install the modernize and future
-python packages (which are included in requirements/py3k.txt, which
-itself is included in requirements/dev.txt, so you probably already
-have these packages installed).
+To run `tools/check-py3`, you need to install the `modernize` and
+`future` Python packages (which are included in
+`requirements/py3k.txt`, which itself is included in
+`requirements/dev.txt`, so you probably already have these packages
+installed).
 
-To run check-py3 on just the python files in a particular directory, you
-can change the current working directory (e.g. cd zerver/) and run
-check-py3 from there.
+To run `check-py3` on just the Python files in a particular directory, you
+can change the current working directory (e.g. `cd zerver/`) and run
+`check-py3` from there.
