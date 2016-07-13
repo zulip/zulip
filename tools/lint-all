@@ -294,7 +294,11 @@ html_rules = whitespace_rules + [
      'description': "`placeholder` value should be translatable."},
     ]
 json_rules = [] # just fix newlines at ends of files
-markdown_rules = markdown_whitespace_rules
+markdown_rules = markdown_whitespace_rules + [
+    {'pattern': ' [jJ]avascript',
+     'exclude': set(['README.dev.md']), # temporary exclusion to avoid merge conflicts
+     'description': "javascript should be spelled JavaScript"},
+]
 txt_rules = whitespace_rules
 
 def check_custom_checks_py():

@@ -39,7 +39,7 @@ All notable changes to the Zulip server are documented in this file.
 - Migrated development environment setup scripts to tools/setup/.
 - Expanded test coverage for several areas of the product.
 - Simplified the API for writing new webhook integrations.
-- Removed most of the remaining javascript global variables.
+- Removed most of the remaining JavaScript global variables.
 
 ### 1.3.12 - 2016-05-10
 - CVE-2016-4426: Bot API keys were accessible to other users in the same realm.
