@@ -495,9 +495,23 @@ class ActivateTest(AuthedTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
 
-        # Can not deactivate a user as a bot
+    def test_api_with_nonexistent_user(self):
+        # type: () -> None
+        admin = get_user_profile_by_email('othello@zulip.com')
+        do_change_is_admin(admin, True)
+        self.login('othello@zulip.com')
+
+        # Can not deactivate a user with the bot api
         result = self.client_delete('/json/bots/hamlet@zulip.com')
         self.assert_json_error(result, 'No such bot')
+
+        # Can not deactivate a nonexistent user.
+        result = self.client_delete('/json/users/nonexistent@zulip.com')
+        self.assert_json_error(result, 'No such user')
+
+        # Can not reactivate a nonexistent user.
+        result = self.client.post('/json/users/nonexistent@zulip.com/reactivate')
+        self.assert_json_error(result, 'No such user')
 
 @skip_py3
 class BotTest(AuthedTestCase):
