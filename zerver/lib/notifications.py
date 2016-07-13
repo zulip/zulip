@@ -515,4 +515,4 @@ def convert_html_to_markdown(html):
     # form `![](http://foo.com/image.png?12345)` into
     # `[image.png](http://foo.com/image.png)`.
     return re.sub(r"!\[\]\((\S*)/(\S*)\?(\S*)\)",
-                  r"[\2](\1/\2)", markdown).decode("utf-8")
+                  r"[\2](\1/\2)", markdown.decode('utf-8'))
