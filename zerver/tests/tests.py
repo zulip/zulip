@@ -46,6 +46,7 @@ import re
 import sys
 import time
 import ujson
+import random
 
 def bail(msg):
     # type: (str) -> None
@@ -1682,7 +1683,7 @@ class TestMissedMessages(AuthedTestCase):
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_extra_context_in_missed_stream_messages(self, mock_random_token):
         # type: (MagicMock) -> None
-        tokens = [str(i) * 4 for i in range(30)]
+        tokens = [str(random.getrandbits(32)) for _ in range(30)]
         mock_random_token.side_effect = tokens
 
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
@@ -1720,7 +1721,7 @@ class TestMissedMessages(AuthedTestCase):
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_extra_context_in_personal_missed_stream_messages(self, mock_random_token):
         # type: (MagicMock) -> None
-        tokens = [str(i) * 4 for i in range(30)]
+        tokens = [str(random.getrandbits(32)) for _ in range(30)]
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
@@ -1746,7 +1747,7 @@ class TestMissedMessages(AuthedTestCase):
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_extra_context_in_huddle_missed_stream_messages(self, mock_random_token):
         # type: (MagicMock) -> None
-        tokens = [str(i) * 4 for i in range(30)]
+        tokens = [str(random.getrandbits(32)) for _ in range(30)]
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message("othello@zulip.com",
