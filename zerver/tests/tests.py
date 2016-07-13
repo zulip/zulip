@@ -513,6 +513,20 @@ class ActivateTest(AuthedTestCase):
         result = self.client.post('/json/users/nonexistent@zulip.com/reactivate')
         self.assert_json_error(result, 'No such user')
 
+    def test_api_with_insufficient_permissions(self):
+        # type: () -> None
+        non_admin = get_user_profile_by_email('othello@zulip.com')
+        do_change_is_admin(non_admin, False)
+        self.login('othello@zulip.com')
+
+        # Can not deactivate a user with the users api
+        result = self.client_delete('/json/users/hamlet@zulip.com')
+        self.assert_json_error(result, 'Insufficient permission')
+
+        # Can not reactivate a user
+        result = self.client.post('/json/users/hamlet@zulip.com/reactivate')
+        self.assert_json_error(result, 'Insufficient permission')
+
 @skip_py3
 class BotTest(AuthedTestCase):
     def assert_num_bots_equal(self, count):
