@@ -50,3 +50,4 @@ htmlcov/
 uploads/
 test_uploads/
 *.mo
+var/*
