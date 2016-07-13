@@ -6,7 +6,7 @@ from unittest import skip
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
-from zerver.lib.test_helpers import AuthedTestCase, skip_py3
+from zerver.lib.test_helpers import AuthedTestCase
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -41,7 +41,6 @@ def destroy_uploads():
 
 class FileUploadTest(AuthedTestCase):
 
-    @skip_py3
     def test_rest_endpoint(self):
         # type: () -> None
         """
@@ -63,14 +62,14 @@ class FileUploadTest(AuthedTestCase):
         # Download file via API
         self.client.post('/accounts/logout/')
         response = self.client.get(uri, **auth_headers)
-        data = "".join(response.streaming_content)
-        self.assertEquals("zulip!", data)
+        data = b"".join(response.streaming_content)
+        self.assertEquals(b"zulip!", data)
 
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
         response = self.client.get(uri)
-        data = "".join(response.streaming_content)
-        self.assertEquals("zulip!", data)
+        data = b"".join(response.streaming_content)
+        self.assertEquals(b"zulip!", data)
 
     def test_multiple_upload_failure(self):
         # type: () -> None
@@ -98,7 +97,6 @@ class FileUploadTest(AuthedTestCase):
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
-    @skip_py3
     def test_file_upload_authed(self):
         # type: () -> None
         """
@@ -121,8 +119,8 @@ class FileUploadTest(AuthedTestCase):
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
         response = self.client.get(uri)
-        data = "".join(response.streaming_content)
-        self.assertEquals("zulip!", data)
+        data = b"".join(response.streaming_content)
+        self.assertEquals(b"zulip!", data)
 
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
@@ -324,7 +322,6 @@ class AvatarTest(AuthedTestCase):
         actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&foo=bar'
         self.assertEqual(redirect_url, actual_url)
 
-    @skip_py3
     def test_valid_avatars(self):
         # type: () -> None
         """
@@ -346,7 +343,7 @@ class AvatarTest(AuthedTestCase):
 
             rfp = open(os.path.join(TEST_AVATAR_DIR, rfname), 'rb')
             response = self.client.get(url)
-            data = "".join(response.streaming_content)
+            data = b"".join(response.streaming_content)
             self.assertEquals(rfp.read(), data)
 
     def test_invalid_avatars(self):
@@ -409,7 +406,6 @@ def use_s3_backend(method):
 
 class S3Test(AuthedTestCase):
 
-    @skip_py3
     @use_s3_backend
     def test_file_upload_s3(self):
         # type: () -> None
@@ -423,7 +419,7 @@ class S3Test(AuthedTestCase):
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEquals("zulip!", bucket.get_key(path_id).get_contents_as_string())
+        self.assertEquals(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -443,7 +439,6 @@ class S3Test(AuthedTestCase):
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
 
-    @skip_py3
     @use_s3_backend
     def test_file_upload_authed(self):
         # type: () -> None
@@ -468,7 +463,7 @@ class S3Test(AuthedTestCase):
         response = self.client.get(uri)
         redirect_url = response['Location']
 
-        self.assertEquals("zulip!", urllib.request.urlopen(redirect_url).read().strip())
+        self.assertEquals(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
