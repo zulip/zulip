@@ -602,6 +602,20 @@ class BotTest(AuthedTestCase):
         bot = bots[0]
         self.assertEqual(bot['bot_owner'], 'hamlet@zulip.com')
 
+    def test_add_bot_with_username_in_use(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        result = self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        bot_info = dict(
+            full_name='Duplicate',
+            short_name='hambot',
+            )
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Username already in use')
+
     def test_add_bot_with_user_avatar(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
