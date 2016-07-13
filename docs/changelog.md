@@ -4,6 +4,58 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+- Migrated Zulip's python dependencies to be installed via a virtualenv,
+  instead of the old apt repository.  This is a major change to how Zulip
+  is installed that we expect to simplify upgrades in the future.
+- Fixed zxcvbn password strength checker being loaded unnecessarily.  This
+  saves a huge fraction of the uncached network transfer for loading Zulip.
+- Added UI for selecting a default language to display settings.
+- Added UI for searching streams in left sidebar with hotkeys.
+- Added Semaphore and Bitbucket integrations.
+- Added new webhook-based integration for Trello.
+- Added management command for creating realms through web UI.
+- Added endpoint for mobile apps to query available auth backends.
+- Added LetsEncrypt documentation for getting SSL certificates.
+- Added preliminary support for running on Ubuntu Xenial in production.
+- Added rendering of unicode emoji code points to the corresponding emoji.
+- Added support for pinning streams to the top of the left sidebar.
+- Added search box for filtering user list when creating a new stream.
+- Added realm setting to disable message editing.
+- Added year to timestamps in message interstitials for old messages.
+- Enhanced logic for tracking origin of user uploads.
+- Improved missed message emails to better support directly replying.
+- Increased backend test coverage of Python code to 85%.
+- Increased mypy static type coverage of Python code to 91%.  Also
+  fixed many string annotations to properly handle unicode.
+- Substantial progress on Python 3 support; backend tests now pass with Python 3.
+- Fixed major i18n-related frontend performance regression on
+  /#subscriptions page.  Saves several seconds of load time with 1k
+  streams.
+- Fixed Jinja2 migration bug when trying to register an email that
+  already has an account.
+- Fixed narrowing to a stream from other pages.
+- Fixed various frontend strings that weren't marked for translation.
+- Fixed several bugs around editing status (/me) messages.
+- Fixed queue workers not restarting after changes in development.
+- Fixed Casper tests hanging while development server is running.
+- Fixed browser autocomplete issue when adding new stream members.
+- Fixed broken create_stream and rename_stream management commands.
+- Fixed zulip-puppet-apply exit code when puppet throws errors.
+- Fixed EPMD restart being attempted on every puppet apply.
+- Fixed message cache filling; should improve perf after server restart.
+- Fixed buggy puppet configuration for supervisord restarts.
+- Improved formatting in reset password links.
+- Improved alert words UI to match style of other settings.
+- Restructured the URLs files to be more readable.
+- Upgraded jquery to version 1.8.3.
+- Upgraded django-pipeline to a current version.
+- Substantially expanded and reorganized developer documentation.
+- Reorganized production documentation and moved to ReadTheDocs.
+- Optimized the performance of all the test suites.
+- Removed old prototype data export tool.
+- Disabled insecure RC4 cipher in nginx configuration.
+- Enabled shared SSL session cache in nginx configuration.
+
 ### 1.3.13 - 2016-06-21
 - Added nearly complete internationalization of the Zulip UI.
 - Added warning when using @all/@everyone.
