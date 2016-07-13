@@ -172,6 +172,15 @@ class PermissionTest(AuthedTestCase):
         admin_users = user_profile.realm.get_admin_users()
         self.assertTrue(user_profile in admin_users)
 
+    def test_updating_non_existent_user(self):
+        # type: () -> None
+        self.login('hamlet@zulip.com')
+        admin = get_user_profile_by_email('hamlet@zulip.com')
+        do_change_is_admin(admin, True)
+
+        result = self.client_patch('/json/users/nonexistentuser@zulip.com', {})
+        self.assert_json_error(result, 'No such user')
+
     def test_admin_api(self):
         # type: () -> None
         self.login('hamlet@zulip.com')
