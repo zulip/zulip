@@ -3,10 +3,12 @@ var subs = (function () {
 var exports = {};
 
 function add_admin_options(sub) {
+    var can_moderate = _.contains(sub.permissions, 'can_moderate');
+    var can_moderate_stream = page_params.is_admin || can_moderate;
     return _.extend(sub, {
-        'is_admin': page_params.is_admin,
-        'can_make_public': page_params.is_admin && sub.invite_only && stream_data.is_subscribed(sub.name),
-        'can_make_private': page_params.is_admin && !sub.invite_only
+        'is_admin': can_moderate_stream,
+        'can_make_public': can_moderate_stream && sub.invite_only && stream_data.is_subscribed(sub.name),
+        'can_make_private': can_moderate_stream && !sub.invite_only
     });
 }
 
