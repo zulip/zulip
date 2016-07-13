@@ -232,7 +232,7 @@ instructions](https://help.github.com/articles/generating-an-ssh-key/).
 2. Open Terminal (OS X/Ubuntu) or Cygwin (Windows; must run as an Administrator)
 3. In Terminal/Cygwin, clone your fork:
 ```
-git clone git@github.com:YOURUSERNAME/zulip.git
+git clone https://github.com/YOURUSERNAME/zulip
 ```
 
 This will create a 'zulip' directory and download the Zulip code into it.
@@ -242,7 +242,7 @@ something like:
 
 ```
 christie@win10 ~
-$ git clone git@github.com:YOURUSERNAME/zulip.git
+$ git clone https://github.com/YOURUSERNAME/zulip
 Cloning into 'zulip'...
 remote: Counting objects: 73571, done.
 remote: Compressing objects: 100% (2/2), done.
@@ -745,7 +745,7 @@ vagrant-lxc FAQ entry about shared folder permissions ][lxc-sf].
 Brief installation instructions for Vagrant development environment
 -------------
 
-Start by cloning this repository: `git clone https://github.com/zulip/zulip.git`
+Start by cloning this repository: `git clone https://github.com/zulip/zulip`
 
 This is the recommended approach for all platforms, and will install
 the Zulip development environment inside a VM or container and works
@@ -786,7 +786,7 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
 
 * On Windows: You can use Vagrant and Virtualbox/VMWare on Windows
   with Cygwin, similar to the Mac setup.  Be sure to create your git
-  clone using `git clone https://github.com/zulip/zulip.git -c
+  clone using `git clone https://github.com/zulip/zulip -c
   core.autocrlf=false` to avoid Windows line endings being added to
   files (this causes weird errors).
 
@@ -860,7 +860,7 @@ http://localhost:9971/ to connect to your development server.
 Installing on Ubuntu 14.04 Trusty without Vagrant
 ----------------------------------
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 If you'd like to install a Zulip development environment on a server
 that's already running Ubuntu 14.04 Trusty, you can do that by just
@@ -909,7 +909,7 @@ Install the following non-Python dependencies:
 #### Using the official Ubuntu repositories and `tsearch-extras` deb package:
 
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 ```
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
@@ -939,7 +939,7 @@ Now continue with the [All Systems](#all-systems) instructions below.
 #### Using the [official Zulip PPA](https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages) (for 14.04 Trusty):
 
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 ```
 sudo add-apt-repository ppa:tabbott/zulip
@@ -959,7 +959,7 @@ These instructions are experimental and may have bugs; patches
 welcome!
 
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 ```
 sudo dnf install libffi-devel memcached rabbitmq-server \
@@ -976,7 +976,7 @@ These instructions are experimental and may have bugs; patches
 welcome!
 
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 ```
 # Add user zulip to the system (not necessary if you configured zulip
@@ -1034,7 +1034,7 @@ These instructions are experimental and may have bugs; patches
 welcome!
 
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
@@ -1068,7 +1068,7 @@ Finally continue with the [All Systems](#all-systems) instructions below.
 ### Common to Fedora/CentOS instructions
 
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 ```
 # Build and install postgres tsearch-extras module
@@ -1167,7 +1167,7 @@ proxy in the environment as follows:
 Using Docker (experimental)
 ---------------------------
 Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
+https://github.com/zulip/zulip`
 
 The docker instructions for development are experimental, so they may
 have bugs.  If you try them and run into any issues, please report
