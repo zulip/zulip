@@ -316,7 +316,7 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = set([user_profile])
 
-    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
+    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers, current_user=user_profile)
 
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list)) # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
@@ -448,7 +448,7 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     if stream is not None:
         recipient = get_recipient(Recipient.STREAM, stream.id)
         if autosubscribe:
-            bulk_add_subscriptions([stream], [user_profile])
+            bulk_add_subscriptions([stream], [user_profile], current_user=user_profile)
         result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
                                                            recipient=recipient,
                                                            active=True).exists()

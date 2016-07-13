@@ -196,7 +196,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     # add the default streams
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
-    bulk_add_subscriptions(streams, [user_profile])
+    bulk_add_subscriptions(streams, [user_profile], current_user=user_profile)
 
     # Give you the last 100 messages on your public streams, so you have
     # something to look at in your home view once you finish the
@@ -1281,8 +1281,8 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-def bulk_add_subscriptions(streams, users):
-    # type: (Iterable[Stream], Iterable[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+def bulk_add_subscriptions(streams, users, current_user=None):
+    # type: (Iterable[Stream], Iterable[UserProfile], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams]) # type: Mapping[int, Recipient]
     recipients = [recipient.id for recipient in recipients_map.values()] # type: List[int]
 
@@ -1318,10 +1318,19 @@ def bulk_add_subscriptions(streams, users):
     subs_to_add = [] # type: List[Tuple[Subscription, Stream]]
     for (user_profile, recipient_id, stream) in new_subs:
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
+        # Give all stream permission if stream is created by user.
+        if current_user == user_profile:
+            permissions = 0
+            for permission in Stream.PERMISSION_FLAGS:
+                permissionattr = getattr(Stream.default_permissions, permission)
+                permissions += permissionattr.mask
+        else:
+            permissions = stream.default_permissions
         sub_to_add = Subscription(user_profile=user_profile, active=True,
                                   color=color, recipient_id=recipient_id,
                                   desktop_notifications=user_profile.enable_stream_desktop_notifications,
-                                  audible_notifications=user_profile.enable_stream_sounds)
+                                  audible_notifications=user_profile.enable_stream_sounds,
+                                  permissions=permissions)
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 
