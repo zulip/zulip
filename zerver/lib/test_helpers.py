@@ -189,9 +189,6 @@ class DummyHandler(object):
         # type: (Callable) -> None
         allocate_handler_id(self)
 
-class DummySession(object):
-    session_key = "0"
-
 class POSTRequestMock(object):
     method = "POST"
 
@@ -200,7 +197,6 @@ class POSTRequestMock(object):
         self.REQUEST = self.POST = post_data
         self.user = user_profile
         self._tornado_handler = DummyHandler()
-        self.session = DummySession()
         self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
