@@ -191,7 +191,6 @@ class DummyTornadoRequest(object):
     def __init__(self):
         # type: () -> None
         self.connection = DummyObject()
-        self.connection.stream = DummyStream() # type: ignore # monkey-patching here
 
 class DummyHandler(object):
     def __init__(self):
@@ -201,11 +200,6 @@ class DummyHandler(object):
 
 class DummySession(object):
     session_key = "0"
-
-class DummyStream(object):
-    def closed(self):
-        # type: () -> bool
-        return False
 
 class POSTRequestMock(object):
     method = "POST"
