@@ -292,6 +292,9 @@ casper.then(function () {
 // Check that edit link no longer appears in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
 casper.then(function () {
+    casper.waitForSelector('.message_row');
+    // Note that this could have a false positive, e.g. if all the messages aren't
+    // loaded yet. See Issue #1243
     casper.evaluate(function () {
         var msg = $('#zhome .message_row:last');
         msg.find('.info').click();
@@ -319,11 +322,12 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editin
     });
 });
 
-// go back home
-casper.then(function () {
-    casper.click('.global-filter[data-name="home"]');
-});
 // Commented out due to Issue #1243
+// go back home
+// casper.then(function () {
+//     casper.click('.global-filter[data-name="home"]');
+// });
+
 // // save our edit
 // casper.waitForSelector('.message_table', function () {
 //     casper.then(function () {
@@ -341,19 +345,19 @@ casper.then(function () {
 
 // check that the edit link reappears in popover menu
 // TODO check for edit icon next to message on hover
-casper.then(function () {
-    casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
-        msg.find('.info').click();
-    });
-    casper.test.assertExists('.popover_edit_message');
-    casper.evaluate(function () {
-        var msg = $('#zhome .message_row:last');
-        msg.find('.info').click();
-    });
-});
+// casper.then(function () {
+//     casper.evaluate(function () {
+//         var msg = $('#zhome .message_row:last');
+//         msg.find('.info').click();
+//     });
+//     casper.test.assertExists('.popover_edit_message');
+//     casper.evaluate(function () {
+//         var msg = $('#zhome .message_row:last');
+//         msg.find('.info').click();
+//     });
+// });
 
-// go back to admin page
+// go to admin page
 casper.then(function () {
     casper.test.info('Administration page');
     casper.click('a[href^="#administration"]');
