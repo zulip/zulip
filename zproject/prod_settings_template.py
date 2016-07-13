@@ -90,7 +90,9 @@ NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 # domains/IP addresses for your site. This is a security measure to
 # prevent an attacker from poisoning caches and triggering password
 # reset emails with links to malicious hosts by submitting requests
-# with a fake HTTP Host header. You must include 'localhost' here.
+# with a fake HTTP Host header. See Django's documentation here:
+# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
+# Zulip adds 'localhost' to the list automatically.
 ALLOWED_HOSTS = ['*']
 
 ### OPTIONAL SETTINGS
