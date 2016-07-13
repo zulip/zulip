@@ -205,7 +205,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         logger.info(logger_line)
 
     if (is_slow_query(time_delta, path)):
-        queue_json_publish("slow_queries", "%s (%s)" % (logger_timing, email), lambda e: None)
+        queue_json_publish("slow_queries", "%s (%s)" % (logger_line, email), lambda e: None)
 
     if settings.PROFILE_ALL_REQUESTS:
         log_data["prof"].disable()
