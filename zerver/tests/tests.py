@@ -556,6 +556,18 @@ class BotTest(AuthedTestCase):
         result = self.client_delete("/json/bots/hambot-bot@zulip.com")
         self.assert_json_success(result)
 
+    def test_add_bot_with_bad_username(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        self.assert_num_bots_equal(0)
+        bot_info = dict(
+            full_name='',
+            short_name='',
+            )
+        result = self.client.post("/json/bots", bot_info)
+        self.assert_json_error(result, 'Bad name or username')
+        self.assert_num_bots_equal(0)
+
     def test_add_bot(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
