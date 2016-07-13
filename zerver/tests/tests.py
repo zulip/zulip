@@ -542,6 +542,13 @@ class BotTest(AuthedTestCase):
             event['event']
         )
 
+        users_result = self.client.get('/json/users')
+        members = ujson.loads(users_result.content)['members']
+        bots = [m for m in members if m['email'] == 'hambot-bot@zulip.com']
+        self.assertEqual(len(bots), 1)
+        bot = bots[0]
+        self.assertEqual(bot['bot_owner'], 'hamlet@zulip.com')
+
     def test_add_bot_with_default_sending_stream(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
