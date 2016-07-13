@@ -17,6 +17,7 @@ function update_alert_words() {
 
 function add_alert_word(word, event) {
     if (word === '') {
+        $("#empty_alert_word_error").show();
         return;
     }
     var final_li = templates.render('alert_word_settings_item', {'word': word, editing: false});
@@ -67,6 +68,12 @@ exports.set_up_alert_words = function () {
             var word = $(event.target).val();
             add_alert_word(word, event);
         }
+    });
+
+    $('#alert_words_list').on('click', '.close-empty-alert-word-error', function (event) {
+        event.preventDefault();
+        var alert = $(event.currentTarget).parents('.alert');
+        alert.hide();
     });
 };
 

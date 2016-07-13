@@ -11,6 +11,12 @@
                             <input type="text" name="alert_word_name" id="create_alert_word_name" class="required"
                                 maxlength=100 placeholder="{{t 'Alert Word' }}" value="" />
                         </div>
+                        <div class="alert alert-danger" id="empty_alert_word_error" role="alert">
+                            <button type="button" class="close close-empty-alert-word-error" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            <span>{{t "Alert words can't be empty!"}}</span>
+                        </div>
                         <button class="btn btn-primary add-alert-word" id="create_alert_word_button" type="button">
                             {{t 'Add Alert Word'}}
                         </button>
