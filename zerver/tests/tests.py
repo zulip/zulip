@@ -825,6 +825,12 @@ class BotTest(AuthedTestCase):
         bot = self.get_bot()
         self.assertEqual(new_api_key, bot['api_key'])
 
+    def test_update_api_key_for_invalid_user(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        result = self.client.post('/json/bots/nonexistentuser@zulip.com/api_key/regenerate')
+        self.assert_json_error(result, 'No such user')
+
     def test_patch_bot_full_name(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
