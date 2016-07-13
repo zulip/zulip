@@ -133,7 +133,7 @@ tornado==2.4.1
 typing==3.5.0.1
 
 # Fast JSON parser
-ujson==1.33
+ujson==1.35
 
 uritemplate==0.6
 zope.interface==4.1.2
