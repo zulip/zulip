@@ -184,18 +184,9 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
-class DummyObject(object):
-    pass
-
-class DummyTornadoRequest(object):
-    def __init__(self):
-        # type: () -> None
-        self.connection = DummyObject()
-
 class DummyHandler(object):
     def __init__(self):
         # type: (Callable) -> None
-        self.request = DummyTornadoRequest()
         allocate_handler_id(self)
 
 class DummySession(object):
