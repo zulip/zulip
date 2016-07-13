@@ -66,10 +66,9 @@ from six.moves import range
 
 
 class GetEventsTest(AuthedTestCase):
-    def tornado_call(self, view_func, user_profile, post_data,
-                     callback=None):
-        # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any], Optional[Callable]) -> HttpResponse
-        request = POSTRequestMock(post_data, user_profile, callback)
+    def tornado_call(self, view_func, user_profile, post_data):
+        # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any]) -> HttpResponse
+        request = POSTRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
 
     def test_get_events(self):
