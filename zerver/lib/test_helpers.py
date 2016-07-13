@@ -194,27 +194,10 @@ class DummyTornadoRequest(object):
         self.connection.stream = DummyStream() # type: ignore # monkey-patching here
 
 class DummyHandler(object):
-    def __init__(self, assert_callback):
+    def __init__(self):
         # type: (Callable) -> None
-        self.assert_callback = assert_callback
         self.request = DummyTornadoRequest()
         allocate_handler_id(self)
-
-    # Mocks RequestHandler.async_callback, which wraps a callback to
-    # handle exceptions.  We return the callback as-is.
-    def async_callback(self, cb):
-        # type: (Callable) -> Callable
-        return cb
-
-    def write(self, response):
-        # type: (str) -> None
-        raise NotImplemented
-
-    def zulip_finish(self, response, *ignore):
-        # type: (HttpResponse, *Any) -> None
-        if self.assert_callback:
-            self.assert_callback(response)
-
 
 class DummySession(object):
     session_key = "0"
@@ -227,11 +210,11 @@ class DummyStream(object):
 class POSTRequestMock(object):
     method = "POST"
 
-    def __init__(self, post_data, user_profile, assert_callback=None):
-        # type: (Dict[str, Any], UserProfile, Optional[Callable]) -> None
+    def __init__(self, post_data, user_profile):
+        # type: (Dict[str, Any], UserProfile) -> None
         self.REQUEST = self.POST = post_data
         self.user = user_profile
-        self._tornado_handler = DummyHandler(assert_callback)
+        self._tornado_handler = DummyHandler()
         self.session = DummySession()
         self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
