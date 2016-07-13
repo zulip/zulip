@@ -72,6 +72,10 @@ These instructions should be followed as root.
   This may take a while to run, since it will install a large number of
   packages via apt.
 
+  The Zulip install script is designed to be idempotent, so if it
+  fails, you can just rerun it after correcting the issue that caused
+  it to fail.
+
 (4) Configure the Zulip server instance by filling in the settings in
   `/etc/zulip/settings.py`.  Be sure to fill in all the mandatory
   settings, enable at least one authentication mechanism, and do the
