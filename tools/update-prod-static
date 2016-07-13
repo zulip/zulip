@@ -61,7 +61,7 @@ subprocess.check_call(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'),
 
 # Move language_options.json to the production release
 subprocess.check_call(['mv', 'static/locale/language_options.json',
-                       'prod-static/serve/locale/language_options.json'],
+                       os.path.join(settings.STATIC_ROOT, 'locale/language_options.json')],
                       stdout=fp, stderr=fp)
 
 fp.close()
