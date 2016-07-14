@@ -631,7 +631,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
-        self.assertEquals(sent_message.subject,
+        self.assertEquals(sent_message.topic_name(),
                           "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
 
     def test_send_forged_message_as_not_superuser(self):
@@ -725,7 +725,7 @@ class EditMessageTest(AuthedTestCase):
         uncached = msg.to_dict_uncached_helper(False)
         self.assertEqual(cached, uncached)
         if subject:
-            self.assertEqual(msg.subject, subject)
+            self.assertEqual(msg.topic_name(), subject)
         if content:
             self.assertEqual(msg.content, content)
         return msg

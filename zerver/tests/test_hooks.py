@@ -65,7 +65,7 @@ class WebhookTestCase(AuthedTestCase):
     def do_test_subject(self, msg, expected_subject):
         # type: (Message, Optional[text_type]) -> None
         if expected_subject is not None:
-            self.assertEqual(msg.subject, expected_subject)
+            self.assertEqual(msg.topic_name(), expected_subject)
 
     def do_test_message(self, msg, expected_message):
         # type: (Message, Optional[text_type]) -> None
@@ -96,7 +96,7 @@ class JiraHookTests(WebhookTestCase):
                                      self.get_body('created'),
                                      stream_name="jira_custom",
                                      content_type="application/json")
-        self.assertEqual(msg.subject, "BUG-15: New bug with hook")
+        self.assertEqual(msg.topic_name(), "BUG-15: New bug with hook")
         self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to @**no one**:
 
 > New bug with hook""")

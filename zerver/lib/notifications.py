@@ -160,7 +160,7 @@ def build_message_list(user_profile, messages):
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             assert isinstance(disp_recipient, text_type)
-            header = u"%s > %s" % (disp_recipient, message.subject)
+            header = u"%s > %s" % (disp_recipient, message.topic_name())
             stream_link = stream_narrow_url(disp_recipient)
             topic_link = topic_narrow_url(disp_recipient, message.subject)
             header_html = u"<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
@@ -300,7 +300,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
     messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, text_type], List[Message]]
     for msg in messages:
-        messages_by_recipient_subject[(msg.recipient_id, msg.subject)].append(msg)
+        messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
 
     message_count_by_recipient_subject = {
         recipient_subject: len(msgs)

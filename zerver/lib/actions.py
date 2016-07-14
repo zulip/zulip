@@ -2445,7 +2445,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             check_attachment_reference_change(prev_content, message)
 
     if subject is not None:
-        orig_subject = message.subject
+        orig_subject = message.topic_name()
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         event["propagate_mode"] = propagate_mode
