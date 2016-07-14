@@ -22,7 +22,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_users
+    get_old_unclaimed_attachments, get_cross_realm_users, Topic
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -2243,8 +2243,8 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
 
-def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> int
+def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_id):
+    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[int]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
@@ -2252,10 +2252,10 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
         msgs = UserMessage.objects.filter(user_profile=user_profile)
     elif stream_obj is not None:
         recipient = get_recipient(Recipient.STREAM, stream_obj.id)
-        if topic_name:
-            msgs = UserMessage.objects.filter(message__recipient=recipient,
-                                              user_profile=user_profile,
-                                              message__subject__iexact=topic_name)
+        if topic_id:
+            print(topic_id)
+            msgs = UserMessage.objects.filter(message__topic_id=topic_id,
+                                              user_profile=user_profile)
         else:
             msgs = UserMessage.objects.filter(message__recipient=recipient, user_profile=user_profile)
     else:
@@ -2445,11 +2445,33 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
             check_attachment_reference_change(prev_content, message)
 
     if subject is not None:
+        orig_topic_id = message.topic_id
+        if not orig_topic_id:
+            # TODO - Change this to a runtime error after topic migration, or figure
+            #        out a workaround.
+            raise JsonableError(_("This message is locked due to data migration."))
+
         orig_subject = message.topic_name()
+        subject = subject.strip()
+        if subject == "":
+            raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         event["propagate_mode"] = propagate_mode
-        message.subject = subject
+
+        # We always create a new topic now for topic edits.  For the
+        # "change_all" case, you could argue we should just reuse the old
+        # zerver_topic row, but that optimization may cause problems if we decide to
+        # expose the history of topic name changes.  Also, even the "change_all"
+        # case is limited to a two-day range as this comment is being written.
+        message.topic, created = Topic.objects.get_or_create(
+            name=subject,
+            recipient=message.recipient)
+        new_topic_id = message.topic_id
+
+        if settings.DEVELOPMENT:
+            message.subject = 'NO LONGER USED'
+
         event["stream_id"] = message.recipient.type_id
         event["subject"] = subject
         event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
@@ -2457,7 +2479,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
 
 
         if propagate_mode in ["change_later", "change_all"]:
-            propagate_query = Q(recipient = message.recipient, subject = orig_subject)
+            propagate_query = Q(recipient = message.recipient, topic_id = orig_topic_id)
             # We only change messages up to 2 days in the past, to avoid hammering our
             # DB by changing an unbounded amount of messages
             if propagate_mode == 'change_all':
@@ -2472,12 +2494,13 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
 
             # Evaluate the query before running the update
             messages_list = list(messages)
-            messages.update(subject=subject)
+            messages.update(topic_id=new_topic_id)
 
             for m in messages_list:
                 # The cached ORM object is not changed by messages.update()
                 # and the remote cache update requires the new value
-                m.subject = subject
+                m.subject = 'NO LONGER USED'
+                m.topic_id = new_topic_id
 
             changed_messages += messages_list
 
@@ -2491,7 +2514,7 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     message.edit_history = ujson.dumps(edit_history)
 
     log_event(event)
-    message.save(update_fields=["subject", "content", "rendered_content",
+    message.save(update_fields=["topic_id", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
 
