@@ -52,8 +52,10 @@ strip_whitespace_left = re.compile(r"\s+(%s-\s*(endtrans|pluralize).*?-?%s)" % (
 regexes = ['{{#tr .*?}}(.*?){{/tr}}',
            '{{t "(.*?)"\W*}}',
            "{{t '(.*?)'\W*}}",
-           "i18n\.t\('(.*?)'\)",
-           'i18n\.t\("(.*?)"\)',
+           "i18n\.t\('([^\']*?)'\)",
+           "i18n\.t\('(.*?)',.*?[^,]\)",
+           'i18n\.t\("([^\"]*?)"\)',
+           'i18n\.t\("(.*?)",.*?[^,]\)',
            ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
