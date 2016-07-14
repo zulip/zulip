@@ -44,7 +44,7 @@ need to do some additional setup documented in the `settings.py` template:
   instructions around `GOOGLE_OAUTH2_CLIENT_ID` and `GOOGLE_CLIENT_ID`.
 
 * For Email authentication, you will need to follow the configuration
-  instructions for outgoing SMTP from Django.  You can use `manage.py
+  instructions for outgoing SMTP from Django.  You can use `./manage.py
   send_test_email username@example.com` to test whether you've
   successfully configured outgoing SMTP.
 

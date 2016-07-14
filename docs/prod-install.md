@@ -42,11 +42,12 @@ These instructions should be followed as root.
   sudo apt-get install -y git bc openssl
   git clone https://github.com/letsencrypt/letsencrypt /opt/letsencrypt
   cd /opt/letsencrypt
-  letsencrypt-auto certonly --standalone
+  ./letsencrypt-auto certonly --standalone
 
   # Now symlink the certificates to make them available where Zulip expects them.
-  ln -s /etc/letsencrypt/live/your_domain/privkey.pem /etc/ssl/private/zulip.key
-  ln -s /etc/letsencrypt/live/your_domain/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+  # Replace YOUR_DOMAIN with your domain name.
+  ln -s /etc/letsencrypt/live/YOUR_DOMAIN/privkey.pem /etc/ssl/private/zulip.key
+  ln -s /etc/letsencrypt/live/YOUR_DOMAIN/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
   ```
 
   If you already had a webserver installed on the system (e.g. you
@@ -80,8 +81,8 @@ These instructions should be followed as root.
   `/etc/zulip/settings.py`.  Be sure to fill in all the mandatory
   settings, enable at least one authentication mechanism, and do the
   configuration required for that authentication mechanism to work.
-  See the section on "Authentication" below for more detail on
-  configuring authentication mechanisms.
+  See the [section on Authentication](https://zulip.readthedocs.io/en/latest/prod-auth-first-login.html)
+  for more detail on configuring authentication mechanisms.
 
 (5) Run
   ```
