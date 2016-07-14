@@ -22,20 +22,23 @@
 
     <div class="portico-page-header"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
 
-    <p class="portico-large-text">With Zulip integrations, your team
-    can stay up-to-date on code changes, issue tickets, build system
-    results, tweets about your project, and much more.</p>
+    <div id="integration-main-text">
+      <p class="portico-large-text">With Zulip integrations, your team
+        can stay up-to-date on code changes, issue tickets, build system
+        results, tweets about your project, and much more.</p>
 
-    <p>Many of these integrations require creating a Zulip bot. You
-    can do so on your <a href="/#settings">Zulip settings page</a>. Be
-    sure to note its username and API key.</p>
+      <p>Many of these integrations require creating a Zulip bot. You
+        can do so on your <a href="/#settings">Zulip settings page</a>. Be
+        sure to note its username and API key.</p>
 
-    <p>If an integration you want isn't available yet, you
-    can <a href="http://zulip.readthedocs.io/en/latest/integration-guide.html">contribute
-    an integration</a>
-    or <a href="https://github.com/zulip/zulip/issues/new">open an
-    issue on GitHub</a> and tag it with the "integrations" label (so
-    you can get notified when that integration becomes available).</p>
+      <p>If an integration you want isn't available yet, you
+        can <a href="http://zulip.readthedocs.io/en/latest/integration-guide.html">contribute
+        an integration</a>
+        or <a href="https://github.com/zulip/zulip/issues/new">open an
+        issue on GitHub</a> and tag it with the "integrations" label
+        (so you can get notified when that integration becomes
+        available).</p>
+    </div>
 
     <div id="integration-instruction-block" class="integration-instruction-block">
        <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i>&nbsp;Back to list</a>
@@ -2464,6 +2467,7 @@ $(function() {
            newlozenge.find(".integration-logo").unwrap();
            newlozenge.addClass("integration-lozenge-static");
            instructionbox.hide();
+           $("#integration-main-text").hide();
            instructionbox.children(".integration-lozenge").remove();
            instructionbox.children(".integration-instructions").appendTo("#integration-instructions-group");
            instructionbox.append(newlozenge);
@@ -2482,6 +2486,7 @@ $(function() {
       else if (currentblock && newlozenge) {
          $("#integration-list-link").css("display", "none");
          $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").show();
+         $("#integration-main-text").show();
          instructionbox.hide();
          newlozenge.remove();
          currentblock.appendTo("#integration-instructions-group");
