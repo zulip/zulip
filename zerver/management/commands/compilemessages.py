@@ -16,10 +16,8 @@ class Command(compilemessages.Command):
         self.extract_language_options()
 
     def extract_language_options(self):
-        DEPLOY_ROOT = settings.DEPLOY_ROOT
-
-        output_path = "{}/static/locale/language_options.json".format(DEPLOY_ROOT)
-        locale_path = "{}/locale".format(DEPLOY_ROOT)
+        locale_path = "{}/locale".format(settings.STATIC_ROOT)
+        output_path = "{}/language_options.json".format(locale_path)
 
         po_template = '{}/{}/LC_MESSAGES/django.po'
         data = {'languages': []}  # type: Dict[str, List[Dict[str, str]]]
@@ -38,6 +36,9 @@ class Command(compilemessages.Command):
                 name = 'Simplified Chinese'
             else:
                 filename = po_template.format(locale_path, locale)
+                if not os.path.exists(filename):
+                    continue
+
                 with open(filename, 'r') as reader:
                     result = lang_name_re.search(reader.read())
                     if result:
@@ -56,4 +57,4 @@ class Command(compilemessages.Command):
                 data['languages'].append(info)
 
         with open(output_path, 'w') as writer:
-            ujson.dump(data, writer)
+            ujson.dump(data, writer, indent=2)
