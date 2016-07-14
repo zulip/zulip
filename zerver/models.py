@@ -768,6 +768,17 @@ def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
+class Topic(ModelReprMixin, models.Model):
+    recipient = models.ForeignKey(Recipient) # type: Recipient
+    name = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
+
+    class Meta(object):
+        unique_together = ("recipient", "name")
+
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Topic: recipient %d, %s>" % (self.recipient_id, self.name)
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
