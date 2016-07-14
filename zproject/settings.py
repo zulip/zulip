@@ -220,7 +220,6 @@ USE_L10N = True
 USE_TZ = True
 
 DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
-LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, 'locale'),)
 # this directory will be used to store logs for development environment
 DEVELOPMENT_LOG_DIRECTORY = os.path.join(DEPLOY_ROOT, 'var', 'log')
 # Make redirects work properly behind a reverse proxy
@@ -559,6 +558,8 @@ else:
         STATIC_ROOT = '/home/zulip/prod-static'
     else:
         STATIC_ROOT = os.path.abspath('prod-static/serve')
+
+LOCALE_PATHS = (os.path.join(STATIC_ROOT, 'locale'),)
 
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
