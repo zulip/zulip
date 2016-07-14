@@ -30,7 +30,7 @@ certifi==2015.4.28
 cffi==1.5.2
 chardet==2.3.0
 
-cryptography==1.2.3
+cryptography==1.4.1
 
 # Needed for integrations
 defusedxml==0.4.1
