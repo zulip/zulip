@@ -63,7 +63,7 @@ class TestStreamEmailMessagesSuccess(AuthedTestCase):
 
         self.assertEqual(message.content, "TestStreamEmailMessages Body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
-        self.assertEqual(message.subject, incoming_valid_message['Subject'])
+        self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
 class TestStreamEmailMessagesEmptyBody(AuthedTestCase):
     def test_receive_stream_email_messages_empty_body(self):
