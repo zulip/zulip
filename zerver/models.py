@@ -778,6 +778,26 @@ def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
+class Topic(ModelReprMixin, models.Model):
+    """
+    This model is not in active use yet, but it is here as part
+    of a four-phase migration toward storing message topics in
+    a Topic table.  More details can be found here:
+
+    https://github.com/zulip/zulip/pull/1289#issuecomment-233773078
+
+    The table essentially defines a unique tuple of recipient id
+    (aka stream) and topic name.  The index for this is created
+    using migrations.RunSQL instead of using a Meta tag, because
+    we need the `name` field to be case insensitve.
+    """
+    recipient = models.ForeignKey(Recipient, db_index=True) # type: Recipient
+    name = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
+
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Topic: recipient %d, %s>" % (self.recipient_id, self.name)
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
