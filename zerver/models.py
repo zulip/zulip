@@ -1153,12 +1153,21 @@ class Message(ModelReprMixin, models.Model):
         self.has_image = bool(Message.content_has_image(content))
         self.has_link = bool(Message.content_has_link(content))
 
+    def update_topic(self):
+        # type: () -> None
+        if self.subject:
+            Topic.objects.get_or_create(
+                name=self.subject,
+                recipient=self.recipient)
+
+
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender, **kwargs):
     # type: (Any, **Any) -> None
     if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
         message = kwargs['instance']
         message.update_calculated_fields()
+        message.update_topic()
 
 def get_context_for_message(message):
     # type: (Message) -> Sequence[Message]
