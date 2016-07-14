@@ -86,7 +86,7 @@ find prod-static/serve/third/gemoji/images/emoji/ -regex '.*\.[0-9a-f]+\.png' -d
 
 cd "$TMPDIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/locale"
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version"
 
 rm -rf "$prefix"
 

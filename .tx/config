@@ -2,10 +2,10 @@
 host = https://www.transifex.com
 
 [zulip.djangopo]
-source_file = locale/en/LC_MESSAGES/django.po
+source_file = static/locale/en/LC_MESSAGES/django.po
 source_lang = en
 type = PO
-file_filter = locale/<lang>/LC_MESSAGES/django.po
+file_filter = static/locale/<lang>/LC_MESSAGES/django.po
 lang_map = zh-Hans: zh_CN
 
 [zulip.translationsjson]
