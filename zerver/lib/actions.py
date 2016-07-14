@@ -16,7 +16,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
+    to_dict_cache_key, get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
@@ -46,14 +46,13 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
-from zerver.lib.cache_helpers import cache_save_message
 from zerver.lib.queue import queue_json_publish
 from django.utils import timezone
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
-    cache_delete, cache_delete_many, message_cache_key
+    cache_delete, cache_delete_many
 from zerver.decorator import statsd_increment
 from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
@@ -66,7 +65,8 @@ from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
-from zerver.lib.upload import claim_attachment, delete_message_image
+from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
+    claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr
 
 import DNS
@@ -412,6 +412,18 @@ def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_onl
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_message_editing(realm, allow_message_editing):
+    # type: (Realm, bool) -> None
+    realm.allow_message_editing = allow_message_editing
+    realm.save(update_fields=['allow_message_editing'])
+    event = dict(
+        type="realm",
+        op="update_dict",
+        property="default",
+        data=dict(allow_message_editing=allow_message_editing),
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """
@@ -640,7 +652,8 @@ def do_send_messages(messages):
             raise ValueError('Bad recipient type')
 
         # Only deliver the message to active user recipients
-        message['active_recipients'] = [user_profile for user_profile in message['recipients'] if user_profile.is_active]
+        message['active_recipients'] = [user_profile for user_profile in message['recipients']
+                                        if user_profile.is_active]
         message['message'].maybe_render_content(None)
         message['message'].update_calculated_fields()
 
@@ -682,7 +695,6 @@ def do_send_messages(messages):
                 do_claim_attachments(message)
 
     for message in messages:
-        cache_save_message(message['message'])
         # Render Markdown etc. here and store (automatically) in
         # remote cache, so that the single-threaded Tornado server
         # doesn't have to.
@@ -863,7 +875,7 @@ def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
-    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> int
+    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[str]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
@@ -926,7 +938,7 @@ def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[text_type]) -> Dict[str, Any]
+    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[str]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
@@ -1251,6 +1263,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     desktop_notifications=subscription.desktop_notifications,
                     audible_notifications=subscription.audible_notifications,
                     description=stream.description,
+                    pin_to_top=subscription.pin_to_top,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
@@ -1397,7 +1410,8 @@ def do_add_subscription(user_profile, stream, no_log=False):
 
     if did_subscribe:
         emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream)}
-        notify_subscriptions_added(user_profile, [(subscription, stream)], lambda stream: emails_by_stream[stream.id], no_log)
+        notify_subscriptions_added(user_profile, [(subscription, stream)],
+                                   lambda stream: emails_by_stream[stream.id], no_log)
 
         user_ids = get_other_subscriber_ids(stream, user_profile.id)
         event = dict(type="subscription", op="peer_add",
@@ -1791,7 +1805,6 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     # Delete cache entries for everything else, which is cheaper and
     # clearer than trying to set them. display_recipient is the out of
     # date field in all cases.
-    cache_delete_many(message_cache_key(message.id) for message in messages)
     cache_delete_many(
         to_dict_cache_key_id(message.id, True) for message in messages)
     cache_delete_many(
@@ -1852,7 +1865,8 @@ def do_create_realm(domain, name, restricted_to_domain=True):
         # Include a welcome message in this notifications stream
         product_name = "Zulip"
         content = """Hello, and welcome to %s!
-This is a message on stream `%s` with the topic `welcome`. We'll use this stream for system-generated notifications.""" % (product_name, notifications_stream.name,)
+This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
+system-generated notifications.""" % (product_name, notifications_stream.name,)
         msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
                                      notifications_stream.name, "welcome",
                                      content, realm=realm)
@@ -2001,6 +2015,25 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
              'setting_name':'left_side_userlist',
+             'setting': setting_value}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
+def do_change_default_language(user_profile, setting_value, log=True):
+    # type: (UserProfile, text_type, bool) -> None
+
+    if setting_value == 'zh_CN':
+        # NB: remove this once we upgrade to Django 1.9
+        # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
+        # Django 1.9
+        setting_value = 'zh_HANS'
+
+    user_profile.default_language = setting_value
+    user_profile.save(update_fields=["default_language"])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting_name':'default_language',
              'setting': setting_value}
     if log:
         log_event(event)
@@ -2208,7 +2241,7 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     send_event(event, [user_profile.id])
 
 def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> None
+    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
@@ -2276,6 +2309,7 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
     send_event(event, [user_profile.id])
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
+    return count
 
 def subscribed_to_stream(user_profile, stream):
     # type: (UserProfile, Stream) -> bool
@@ -2290,17 +2324,17 @@ def subscribed_to_stream(user_profile, stream):
         return False
 
 def truncate_content(content, max_length, truncation_message):
-    # type: (AnyStr, int, AnyStr) -> AnyStr
+    # type: (text_type, int, text_type) -> text_type
     if len(content) > max_length:
         content = content[:max_length - len(truncation_message)] + truncation_message
     return content
 
 def truncate_body(body):
-    # type: (AnyStr) -> AnyStr
+    # type: (text_type) -> text_type
     return truncate_content(body, MAX_MESSAGE_LENGTH, "...")
 
 def truncate_topic(topic):
-    # type: (AnyStr) -> AnyStr
+    # type: (text_type) -> text_type
     return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
 
 
@@ -2403,11 +2437,12 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
         event["content"] = content
         event["rendered_content"] = rendered_content
 
+        prev_content = edit_history_event['prev_content']
+        if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
+            check_attachment_reference_change(prev_content, message)
+
     if subject is not None:
         orig_subject = message.subject
-        subject = subject.strip()
-        if subject == "":
-            raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         event["propagate_mode"] = propagate_mode
@@ -2464,11 +2499,10 @@ def do_update_message(user_profile, message_id, subject, propagate_mode, content
     event['message_ids'] = []
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
-        items_for_remote_cache[message_cache_key(changed_message.id)] = (changed_message,)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=True)),)
+            (changed_message.to_dict_uncached(apply_markdown=True),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (stringify_message_dict(changed_message.to_dict_uncached(apply_markdown=False)),)
+            (changed_message.to_dict_uncached(apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
 
     def user_info(um):
@@ -2541,7 +2575,7 @@ def gather_subscriptions_helper(user_profile):
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "active")
+        "audible_notifications", "active", "pin_to_top")
 
     stream_ids = [sub["recipient__type_id"] for sub in sub_dicts]
 
@@ -2580,6 +2614,7 @@ def gather_subscriptions_helper(user_profile):
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
+                       'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
@@ -2633,7 +2668,7 @@ def get_realm_user_dicts(user_profile):
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
 def fetch_initial_state_data(user_profile, event_types, queue_id):
-    # type: (UserProfile, Optional[Iterable[str]], text_type) -> Dict[str, Any]
+    # type: (UserProfile, Optional[Iterable[str]], str) -> Dict[str, Any]
     state = {'queue_id': queue_id} # type: Dict[str, Any]
 
     if event_types is None:
@@ -2669,6 +2704,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_invite_required'] = user_profile.realm.invite_required
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
+        state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain
@@ -2708,6 +2744,15 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if want('update_display_settings'):
         state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
         state['left_side_userlist'] = user_profile.left_side_userlist
+
+        default_language = user_profile.default_language
+        if user_profile.default_language == 'zh_HANS':
+            # NB: remove this once we upgrade to Django 1.9
+            # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
+            # Django 1.9
+            default_language = 'zh_CN'
+
+        state['default_language'] = default_language
 
     return state
 
@@ -2780,8 +2825,12 @@ def apply_events(state, events, user_profile):
         elif event['type'] == 'default_streams':
             state['realm_default_streams'] = event['default_streams']
         elif event['type'] == 'realm':
-            field = 'realm_' + event['property']
-            state[field] = event['value']
+            if event['op'] == "update":
+                field = 'realm_' + event['property']
+                state[field] = event['value']
+            elif event['op'] == "update_dict":
+                for key, value in event['data'].items():
+                    state['realm_' + key] = value
         elif event['type'] == "subscription":
             if event['op'] in ["add"]:
                 # Convert the user_profile IDs to emails since that's what register() returns
@@ -3230,14 +3279,11 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
 
 def do_claim_attachments(message):
     # type: (Mapping[str, Any]) -> List[Tuple[text_type, bool]]
-    attachment_url_re = re.compile(u'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
     attachment_url_list = attachment_url_re.findall(message['message'].content)
 
     results = []
     for url in attachment_url_list:
-        path_id = re.sub(u'[/\-]user[\-_]uploads[/\.-]', u'', url)
-        # Remove any extra '.' after file extension. These are probably added by the user
-        path_id = re.sub(u'[.]+$', u'', path_id, re.M)
+        path_id = attachment_url_to_path_id(url)
         user_profile = message['message'].sender
         is_message_realm_public = False
         if message['message'].recipient.type == Recipient.STREAM:
@@ -3256,3 +3302,28 @@ def do_delete_old_unclaimed_attachments(weeks_ago):
     for attachment in old_unclaimed_attachments:
         delete_message_image(attachment.path_id)
         attachment.delete()
+
+def check_attachment_reference_change(prev_content, message):
+    new_content = message.content
+    prev_attachments = set(attachment_url_re.findall(prev_content))
+    new_attachments = set(attachment_url_re.findall(new_content))
+
+    to_remove = list(prev_attachments - new_attachments)
+    path_ids = []
+    for url in to_remove:
+        path_id = attachment_url_to_path_id(url)
+        path_ids.append(path_id)
+
+    attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()
+    for attachment in attachments_to_update:
+        try:
+            attachment = Attachment.objects.get(path_id=path_id)
+            attachment.messages.remove(message)
+            attachment.save()
+        except Attachment.DoesNotExist:
+            # The entry for this attachment does not exist. Just ignore.
+            pass
+
+    to_add = list(new_attachments - prev_attachments)
+    if len(to_add) > 1:
+        do_claim_attachments(message)
