@@ -1149,9 +1149,7 @@ def get_subscribers_query(stream, requesting_user):
     # type: (Stream, UserProfile) -> QuerySet
     # TODO: Make a generic stub for QuerySet
     """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
-
     'realm' is optional in stream.
-
     The caller can refine this query with select_related(), values(), etc. depending
     on whether it wants objects or just certain fields
     """
@@ -1854,7 +1852,6 @@ def do_create_realm(domain, name, restricted_to_domain=True):
         # Include a welcome message in this notifications stream
         product_name = "Zulip"
         content = """Hello, and welcome to %s!
-
 This is a message on stream `%s` with the topic `welcome`. We'll use this stream for system-generated notifications.""" % (product_name, notifications_stream.name,)
         msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
                                      notifications_stream.name, "welcome",
@@ -2900,7 +2897,6 @@ def do_send_confirmation_email(invitee, referrer):
     # type: (PreregistrationUser, UserProfile) -> None
     """
     Send the confirmation/welcome e-mail to an invited user.
-
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
@@ -3083,9 +3079,9 @@ def send_referral_event(user_profile):
 
 def do_refer_friend(user_profile, email):
     # type: (UserProfile, text_type) -> None
-    content = """Referrer: "%s" <%s>
-                 Realm: %s
-                 Referred: %s""" % (user_profile.full_name, user_profile.email,
+    content = ('Referrer: "%s" <%s>\n'
+               'Realm: %s\n'
+               'Referred: %s') % (user_profile.full_name, user_profile.email,
                                     user_profile.realm.domain, email)
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
