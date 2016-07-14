@@ -780,6 +780,13 @@ class Message(ModelReprMixin, models.Model):
     has_image = models.BooleanField(default=False, db_index=True) # type: bool
     has_link = models.BooleanField(default=False, db_index=True) # type: bool
 
+    def topic_name(self):
+        # type: () -> text_type
+        """
+        Please start using this helper to facilitate an
+        eventual switch over to a separate topic table.
+        """
+        return self.subject
 
     def __unicode__(self):
         # type: () -> text_type
