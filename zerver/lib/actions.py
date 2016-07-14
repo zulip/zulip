@@ -659,6 +659,7 @@ def do_send_messages(messages):
                                         if user_profile.is_active]
         message['message'].maybe_render_content(None)
         message['message'].update_calculated_fields()
+        message['message'].update_topic()
 
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict) # type: Dict[int, Dict[int, List[str]]]
