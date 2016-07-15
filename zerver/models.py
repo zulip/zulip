@@ -902,7 +902,7 @@ class Message(ModelReprMixin, models.Model):
                 last_edit_time = self.last_edit_time,
                 edit_history = self.edit_history,
                 content = self.content,
-                subject = self.subject,
+                subject = self.topic_name(),
                 pub_date = self.pub_date,
                 rendered_content = self.rendered_content,
                 rendered_content_version = self.rendered_content_version,
@@ -920,6 +920,14 @@ class Message(ModelReprMixin, models.Model):
         )
 
     @staticmethod
+    def get_topic_name_from_raw_data(row):
+        # TODO: inline this when topic id transition finishes
+        if row['topic__name']:
+            return row['topic__name']
+        else:
+            return row['subject']
+
+    @staticmethod
     def build_dict_from_raw_db_row(row, apply_markdown):
         # type: (Dict[str, Any], bool) -> Dict[str, Any]
         '''
@@ -933,7 +941,7 @@ class Message(ModelReprMixin, models.Model):
                 last_edit_time = row['last_edit_time'],
                 edit_history = row['edit_history'],
                 content = row['content'],
-                subject = row['subject'],
+                subject = Message.get_topic_name_from_raw_data(row),
                 pub_date = row['pub_date'],
                 rendered_content = row['rendered_content'],
                 rendered_content_version = row['rendered_content_version'],
@@ -1102,6 +1110,7 @@ class Message(ModelReprMixin, models.Model):
             'sender__realm__domain',
             'sender__avatar_source',
             'sender__is_mirror_dummy',
+            'topic__name',
         ]
         return Message.objects.filter(id__in=needed_ids).values(*fields)
 

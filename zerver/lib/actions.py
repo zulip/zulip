@@ -2441,7 +2441,10 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         subject = truncate_topic(subject)
         event["orig_subject"] = orig_subject
         event["propagate_mode"] = propagate_mode
-        message.subject = subject
+        if getattr(settings, 'CATCH_TOPIC_MIGRATION_BUGS', False):
+            message.subject = 'CATCH_TOPIC_MIGRATION_BUGS'
+        else:
+            message.subject = subject
 
         # We always create a new topic now for topic edits.  For the
         # "change_all" case, you could argue we should just reuse the old
@@ -2479,8 +2482,11 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             for m in messages_list:
                 # The cached ORM object is not changed by messages.update()
                 # and the remote cache update requires the new value
-                m.subject = subject
                 m.topic_id = new_topic_id
+                if getattr(settings, 'CATCH_TOPIC_MIGRATION_BUGS', False):
+                    m.subject = 'CATCH_TOPIC_MIGRATION_BUGS'
+                else:
+                    m.subject = subject
 
             changed_messages += messages_list
 
@@ -2494,7 +2500,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     message.edit_history = ujson.dumps(edit_history)
 
     log_event(event)
-    message.save(update_fields=["topic_id", "subject", "content", "rendered_content",
+    message.save(update_fields=["topic_id", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
 
