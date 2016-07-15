@@ -27,7 +27,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
-from zerver.models import Message, UserProfile, Stream, Subscription, \
+from zerver.models import Message, UserProfile, Stream, Subscription, Topic, \
     Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, valid_stream_name, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
@@ -587,19 +587,28 @@ def update_message_flags(request, user_profile,
     log_data_str = "[%s %s/%s]" % (operation, flag, target_count_str)
     request._log_data["extra"] = log_data_str
     stream = None
+    topic_id = None
     if stream_name is not None:
         stream = get_stream(stream_name, user_profile.realm)
         if not stream:
             raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
         if topic_name:
-            topic_exists = UserMessage.objects.filter(user_profile=user_profile,
-                                                      message__recipient__type_id=stream.id,
-                                                      message__recipient__type=Recipient.STREAM,
-                                                      message__subject__iexact=topic_name).exists()
+            # TODO: If we want to support legacy subject names here, we
+            #       need to make this more complicated.
+            topics = Topic.objects.filter(
+                recipient__type_id=stream.id,
+                recipient__type=Recipient.STREAM,
+                name__iexact=topic_name)
+            topic_exists = len(topics) == 1
+            if topic_exists:
+                topic_id = topics[0].id
+                topic_exists = UserMessage.objects.filter(
+                    user_profile=user_profile,
+                    message__topic_id=topic_id).exists()
             if not topic_exists:
                 raise JsonableError(_('No such topic \'%s\'') % (topic_name,))
     count = do_update_message_flags(user_profile, operation, flag, messages,
-                                    all, stream, topic_name)
+                                    all, stream, topic_id=topic_id)
 
     # If we succeed, update log data str with the actual count for how
     # many messages were updated.

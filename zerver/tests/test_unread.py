@@ -210,7 +210,7 @@ class UnreadCountTests(AuthedTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
 
-        with subject_topic_awareness(self): # unread
+        with subject_topic_awareness(self, new_topics=True): # unread
             message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello", "test_topic")
         unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello", "Denmark2")
         events = [] # type: List[Dict[str, Any]]

@@ -2256,8 +2256,8 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
 
-def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> int
+def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_id):
+    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[int]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
@@ -2265,10 +2265,10 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
         msgs = UserMessage.objects.filter(user_profile=user_profile)
     elif stream_obj is not None:
         recipient = get_recipient(Recipient.STREAM, stream_obj.id)
-        if topic_name:
-            msgs = UserMessage.objects.filter(message__recipient=recipient,
+        if topic_id:
+            msgs = UserMessage.objects.filter(message__topic_id=topic_id,
                                               user_profile=user_profile,
-                                              message__subject__iexact=topic_name)
+                                              )
         else:
             msgs = UserMessage.objects.filter(message__recipient=recipient, user_profile=user_profile)
     else:
