@@ -67,6 +67,7 @@ Contents:
    brief-install-vagrant-dev
    install-docker-dev
    install-ubuntu-without-vagrant-dev
+   install-generic-unix-dev
    using-dev-environment
    test-suite-dev
 
