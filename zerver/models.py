@@ -517,6 +517,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     since they can't be used to read messages.
     """
     INCOMING_WEBHOOK_BOT = 2
+    OUTGOING_WEBHOOK_BOT = 3
 
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
@@ -696,6 +697,11 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     def is_incoming_webhook(self):
         # type: () -> bool
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
+
+    @property
+    def is_outgoing_webhook_bot(self):
+        # type: () -> bool
+        return self.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
 
     @staticmethod
     def emojiset_choices():
@@ -1697,3 +1703,38 @@ class CustomProfileFieldValue(models.Model):
 
     class Meta(object):
         unique_together = ('user_profile', 'field')
+
+class Service(models.Model):
+    name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH) # type: Text
+    # owner of service/bot user corresponding to the service
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    # address of the third party site
+    base_url = models.TextField() # type: Text
+    # used for authentication to third party site
+    token = models.TextField() # type: Text
+    # the interface used to send data to third party site
+    interface = models.PositiveSmallIntegerField(default=1)  # type: int
+
+    # Valid interfaces are {}
+
+    # N.B. If we used Django's choice=... we would get this for free (kinda)
+    _interfaces = {} # type: Dict[int, Text]
+
+    def interface_name(self):
+        # type: () -> Text
+        # Raises KeyError if invalid
+        return self._interfaces[self.interface]
+
+
+def get_realm_outgoing_webhook_services_name(realm):
+    # type: (Realm) -> List[Any]
+    return list(Service.objects.filter(user_profile__realm=realm, user_profile__is_bot=True,
+                                       user_profile__bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values('name'))
+
+def get_realm_bot_services(email, realm):
+    # type: (str, Realm) -> List[Any]
+    return list(Service.objects.filter(user_profile__email=email, user_profile__realm=realm).values())
+
+def get_service_profile(email, realm, service_name):
+    # type: (str, Realm, str) -> Service
+    return Service.objects.get(user_profile__email=email, user_profile__realm=realm, name=service_name)
