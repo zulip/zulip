@@ -786,7 +786,7 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_success(result)
         self.check_message(msg_id, content="after edit")
 
-        with subject_topic_awareness(self): # edit
+        with subject_topic_awareness(self, new_topics=True): # edit
             result = self.client.post("/json/update_message", {
                 'message_id': msg_id,
                 'subject': 'edited'
@@ -893,7 +893,7 @@ class EditMessageTest(AuthedTestCase):
 
     def test_propagate_topic_forward(self):
         self.login("hamlet@zulip.com")
-        with subject_topic_awareness(self): # edit
+        with subject_topic_awareness(self, new_topics=True): # edit
             id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
                 subject="topic1")
             id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
@@ -920,7 +920,7 @@ class EditMessageTest(AuthedTestCase):
 
     def test_propagate_all_topics(self):
         self.login("hamlet@zulip.com")
-        with subject_topic_awareness(self): # edit
+        with subject_topic_awareness(self, new_topics=True): # edit
             id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
                 subject="topic1")
             id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
