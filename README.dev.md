@@ -14,7 +14,6 @@ Installing the Zulip Development environment
 * [Using Docker (experimental)](#using-docker-experimental)
 * [Using the Development Environment](#using-the-development-environment)
 * [Running the test suite](#running-the-test-suite)
-* [Possible testing issues](#possible-testing-issues)
 
 Those who have installed Zulip before or are experienced at administering Linux
 may wish to skip ahead to [Brief installation instructions for Vagrant
@@ -341,75 +340,7 @@ proxy in the environment as follows:
 
 Using Docker (experimental)
 ---------------------------
-Start by cloning this repository: `git clone
-https://github.com/zulip/zulip.git`
-
-The docker instructions for development are experimental, so they may
-have bugs.  If you try them and run into any issues, please report
-them!
-
-You can also use Docker to run a Zulip development environment.
-First, you need to install Docker in your development machine
-following the [instructions][docker-install].  Some other interesting
-links for somebody new in Docker are:
-
-* [Get Started](https://docs.docker.com/engine/installation/linux/)
-* [Understand the architecture](https://docs.docker.com/engine/understanding-docker/)
-* [Docker run reference](https://docs.docker.com/engine/reference/run/)
-* [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
-
-[docker-install]: https://docs.docker.com/engine/installation/
-
-Then you should create the Docker image based on Ubuntu Linux, first
-go to the directory with the Zulip source code:
-
-```
-docker build -t user/zulipdev .
-```
-
-Now you're going to install Zulip dependencies in the image:
-
-```
-docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/tools/provision.py --docker
-docker ps -af ancestor=user/zulipdev
-docker commit -m "Zulip installed" <container id> user/zulipdev:v2
-```
-
-Finally you can run the docker server with:
-
-```
-docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev:v2 \
-    /srv/zulip/tools/start-dockers
-```
-
-If you want to connect to the Docker instance to build a release
-tarball you can use:
-
-```
-docker ps
-docker exec -it <container id> /bin/bash
-$ source /home/zulip/.bash_profile
-$ <Your commands>
-$ exit
-```
-
-To stop the server use:
-```
-docker ps
-docker kill <container id>
-```
-
-If you want to run all the tests you need to start the servers first,
-you can do it with:
-
-```
-docker run -itv $(pwd):/srv/zulip user/zulipdev:v2 /bin/bash
-$ tools/test-all-docker
-```
-
-You can modify the source code in your development machine and review
-the results in your browser.
+See [the Docker instructions](https://zulip.readthedocs.io/en/latest/install-docker-dev.html).
 
 [using-dev]: #using-the-development-environment
 
@@ -466,80 +397,14 @@ migrations and then cleanly restaring the server for you).
 [new-feature-tutorial]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [testing-docs]: http://zulip.readthedocs.io/en/latest/testing.html
 
-Running the test suite
-======================
-
-Zulip tests must be run inside a Zulip development environment; if
-you're using Vagrant, you will need to enter the Vagrant environment
-before running the tests:
-
-```
-vagrant ssh
-cd /srv/zulip
-```
-
-To run all the tests, do this:
-```
-./tools/test-all
-```
-
-For more details on how to run a single test, efficiently debug test
-failures, or write tests, check out the [detailed testing
-docs][tdocs].
-
-[tdocs]: http://zulip.readthedocs.io/en/latest/testing.html
-
-
-
-This runs the linter (`tools/lint-all`) plus all of our test suites;
-they can all be run separately (just read `tools/test-all` to see
-them).  You can also run individual tests which can save you a lot of
-time debugging a test failure, e.g.:
-
-```
-./tools/lint-all # Runs all the linters in parallel
-./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
-./tools/test-js-with-casper 09-navigation.js
-./tools/test-js-with-node util.js
-```
-
-The above setup instructions include the first-time setup of test
-databases, but you may need to rebuild the test database occasionally
-if you're working on new database migrations.  To do this, run:
-
-```
-./tools/do-destroy-rebuild-test-database
-```
-
-Possible testing issues
-=======================
-
-- When running the test suite, if you get an error like this:
-
-  ```
-      sqlalchemy.exc.ProgrammingError: (ProgrammingError) function ts_match_locs_array(unknown, text, tsquery) does not   exist
-      LINE 2: ...ECT message_id, flags, subject, rendered_content, ts_match_l...
-                                                                   ^
-  ```
-
-  … then you need to install tsearch-extras, described
-  above. Afterwards, re-run the `init*-db` and the
-  `do-destroy-rebuild*-database` scripts.
-
-- When building the development environment using Vagrant and the LXC
-  provider, if you encounter permissions errors, you may need to
-  `chown -R 1000:$(whoami) /path/to/zulip` on the host before running
-  `vagrant up` in order to ensure that the synced directory has the
-  correct owner during provision. This issue will arise if you run `id
-  username` on the host where `username` is the user running Vagrant
-  and the output is anything but 1000.
-  This seems to be caused by Vagrant behavior; for more information,
-  see [the vagrant-lxc FAQ entry about shared folder permissions
-  ][lxc-sf].
-
-[lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner)
 [dev-install]: http://zulip.readthedocs.io/en/latest/dev-install-choices.html
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
+
+Running the test suite
+======================
+
+See [the developer testing
+guide)[https://zulip.readthedocs.org/en/latest/test-suite-dev.html).
