@@ -797,11 +797,10 @@ class Message(ModelReprMixin, models.Model):
 
     def topic_name(self):
         # type: () -> text_type
-        """
-        Please start using this helper to facilitate an
-        eventual switch over to a separate topic table.
-        """
-        return self.subject
+        if self.topic:
+            return self.topic.name
+        else:
+            return self.subject
 
     def __unicode__(self):
         # type: () -> text_type
@@ -1160,6 +1159,9 @@ class Message(ModelReprMixin, models.Model):
             self.topic, _ = Topic.objects.get_or_create(
                 name=self.subject,
                 recipient=self.recipient)
+        if self.subject:
+            if getattr(settings, 'CATCH_TOPIC_MIGRATION_BUGS', False):
+                self.subject = 'CATCH_TOPIC_MIGRATION_BUGS'
 
 
 @receiver(pre_save, sender=Message)

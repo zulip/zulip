@@ -403,7 +403,8 @@ class MessageTopicTest(TestCase):
                 last_edit_time=datetime.datetime.now(),
                 edit_history='[]'
             )
-            message.save()
+            with subject_topic_awareness(self):
+                message.save()
             messages.append(message)
 
         lunch_topics = Topic.objects.filter(
