@@ -12,7 +12,6 @@ from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
 from django.utils.timezone import now
 from django.conf import settings
-from six.moves import cStringIO as StringIO
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import statsd
@@ -26,6 +25,7 @@ from functools import wraps
 import base64
 import logging
 import cProfile
+from io import BytesIO
 from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
@@ -396,7 +396,7 @@ def process_as_post(view_func):
                 # Note that request._files is just the private attribute that backs the
                 # FILES property, so we are essentially setting request.FILES here.  (In
                 # Django 1.5 FILES was still a read-only property.)
-                request.POST, request._files = MultiPartParser(request.META, StringIO(request.body),
+                request.POST, request._files = MultiPartParser(request.META, BytesIO(request.body),
                         request.upload_handlers, request.encoding).parse()
             else:
                 request.POST = QueryDict(request.body, encoding=request.encoding)
