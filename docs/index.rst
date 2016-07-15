@@ -66,6 +66,7 @@ Contents:
    dev-env-first-time-contributors
    brief-install-vagrant-dev
    install-docker-dev
+   install-ubuntu-without-vagrant-dev
    using-dev-environment
    test-suite-dev
 
