@@ -25,6 +25,7 @@ Contents:
 
 * :ref:`user-docs`
 * :ref:`prod-install-docs`
+* :ref:`dev-install-docs`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
 * :ref:`system-docs`
@@ -55,6 +56,15 @@ Contents:
    prod-maintain-secure-upgrade
    prod-authentication-methods
    prod-postgres
+
+.. _dev-install-docs:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Installation for developers
+
+   dev-env-first-time-contributors
+
 
 .. _tutorial-docs:
 
