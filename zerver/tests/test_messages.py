@@ -443,7 +443,7 @@ class MessageDictTest(AuthedTestCase):
                     last_edit_time=datetime.datetime.now(),
                     edit_history='[]'
                 )
-                with subject_topic_awareness(self):
+                with subject_topic_awareness(self, new_topics=True):
                     message.save()
 
         ids = [row['id'] for row in Message.objects.all().values('id')]
