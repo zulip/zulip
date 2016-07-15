@@ -1177,7 +1177,7 @@ def get_context_for_message(message):
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        topic_id=message.topic_id,
         id__lt=message.id,
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
