@@ -403,7 +403,7 @@ class MessageTopicTest(TestCase):
                 last_edit_time=datetime.datetime.now(),
                 edit_history='[]'
             )
-            with subject_topic_awareness(self):
+            with subject_topic_awareness(self, new_topics=True):
                 message.save()
             messages.append(message)
 
@@ -418,7 +418,7 @@ class MessageTopicTest(TestCase):
         for message in messages:
             msg = Message.objects.get(id=message.id)
             self.assertEqual(msg.topic_id, topic_id)
-            self.assertEqual(msg.subject, 'lunch')
+            self.assertNotEqual(msg.subject, 'lunch')
 
 class MessageDictTest(AuthedTestCase):
     @slow(1.6, 'builds lots of messages')
