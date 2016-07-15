@@ -6,7 +6,7 @@ from sqlalchemy.sql import (
 )
 
 from zerver.models import (
-    Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
+    Realm, Recipient, Stream, Subscription, UserProfile, Attachment, Topic,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
@@ -58,6 +58,13 @@ class NarrowBuilderTest(AuthedTestCase):
         self.builder = NarrowBuilder(self.user_profile, column('id'))
         self.raw_query = select([column("id")], None, "zerver_message")
 
+    def _create_topic(self, name):
+        stream = get_stream("Scotland", self.realm)
+        return Topic.objects.get_or_create(
+            name=name,
+            recipient=get_recipient(Recipient.STREAM, stream.id)
+        )
+
     def test_add_term_using_not_defined_operator(self):
         term = dict(operator='not-defined', operand='any')
         self.assertRaises(BadNarrowOperator, self._build_query, term)
@@ -97,20 +104,24 @@ class NarrowBuilderTest(AuthedTestCase):
         self.assertRaises(BadNarrowOperator, self._build_query, term)
 
     def test_add_term_using_topic_operator_and_lunch_operand(self):
+        self._create_topic('lunch')
         term = dict(operator='topic', operand='lunch')
-        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE topic_id IN (:topic_id_1)')
 
     def test_add_term_using_topic_operator_lunch_operand_and_negated(self):  # NEGATED
+        self._create_topic('lunch')
         term = dict(operator='topic', operand='lunch', negated=True)
-        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE topic_id NOT IN (:topic_id_1)')
 
     def test_add_term_using_topic_operator_and_personal_operand(self):
+        self._create_topic('personal')
         term = dict(operator='topic', operand='personal')
-        self._do_add_term_test(term, 'WHERE upper(subject) = upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE topic_id IN (:topic_id_1)')
 
     def test_add_term_using_topic_operator_personal_operand_and_negated(self):  # NEGATED
+        self._create_topic('personal')
         term = dict(operator='topic', operand='personal', negated=True)
-        self._do_add_term_test(term, 'WHERE upper(subject) != upper(:param_1)')
+        self._do_add_term_test(term, 'WHERE topic_id NOT IN (:topic_id_1)')
 
     def test_add_term_using_sender_operator(self):
         term = dict(operator='sender', operand='othello@zulip.com')
@@ -331,6 +342,12 @@ class GetOldMessagesTest(AuthedTestCase):
         query_ids['othello_id'] = othello_user.id
         query_ids['hamlet_recipient'] = get_recipient(Recipient.PERSONAL, hamlet_user.id).id
         query_ids['othello_recipient'] = get_recipient(Recipient.PERSONAL, othello_user.id).id
+        blah_topic, created= Topic.objects.get_or_create(
+            name='blah',
+            recipient_id=query_ids['hamlet_recipient'],
+            )
+        query_ids['blah_topic_id'] = blah_topic.id
+
 
         return query_ids
 
@@ -454,7 +471,7 @@ class GetOldMessagesTest(AuthedTestCase):
         do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
                             stream, no_log=True)
 
-        with subject_topic_awareness(self): # narrow
+        with subject_topic_awareness(self, new_topics=True): # narrow
             self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
                               subject=u"\u03bb-topic")
             self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
@@ -835,13 +852,13 @@ class GetOldMessagesTest(AuthedTestCase):
                                                   'narrow': '[["stream", "Scotland"]]'},
                                                  sql)
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND topic_id IN ({blah_topic_id}) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["topic", "blah"]]'},
                                                  sql)
 
-        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
+        sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND topic_id IN ({blah_topic_id}) AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},

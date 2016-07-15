@@ -179,10 +179,14 @@ class NarrowBuilder(object):
             else:
                 regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
 
-            cond = column("subject").op("~*")(regex)
+            topics = Topic.objects.filter(name__iregex=regex)
+            topic_ids = [topic.id for topic in topics]
+            cond = column("topic_id").in_(topic_ids)
             return query.where(maybe_negate(cond))
 
-        cond = func.upper(column("subject")) == func.upper(literal(operand))
+        topics = Topic.objects.filter(name__iexact=operand)
+        topic_ids = [topic.id for topic in topics]
+        cond = column("topic_id").in_(topic_ids)
         return query.where(maybe_negate(cond))
 
     def by_sender(self, query, operand, maybe_negate):
