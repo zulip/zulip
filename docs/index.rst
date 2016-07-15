@@ -65,6 +65,8 @@ Contents:
 
    dev-env-first-time-contributors
    brief-install-vagrant-dev
+   install-docker-dev
+   test-suite-dev
 
 
 .. _tutorial-docs:
