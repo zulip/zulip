@@ -14,6 +14,7 @@ from zerver.lib.test_helpers import (
     message_ids, message_stream_count,
     most_recent_message,
     queries_captured,
+    subject_topic_awareness,
 )
 
 from zerver.models import (
@@ -403,7 +404,8 @@ class MessageDictTest(AuthedTestCase):
                     last_edit_time=datetime.datetime.now(),
                     edit_history='[]'
                 )
-                message.save()
+                with subject_topic_awareness(self):
+                    message.save()
 
         ids = [row['id'] for row in Message.objects.all().values('id')]
         num_ids = len(ids)
@@ -743,10 +745,11 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_success(result)
         self.check_message(msg_id, content="after edit")
 
-        result = self.client.post("/json/update_message", {
-            'message_id': msg_id,
-            'subject': 'edited'
-        })
+        with subject_topic_awareness(self): # edit
+            result = self.client.post("/json/update_message", {
+                'message_id': msg_id,
+                'subject': 'edited'
+            })
         self.assert_json_success(result)
         self.check_message(msg_id, subject="edited")
 
@@ -781,22 +784,23 @@ class EditMessageTest(AuthedTestCase):
 
     def test_propagate_topic_forward(self):
         self.login("hamlet@zulip.com")
-        id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
-            subject="topic1")
-        id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic2")
-        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+        with subject_topic_awareness(self): # edit
+            id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+                subject="topic1")
+            id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic2")
+            id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
 
-        result = self.client.post("/json/update_message", {
-            'message_id': id1,
-            'subject': 'edited',
-            'propagate_mode': 'change_later'
-        })
+            result = self.client.post("/json/update_message", {
+                'message_id': id1,
+                'subject': 'edited',
+                'propagate_mode': 'change_later'
+            })
         self.assert_json_success(result)
 
         self.check_message(id1, subject="edited")
@@ -807,24 +811,25 @@ class EditMessageTest(AuthedTestCase):
 
     def test_propagate_all_topics(self):
         self.login("hamlet@zulip.com")
-        id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
-            subject="topic1")
-        id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic2")
-        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic3")
+        with subject_topic_awareness(self): # edit
+            id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+                subject="topic1")
+            id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic2")
+            id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic3")
 
-        result = self.client.post("/json/update_message", {
-            'message_id': id2,
-            'subject': 'edited',
-            'propagate_mode': 'change_all'
-        })
+            result = self.client.post("/json/update_message", {
+                'message_id': id2,
+                'subject': 'edited',
+                'propagate_mode': 'change_all'
+            })
         self.assert_json_success(result)
 
         self.check_message(id1, subject="edited")
