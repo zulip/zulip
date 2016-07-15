@@ -64,6 +64,7 @@ Contents:
    :caption: Installation for developers
 
    dev-env-first-time-contributors
+   brief-install-vagrant-dev
 
 
 .. _tutorial-docs:
