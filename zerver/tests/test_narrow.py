@@ -18,6 +18,7 @@ from zerver.lib.test_helpers import (
     AuthedTestCase, POSTRequestMock,
     TestCase,
     get_user_messages, message_ids, queries_captured,
+    subject_topic_awareness,
 )
 from zerver.views.messages import (
     exclude_muting_conditions,
@@ -453,10 +454,11 @@ class GetOldMessagesTest(AuthedTestCase):
         do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
                             stream, no_log=True)
 
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic")
-        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
-                          subject=u"\u03bb-topic.d")
+        with subject_topic_awareness(self): # narrow
+            self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                              subject=u"\u03bb-topic")
+            self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                              subject=u"\u03bb-topic.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
         result = self.post_with_params(dict(num_after=2, narrow=ujson.dumps(narrow)))
