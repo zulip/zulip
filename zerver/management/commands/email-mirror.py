@@ -36,6 +36,7 @@ This script can be used via two mechanisms:
 from __future__ import absolute_import
 from __future__ import print_function
 
+import six
 from typing import Any
 
 from argparse import ArgumentParser
@@ -60,7 +61,8 @@ from zerver.lib.email_mirror import logger, process_message, \
     mark_missed_message_address_as_used, is_missed_message_address
 
 from twisted.internet import protocol, reactor, ssl
-from twisted.mail import imap4
+if six.PY2:
+    from twisted.mail import imap4
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../api"))
 import zulip
@@ -129,13 +131,18 @@ def done(_):
     # type: (Any) -> None
     reactor.callLater(0, reactor.stop)
 
+py3_warning = "email-mirror is not available on python 3."
+
 def main():
     # type: () -> None
-    imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
-    d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT,
-                               ssl.ClientContextFactory())
-    d.addCallbacks(connected, login_failed)
-    d.addBoth(done)
+    if six.PY2:
+        imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
+        d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT,
+                                   ssl.ClientContextFactory())
+        d.addCallbacks(connected, login_failed)
+        d.addBoth(done)
+    else:
+        print(py3_warning)
 
 class Command(BaseCommand):
     help = __doc__
@@ -147,6 +154,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
+        if six.PY3:
+            print(py3_warning)
+            return
         rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", options['recipient'])
         if rcpt_to is not None:
             if is_missed_message_address(rcpt_to):
