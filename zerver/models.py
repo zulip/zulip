@@ -1061,7 +1061,7 @@ class Message(ModelReprMixin, models.Model):
             sending_client    = self.sending_client.name,
             type              = self.recipient.type_name(),
             recipient         = get_display_recipient(self.recipient),
-            subject           = self.subject,
+            subject           = self.topic_name(),
             content           = self.content,
             timestamp         = datetime_to_timestamp(self.pub_date))
 
