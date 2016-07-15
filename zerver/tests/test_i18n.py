@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from six.moves.http_cookies import SimpleCookie
 
 from zerver.lib.test_helpers import AuthedTestCase
+from zerver.management.commands import makemessages
 
 
 class TranslationTestCase(AuthedTestCase):
@@ -92,3 +93,36 @@ class JsonTranslationTestCase(AuthedTestCase):
         self.assert_json_error_contains(result,
                                         dummy_value,
                                         status_code=400)
+
+
+class FrontendRegexTestCase(TestCase):
+    def test_regexes(self):
+        command = makemessages.Command()
+
+        data = [
+            ('{{#tr context}}english text with __variable__{{/tr}}{{/tr}}',
+             'english text with __variable__'),
+
+            ('{{t "english text" }}, "extra"}}',
+             'english text'),
+
+            ("{{t 'english text' }}, 'extra'}}",
+             'english text'),
+
+            ('i18n.t("english text"), "extra",)',
+             'english text'),
+
+            ('i18n.t("english text", context), "extra",)',
+             'english text'),
+
+            ("i18n.t('english text'), 'extra',)",
+             'english text'),
+
+            ("i18n.t('english text', context), 'extra',)",
+             'english text'),
+        ]
+
+        for input_text, expected in data:
+            result = list(command.extract_strings(input_text).keys())
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0], expected)
