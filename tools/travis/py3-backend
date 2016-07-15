@@ -20,3 +20,4 @@ set -x
 
 tools/test-migrations
 tools/test-backend --nonfatal-errors
+tools/test-management
