@@ -37,9 +37,12 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
                                pointer=-1, is_bot=bool(bot_type), bot_type=bot_type,
-                               bot_owner=bot_owner, is_mirror_dummy=is_mirror_dummy,
+                               is_mirror_dummy=is_mirror_dummy,
                                enable_stream_desktop_notifications=enable_stream_desktop_notifications,
                                onboarding_steps=ujson.dumps([]))
+    if bot_owner is not None:
+        # `user_profile.bot_owner = bot_owner` doesn't work on python 3.4
+        user_profile.bot_owner_id = bot_owner.id
 
     if bot_type or not active:
         password = None
