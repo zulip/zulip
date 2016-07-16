@@ -76,7 +76,7 @@ mandrill==1.0.57
 mock==1.0.1
 
 oauth2client==1.4.11
-oauthlib==1.0.3
+oauthlib==1.1.2
 
 # Needed to access rabbitmq
 pika==0.10.0
@@ -105,9 +105,9 @@ pytz==2015.4
 redis==2.10.3
 
 # Dependencies of our API
-requests==2.7.0
+requests==2.10.0
 
-requests_oauthlib==0.6.1
+requests_oauthlib==0.6.2
 rsa==3.1.4
 
 # Dependencies of our API
@@ -135,10 +135,13 @@ ujson==1.35
 uritemplate==0.6
 zope.interface==4.1.2
 
--r emailmirror.txt
-
 # Django extension for static asset pipeline
 django-pipeline==1.6.8
 
 # Needed for iOS push notifications
 git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns-2.0.1
+
+# Needed for Twitter card integration
+git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5
+
+-r emailmirror.txt

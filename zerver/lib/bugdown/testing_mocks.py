@@ -86,9 +86,12 @@ NORMAL_TWEET = """{
       "id": 4
     }
    ],
-  "urls": {
-    "http://t.co/6J2EgYM": "http://instagram.com/p/MuW67/"
-  }
+  "urls": [
+    {
+      "expanded_url": "http://instagram.com/p/MuW67/",
+      "url": "http://t.co/6J2EgYM"
+    }
+  ]
 }"""
 
 MENTION_IN_LINK_TWEET = """{
@@ -156,9 +159,12 @@ MENTION_IN_LINK_TWEET = """{
       "id": 1
     }
    ],
-  "urls": {
-    "http://t.co/@foo": "http://foo.com"
-  }
+  "urls": [
+    {
+      "expanded_url": "http://foo.com",
+      "url": "http://t.co/@foo"
+    }
+  ]
 }"""
 
 MEDIA_TWEET = """{
