@@ -29,6 +29,7 @@ PY3_VENV_PATH = "/srv/zulip-py3-venv"
 TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
+UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
 TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 
@@ -185,6 +186,8 @@ def main():
 
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
+    # create upload directory `var/uploads`
+    run(["mkdir", "-p", UPLOAD_DIR_PATH])
     # create test upload directory `var/test_upload`
     run(["mkdir", "-p", TEST_UPLOAD_DIR_PATH])
     # create coverage directory`var/coverage`

@@ -3,7 +3,7 @@
 # sample local_settings.py file, with a few exceptions.
 from .local_settings_template import *
 
-LOCAL_UPLOADS_DIR = 'uploads'
+LOCAL_UPLOADS_DIR = 'var/uploads'
 EXTERNAL_HOST = 'localhost:9991'
 ALLOWED_HOSTS = ['localhost']
 AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
