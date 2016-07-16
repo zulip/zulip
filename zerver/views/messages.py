@@ -22,7 +22,6 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body
 from zerver.lib.cache import generic_bulk_cached_fetch
-from zerver.lib.query import last_n
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
