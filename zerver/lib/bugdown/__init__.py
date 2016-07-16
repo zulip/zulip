@@ -37,7 +37,7 @@ from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
 from zerver.models import Message
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
-from zerver.lib.str_utils import force_text
+from zerver.lib.str_utils import force_text, force_str
 import six
 from six.moves import range, html_parser
 from six import text_type
@@ -389,12 +389,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Build dicts for mentions
         for user_mention in user_mentions:
             screen_name = user_mention['screen_name']
-            mention_string = '@' + screen_name
+            mention_string = u'@' + screen_name
             for match in re.finditer(re.escape(mention_string), text, re.IGNORECASE):
                 to_linkify.append({
                     'start': match.start(),
                     'end': match.end(),
-                    'url': 'https://twitter.com/' + urllib.parse.quote(screen_name),
+                    'url': u'https://twitter.com/' + force_text(urllib.parse.quote(force_str(screen_name))),
                     'text': mention_string,
                 })
         # Build dicts for media
@@ -473,7 +473,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             tweet.append(p)
 
             span = markdown.util.etree.SubElement(tweet, 'span')
-            span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
+            span.text = u"- %s (@%s)" % (user['name'], user['screen_name'])
 
             # Add image previews
             for media_item in media:
@@ -490,7 +490,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     if size['h'] < self.TWITTER_MAX_IMAGE_HEIGHT:
                         break
 
-                media_url = '%s:%s' % (media_item['media_url_https'], size_name)
+                media_url = u'%s:%s' % (media_item['media_url_https'], size_name)
                 img_div = markdown.util.etree.SubElement(tweet, 'div')
                 img_div.set('class', 'twitter-image')
                 img_a = markdown.util.etree.SubElement(img_div, 'a')
