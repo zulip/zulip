@@ -97,7 +97,7 @@ if py_version == 2:
     extra_args.append("--py2")
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
-    extra_args.append("linecoverage-report")
+    extra_args.append("var/linecoverage-report")
 if args.disallow_untyped_defs:
     extra_args.append("--disallow-untyped-defs")
 
@@ -108,7 +108,7 @@ if python_files:
     if args.linecoverage_report:
         # Move the coverage report to where coveralls will look for it.
         try:
-            os.rename('linecoverage-report/coverage.txt', '.coverage')
+            os.rename('var/linecoverage-report/coverage.txt', '.coverage')
         except OSError:
             # maybe mypy crashed; exit with its error code
             pass
