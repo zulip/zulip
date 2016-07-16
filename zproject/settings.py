@@ -806,6 +806,9 @@ for (var, path) in ZULIP_PATHS:
     if DEVELOPMENT:
         # if DEVELOPMENT, store these files in the Zulip checkout
         path = os.path.join(DEVELOPMENT_LOG_DIRECTORY, os.path.basename(path))
+        # only `JSON_PERSISTENT_QUEUE_FILENAME` will be stored in `var`
+        if var == 'JSON_PERSISTENT_QUEUE_FILENAME':
+            path = os.path.join(os.path.join(DEPLOY_ROOT, 'var'), os.path.basename(path))
     vars()[var] = path
 
 ZULIP_WORKER_TEST_FILE = '/tmp/zulip-worker-test-file'
