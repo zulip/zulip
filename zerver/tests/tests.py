@@ -13,6 +13,7 @@ from zerver.lib.test_helpers import (
     simulated_queue_client, tornado_redirected_to_list, AuthedTestCase,
     most_recent_usermessage, most_recent_message,
 )
+from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
     Realm, Client, UserActivity, \
@@ -1714,6 +1715,129 @@ class AlertWordTests(AuthedTestCase):
         # We don't cause alerts for matches in URLs.
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one/ urls"))
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
+
+class HomeTest(AuthedTestCase):
+    @slow(1.0, 'big method')
+    def test_home(self):
+        # type: () -> None
+
+        # Keep this list sorted!!!
+        html_bits = [
+            'Compose your message here...',
+            'Exclude messages with topic',
+            'Get started',
+            'Keyboard shortcuts',
+            'Loading...',
+            'Manage Streams',
+            'Narrow by topic',
+            'Next message',
+            'SHARE THE LOVE',
+            'Search streams',
+            'Welcome to Zulip',
+            'pygments.css',
+            'var page_params',
+        ]
+
+        # Keep this list sorted!!!
+        expected_keys = [
+            "alert_words",
+            "autoscroll_forever",
+            "avatar_url",
+            "bot_list",
+            "can_create_streams",
+            "cross_realm_user_emails",
+            "debug_mode",
+            "default_desktop_notifications",
+            "default_language",
+            "desktop_notifications_enabled",
+            "development_environment",
+            "domain",
+            "email",
+            "email_dict",
+            "enable_digest_emails",
+            "enable_offline_email_notifications",
+            "enable_offline_push_notifications",
+            "enter_sends",
+            "event_queue_id",
+            "first_in_realm",
+            "fullname",
+            "furthest_read_time",
+            "has_mobile_devices",
+            "have_initial_messages",
+            "initial_pointer",
+            "initial_presences",
+            "initial_servertime",
+            "is_admin",
+            "language_list",
+            "last_event_id",
+            "left_side_userlist",
+            "login_page",
+            "mandatory_topics",
+            "max_message_id",
+            "maxfilesize",
+            "muted_topics",
+            "name_changes_disabled",
+            "narrow",
+            "narrow_stream",
+            "needs_tutorial",
+            "notifications_stream",
+            "password_auth_enabled",
+            "people_list",
+            "poll_timeout",
+            "product_name",
+            "prompt_for_invites",
+            "realm_allow_message_editing",
+            "realm_create_stream_by_admins_only",
+            "realm_default_streams",
+            "realm_emoji",
+            "realm_filters",
+            "realm_invite_by_admins_only",
+            "realm_invite_required",
+            "realm_message_content_edit_limit_seconds",
+            "realm_name",
+            "realm_restricted_to_domain",
+            "referrals",
+            "show_digest_email",
+            "sounds_enabled",
+            "staging",
+            "stream_desktop_notifications_enabled",
+            "stream_sounds_enabled",
+            "subbed_info",
+            "test_suite",
+            "twenty_four_hour_time",
+            "unread_count",
+            "unsubbed_info",
+            "voyager",
+        ]
+
+        email = "hamlet@zulip.com"
+
+        # Verify fails if logged-out
+        result = self.client.get('/')
+        self.assertEqual(result.status_code, 302)
+
+        # Verify succeeds once logged-in
+        self.login(email)
+        with \
+                patch('zerver.lib.actions.request_event_queue', return_value=42), \
+                patch('zerver.lib.actions.get_user_events', return_value=[]):
+            result = self.client.get('/', dict(stream='Denmark'))
+        html = result.content.decode('utf-8')
+
+        for html_bit in html_bits:
+            if html_bit not in html:
+                self.fail('%s not in result' % (html_bit,))
+
+        lines = html.split('\n')
+        page_params_line = [l for l in lines if l.startswith('var page_params')][0]
+        page_params_json = page_params_line.split(' = ')[1].rstrip(';')
+        page_params = ujson.loads(page_params_json)
+
+        actual_keys = sorted([str(k) for k in page_params.keys()])
+        self.assertEqual(actual_keys, expected_keys)
+
+        # TODO: Inspect the page_params data further.
+        # print(ujson.dumps(page_params, indent=2))
 
 class MutedTopicsTests(AuthedTestCase):
     def test_json_set(self):
