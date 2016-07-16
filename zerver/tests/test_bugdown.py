@@ -238,15 +238,34 @@ class BugdownTest(TestCase):
         def make_link(url):
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
-        normal_tweet_html = """<a href="https://twitter.com/twitter" target="_blank" title="https://twitter.com/twitter">@twitter</a> meets @seepicturely at #tcdisrupt cc.<a href="https://twitter.com/boscomonkey" target="_blank" title="https://twitter.com/boscomonkey">@boscomonkey</a> <a href="https://twitter.com/episod" target="_blank" title="https://twitter.com/episod">@episod</a> <a href="http://t.co/6J2EgYM" target="_blank" title="http://t.co/6J2EgYM">http://instagram.com/p/MuW67/</a>"""
+        normal_tweet_html = ('<a href="https://twitter.com/twitter" target="_blank"'
+                             ' title="https://twitter.com/twitter">@twitter</a> '
+                             'meets @seepicturely at #tcdisrupt cc.'
+                             '<a href="https://twitter.com/boscomonkey" target="_blank"'
+                             ' title="https://twitter.com/boscomonkey">@boscomonkey</a> '
+                             '<a href="https://twitter.com/episod" target="_blank"'
+                             ' title="https://twitter.com/episod">@episod</a> '
+                             '<a href="http://t.co/6J2EgYM" target="_blank"'
+                             ' title="http://t.co/6J2EgYM">http://instagram.com/p/MuW67/</a>')
 
         mention_in_link_tweet_html = """<a href="http://t.co/@foo" target="_blank" title="http://t.co/@foo">http://foo.com</a>"""
 
-        media_tweet_html = """<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>"""
+        media_tweet_html = ('<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
+                            'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
             ## As of right now, all previews are mocked to be the exact same tweet
-            return """<div class="inline-preview-twitter"><div class="twitter-tweet"><a href="%s" target="_blank"><img class="twitter-avatar" src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png"></a><p>%s</p><span>- Eoin McMillan  (@imeoin)</span>%s</div></div>""" % (url, tweet_html, image_html)
+            return ('<div class="inline-preview-twitter">'
+                      '<div class="twitter-tweet">'
+                        '<a href="%s" target="_blank">'
+                          '<img class="twitter-avatar"'
+                          ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
+                        '</a>'
+                        '<p>%s</p>'
+                        '<span>- Eoin McMillan  (@imeoin)</span>'
+                        '%s'
+                      '</div>'
+                    '</div>') % (url, tweet_html, image_html)
 
         msg = 'http://www.twitter.com'
         converted = bugdown_convert(msg)
@@ -272,43 +291,58 @@ class BugdownTest(TestCase):
 
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
-                                                       make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
-                                                       make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         msg = 'http://twitter.com/wdaher/status/287977969287315456'
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
-                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('http://twitter.com/wdaher/status/287977969287315456'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html)))
 
         # A max of 3 will be converted
-        msg = 'http://twitter.com/wdaher/status/287977969287315456 http://twitter.com/wdaher/status/287977969287315457 http://twitter.com/wdaher/status/287977969287315457 http://twitter.com/wdaher/status/287977969287315457'
+        msg = ('http://twitter.com/wdaher/status/287977969287315456 '
+               'http://twitter.com/wdaher/status/287977969287315457 '
+               'http://twitter.com/wdaher/status/287977969287315457 '
+               'http://twitter.com/wdaher/status/287977969287315457')
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s %s %s %s</p>\n%s%s%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
-                                                          make_link('http://twitter.com/wdaher/status/287977969287315457'),
-                                                          make_link('http://twitter.com/wdaher/status/287977969287315457'),
-                                                          make_link('http://twitter.com/wdaher/status/287977969287315457'),
-                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
-                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
-                                                          make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
+        self.assertEqual(converted, '<p>%s %s %s %s</p>\n%s%s%s' % (
+            make_link('http://twitter.com/wdaher/status/287977969287315456'),
+            make_link('http://twitter.com/wdaher/status/287977969287315457'),
+            make_link('http://twitter.com/wdaher/status/287977969287315457'),
+            make_link('http://twitter.com/wdaher/status/287977969287315457'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456', normal_tweet_html),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315457', normal_tweet_html)))
 
         # Tweet has a mention in a URL, only the URL is linked
         msg = 'http://twitter.com/wdaher/status/287977969287315458'
 
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315458'),
-                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('http://twitter.com/wdaher/status/287977969287315458'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315458', mention_in_link_tweet_html)))
 
         # Tweet with an image
         msg = 'http://twitter.com/wdaher/status/287977969287315459'
 
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315459'),
-                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459', media_tweet_html, """<div class="twitter-image"><a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3"><img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small"></a></div>""")))
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (
+            make_link('http://twitter.com/wdaher/status/287977969287315459'),
+            make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
+                                        media_tweet_html,
+                                        ('<div class="twitter-image">'
+                                           '<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
+                                             '<img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small">'
+                                           '</a>'
+                                         '</div>'))))
 
     def test_fetch_tweet_data_settings_validation(self):
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
