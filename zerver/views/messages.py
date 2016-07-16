@@ -825,7 +825,7 @@ def update_message_backend(request, user_profile,
     # 3. This is a topic-only edit and you are an admin.
     if message.sender == user_profile:
         pass
-    elif (content is None) and ((message.subject == "(no topic)") or
+    elif (content is None) and ((message.topic_name() == "(no topic)") or
                                 user_profile.is_realm_admin):
         pass
     else:
