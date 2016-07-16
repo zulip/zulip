@@ -145,21 +145,6 @@ Zulip endpoints that are called by other services for integrations have
 to conform to the service's request format. They are likely to use
 only POST.
 
-Some integrations will only provide an API key for their webhooks. For
-these integrations, we use the `api_key_only_webhook_view` decorator,
-to fill in the `user_profile` and `client` fields of a request:
-
-``` py
-@api_key_only_webhook_view('PagerDuty')
-@has_request_variables
-def api_pagerduty_webhook(request, user_profile, client,
-                          payload=REQ(argument_type='body'),
-                          stream=REQ(default='pagerduty'),
-                          topic=REQ(default=None)):
-```
-The `client` will be the result of `get_client("ZulipPagerDutyWebhook")`
-in this example.
-
 ## Django calls rest_dispatch for REST endpoints, and authenticates
 
 For requests that correspond to a REST url pattern, Zulip configures its
@@ -182,34 +167,7 @@ find the correct view to show: `zerver.views.users.create_user_backend`.
 
 ## The view will authorize the user, extract request variables, and validate them
 
-There are some special decorators we may use for a given view. Our
-example uses `require_realm_admin` and `has_request_variables`:
-``` py
-@require_realm_admin
-@has_request_variables
-def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
-                        full_name=REQ(), short_name=REQ()):
-```
-
-`require_realm_admin` checks the authorization of the given
-`user_profile` to make sure it belongs to a realm admin and thus has
-permission to create a user.
-
-We can see a special `REQ()` in the keyword arguments to `create_user_backend`.
-The body of a request is expected to be in JSON format, so this is used
-in conjunction with the `has_request_variables` decorator to unpack the
-variables in the JSON string for use in the function. The implementation
-of `has_request_variables` is documented heavily in [zerver/lib/request.py](https://github.com/zulip/zulip/blob/master/zerver/lib/request.py))
-
-REQ also helps us with request variable validation. For example:
-`msg_ids = REQ(validator=check_list(check_int))`
-will check that the `msg_ids` request variable is a list of integers,
-marshalled as JSON.
-
-See [zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py) for more validators and their documentation.
-
-If the view does any modification to the database, that change is done
-in a helper function in `zerver/lib/actions.py`.
+This is covered in good detail in the [writing views doc](https://zulip.readthedocs.io/en/latest/writing-views.html)
 
 ## Results are given as JSON
 
