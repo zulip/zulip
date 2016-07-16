@@ -102,6 +102,18 @@ class StreamAdminTest(AuthedTestCase):
         ).exists()
         self.assertFalse(subscription_exists)
 
+    def test_deactivate_stream_backend_requires_existing_stream(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        realm = user_profile.realm
+        stream, _ = create_stream_if_needed(realm, 'new_stream')
+        do_change_is_admin(user_profile, True)
+
+        result = self.client.delete('/json/streams/unknown_stream')
+        self.assert_json_error(result, 'No such stream name')
+
     def test_deactivate_stream_backend_requires_realm_admin(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -576,6 +588,23 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_error(
             result, "stream key is missing from subscription_data[0]")
 
+    def test_json_subscription_property_invalid_verb(self):
+        # type: () -> None
+        """
+        Called by invalid request method. No other request method other than
+        'post' is allowed in this case.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
+
+        result = self.client.get(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "in_home_view",
+                                                "stream": subs[0]["name"],
+                                                "value": False}])})
+        self.assert_json_error(result, "Invalid verb")
+
     def test_set_color_missing_color(self):
         # type: () -> None
         """
@@ -618,6 +647,55 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         self.assertIsNotNone(updated_sub)
         self.assertEqual(updated_sub.pin_to_top, new_pin_to_top)
+
+    def test_set_subscription_property_incorrect(self):
+        # type: () -> None
+        """
+        Trying to set a property incorrectly returns a JSON error.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
+
+        property_name = "in_home_view"
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": property_name,
+                                                "value": "bad",
+                                                "stream": subs[0]["name"]}])})
+
+        self.assert_json_error(result,
+                               '%s is not a boolean' % (property_name,))
+
+        property_name = "desktop_notifications"
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": property_name,
+                                                "value": "bad",
+                                                "stream": subs[0]["name"]}])})
+
+        self.assert_json_error(result,
+                               '%s is not a boolean' % (property_name,))
+
+        property_name = "audible_notifications"
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": property_name,
+                                                "value": "bad",
+                                                "stream": subs[0]["name"]}])})
+
+        self.assert_json_error(result,
+                               '%s is not a boolean' % (property_name,))
+
+        property_name = "color"
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": property_name,
+                                                "value": False,
+                                                "stream": subs[0]["name"]}])})
+
+        self.assert_json_error(result,
+                               '%s is not a string' % (property_name,))
 
     def test_set_invalid_property(self):
         # type: () -> None
@@ -719,6 +797,56 @@ class SubscriptionRestApiTest(AuthedTestCase):
             **self.api_auth(email)
         )
         self.assert_json_error(result, "delete[0] is not a string")
+
+    def test_add_or_delete_not_specified(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            {},
+            **self.api_auth(email)
+        )
+        self.assert_json_error(result,
+                               'Nothing to do. Specify at least one of "add" or "delete".')
+
+    def test_patch_enforces_valid_stream_name_check(self):
+        # type: () -> None
+        """
+        Only way to force an error is with a empty string.
+        """
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        invalid_stream_name = ""
+        request = {
+            'delete': ujson.dumps([invalid_stream_name])
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_error(result,
+                               "Invalid stream name (%s)." % (invalid_stream_name,))
+
+    def test_stream_name_too_long(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        long_stream_name = "a" * 61
+        request = {
+            'delete': ujson.dumps([long_stream_name])
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_error(result,
+                               "Stream name (%s) too long." % (long_stream_name,))
 
 class SubscriptionAPITest(AuthedTestCase):
 
@@ -1722,6 +1850,15 @@ class GetSubscribersTest(AuthedTestCase):
         self.common_subscribe_to_streams(self.email, [stream_name],
                                          invite_only=True)
         self.make_successful_subscriber_request(stream_name)
+
+    def test_json_get_subscribers_stream_not_exist(self):
+        # type: () -> None
+        """
+        json_get_subscribers also returns the list of subscribers for a stream.
+        """
+        stream_name = "unknown_stream"
+        result = self.client.post("/json/get_subscribers", {"stream": stream_name})
+        self.assert_json_error(result, "Stream does not exist: %s" % (stream_name,))
 
     def test_json_get_subscribers(self):
         # type: () -> None
