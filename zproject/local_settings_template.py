@@ -135,7 +135,7 @@ INLINE_IMAGE_PREVIEW = True
 # https://github.com/zulip/zulip/issues/291 for discussion of a better
 # solution that won't be automatically reverted by the Zulip upgrade
 # script), and then restart nginx.
-LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
+LOCAL_UPLOADS_DIR = "/home/zulip/var/uploads"
 #S3_AUTH_UPLOADS_BUCKET = ""
 #S3_AVATAR_BUCKET = ""
 
