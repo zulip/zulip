@@ -803,7 +803,7 @@ class EditMessageTest(AuthedTestCase):
 
         def do_edit_message_assert_error(id_, unique_str, error, topic_only = False):
             message = Message.objects.get(id=id_)
-            old_subject = message.subject
+            old_subject = message.topic_name()
             old_content = message.content
             new_subject = 'subject' + unique_str
             new_content = 'content' + unique_str
