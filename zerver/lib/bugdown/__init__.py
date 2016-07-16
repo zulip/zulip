@@ -449,7 +449,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             res = fetch_tweet_data(tweet_id)
             if res is None:
                 return None
-            user = res['user']
+            user = res['user'] # type: Dict[text_type, Any]
             tweet = markdown.util.etree.Element("div")
             tweet.set("class", "twitter-tweet")
             img_a = markdown.util.etree.SubElement(tweet, 'a')
@@ -468,7 +468,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             text = unescape(res['text'])
             urls = res.get('urls', {})
             user_mentions = res.get('user_mentions', [])
-            media = res.get('media', [])
+            media = res.get('media', []) # type: List[Dict[text_type, Any]]
             p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
 
