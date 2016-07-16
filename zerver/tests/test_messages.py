@@ -1002,6 +1002,34 @@ class AttachmentTest(AuthedTestCase):
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
 
+class LogDictTest(AuthedTestCase):
+    def test_to_log_dict(self):
+        email = 'hamlet@zulip.com'
+        stream_name = 'Denmark'
+        topic_name = 'Copenhagen'
+        content = 'find me some good coffee shops'
+        # self.login("hamlet@zulip.com")
+        message_id = self.send_message(email, stream_name,
+            message_type=Recipient.STREAM,
+            subject=topic_name,
+            content=content)
+        message = Message.objects.get(id=message_id)
+        dct = message.to_log_dict()
+
+        self.assertTrue('timestamp' in dct)
+
+        self.assertEqual(dct['content'], 'find me some good coffee shops')
+        self.assertEqual(dct['id'], message.id)
+        self.assertEqual(dct['recipient'], 'Denmark')
+        self.assertEqual(dct['sender_domain'], 'zulip.com')
+        self.assertEqual(dct['sender_email'], 'hamlet@zulip.com')
+        self.assertEqual(dct['sender_full_name'], 'King Hamlet')
+        self.assertEqual(dct['sender_id'], get_user_profile_by_email(email).id)
+        self.assertEqual(dct['sender_short_name'], 'hamlet')
+        self.assertEqual(dct['sending_client'], 'test suite')
+        self.assertEqual(dct['subject'], 'Copenhagen')
+        self.assertEqual(dct['type'], 'stream')
+
 class CheckMessageTest(AuthedTestCase):
     def test_basic_check_message_call(self):
         sender = get_user_profile_by_email('othello@zulip.com')
