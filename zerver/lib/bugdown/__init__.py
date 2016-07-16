@@ -144,7 +144,6 @@ def fetch_tweet_data(tweet_id):
             # formatting timeout.
             tweet = timeout(3, api.GetStatus, tweet_id)
             res = tweet.AsDict()
-            res['media'] = tweet.media  # AsDict does not include media
         except AttributeError:
             logging.error('Unable to load twitter api, you may have the wrong '
                           'library installed, see https://github.com/zulip/zulip/issues/86')
@@ -355,7 +354,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return "https://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
 
     def twitter_text(self, text, urls, user_mentions, media):
-        # type: (text_type, Dict[text_type, text_type], List[Dict[text_type, Any]], List[Dict[text_type, Any]]) -> Element
+        # type: (text_type, List[Dict[text_type, text_type]], List[Dict[text_type, Any]], List[Dict[text_type, Any]]) -> Element
         """
         Use data from the twitter API to turn links, mentions and media into A
         tags.
@@ -378,7 +377,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         to_linkify = [] # type: List[Dict[text_type, Any]]
         # Build dicts for URLs
-        for short_url, full_url in urls.items():
+        for url_data in urls:
+            short_url = url_data["url"]
+            full_url = url_data["expanded_url"]
             for match in re.finditer(re.escape(short_url), text, re.IGNORECASE):
                 to_linkify.append({
                     'start': match.start(),
@@ -466,7 +467,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             profile_img.set('src', image_url)
 
             text = unescape(res['text'])
-            urls = res.get('urls', {})
+            urls = res.get('urls', [])
             user_mentions = res.get('user_mentions', [])
             media = res.get('media', []) # type: List[Dict[text_type, Any]]
             p = self.twitter_text(text, urls, user_mentions, media)
