@@ -598,6 +598,7 @@ PIPELINE = {
                 'third/spectrum/spectrum.css',
                 'styles/zulip.css',
                 'styles/settings.css',
+                'styles/subscriptions.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
@@ -611,6 +612,7 @@ PIPELINE = {
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
                 'styles/zulip.css',
                 'styles/settings.css',
+                'styles/subscriptions.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 'styles/fonts.css',

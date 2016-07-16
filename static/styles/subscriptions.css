@@ -1,0 +1,165 @@
+.subscription_settings,
+.subscription_header,
+.subscription_header.active {
+    background-color: #fefefe;
+}
+
+.color_swatch {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+    padding: 0;
+    margin: 0 0 0 10px;
+    vertical-align: middle;
+}
+
+.subscriptions {
+    margin-top: 55px;
+    padding-left: 15px;
+}
+
+#subscriptions_table .subscription_block {
+    padding-left: 0.5em;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.subscription_header.collapsed {
+    background-color: inherit;
+}
+
+.subscriber_list_loading_indicator {
+    margin: 10px auto;
+}
+
+.subscription-name-row,
+.subscription-description-row {
+    line-height: 47px;
+}
+
+.subscription-description-row {
+    font-weight: 300;
+}
+
+#subscriptions-status {
+    position: fixed;
+    z-index: 999;
+    display: block;
+    left: 300px;
+    right: 300px;
+    margin: 0px auto;
+    opacity: 0.9 !important;
+    top: 55px;
+    max-width: 800px;
+}
+
+#add_new_subscription {
+    text-align: center;
+}
+
+#close-subscriptions-status {
+    position: absolute;
+    top: 8px;
+    cursor: pointer;
+    font-size: 17px;
+    right: 8px;
+}
+
+.subscription_header {
+    min-height: 47px;
+}
+
+.subscription_header .subscription_name {
+    width: auto;
+}
+
+.subscription_header .subscription_lock {
+    font-size: 23px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 12px;
+    margin-right: 1px;
+}
+
+.subscription_settings {
+    width: 100%;
+    position: relative;
+    top: -1px;
+}
+
+.subscription_settings form {
+    text-align: center;
+}
+
+.subscription_settings ul {
+    list-style-type: none;
+}
+
+.subscription-type {
+    text-align: center;
+    padding: 5px;
+    width: 80%;
+    margin: auto;
+    font-weight: 300;
+}
+
+.stream-email {
+    width: 80%;
+    margin: auto;
+    margin-top: 5px;
+    text-align: center;
+    padding: 5px;
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+.subscription-control-label {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 18px;
+    padding: 5px;
+}
+
+.sp-preview {
+    width: 20px;
+    border: none;
+    box-shadow: 0px 0px 1px rgba(0,0,0,1);
+}
+
+.sp-replacer {
+    margin-right: 12px;
+    border: none;
+    box-shadow: 0px 0px 2px rgba(0,0,0,0.8);
+}
+
+.subscription-config {
+    width: 270px;
+    margin: auto;
+    margin-top: 25px;
+}
+
+.stream-email-box,
+.subscriber_list_settings,
+.rename-stream {
+    margin: 20px 15px 20px 15px;
+}
+
+.subscription_row {
+    border-top: 1px solid #ddd;
+}
+
+.stream-email .email-address {
+    width: 90%;
+    display: block;
+    margin: auto;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+.sub_setting_control[type="checkbox"] {
+    margin: 0 30px 5px 20px;
+}
