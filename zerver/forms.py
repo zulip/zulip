@@ -37,7 +37,8 @@ MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
 def get_registration_string(domain):
     # type: (text_type) -> text_type
     register_url  = reverse('register') + domain
-    register_account_string = _('The organization with the domain already exists. Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
+    register_account_string = _('The organization with the domain already exists. '
+                                'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
     return register_account_string
 
 def has_valid_realm(value):
