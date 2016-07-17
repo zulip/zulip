@@ -595,12 +595,14 @@ def restore_saved_messages():
             user_profile.save(update_fields=["enable_sounds"])
         elif message_type == "enable_offline_email_notifications_changed":
             user_profile = users[old_message["user"]]
-            user_profile.enable_offline_email_notifications = (old_message["enable_offline_email_notifications"] != "false")
+            user_profile.enable_offline_email_notifications = (
+                old_message["enable_offline_email_notifications"] != "false")
             user_profile.save(update_fields=["enable_offline_email_notifications"])
             continue
         elif message_type == "enable_offline_push_notifications_changed":
             user_profile = users[old_message["user"]]
-            user_profile.enable_offline_push_notifications = (old_message["enable_offline_push_notifications"] != "false")
+            user_profile.enable_offline_push_notifications = (
+                old_message["enable_offline_push_notifications"] != "false")
             user_profile.save(update_fields=["enable_offline_push_notifications"])
             continue
         elif message_type == "default_streams":
