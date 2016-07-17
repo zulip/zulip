@@ -31,7 +31,8 @@ def beanstalk_decoder(view_func):
                 email, api_key = base64.b64decode(force_bytes(encoded_value)).decode('utf-8').split(":")
                 email = email.replace('%40', '@')
                 credentials = u"%s:%s" % (email, api_key)
-                request.META['HTTP_AUTHORIZATION'] = "Basic " + force_str(base64.b64encode(credentials.encode('utf-8')))
+                encoded_credentials = force_str(base64.b64encode(credentials.encode('utf-8')))
+                request.META['HTTP_AUTHORIZATION'] = "Basic " + encoded_credentials
         except Exception:
             pass
 
