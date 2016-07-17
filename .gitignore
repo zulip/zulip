@@ -2,18 +2,9 @@
 *~
 /all_messages_log.*
 /event_log/*
-/digest.log*
-/errors.log*
-/manage.log*
-/server.log*
-/workers.log*
-/email-deliverer.log
-/email-mirror.log
-/sync_ldap_user_data.log
 /update-prod-static.log
 frontend_tests/casper_tests/server.log
 frontend_tests/casper_lib/test_credentials.js
-memcached_prefix
 /prod-static
 /errors/*
 *.sw[po]
@@ -26,7 +17,6 @@ zerver/fixtures/test_data1.json
 .kdev4
 .idea
 zulip.kdev4
-remote_cache_prefix
 coverage/
 .coverage
 /queue_error
@@ -46,8 +36,5 @@ tools/setup/emoji_dump/*.ttx
 tools/phantomjs
 node_modules
 npm-debug.log
-htmlcov/
-uploads/
-test_uploads/
 *.mo
 var/*
