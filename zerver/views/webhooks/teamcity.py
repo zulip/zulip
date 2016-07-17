@@ -81,13 +81,15 @@ def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_typ
         teamcity_user = guess_zulip_user_from_teamcity(teamcity_fullname, user_profile.realm)
 
         if teamcity_user is None:
-            teamcity_shortname = get_teamcity_property_value(message['teamcityProperties'], 'teamcity.build.triggeredBy.username')
+            teamcity_shortname = get_teamcity_property_value(message['teamcityProperties'],
+                                                             'teamcity.build.triggeredBy.username')
             if teamcity_shortname is not None:
                 teamcity_user = guess_zulip_user_from_teamcity(teamcity_shortname, user_profile.realm)
 
         if teamcity_user is None:
             # We can't figure out who started this build - there's nothing we can do here.
-            logging.info("Teamcity webhook couldn't find a matching Zulip user for Teamcity user '%s' or '%s'" % (teamcity_fullname, teamcity_shortname))
+            logging.info("Teamcity webhook couldn't find a matching Zulip user for Teamcity user '%s' or '%s'" % (
+                teamcity_fullname, teamcity_shortname))
             return json_success()
 
         body = "Your personal build of " + body
