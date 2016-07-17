@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
+from django.db import connection
 from sqlalchemy.sql import (
     and_, select, column, compiler
 )
@@ -467,6 +468,68 @@ class GetOldMessagesTest(AuthedTestCase):
 
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], "othello@zulip.com")
+
+    def test_get_old_messages_with_search(self):
+        self.login("cordelia@zulip.com")
+
+        messages_to_search = [
+            ('breakfast', 'there are muffins in the conference room'),
+            ('lunch plans', 'I am hungry!'),
+            ('meetings', 'discuss lunch after lunch'),
+            ('meetings', 'please bring your laptops to take notes'),
+            ('dinner', 'Anybody staying late tonight?'),
+        ]
+
+        for topic, content in messages_to_search:
+            self.send_message(
+                sender_name="cordelia@zulip.com",
+                raw_recipients="Verona",
+                message_type=Recipient.STREAM,
+                content=content,
+                subject=topic,
+            )
+
+        # We use brute force here and update our text search index
+        # for the entire zerver_message table (which is small in test
+        # mode).  In production there is an async process which keeps
+        # the search index up to date.
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                UPDATE zerver_message SET
+                search_tsvector = to_tsvector('zulip.english_us_search',
+                subject || rendered_content)
+                """)
+
+        narrow = [
+            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='search', operand='lunch'),
+        ]
+        result = self.post_with_params(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=0,
+            num_after=10,
+        ))
+        self.check_well_formed_messages_response(result)
+        self.assertEqual(len(result['messages']), 2)
+        messages = result['messages']
+
+        meeting_message = [m for m in messages if m['subject'] == 'meetings'][0]
+        self.assertEqual(
+            meeting_message['match_subject'],
+            'meetings')
+        self.assertEqual(
+            meeting_message['match_content'],
+            '<p>discuss <span class="highlight">lunch</span> after ' +
+            '<span class="highlight">lunch</span></p>')
+
+        meeting_message = [m for m in messages if m['subject'] == 'lunch plans'][0]
+        self.assertEqual(
+            meeting_message['match_subject'],
+            '<span class="highlight">lunch</span> plans')
+        self.assertEqual(
+            meeting_message['match_content'],
+            '<p>I am hungry!</p>')
+
 
     def test_get_old_messages_with_only_searching_anchor(self):
         """
