@@ -838,7 +838,8 @@ def update_message_backend(request, user_profile,
     # you change this value also change those two parameters in message_edit.js.
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0 and \
-       (now() - message.pub_date) > datetime.timedelta(seconds=user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer):
+       (now() - message.pub_date) > datetime.timedelta(
+        seconds=user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer):
         raise JsonableError(_("The time limit for editing this message has past"))
 
     if subject is None and content is None:
