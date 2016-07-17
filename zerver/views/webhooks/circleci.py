@@ -14,7 +14,8 @@ FAILED_STATUS = 'failed'
 
 @api_key_only_webhook_view('CircleCI')
 @has_request_variables
-def api_circleci_webhook(request, user_profile, client, payload=REQ(argument_type='body'), stream=REQ(default='circleci')):
+def api_circleci_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+                         stream=REQ(default='circleci')):
     payload = payload['payload']
     subject = get_subject(payload)
     body = get_body(payload)
