@@ -89,7 +89,8 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 
     performed_by = payload.get("performed_by", {}).get("name", "")
 
-    story_info = "[%s](https://www.pivotaltracker.com/s/projects/%s): [%s](%s)" % (project_name, project_id, story_name, story_url)
+    story_info = "[%s](https://www.pivotaltracker.com/s/projects/%s): [%s](%s)" % (
+        project_name, project_id, story_name, story_url)
 
     changes = payload.get("changes", [])
 
@@ -110,7 +111,8 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
             new_values = change["new_values"]
 
             if "current_state" in old_values and "current_state" in new_values:
-                content += "* state changed from **%s** to **%s**\n" % (old_values["current_state"], new_values["current_state"])
+                content += "* state changed from **%s** to **%s**\n" % (
+                    old_values["current_state"], new_values["current_state"])
             if "estimate" in old_values and "estimate" in new_values:
                 old_estimate = old_values.get("estimate", None)
                 if old_estimate is None:
@@ -120,7 +122,8 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
                 new_estimate = new_values["estimate"] if new_values["estimate"] is not None else "0"
                 content += "* estimate %s **%s points**\n" % (estimate, new_estimate)
             if "story_type" in old_values and "story_type" in new_values:
-                content += "* type changed from **%s** to **%s**\n" % (old_values["story_type"], new_values["story_type"])
+                content += "* type changed from **%s** to **%s**\n" % (
+                    old_values["story_type"], new_values["story_type"])
 
             comment = extract_comment(change)
             if comment is not None:
