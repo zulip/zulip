@@ -70,38 +70,45 @@ people.test_set_people_dict({
 
 (function test_presence_list_full_update() {
     var users = activity.update_users();
-    assert.deepEqual(users, [
+    var expected_users = [
         { name: 'Fred Flintstone',
           email: 'fred@zulip.com',
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined },
+          mobile: undefined,
+          starred: false },
         { name: 'Jill Hill',
           email: 'jill@zulip.com',
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined },
+          mobile: undefined,
+          starred: false },
         { name: 'Norbert Oswald',
           email: 'norbert@zulip.com',
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined },
+          mobile: undefined,
+          starred: false },
         { name: 'Alice Smith',
           email: 'alice@zulip.com',
           num_unread: 0,
           type: 'idle',
           type_desc: 'is not active',
-          mobile: undefined },
+          mobile: undefined,
+          starred: false },
         { name: 'Marky Mark',
           email: 'mark@zulip.com',
           num_unread: 0,
           type: 'idle',
           type_desc: 'is not active',
-          mobile: undefined }
-    ]);
+          mobile: undefined,
+          starred: false }
+    ];
+
+    assert.deepEqual(users, expected_users);
 }());
 
 (function test_presence_list_partial_update() {
@@ -117,7 +124,8 @@ people.test_set_people_dict({
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined }
+          mobile: undefined,
+          starred: false }
     ]);
 
     // Test if user index in presence_info is the expected one
@@ -136,7 +144,8 @@ people.test_set_people_dict({
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined }
+          mobile: undefined,
+          starred: false }
     ]);
 
     all_users = activity._filter_and_sort(activity.presence_info);
