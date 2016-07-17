@@ -252,7 +252,21 @@ exports.update_users = function (user_list) {
         };
     }
 
-    var user_info = _.map(users, info_for);
+    function filter_starred_user(user) {
+        if (user.starred === true) {
+            return user;
+        }
+    }
+
+    // User info unsorted
+    var user_info_unsorted = _.map(users, info_for);
+
+    // Filtering out starred and unstarred users out of all users info
+    var starred_users = _.filter(user_info_unsorted, filter_starred_user);
+    var unstarred_users = _.difference(user_info_unsorted, starred_users);
+
+    // Concatenate starrred_users and unstarred_users with starred_users at top.
+    var user_info = starred_users.concat(unstarred_users);
     if (user_list !== undefined) {
         // Render right panel partially
         $.each(user_info, function (index, user) {
@@ -261,7 +275,12 @@ exports.update_users = function (user_list) {
             $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
         });
     } else {
-        $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
+        var split_users = starred_users.length !== 0 && unstarred_users.length !== 0;
+        $('#user_presences').html(templates.render('user_presence_rows',
+                                    {starred_users: starred_users,
+                                     unstarred_users: unstarred_users,
+                                     split: split_users
+                                }));
     }
 
     // Update user fading, if necessary.
