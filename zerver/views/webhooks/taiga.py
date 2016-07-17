@@ -54,13 +54,16 @@ templates = {
     'userstory': {
         'create': u':package: %(user)s created user story **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned user story **%(subject)s** from %(old)s to %(new)s.',
+        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned user story **%(subject)s**'
+                                ' from %(old)s to %(new)s.',
         'points': u':game_die: %(user)s changed estimation of user story **%(subject)s**.',
         'blocked': u':lock: %(user)s blocked user story **%(subject)s**.',
         'unblocked': u':unlock: %(user)s unblocked user story **%(subject)s**.',
         'set_milestone': u':calendar: %(user)s added user story **%(subject)s** to sprint %(new)s.',
-        'changed_milestone': u':calendar: %(user)s changed sprint of user story **%(subject)s** from %(old)s to %(new)s.',
-        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of user story **%(subject)s** from %(old)s to %(new)s.',
+        'changed_milestone': u':calendar: %(user)s changed sprint of user story **%(subject)s** from %(old)s'
+                              ' to %(new)s.',
+        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of user story **%(subject)s**'
+                           ' from %(old)s to %(new)s.',
         'closed': u':checkered_flag: %(user)s closed user story **%(subject)s**.',
         'reopened': u':package: %(user)s reopened user story **%(subject)s**.',
         'renamed': u':notebook: %(user)s renamed user story from %(old)s to **%(new)s**.',
@@ -71,19 +74,23 @@ templates = {
     'milestone': {
         'create': u':calendar: %(user)s created sprint **%(subject)s**.',
         'renamed': u':notebook: %(user)s renamed sprint from %(old)s to **%(new)s**.',
-        'estimated_start': u':calendar: %(user)s changed estimated start of sprint **%(subject)s** from %(old)s to %(new)s.',
-        'estimated_finish': u':calendar: %(user)s changed estimated finish of sprint **%(subject)s** from %(old)s to %(new)s.',
+        'estimated_start': u':calendar: %(user)s changed estimated start of sprint **%(subject)s**'
+                            ' from %(old)s to %(new)s.',
+        'estimated_finish': u':calendar: %(user)s changed estimated finish of sprint **%(subject)s**'
+                             ' from %(old)s to %(new)s.',
         'delete': u':x: %(user)s deleted sprint **%(subject)s**.'
     },
     'task': {
         'create': u':clipboard: %(user)s created task **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned task **%(subject)s** to %(new)s.',
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned task **%(subject)s** from %(old)s to %(new)s.',
+        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned task **%(subject)s**'
+                                ' from %(old)s to %(new)s.',
         'blocked': u':lock: %(user)s blocked task **%(subject)s**.',
         'unblocked': u':unlock: %(user)s unblocked task **%(subject)s**.',
         'set_milestone': u':calendar: %(user)s added task **%(subject)s** to sprint %(new)s.',
         'changed_milestone': u':calendar: %(user)s changed sprint of task **%(subject)s** from %(old)s to %(new)s.',
-        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s** from %(old)s to %(new)s.',
+        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s**'
+                           ' from %(old)s to %(new)s.',
         'renamed': u':notebook: %(user)s renamed task %(old)s to **%(new)s**.',
         'description': u':notebook: %(user)s updated description of task **%(subject)s**.',
         'commented': u':thought_balloon: %(user)s commented on task **%(subject)s**.',
@@ -93,10 +100,12 @@ templates = {
     'issue': {
         'create': u':bulb: %(user)s created issue **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.', #
-        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s** from %(old)s to %(new)s.',
+        'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
+                                ' from %(old)s to %(new)s.',
         'changed_priority': u':rocket: %(user)s changed priority of issue **%(subject)s** from %(old)s to %(new)s.',
         'changed_severity': u':warning: %(user)s changed severity of issue **%(subject)s** from %(old)s to %(new)s.',
-        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of issue **%(subject)s** from %(old)s to %(new)s.',
+        'changed_status': u':chart_with_upwards_trend: %(user)s changed status of issue **%(subject)s**'
+                           ' from %(old)s to %(new)s.',
         'changed_type': u':bulb: %(user)s changed type of issue **%(subject)s** from %(old)s to %(new)s.',
         'renamed': u':notebook: %(user)s renamed issue %(old)s to **%(new)s**.',
         'description': u':notebook: %(user)s updated description of issue **%(subject)s**.',
@@ -147,7 +156,8 @@ def parse_comment(message):
         'type': message["type"],
         'values': {
             'user': message["change"]["user"]["name"],
-            'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else message["data"]["name"]
+            'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
+                       message["data"]["name"]
         }
     }
 
@@ -160,7 +170,8 @@ def parse_create_or_delete(message):
         'values':
             {
                 'user': message["data"]["owner"]["name"],
-                'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else message["data"]["name"]
+                'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
+                           message["data"]["name"]
             }
     }
 
