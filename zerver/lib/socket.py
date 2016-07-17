@@ -300,7 +300,8 @@ def respond_send_message(data):
 # securely send us the zulip.com cookie, which we use as part of our
 # authentication scheme.
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
-                                            {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (settings.EXTERNAL_HOST,),
+                                            {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (
+                                                                settings.EXTERNAL_HOST,),
                                              'disabled_transports': ['eventsource', 'htmlfile']})
 def get_sockjs_router():
     # type: () -> sockjs.tornado.SockJSRouter
