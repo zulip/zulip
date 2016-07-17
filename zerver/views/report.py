@@ -35,11 +35,12 @@ def json_report_send_time(request, user_profile,
     # type: (HttpRequest, UserProfile, int, int, int, bool, bool) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms/echo:%s/diff:%s]" \
         % (time, received, displayed, locally_echoed, rendered_content_disparity)
-    statsd.timing("endtoend.send_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), time)
+    base_key = statsd_key(user_profile.realm.domain, clean_periods=True)
+    statsd.timing("endtoend.send_time.%s" % (base_key,), time)
     if received != "(unknown)":
-        statsd.timing("endtoend.receive_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), received)
+        statsd.timing("endtoend.receive_time.%s" % (base_key,), received)
     if displayed != "(unknown)":
-        statsd.timing("endtoend.displayed_time.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), displayed)
+        statsd.timing("endtoend.displayed_time.%s" % (base_key,), displayed)
     if locally_echoed:
         statsd.incr('locally_echoed')
     if rendered_content_disparity:
@@ -54,9 +55,10 @@ def json_report_narrow_time(request, user_profile,
                             network=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms/%sms]" % (initial_core, initial_free, network)
-    statsd.timing("narrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
-    statsd.timing("narrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
-    statsd.timing("narrow.network.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), network)
+    base_key = statsd_key(user_profile.realm.domain, clean_periods=True)
+    statsd.timing("narrow.initial_core.%s" % (base_key,), initial_core)
+    statsd.timing("narrow.initial_free.%s" % (base_key,), initial_free)
+    statsd.timing("narrow.network.%s" % (base_key,), network)
     return json_success()
 
 @authenticated_json_post_view
@@ -66,8 +68,9 @@ def json_report_unnarrow_time(request, user_profile,
                             initial_free=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
-    statsd.timing("unnarrow.initial_core.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_core)
-    statsd.timing("unnarrow.initial_free.%s" % (statsd_key(user_profile.realm.domain, clean_periods=True),), initial_free)
+    base_key = statsd_key(user_profile.realm.domain, clean_periods=True)
+    statsd.timing("unnarrow.initial_core.%s" % (base_key,), initial_core)
+    statsd.timing("unnarrow.initial_free.%s" % (base_key,), initial_free)
     return json_success()
 
 @authenticated_json_post_view
