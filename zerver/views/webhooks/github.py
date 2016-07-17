@@ -59,7 +59,8 @@ def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
     return api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
 
 
-def api_github_v2(user_profile, event, payload, branches, default_stream, commit_stream, issue_stream, topic_focus = None):
+def api_github_v2(user_profile, event, payload, branches, default_stream, commit_stream, issue_stream,
+                  topic_focus = None):
     # type: (UserProfile, text_type, Mapping[text_type, Any], text_type, text_type, text_type, text_type, Optional[text_type]) -> Tuple[text_type, text_type, text_type]
     """
     processes github payload with version 2 field specification
@@ -206,7 +207,8 @@ def api_github_landing(request, user_profile, event=REQ(),
 
     # Map payload to the handler with the right version
     if version == 2:
-        target_stream, subject, content = api_github_v2(user_profile, event, payload, branches, stream, commit_stream, issue_stream, **kwargs)
+        target_stream, subject, content = api_github_v2(user_profile, event, payload, branches, stream, commit_stream,
+                                                        issue_stream, **kwargs)
     else:
         target_stream, subject, content = api_github_v1(user_profile, event, payload, branches, stream, **kwargs)
 
