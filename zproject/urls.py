@@ -195,6 +195,9 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
     url(r'^users/me/enter-sends$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.user_settings.change_enter_sends'}),
+    url(r'^users/me/starred_users$', 'zerver.lib.rest.rest_dispatch',
+        {'GET': 'zerver.views.user_settings.list_starred_users',
+         'PUT': 'zerver.views.user_settings.update_user_star'}),
 
     # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', 'zerver.lib.rest.rest_dispatch',

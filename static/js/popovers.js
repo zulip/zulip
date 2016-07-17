@@ -279,6 +279,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '.user_popover .star_user', function (e) {
+        var email = $(e.target).parents('ul').attr('data-email');
+        popovers.hide_user_sidebar_popover();
+        var current_status = people.get_star_status(email);
+        settings.star_unstar_user(email, !current_status);
+        e.stopPropagation();
+    });
+
     $('body').on('click', '.sender_info_popover .narrow_to_messages_sent', function (e) {
         var email = $(e.target).parents('ul').attr('data-email');
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
@@ -295,6 +303,7 @@ exports.register_click_handlers = function () {
         var target = $(this).closest('li');
         var email = target.find('a').attr('data-email');
         var name = target.find('a').attr('data-name');
+        var starred = people.get_star_status(email);
 
         if (current_user_sidebar_email === email) {
             // If the popover is already shown, clicking again should toggle it.
@@ -306,7 +315,7 @@ exports.register_click_handlers = function () {
         if (userlist_placement === "right") {
             popovers.show_userlist_sidebar();
         }
-        var template_vars = {email: email, name: name};
+        var template_vars = {email: email, name: name, starred: starred};
         var content = templates.render('user_sidebar_actions', template_vars);
 
         target.popover({

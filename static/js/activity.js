@@ -247,7 +247,8 @@ exports.update_users = function (user_list) {
             num_unread: get_num_unread(email),
             type: presence,
             type_desc: presence_descriptions[presence],
-            mobile: exports.presence_info[email].mobile
+            mobile: exports.presence_info[email].mobile,
+            starred: people.get_star_status(email)
         };
     }
 

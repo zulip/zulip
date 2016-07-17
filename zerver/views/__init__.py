@@ -920,6 +920,7 @@ def home(request):
         neversubbed_info      = register_ret['never_subscribed'],
         email_dict            = register_ret['email_dict'],
         people_list           = register_ret['realm_users'],
+        starred_users         = register_ret['starred_users'],
         bot_list              = register_ret['realm_bots'],
         initial_pointer       = register_ret['pointer'],
         initial_presences     = register_ret['presences'],
