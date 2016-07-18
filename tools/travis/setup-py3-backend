@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-set -x
-python tools/provision.py --travis
