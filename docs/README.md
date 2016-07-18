@@ -16,7 +16,7 @@ cd docs/
 make html
 ```
 
-and then opening `file:///path/to/zulip/_build/html/index.html` in
+and then opening `file:///path/to/zulip/docs/_build/html/index.html` in
 your browser (you can also use e.g. `firefox
 docs/_build/html/index.html` from the root of your Zulip checkout).
 
