@@ -1780,6 +1780,7 @@ class HomeTest(AuthedTestCase):
             "narrow",
             "narrow_stream",
             "needs_tutorial",
+            "neversubbed_info",
             "notifications_stream",
             "password_auth_enabled",
             "people_list",
