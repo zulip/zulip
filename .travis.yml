@@ -21,16 +21,16 @@ env:
   matrix:
     - TEST_SUITE=frontend
     - TEST_SUITE=backend
-    - TEST_SUITE=production
 language: python
 python:
   - "2.7"
+  - "3.4"
 matrix:
   include:
     - python: "3.4"
       env: TEST_SUITE=static-analysis
-    - python: "3.4"
-      env: TEST_SUITE=py3-backend
+    - python: "2.7"
+      env: TEST_SUITE=production
       sudo: required
 # command to run tests
 script:
