@@ -32,6 +32,8 @@ class Command(compilemessages.Command):
             if locale == 'en':
                 data['languages'].append({'code': 'en', 'name': 'English'})
                 continue
+            if locale == 'zh-CN':
+                continue
             if locale == 'zh_CN':
                 name = 'Simplified Chinese'
             else:
