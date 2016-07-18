@@ -12,7 +12,7 @@ from django.core.cache.backends.base import BaseCache
 from typing import Any, Callable, Iterable, Optional, Union, TypeVar
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
-from zulip_tools import run
+import subprocess
 import time
 import base64
 import random
@@ -60,7 +60,7 @@ def get_or_create_key_prefix():
         # The Python tests overwrite KEY_PREFIX on each test.
         return u'test_suite:%s:' % (text_type(os.getpid()),)
     # directory `var` should exist in production
-    run(["mkdir", "-p", os.path.join(settings.DEPLOY_ROOT, "var")])
+    subprocess.check_call(["mkdir", "-p", os.path.join(settings.DEPLOY_ROOT, "var")])
 
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
