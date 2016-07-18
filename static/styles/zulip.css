@@ -703,9 +703,6 @@ ul.filters li.out_of_home_view li.muted_topic {
     opacity: 1;
 }
 
-.message_list {
-}
-
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
     margin-top: 68px;
@@ -2342,9 +2339,6 @@ div.floating_recipient {
 
 .message_inline_image_title {
     font-weight: bold;
-}
-
-.message_inline_image_desc {
 }
 
 .popover {
