@@ -1,8 +1,10 @@
 #!/bin/bash
+
+source tools/travis/activate-venv
+
 set -e
 set -x
-source /srv/zulip-venv/bin/activate
-export PATH=$PATH:/srv/zulip-venv/bin
+
 ./tools/lint-all
 ./tools/test-backend --coverage --no-verbose-coverage
 ./tools/test-management
