@@ -191,18 +191,18 @@ li,
     line-height: 18px;
     text-decoration: none;
     position: relative;
- }
+}
 
- .header-main .logoimage {
+.header-main .logoimage {
     height: 40px;
     width: auto;
 }
 
- #user-settings-avatar {
+#user-settings-avatar {
     width: 100px;
     height: 100px;
     margin-top: 10px;
- }
+}
 
 /* Classes for hiding and showing controls */
 
@@ -834,7 +834,7 @@ td.pointer {
     z-index: 0;
 }
 
- .message_list .recipient_row {
+.message_list .recipient_row {
     background: #f1f1f1;
     border-bottom: 1px solid #e2e2e2;
     margin-bottom: 10px;
@@ -2260,14 +2260,14 @@ div.floating_recipient {
 }
 
 #bottom_whitespace {
-  display: block;
-  height: 300px;
- -webkit-touch-callout: none;
- -webkit-user-select: none;
- -khtml-user-select: none;
- -moz-user-select: none;
- -ms-user-select: none;
-  user-select: none;
+    display: block;
+    height: 300px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #home-error {
