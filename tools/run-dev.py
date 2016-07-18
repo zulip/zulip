@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import optparse
 import subprocess
 import signal
@@ -43,6 +45,10 @@ parser.add_option('--interface',
     action='store', dest='interface',
     default='127.0.0.1', help='Set the IP or hostname for the proxy to listen on')
 
+parser.add_option('--no-clear-memcached',
+    action='store_false', dest='clear_memcached',
+    default=True, help='Do not clear memcached')
+
 (options, args) = parser.parse_args()
 
 base_port   = 9991
@@ -66,6 +72,10 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')
+
+if options.clear_memcached:
+    print("Clearing memcached ...")
+    subprocess.check_call('./scripts/setup/flush-memcached')
 
 # Set up a new process group, so that we can later kill run{server,tornado}
 # and all of the processes they spawn.
