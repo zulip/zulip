@@ -147,7 +147,7 @@ casper.waitUntilVisible('#display-settings-status', function () {
     });
 });
 
-casper.waitForSelector("#settings-change-box", function () {
+casper.waitForSelector("html", function () {
     casper.test.info("Checking if we are on Chinese page.");
     casper.test.assertEvalEquals(function () {
         return document.documentElement.lang;
