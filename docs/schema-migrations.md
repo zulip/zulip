@@ -18,6 +18,8 @@ migrations.
 * **Numbering conflicts across branches**: If you've done your schema
   change in a branch, and meanwhile another schema change has taken
   place, Django will now have two migrations with the same number. To
-  fix this, you can just rename the file, as long as no other
-  migrations depend on it (in which case you also need to update the
-  dependencies).
+  fix this, you need to renumber your migration(s), fix up
+  the "dependencies" entries in your migration(s), and rewrite your
+  git history as needed.  There is a tutorial
+  [here](migration-renumbering.html) that walks you though that
+  process.
