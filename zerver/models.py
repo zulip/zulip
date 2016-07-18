@@ -637,6 +637,12 @@ class Stream(ModelReprMixin, models.Model):
                     description=self.description,
                     invite_only=self.invite_only)
 
+    def default_permissions_list(self):
+        # type: () -> list[str]
+        return [permission for permission in self.default_permissions.keys() \
+                            if getattr(self.default_permissions, permission).is_set]
+
+
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
@@ -1322,6 +1328,11 @@ class Subscription(ModelReprMixin, models.Model):
     def __unicode__(self):
         # type: () -> text_type
         return u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)
+
+    def permissions_list(self):
+        # type: () -> List[str]
+        return [permission for permission in self.permissions.keys() \
+                            if getattr(self.permissions, permission).is_set]
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
