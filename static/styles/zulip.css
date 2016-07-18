@@ -1008,11 +1008,7 @@ just a temporary hack.
     background: none;
 }
 
-.compose_table .message_header_colorblock {
-    border-radius: 3px 0px 0px 3px;
-    border-bottom: 0px;
-}
-
+.compose_table .message_header_colorblock,
 .compose_table .message_header_colorblock.message_header_private_message {
     border-radius: 3px 0px 0px 3px;
     border-bottom: 0px;
