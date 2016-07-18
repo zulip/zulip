@@ -384,7 +384,10 @@ a:hover code {
     position: relative;
 }
 
-#stream_filters li:hover {
+#global_filters li:hover,
+#group-pms li:hover,
+#stream_filters li:hover,
+#user_presences li:hover {
     background-color: #e2e8dd;
 }
 
@@ -400,10 +403,6 @@ a:hover code {
 
 #user_presences:hover, #group-pms:hover {
     overflow-y: auto;
-}
-
-#user_presences li:hover, #group-pms li:hover {
-    background-color: #e2e8dd;
 }
 
 #user_presences .user_sidebar_entry:hover, #group-pms .group-pms-sidebar-entry:hover {
@@ -2967,10 +2966,6 @@ li.expanded_private_message {
     padding-left: 24px;
     padding-bottom: 1px;
     padding-top: 2px;
-}
-
-#global_filters li:hover {
-    background-color: #e2e8dd;
 }
 
 .show-all-streams a {
