@@ -13,13 +13,16 @@ from zerver.models import Client, UserProfile
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
 
-BITBUCKET_PUSH_BODY = 'User {display_name}(login: {username}) pushed [{number_of_commits} commit{s}]({commits_url}) into {branch} branch.'
+BITBUCKET_PUSH_BODY = 'User {display_name}(login: {username}) pushed [{number_of_commits} commit{s}]({commits_url})'\
+' into {branch} branch.'
 BITBUCKET_FORK_BODY = 'User {display_name}(login: {username}) forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_COMMENT_BODY = 'User {display_name}(login: {username}) added [comment]({url_to_comment}) to commit.'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
 BITBUCKET_ISSUE_ACTION_BODY = 'User {display_name}(login: {username}) {action} [an issue]({issue_url})'
-BITBUCKET_PULL_REQUEST_ACTION_BODY = 'User {display_name}(login: {username}) {action} ["{title}" pull request]({pull_request_url})'
-BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY = 'User {display_name}(login: {username}) {action} [comment]({comment_url} in ["{title}" pull request]({pull_request_url})'
+BITBUCKET_PULL_REQUEST_ACTION_BODY = 'User {display_name}(login: {username}) {action} ["{title}" pull request]'\
+'({pull_request_url})'
+BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY = 'User {display_name}(login: {username}) {action} [comment]({comment_url}'\
+' in ["{title}" pull request]({pull_request_url})'
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [
     'approved',
@@ -39,7 +42,8 @@ class UnknownTriggerType(Exception):
 
 @api_key_only_webhook_view('Bitbucket2')
 @has_request_variables
-def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_type='body'), stream=REQ(default='bitbucket')):
+def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+                           stream=REQ(default='bitbucket')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
     try:
         subject = get_subject(payload)

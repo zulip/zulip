@@ -158,7 +158,8 @@ def accounts_register(request):
                 if isinstance(backend, LDAPBackend):
                     ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
                     try:
-                        request.session['authenticated_full_name'] = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
+                        request.session['authenticated_full_name'] = ldap_attrs[
+                            settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
                         name_validated = True
                         # We don't use initial= here, because if the form is
                         # complete (that is, no additional fields need to be
@@ -738,7 +739,9 @@ def create_realm(request, creation_key=None):
             return render_to_response("zerver/realm_creation_failed.html",
                                       {'message': _('New organization creation disabled.')})
         elif not check_key_is_valid(creation_key):
-            return render_to_response("zerver/realm_creation_failed.html", {'message': _('The organization creation link has been expired or is not valid.')})
+            return render_to_response("zerver/realm_creation_failed.html",
+                                      {'message': _('The organization creation link has been expired'
+                                                    ' or is not valid.')})
 
     if request.method == 'POST':
         form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
@@ -756,7 +759,8 @@ def create_realm(request, creation_key=None):
         except ValidationError:
             # if the user user is already registered he can't create a new realm as a realm
             # with the same domain as user's email already exists
-            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email))
+            redirect_url = reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email)
+            return HttpResponseRedirect(redirect_url)
     else:
         form = RealmCreationForm(domain=request.session.get("domain"))
     return render_to_response('zerver/create_realm.html',
@@ -779,7 +783,8 @@ def accounts_home(request):
             # Note: We don't check for uniqueness
             is_inactive(email)
         except ValidationError:
-            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email))
+            redirect_url = reverse('django.contrib.auth.views.login') + '?email=' + urllib.parse.quote_plus(email)
+            return HttpResponseRedirect(redirect_url)
     else:
         form = create_homepage_form(request)
     return render_to_response('zerver/accounts_home.html',
@@ -1121,7 +1126,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only)
         data['create_stream_by_admins_only'] = create_stream_by_admins_only
     if (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or \
-       (message_content_edit_limit_seconds is not None and realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
+       (message_content_edit_limit_seconds is not None and
+        realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:
@@ -1146,11 +1152,13 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
     if return_data.get("inactive_realm") == True:
         return json_error(_("Your realm has been deactivated."), data={"reason": "realm deactivated"}, status=403)
     if return_data.get("password_auth_disabled") == True:
-        return json_error(_("Password auth is disabled in your team."), data={"reason": "password auth disabled"}, status=403)
+        return json_error(_("Password auth is disabled in your team."), data={"reason": "password auth disabled"},
+                          status=403)
     if user_profile is None:
         if return_data.get("valid_attestation") == True:
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
-            return json_error(_("This user is not registered; do so from a browser."), data={"reason": "unregistered"}, status=403)
+            return json_error(_("This user is not registered; do so from a browser."), data={"reason": "unregistered"},
+                              status=403)
         return json_error(_("Your username or password is incorrect."), data={"reason": "incorrect_creds"}, status=403)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 

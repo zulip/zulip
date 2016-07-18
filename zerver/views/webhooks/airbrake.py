@@ -16,7 +16,8 @@ AIRBRAKE_MESSAGE_TEMPLATE = '[{error_class}]({error_url}): "{error_message}" occ
 
 @api_key_only_webhook_view('Airbrake')
 @has_request_variables
-def api_airbrake_webhook(request, user_profile, client, payload=REQ(argument_type='body'), stream=REQ(default='airbrake')):
+def api_airbrake_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+                         stream=REQ(default='airbrake')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], six.text_type) -> HttpResponse
     try:
         subject = get_subject(payload)
