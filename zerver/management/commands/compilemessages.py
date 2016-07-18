@@ -48,7 +48,7 @@ class Command(compilemessages.Command):
                             print("Problem in parsing {}".format(filename))
                             raise
                     else:
-                        raise Exception("Unknown language")
+                        raise Exception("Unknown language %s" % (locale,))
 
             info['name'] = name
             info['code'] = locale
