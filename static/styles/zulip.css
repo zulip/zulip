@@ -2462,6 +2462,7 @@ div.floating_recipient {
     vertical-align: middle;
 }
 
+.administration,
 .subscriptions {
     margin-top: 55px;
     padding-left: 15px;
@@ -3632,11 +3633,6 @@ li.expanded_private_message {
 
 .admin-menu-item {
     display: none;
-}
-
-.administration {
-    margin-top: 55px;
-    padding-left: 15px;
 }
 
 li.show-more-topics a {
