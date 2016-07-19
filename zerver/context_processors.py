@@ -12,6 +12,7 @@ def add_settings(request):
         # to the template
         'not_voyager':               not settings.VOYAGER,
         'zulip_com':                 settings.ZULIP_COM,
+        'custom_logo_url':           settings.CUSTOM_LOGO_URL,
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,

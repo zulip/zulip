@@ -15,8 +15,8 @@
 <div class="header-main" id="top_navbar">
   <div class="column-left">
         <div>
-          {% if zulip_com %}
-          <a class="brand logo" href="/"><img src="/static/images/logo/zulip-dropbox.png" class="portico-logo" alt="Zulip" content="Zulip" /></a>
+          {% if custom_logo_url %}
+          <a class="brand logo" href="/"><img src="{{ custom_logo_url }}" class="portico-logo" alt="Zulip" content="Zulip" /></a>
           {% else %}
           <a class="brand logo" href="/"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="portico-simple-logo" alt="Zulip" content="Zulip" /></a>
           {% endif %}
