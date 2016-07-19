@@ -22,3 +22,4 @@ EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 CAMO_URI = ''
 OPEN_REALM_CREATION = True
 
+SAVE_FRONTEND_STACKTRACES = True
