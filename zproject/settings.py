@@ -313,6 +313,8 @@ INSTALLED_APPS = [
     'zerver',
 ] + EXTRA_INSTALLED_APPS
 
+ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
+
 # Base URL of the Tornado server
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.

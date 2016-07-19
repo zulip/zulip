@@ -59,7 +59,7 @@ def queue_digest_recipient(user_profile, cutoff):
 
 def domains_for_this_deployment():
     # type: () -> List[str]
-    if settings.ZULIP_COM:
+    if settings.ZILENCER_ENABLED:
         # Voyager deployments don't have a Deployment entry.
         # Only send zulip.com digests on staging.
         from zilencer.models import Deployment

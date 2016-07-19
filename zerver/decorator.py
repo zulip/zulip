@@ -33,7 +33,7 @@ from six import text_type
 from typing import Union, Any, Callable, Sequence, Dict, Optional
 from zerver.lib.str_utils import force_bytes
 
-if settings.ZULIP_COM:
+if settings.ZILENCER_ENABLED:
     from zilencer.models import get_deployment_by_domain, Deployment
 else:
     from mock import Mock
