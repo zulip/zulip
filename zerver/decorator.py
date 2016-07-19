@@ -250,7 +250,7 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
             # type: (HttpRequest, *Any, **Any) -> HttpResponse
-            if test_func(request.user):
+            if test_func(request):
                 return view_func(request, *args, **kwargs)
             path = request.build_absolute_uri()
             resolved_login_url = resolve_url(login_url or settings.LOGIN_URL)
@@ -266,13 +266,13 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
         return _wrapped_view
     return decorator
 
-def logged_in_and_active(user_profile):
-    # type: (UserProfile) -> bool
-    if not user_profile.is_authenticated():
+def logged_in_and_active(request):
+    # type: (HttpRequest) -> bool
+    if not request.user.is_authenticated():
         return False
-    if not user_profile.is_active:
+    if not request.user.is_active:
         return False
-    if user_profile.realm.deactivated:
+    if request.user.realm.deactivated:
         return False
     return True
 
