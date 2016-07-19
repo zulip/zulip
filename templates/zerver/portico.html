@@ -62,7 +62,7 @@
       {% if not only_sso %}
       <li><span class="little-bullet">·</span></li>
       <li>
-          {% if zulip_com %}
+          {% if register_link_disabled %}
           {% else %}
           <a href="{{ url('register') }}">{{ _('Register') }}</a>
           {% endif %}
