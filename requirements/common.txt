@@ -130,7 +130,7 @@ sourcemap==0.1.8
 tornado==2.4.1
 
 # Needed for Python static typing
-typing==3.5.0.1
+typing==3.5.2.2
 
 # Fast JSON parser
 ujson==1.35
