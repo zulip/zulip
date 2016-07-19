@@ -2,7 +2,7 @@
 {% block hello_page_container %} hello-main{% endblock %}
 {% block hello_page_footer %} hello-footer{% endblock %}
 {% block os_announcement %}
-  {% if zulip_com %}
+  {% if show_oss_announcement %}
   <div class="os-headline-container">
     <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
     <div class="main-headline-text">
