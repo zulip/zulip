@@ -782,6 +782,7 @@ class Topic(ModelReprMixin, models.Model):
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
+    topic = models.ForeignKey(Topic, null=True)
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
     content = models.TextField() # type: text_type
     rendered_content = models.TextField(null=True) # type: Optional[text_type]
@@ -1155,8 +1156,8 @@ class Message(ModelReprMixin, models.Model):
 
     def update_topic(self):
         # type: () -> None
-        if self.subject:
-            Topic.objects.get_or_create(
+        if self.subject and not self.topic:
+            self.topic, _ = Topic.objects.get_or_create(
                 name=self.subject,
                 recipient=self.recipient)
 

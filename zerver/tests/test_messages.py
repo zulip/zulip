@@ -411,10 +411,12 @@ class MessageTopicTest(TestCase):
             recipient=stream_recipient,
         )
         self.assertEqual(len(lunch_topics), 1)
+        topic_id = lunch_topics[0].id
 
         # Make sure we write legacy/new fields.
         for message in messages:
             msg = Message.objects.get(id=message.id)
+            self.assertEqual(msg.topic_id, topic_id)
             self.assertEqual(msg.subject, 'lunch')
 
 class MessageDictTest(AuthedTestCase):
