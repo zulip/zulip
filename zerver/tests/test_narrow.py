@@ -10,12 +10,13 @@ from zerver.models import (
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
+from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     AuthedTestCase, POSTRequestMock,
     get_user_messages, message_ids, queries_captured,
 )
 from zerver.views.messages import (
-    exclude_muting_conditions, get_sqlalchemy_connection,
+    exclude_muting_conditions,
     get_old_messages_backend, ok_to_include_history,
     NarrowBuilder, BadNarrowOperator
 )
