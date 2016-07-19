@@ -41,8 +41,9 @@ try:
                            os.path.join(deploy_path, "zulip-venv")])
 
     # Hack to deploy images not included in open source project
-    subprocess.check_call(["cp", "-a", "/etc/zulip/zulip-dropbox.png",
-                           os.path.join(deploy_path, "static/images/logo")])
+    if os.path.exists("/etc/zulip/zulip-dropbox.png"):
+        subprocess.check_call(["cp", "-a", "/etc/zulip/zulip-dropbox.png",
+                               os.path.join(deploy_path, "static/images/logo")])
 
     # Update static files
     logging.info("Updating static files")
