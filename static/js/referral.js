@@ -20,7 +20,7 @@ exports.update_state = function (granted, used) {
     last_granted = granted;
     last_used = used;
 
-    if (granted <= 0 || feature_flags.do_not_share_the_love) {
+    if (granted <= 0 || !page_params.share_the_love) {
         $("#share-the-love").hide();
     } else {
         $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());

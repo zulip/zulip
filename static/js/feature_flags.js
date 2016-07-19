@@ -2,9 +2,6 @@ var feature_flags = (function () {
 
 var exports = {};
 
-// Voyager-related flags
-exports.do_not_share_the_love = page_params.voyager;
-
 // Manually-flipped debugging flags
 exports.log_send_times = false;
 exports.collect_send_times = false;
