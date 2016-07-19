@@ -1,5 +1,6 @@
 var common = require('../casper_lib/common.js').common;
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
+var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 
 common.start_and_log_in();
 
@@ -162,7 +163,14 @@ casper.waitForSelector("#default_language", function () {
     casper.test.info("Opening German page through i18n url.");
 });
 
-casper.thenOpen('http://127.0.0.1:9981/de/#settings');
+var settings_url = "";
+if (REALMS_HAVE_SUBDOMAINS) {
+    settings_url = 'http://zulip.zulipdev.com:9981/de/#settings';
+} else {
+    settings_url = 'http://localhost:9981/de/#settings';
+}
+
+casper.thenOpen(settings_url);
 
 casper.waitForSelector("#settings-change-box", function check_url_preference() {
     casper.test.info("Checking the i18n url language precedence.");

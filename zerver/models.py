@@ -137,6 +137,7 @@ class Realm(ModelReprMixin, models.Model):
     # name is the user-visible identifier for the realm. It has no required
     # structure.
     name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
+    subdomain = models.CharField(max_length=40, null=True, unique=True) # type: Optional[text_type]
     restricted_to_domain = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
@@ -239,6 +240,12 @@ def resolve_email_to_domain(email):
     if alias is not None:
         domain = alias.realm.domain
     return domain
+
+def resolve_subdomain_to_realm(subdomain):
+    try:
+        return Realm.objects.get(subdomain=subdomain)
+    except Realm.DoesNotExist:
+        return None
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
