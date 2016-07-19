@@ -20,7 +20,6 @@ zulip.kdev4
 coverage/
 .coverage
 /queue_error
-.test-js-with-node.html
 .kateproject.d/
 .kateproject
 *.kate-swp
