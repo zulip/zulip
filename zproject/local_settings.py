@@ -89,6 +89,7 @@ if ZULIP_COM_STAGING:
     EMAIL_GATEWAY_PATTERN = "%s@streams.staging.zulip.com"
 else:
     EMAIL_GATEWAY_PATTERN = "%s@streams.zulip.com"
+EMAIL_GATEWAY_EXTRA_PATTERN_HACK = r'@[\w-]*\.zulip\.net'
 
 # Email mirror configuration
 # The email of the Zulip bot that the email gateway should post as.
