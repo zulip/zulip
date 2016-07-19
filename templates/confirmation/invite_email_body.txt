@@ -5,10 +5,10 @@ Hi there,
 To get started, visit the link below:
     <{{ activate_url }}>
 
-{% if voyager %}
-If you are having issues, please contact your Zulip administrator at <{{ support_email }}>.
-{% else %}
+{% if verbose_support_offers %}
 Feel free to give us a shout at <{{ support_email }}> if you have any questions.
+{% else %}
+If you are having issues, please contact your Zulip administrator at <{{ support_email }}>.
 {% endif %}
 
 Cheers,
