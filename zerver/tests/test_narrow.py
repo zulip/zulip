@@ -504,14 +504,15 @@ class GetOldMessagesTest(AuthedTestCase):
             ('dinner', 'Anybody staying late tonight?'),
         ]
 
-        for topic, content in messages_to_search:
-            self.send_message(
-                sender_name="cordelia@zulip.com",
-                raw_recipients="Verona",
-                message_type=Recipient.STREAM,
-                content=content,
-                subject=topic,
-            )
+        with subject_topic_awareness(self): # search
+            for topic, content in messages_to_search:
+                self.send_message(
+                    sender_name="cordelia@zulip.com",
+                    raw_recipients="Verona",
+                    message_type=Recipient.STREAM,
+                    content=content,
+                    subject=topic,
+                )
 
         # We use brute force here and update our text search index
         # for the entire zerver_message table (which is small in test
