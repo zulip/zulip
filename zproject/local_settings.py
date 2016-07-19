@@ -31,6 +31,7 @@ ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 SHARE_THE_LOVE = True
 SHOW_OSS_ANNOUNCEMENT = True
 REGISTER_LINK_DISABLED = True
+CUSTOM_LOGO_URL = "/static/images/logo/zulip-dropbox.png"
 
 # This can be filled in automatically from the database, maybe
 DEPLOYMENT_ROLE_NAME = 'zulip.com'
