@@ -1,7 +1,14 @@
 var common = require('../casper_lib/common.js').common;
+var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 
+var realm_url = "";
+if (REALMS_HAVE_SUBDOMAINS) {
+    realm_url = "http://zulip.zulipdev.com:9981/";
+} else {
+    realm_url = "http://localhost:9981/";
+}
 // Start of test script.
-casper.start('http://127.0.0.1:9981/', common.initialize_casper);
+casper.start(realm_url, common.initialize_casper);
 
 casper.then(function () {
     casper.test.assertHttpStatus(302);

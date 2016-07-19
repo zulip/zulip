@@ -13,6 +13,7 @@ import os
 from time import sleep
 
 from django.conf import settings
+from django.http import HttpRequest
 from six.moves import range
 from zerver.lib.str_utils import force_text
 
@@ -184,3 +185,21 @@ def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=Non
         id_collector.update(tup_ids)
 
         yield [row for row_id, i, row in tup_chunk]
+
+def get_subdomain(request):
+    # type: (HttpRequest) -> text_type
+    domain = request.get_host().lower()
+    index = domain.find("." + settings.EXTERNAL_HOST)
+    if index == -1:
+        return ""
+    subdomain = domain[0:index]
+    return subdomain
+
+def check_subdomain(realm_subdomain, user_subdomain):
+    # type: (text_type, text_type) -> bool
+    if settings.REALMS_HAVE_SUBDOMAINS and realm_subdomain is not None:
+        if (realm_subdomain == "" and user_subdomain is None):
+            return True
+        if realm_subdomain != user_subdomain:
+            return False
+    return True

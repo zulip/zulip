@@ -14,7 +14,7 @@ from django.utils.timezone import now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.utils import statsd
+from zerver.lib.utils import statsd, get_subdomain, check_subdomain
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
      api_calls_left
@@ -279,7 +279,7 @@ def logged_in_and_active(request):
         return False
     if request.user.realm.deactivated:
         return False
-    return True
+    return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
 
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
