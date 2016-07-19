@@ -23,7 +23,7 @@ from six import text_type
 
 SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
                 u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
-if settings.ZULIP_COM:
+if settings.SHOW_OSS_ANNOUNCEMENT:
     SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
                     u"The zulip.com service is not taking new customer teams. <br /> " + \
                     u"<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/\">" + \

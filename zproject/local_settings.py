@@ -29,6 +29,7 @@ if not ZULIP_COM:
 
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 SHARE_THE_LOVE = True
+SHOW_OSS_ANNOUNCEMENT = True
 
 # This can be filled in automatically from the database, maybe
 DEPLOYMENT_ROLE_NAME = 'zulip.com'
