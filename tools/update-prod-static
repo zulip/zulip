@@ -11,6 +11,7 @@ import sys
 
 # We need settings so we can figure out where the prod-static directory is.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import scripts.lib.setup_path_on_import
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 
