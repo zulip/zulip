@@ -166,14 +166,20 @@ def main():
         run(["wget", "-O", temp_deb_path, TSEARCH_URL])
         run(["sudo", "dpkg", "--install", temp_deb_path])
 
-    if PY2:
-        MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
-        setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, virtualenv_args=['-p', 'python3'])
+    if TRAVIS:
+        if PY2:
+            MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
+            setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, virtualenv_args=['-p', 'python3'])
+            DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
+            setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE)
+        else:
+            DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
+            setup_virtualenv(VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
+    else:
         DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
         setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE)
-    else:
         DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
-        setup_virtualenv(VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
+        setup_virtualenv(PY3_VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
 
     # Put Python2 virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
