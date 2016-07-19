@@ -129,7 +129,7 @@ class zulip_ops::base {
     content    => template('zulip_ops/iptables/rules.v4.erb'),
     require    => Package['iptables-persistent'],
   }
-  service { 'iptables-persistent':
+  service { 'netfilter-persistent':
     ensure     => running,
 
     # Because there is no running process for this service, the normal status
@@ -144,6 +144,7 @@ class zulip_ops::base {
     # Puppet to fall back to stop/start, which does work.
     hasrestart => false,
 
+    require    => Package['iptables-persistent'],
     subscribe  => File['/etc/iptables/rules.v4'],
   }
 }
