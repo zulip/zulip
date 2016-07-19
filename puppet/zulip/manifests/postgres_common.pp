@@ -9,6 +9,8 @@ class zulip::postgres_common {
                         "python-dateutil", # TODO: use a virtualenv instead
                         # our dictionary
                         "hunspell-en-us",
+                        # Used to read /etc/zulip/zulip.conf for database backups
+                        "crudini",
                         ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
@@ -29,5 +31,13 @@ class zulip::postgres_common {
     group => "root",
     mode => 755,
     source => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_common",
+  }
+
+  file { "/usr/local/bin/env-wal-e":
+    ensure => file,
+    owner => "root",
+    group => "postgres",
+    mode => 750,
+    source => "puppet:///modules/zulip/postgresql/env-wal-e",
   }
 }

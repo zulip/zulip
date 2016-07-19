@@ -6,8 +6,6 @@ class zulip_internal::postgres_common {
                                  "lzop",
                                  "pv",
                                  "python-pip",
-                                 # Used to read /etc/zulip/zulip.conf for our backup system
-                                 "crudini",
                                  ]
   package { $internal_postgres_packages: ensure => "installed" }
 
@@ -16,14 +14,6 @@ class zulip_internal::postgres_common {
     creates  => "/usr/local/bin/wal-e",
     require  => Package['python-pip', 'python-boto',
                         'python-gevent', 'lzop', 'pv'],
-  }
-
-  file { "/usr/local/bin/env-wal-e":
-    ensure => file,
-    owner => "root",
-    group => "postgres",
-    mode => 750,
-    source => "puppet:///modules/zulip_internal/postgresql/env-wal-e",
   }
 
   file { "/usr/local/bin/pg_backup_and_purge.py":
