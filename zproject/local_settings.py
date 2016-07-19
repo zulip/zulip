@@ -28,6 +28,7 @@ if not ZULIP_COM:
     raise Exception("You should create your own local settings from local_settings_template.")
 
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
+SHARE_THE_LOVE = True
 
 # This can be filled in automatically from the database, maybe
 DEPLOYMENT_ROLE_NAME = 'zulip.com'
