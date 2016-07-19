@@ -7,7 +7,7 @@ from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
 
 from zerver.lib.cache import bounce_key_prefix_for_testing
-from zerver.views.messages import get_sqlalchemy_connection
+from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import get_all_templates
 
 import os

@@ -23,6 +23,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     extract_recipients, truncate_body
 from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.response import json_success, json_error
+from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
@@ -34,7 +35,6 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     resolve_email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams
 
-import sqlalchemy
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
     or_, not_, union_all, alias
@@ -45,39 +45,6 @@ import datetime
 
 from six.moves import map
 import six
-
-# This is a Pool that doesn't close connections.  Therefore it can be used with
-# existing Django database connections.
-class NonClosingPool(sqlalchemy.pool.NullPool):
-    def status(self):
-        return "NonClosingPool"
-
-    def _do_return_conn(self, conn):
-        pass
-
-    def recreate(self):
-        return self.__class__(creator=self._creator, # type: ignore # __class__
-                              recycle=self._recycle,
-                              use_threadlocal=self._use_threadlocal,
-                              reset_on_return=self._reset_on_return,
-                              echo=self.echo,
-                              logging_name=self._orig_logging_name,
-                              _dispatch=self.dispatch)
-
-sqlalchemy_engine = None
-def get_sqlalchemy_connection():
-    global sqlalchemy_engine
-    if sqlalchemy_engine is None:
-        def get_dj_conn():
-            connection.ensure_connection()
-            return connection.connection
-        sqlalchemy_engine = sqlalchemy.create_engine('postgresql://',
-                                                     creator=get_dj_conn,
-                                                     poolclass=NonClosingPool,
-                                                     pool_reset_on_return=False)
-    sa_connection = sqlalchemy_engine.connect()
-    sa_connection.execution_options(autocommit=False)
-    return sa_connection
 
 class BadNarrowOperator(JsonableError):
     def __init__(self, desc, status_code=400):
