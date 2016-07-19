@@ -172,8 +172,8 @@ only one fixture, `zerver/fixtures/helloworld/helloworld_hello.json`:
 }
 ```
 
-When writing your own webhook integration, you'll want to write one test
-function for every message type that your webhook supports. You'll also need a
+When writing your own webhook integration, you'll want to write a test function
+for each distinct message condition your webhook supports. You'll also need a
 corresponding fixture for each of these tests. See [Step 3: Create
 tests](#step-3-create-tests) or [Testing](testing.html) for further details.
 
@@ -200,15 +200,15 @@ def api_helloworld_webhook(request, user_profile, client,
                            topic=REQ(default='Hello World')):
 
   # construct the body of the message
-  body = ('Hello! I am happy to be here! :smile: ')
+  body = 'Hello! I am happy to be here! :smile: '
 
   # try to add the Wikipedia article of the day
   # return appropriate error if not successful
   try:
-      body_template = '\nThe Wikipedia featured article for today is **[%s](%s)**'
-      body += body_template % (payload['featured_title'], payload['featured_url'])
+      body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
+      body += body_template.format(**payload)
   except KeyError as e:
-      return json_error("Missing key %s in JSON" % (e.message,))
+      return json_error(_("Missing key {} in JSON").format(e.message))
 
   # send the message
   check_send_message(user_profile, client, 'stream', [stream], topic, body)
@@ -302,6 +302,10 @@ Using either method will create a message in Zulip:
 
 ![Image of Hello World webhook message](images/helloworld-webhook.png)
 
+Another helpful tool for testing your integration is to use
+[UltraHook](http://www.ultrahook.com/), which allows you to receive webhook
+calls via your local Zulip dev environment.
+
 #### Step 3: Create tests
 
 Every webhook integraton should have a corresponding test class in
@@ -317,8 +321,7 @@ class HelloWorldHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
     FIXTURE_DIR_NAME = 'helloworld'
 
-    # Note: Include a test function per each type of message your integration supports
-
+    # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self):
         expected_subject = u"Hello World";
         expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
@@ -331,13 +334,32 @@ class HelloWorldHookTests(WebhookTestCase):
 
 ```
 
-When writing tests for your webook, you'll want to include one function per
-each message action (and corresponding fixture) that your integration supports.
+When writing tests for your webook, you'll want to include one test function
+(and corresponding fixture) per each distinct message condition that your
+integration supports.
 
 If, for example, we added support for sending a goodbye message to our `Hello
 World` webook, we would add another test function to `HelloWorldHookTests`
-class called something like `test_goodbye_message` as well as a new fixtured
-`helloworld_goodbye.json` in `zerver/fixtures/helloworld/`.
+class called something like `test_goodbye_message`:
+
+```
+    def test_goodbye_message(self):
+        expected_subject = u"Hello World";
+        expected_message = u"Goodbye!";
+
+        # use fixture named helloworld_goodbye
+        self.send_and_test_stream_message('goodbye', expected_subject, expected_message,content_type="application/x-www-form-urlencoded")
+```
+
+As well as a new fixture `helloworld_goodbye.json` in
+`zerver/fixtures/helloworld/`:
+
+```
+{
+  "message":"Goodbye!",
+}
+
+```
 
 Once you have written some tests, you can run just these new tests from within
 the Zulip dev environment with this command:
@@ -413,7 +435,8 @@ request:
 2. Read through [Code styles and conventions](code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
 3. Take a look at your git history to ensure your commits have been clear and
-   logical. If not, consider revising them with `git rebase --interactive`.
+   logical (see [Version Control](version-control.html) for tips). If not,
+   consider revising them with `git rebase --interactive`.
 4. Push code to your fork.
 5. Submit a pull request to zulip/zulip.
 

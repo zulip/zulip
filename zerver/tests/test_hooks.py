@@ -1710,8 +1710,7 @@ class HelloWorldHookTests(WebhookTestCase):
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
     FIXTURE_DIR_NAME = 'hello'
 
-    # Note: Include a test function per each type of message your integration supports
-
+    # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self):
         expected_subject = u"Hello World";
         expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";

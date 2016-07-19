@@ -13,15 +13,15 @@ def api_helloworld_webhook(request, user_profile, client,
                            topic=REQ(default='Hello World')):
 
     # construct the body of the message
-    body = ('Hello! I am happy to be here! :smile: ')
+    body = 'Hello! I am happy to be here! :smile: '
 
     # try to add the Wikipedia article of the day
     # return appropriate error if not successful
     try:
-        body_template = '\nThe Wikipedia featured article for today is **[%s](%s)**'
-        body += body_template % (payload['featured_title'], payload['featured_url'])
+        body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
+        body += body_template.format(**payload)
     except KeyError as e:
-        return json_error(_("Missing key %s in JSON") % (e.message,))
+        return json_error(_("Missing key {} in JSON").format(str(e)))
 
     # send the message
     check_send_message(user_profile, client, 'stream', [stream], topic, body)
