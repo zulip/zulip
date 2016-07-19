@@ -107,6 +107,14 @@ casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function
     );
 });
 
+/*
+   This test needs a modification. As it stands now, it will cause a race
+   condition with all subsequent tests which access the UserProfile object
+   this test modifies. Currently, if we modify alert words, we don't get
+   any notification from the server, issue reported at
+   https://github.com/zulip/zulip/issues/1269. Consequently, we can't wait
+   on any condition to avoid the race condition.
+
 casper.waitForSelector('#create_alert_word_form', function () {
     casper.test.info('Attempting to submit an empty alert word');
     casper.click('#create_alert_word_button');
@@ -131,6 +139,7 @@ casper.waitForSelector('#create_alert_word_form', function () {
     casper.test.info('Checking that the element was deleted');
     casper.test.assertDoesntExist('div.alert-word-information-box');
 });
+*/
 
 casper.then(function change_default_language() {
     casper.test.info('Changing the default language');
