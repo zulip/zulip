@@ -1,0 +1,2 @@
+Twisted==15.2.1
+zope.interface==4.1.2

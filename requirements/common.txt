@@ -20,9 +20,6 @@ Pygments==2.0.2
 # Needed for building complex DB queries
 SQLAlchemy==0.7.8
 
-# Needed for the email mirror
-Twisted==15.2.1
-
 # Needed for S3 file uploads
 boto==2.38.0
 
@@ -136,7 +133,6 @@ typing==3.5.2.2
 ujson==1.35
 
 uritemplate==0.6
-zope.interface==4.1.2
 
 # Django extension for static asset pipeline
 django-pipeline==1.6.8
@@ -147,4 +143,8 @@ git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns-2.0.
 # Needed for Twitter card integration
 git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5
 
+# Needed for the email mirror and for running tools/run-dev.py
+-r twisted.txt
+
+# Needed for the email mirror
 -r emailmirror.txt
