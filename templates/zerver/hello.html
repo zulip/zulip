@@ -26,7 +26,7 @@
         {{ _('Finally, workplace chat that actually improves your productivity.*') }}
       </span>
       <span class="footnote">{{ _("* It's also great for sharing cat pictures") }}.</span>
-        {% if not_voyager %}
+        {% if register_link_disabled %}
         {% elif only_sso %}
           <a href="{{ url('login-sso') }}" class="main-signup-button btn btn-large btn-primary">{{ _('Log in now!') }}</a>
         {% else %}
@@ -194,7 +194,7 @@
 
 <div class="app feature-line light">
   <div class="app-main feature-line-container centered-content">
-    {% if not_voyager %}
+    {% if register_link_disabled %}
     {% elif only_sso %}
       <a href="{{ url('login-sso') }}" class="bottom-signup-button btn btn-large btn-primary">{{ _('Log in now') }}</a>
     {% else %}
