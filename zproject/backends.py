@@ -15,6 +15,7 @@ from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
 from social.backends.github import GithubOAuth2
 from django.contrib.auth import authenticate
+from zerver.lib.utils import check_subdomain
 
 def password_auth_enabled(realm):
     if realm is not None:
@@ -125,9 +126,11 @@ class ZulipDummyBackend(ZulipAuthMixin):
     """
     Used when we want to log you in but we don't know which backend to use.
     """
-    def authenticate(self, username=None, use_dummy_backend=False):
+    def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False):
         if use_dummy_backend:
-            return common_get_active_user_by_email(username)
+            user_profile = common_get_active_user_by_email(username)
+            if user_profile is not None and check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+                return user_profile
         return None
 
 class EmailAuthBackend(ZulipAuthMixin):
@@ -138,7 +141,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     a username/password pair.
     """
 
-    def authenticate(self, username=None, password=None, return_data=None):
+    def authenticate(self, username=None, password=None, realm_subdomain=None, return_data=None):
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
             # Return immediately.  Otherwise we will look for a SQL row with
@@ -154,7 +157,10 @@ class EmailAuthBackend(ZulipAuthMixin):
                 return_data['password_auth_disabled'] = True
             return None
         if user_profile.check_password(password):
-            return user_profile
+            if check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+                return user_profile
+            else:
+                return None
 
 class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
@@ -167,7 +173,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
 
     """
-    def authenticate(self, google_oauth2_token=None, return_data={}):
+    def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data={}):
         try:
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
@@ -184,19 +190,25 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             if user_profile.realm.deactivated:
                 return_data["inactive_realm"] = True
                 return None
-            return user_profile
+            if check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+                return user_profile
+            else:
+                return None
         else:
             return_data["valid_attestation"] = False
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
 
-    def authenticate(self, remote_user):
+    def authenticate(self, remote_user, realm_subdomain=None):
         if not remote_user:
             return None
 
         email = remote_user_to_email(remote_user)
-        return common_get_active_user_by_email(email)
+        user = common_get_active_user_by_email(email)
+        if user is not None and check_subdomain(realm_subdomain, user.realm.subdomain):
+            return user
+        return None
 
 class ZulipLDAPException(Exception):
     pass
@@ -224,10 +236,14 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return username
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
-    def authenticate(self, username, password, return_data=None):
+    def authenticate(self, username, password, realm_subdomain=None, return_data=None):
         try:
             username = self.django_to_ldap_username(username)
-            return ZulipLDAPAuthBackendBase.authenticate(self, username, password)
+            user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
+            if user_profile is not None and check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+                return user_profile
+            else:
+                return None
         except Realm.DoesNotExist:
             return None
         except ZulipLDAPException:
@@ -257,14 +273,14 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
-    def authenticate(self, username, password):
+    def authenticate(self, username, password, realm_subdomain=None):
         return None
 
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
 
-    def authenticate(self, username, return_data=None):
+    def authenticate(self, username, realm_subdomain=None, return_data=None):
         return common_get_active_user_by_email(username, return_data=return_data)
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):

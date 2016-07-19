@@ -10,6 +10,8 @@ from django.db.models.query import QuerySet
 from jinja2 import Markup as mark_safe
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+from zerver.models import resolve_subdomain_to_realm
+from zerver.lib.utils import get_subdomain, check_subdomain
 
 import logging
 
@@ -23,6 +25,10 @@ from six import text_type
 
 SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
                 u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
+
+def subdomain_unavailable(subdomain):
+    return u"The subdomain '%s' is not available. Please choose another one." % (subdomain)
+
 if settings.SHOW_OSS_ANNOUNCEMENT:
     SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
                     u"The zulip.com service is not taking new customer teams. <br /> " + \
@@ -74,8 +80,17 @@ class RegistrationForm(forms.Form):
                                required=False)
     realm_name = forms.CharField(max_length=100, required=False)
 
+    realm_subdomain = forms.CharField(max_length=40, required=False)
     if not settings.VOYAGER:
         terms = forms.BooleanField(required=True)
+
+    def clean_realm_subdomain(self):
+        # type: () -> str
+        data = self.cleaned_data['realm_subdomain']
+        realm = resolve_subdomain_to_realm(data)
+        if realm is not None:
+            raise ValidationError(subdomain_unavailable(data))
+        return data
 
 class ToSForm(forms.Form):
     full_name = forms.CharField(max_length=100)
@@ -90,8 +105,11 @@ class HomepageForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         self.domain = kwargs.get("domain")
+        self.subdomain = kwargs.get("subdomain")
         if "domain" in kwargs:
             del kwargs["domain"]
+        if "subdomain" in kwargs:
+            del kwargs["subdomain"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -105,6 +123,10 @@ class HomepageForm(forms.Form):
 
         # If a realm is specified and that realm is open, pass
         if completely_open(self.domain):
+            return data
+
+        if (resolve_subdomain_to_realm(self.subdomain) is not None and
+            completely_open(resolve_subdomain_to_realm(self.subdomain).domain)):
             return data
 
         # If no realm is specified, fail
@@ -192,4 +214,6 @@ Please contact %s to reactivate this group.""" % (
                 settings.ZULIP_ADMINISTRATOR)
             raise ValidationError(mark_safe(error_msg))
 
+        if not check_subdomain(get_subdomain(self.request), user_profile.realm.subdomain):
+             raise ValidationError(mark_safe("You are not a member of this organization. Please check the subdomain."))
         return email

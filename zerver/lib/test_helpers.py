@@ -348,8 +348,8 @@ class AuthedTestCase(TestCase):
                          {'email': username + "@" + domain})
         return self.submit_reg_form_for_user(username, password, domain=domain)
 
-    def submit_reg_form_for_user(self, username, password, domain="zulip.com"):
-        # type: (text_type, text_type, text_type) -> HttpResponse
+    def submit_reg_form_for_user(self, username, password, domain="zulip.com", realm_name=None, realm_subdomain=None):
+        # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -358,6 +358,8 @@ class AuthedTestCase(TestCase):
         """
         return self.client_post('/accounts/register/',
                                 {'full_name': username, 'password': password,
+                                 'realm_name': realm_name,
+                                 'realm_subdomain': realm_subdomain,
                                  'key': find_key_by_email(username + '@' + domain),
                                  'terms': True})
 

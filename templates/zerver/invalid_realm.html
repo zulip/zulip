@@ -1,0 +1,9 @@
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+
+<h3>{{ _('Realm Does Not Exist') }}</h3>
+
+<p>{{ _('Hi there! Thank you for your interest in Zulip') }}.</p>
+<p>{% trans %}The organization you are trying to access does not exist{% endtrans %}.</p>
+
+{% endblock %}

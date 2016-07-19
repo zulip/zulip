@@ -22,6 +22,7 @@ def add_settings(request):
         'external_api_path':         settings.EXTERNAL_API_PATH,
         'external_api_uri':          settings.EXTERNAL_API_URI,
         'external_uri_scheme':       settings.EXTERNAL_URI_SCHEME,
+        'external_host':             settings.EXTERNAL_HOST,
         'api_site_required':         settings.EXTERNAL_API_PATH != "api.zulip.com",
         'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
         'email_gateway_example':     settings.EMAIL_GATEWAY_EXAMPLE,
