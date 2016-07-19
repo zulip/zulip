@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 from __future__ import print_function
 
 import optparse
@@ -7,6 +7,17 @@ import signal
 import traceback
 import sys
 import os
+
+# find out python version
+major_version = int(subprocess.check_output(['python', '-c', 'import sys; print(sys.version_info[0])']))
+if major_version != 2:
+    # use twisted from its python2 venv but use django, tornado, etc. from the python3 venv.
+    PATH = os.environ["PATH"]
+    activate_this = "/srv/zulip-venv/bin/activate_this.py"
+    if not os.path.exists(activate_this):
+        activate_this = "/srv/zulip-py2-twisted-venv/bin/activate_this.py"
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
+    os.environ["PATH"] = PATH
 
 from twisted.internet import reactor
 from twisted.web      import proxy, server, resource
