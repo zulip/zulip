@@ -150,27 +150,22 @@ casper.then(function change_default_language() {
 
 casper.waitUntilVisible('#display-settings-status', function () {
     casper.test.assertSelectorHasText('#display-settings-status', '简体中文 is now the default language');
-    casper.test.info("Reloading page");
-    casper.reload(function () {
-        casper.test.info("Reloaded");
-    });
+    casper.test.info("Reloading the page.");
+    casper.reload();
 });
 
-casper.waitForSelector("#settings-change-box", function () {
+casper.waitForSelector("#default_language", function () {
     casper.test.info("Checking if we are on Chinese page.");
     casper.test.assertEvalEquals(function () {
-        return document.documentElement.lang;
-    }, 'zh-cn');
+        return $('#default_language').val();
+    }, 'zh_CN');
+    casper.test.info("Opening German page through i18n url.");
 });
 
-casper.thenOpen('http://localhost:9981/de/#settings', function () {
-    casper.test.info("German page opened.");
-});
+casper.thenOpen('http://localhost:9981/de/#settings');
 
-casper.waitForSelector("#settings-change-box");
-
-casper.then(function check_url_preference() {
-    casper.test.info("Checking i18n url language precedence.");
+casper.waitForSelector("#settings-change-box", function check_url_preference() {
+    casper.test.info("Checking the i18n url language precedence.");
     casper.test.assertEvalEquals(function () {
         return document.documentElement.lang;
     }, 'de');
@@ -180,6 +175,9 @@ casper.then(function check_url_preference() {
     });
 });
 
+/*
+ * Changing the language back to English so that subsequent tests pass.
+ */
 casper.waitUntilVisible('#display-settings-status', function () {
     casper.test.assertSelectorHasText('#display-settings-status', 'English is now the default language');
 });
