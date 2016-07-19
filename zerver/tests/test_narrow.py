@@ -10,8 +10,12 @@ from zerver.models import (
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
+from zerver.lib.narrow import (
+    build_narrow_filter,
+)
 from zerver.lib.test_helpers import (
     AuthedTestCase, POSTRequestMock,
+    TestCase,
     get_user_messages, message_ids, queries_captured,
 )
 from zerver.views.messages import (
@@ -21,6 +25,7 @@ from zerver.views.messages import (
 )
 
 from six.moves import range
+import os
 import re
 import ujson
 
@@ -231,6 +236,23 @@ class NarrowBuilderTest(AuthedTestCase):
 
     def _build_query(self, term):
         return self.builder.add_term(self.raw_query, term)
+
+class BuildNarrowFilterTest(TestCase):
+    def test_build_narrow_filter(self):
+        fixtures_fn = os.path.join(
+            os.path.dirname(__file__),
+            '../fixtures/narrow.json')
+        scenarios = ujson.loads(open(fixtures_fn, 'r').read())
+        self.assertTrue(len(scenarios) == 8)
+        for scenario in scenarios:
+            narrow = scenario['narrow']
+            accept_events = scenario['accept_events']
+            reject_events = scenario['reject_events']
+            narrow_filter = build_narrow_filter(narrow)
+            for e in accept_events:
+                self.assertTrue(narrow_filter(e))
+            for e in reject_events:
+                self.assertFalse(narrow_filter(e))
 
 class IncludeHistoryTest(AuthedTestCase):
     def test_ok_to_include_history(self):
