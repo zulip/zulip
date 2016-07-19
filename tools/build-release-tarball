@@ -77,7 +77,7 @@ set -x
 ./tools/update-prod-static
 echo "$GITID" > build_id
 echo "$version" > version
-mv update-prod-static.log ..
+mv var/update-prod-static.log ../..
 
 rm -f zproject/dev-secrets.conf
 
