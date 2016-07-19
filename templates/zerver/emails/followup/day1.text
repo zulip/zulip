@@ -16,7 +16,7 @@ https://{{ external_host }}/hello has a nice overview of what we're up to, but h
 5. Are you a keyboard power user? Learn about keyboard shortcuts in the Keyboard Shortcuts tab under the gear icon. (Or press '?')
 
 6. Emoji. Because :ramen:
-{% if not_voyager %}
+{% if verbose_support_offers %}
 Zulip has a team of engineers standing by to respond to your feedback, so please let us know what you think! Click the "Send feedback" button inside Zulip, or just reply to this email.
 {% endif %}
 Thanks,
