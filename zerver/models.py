@@ -1334,6 +1334,16 @@ class Subscription(ModelReprMixin, models.Model):
         return [permission for permission in self.permissions.keys() \
                             if getattr(self.permissions, permission).is_set]
 
+def parse_sub_permissions(permission_val):
+    # type: (int) -> List[str]
+    permissions = []
+    mask = 1
+    for permission in Stream.PERMISSION_FLAGS:
+        if permission_val & mask:
+            permissions.append(permission)
+        mask <<= 1
+    return permissions
+
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
     # type: (int) -> UserProfile
