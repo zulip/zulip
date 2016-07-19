@@ -39,6 +39,9 @@ if PY2:
 else:
     VENV_PATH = PY3_VENV_PATH
 
+TRAVIS = "--travis" in sys.argv
+PRODUCTION_TRAVIS = "--production-travis" in sys.argv
+
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
     print("To setup the Zulip development environment, you should clone the code")
@@ -131,7 +134,7 @@ def setup_node_modules():
 
 def install_npm():
     # type: () -> None
-    if "--travis" not in sys.argv:
+    if not TRAVIS:
         if subprocess_text_output(['npm', '--version']) != NPM_VERSION:
             run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
 
@@ -196,14 +199,14 @@ def main():
     # create linecoverage directory`var/linecoverage-report`
     run(["mkdir", "-p", LINECOVERAGE_DIR_PATH])
 
-    if "--travis" in sys.argv:
+    if TRAVIS:
         run(["tools/setup/install-phantomjs", "--travis"])
     else:
         run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
-    if "--travis" in sys.argv and '--production-travis' not in sys.argv:
+    if TRAVIS and not PRODUCTION_TRAVIS:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
@@ -213,7 +216,7 @@ def main():
         run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
-    if '--production-travis' not in sys.argv:
+    if not PRODUCTION_TRAVIS:
         # These won't be used anyway
         run(["scripts/setup/configure-rabbitmq"])
         run(["tools/setup/postgres-init-dev-db"])
