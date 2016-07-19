@@ -722,7 +722,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
     """
     prereg_user = create_preregistration_user(email, request, realm_creation)
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
-               'voyager': settings.VOYAGER}
+               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
     return Confirmation.objects.send_confirmation(prereg_user, email,
                                                   additional_context=context)
 

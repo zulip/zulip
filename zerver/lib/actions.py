@@ -2994,7 +2994,7 @@ def do_send_confirmation_email(invitee, referrer):
     body_template_path = 'confirmation/invite_email_body.txt'
     context = {'referrer': referrer,
                'support_email': settings.ZULIP_ADMINISTRATOR,
-               'voyager': settings.VOYAGER}
+               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
 
     if referrer.realm.domain == 'mit.edu':
         subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
