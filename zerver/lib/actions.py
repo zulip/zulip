@@ -2528,9 +2528,9 @@ def encode_email_address_helper(name, email_token):
 def get_email_gateway_message_string_from_address(address):
     # type: (text_type) -> Optional[text_type]
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
-    if settings.ZULIP_COM:
+    if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
         # Accept mails delivered to any Zulip server
-        pattern_parts[-1] = r'@[\w-]*\.zulip\.net'
+        pattern_parts[-1] = settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK
     match_email_re = re.compile("(.*?)".join(pattern_parts))
     match = match_email_re.match(address)
 
