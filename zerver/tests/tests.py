@@ -1798,6 +1798,7 @@ class HomeTest(AuthedTestCase):
             "realm_name",
             "realm_restricted_to_domain",
             "referrals",
+            "share_the_love",
             "show_digest_email",
             "sounds_enabled",
             "staging",
@@ -1808,7 +1809,6 @@ class HomeTest(AuthedTestCase):
             "twenty_four_hour_time",
             "unread_count",
             "unsubbed_info",
-            "voyager",
         ]
 
         email = "hamlet@zulip.com"
