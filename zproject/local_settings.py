@@ -55,6 +55,7 @@ STATSD_HOST = 'stats.zulip.net'
 if ZULIP_COM_STAGING:
     EXTERNAL_HOST = 'staging.zulip.com'
     STATSD_PREFIX = 'staging'
+    STAGING_ERROR_NOTIFICATIONS = True
 else:
     EXTERNAL_HOST = 'zulip.com'
     EXTERNAL_API_PATH = 'api.zulip.com'
