@@ -79,7 +79,7 @@ global.use_template = function (name) {
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
-var output_fn = '.test-js-with-node.html';
+var output_fn = 'var/.test-js-with-node.html';
 
 (function () {
     var data = '';
