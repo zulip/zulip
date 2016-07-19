@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from zerver.lib.actions import do_create_realm, set_default_streams
 from zerver.models import RealmAlias
 
-if not settings.VOYAGER:
+if settings.ZILENCER_ENABLED:
     from zilencer.models import Deployment
 
 import re
@@ -69,7 +69,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             print("\033[1;31mExternal deployments cannot be open realms.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")
             exit(1)
-        if options["deployment_id"] is not None and settings.VOYAGER:
+        if options["deployment_id"] is not None and not settings.ZILENCER_ENABLED:
             print("\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n", file=sys.stderr)
             exit(1)
 
@@ -87,7 +87,7 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                 deployment.realms.add(realm)
                 deployment.save()
                 print("Added to deployment", str(deployment.id))
-            elif settings.ZULIP_COM:
+            elif settings.PRODUCTION and settings.ZILENCER_ENABLED:
                 deployment = Deployment.objects.get(base_site_url="https://zulip.com/")
                 deployment.realms.add(realm)
                 deployment.save()
