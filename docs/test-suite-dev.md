@@ -1,5 +1,4 @@
-Running the test suite
-======================
+# Running the test suite
 
 Zulip tests must be run inside a Zulip development environment; if
 you're using Vagrant, you will need to enter the Vagrant environment
@@ -43,8 +42,7 @@ if you're working on new database migrations.  To do this, run:
 ./tools/do-destroy-rebuild-test-database
 ```
 
-Possible testing issues
-=======================
+## Possible testing issues
 
 - When running the test suite, if you get an error like this:
 
