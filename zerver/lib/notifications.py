@@ -468,7 +468,7 @@ def enqueue_welcome_emails(email, name):
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
 
     template_payload = {'name': name,
-                        'not_voyager': not settings.VOYAGER,
+                        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
                         'external_host': settings.EXTERNAL_HOST,
                         'unsubscribe_link': unsubscribe_link}
 
