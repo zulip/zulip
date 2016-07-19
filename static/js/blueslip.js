@@ -168,7 +168,7 @@ function report_error(msg, stack, opts) {
         }
     });
 
-    if (page_params.staging) {
+    if (page_params.save_stacktraces) {
         // Save the stacktrace so it can be examined even in
         // development servers.  (N.B. This assumes you have set DEBUG
         // = False on your development server, or else this code path
