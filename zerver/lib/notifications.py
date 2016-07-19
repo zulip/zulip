@@ -460,8 +460,9 @@ def send_local_email_template_with_delay(recipients, template_prefix,
 
 def enqueue_welcome_emails(email, name):
     # type: (text_type, text_type) -> None
-    sender = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'} # type: Dict[str, text_type]
-    if settings.VOYAGER:
+    if settings.WELCOME_EMAIL_SENDER is not None:
+        sender = settings.WELCOME_EMAIL_SENDER # type: Dict[str, text_type]
+    else:
         sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
 
     user_profile = get_user_profile_by_email(email)
