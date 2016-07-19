@@ -68,7 +68,7 @@ class AdminZulipHandler(logging.Handler):
             )
 
         try:
-            if settings.ZULIP_COM_STAGING:
+            if settings.STAGING_ERROR_NOTIFICATIONS:
                 # On staging, process the report directly so it can happen inside this
                 # try/except to prevent looping
                 from zilencer.error_notify import notify_server_error
