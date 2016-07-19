@@ -19,7 +19,7 @@ class zulip_ops::base {
                         "python-netifaces",
                         # Popular editors
                         "vim",
-                        "emacs23-nox",
+                        "emacs-nox",
                         "puppet-el",
                         # Prevent accidental reboots
                         "molly-guard",
