@@ -50,11 +50,13 @@ echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_
 /root/zulip/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
+set +e
 [ -e "/etc/init.d/camo" ]; has_camo=$?
 [ -e "/etc/init.d/nginx" ]; has_nginx=$?
 [ -e "/etc/supervisor/conf.d/zulip.conf" ]; has_appserver=$?
 [ -e "/etc/cron.d/rabbitmq-numconsumers" ]; has_rabbit=$?
 [ -e "/etc/init.d/postgresql" ]; has_postgres=$?
+set -e
 
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
