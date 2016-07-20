@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This tools generates local_settings_generated.py using the template
+# This tools generates /etc/zulip/zulip-secrets.conf
 
 from __future__ import print_function
 import sys, os, os.path
