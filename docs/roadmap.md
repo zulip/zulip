@@ -169,7 +169,7 @@ of its size, it takes work to keep it that way.
 
 * [Add support for 2-factor authentication on all platforms](https://github.com/zulip/zulip/pull/451)
 * [Add a retention policy feature that automatically deletes old messages](https://github.com/zulip/zulip/issues/106)
-* [Upgrade every Zulip dependency to a modern version](https://github.com/zulip/zulip/issues/717)
+* [Upgrade every Zulip dependency to a modern version](https://github.com/zulip/zulip/issues/1331)
 * [The LOCAL_UPLOADS_DIR file uploads backend only supports world-readable uploads](https://github.com/zulip/zulip/issues/320)
 * [Add support for stronger security controls for uploaded files](https://github.com/zulip/zulip/issues/320)
 
