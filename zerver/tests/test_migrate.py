@@ -11,6 +11,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.migrate import (
     create_topics_for_message_range,
+    migrate_all_messages,
 )
 from zerver.models import (
     Client,
@@ -95,3 +96,15 @@ class TestTopicMigration(TestCase):
 
         # Make sure 'subject 1' has entries for each of its streams.
         self.assertEqual(Topic.objects.filter(name='subject 1').count(), num_streams)
+
+    def test_full_migration(self):
+        # type: () -> None
+        # This is mostly a don't-explode test.  To debug
+        # migrate_all_messages() while you are in test mode,
+        # you can set verbose to True here.
+        migrate_all_messages(
+            range_method=create_topics_for_message_range,
+            batch_size=10,
+            max_num_batches=3,
+            verbose=False,
+        )

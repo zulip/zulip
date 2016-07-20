@@ -9,6 +9,66 @@ from zerver.models import (
     Topic,
 )
 
+def migrate_all_messages(range_method, batch_size, max_num_batches, verbose):
+    # type: (Callable[[int, int], str], int, int, bool) -> None
+    """
+    Process a batch migration on Message in reverse order though
+    the Message table.  (We go in reverse order, since usually the
+    most recent messages are most likely to expose any problems with
+    a long-running migration, and if we are going to fail for some
+    reason, we want to fail early to minimize surprises.  Also, for
+    some migrations, we may be able to live with a lag on historical
+    messages getting converted.)
+
+    The parameter `range_method` should be a function that knows
+    how to convert a range of messages.  It should be quiet during
+    normal operation, except for returning a status message as its
+    return value.  The status message can be something bland like
+    '5 rows updated,' or it can be more detailed based on what
+    we want to know operationally.
+
+    `batch_size` is a slight misnomer, but it's used for simplicity.
+    It actually refers to the size of the range of message ids we
+    will check, but if there are gaps in message ids, the number of
+    message rows processed in the batch will be less than batch_size.
+    """
+    max_msg_id = Message.objects.order_by('-id')[0].id
+
+    assert batch_size >= 1
+    assert max_num_batches >= 1
+
+    if verbose:
+        print("===\nStarting migration...")
+        print('  batch_size: %d' % (batch_size,))
+        print('  max_num_batches: %d' % (max_num_batches,))
+        print()
+
+
+    num_batches_completed = 0
+
+    low = (max_msg_id // batch_size) * batch_size
+    high = max_msg_id + 1
+    while (low >= 0) and (num_batches_completed < max_num_batches):
+        if verbose:
+            print('--')
+            print('Migrating data for messages in id range [%d, %d)' % (low, high))
+
+        status = range_method(low, high)
+        num_batches_completed += 1
+
+        if verbose:
+            print('  ' + status)
+
+        low -= batch_size
+        high = low + batch_size
+
+    if verbose:
+        print("\n===")
+        print('MIGRATION COMPLETED!')
+        print('  %d batches of (max) id range %d were run' % (num_batches_completed, batch_size))
+        print("===\n")
+
+
 def create_topics_for_message_range(low_msg_id, high_msg_id):
     # type: (int, int) -> str
     assert low_msg_id <= high_msg_id
