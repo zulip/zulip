@@ -80,6 +80,7 @@ Contents:
 
    integration-guide
    new-feature-tutorial
+   life-of-a-request
 
 .. _code-docs:
 
