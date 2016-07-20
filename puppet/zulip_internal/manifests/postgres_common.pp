@@ -16,15 +16,6 @@ class zulip_internal::postgres_common {
                         'python-gevent', 'lzop', 'pv'],
   }
 
-  file { "/usr/local/bin/pg_backup_and_purge.py":
-    ensure => file,
-    owner => "root",
-    group => "postgres",
-    mode => 754,
-    source => "puppet:///modules/zulip_internal/postgresql/pg_backup_and_purge.py",
-    require => File["/usr/local/bin/env-wal-e"],
-  }
-
   cron { "pg_backup_and_purge":
     command => "/usr/local/bin/pg_backup_and_purge.py",
     ensure => present,
