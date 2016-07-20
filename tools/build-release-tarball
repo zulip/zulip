@@ -47,9 +47,6 @@ cd "$TMP_CHECKOUT"
 # create var/log directory in the new temporary checkout
 mkdir -p "var/log"
 
-# Use default settings so there is no chance of leaking secrets
-cp zproject/local_settings_template.py zproject/local_settings.py
-
 # Some settings need to be updated for update-prod-static to work
 #
 # TODO: Would be much better to instead run the below tools with some
