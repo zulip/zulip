@@ -29,7 +29,7 @@ proxy](brief-install-vagrant-dev.html#specifying-a-proxy) if you need
 a proxy to access the internet.)
 
 
-- **All**: 1.5GB available RAM, Active broadband internet connection.
+- **All**: 2GB available RAM, Active broadband internet connection.
 - **OS X**: OS X (El Capitan recommended, untested on previous versions), Git,
   [VirtualBox][vbox-dl], [Vagrant][vagrant-dl].
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl], lxc.
@@ -49,8 +49,7 @@ Don't see your system listed above? Check out:
 Jump to:
 
 * [OS X](#os-x)
-* [Ubuntu 14.04 Trusty](#ubuntu-14-04)
-* [Ubuntu 16.04 Xenial](#ubuntu-16-04)
+* [Ubuntu](#ubuntu)
 * [Windows](#windows-10)
 
 #### OS X
@@ -60,89 +59,60 @@ Jump to:
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
-#### Ubuntu 14.04
+#### Ubuntu
 
-If you're in a hurry, you can copy and paste into your terminal after which you
-can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
+The setup for Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are the same.
+
+If you're in a hurry, you can copy and paste the following into your terminal
+after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
 ```
 sudo apt-get purge vagrant
-wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
+wget https://releases.hashicorp.com/vagrant/1.8.4/vagrant_1.8.4_x86_64.deb
 sudo dpkg -i vagrant*.deb
-sudo apt-get install git lxc lxc-templates cgroup-lite redir
-vagrant plugin install vagrant-lxc
-```
-
-For a step-by-step explanation, read on.
-
-##### 1. Install Vagrant
-
-For 14.04 Trusty you'll need a more recent version of Vagrant than what's
-available in the official Ubuntu repositories.
-
-First uninstall any vagrant package you may have installed from the Ubuntu
-repository:
-
-```
-christie@trusty-desktop:~
-$ sudo apt-get purge vagrant
-```
-
-Now download and install the most recent .deb package from [Vagrant][vagrant-dl]:
-
-```
-christie@trusty-desktop:~
-$ wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
-
-christie@trusty-desktop:~
-$ sudo dpkg -i vagrant*.deb
-```
-
-
-##### 2. Install remaining dependencies
-
-Now install git and lxc-related packages:
-
-```
-christie@trusty-desktop:~
-$ sudo apt-get install git lxc lxc-templates cgroup-lite redir
-```
-
-##### 3. Install the vagrant lxc plugin:
-
-```
-christie@trusty-desktop:~
-$ vagrant plugin install vagrant-lxc
-Installing the 'vagrant-lxc' plugin. This can take a few minutes...
-Installed the plugin 'vagrant-lxc (1.2.1)'!
-```
-
-Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
-
-#### Ubuntu 16.04
-
-If you're in a hurry, you can copy and paste into your terminal after which you
-can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
-
-```
-sudo apt-get install git vagrant lxc lxc-templates cgroup-lite redir
+sudo apt-get install build-essential git ruby lxc lxc-templates cgroup-lite redir
 vagrant plugin install vagrant-lxc
 vagrant lxc sudoers
 ```
 
 For a step-by-step explanation, read on.
 
-##### 1. Install git, vagrant, lxc, and related dependencies:
+##### 1. Install Vagrant
+
+For both 14.04 Trusty and 16.04 Xenial, you'll need a more recent version of
+Vagrant than what's available in the official Ubuntu repositories.
+
+First uninstall any vagrant package you may have installed from the Ubuntu
+repository:
 
 ```
-christie@xenial-desktop:~
-$ sudo apt-get install git vagrant lxc lxc-templates cgroup-lite redir
+christie@ubuntu-desktop:~
+$ sudo apt-get purge vagrant
 ```
 
-##### 2. Install the vagrant lxc plugin:
+Now download and install the most recent .deb package from [Vagrant][vagrant-dl]:
 
 ```
-christie@xenial-desktop:~
+christie@ubuntu-desktop:~
+$ wget https://releases.hashicorp.com/vagrant/1.8.4/vagrant_1.8.4_x86_64.deb
+
+christie@ubuntu-desktop:~
+$ sudo dpkg -i vagrant*.deb
+```
+
+##### 2. Install remaining dependencies
+
+Now install git and lxc-related packages:
+
+```
+christie@ubuntu-desktop:~
+$ sudo apt-get install build-essential git ruby lxc lxc-templates cgroup-lite redir
+```
+
+##### 3. Install the vagrant lxc plugin:
+
+```
+christie@ubuntu-desktop:~
 $ vagrant plugin install vagrant-lxc
 Installing the 'vagrant-lxc' plugin. This can take a few minutes...
 Installed the plugin 'vagrant-lxc (1.2.1)'!
@@ -151,22 +121,22 @@ Installed the plugin 'vagrant-lxc (1.2.1)'!
 If you encounter an error when trying to install the vagrant-lxc plugin, [see
 this](#nomethoderror-when-installing-vagrant-lxc-plugin-ubuntu-1604).
 
-##### 3. Configure sudo to be passwordless
+##### 4. Configure sudo to be passwordless
 
 Finally, [configure sudo to be passwordless when using Vagrant LXC][avoiding-sudo]:
 
 ```
-christie@xenial-desktop:~
+christie@ubuntu-desktop:~
 $ vagrant lxc sudoers
 [sudo] password for christie:
 ```
+
+Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
-
-Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Windows 10
 
