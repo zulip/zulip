@@ -58,9 +58,9 @@ In a production environment, we have:
   middleware, etc.), as well as default values for the settings the
   user would set in `/etc/zulip/settings.py` (you can look at the
   `DEFAULT_SETTINGS` dictionary to easily review the settings
-  available).  `zproject/settings.py` has a line `from local_settings
+  available).  `zproject/settings.py` has a line `from prod_settings
   import *`, which has the effect of importing
-  `/etc/zulip/settings.py`.
+  `/etc/zulip/settings.py` in a prod environment (via a symlink).
 
 In a development environment, we have `zproject/settings.py`, and
 additionally:

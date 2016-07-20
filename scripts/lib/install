@@ -71,7 +71,7 @@ fi
 if [ "$has_appserver" = 0 ]; then
     /root/zulip/scripts/setup/generate_secrets.py
     cp -a /root/zulip/zproject/local_settings_template.py /etc/zulip/settings.py
-    ln -nsf /etc/zulip/settings.py /root/zulip/zproject/local_settings.py
+    ln -nsf /etc/zulip/settings.py /root/zulip/zproject/prod_settings.py
 fi
 
 # Restart camo since generate_secrets.py likely replaced its secret key
@@ -104,7 +104,7 @@ if [ "$has_appserver" = 0 ]; then
     ln -nsf /home/zulip/deployments/next /root/zulip
     ln -nsf "$deploy_path" /home/zulip/deployments/next
     ln -nsf "$deploy_path" /home/zulip/deployments/current
-    ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/local_settings.py
+    ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
     mkdir -p "$deploy_path"/prod-static/serve
     cp -rT "$deploy_path"/prod-static/serve /home/zulip/prod-static
     chown -R zulip:zulip /home/zulip /var/log/zulip /etc/zulip/settings.py
