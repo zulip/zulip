@@ -11,6 +11,10 @@ config_file.read("/etc/zulip/zulip.conf")
 
 ZULIP_COM = config_file.get('machine', 'deploy_type') in ['zulip.com-prod',
                                                           'zulip.com-staging']
+if ZULIP_COM:
+    git_url = "git@git.zulip.net:eng/zulip.git"
+else:
+    git_url = config_file.get('deployment', 'git_repo_url')
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -38,9 +42,8 @@ try:
     deploy_path = make_deploy_path()
 
     logging.info("Cloning the repository")
-    subprocess.check_call(["git", "clone", "-q", "-b", refname,
-                           "git@git.zulip.net:eng/zulip.git",
-                           deploy_path], stdout=open('/dev/null', 'w'))
+    subprocess.check_call(["git", "clone", "-q", "-b", refname, git_url, deploy_path],
+                          stdout=open('/dev/null', 'w'))
 
     os.chdir(deploy_path)
 
