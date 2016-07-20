@@ -50,15 +50,19 @@ be on a good path.  The iOS app has fewer features than Android and
 has more bugs, but more importantly is in need of an experienced iOS
 developer who has time to drive the project.
 
+Update: Neeraj Wahi is leading an effort on to write a [new React
+Native iOS app for Zulip](https://github.com/zulip/zulip-mobile) to
+replace the old iOS app.
+
 ## Core User Experience
 
 This category includes important improvements to the core user
 experience that will benefit all users.
 
-* [Improve missed message notifications to make "reply" work nicely](https://github.com/zulip/zulip/issues/612)
+* <strike>[Improve missed message notifications to make "reply" work nicely](https://github.com/zulip/zulip/issues/612)</strike>
 * [Add support for showing "user is typing" notifications](https://github.com/zulip/zulip/issues/150)
 * [Add pretty bubbles for recipients in the compose box](https://github.com/zulip/zulip/issues/595)
-* [Finish and merge support for pinning a few important streams](https://github.com/zulip/zulip/issues/285)
+* <strike>[Finish and merge support for pinning a few important streams](https://github.com/zulip/zulip/issues/285)</strike>
 * [Display stream descriptions more prominently](https://github.com/zulip/zulip/issues/164)
 * [Integration inline URL previews](https://github.com/zulip/zulip/issues/406)
 * [Add support for managing uploaded files](https://github.com/zulip/zulip/issues/454)
@@ -96,7 +100,7 @@ teams.
 * [Improve @-mentioning syntax based on stronger unique identifiers](https://github.com/zulip/zulip/issues/374)
 * [Show subscriber counts on streams](https://github.com/zulip/zulip/pull/525)
 * [Make the streams page easier to navigate with 100s of streams](https://github.com/zulip/zulip/issues/563)
-* [Add support for filtering long lists of streams](https://github.com/zulip/zulip/issues/565)
+* <strike>[Add support for filtering long lists of streams](https://github.com/zulip/zulip/issues/565)</strike>
 
 ## Administration and management
 
@@ -130,7 +134,7 @@ this is an area where one can always improve.  There are a few known
 performance opportunities:
 
 * <strike>[Migrate to faster jinja2 templating engine](https://github.com/zulip/zulip/issues/620)</strike>
-* [Don't load zxcvbn when it isn't needed](https://github.com/zulip/zulip/issues/263)
+* <strike>[Don't load zxcvbn when it isn't needed](https://github.com/zulip/zulip/issues/263)</strike>
 * [Optimize the frontend performance of loading the Zulip webapp using profiling](https://github.com/zulip/zulip/issues/714)
 
 ## Technology improvements
@@ -158,7 +162,7 @@ of its size, it takes work to keep it that way.
 
 ## Deployment and upgrade process
 
-* [Support backwards-incompatible upgrades to Python libraries](https://github.com/zulip/zulip/issues/717)
+* <strike>[Support backwards-incompatible upgrades to Python libraries](https://github.com/zulip/zulip/issues/717)</strike>
 * [Minimize the downtime required in Zulip upgrade process](https://github.com/zulip/zulip/issues/646)
 
 ## Security
@@ -175,7 +179,7 @@ of its size, it takes work to keep it that way.
 * [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
 * [Add Python static type-checking to Zulip using mypy](https://github.com/zulip/zulip/issues/733)
 * <strike>[Improve the runtime of Zulip's backend test suite](https://github.com/zulip/zulip/issues/441)</strike>
-* [Use caching to make Travis CI runtimes faster](https://github.com/zulip/zulip/issues/712)
+* <strike>[Use caching to make Travis CI runtimes faster](https://github.com/zulip/zulip/issues/712)</strike>
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
 * <strike>[Improve Travis CI "production" test suite to catch more regressions](https://github.com/zulip/zulip/issues/598)</strike>
 
@@ -183,7 +187,6 @@ of its size, it takes work to keep it that way.
 
 * [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
 * <strike>[Figure out a nice upgrade process for Zulip Vagrant VMs](https://github.com/zulip/zulip/issues/264)</strike>
-* [Overhaul new contributor documentation](https://github.com/zulip/zulip/issues/677)
 * [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
 * [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
 * [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
@@ -209,7 +212,7 @@ process and make bots that receive messages just as easy to build.
 
 * <strike>[Make it super easy to take screenshots for new webhook integrations](https://github.com/zulip/zulip/issues/658)</strike>
 * [Add an outgoing webhook integration system](https://github.com/zulip/zulip/issues/735)
-* [Build a framework to cut duplicated code in new webhook integrations](https://github.com/zulip/zulip/issues/660)
+* <strike>[Build a framework to cut duplicated code in new webhook integrations](https://github.com/zulip/zulip/issues/660)</strike>
 * [Make setting up a new integration a smooth flow](https://github.com/zulip/zulip/issues/692)
 * <strike>[Optimize the integration writing documentation to make writing new
    ones really easy.](https://github.com/zulip/zulip/issues/70)</strike>
@@ -219,16 +222,16 @@ process and make bots that receive messages just as easy to build.
 The Zulip Android app is ahead of the iOS app in terms of feature set,
 so this section serves to document the goals for Zulip on mobile.
 
-* [Support using a non-zulip.com server](https://github.com/zulip/zulip-android/issues/1)
+* <strike>[Support using a non-zulip.com server](https://github.com/zulip/zulip-android/issues/1)</strike>
 * [Support Google authentication with a non-Zulip.com server](https://github.com/zulip/zulip-android/issues/49)
 * [Add support for narrowing to @-mentions](https://github.com/zulip/zulip-android/issues/39)
 * [Support having multiple Zulip realms open simultaneously](https://github.com/zulip/zulip-android/issues/47)
-* [Build a slick development login page to simplify testing (similar to
-  the development homepage on web)](https://github.com/zulip/zulip-android/issues/48)
-* [Improve the compose box to let you see what you're replying to](https://github.com/zulip/zulip-android/issues/8)
+* <strike>[Build a slick development login page to simplify testing (similar to
+  the development homepage on web)](https://github.com/zulip/zulip-android/issues/48)</strike>
+* <strike>[Improve the compose box to let you see what you're replying to](https://github.com/zulip/zulip-android/issues/8)</strike>
 * [Make it easy to compose messages with mentions, emoji, etc.](https://github.com/zulip/zulip-android/issues/11)
 * [Display unread counts and improve navigation](https://github.com/zulip/zulip-android/issues/57)
-* [Hide messages sent to muted topics](https://github.com/zulip/zulip-android/issues/9)
+* <strike>[Hide messages sent to muted topics](https://github.com/zulip/zulip-android/issues/9)</strike>
 * [Fill out documentation to make it easy to get started](https://github.com/zulip/zulip-android/issues/58)
 
 ## iOS app
@@ -240,7 +243,7 @@ iOS app.  Once we have that resolved, we'll expand our ambitions for
 the app with more specific improvements.
 
 * [iOS app needs maintainer](https://github.com/zulip/zulip-ios/issues/12)
-* [APNS notifications are broken](https://github.com/zulip/zulip/issues/538)
+* <strike>[APNS notifications are broken](https://github.com/zulip/zulip/issues/538)</strike>
 
 ## Desktop apps
 
@@ -259,7 +262,7 @@ to contribute to the apps.
 These don't get GitHub issues since they're not technical projects,
 but they are important goals for the project.
 
-* Setup a Zulip server for the Zulip development community
+* <strike>Setup a Zulip server for the Zulip development community</strike>
 * Expand the number of core developers able to do code reviews
-* Expand the number of contributors regularly adding features to Zulip
+* <strike>Expand the number of contributors regularly adding features to Zulip</strike>
 * Have a successful summer with Zulip's 3 GSOC students
