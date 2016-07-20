@@ -6,6 +6,7 @@ import sys
 sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
 
+import glob
 import subprocess
 import sys
 import logging
@@ -36,7 +37,12 @@ def run(args, dry_run=False):
 if run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip() != 'f':
     sys.exit(0)
 
-run(['env-wal-e', 'backup-push', '/var/lib/postgresql/9.1/main'])
+pg_data_paths = glob.glob('/var/lib/postgresql/*/main')
+if len(pg_data_paths) != 1:
+    print("Postgres installation is not unique: %s" % (pg_data_paths,))
+    sys.exit(1)
+pg_data_path = pg_data_paths[0]
+run(['env-wal-e', 'backup-push', pg_data_path])
 
 now = datetime.now(tz=pytz.utc)
 with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
