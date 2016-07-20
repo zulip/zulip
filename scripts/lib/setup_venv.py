@@ -34,6 +34,21 @@ VENV_DEPENDENCIES = [
     "libpq-dev",            # Needed by psycopg2
 ]
 
+def patch_activate_script(venv_path):
+    # venv_path should be what we want to have in VIRTUAL_ENV after patching
+    script_path = os.path.join(venv_path, "bin", "activate")
+
+    file_obj = open(script_path)
+    lines = file_obj.readlines()
+    for i, line in enumerate(lines):
+        if line.startswith('VIRTUAL_ENV='):
+            lines[i] = 'VIRTUAL_ENV="%s"\n' % (venv_path,)
+    file_obj.close()
+
+    file_obj = open(script_path, 'w')
+    file_obj.write("".join(lines))
+    file_obj.close()
+
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     # type: (Optional[str], str, Optional[List[str]]) -> str
 
@@ -53,6 +68,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:
         run(["sudo", "ln", "-nsf", cached_venv_path, target_venv_path])
+        patch_activate_script(target_venv_path)
     activate_this = os.path.join(cached_venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
     return cached_venv_path
