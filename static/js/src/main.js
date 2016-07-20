@@ -1,7 +1,6 @@
 // commonjs code goes here
 
 (function () {
-    /*
     var i18n = window.i18n = require('i18next');
     var XHR = require('i18next-xhr-backend');
     var lngDetector = require('i18next-browser-languagedetector');
@@ -51,17 +50,5 @@
             callbacks.push(callback);
         }
     };
-        */
-
-    var i18n = {
-        t: function (s) {
-            return s;
-        },
-        ensure_i18n: function (callback) {
-            callback();
-        }
-    };
-
-    window.i18n = i18n;
 
 }());
