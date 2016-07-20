@@ -23,7 +23,6 @@ VENV_DEPENDENCIES = [
     "libfreetype6-dev",
     "libldap2-dev",
     "libmemcached-dev",
-    "postgresql-server-dev-all",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
     "python-dev",
     "python-pip",
