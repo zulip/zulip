@@ -941,6 +941,7 @@ def home(request):
         realm_name            = register_ret['realm_name'],
         realm_invite_required = register_ret['realm_invite_required'],
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
+        realm_authentication_methods = register_ret['realm_authentication_methods'],
         realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
         realm_allow_message_editing = register_ret['realm_allow_message_editing'],
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],

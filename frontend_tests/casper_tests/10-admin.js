@@ -510,6 +510,51 @@ casper.waitUntilVisible('#admin-realm-default-language-status', function () {
     casper.test.assertSelectorHasText('#admin-realm-default-language-status', 'Default language changed!');
 });
 
+// Test authentication methods setting
+casper.waitForSelector('input[type="checkbox"][id="enabled"]', function () {
+    casper.click('input[type="checkbox"][id="enabled"]');
+    casper.click('form.admin-realm-form input.btn');
+});
+
+// Test setting was activated--default is checked
+casper.then(function () {
+    // Test setting was activated
+    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
+        casper.test.assertEval(function () {
+            return !(document.querySelector('input[type="checkbox"][id="enabled"]').checked);
+        });
+    });
+});
+
+casper.then(function () {
+    // Leave the page and return
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#subscriptions"]');
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#administration"]');
+
+    casper.waitForSelector('input[type="checkbox"][id="enabled"]', function () {
+        // Test Setting was saved
+        // Test Setting was saved
+        casper.test.assertEval(function () {
+            return !(document.querySelector('input[type="checkbox"][id="enabled"]').checked);
+        });
+    });
+});
+
+// Deactivate setting--default is checked
+casper.then(function () {
+    casper.click('input[type="checkbox"][id="enabled"]');
+    casper.click('form.admin-realm-form input.btn');
+    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="enabled"]').checked;
+        });
+    });
+});
+
 common.then_log_out();
 
 casper.run(function () {

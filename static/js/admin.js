@@ -145,6 +145,20 @@ exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
+exports.populate_auth_methods = function (auth_methods) {
+    var auth_methods_table = $("#admin_auth_methods_table").expectOne();
+    auth_methods_table.find('tr.method_row').remove();
+    _.each(auth_methods, function (val,key) {
+        auth_methods_table.append(templates.render('admin_auth_methods_list', {
+            method: {
+                method: key,
+                enabled: val
+            }
+        }));
+    });
+    loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
+};
+
 function _setup_page() {
     var options = {
         realm_name: page_params.realm_name,
@@ -152,6 +166,7 @@ function _setup_page() {
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required: page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
+        realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
@@ -165,6 +180,7 @@ function _setup_page() {
     $("#admin-realm-restricted-to-domain-status").expectOne().hide();
     $("#admin-realm-invite-required-status").expectOne().hide();
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-authentication-methods-status").expectOne().hide();
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
@@ -180,6 +196,7 @@ function _setup_page() {
     loading.make_indicator($('#admin_page_streams_loading_indicator'));
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
     loading.make_indicator($('#admin_page_emoji_loading_indicator'));
+    loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
 
     // Populate users and bots tables
     channel.get({
@@ -198,6 +215,9 @@ function _setup_page() {
         success: populate_streams,
         error: failed_listing_streams
     });
+
+    // Populate authentication methods table
+    exports.populate_auth_methods(page_params.realm_authentication_methods);
 
     // Populate emoji table
     exports.populate_emoji(page_params.realm_emoji);
@@ -371,14 +391,16 @@ function _setup_page() {
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
+        var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
-
+        var auth_methods_table = $('.admin_auth_methods_table');
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
+        authentication_methods_status.hide();
         create_stream_by_admins_only_status.hide();
         message_editing_status.hide();
         default_language_status.hide();
@@ -394,7 +416,10 @@ function _setup_page() {
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_default_language = $("#id_realm_default_language").val();
-
+        var new_auth_methods = {};
+        _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
+            new_auth_methods[$(method_row).attr('method')] = $(method_row).find('input').prop('checked');
+        });
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
         // is irrelevant.  Hence if allow_message_editing is unchecked, and
         // message_content_edit_limit_minutes is poorly formed, we set the latter to
@@ -413,6 +438,7 @@ function _setup_page() {
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
+            authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
@@ -454,6 +480,11 @@ function _setup_page() {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
                     }
                 }
+                if (response_data.authentication_methods !== undefined) {
+                    if (response_data.authentication_methods) {
+                        ui.report_success(i18n.t("Authentication methods saved!"), authentication_methods_status);
+                    }
+                }
                 if (response_data.allow_message_editing !== undefined) {
                     // We expect message_content_edit_limit_seconds was sent in the
                     // response as well
@@ -480,7 +511,12 @@ function _setup_page() {
                 }
             },
             error: function (xhr, error) {
-                ui.report_error(i18n.t("Failed!"), xhr, name_status);
+                var reason = $.parseJSON(xhr.responseText).reason;
+                if (reason === "no authentication") {
+                    ui.report_error(i18n.t("Failed!"), xhr, authentication_methods_status);
+                } else {
+                    ui.report_error(i18n.t("Failed!"), xhr, name_status);
+                }
             }
         });
     });

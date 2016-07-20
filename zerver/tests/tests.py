@@ -1855,6 +1855,7 @@ class HomeTest(AuthedTestCase):
             "product_name",
             "prompt_for_invites",
             "realm_allow_message_editing",
+            "realm_authentication_methods",
             "realm_create_stream_by_admins_only",
             "realm_default_language",
             "realm_default_streams",

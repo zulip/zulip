@@ -137,6 +137,8 @@ class Realm(ModelReprMixin, models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True) # type: text_type
     # name is the user-visible identifier for the realm. It has no required
     # structure.
+    AUTHENTICATION_FLAGS = ['Google', 'Email', 'GitHub']
+
     name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
     restricted_to_domain = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
@@ -154,12 +156,17 @@ class Realm(ModelReprMixin, models.Model):
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: text_type
-
+    authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
+                                              default=2**len(AUTHENTICATION_FLAGS) - 1) # type: BitHandler
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
     def __unicode__(self):
         # type: () -> text_type
         return u"<Realm: %s %s>" % (self.domain, self.id)
+
+    def authentication_methods_dict(self):
+        # type: () -> Dict[str, bool]
+        return {k: v for k, v in self.authentication_methods.iteritems()}
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):

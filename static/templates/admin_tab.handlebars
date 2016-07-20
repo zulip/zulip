@@ -169,6 +169,28 @@
               </div>
             </form>
           </div>
+          <div id="organization-settings" class="settings-section">
+            <div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
+                {{t "Authentication Methods" }}</div>
+              <form class="form-horizontal admin-realm-form">
+               <div class="alert" id="admin-realm-authentication-methods-status"></div>
+                <div class="admin-table-wrapper">
+                  <p>{{#tr this}}Configure the authentication methods for the __domain__ organization.{{/tr}}</p>
+                  <table class="table table-condensed table-striped">
+                    <tbody id="admin_auth_methods_table" class=" admin_auth_methods_table">
+                      <th>{{t "Method" }}</th>
+                      <th>{{t "Enabled" }}</th>
+                    </tbody>
+                  </table>
+                </div>
+                <div id="admin_page_auth_methods_loading_indicator"></div>
+                <div class="control-group">
+                  <div class="controls organization-submission">
+                    <input type="submit" class="btn btn-big btn-primary" value="{{t 'Save changes' }}" />
+                  </div>
+                </div>
+              </form>
+          </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="users">
           <div id="admin-user-list" class="settings-section">

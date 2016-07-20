@@ -26,16 +26,19 @@ from django.contrib.auth import authenticate
 def password_auth_enabled(realm):
     # type: (Realm) -> bool
     if realm is not None:
-        if realm.domain == 'zulip.com' and settings.PRODUCTION:
-            # the dropbox realm is SSO only, but the unit tests still need to be
-            # able to login
-            return False
+        method_dict = realm.authentication_methods_dict()
+        for backend in django.contrib.auth.get_backends():
+            if method_dict['Email'] and isinstance(backend, EmailAuthBackend):
+                return True
+            if method_dict['GitHub'] and isinstance(backend, GitHubAuthBackend):
+                return True
+        return False
 
     for backend in django.contrib.auth.get_backends():
-         if isinstance(backend, EmailAuthBackend):
-             return True
-         if isinstance(backend, ZulipLDAPAuthBackend):
-             return True
+        if isinstance(backend, EmailAuthBackend):
+            return True
+        if isinstance(backend, ZulipLDAPAuthBackend):
+            return True
     return False
 
 def dev_auth_enabled():
