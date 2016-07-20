@@ -16,7 +16,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream
+    do_remove_default_stream, get_subscribers_details
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -210,12 +210,17 @@ def json_remove_subscriptions(request, user_profile):
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", validator=check_list(check_string)),
-                                 principals = REQ(validator=check_list(check_string), default=None)):
-    # type: (HttpRequest, UserProfile, Iterable[text_type], Optional[Iterable[text_type]]) -> HttpResponse
+                                 principals = REQ(validator=check_list(check_string), default=None),
+                                 permissions = REQ(validator=check_list(check_string), default=None)):
+    # type: (HttpRequest, UserProfile, Iterable[text_type], Optional[Iterable[text_type]], Optional[Iterable[text_type]]) -> HttpResponse
 
+    if permissions:
+        can_add_remove_users = user_profile.is_realm_admin or 'can_add_remove_users' in permissions
+    else:
+        can_add_remove_users = user_profile.is_realm_admin
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
-    if removing_someone_else and not user_profile.is_realm_admin:
+    if removing_someone_else and not can_add_remove_users:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
         return json_error(_("This action requires administrative rights"))
@@ -406,7 +411,7 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
     if stream is None:
         raise JsonableError(_("Stream does not exist: %s") % (stream_name,))
 
-    subscribers = get_subscriber_emails(stream, user_profile)
+    subscribers = get_subscribers_details(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
 

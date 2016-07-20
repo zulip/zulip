@@ -1214,6 +1214,28 @@ def get_subscriber_emails(stream, requesting_user=None):
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
+def get_subscribers_details(stream, requesting_user=None):
+    # type: (Stream, Optional[UserProfile]) -> List[UserProfile]
+    subscriptions = get_subscribers_query(stream, requesting_user).select_related()
+    return [{'user_email' : subscription.user_profile.email, \
+             'permissions' : subscription.permissions_list()} for subscription in subscriptions]
+
+def get_subscriber_ids(stream):
+    # type: (Stream) -> List[int]
+    try:
+        subscriptions = get_subscribers_query(stream, None)
+    except JsonableError:
+        return []
+
+    rows = subscriptions.values('user_profile_id')
+    ids = [row['user_profile_id'] for row in rows]
+    return ids
+
+def get_other_subscriber_ids(stream, user_profile_id):
+    # type: (Stream, int) -> List[int]
+    ids = get_subscriber_ids(stream)
+    return [id for id in ids if id != user_profile_id]
+
 def maybe_get_subscriber_emails(stream, user_profile):
     # type: (Stream, UserProfile) -> List[text_type]
     """ Alternate version of get_subscriber_emails that takes a Stream object only

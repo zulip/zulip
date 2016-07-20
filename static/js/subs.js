@@ -3,12 +3,17 @@ var subs = (function () {
 var exports = {};
 
 function add_admin_options(sub) {
-    var can_moderate = _.contains(sub.permissions, 'can_moderate');
-    var can_moderate_stream = page_params.is_admin || can_moderate;
+    var can_moderate_stream = false;
+    var can_add_remove_users = false;
+    if (sub.subscribed === true) {
+        can_moderate_stream = page_params.is_admin || _.contains(sub.permissions, 'can_moderate');
+        can_add_remove_users = _.contains(sub.permissions, 'can_add_remove_users');
+    }
     return _.extend(sub, {
         'is_admin': can_moderate_stream,
         'can_make_public': can_moderate_stream && sub.invite_only && stream_data.is_subscribed(sub.name),
-        'can_make_private': can_moderate_stream && !sub.invite_only
+        'can_make_private': can_moderate_stream && !sub.invite_only,
+        'can_add_remove_users': can_add_remove_users || page_params.is_admin
     });
 }
 
@@ -308,17 +313,21 @@ function add_sub_to_table(sub) {
     add_email_hint(sub, email_address_hint_content);
 }
 
-function format_member_list_elem(name, email) {
+function format_member_list_elem(name, email, permissions, stream) {
+    var can_add_remove_users = false;
+    if (stream.subscribed) {
+        can_add_remove_users = _.contains(stream.permissions, 'can_add_remove_users');
+    }
     return templates.render('stream_member_list_entry',
-                            {name: name, email: email,
-                             displaying_for_admin: page_params.is_admin});
+                            {name: name, email: email, permissions: permissions,
+                             displaying_for_admin: page_params.is_admin || can_add_remove_users});
 }
 
 function add_element_to_member_list (tb, elem) {
     tb.prepend(elem);
 }
 
-function add_to_member_list(tb, name, email) {
+function add_to_member_list(tb, name, email, permissions, current_user_permissions) {
     tb.prepend(format_member_list_elem(name, email));
 }
 
@@ -703,11 +712,12 @@ exports.invite_user_to_stream = function (user_email, stream_name, success, fail
     });
 };
 
-exports.remove_user_from_stream = function (user_email, stream_name, success, failure) {
+exports.remove_user_from_stream = function (user_email, stream_name, permissions, success, failure) {
     return channel.post({
         url: "/json/subscriptions/remove",
         data: {"subscriptions": JSON.stringify([stream_name]),
-               "principals": JSON.stringify([user_email])},
+               "principals": JSON.stringify([user_email]),
+               "permissions": JSON.stringify(permissions)},
         success: success,
         error: failure
     });
@@ -1022,6 +1032,7 @@ $(function () {
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
 
+        var stream = stream_data.get_sub(stream_name);
         function removal_success(data) {
             if (data.removed.length > 0) {
                 error_elem.addClass("hide");
@@ -1046,7 +1057,7 @@ $(function () {
             error_elem.removeClass("hide").text("Could not remove user from this stream");
         }
 
-        exports.remove_user_from_stream(principal, stream_name, removal_success,
+        exports.remove_user_from_stream(principal, stream_name, stream.permissions, removal_success,
                                         removal_failure);
     });
 
@@ -1179,13 +1190,14 @@ $(function () {
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var sub_row = $(e.target).closest('.subscription_row');
-        var stream = sub_row.find('.subscription_name').text();
+        var stream_name = sub_row.find('.subscription_name').text();
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container .subscriber-list');
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
-        if (!stream_data.get_sub(stream).render_subscribers) {
+        var stream = stream_data.get_sub(stream_name);
+        if (!stream.render_subscribers) {
             return;
         }
 
@@ -1198,15 +1210,16 @@ $(function () {
         channel.post({
             url: "/json/get_subscribers",
             idempotent: true,
-            data: {stream: stream},
+            data: {stream: stream.name},
             success: function (data) {
                 loading.destroy_indicator(indicator_elem);
                 var subscribers = _.map(data.subscribers, function (elem) {
-                    var person = people.get_by_email(elem);
+                    var person = people.get_by_email(elem.user_email);
                     if (person === undefined) {
                         return elem;
                     }
-                    return format_member_list_elem(people.get_by_email(elem).full_name, elem);
+                    return format_member_list_elem(person.full_name, person.email,
+                                                   elem.permissions, stream);
                 });
                 _.each(subscribers.sort().reverse(), function (elem) {
                     // add_element_to_member_list *prepends* the element,
