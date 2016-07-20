@@ -34,7 +34,12 @@ VENV_DEPENDENCIES = [
     "libpq-dev",            # Needed by psycopg2
 ]
 
-def patch_activate_script(venv_path):
+def do_patch_activate_script(venv_path):
+    # type: (str) -> None
+    """
+    Patches the bin/activate script so that the value of the environment variable VIRTUAL_ENV
+    is set to venv_path during the script's execution whenever it is sourced.
+    """
     # venv_path should be what we want to have in VIRTUAL_ENV after patching
     script_path = os.path.join(venv_path, "bin", "activate")
 
@@ -49,8 +54,8 @@ def patch_activate_script(venv_path):
     file_obj.write("".join(lines))
     file_obj.close()
 
-def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
-    # type: (Optional[str], str, Optional[List[str]]) -> str
+def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, patch_activate_script=False):
+    # type: (Optional[str], str, Optional[List[str]], bool) -> str
 
     # Check if a cached version already exists
     path = os.path.join(ZULIP_PATH, 'scripts', 'lib', 'hash_reqs.py')
@@ -68,7 +73,8 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:
         run(["sudo", "ln", "-nsf", cached_venv_path, target_venv_path])
-        patch_activate_script(target_venv_path)
+        if patch_activate_script:
+            do_patch_activate_script(target_venv_path)
     activate_this = os.path.join(cached_venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
     return cached_venv_path
