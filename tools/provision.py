@@ -178,7 +178,10 @@ def main():
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
             setup_virtualenv(VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
     else:
-        run(["tools/setup/setup-venvs"])
+        DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
+        setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE)
+        DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
+        setup_virtualenv(PY3_VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
 
     # Put Python2 virtualenv activation in our .bash_profile.
     with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
