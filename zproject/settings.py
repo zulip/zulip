@@ -6,7 +6,7 @@ from __future__ import absolute_import
 # * settings.py contains non-site-specific and settings configuration
 # for the Zulip Django app.
 # * settings.py imports prod_settings.py, and any site-specific configuration
-# belongs there.  The template for prod_settings.py is local_settings_template.py
+# belongs there.  The template for prod_settings.py is prod_settings_template.py
 #
 # See http://zulip.readthedocs.io/en/latest/settings.html for more information
 #

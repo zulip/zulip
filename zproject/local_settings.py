@@ -5,7 +5,7 @@
 # configured.
 #
 # On a normal Zulip production server, zproject/local_settings.py is a
-# symlink to /etc/zulip/settings.py (based off local_settings_template.py).
+# symlink to /etc/zulip/settings.py (based off prod_settings_template.py).
 import platform
 import six.moves.configparser
 from base64 import b64decode
@@ -25,7 +25,7 @@ ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 
 ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod')
              or ZULIP_COM_STAGING)
 if not ZULIP_COM:
-    raise Exception("You should create your own local settings from local_settings_template.")
+    raise Exception("You should create your own local settings from prod_settings_template.")
 
 ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 SHARE_THE_LOVE = True

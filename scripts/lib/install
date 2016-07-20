@@ -70,7 +70,7 @@ fi
 
 if [ "$has_appserver" = 0 ]; then
     /root/zulip/scripts/setup/generate_secrets.py
-    cp -a /root/zulip/zproject/local_settings_template.py /etc/zulip/settings.py
+    cp -a /root/zulip/zproject/prod_settings_template.py /etc/zulip/settings.py
     ln -nsf /etc/zulip/settings.py /root/zulip/zproject/prod_settings.py
 fi
 
