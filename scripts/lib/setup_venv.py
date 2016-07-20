@@ -20,7 +20,9 @@ if False:
 VENV_DEPENDENCIES = [
     "build-essential",
     "libffi-dev",
-    "libfreetype6-dev",
+    "libfreetype6-dev",     # Needed for image types with Pillow
+    "libz-dev",             # Needed to handle compressed PNGs with Pillow
+    "libjpeg-dev",          # Needed to handle JPEGs with Pillow
     "libldap2-dev",
     "libmemcached-dev",
     "python3-dev",          # Needed to install typed-ast dependency of mypy
