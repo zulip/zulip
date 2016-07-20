@@ -40,8 +40,8 @@ def get_ftype(fpath, use_shebang):
         return ''
 
 def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
-               exclude=[], group_by_ftype=False):
-    # type: (List[str], List[str], bool, bool, List[str], bool) -> Union[Dict[str, List[str]], List[str]]
+               exclude=[], group_by_ftype=False, extless_only=False):
+    # type: (List[str], List[str], bool, bool, List[str], bool, bool) -> Union[Dict[str, List[str]], List[str]]
     """
     List files tracked by git.
 
@@ -56,6 +56,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     exclude - List of paths to be excluded, relative to repository root.
     group_by_ftype - If True, returns a dict of lists keyed by file type.
         If False, returns a flat list of files.
+    extless_only - Only include extensionless files in output.
     """
     ftypes = [x.strip('.') for x in ftypes]
     ftypes_set = set(ftypes)
@@ -79,6 +80,9 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
 
     for fpath in files:
         # this will take a long time if exclude is very large
+        ext = os.path.splitext(fpath)[1]
+        if extless_only and ext:
+            continue
         absfpath = abspath(fpath)
         if any(absfpath == expath or absfpath.startswith(expath + '/')
                for expath in exclude_abspaths):
@@ -117,8 +121,10 @@ if __name__=="__main__":
                         help='only use extension to determine file type')
     parser.add_argument('--exclude', nargs='+', default=[],
                         help='list of files and directories to exclude from results, relative to repo root')
+    parser.add_argument('--extless-only', dest='extless_only', action='store_true', default=False,
+                        help='only include extensionless files in output')
     args = parser.parse_args()
     listing = list_files(targets=args.targets, ftypes=args.ftypes, use_shebang=not args.extonly,
-                         modified_only=args.modified, exclude=args.exclude)
+                         modified_only=args.modified, exclude=args.exclude, extless_only=args.extless_only)
     for l in listing:
         print(l)
