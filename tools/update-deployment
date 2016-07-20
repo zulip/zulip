@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import os
+import six.moves.configparser
 import sys
 import subprocess
 import logging
+
+config_file = six.moves.configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+
+ZULIP_COM = config_file.get('machine', 'deploy_type') in ['zulip.com-prod',
+                                                          'zulip.com-staging']
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
