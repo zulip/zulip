@@ -6,6 +6,12 @@ exports.render = function (name, arg) {
     if (Handlebars.templates === undefined) {
         throw "Cannot find compiled templates!";
     }
+    if (Handlebars.templates[name] === undefined) {
+        throw "Cannot find a template with this name: " + name
+              + ". If you are developing a new feature, this likely"
+              + "means you need to add the file static/templates/"
+              + name + ".handlerbars";
+    }
 
     // The templates should be compiled into compiled.js.  In
     // prod we build compiled.js as part of the deployment process,
