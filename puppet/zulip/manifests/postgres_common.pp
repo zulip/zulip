@@ -40,4 +40,13 @@ class zulip::postgres_common {
     mode => 750,
     source => "puppet:///modules/zulip/postgresql/env-wal-e",
   }
+
+  file { "/usr/local/bin/pg_backup_and_purge.py":
+    ensure => file,
+    owner => "root",
+    group => "postgres",
+    mode => 754,
+    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge.py",
+    require => File["/usr/local/bin/env-wal-e"],
+  }
 }
