@@ -14,6 +14,8 @@ def check_supported_events_narrow_filter(narrow):
 
 def build_narrow_filter(narrow):
     # type: (Iterable[Sequence[text_type]]) -> Callable[[Mapping[str, Any]], bool]
+    """Changes to this function should come with corresponding changes to
+    BuildNarrowFilterTest."""
     check_supported_events_narrow_filter(narrow)
     def narrow_filter(event):
         # type: (Mapping[str, Any]) -> bool
