@@ -239,7 +239,7 @@ You must also install appropriate python packages in them.
 You should either install the virtualenvs in `/srv`, or put symlinks to
 them in `/srv`.  If you don't do that, some scripts might not work correctly.
 
-You can run `tools/setup/setup-venv` to do this.  This script will create two
+You can run `tools/setup/setup_venvs.py` to do this.  This script will create two
 virtualenvs - /srv/zulip-venv and /srv/zulip-py3-venv.
 
 If you want to do it manually, here are the steps:
