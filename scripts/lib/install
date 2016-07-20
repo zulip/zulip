@@ -58,6 +58,15 @@ set +e
 [ -e "/etc/init.d/postgresql" ]; has_postgres=$?
 set -e
 
+# Switch the features depending on the DEPLOYMENT_TYPE 
+if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
+    has_camo=1
+    has_nginx=1
+    has_appserver=1
+    has_rabbit=1
+    has_postgres=1
+fi
+
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 
