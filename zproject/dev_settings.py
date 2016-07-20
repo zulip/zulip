@@ -1,6 +1,6 @@
 
 # For the Dev VM environment, we use the same settings as the
-# sample local_settings.py file, with a few exceptions.
+# sample prod_settings.py file, with a few exceptions.
 from .local_settings_template import *
 
 LOCAL_UPLOADS_DIR = 'var/uploads'

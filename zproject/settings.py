@@ -5,8 +5,8 @@ from __future__ import absolute_import
 #
 # * settings.py contains non-site-specific and settings configuration
 # for the Zulip Django app.
-# * settings.py imports local_settings.py, and any site-specific configuration
-# belongs there.  The template for local_settings.py is local_settings_template.py
+# * settings.py imports prod_settings.py, and any site-specific configuration
+# belongs there.  The template for prod_settings.py is local_settings_template.py
 #
 # See http://zulip.readthedocs.io/en/latest/settings.html for more information
 #
@@ -79,10 +79,10 @@ TEST_SUITE = False
 # The new user tutorial is enabled by default, but disabled for client tests.
 TUTORIAL_ENABLED = True
 
-# Import variables like secrets from the local_settings file
-# Import local_settings after determining the deployment/machine type
+# Import variables like secrets from the prod_settings file
+# Import prod_settings after determining the deployment/machine type
 if PRODUCTION:
-    from .local_settings import *
+    from .prod_settings import *
 else:
     from .dev_settings import *
 
@@ -90,7 +90,7 @@ else:
 # DEFAULT VALUES FOR SETTINGS
 ########################################################################
 
-# For any settings that are not defined in local_settings.py,
+# For any settings that are not defined in prod_settings.py,
 # we want to initialize them to sane default
 DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'TWITTER_CONSUMER_SECRET': '',
