@@ -13,6 +13,8 @@ from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
+from social.backends.github import GithubOAuth2
+from django.contrib.auth import authenticate
 
 def password_auth_enabled(realm):
     if realm is not None:
@@ -54,6 +56,12 @@ def common_get_active_user_by_email(email, return_data=None):
             return_data['inactive_realm'] = True
         return None
     return user_profile
+
+def github_auth_enabled():
+    for backend in django.contrib.auth.get_backends():
+        if isinstance(backend, GitHubBackend):
+            return True
+    return False
 
 class ZulipAuthMixin(object):
     def get_user(self, user_profile_id):
@@ -208,3 +216,51 @@ class DevAuthBackend(ZulipAuthMixin):
 
     def authenticate(self, username, return_data=None):
         return common_get_active_user_by_email(username, return_data=return_data)
+
+class GitHubBackend(ZulipAuthMixin, GithubOAuth2):
+    def authenticate(self, *args, **kwargs):
+        try:
+            email_address = kwargs['response']['email']
+            return_data = kwargs['return_data']
+        except KeyError:
+            return None
+
+        try:
+            user_profile = get_user_profile_by_email(email_address)
+        except UserProfile.DoesNotExist:
+            return_data["valid_attestation"] = True
+            return None
+
+        if not user_profile.is_active:
+            return_data["inactive_user"] = True
+            return None
+
+        if user_profile.realm.deactivated:
+            return_data["inactive_realm"] = True
+            return None
+
+        return user_profile
+
+    def do_auth(self, *args, **kwargs):
+        # This function needs to be imported from here due to the cyclic
+        # dependency.
+        from zerver.views import login_or_register_remote_user
+
+        kwargs['return_data'] = {}
+
+        user_profile = super(GitHubBackend, self).do_auth(*args, **kwargs)
+
+        return_data = kwargs['return_data']
+        inactive_user = return_data.get('inactive_user')
+        inactive_realm = return_data.get('inactive_realm')
+
+        if inactive_user or inactive_realm:
+            return None
+
+        request = self.strategy.request
+        details = kwargs['response']
+        email_address = details.get('email')
+        full_name = details.get('name')
+
+        return login_or_register_remote_user(request, email_address,
+                                             user_profile, full_name)
