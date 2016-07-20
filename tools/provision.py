@@ -169,14 +169,17 @@ def main():
     if TRAVIS:
         if PY2:
             MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
-            setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, virtualenv_args=['-p', 'python3'])
+            setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, patch_activate_script=True,
+                             virtualenv_args=['-p', 'python3'])
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
-            setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE)
+            setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE, patch_activate_script=True)
         else:
             TWISTED_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "twisted.txt")
-            setup_virtualenv("/srv/zulip-py2-twisted-venv", TWISTED_REQS_FILE)
+            setup_virtualenv("/srv/zulip-py2-twisted-venv", TWISTED_REQS_FILE,
+                             patch_activate_script=True)
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
-            setup_virtualenv(VENV_PATH, DEV_REQS_FILE, virtualenv_args=['-p', 'python3'])
+            setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
+                             virtualenv_args=['-p', 'python3'])
     else:
         # Import tools/setup_venv.py instead of running it so that we get an
         # activated virtualenv for the rest of the provisioning process.
