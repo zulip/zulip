@@ -29,6 +29,7 @@ VENV_DEPENDENCIES = [
     "python-virtualenv",
     "libxml2-dev",          # Used for installing talon
     "libxslt1-dev",         # Used for installing talon
+    "libpq-dev",            # Needed by psycopg2
 ]
 
 def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None):
