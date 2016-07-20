@@ -1,8 +1,40 @@
 from __future__ import print_function
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, List, Tuple
 from django.db.models.query import QuerySet
 import re
 import time
+
+from zerver.models import (
+    Message,
+    Topic,
+)
+
+def create_topics_for_message_range(low_msg_id, high_msg_id):
+    # type: (int, int) -> str
+    assert low_msg_id <= high_msg_id
+    assert (high_msg_id - low_msg_id) < 50000 # arbitrary sanity check
+
+    q = Message.objects.filter(
+        id__gte=low_msg_id,
+        id__lt=high_msg_id)
+
+    fields = ['recipient_id', 'subject']
+    q = q.exclude(subject__exact='')
+    q = q.values_list(*fields)
+    q = q.order_by(*fields).distinct()
+    rows = list(q) # type: List[Tuple[int, str]]
+
+    num_created = 0 # type: int
+
+    # I could not find a good way to do bulk get_or_create.
+    for recipient_id, subject in rows:
+        _, created = Topic.objects.get_or_create(
+            recipient_id=recipient_id,
+            name=subject)
+        if created:
+            num_created += 1
+
+    return '%d Topic rows created' % (num_created,)
 
 def timed_ddl(db, stmt):
     # type: (Any, str) -> None
