@@ -247,20 +247,20 @@ class AdminCreateUserTest(AuthedTestCase):
         admin = get_user_profile_by_email(admin_email)
         do_change_is_admin(admin, True)
 
-        result = self.client.post("/json/users", dict(
+        result = self.client_put("/json/users", dict(
             user_profile=admin,
             )
         )
         self.assert_json_error(result, "Missing 'email' argument")
 
-        result = self.client.post("/json/users", dict(
+        result = self.client_put("/json/users", dict(
             user_profile=admin,
             email='romeo@not-zulip.com',
             )
         )
         self.assert_json_error(result, "Missing 'password' argument")
 
-        result = self.client.post("/json/users", dict(
+        result = self.client_put("/json/users", dict(
             user_profile=admin,
             email='romeo@not-zulip.com',
             password='xxxx',
@@ -268,7 +268,7 @@ class AdminCreateUserTest(AuthedTestCase):
         )
         self.assert_json_error(result, "Missing 'full_name' argument")
 
-        result = self.client.post("/json/users", dict(
+        result = self.client_put("/json/users", dict(
             user_profile=admin,
             email='romeo@not-zulip.com',
             password='xxxx',
@@ -277,7 +277,7 @@ class AdminCreateUserTest(AuthedTestCase):
         )
         self.assert_json_error(result, "Missing 'short_name' argument")
 
-        result = self.client.post("/json/users", dict(
+        result = self.client_put("/json/users", dict(
             user_profile=admin,
             email='broken',
             password='xxxx',
@@ -287,7 +287,7 @@ class AdminCreateUserTest(AuthedTestCase):
         )
         self.assert_json_error(result, "Bad name or username")
 
-        result = self.client.post("/json/users", dict(
+        result = self.client_put("/json/users", dict(
             user_profile=admin,
             email='romeo@not-zulip.com',
             password='xxxx',
@@ -306,7 +306,7 @@ class AdminCreateUserTest(AuthedTestCase):
             full_name='Romeo Montague',
             short_name='Romeo',
         )
-        result = self.client.post("/json/users", valid_params)
+        result = self.client_put("/json/users", valid_params)
         self.assert_json_success(result)
 
         new_user = get_user_profile_by_email('romeo@zulip.com')
@@ -315,7 +315,7 @@ class AdminCreateUserTest(AuthedTestCase):
 
         # One more error condition to test--we can't create
         # the same user twice.
-        result = self.client.post("/json/users", valid_params)
+        result = self.client_put("/json/users", valid_params)
         self.assert_json_error(result,
             "Email 'romeo@zulip.com' already in use")
 
