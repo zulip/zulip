@@ -37,7 +37,7 @@ few files involved in the Zulip settings for server administrations.
 In a production environment, we have:
 
 * `/etc/zulip/settings.py` (generated from
-  `zproject/local_settings_template.py`) is the main system
+  `zproject/prod_settings_template.py`) is the main system
   administration facing settings file for Zulip.  It contains all the
   server-specific settings, such as how to send outgoing email, the
   hostname of the Postgres database, etc., but does not contain any
@@ -66,7 +66,7 @@ In a development environment, we have `zproject/settings.py`, and
 additionally:
 
 * `zproject/dev_settings.py` has the settings for the Zulip development
-  environment; it mostly just imports local_settings_template.py.
+  environment; it mostly just imports prod_settings_template.py.
 
 * `zproject/dev-secrets.conf` replaces `/etc/zulip/zulip-secrets.conf`.
 
@@ -80,7 +80,7 @@ in two or three places:
 * In DEFAULT_SETTINGS in `zproject/settings.py`, with a default value
   for production environments.
 
-* In an appropriate section of `zproject/local_settings_template.py`,
+* In an appropriate section of `zproject/prod_settings_template.py`,
   with documentation in the comments explaining the settings's
   purpose and effect.
 
