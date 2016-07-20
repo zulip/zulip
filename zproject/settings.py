@@ -965,6 +965,14 @@ else:
     POPULATE_PROFILE_VIA_LDAP = 'zproject.backends.ZulipLDAPAuthBackend' in AUTHENTICATION_BACKENDS or POPULATE_PROFILE_VIA_LDAP
 
 ########################################################################
+# GITHUB AUTHENTICATION SETTINGS
+########################################################################
+SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key')
+SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
+SOCIAL_AUTH_GITHUB_SCOPE = ['email']
+
+########################################################################
 # EMAIL SETTINGS
 ########################################################################
 

@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from django.conf import settings
 import ujson
-from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
+from zproject.backends import (password_auth_enabled, dev_auth_enabled,
+                               google_auth_enabled, github_auth_enabled)
 
 def add_settings(request):
     realm = request.user.realm if hasattr(request.user, "realm") else None
@@ -28,6 +29,7 @@ def add_settings(request):
         'password_auth_enabled':     password_auth_enabled(realm),
         'dev_auth_enabled':          dev_auth_enabled(),
         'google_auth_enabled':       google_auth_enabled(),
+        'github_auth_enabled':       github_auth_enabled(),
         'development_environment':   settings.DEVELOPMENT,
     }
 

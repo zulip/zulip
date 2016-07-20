@@ -310,6 +310,9 @@ urls += [
     url(r'^notify_tornado$',                'zerver.tornadoviews.notify'),
 ]
 
+# Python Social Auth
+urls += [url(r'^', include('social.apps.django_app.urls', namespace='social'))]
+
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
