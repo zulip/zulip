@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -xe
+set -e
 
 server=$1
 type=$2
@@ -21,7 +21,7 @@ if ! echo "$hostname" | grep -q zulip; then
     echo "Hostname must have zulip in it."
     exit 1
 fi
-
+set -x
 zulip_root=${ZULIP_ROOT:-$HOME/zulip}
 
 zulip_ssh_config_file="$HOME/.zulip-install-server.conf"
