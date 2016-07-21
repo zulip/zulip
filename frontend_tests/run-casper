@@ -62,9 +62,9 @@ def server_is_up(server):
     except:
         return False
 
-def run_tests():
+def run_tests(files):
     test_files = []
-    for file in args:
+    for file in files:
         if not os.path.exists(file):
             file = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests', file)
         test_files.append(os.path.abspath(file))
@@ -111,5 +111,5 @@ Oops, the frontend tests failed. Tips for debugging:
 
         sys.exit(ret)
 
-run_tests()
+run_tests(args)
 sys.exit(0)
