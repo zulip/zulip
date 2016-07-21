@@ -150,6 +150,14 @@ autofocus('#id_username');
     </div>
     {% endif %}
 
+    {% if github_auth_enabled %}
+    <div class="login-github">
+        or <a href="{{ url('social:begin', args=('github',)) }}" class="login-github-button zocial github">
+            <span>{{ _('Sign in with GitHub') }}</span>
+        </a>
+    </div>
+    {% endif %}
+
 {% endif %}
 
 </div>
