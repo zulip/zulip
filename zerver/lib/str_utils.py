@@ -45,7 +45,7 @@ def force_text(s, encoding='utf-8'):
     elif isinstance(s, binary_type):
         return s.decode(encoding)
     else:
-        raise ValueError("force_text expects a string type")
+        raise TypeError("force_text expects a string type")
 
 def force_bytes(s, encoding='utf-8'):
     # type: (Union[text_type, binary_type], str) -> binary_type
@@ -55,7 +55,7 @@ def force_bytes(s, encoding='utf-8'):
     elif isinstance(s, text_type):
         return s.encode(encoding)
     else:
-        raise ValueError("force_bytes expects a string type")
+        raise TypeError("force_bytes expects a string type")
 
 def force_str(s, encoding='utf-8'):
     # type: (Union[text_type, binary_type], str) -> str
@@ -67,7 +67,7 @@ def force_str(s, encoding='utf-8'):
     elif isinstance(s, binary_type):
         return s.decode(encoding)
     else:
-        raise ValueError("force_str expects a string type")
+        raise TypeError("force_str expects a string type")
 
 def dict_with_str_keys(dct, encoding='utf-8'):
     # type: (Mapping[NonBinaryStr, Any], str) -> Dict[str, Any]
