@@ -3,7 +3,52 @@ from __future__ import print_function
 import sys
 import functools
 
-from typing import Any, Callable, IO, TypeVar
+from typing import Any, Callable, IO, Mapping, Sequence, TypeVar
+from six import text_type
+
+def get_mapping_type_str(x):
+    # type: (Mapping) -> str
+    container_type = type(x).__name__
+    if not x:
+        if container_type == 'dict':
+            return '{}'
+        else:
+            return container_type + '([])'
+    key = next(iter(x))
+    key_type = get_type_str(key)
+    value_type = get_type_str(x[key])
+    if container_type == 'dict':
+        if len(x) == 1:
+            return '{%s: %s}' % (key_type, value_type)
+        else:
+            return '{%s: %s, ...}' % (key_type, value_type)
+    else:
+        if len(x) == 1:
+            return '%s([(%s, %s)])' % (container_type, key_type, value_type)
+        else:
+            return '%s([(%s, %s), ...])' % (container_type, key_type, value_type)
+
+def get_sequence_type_str(x):
+    # type: (Sequence) -> str
+    container_type = type(x).__name__
+    if not x:
+        if container_type == 'list':
+            return '[]'
+        else:
+            return container_type + '([])'
+    elem_type = get_type_str(x[0])
+    if container_type == 'list':
+        if len(x) == 1:
+            return '[' + elem_type + ']'
+        else:
+            return '[' + elem_type + ', ...]'
+    else:
+        if len(x) == 1:
+            return '%s([%s])' % (container_type, elem_type)
+        else:
+            return '%s([%s, ...])' % (container_type, elem_type)
+
+expansion_blacklist = [text_type, bytes]
 
 def get_type_str(x):
     # type: (Any) -> str
@@ -17,6 +62,10 @@ def get_type_str(x):
             return '(' + types[0] + ',)'
         else:
             return '(' + ', '.join(types) + ')'
+    elif isinstance(x, Mapping):
+        return get_mapping_type_str(x)
+    elif isinstance(x, Sequence) and not any(isinstance(x, t) for t in expansion_blacklist):
+        return get_sequence_type_str(x)
     else:
         return type(x).__name__
 
