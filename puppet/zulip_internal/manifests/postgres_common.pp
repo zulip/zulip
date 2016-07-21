@@ -24,7 +24,7 @@ class zulip_internal::postgres_common {
     minute => 0,
     target => "postgres",
     user => "postgres",
-    require => [ File["/usr/local/bin/pg_backup_and_purge.py"], Package["postgresql-9.1", "python-dateutil"] ]
+    require => [ File["/usr/local/bin/pg_backup_and_purge.py"], Package["postgresql-${zulip::base::postgres_version}", "python-dateutil"] ]
   }
 
   exec { "sysctl_p":
