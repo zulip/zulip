@@ -24,6 +24,7 @@ from django.db import transaction
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from zerver.lib.camo import get_camo_url
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
@@ -782,6 +783,7 @@ class Message(ModelReprMixin, models.Model):
     has_attachment = models.BooleanField(default=False, db_index=True) # type: bool
     has_image = models.BooleanField(default=False, db_index=True) # type: bool
     has_link = models.BooleanField(default=False, db_index=True) # type: bool
+    is_me_message = models.BooleanField(default=False) # type: bool
 
     def topic_name(self):
         # type: () -> text_type
@@ -813,20 +815,18 @@ class Message(ModelReprMixin, models.Model):
             # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
         self.mentions_wildcard = False
-        self.is_me_message = False
         self.mentions_user_ids = set() # type: Set[int]
         self.user_ids_with_alert_words = set() # type: Set[int]
 
         if not domain:
             domain = self.sender.realm.domain
-        if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
+        if self.sending_client and self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
             domain = u"mit.edu/zephyr_mirror"
         rendered_content = bugdown.convert(content, domain, self)
 
         self.is_me_message = Message.is_status_message(content, rendered_content)
-
         return rendered_content
 
     def set_rendered_content(self, rendered_content, save = False):
@@ -906,6 +906,7 @@ class Message(ModelReprMixin, models.Model):
                 recipient_id = self.recipient.id,
                 recipient_type = self.recipient.type,
                 recipient_type_id = self.recipient.type_id,
+                is_me_message = self.is_me_message
         )
 
     @staticmethod
@@ -937,6 +938,7 @@ class Message(ModelReprMixin, models.Model):
                 recipient_id = row['recipient_id'],
                 recipient_type = row['recipient__type'],
                 recipient_type_id = row['recipient__type_id'],
+                is_me_message = row['is_me_message']
         )
 
     @staticmethod
@@ -962,8 +964,9 @@ class Message(ModelReprMixin, models.Model):
             recipient_id,
             recipient_type,
             recipient_type_id,
+            is_me_message
     ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int, bool) -> Dict[str, Any]
         global bugdown
         if bugdown is None:
             import zerver.lib.bugdown as bugdown
@@ -1010,7 +1013,9 @@ class Message(ModelReprMixin, models.Model):
             timestamp         = datetime_to_timestamp(pub_date),
             gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
             avatar_url        = avatar_url,
-            client            = sending_client_name)
+            client            = sending_client_name,
+            is_me_message     = is_me_message,
+        )
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
 
@@ -1077,6 +1082,7 @@ class Message(ModelReprMixin, models.Model):
             'last_edit_time',
             'edit_history',
             'content',
+            'is_me_message',
             'rendered_content',
             'rendered_content_version',
             'recipient_id',
@@ -1186,9 +1192,9 @@ class UserMessage(ModelReprMixin, models.Model):
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
-    ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
-                 'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
-                 'has_alert_word', "historical", 'is_me_message']
+    ALL_FLAGS = [u'read', u'starred', u'collapsed', u'mentioned', u'wildcard_mentioned',
+                 u'summarize_in_home', u'summarize_in_stream', u'force_expand', u'force_collapse',
+                 u'has_alert_word', u'historical']
     flags = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
 
     class Meta(object):
