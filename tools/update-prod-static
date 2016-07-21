@@ -24,7 +24,7 @@ prev_deploy = options.prev_deploy
 os.chdir(settings.DEPLOY_ROOT)
 
 # Redirect child processes' output to a log file (most recent run only).
-fp = open('update-prod-static.log', 'w')
+fp = open('var/update-prod-static.log', 'w')
 
 # Install node packages
 subprocess.check_call(['npm', 'install'], stdout=fp, stderr=fp);
