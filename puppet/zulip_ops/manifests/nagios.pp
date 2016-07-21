@@ -17,6 +17,7 @@ class zulip_ops::nagios {
   $nagios_mail_domain = zulipconf("nagios", "mail_domain", undef)
   $nagios_mail_host = zulipconf("nagios", "mail_host", undef)
   $nagios_mail_password = zulipsecret("secrets", "nagios_mail_password", "")
+  $nagios_camo_check_url = zulipconf("nagios", "camo_check_url", undef)
 
   $hosts_domain = zulipconf("nagios", "hosts_domain", undef)
   $hosts_zmirror = split(zulipconf("nagios", "hosts_zmirror", undef), ",")
@@ -61,6 +62,14 @@ class zulip_ops::nagios {
     group  => "root",
     mode => 644,
     content => template("zulip_ops/nagios3/hosts.cfg.template.erb"),
+    notify => Service["nagios3"],
+  }
+  file { "/etc/nagios3/conf.d/localhost.cfg":
+    require => Package[nagios3],
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    content => template("zulip_ops/nagios3/localhost.cfg.template.erb"),
     notify => Service["nagios3"],
   }
 
