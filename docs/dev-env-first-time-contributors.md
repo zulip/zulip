@@ -15,9 +15,9 @@ Contents:
 * [Step 2: Get Zulip code](#step-2-get-zulip-code)
 * [Step 3: Start the dev environment](#step-3-start-the-dev-environment)
 * [Step 4: Developing](#step-4-developing)
-* [Troubleshooting & Common Errors](#troubleshooting--common-errors)
+* [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 
-If you encounter errors installing the Zulip dev environment and they are not addressed in [Troubleshooting & Common Errors](#troubleshooting--common-errors), send a note to the [Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an issue](https://github.com/zulip/zulip/issues).
+If you encounter errors installing the Zulip dev environment and they are not addressed in [Troubleshooting & Common Errors](#troubleshooting-common-errors), send a note to the [Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an issue](https://github.com/zulip/zulip/issues).
 
 ### Requirements
 
