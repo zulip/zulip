@@ -44,6 +44,15 @@ exclude_py3 = """
 zerver/lib/ccache.py
 """.split()
 
+exclude_scripts_common = """
+""".split()
+
+exclude_scripts_py2 = """
+""".split()
+
+exclude_scripts_py3 = """
+""".split()
+
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
 parser.add_argument('targets', nargs='*', default=[],
                     help="""files and directories to include in the result.
@@ -73,10 +82,16 @@ else:
 
 if args.all:
     exclude = []
-elif py_version == 2:
-    exclude = exclude_common + exclude_py2
+elif args.scripts_only:
+    if py_version == 2:
+        exclude = exclude_scripts_common + exclude_scripts_py2
+    else:
+        exclude = exclude_scripts_common + exclude_scripts_py3
 else:
-    exclude = exclude_common + exclude_py3
+    if py_version == 2:
+        exclude = exclude_common + exclude_py2
+    else:
+        exclude = exclude_common + exclude_py3
 
 # find all non-excluded files in current directory
 files_dict = lister.list_files(targets=args.targets, ftypes=['py', 'pyi'], use_shebang=args.scripts_only,
