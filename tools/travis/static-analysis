@@ -4,6 +4,8 @@ retcode=0
 set -x
 ./tools/run-mypy --py2 --linecoverage-report || retcode=1
 ./tools/run-mypy --py3 || retcode=1
+./tools/run-mypy --py2 --scripts-only || retcode=1
+./tools/run-mypy --py3 --scripts-only || retcode=1
 set +x
 
 if [ "$retcode" == "0" ]; then
