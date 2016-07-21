@@ -41,8 +41,8 @@ def check_worker_launch(logfile):
     log_output = u''
     print("Polling logfile", end='')
     # Attempt to poll the log file for 10 sec. to see if all worker threads are launched.
-    for i in range(30):
-        time.sleep(1)
+    for i in range(100):
+        time.sleep(0.3)
         sys.stdout.write('.')
         sys.stdout.flush()
         logfile.seek(0)
