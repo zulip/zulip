@@ -39,25 +39,13 @@ parser.add_option('--remote-debug',
                   default=False)
 (options, args) = parser.parse_args()
 
-test_files = []
-for file in args:
-    if not os.path.exists(file):
-        file = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests', file)
-    test_files.append(os.path.abspath(file))
-
 os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
-
-subprocess.check_call('tools/setup/generate-fixtures')
 
 subprocess.check_call('tools/setup/generate-test-credentials')
 
 subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 
 log = open('frontend_tests/casper_tests/server.log', 'w')
-
-# Run this not through the shell, so that we have the actual PID.
-server = subprocess.Popen(('tools/run-dev.py', '--test'),
-                          stdout=log, stderr=log)
 
 def assert_server_running():
     # type: () -> None
@@ -73,6 +61,18 @@ def server_is_up():
         return requests.get('http://localhost:9981/accounts/home').status_code == 200
     except:
         return False
+
+test_files = []
+for file in args:
+    if not os.path.exists(file):
+        file = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests', file)
+    test_files.append(os.path.abspath(file))
+
+subprocess.check_call('tools/setup/generate-fixtures')
+
+# Run this not through the shell, so that we have the actual PID.
+server = subprocess.Popen(('tools/run-dev.py', '--test'),
+                          stdout=log, stderr=log)
 
 ret = 1
 
