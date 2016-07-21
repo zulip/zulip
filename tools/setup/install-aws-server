@@ -37,6 +37,11 @@ if ! [ -e "$server_private_key_file" ]; then
     exit 1
 fi
 
+if [ -z "$secrets_file" ]; then
+    echo "Specify secrets_file via environment."
+    exit 1
+fi
+
 zulip_repo=$(crudini --get "$zulip_ssh_config_file" repo repo_url)
 
 if [ -z "$branch" ]; then
@@ -55,6 +60,7 @@ set +e
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lubuntu -o "ControlMaster=no" <<EOF
 sudo mkdir -p ~root/.ssh && sudo cp .ssh/authorized_keys /root/.ssh/authorized_keys
 sudo sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
+mkdir -p /etc/zulip
 EOF
 
 set -e
@@ -62,6 +68,7 @@ set -e
 # Give server its SSH keys
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file".pub root@"$server":/root/.ssh/id_rsa.pub
+scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$secrets_file" root@"$server":/etc/zulip/zulip-secrets.conf
 
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 # Finish setting up the SSH private key
@@ -81,7 +88,7 @@ apt-get -y upgrade
 cd /root
 if ! [ -e "zulip" ]; then
     # need to install git to clone the repo
-    apt-get install -y git
+    apt-get install -y git crudini
     git clone $zulip_repo
 fi
 cd zulip
