@@ -45,12 +45,45 @@ zerver/lib/ccache.py
 """.split()
 
 exclude_scripts_common = """
+api/integrations/asana/zulip_asana_mirror
+api/integrations/basecamp/zulip_basecamp_mirror
+api/integrations/codebase/zulip_codebase_mirror
+api/integrations/git/post-receive
+api/integrations/nagios/nagios-notify-zulip
+api/integrations/rss/rss-bot
+api/integrations/svn/post-commit
+api/integrations/twitter/twitter-bot
+api/integrations/twitter/twitter-search-bot
+bots/check-mirroring
+bots/gcal-bot
+bots/githook-post-receive
+frontend_tests/run-casper
+puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time
+scripts/nagios/check-rabbitmq-consumers
+scripts/nagios/check-rabbitmq-queue
+scripts/zulip-puppet-apply
+tools/check-templates
+tools/compile-handlebars-templates
+tools/deprecated/inject-messages/inject-messages
+tools/deprecated/review
+tools/get-handlebar-vars
+tools/lint-all
+tools/minify-js
+tools/run-mypy
+tools/test-js-with-casper
+tools/test-run-dev
+tools/update-deployment
+tools/zulip-export/zulip-export
 """.split()
 
 exclude_scripts_py2 = """
+puppet/zulip_internal/files/zulip-ec2-configure-interfaces
 """.split()
 
 exclude_scripts_py3 = """
+bots/process_ccache
+scripts/restart-server
+tools/post-receive
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
