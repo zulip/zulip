@@ -6,8 +6,8 @@ All notable changes to the Zulip server are documented in this file.
 
 - Migrated Zulip's python dependencies to be installed via a virtualenv,
   instead of the old apt repository.  This is a major change to how Zulip
-  is installed that we expect to simplify upgrades in the future.
-- Fixed zxcvbn password strength checker being loaded unnecessarily.  This
+  is installed that we expect will simplify upgrades in the future.
+- Fixed unnecessary loading of zxcvbn password strength checker.  This
   saves a huge fraction of the uncached network transfer for loading Zulip.
 - Added UI for selecting a default language to display settings.
 - Added UI for searching streams in left sidebar with hotkeys.
