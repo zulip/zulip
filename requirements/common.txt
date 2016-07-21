@@ -46,7 +46,7 @@ django-bitfield==1.8.0
 git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
 
 # Django extension for sending data to statsd
-django-statsd==2.1.1
+django-statsd-mozilla==0.3.16
 
 docopt==0.4.0
 fonttools==3.0
@@ -122,6 +122,9 @@ sockjs-tornado==1.0.1
 
 # Needed to parse source maps for error reporting
 sourcemap==0.1.8
+
+# Needed for django-statsd-mozilla
+statsd==3.2.1
 
 # Tornado used for server->client push system
 tornado==2.4.1
