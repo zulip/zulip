@@ -65,8 +65,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |vb, override|
     override.vm.box = "ubuntu/trusty64"
-    # It's possible we can get away with just 1GB; more testing needed
-    vb.memory = 1280
+    # It's possible we can get away with just 1.5GB; more testing needed
+    vb.memory = 2048
   end
 
 $provision_script = <<SCRIPT
