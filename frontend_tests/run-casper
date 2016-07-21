@@ -47,15 +47,15 @@ subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 
 log = open('frontend_tests/casper_tests/server.log', 'w')
 
-def assert_server_running():
+def assert_server_running(server):
     # type: () -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         raise RuntimeError('Server died unexpectedly! Check frontend_tests/casper_tests/server.log')
 
-def server_is_up():
+def server_is_up(server):
     # type: () -> bool
-    assert_server_running()
+    assert_server_running(server)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
         return requests.get('http://localhost:9981/accounts/home').status_code == 200
@@ -79,7 +79,7 @@ ret = 1
 try:
     # Wait for the server to start up.
     sys.stdout.write('Waiting for test server')
-    while not server_is_up():
+    while not server_is_up(server):
         sys.stdout.write('.')
         sys.stdout.flush()
         time.sleep(0.1)
@@ -97,7 +97,7 @@ try:
     print("Running %s" % (cmd,))
     ret = subprocess.call(cmd, shell=True)
 finally:
-    assert_server_running()
+    assert_server_running(server)
     server.terminate()
 
 if ret != 0:
