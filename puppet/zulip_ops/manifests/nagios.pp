@@ -134,5 +134,14 @@ class zulip_ops::nagios {
     notify => Service["nagios3"],
   }
 
+  file { "/etc/apache2/sites-available/nagios.conf":
+    recurse => true,
+    purge => false,
+    require => Package[apache2],
+    owner  => "root",
+    group  => "root",
+    mode => 640,
+    content => template("zulip_ops/nagios_apache_site.conf.template.erb"),
+  }
   # TODO: Install our API
 }

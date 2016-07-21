@@ -1,17 +1,15 @@
 <VirtualHost *:80>
-    ServerName nagios.zulip.net
-    Redirect permanent / https://nagios.zulip.net/
+    ServerName nagios.<%= @hosts_domain %>
+    Redirect permanent / https://nagios.<%= @hosts_domain %>/
 </VirtualHost>
 
 <VirtualHost *:443>
-    ServerName nagios.zulip.net
+    ServerName nagios.<%= @hosts_domain %>
 
     SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/nagios.zulip.net.crt
-    SSLCertificateKeyFile /etc/ssl/private/nagios.key
-
-    SSLCertificateChainFile /etc/ssl/certs/sub.class1.server.ca.pem
-    SSLCACertificateFile /etc/ssl/certs/ca.pem
+    SSLCertificateFile /etc/letsencrypt/live/nagios.<%= @hosts_domain %>/cert.pem
+    SSLCertificateChainFile /etc/letsencrypt/live/nagios.<%= @hosts_domain %>/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/nagios.<%= @hosts_domain %>/privkey.pem
 
     Header add Strict-Transport-Security "max-age=15768000"
     Header add X-Frame-Options DENY
@@ -25,7 +23,7 @@
     # Where the HTML pages live
     Alias /nagios3 /usr/share/nagios3/htdocs
 
-    RedirectMatch ^/?$ https://nagios.zulip.net/cgi-bin/nagios3/status.cgi?host=all
+    RedirectMatch ^/?$ https://nagios.<%= @hosts_domain %>/cgi-bin/nagios3/status.cgi?host=all
 
     <Location "/">
         AuthType Digest

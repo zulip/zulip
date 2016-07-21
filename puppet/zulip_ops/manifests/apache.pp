@@ -45,11 +45,10 @@ class zulip_ops::apache {
   }
 
   file { "/etc/apache2/sites-available/":
-    recurse => true,
+    ensure => directory,
     require => Package[apache2],
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/zulip_ops/apache/sites/",
   }
 }
