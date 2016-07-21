@@ -56,6 +56,8 @@ parser.add_argument('--linecoverage-report', dest='linecoverage_report', action=
                     help="""run the linecoverage report to see annotation coverage""")
 parser.add_argument('--disallow-untyped-defs', dest='disallow_untyped_defs', action='store_true', default=False,
                     help="""throw errors when functions are not annotated""")
+parser.add_argument('--scripts-only', dest='scripts_only', action='store_true', default=False,
+                    help="""Only type check extensionless python scripts""")
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('--py2', default=False, action='store_true', help="Use Python 2 mode")
@@ -77,12 +79,12 @@ else:
     exclude = exclude_common + exclude_py3
 
 # find all non-excluded files in current directory
-files_dict = lister.list_files(targets=args.targets, ftypes=['py', 'pyi'], use_shebang=False,
+files_dict = lister.list_files(targets=args.targets, ftypes=['py', 'pyi'], use_shebang=args.scripts_only,
                                modified_only=args.modified, exclude = exclude + ['stubs'],
-                               group_by_ftype=True)
+                               group_by_ftype=True, extless_only=args.scripts_only)
 pyi_files = set(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
-                if fpath.endswith('.py') and fpath + 'i' not in pyi_files]
+                if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
 
 # Use zulip-py3-venv's mypy if it's available and we're on python 2
 PY3_VENV_DIR = "/srv/zulip-py3-venv"
@@ -105,14 +107,20 @@ if args.disallow_untyped_defs:
 
 # run mypy
 if python_files:
-    rc = subprocess.call([mypy_command] + extra_args + python_files)
-    if args.linecoverage_report:
-        # Move the coverage report to where coveralls will look for it.
-        try:
-            os.rename('var/linecoverage-report/coverage.txt', '.coverage')
-        except OSError:
-            # maybe mypy crashed; exit with its error code
-            pass
+    if args.scripts_only:
+        rc = 0
+        for fpath in python_files:
+            print("Checking", fpath)
+            rc = subprocess.call([mypy_command] + extra_args + [fpath]) or rc
+    else:
+        rc = subprocess.call([mypy_command] + extra_args + python_files)
+        if args.linecoverage_report:
+            # Move the coverage report to where coveralls will look for it.
+            try:
+                os.rename('var/linecoverage-report/coverage.txt', '.coverage')
+            except OSError:
+                # maybe mypy crashed; exit with its error code
+                pass
     sys.exit(rc)
 else:
     print("There are no files to run mypy on.")
