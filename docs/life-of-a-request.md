@@ -26,7 +26,7 @@ likely culprit.
 
 ## Static files are [served directly](https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app) by Nginx
 
-Static files include javascript, css, static assets (like emoji, avatars),
+Static files include JavaScript, css, static assets (like emoji, avatars),
 and user uploads (if stored locally and not on S3).
 
 ```
