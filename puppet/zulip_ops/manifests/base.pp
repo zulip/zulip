@@ -31,6 +31,9 @@ class zulip_ops::base {
                          ]
   package { $org_base_packages: ensure => "installed" }
 
+  # Add system users here
+  $users = []
+
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
