@@ -39,8 +39,7 @@ def beanstalk_decoder(view_func):
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func # type: ignore
-    # mypy isn't convinced that signatures of view_func and _wrapped_view_func are the same
+    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 @beanstalk_decoder
 @authenticated_rest_api_view(is_webhook=True)
