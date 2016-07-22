@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping
+from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -179,6 +179,8 @@ def list_subscriptions_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
+FuncItPair = Tuple[Callable[..., HttpResponse], Iterable[Any]]
+
 @transaction.atomic
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
@@ -189,7 +191,8 @@ def update_subscriptions_backend(request, user_profile,
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
     json_dict = {} # type: Dict[str, Any]
-    for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
+    method_items_pairs = ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)) # type: Tuple[FuncItPair, FuncItPair]
+    for method, items in method_items_pairs:
         response = method(request, user_profile, streams_raw=items)
         if response.status_code != 200:
             transaction.rollback()
