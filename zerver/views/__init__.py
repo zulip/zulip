@@ -39,7 +39,8 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
-    CreateUserForm, is_inactive, OurAuthenticationForm
+    CreateUserForm, OurAuthenticationForm
+from zerver.lib.actions import is_inactive
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.lib import bugdown
