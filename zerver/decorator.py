@@ -105,7 +105,7 @@ def require_post(func):
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
         return func(request, *args, **kwargs)
-    return wrapper # type: ignore # mypy isn't convinced that signatures of wrapper and func are same
+    return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
 
 def require_realm_admin(func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -115,7 +115,7 @@ def require_realm_admin(func):
         if not user_profile.is_realm_admin:
             raise JsonableError(_("Must be a realm administrator"))
         return func(request, user_profile, *args, **kwargs)
-    return wrapper # type: ignore
+    return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
 
 from zerver.lib.user_agent import parse_user_agent
 
@@ -307,7 +307,7 @@ def zulip_internal(view_func):
         request._email = request.user.email
         process_client(request, request.user)
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func # type: ignore
+    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 # authenticated_api_view will add the authenticated user's
 # user_profile to the view function's arguments list, since we have to
@@ -408,7 +408,7 @@ def process_as_post(view_func):
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func # type: ignore
+    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     # type: (HttpRequest, Callable[..., HttpResponse], *Any, **Any) -> HttpResponse
@@ -437,7 +437,7 @@ def authenticated_json_post_view(view_func):
                            *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func # type: ignore
+    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticated_json_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -446,7 +446,7 @@ def authenticated_json_view(view_func):
                            *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func # type: ignore
+    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 def is_local_addr(addr):
     # type: (text_type) -> bool
@@ -609,7 +609,7 @@ def profiled(func):
         retval = prof.runcall(func, *args, **kwargs)
         prof.dump_stats(fn)
         return retval
-    return wrapped_func # type: ignore
+    return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 def uses_mandrill(func):
     # type: (FuncT) -> FuncT
@@ -622,4 +622,4 @@ def uses_mandrill(func):
         # type: (*Any, **Any) -> Any
         kwargs['mail_client'] = get_mandrill_client()
         return func(*args, **kwargs)
-    return wrapped_func # type: ignore
+    return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927
