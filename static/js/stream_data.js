@@ -7,6 +7,7 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
+exports.neversubbed_streams_map = {};
 
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
@@ -59,6 +60,9 @@ exports.get_subscribers_count = function (stream_name) {
         // Then, substracting count by 1
         // Else count is correct.
         count -= 1;
+    }
+    if (exports.neversubbed_streams_map.hasOwnProperty(stream_name)) {
+        count = exports.neversubbed_streams_map[stream_name].subscribers.length;
     }
     sub.subscriber_count = count;
     return count;

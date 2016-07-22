@@ -342,6 +342,9 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
+            if (stream_data.neversubbed_streams_map[stream_name]) {
+                delete stream_data.neversubbed_streams_map[stream_name];
+            }
             // Update subscribers count
             exports.rerender_subscribers_count(sub);
 
@@ -478,6 +481,12 @@ function populate_subscriptions(subs, subscribed) {
     });
 
     return sub_rows;
+}
+
+function populate_neversubbed_info(subs) {
+    stream_data.neversubbed_streams_map = _.object(_.map(subs, function (stream) {
+       return [stream.name, stream];
+    }));
 }
 
 exports.setup_page = function () {
@@ -750,6 +759,9 @@ $(function () {
     // Populate stream_info with data handed over to client-side template.
     populate_subscriptions(page_params.subbed_info, true);
     populate_subscriptions(page_params.unsubbed_info, false);
+
+    // Populate neversubbed_streams_map with data
+    populate_neversubbed_info(page_params.neversubbed_info);
 
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subbed_info;
