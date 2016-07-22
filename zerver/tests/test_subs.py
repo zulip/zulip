@@ -27,7 +27,7 @@ from zerver.lib.test_runner import (
 
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
-    UserProfile,
+    UserProfile, get_user_profile_by_id
 )
 
 from zerver.lib.actions import (
@@ -1398,6 +1398,42 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], email3)
 
+
+    def test_users_getting_add_peer_event(self):
+        # type: () -> None
+        """
+        Check users getting add_peer_event is correct
+        """
+        streams_to_sub = ['multi_user_stream']
+        users_to_subscribe = [self.test_email, "othello@zulip.com"]
+        self.common_subscribe_to_streams(
+            self.test_email,
+            streams_to_sub,
+            dict(principals=ujson.dumps(users_to_subscribe)))
+
+        new_users_to_subscribe = ["iago@zulip.com", "cordelia@zulip.com"]
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            self.common_subscribe_to_streams(
+                    "iago@zulip.com",
+                    streams_to_sub,
+                    dict(principals=ujson.dumps(new_users_to_subscribe)),
+            )
+
+        add_peer_events = [events[2], events[3]]
+        for add_peer_event in add_peer_events:
+            self.assertEqual(add_peer_event['event']['type'], 'subscription')
+            self.assertEqual(add_peer_event['event']['op'], 'peer_add')
+            event_sent_to_ids = add_peer_event['users']
+            user_dict = [get_user_profile_by_id(user_id).email
+                            for user_id in event_sent_to_ids]
+            for user in new_users_to_subscribe:
+                # Make sure new users subscribed to stream is not in
+                # peer_add event recipient list
+                self.assertNotIn(user, user_dict)
+            for old_user in users_to_subscribe:
+                # Check non new users are in peer_add event recipient list.
+                self.assertIn(old_user, user_dict)
 
     def test_bulk_subscribe_MIT(self):
         # type: () -> None
