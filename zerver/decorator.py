@@ -30,7 +30,7 @@ from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
 from six import text_type
-from typing import Union, Any, Callable, Sequence, Dict, Optional
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar
 from zerver.lib.str_utils import force_bytes
 
 if settings.ZILENCER_ENABLED:
@@ -39,6 +39,9 @@ else:
     from mock import Mock
     get_deployment_by_domain = Mock()
     Deployment = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 def get_deployment_or_userprofile(role):
     # type: (text_type) -> Union[UserProfile, Deployment]
@@ -87,7 +90,7 @@ def update_user_activity(request, user_profile):
 
 # Based on django.views.decorators.http.require_http_methods
 def require_post(func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
@@ -102,17 +105,17 @@ def require_post(func):
                             extra={'status_code': 405, 'request': request})
             return HttpResponseNotAllowed(["POST"])
         return func(request, *args, **kwargs)
-    return wrapper
+    return wrapper # type: ignore # mypy isn't convinced that signatures of wrapper and func are same
 
 def require_realm_admin(func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @wraps(func)
     def wrapper(request, user_profile, *args, **kwargs):
         # type: (HttpRequest, UserProfile, *Any, **Any) -> HttpResponse
         if not user_profile.is_realm_admin:
             raise JsonableError(_("Must be a realm administrator"))
         return func(request, user_profile, *args, **kwargs)
-    return wrapper
+    return wrapper # type: ignore
 
 from zerver.lib.user_agent import parse_user_agent
 
@@ -191,6 +194,8 @@ def validate_api_key(role, api_key, is_webhook=False):
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(client_name):
     # type: (text_type) ->  Callable[..., HttpResponse]
+    # This function can't be typed perfectly because returning a generic function
+    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
     def _wrapped_view_func(view_func):
         # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
         @csrf_exempt
@@ -291,7 +296,7 @@ def zulip_login_required(function=None,
     return actual_decorator
 
 def zulip_internal(view_func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @zulip_login_required
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
@@ -302,7 +307,7 @@ def zulip_internal(view_func):
         request._email = request.user.email
         process_client(request, request.user)
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func
+    return _wrapped_view_func # type: ignore
 
 # authenticated_api_view will add the authenticated user's
 # user_profile to the view function's arguments list, since we have to
@@ -378,7 +383,7 @@ def authenticated_rest_api_view(is_webhook=False):
     return _wrapped_view_func
 
 def process_as_post(view_func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
@@ -403,7 +408,7 @@ def process_as_post(view_func):
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func
+    return _wrapped_view_func # type: ignore
 
 def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     # type: (HttpRequest, Callable[..., HttpResponse], *Any, **Any) -> HttpResponse
@@ -424,7 +429,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
 # in.  If not, return an error (the @login_required behavior of
 # redirecting to a login page doesn't make sense for json views)
 def authenticated_json_post_view(view_func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @require_post
     @has_request_variables
     @wraps(view_func)
@@ -432,16 +437,16 @@ def authenticated_json_post_view(view_func):
                            *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func
+    return _wrapped_view_func # type: ignore
 
 def authenticated_json_view(view_func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @wraps(view_func)
     def _wrapped_view_func(request,
                            *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
-    return _wrapped_view_func
+    return _wrapped_view_func # type: ignore
 
 def is_local_addr(addr):
     # type: (text_type) -> bool
@@ -464,7 +469,7 @@ def client_is_exempt_from_rate_limiting(request):
            and (is_local_addr(request.META['REMOTE_ADDR']) or settings.DEBUG))
 
 def internal_notify_view(view_func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @csrf_exempt
     @require_post
     @wraps(view_func)
@@ -579,7 +584,7 @@ def rate_limit(domain='all'):
     return wrapper
 
 def profiled(func):
-    # type: (Callable[..., Any]) -> Callable[..., Any]
+    # type: (FuncT) -> FuncT
     """
     This decorator should obviously be used only in a dev environment.
     It works best when surrounding a function that you expect to be
@@ -604,10 +609,10 @@ def profiled(func):
         retval = prof.runcall(func, *args, **kwargs)
         prof.dump_stats(fn)
         return retval
-    return wrapped_func
+    return wrapped_func # type: ignore
 
 def uses_mandrill(func):
-    # type: (Callable[..., Any]) -> Callable[..., Any]
+    # type: (FuncT) -> FuncT
     """
     This decorator takes a function with keyword argument "mail_client" and
     fills it in with the mail_client for the Mandrill account.
@@ -617,4 +622,4 @@ def uses_mandrill(func):
         # type: (*Any, **Any) -> Any
         kwargs['mail_client'] = get_mandrill_client()
         return func(*args, **kwargs)
-    return wrapped_func
+    return wrapped_func # type: ignore

@@ -13,15 +13,16 @@ from functools import wraps
 
 from .github import build_message_from_gitlog
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, TypeVar
 from zerver.lib.str_utils import force_str, force_bytes
 
+ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
 # We manually fix the username here before passing it along to @authenticated_rest_api_view
 def beanstalk_decoder(view_func):
-    # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+    # type: (ViewFuncT) -> ViewFuncT
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
@@ -38,7 +39,8 @@ def beanstalk_decoder(view_func):
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func
+    return _wrapped_view_func # type: ignore
+    # mypy isn't convinced that signatures of view_func and _wrapped_view_func are the same
 
 @beanstalk_decoder
 @authenticated_rest_api_view(is_webhook=True)
