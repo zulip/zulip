@@ -5,6 +5,8 @@ class zulip_ops::base {
   $org_base_packages = [# Management for our systems
                         "openssh-server",
                         "mosh",
+                        # package management
+                        "aptitude",
                         # SSL Certificates
                         "letsencrypt",
                         # Monitoring
