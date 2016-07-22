@@ -450,13 +450,13 @@ def send_local_email_template_with_delay(recipients, template_prefix,
     text_content = loader.render_to_string(template_prefix + ".text", template_payload)
     subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
 
-    return send_future_email(recipients,
-                             html_content,
-                             text_content,
-                             subject,
-                             delay=delay,
-                             sender=sender,
-                             tags=tags)
+    send_future_email(recipients,
+                      html_content,
+                      text_content,
+                      subject,
+                      delay=delay,
+                      sender=sender,
+                      tags=tags)
 
 def enqueue_welcome_emails(email, name):
     # type: (text_type, text_type) -> None
