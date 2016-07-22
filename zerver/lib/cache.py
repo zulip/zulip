@@ -28,6 +28,8 @@ if False:
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
 
+FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+
 remote_cache_time_start = 0.0
 remote_cache_total_time = 0.0
 remote_cache_total_requests = 0
@@ -103,6 +105,8 @@ def get_cache_backend(cache_name):
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
     # type: ignore # CANNOT_INFER_LAMBDA_TYPE issue with models.py
+    # This function can't be typed perfectly because returning a generic function
+    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -238,13 +242,13 @@ def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
                 if cache_keys[object_id] in cached_objects)
 
 def cache(func):
-    # type: ignore # CANNOT_INFER_FUNC_TYPE
+    # type: (FuncT) -> FuncT
     """Decorator which applies Django caching to a function.
 
        Uses a key based on the function's name, filename, and
        the repr() of its arguments."""
 
-    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__)
+    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__) # type: ignore # https://github.com/python/mypy/issues/1923
 
     @wraps(func)
     def keyfunc(*args, **kwargs):
