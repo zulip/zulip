@@ -2386,7 +2386,8 @@ def update_user_message_flags(message, ums):
     for um in changed_ums:
         um.save(update_fields=['flags'])
 
-
+# We use transaction.atomic to support select_for_update in the attachment codepath.
+@transaction.atomic
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
     # type: (UserProfile, Message, Optional[text_type], str, Optional[text_type], Optional[text_type]) -> None
     event = {'type': 'update_message',
