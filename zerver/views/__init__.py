@@ -698,7 +698,7 @@ def create_preregistration_user(email, request, realm_creation=False):
     # require special handling (They may already have an (inactive)
     # account, for example)
     if split_email_to_domain(email) == "mit.edu":
-        return MitUser.objects.get_or_create(email=email, realm_creation=realm_creation)[0]
+        return MitUser.objects.get_or_create(email=email)[0]
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
 def accounts_home_with_domain(request, domain):
