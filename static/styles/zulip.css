@@ -1624,6 +1624,36 @@ blockquote p {
     top: 5px;
 }
 
+#topic_muted {
+    display: block;
+}
+
+.topic_muted {
+    padding: 4px 0px 4px 0px;
+}
+
+.topic_muted_close {
+    display: inline;
+    margin-top: 4px;
+
+    width: 10px;
+}
+
+.topic_muted_controls {
+    float: right;
+}
+
+.compose_invite_link {
+    height: 20px;
+    margin-bottom: 3px;
+}
+
+.topic_muted_error {
+    margin-right: 10px;
+
+    padding: 3px 8px 3px 8px;
+}
+
 #compose_invite_users {
     /* Don't overlap into the compose_close × */
     margin-right: 10px;
