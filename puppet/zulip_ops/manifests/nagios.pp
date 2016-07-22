@@ -5,12 +5,18 @@ class zulip_ops::nagios {
 
   $nagios_packages = [# Packages needed for Nagios
                       "nagios3",
+                      # For sending outgoing email
+                      "msmtp",
                       ]
   package { $nagios_packages: ensure => "installed" }
   $nagios_format_users = join($zulip_ops::base::users, ",")
   $nagios_alert_email = zulipconf("nagios", "alert_email", undef)
   $nagios_test_email = zulipconf("nagios", "test_email", undef)
   $nagios_pager_email = zulipconf("nagios", "pager_email", undef)
+
+  $nagios_mail_domain = zulipconf("nagios", "mail_domain", undef)
+  $nagios_mail_host = zulipconf("nagios", "mail_host", undef)
+  $nagios_mail_password = zulipsecret("secrets", "nagios_mail_password", "")
 
   $hosts_domain = zulipconf("nagios", "hosts_domain", undef)
   $hosts_zmirror = split(zulipconf("nagios", "hosts_zmirror", undef), ",")
@@ -97,6 +103,15 @@ class zulip_ops::nagios {
     group      => "root",
     content => template('zulip_ops/nagios_autossh.template.erb'),
     notify => Service["nagios3"],
+  }
+
+  file { '/var/lib/nagios/msmtprc':
+    ensure     => file,
+    mode       => 600,
+    owner      => "nagios",
+    group      => "nagios",
+    content    => template("zulip_ops/msmtprc_nagios.template.erb"),
+    require    => File['/var/lib/nagios'],
   }
 
   exec { "fix_nagios_permissions":

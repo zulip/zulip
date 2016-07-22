@@ -1,0 +1,15 @@
+from <%= @nagios_alert_email %>
+user postmaster@nagios.<%= @hosts_domain %>
+password <%= @nagios_mail_password %>
+
+host <%= @nagios_mail_host %>
+port 587
+auth on
+
+protocol smtp
+
+maildomain <%= @nagios_mail_domain %>
+domain <%= @nagios_mail_domain %>
+
+tls on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
