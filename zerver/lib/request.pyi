@@ -1,4 +1,7 @@
-from typing import Any
+from typing import Any, Callable, TypeVar
+from django.http import HttpResponse
+
+ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 class JsonableError(Exception):
     error = ...  # type: Any
@@ -8,4 +11,4 @@ class RequestVariableMissingError(JsonableError): ...
 
 def REQ(*args: Any, **kwargs: Any) -> Any: ...
 
-def has_request_variables(view_func: Any) -> Any: ...
+def has_request_variables(view_func: ViewFuncT) -> ViewFuncT: ...
