@@ -123,5 +123,11 @@ class TemplateTestCase(TestCase):
     def test_custom_tos_template(self):
         response = self.client.get("/terms/")
         self.assertEqual(response.status_code, 200)
+
+        output = ""
+        for i in sorted(dir(settings)):
+            output += "\n" + i + ": " + str(getattr(settings,i))
+        open('/home/zulip/zulip/settings','w').write(output)
+        open("rendered", 'w').write(response.content)
         self.assertTrue("Thanks for using our products and services (\"Services\"). " in response.content)
         self.assertTrue("By using our Services, you are agreeing to these terms" in response.content)

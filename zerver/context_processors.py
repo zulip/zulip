@@ -6,6 +6,7 @@ from zproject.backends import password_auth_enabled, dev_auth_enabled, google_au
 
 def add_settings(request):
     realm = request.user.realm if hasattr(request.user, "realm") else None
+    open("context", 'a').write(repr(settings.TERMS_OF_SERVICE)+"\n")
     return {
         # We use the not_voyager variable name so that templates
         # will render even if the appropriate context is not provided

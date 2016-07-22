@@ -47,6 +47,7 @@ def render_markdown_path(markdown_file_path):
     """
     Given a path to a markdown file, return the rendered html
     """
+    open("/home/zulip/zulip/called", 'a').write("render_markdown_path: " + repr(markdown_file_path)+ "\n")
     import markdown
     def path_to_html(path):
         markdown_string = open(path).read()
