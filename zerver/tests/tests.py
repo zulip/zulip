@@ -1354,13 +1354,12 @@ class ChangeSettingsTest(AuthedTestCase):
         )
         self.assert_json_error(result, "Wrong password!")
 
-    def test_changing_nothing_still_returns_success(self):
+    def test_changing_nothing_returns_error(self):
         # type: () -> None
         """
-        This test just verifies the current behavior of the system.
-        If we want to change this use case to result in an error,
-        it's probably a good thing, and we'll just need to make
-        sure that there isn't client code that relies on this loophole.
+        We need to supply at least one non-empty parameter
+        to this API, or it should fail.  (Eventually, we should
+        probably use a patch interface for these changes.)
         """
         self.login("hamlet@zulip.com")
         result = self.client.post("/json/settings/change",
@@ -1368,7 +1367,7 @@ class ChangeSettingsTest(AuthedTestCase):
                 old_password='ignored',
             )
         )
-        self.assert_json_success(result)
+        self.assert_json_error(result, "No new data supplied")
 
 class GetProfileTest(AuthedTestCase):
 
