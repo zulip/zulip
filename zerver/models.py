@@ -1732,9 +1732,9 @@ def get_realm_outgoing_webhook_services_name(realm):
     return list(Service.objects.filter(user_profile__realm=realm, user_profile__is_bot=True,
                                        user_profile__bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values('name'))
 
-def get_realm_bot_services(email, realm):
-    # type: (str, Realm) -> List[Any]
-    return list(Service.objects.filter(user_profile__email=email, user_profile__realm=realm).values())
+def get_bot_services(user_profile_id):
+    # type: (str) -> List[Service]
+    return list(Service.objects.filter(user_profile__id=user_profile_id))
 
 def get_service_profile(email, realm, service_name):
     # type: (str, Realm, str) -> Service
