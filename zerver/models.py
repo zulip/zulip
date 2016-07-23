@@ -861,6 +861,7 @@ class Message(ModelReprMixin, models.Model):
         self.is_me_message = False
         self.mentions_user_ids = set() # type: Set[int]
         self.user_ids_with_alert_words = set() # type: Set[int]
+        self.outgoing_webhook_triggers = [] # type: List[Tuple[Dict[text_type, Any], text_type]]
 
         if not domain:
             domain = self.sender.realm.domain
