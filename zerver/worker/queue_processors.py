@@ -1,6 +1,6 @@
 # Documented in http://zulip.readthedocs.io/en/latest/queuing.html
 from __future__ import absolute_import
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, cast
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
@@ -31,6 +31,8 @@ from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
+from zerver.lib.outgoing_webhook import do_rest_call
+from zerver.models import get_bot_services
 
 import os
 import sys
@@ -44,6 +46,7 @@ import logging
 import requests
 import simplejson
 from six.moves import cStringIO as StringIO
+import re
 
 class WorkerDeclarationException(Exception):
     pass
@@ -427,6 +430,17 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 class OutgoingWebhookWorker(QueueProcessingWorker):
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
+        message = event['message']
+        services = get_bot_services(event['user_profile_id'])
+        rest_operation = {'method': 'POST',
+                          'relative_url_path': '',
+                          'request_kwargs': {},
+                          'base_url': ''}
 
-        # TODO: Implement this worker.
-        pass
+        dup_event = cast(Dict[str, Any], event)
+        dup_event['command'] = message['content']
+
+        for service in services:
+            rest_operation['base_url'] = str(service.base_url)
+            dup_event['service_name'] = str(service.name)
+            do_rest_call(rest_operation, dup_event)
