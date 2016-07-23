@@ -1249,15 +1249,6 @@ class BotTest(AuthedTestCase):
 
 class ChangeSettingsTest(AuthedTestCase):
 
-    def post_with_params(self, modified_params):
-        # type: (Dict[str, text_type]) -> HttpResponse
-        post_params = {"full_name": "Foo Bar",
-                  "old_password": initial_password("hamlet@zulip.com"),
-                  "new_password": "foobar1", "confirm_password": "foobar1",
-        }
-        post_params.update(modified_params)
-        return self.client.post("/json/settings/change", dict(post_params))
-
     def check_well_formed_change_settings_response(self, result):
         # type: (Dict[str, Any]) -> None
         self.assertIn("full_name", result)
@@ -1287,7 +1278,14 @@ class ChangeSettingsTest(AuthedTestCase):
         settings correctly and returns correct values.
         """
         self.login("hamlet@zulip.com")
-        json_result = self.post_with_params({})
+        json_result = self.client.post("/json/settings/change",
+            dict(
+                full_name='Foo Bar',
+                old_password=initial_password('hamlet@zulip.com'),
+                new_password='foobar1',
+                confirm_password='foobar1',
+            )
+        )
         self.assert_json_success(json_result)
         result = ujson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
@@ -1345,7 +1343,13 @@ class ChangeSettingsTest(AuthedTestCase):
         new_password and confirm_password must match
         """
         self.login("hamlet@zulip.com")
-        result = self.post_with_params({"new_password": "mismatched_password"})
+        result = self.client.post("/json/settings/change",
+            dict(
+                full_name="", # TODO, make this a default in prod code
+                new_password="mismatched_password",
+                confirm_password="not_the_same",
+            )
+        )
         self.assert_json_error(result,
                 "New password must match confirmation password!")
 
@@ -1355,7 +1359,14 @@ class ChangeSettingsTest(AuthedTestCase):
         new_password and confirm_password must match
         """
         self.login("hamlet@zulip.com")
-        result = self.post_with_params({"old_password": "bad_password"})
+        result = self.client.post("/json/settings/change",
+            dict(
+                full_name="", # TODO, make this a default in prod code
+                old_password='bad_password',
+                new_password="ignored",
+                confirm_password="ignored",
+            )
+        )
         self.assert_json_error(result, "Wrong password!")
 
 class GetProfileTest(AuthedTestCase):
