@@ -893,6 +893,7 @@ def do_send_messages(messages_maybe_none):
                     "message": message_to_dict(message['message'], apply_markdown=False),
                     "trigger": outgoing_webhook_event['trigger'],
                     "user_profile_id": outgoing_webhook_event["user_profile"].id,
+                    "failed_tries": 0,
                 },
                 lambda x: None
             )
