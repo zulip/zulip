@@ -1220,7 +1220,7 @@ class Attachment(ModelReprMixin, models.Model):
     # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
     # then its path_id will be a/b/abc/temp_file.py.
     path_id = models.TextField(db_index=True) # type: text_type
-    owner = models.ForeignKey(UserProfile) # type: UserProfile
+    owner = models.ForeignKey(UserProfile, blank=True, null=True) # type: UserProfile
     realm = models.ForeignKey(Realm, blank=True, null=True) # type: Realm
     is_realm_public = models.BooleanField(default=False) # type: bool
     messages = models.ManyToManyField(Message) # type: Manager
