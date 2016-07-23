@@ -154,7 +154,8 @@ for msg in result['messages']:
     uniwrite(f, '<img class="avatar" src="%s" />' % msg['avatar_url'])
 
     uniwrite(f, '<div class="sender-bar">')
-    uniwrite(f, '<div class="recipient" style="background-color: %s;">%s &gt; %s</div>' % (color[msg['display_recipient']], msg['display_recipient'], msg['subject']))
+    uniwrite(f, '<div class="recipient" style="background-color: %s;">%s &gt; %s</div>' % (
+             color[msg['display_recipient']], msg['display_recipient'], msg['subject']))
     uniwrite(f, '<span class="sender">%s</span>' % msg['sender_full_name'])
     uniwrite(f, '</div>')
 
