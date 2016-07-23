@@ -714,7 +714,19 @@ class GetOldMessagesTest(AuthedTestCase):
                 return
         self.fail("get_old_messages query not found")
 
-    def test_use_first_unread_anchor(self):
+    def test_use_first_unread_anchor_with_muted_topics(self):
+        """
+        Test that our logic related to `use_first_unread_anchor`
+        invokes the `message_id = 10000000000000000` hack for
+        the `/* get_old_messages */` query when relevant muting
+        is in effect.
+
+        This is a very arcane test on arcane, but very heavily
+        field-tested, logic in get_old_messages_backend().  If
+        this test breaks, be absolutely sure you know what you're
+        doing.
+        """
+
         realm = get_realm('zulip.com')
         create_stream_if_needed(realm, 'devel')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
@@ -730,19 +742,24 @@ class GetOldMessagesTest(AuthedTestCase):
         )
         request = POSTRequestMock(query_params, user_profile)
 
-        with queries_captured() as queries:
+        with queries_captured() as all_queries:
             get_old_messages_backend(request, user_profile)
 
-        queries = [q for q in queries if q['sql'].startswith("SELECT message_id, flags")]
+        # Do some tests on the main query, to verify the muting logic
+        # runs on this code path.
+        queries = [q for q in all_queries if q['sql'].startswith("SELECT message_id, flags")]
+        self.assertEqual(len(queries), 1)
 
-        ids = {}
-        for stream_name in ['Scotland']:
-            stream = get_stream(stream_name, realm)
-            ids[stream_name] = get_recipient(Recipient.STREAM, stream.id).id
+        stream = get_stream('Scotland', realm)
+        recipient_id = get_recipient(Recipient.STREAM, stream.id).id
+        cond = '''AND NOT (recipient_id = {scotland} AND upper(subject) = upper('golf'))'''.format(scotland=recipient_id)
+        self.assertIn(cond, queries[0]['sql'])
 
-        cond = '''AND NOT (recipient_id = {Scotland} AND upper(subject) = upper('golf'))'''
-        cond = cond.format(**ids)
-        self.assertTrue(cond in queries[0]['sql'])
+        # Next, verify the use_first_unread_anchor setting invokes
+        # the `message_id = 10000000000000000` hack.
+        queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
+        self.assertEqual(len(queries), 1)
+        self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
 
     def test_exclude_muting_conditions(self):
         realm = get_realm('zulip.com')
