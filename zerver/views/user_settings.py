@@ -58,6 +58,9 @@ def json_change_settings(request, user_profile,
                          new_password=REQ(default=""),
                          confirm_password=REQ(default="")):
     # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type) -> HttpResponse
+    if not (full_name or new_password):
+        return json_error(_("No new data supplied"))
+
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error(_("New password must match confirmation password!"))
