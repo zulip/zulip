@@ -3,13 +3,20 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import mock
-from typing import Any
+from typing import Any, Union, Mapping, Callable
 
 from zerver.lib.test_helpers import get_user_profile_by_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Service
+
+from zerver.models import (
+    get_realm_by_email_domain,
+    UserProfile,
+    Recipient,
+    Service,
+)
 from zerver.lib.outgoing_webhook import do_rest_call
 
+from zerver.lib.actions import do_create_user
 import requests
 
 rest_operation = {'method': "POST",
@@ -72,3 +79,35 @@ class DoRestCallTests(ZulipTestCase):
         # type: (mock.Mock, mock.Mock, mock.Mock) -> None
         do_rest_call(rest_operation, {"command": ""}, None)
         self.assertTrue(mock_fail_with_message.called)
+
+
+class TestMentionMessageTrigger(ZulipTestCase):
+
+    def check_values_passed(self, queue_name, trigger_event, x):
+        # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
+        self.assertEqual(queue_name, "outgoing_webhooks")
+        self.assertEqual(trigger_event['user_profile_id'], self.bot_profile.id)
+        self.assertEqual(trigger_event['trigger'], "mention")
+        self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
+        self.assertEqual(trigger_event["message"]["content"], self.content)
+        self.assertEqual(trigger_event["message"]["type"], Recipient._type_names[Recipient.STREAM])
+        self.assertEqual(trigger_event["message"]["display_recipient"], "Denmark")
+
+    @mock.patch('zerver.lib.actions.queue_json_publish')
+    def test_mention_message_event_flow(self, mock_queue_json_publish):
+        # type: (mock.Mock) -> None
+        self.user_profile = get_user_profile_by_email("othello@zulip.com")
+        self.bot_profile = do_create_user(email="foo-bot@zulip.com",
+                                          password="test",
+                                          realm=get_realm_by_email_domain("zulip.com"),
+                                          full_name="FooBot",
+                                          short_name="foo-bot",
+                                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                                          bot_owner=self.user_profile)
+        self.content = u'@**FooBot** foo bar!!!'
+        mock_queue_json_publish.side_effect = self.check_values_passed
+
+        # TODO: In future versions this won't be required
+        self.subscribe_to_stream(self.bot_profile.email, "Denmark")
+        self.send_message(self.user_profile.email, "Denmark", Recipient.STREAM, self.content)
+        self.assertTrue(mock_queue_json_publish.called)
