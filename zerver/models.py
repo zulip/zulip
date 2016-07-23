@@ -1705,6 +1705,8 @@ class CustomProfileFieldValue(models.Model):
     class Meta(object):
         unique_together = ('user_profile', 'field')
 
+GENERIC_INTERFACE = u'GenericService'
+
 class Service(models.Model):
     name = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH) # type: Text
     # owner of service/bot user corresponding to the service
@@ -1716,10 +1718,13 @@ class Service(models.Model):
     # the interface used to send data to third party site
     interface = models.PositiveSmallIntegerField(default=1)  # type: int
 
-    # Valid interfaces are {}
+    # Valid interfaces are {generic}
+    GENERIC = 1
 
     # N.B. If we used Django's choice=... we would get this for free (kinda)
-    _interfaces = {} # type: Dict[int, Text]
+    _interfaces = {
+        GENERIC: GENERIC_INTERFACE
+    } # type: Dict[int, Text]
 
     def interface_name(self):
         # type: () -> Text
@@ -1733,8 +1738,8 @@ def get_realm_outgoing_webhook_services_name(realm):
                                        user_profile__bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values('name'))
 
 def get_realm_bot_services(email, realm):
-    # type: (str, Realm) -> List[Any]
-    return list(Service.objects.filter(user_profile__email=email, user_profile__realm=realm).values())
+    # type: (str, Realm) -> List[Service]
+    return list(Service.objects.filter(user_profile__email=email, user_profile__realm=realm))
 
 def get_service_profile(email, realm, service_name):
     # type: (str, Realm, str) -> Service
