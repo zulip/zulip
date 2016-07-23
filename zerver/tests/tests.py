@@ -1369,6 +1369,23 @@ class ChangeSettingsTest(AuthedTestCase):
         )
         self.assert_json_error(result, "Wrong password!")
 
+    def test_changing_nothing_still_returns_success(self):
+        # type: () -> None
+        """
+        This test just verifies the current behavior of the system.
+        If we want to change this use case to result in an error,
+        it's probably a good thing, and we'll just need to make
+        sure that there isn't client code that relies on this loophole.
+        """
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/settings/change",
+            dict(
+                full_name="", # TODO, make this a default in prod code
+                old_password='ignored',
+            )
+        )
+        self.assert_json_success(result)
+
 class GetProfileTest(AuthedTestCase):
 
     def common_update_pointer(self, email, pointer):
