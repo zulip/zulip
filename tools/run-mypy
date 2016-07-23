@@ -59,9 +59,6 @@ bots/gcal-bot
 bots/githook-post-receive
 frontend_tests/run-casper
 puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time
-scripts/nagios/check-rabbitmq-consumers
-scripts/nagios/check-rabbitmq-queue
-scripts/zulip-puppet-apply
 tools/check-templates
 tools/compile-handlebars-templates
 tools/deprecated/inject-messages/inject-messages
@@ -82,7 +79,6 @@ puppet/zulip_internal/files/zulip-ec2-configure-interfaces
 
 exclude_scripts_py3 = """
 bots/process_ccache
-scripts/restart-server
 tools/post-receive
 """.split()
 
