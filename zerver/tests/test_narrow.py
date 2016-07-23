@@ -748,9 +748,24 @@ class GetOldMessagesTest(AuthedTestCase):
         realm = get_realm('zulip.com')
         create_stream_if_needed(realm, 'devel')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+
+        # Test the do-nothing case first.
+        user_profile.muted_topics = ujson.dumps([['irrelevant_stream', 'irrelevant_topic']])
+        user_profile.save()
+
+        # If nothing relevant is muted, then exclude_muting_conditions()
+        # should return an empty list.
+        narrow = [
+            dict(operator='stream', operand='Scotland'),
+        ]
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        self.assertEqual(muting_conditions, [])
+
+        # Ok, now set up our muted topics to include a topic relevant to our narrow.
         user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css'], ['bogus', 'bogus']])
         user_profile.save()
 
+        # And verify that our query will exclude them.
         narrow = [
             dict(operator='stream', operand='Scotland'),
         ]
