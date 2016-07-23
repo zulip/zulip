@@ -30,6 +30,43 @@ You can learn more about it at:
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process in the 'static-analysis' build.
 
+## `type_debug.py`
+
+`zerver/lib/type_debug.py` has a useful decorator `print_types`.  It prints the
+types of the parameters of the decorated function and the return type whenever
+that function is called.  This can help find out what parameter types a function
+is supposed to accept, or if wrong types are being passed to a function.
+
+Here is an example using the interactive console:
+
+```
+>>> from zerver.lib.type_debug import print_types
+>>>
+>>> @print_types
+... def func(x, y):
+...     return x + y
+...
+>>> func(1.0, 2)
+func(float, int) -> float
+3.0
+>>> func('a', 'b')
+func(str, str) -> str
+'ab'
+>>> func((1, 2), (3,))
+func((int, int), (int,)) -> (int, int, int)
+(1, 2, 3)
+>>> func([1, 2, 3], [4, 5, 6, 7])
+func([int, ...], [int, ...]) -> [int, ...]
+[1, 2, 3, 4, 5, 6, 7]
+```
+
+`print_all` prints the type of the first item of lists.  So `[int, ...]` represents
+a list whose first element's type is `int`.  Types of all items are not printed
+because a list can have many elements, which would make the output too large.
+
+Similarly in dicts, one key's type and the corresponding value's type are printed.
+So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
+
 ## Zulip goals
 
 Zulip is hoping to reach 100% of the codebase annotated with mypy
