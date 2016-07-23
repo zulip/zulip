@@ -1324,19 +1324,6 @@ class ChangeSettingsTest(AuthedTestCase):
         # type: () -> None
         self.check_for_toggle_param('/json/users/me/enter-sends', "enter_sends")
 
-    def test_missing_params(self):
-        # type: () -> None
-        """
-        full_name is a required POST parameter for json_change_settings.
-        (enable_desktop_notifications is false by default, and password is
-        only required if you are changing it)
-        """
-        self.login("hamlet@zulip.com")
-
-        result = self.client.post("/json/settings/change", {})
-        self.assert_json_error(result,
-                "Missing '%s' argument" % ("full_name",))
-
     def test_mismatching_passwords(self):
         # type: () -> None
         """
@@ -1345,7 +1332,6 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         result = self.client.post("/json/settings/change",
             dict(
-                full_name="", # TODO, make this a default in prod code
                 new_password="mismatched_password",
                 confirm_password="not_the_same",
             )
@@ -1361,7 +1347,6 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         result = self.client.post("/json/settings/change",
             dict(
-                full_name="", # TODO, make this a default in prod code
                 old_password='bad_password',
                 new_password="ignored",
                 confirm_password="ignored",
@@ -1380,7 +1365,6 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         result = self.client.post("/json/settings/change",
             dict(
-                full_name="", # TODO, make this a default in prod code
                 old_password='ignored',
             )
         )
