@@ -5,11 +5,11 @@ git+https://github.com/zulip/truncated-django.git
 GitPython==0.3.2.1
 
 # Needed for rendering backend templates
-Jinja2==2.7.2
+Jinja2==2.8
 
 # Needed for markdown processing
 Markdown==2.1.1
-MarkupSafe==0.18
+MarkupSafe==0.23
 
 # Needed for Image Processing
 Pillow==2.8.2
