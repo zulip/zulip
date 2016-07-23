@@ -714,6 +714,65 @@ class GetOldMessagesTest(AuthedTestCase):
                 return
         self.fail("get_old_messages query not found")
 
+    def test_use_first_unread_anchor_with_some_unread_messages(self):
+        realm = get_realm('zulip.com')
+        create_stream_if_needed(realm, 'devel')
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+
+        # Have Othello send messages to Hamlet that he hasn't read.
+        self.send_message("othello@zulip.com", "Scotland", Recipient.STREAM)
+        last_message_id_to_hamlet = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL)
+
+        # Add a few messages that help us test that our query doesn't
+        # look at messages that are irrelevant to Hamlet.
+        self.send_message("othello@zulip.com", "cordelia@zulip.com", Recipient.PERSONAL)
+        self.send_message("othello@zulip.com", "iago@zulip.com", Recipient.PERSONAL)
+
+        query_params = dict(
+            use_first_unread_anchor='true',
+            anchor=0,
+            num_before=0,
+            num_after=0,
+            narrow='[]'
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        with queries_captured() as all_queries:
+            get_old_messages_backend(request, user_profile)
+
+        # Verify the query for old messages looks correct.
+        queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
+        self.assertEqual(len(queries), 1)
+        sql = queries[0]['sql']
+        self.assertNotIn('AND message_id = 10000000000000000', sql)
+        self.assertIn('ORDER BY message_id ASC', sql)
+
+        cond = 'WHERE user_profile_id = %d AND message_id = %d' % (user_profile.id, last_message_id_to_hamlet)
+        self.assertIn(cond, sql)
+
+    def test_use_first_unread_anchor_with_no_unread_messages(self):
+        realm = get_realm('zulip.com')
+        create_stream_if_needed(realm, 'devel')
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+
+        query_params = dict(
+            use_first_unread_anchor='true',
+            anchor=0,
+            num_before=0,
+            num_after=0,
+            narrow='[]'
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        with queries_captured() as all_queries:
+            get_old_messages_backend(request, user_profile)
+
+        # Next, verify the use_first_unread_anchor setting invokes
+        # the `message_id = 10000000000000000` hack.
+        queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
+        self.assertEqual(len(queries), 1)
+        self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
+
     def test_use_first_unread_anchor_with_muted_topics(self):
         """
         Test that our logic related to `use_first_unread_anchor`
