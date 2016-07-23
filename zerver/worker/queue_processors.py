@@ -31,6 +31,8 @@ from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
+from zerver.lib.outgoing_webhook import get_outgoing_webhook_service_handler, do_rest_call
+from zerver.models import get_realm_by_email_domain, get_realm_bot_services, get_service_profile
 
 import os
 import sys
@@ -378,6 +380,32 @@ class MirrorWorker(QueueProcessingWorker):
         message = force_str(event["message"])
         mirror_email(email.message_from_string(message),
                      rcpt_to=event["rcpt_to"], pre_checked=True)
+
+@assign_queue('outgoing_webhooks')
+class OutgoingWebhookWorker(QueueProcessingWorker):
+
+    def consume(self, event):
+        # type: (Mapping[str, Any]) -> None
+        bot_email = event['bot_email']
+        command = event['command']
+        trigger_message = event['message']
+        realm = get_realm_by_email_domain(trigger_message['sender_email'])
+        service_name = event['service_name']
+
+        if service_name is None:
+            services = get_realm_bot_services(bot_email, realm)
+        else:
+            services = [get_service_profile(bot_email, realm, service_name)]
+
+        for service in services:
+            service_handler = get_outgoing_webhook_service_handler(service)
+            rest_operation, trigger_cache = service_handler.process_command(event)
+            if rest_operation is not None:
+                bot_action, response_message = do_rest_call(service_handler, rest_operation, trigger_cache)
+                bot_action(event, response_message)
+            else:
+                bot_action, message = service_handler.handle_invalid_command(command, trigger_cache)
+                bot_action(event, message)
 
 @assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):

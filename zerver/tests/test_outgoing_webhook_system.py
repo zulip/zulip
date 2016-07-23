@@ -3,11 +3,17 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import mock
-from typing import Any
+from typing import Any, Union, Mapping, Callable
 
 from zerver.lib.test_helpers import get_user_profile_by_email
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Service, GENERIC_INTERFACE
+from zerver.models import (
+    get_realm_by_email_domain,
+    UserProfile,
+    Recipient,
+    Service,
+    GENERIC_INTERFACE,
+)
 from zerver.outgoing_webhooks import (
     AVAILABLE_OUTGOING_WEBHOOK_INTERFACES,
     get_service_interface_class,
@@ -18,6 +24,7 @@ from zerver.lib.outgoing_webhook import (
     ServiceMessageActions,
 )
 
+from zerver.lib.actions import do_create_user
 import requests
 
 service = Service.objects.get_or_create(name="test",
@@ -116,3 +123,29 @@ class OutgoingWebhookServiceHandlerTests(ZulipTestCase):
         self.assertEqual(service_handler.token, generic_interface.token)
         self.assertEqual(service_handler.bot_email, generic_interface.bot_email)
         self.assertEqual(service_handler.service_name, generic_interface.service_name)
+
+class TestEventPublishedToQueue(ZulipTestCase):
+
+    @mock.patch('zerver.lib.actions.queue_json_publish')
+    def test_event_flow(self, mock_queue_json_publish):
+        # type: (mock.Mock) -> None
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        bot_profile = do_create_user(email="foo-bot@zulip.com",
+                                     password = "test",
+                                     realm = get_realm_by_email_domain("zulip.com"),
+                                     full_name = "FooBot",
+                                     short_name = "foo-bot",
+                                     bot_type = UserProfile.OUTGOING_WEBHOOK_BOT,
+                                     bot_owner = user_profile)
+        content = u'@**FooBot** foo bar!!!'
+
+        def check_values_passed(queue_name, trigger_event, x):
+            # type: (Any, Union[Mapping[Any, Any], Any], Callable[[Any], None]) -> None
+            self.assertEqual(queue_name, "outgoing_webhooks")
+            self.assertEqual(trigger_event['bot_email'], bot_profile.email)
+            self.assertEqual(trigger_event["command"], u'foo bar!!!')
+            self.assertEqual(trigger_event["message"]["sender_email"], user_profile.email)
+
+        mock_queue_json_publish.side_effect = check_values_passed
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, content)
+        self.assertTrue(mock_queue_json_publish.called)
