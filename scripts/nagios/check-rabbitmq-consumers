@@ -34,9 +34,10 @@ parser.add_option('--min-threshold',
 
 (options, args) = parser.parse_args()
 
-output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'], shell=False)
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
+                                 universal_newlines=True)
 
-consumers = defaultdict(int)
+consumers = defaultdict(int) # type: Dict[str, int]
 
 for line in output.split('\n'):
     parts = line.split('\t')

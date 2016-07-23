@@ -23,7 +23,7 @@ states = {
     3: "UNKNOWN"
 }
 
-re = re.compile(r'(\w+)\t(\d+)')
+pattern = re.compile(r'(\w+)\t(\d+)')
 output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
 
 status = 0
@@ -35,7 +35,7 @@ if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
 
 for line in output.split("\n"):
     line = line.strip()
-    m = re.match(line)
+    m = pattern.match(line)
     if m:
         queue = m.group(1)
         count = int(m.group(2))
