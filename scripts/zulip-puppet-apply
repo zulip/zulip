@@ -3,7 +3,7 @@
 from __future__ import print_function
 import sys
 import subprocess
-import six.moves.configparser
+import six.moves.configparser as configparser
 import re
 
 force = False
@@ -13,7 +13,7 @@ if len(extra_args) and extra_args[0] in ('-f', '--force'):
     force = True
     extra_args = extra_args[1:]
 
-config = six.moves.configparser.RawConfigParser()
+config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
 
 puppet_config = """
