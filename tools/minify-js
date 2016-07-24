@@ -11,6 +11,8 @@ import optparse
 import sys
 import six
 
+from typing import Optional, Set
+
 parser = optparse.OptionParser()
 parser.add_option('--prev-deploy', nargs=1, metavar='DIR',
                   help='A previous deploy from which to reuse files if possible')
@@ -34,6 +36,7 @@ subprocess.check_call(['tools/compile-handlebars-templates'])
 subprocess.check_call(['tools/webpack'])
 
 def get_changed_source_files(other_checkout):
+    # type: (Optional[str]) -> Optional[Set[str]]
     """ Get list of changed static files since other_checkout.
     If git fails to return a reasonable looking list, this returns None,
     in which case it should be assumed no files can be reused from
@@ -55,7 +58,7 @@ def get_changed_source_files(other_checkout):
                % (other_checkout,))
         return None
 
-    changed = set()
+    changed = set() # type: Set[str]
     for filename in git_diff.split('\n'):
         if not filename.startswith(STATIC_PATH):
             continue  # Ignore non-static files.
@@ -68,7 +71,7 @@ def get_changed_source_files(other_checkout):
     return changed
 
 
-changed_files = set()
+changed_files = set() # type: Set[str]
 if prev_deploy:
     changed_files = get_changed_source_files(prev_deploy)
     if changed_files is None:
