@@ -9,7 +9,7 @@ import glob
 try:
     # We don't actually need typing, but it's a good guard for being
     # outside a Zulip virtualenv.
-    import typing
+    from typing import Iterable
     import requests
 except ImportError as e:
     print("ImportError: {}".format(e))
@@ -48,13 +48,13 @@ subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 log = open('frontend_tests/casper_tests/server.log', 'w')
 
 def assert_server_running(server):
-    # type: () -> None
+    # type: (subprocess.Popen) -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
         raise RuntimeError('Server died unexpectedly! Check frontend_tests/casper_tests/server.log')
 
 def server_is_up(server):
-    # type: () -> bool
+    # type: (subprocess.Popen) -> bool
     assert_server_running(server)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
@@ -63,6 +63,7 @@ def server_is_up(server):
         return False
 
 def run_tests(files):
+    # type: (Iterable[str]) -> None
     test_files = []
     for file in files:
         if not os.path.exists(file):
