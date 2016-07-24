@@ -133,7 +133,7 @@ def validate(fn, check_indent=True):
         advance(1)
 
     if state.depth != 0:
-        return state.matcher("(NO TAG)")
+        state.matcher("(NO TAG)")
 
 def is_django_block_tag(tag):
     return tag in [
