@@ -25,7 +25,6 @@ from __future__ import print_function
 import sys
 import os.path
 import optparse
-import codecs
 import time
 import json
 usage = """Export all messages on a given stream to a JSON dump.
@@ -79,8 +78,8 @@ for msg in result['messages']:
     messages.append(msg)
 
 filename = "zulip-%s.json" % (options.stream,)
-f = codecs.open(filename, encoding='utf-8', mode="wb")
-f.write(json.dumps(messages, indent=0, sort_keys=False))
+f = open(filename, mode="wb")
+f.write(json.dumps(messages, indent=0, sort_keys=False).encode('utf-8'))
 f.close()
 print("%d messages exported to %s" % (len(messages), filename,))
 sys.exit(0)
