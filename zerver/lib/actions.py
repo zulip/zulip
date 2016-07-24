@@ -695,7 +695,7 @@ def do_send_messages(messages):
         # Claim attachments in message
         for message in messages:
             if Message.content_has_attachment(message['message'].content):
-                do_claim_attachments(message)
+                do_claim_attachments(message['message'])
 
     for message in messages:
         # Render Markdown etc. here and store (automatically) in
@@ -3320,19 +3320,19 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     return streams
 
 def do_claim_attachments(message):
-    # type: (Mapping[str, Any]) -> List[Tuple[text_type, bool]]
-    attachment_url_list = attachment_url_re.findall(message['message'].content)
+    # type: (Message) -> List[Tuple[text_type, bool]]
+    attachment_url_list = attachment_url_re.findall(message.content)
 
     results = []
     for url in attachment_url_list:
         path_id = attachment_url_to_path_id(url)
-        user_profile = message['message'].sender
+        user_profile = message.sender
         is_message_realm_public = False
-        if message['message'].recipient.type == Recipient.STREAM:
-            is_message_realm_public = Stream.objects.get(id=message['message'].recipient.type_id).is_public()
+        if message.recipient.type == Recipient.STREAM:
+            is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
 
         if path_id is not None:
-            is_claimed = claim_attachment(user_profile, path_id, message['message'],
+            is_claimed = claim_attachment(user_profile, path_id, message,
                                           is_message_realm_public)
             results.append((path_id, is_claimed))
 
