@@ -697,6 +697,20 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_error(result,
                                '%s is not a string' % (property_name,))
 
+    def test_json_subscription_property_invalid_stream(self):
+        # type: () -> None
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+
+        stream_name = "invalid_stream"
+        result = self.client.post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "in_home_view",
+                                                "stream": stream_name,
+                                                "value": False}])})
+
+        self.assert_json_error(result, "Invalid stream %s" % (stream_name,))
+
     def test_set_invalid_property(self):
         # type: () -> None
         """
