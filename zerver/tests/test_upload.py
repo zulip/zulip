@@ -230,7 +230,7 @@ class FileUploadTest(AuthedTestCase):
         message = Message.objects.get(id=msg_id)
         f1_attachment = Attachment.objects.get(path_id=f1_path_id)
         f2_attachment = Attachment.objects.get(path_id=f2_path_id)
-        f3_attachment = Attachment.objects.get(path_id=f2_path_id)
+        f3_attachment = Attachment.objects.get(path_id=f3_path_id)
 
         self.assertTrue(message not in f1_attachment.messages.all())
         self.assertTrue(message in f2_attachment.messages.all())
