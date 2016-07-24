@@ -33,7 +33,8 @@ import os
 import sys
 import subprocess
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import ENDC, FAIL
+from zerver.lib.str_utils import force_str
+from zulip_tools import ENDC, FAIL, subprocess_text_output
 
 def update_deployment(server, refname):
     return subprocess.call(["ssh", "-l", "zulip", server, "--", "env", "-u", "GIT_DIR",
@@ -43,7 +44,7 @@ def send_deployment_finished_message(branch, message):
     subprocess.check_call(["/home/zulip/zulip/api/bin/zulip-send", "--user=commit-bot@zulip.com",
                            "--api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "--stream=commits",
                            "--site=https://zulip.com",
-                           (u"--subject=%s" % (branch,)).encode("utf-8"), "--message=%s" % (message,)])
+                           force_str(u"--subject=%s" % (branch,)), "--message=%s" % (message,)])
 
 deployments = {
     'refs/heads/prod': ('prod0.zulip.net', 'prod'),
@@ -71,7 +72,7 @@ for ln in sys.stdin:
                 # 00...0 means we're deleting the ref
                 commits = ''
             else:
-                commits = subprocess.check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
+                commits = subprocess_text_output(["git", "log", "%s..%s" % (oldrev, newrev)])
 
             if '[schema]' in commits:
                 print()
