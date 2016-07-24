@@ -10,6 +10,8 @@ import argparse
 import subprocess
 import six
 
+from typing import cast, Dict, List
+
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
@@ -38,7 +40,7 @@ zerver/tests/test_messages.py
 zerver/tests/test_narrow.py
 """.split()
 
-exclude_py2 = []
+exclude_py2 = [] # type: List[str]
 
 exclude_py3 = """
 zerver/lib/ccache.py
@@ -64,14 +66,13 @@ tools/deprecated/review
 tools/get-handlebar-vars
 tools/lint-all
 tools/minify-js
-tools/run-mypy
 tools/test-js-with-casper
 tools/test-run-dev
 tools/update-deployment
 tools/zulip-export/zulip-export
 """.split()
 
-exclude_scripts_py2 = []
+exclude_scripts_py2 = [] # type: List[str]
 
 exclude_scripts_py3 = """
 bots/process_ccache
@@ -106,7 +107,7 @@ else:
     py_version = 2
 
 if args.all:
-    exclude = []
+    exclude = [] # type: List[str]
 elif args.scripts_only:
     if py_version == 2:
         exclude = exclude_scripts_common + exclude_scripts_py2
@@ -119,9 +120,11 @@ else:
         exclude = exclude_common + exclude_py3
 
 # find all non-excluded files in current directory
-files_dict = lister.list_files(targets=args.targets, ftypes=['py', 'pyi'], use_shebang=args.scripts_only,
-                               modified_only=args.modified, exclude = exclude + ['stubs'],
-                               group_by_ftype=True, extless_only=args.scripts_only)
+files_dict = cast(Dict[str, List[str]],
+                  lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
+                                    use_shebang=args.scripts_only, modified_only=args.modified,
+                                    exclude = exclude + ['stubs'], group_by_ftype=True,
+                                    extless_only=args.scripts_only))
 pyi_files = set(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
