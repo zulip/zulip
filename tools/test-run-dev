@@ -10,12 +10,14 @@ import signal
 import subprocess
 
 from six.moves import range
+from typing import IO
 
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def start_server(logfile):
+    # type: (IO[str]) -> bool
     failure = True
     key = "Quit the server with CTRL-C."
     for i in range(200):
@@ -30,6 +32,7 @@ def start_server(logfile):
 
 
 def test_nagios(nagios_logfile):
+    # type: (IO[str]) -> bool
     ZULIP_DIR = os.path.join(TOOLS_DIR, '..')
     API_DIR = os.path.join(ZULIP_DIR, 'api')
     os.chdir(API_DIR)
@@ -55,6 +58,7 @@ def test_nagios(nagios_logfile):
 
 
 def close_and_get_content(file_handle):
+    # type: (IO[str]) -> str
     file_handle.seek(0)
     content = file_handle.read()
     file_handle.close()
@@ -74,20 +78,20 @@ if __name__ == '__main__':
         failure = start_server(logfile)
         failure = failure or not test_nagios(nagios_logfile)
     finally:
-        logfile = close_and_get_content(logfile)
-        nagios_logfile = close_and_get_content(nagios_logfile)
+        log = close_and_get_content(logfile)
+        nagios_log = close_and_get_content(nagios_logfile)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
 
-    if not failure and 'Traceback' in logfile + ' ' + nagios_logfile:
+    if not failure and 'Traceback' in log + ' ' + nagios_log:
         failure = True
 
     if failure:
         print("Development server is not working properly:")
-        print(logfile)
+        print(log)
         print("check_send_receive_time output:")
-        print(nagios_logfile)
+        print(nagios_log)
         sys.exit(1)
     else:
         print("Development server is working properly.")
