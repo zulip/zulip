@@ -457,7 +457,7 @@ def get_subscription_or_die(stream_name, user_profile):
     # type: (text_type, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
-        raise JsonableError(_("Invalid stream %s") % (stream.name,))
+        raise JsonableError(_("Invalid stream %s") % (stream_name,))
     recipient = get_recipient(Recipient.STREAM, stream.id)
     subscription = Subscription.objects.filter(user_profile=user_profile,
                                                recipient=recipient, active=True)
