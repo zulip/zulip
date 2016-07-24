@@ -300,14 +300,13 @@ class IncludeHistoryTest(AuthedTestCase):
 
 class GetOldMessagesTest(AuthedTestCase):
 
-    def post_with_params(self, modified_params):
+    def get_and_check_messages(self, modified_params):
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
         post_params.update(modified_params)
-        result = self.client.get("/json/messages", dict(post_params))
-        self.assert_json_success(result)
-        return ujson.loads(result.content)
+        payload = self.client.get("/json/messages", dict(post_params))
+        self.assert_json_success(payload)
+        result = ujson.loads(payload.content)
 
-    def check_well_formed_messages_response(self, result):
         self.assertIn("messages", result)
         self.assertIsInstance(result["messages"], list)
         for message in result["messages"]:
@@ -317,6 +316,8 @@ class GetOldMessagesTest(AuthedTestCase):
                 self.assertIn(field, message)
             # TODO: deprecate soon in favor of avatar_url
             self.assertIn('gravatar_hash', message)
+
+        return result
 
     def get_query_ids(self):
         hamlet_user = get_user_profile_by_email('hamlet@zulip.com')
@@ -339,18 +340,15 @@ class GetOldMessagesTest(AuthedTestCase):
         messages.
         """
         self.login("hamlet@zulip.com")
-        result = self.post_with_params(dict())
-        self.check_well_formed_messages_response(result)
+        self.get_and_check_messages(dict())
 
         # We have to support the legacy tuple style while there are old
         # clients around, which might include third party home-grown bots.
         narrow = [['pm-with', 'othello@zulip.com']]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
         narrow = [dict(operator='pm-with', operand='othello@zulip.com')]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
     def test_get_old_messages_with_narrow_pm_with(self):
         """
@@ -372,8 +370,7 @@ class GetOldMessagesTest(AuthedTestCase):
 
         self.login(me)
         narrow = [dict(operator='pm-with', operand=emails)]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
         for message in result["messages"]:
             self.assertEqual(dr_emails(message['display_recipient']), emails)
@@ -398,8 +395,7 @@ class GetOldMessagesTest(AuthedTestCase):
         stream_id = stream_messages[0].recipient.id
 
         narrow = [dict(operator='stream', operand=stream_name)]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
         for message in result["messages"]:
             self.assertEqual(message["type"], "stream")
@@ -427,8 +423,8 @@ class GetOldMessagesTest(AuthedTestCase):
         self.send_message("starnine@mit.edu", u"\u03bb-stream.d", Recipient.STREAM)
 
         narrow = [dict(operator='stream', operand=u'\u03bb-stream')]
-        result = self.post_with_params(dict(num_after=2, narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(num_after=2,
+                                                  narrow=ujson.dumps(narrow)))
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -459,8 +455,9 @@ class GetOldMessagesTest(AuthedTestCase):
                           subject=u"\u03bb-topic.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
-        result = self.post_with_params(dict(num_after=2, narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(
+            num_after=2,
+            narrow=ujson.dumps(narrow)))
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -485,8 +482,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM)
 
         narrow = [dict(operator='sender', operand='othello@zulip.com')]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow)))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], "othello@zulip.com")
@@ -526,12 +522,11 @@ class GetOldMessagesTest(AuthedTestCase):
             dict(operator='sender', operand='cordelia@zulip.com'),
             dict(operator='search', operand='lunch'),
         ]
-        result = self.post_with_params(dict(
+        result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(narrow),
             anchor=0,
             num_after=10,
         ))
-        self.check_well_formed_messages_response(result)
         self.assertEqual(len(result['messages']), 2)
         messages = result['messages']
 
@@ -562,17 +557,15 @@ class GetOldMessagesTest(AuthedTestCase):
         anchor = self.send_message("cordelia@zulip.com", "Verona", Recipient.STREAM)
 
         narrow = [dict(operator='sender', operand='cordelia@zulip.com')]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow),
-                                            anchor=anchor, num_before=0,
-                                            num_after=0))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
+                                                  anchor=anchor, num_before=0,
+                                                  num_after=0))
         self.assertEqual(len(result['messages']), 1)
 
         narrow = [dict(operator='is', operand='mentioned')]
-        result = self.post_with_params(dict(narrow=ujson.dumps(narrow),
-                                            anchor=anchor, num_before=0,
-                                            num_after=0))
-        self.check_well_formed_messages_response(result)
+        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow),
+                                                  anchor=anchor, num_before=0,
+                                                  num_after=0))
         self.assertEqual(len(result['messages']), 0)
 
     def test_missing_params(self):
@@ -634,11 +627,8 @@ class GetOldMessagesTest(AuthedTestCase):
         '{}' is accepted to mean 'no narrow', for use by old mobile clients.
         """
         self.login("hamlet@zulip.com")
-        all_result    = self.post_with_params({})
-        narrow_result = self.post_with_params({'narrow': '{}'})
-
-        for r in (all_result, narrow_result):
-            self.check_well_formed_messages_response(r)
+        all_result    = self.get_and_check_messages({})
+        narrow_result = self.get_and_check_messages({'narrow': '{}'})
 
         self.assertEqual(message_ids(all_result), message_ids(narrow_result))
 
