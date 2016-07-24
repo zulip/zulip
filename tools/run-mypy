@@ -74,7 +74,6 @@ exclude_scripts_py2 = [] # type: List[str]
 
 exclude_scripts_py3 = """
 bots/process_ccache
-tools/post-receive
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
