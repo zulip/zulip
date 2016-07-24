@@ -59,7 +59,6 @@ api/integrations/twitter/twitter-search-bot
 bots/check-mirroring
 bots/gcal-bot
 bots/githook-post-receive
-tools/check-templates
 tools/compile-handlebars-templates
 tools/deprecated/inject-messages/inject-messages
 tools/deprecated/review
