@@ -71,9 +71,7 @@ tools/update-deployment
 tools/zulip-export/zulip-export
 """.split()
 
-exclude_scripts_py2 = """
-puppet/zulip_internal/files/zulip-ec2-configure-interfaces
-""".split()
+exclude_scripts_py2 = []
 
 exclude_scripts_py3 = """
 bots/process_ccache
