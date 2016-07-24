@@ -3344,14 +3344,7 @@ def check_attachment_reference_change(prev_content, message):
         path_ids.append(path_id)
 
     attachments_to_update = Attachment.objects.filter(path_id__in=path_ids).select_for_update()
-    for attachment in attachments_to_update:
-        try:
-            attachment = Attachment.objects.get(path_id=path_id)
-            attachment.messages.remove(message)
-            attachment.save()
-        except Attachment.DoesNotExist:
-            # The entry for this attachment does not exist. Just ignore.
-            pass
+    message.attachment_set.remove(*attachments_to_update)
 
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
