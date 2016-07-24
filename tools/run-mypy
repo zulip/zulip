@@ -62,7 +62,6 @@ bots/githook-post-receive
 tools/deprecated/inject-messages/inject-messages
 tools/deprecated/review
 tools/get-handlebar-vars
-tools/minify-js
 tools/update-deployment
 tools/zulip-export/zulip-export
 """.split()
