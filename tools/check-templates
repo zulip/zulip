@@ -17,12 +17,15 @@ except ImportError as e:
     sys.exit(1)
 
 class Record(object):
-    pass
+    def __init__(self, func):
+        self.depth = 0
+        self.i = 0
+        self.line = 1
+        self.col = 1
+        self.matcher = func
 
 def validate(fn, check_indent=True):
     text = open(fn).read()
-
-    state = Record()
 
     def NoStartTag(end_tag):
         raise Exception('''
@@ -60,11 +63,7 @@ def validate(fn, check_indent=True):
             state.depth -= 1
         state.matcher = f
 
-    state.depth = 0
-    state.i = 0
-    state.line = 1
-    state.col = 1
-    state.matcher = NoStartTag
+    state = Record(NoStartTag)
 
     def advance(n):
         for _ in range(n):
