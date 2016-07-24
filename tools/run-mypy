@@ -64,7 +64,6 @@ tools/compile-handlebars-templates
 tools/deprecated/inject-messages/inject-messages
 tools/deprecated/review
 tools/get-handlebar-vars
-tools/lint-all
 tools/minify-js
 tools/test-js-with-casper
 tools/test-run-dev

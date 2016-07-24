@@ -9,6 +9,7 @@ import subprocess
 import traceback
 try:
     import lister
+    from typing import cast, Any, Callable, Dict, List, Optional
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip linters inside a Zulip dev environment.")
@@ -50,9 +51,9 @@ puppet/apt/README.md
 static/locale
 """.split()
 
-by_lang = lister.list_files(args, modified_only=options.modified, use_shebang=True,
+by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
     ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
-    group_by_ftype=True, exclude=exclude)
+    use_shebang=True, group_by_ftype=True, exclude=exclude))
 
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
@@ -66,6 +67,7 @@ else:
     logger.setLevel(logging.WARNING)
 
 def check_pyflakes():
+    # type: () -> bool
     if not by_lang['py']:
         return False
     failed = False
@@ -92,7 +94,10 @@ def check_pyflakes():
                 failed = True
     return failed
 
+RuleList = List[Dict[str, Any]]
+
 def custom_check_file(fn, rules, skip_rules=None, max_length=None):
+    # type: (str, RuleList, Optional[Any], Optional[int]) -> bool
     failed = False
     lineFlag = False
     for i, line in enumerate(open(fn)):
@@ -144,7 +149,7 @@ whitespace_rules = [
      'strip': '\n',
      'exclude': set(['zerver/lib/bugdown/codehilite.py']),
      'description': 'Fix tab-based whitespace'},
-    ]
+    ] # type: RuleList
 markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
    # Two spaces trailing a line with other content is okay--it's a markdown line break.
    # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -152,8 +157,8 @@ markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pat
    {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
     'strip': '\n',
     'description': 'Fix trailing whitespace'},
-   ]
-js_rules = [
+   ] # type: RuleList
+js_rules = cast(RuleList, [
     {'pattern': '[^_]function\(',
      'description': 'The keyword "function" should be followed by a space'},
     {'pattern': '.*blueslip.warning\(.*',
@@ -191,8 +196,8 @@ js_rules = [
      'exclude': set(['tools/lint-all']),
      'description': 'Argument to report_error should be a literal string enclosed '
                     'by i18n.t()'},
-    ] + whitespace_rules
-python_rules = [
+    ]) + whitespace_rules
+python_rules = cast(RuleList, [
     {'pattern': '^(?!#)@login_required',
      'description': '@login_required is unsupported; use @zulip_login_required'},
     {'pattern': '".*"%\([a-z_].*\)?$',
@@ -273,11 +278,11 @@ python_rules = [
      'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
     {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
      'description': 'REQ\'s first argument already defaults to parameter name'},
-    ] + whitespace_rules
+    ]) + whitespace_rules
 bash_rules = [
     {'pattern': '#!.*sh [-xe]',
      'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches to set -x|set -e'},
-    ] + whitespace_rules[0:1]
+    ] + whitespace_rules[0:1] # type: RuleList
 css_rules = [
     {'pattern': '^[^:]*:\S[^:]*;$',
      'description': "Missing whitespace after : in CSS"},
@@ -285,23 +290,24 @@ css_rules = [
      'description': "Missing whitespace before '{' in CSS."},
     {'pattern': '{\w',
      'description': "Missing whitespace after '{' in CSS (should be newline)."},
-    ] + whitespace_rules
+    ] + whitespace_rules # type: RuleList
 handlebars_rules = whitespace_rules
 html_rules = whitespace_rules + [
     {'pattern': 'placeholder="[^{]',
      'description': "`placeholder` value should be translatable."},
     {'pattern': "placeholder='[^{]",
      'description': "`placeholder` value should be translatable."},
-    ]
-json_rules = [] # just fix newlines at ends of files
+    ] # type: RuleList
+json_rules = [] # type: RuleList # just fix newlines at ends of files
 markdown_rules = markdown_whitespace_rules + [
     {'pattern': ' [jJ]avascript',
      'exclude': set(['README.dev.md']), # temporary exclusion to avoid merge conflicts
      'description': "javascript should be spelled JavaScript"},
-]
+] # type: RuleList
 txt_rules = whitespace_rules
 
 def check_custom_checks_py():
+    # type: () -> bool
     failed = False
 
     for fn in by_lang['py']:
@@ -310,6 +316,7 @@ def check_custom_checks_py():
     return failed
 
 def check_custom_checks_nonpy():
+    # type: () -> bool
     failed = False
 
     for fn in by_lang['js']:
@@ -346,9 +353,10 @@ def check_custom_checks_nonpy():
 
     return failed
 
-lint_functions = {}
+lint_functions = {} # type: Dict[str, Callable[[], int]]
 
 def run_parallel():
+    # type: () -> bool
     pids = []
     for name, func in lint_functions.items():
         pid = os.fork()
@@ -367,6 +375,7 @@ def run_parallel():
     return failed
 
 def lint(func):
+    # type: (Callable[[], int]) -> Callable[[], int]
     lint_functions[func.__name__] = func
     return func
 
@@ -377,6 +386,7 @@ try:
 
     @lint
     def templates():
+        # type: () -> int
         args = ['tools/check-templates']
         if options.modified:
             args.append('-m')
@@ -385,12 +395,14 @@ try:
 
     @lint
     def jslint():
+        # type: () -> int
         result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
                                  + by_lang['js'])
         return result
 
     @lint
     def puppet():
+        # type: () -> int
         if not by_lang['pp']:
             return 0
         result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['pp'])
@@ -398,16 +410,19 @@ try:
 
     @lint
     def custom_py():
+        # type: () -> int
         failed = check_custom_checks_py()
         return 1 if failed else 0
 
     @lint
     def custom_nonpy():
+        # type: () -> int
         failed = check_custom_checks_nonpy()
         return 1 if failed else 0
 
     @lint
     def pyflakes():
+        # type: () -> int
         failed = check_pyflakes()
         return 1 if failed else 0
 
