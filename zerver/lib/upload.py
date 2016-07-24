@@ -20,7 +20,7 @@ from mimetypes import guess_type, guess_extension
 
 from zerver.models import get_user_profile_by_id
 from zerver.models import Attachment
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, UserProfile, Message
 
 from six.moves import urllib
 import base64
@@ -318,10 +318,10 @@ def upload_message_image(uploaded_file_name, content_type, file_data, user_profi
                                                user_profile, target_realm=target_realm)
 
 def claim_attachment(user_profile, path_id, message, is_message_realm_public):
-    # type: (UserProfile, text_type, Mapping[str, Any], bool) -> bool
+    # type: (UserProfile, text_type, Message, bool) -> bool
     try:
         attachment = Attachment.objects.get(path_id=path_id)
-        attachment.messages.add(message['message'])
+        attachment.messages.add(message)
         # Only the owner of the file has the right to elevate the permissions of a file.
         # This makes sure that a private file is not accidently made public by another user
         # by sending a message to a public stream that refers the private file.
