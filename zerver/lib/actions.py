@@ -3332,7 +3332,8 @@ def do_claim_attachments(message):
             is_message_realm_public = Stream.objects.get(id=message['message'].recipient.type_id).is_public()
 
         if path_id is not None:
-            is_claimed = claim_attachment(user_profile, path_id, message, is_message_realm_public)
+            is_claimed = claim_attachment(user_profile, path_id, message['message'],
+                                          is_message_realm_public)
             results.append((path_id, is_claimed))
 
     return results
