@@ -10,6 +10,7 @@ from six.moves import map
 from six.moves import range
 try:
     import lister
+    from typing import cast, Callable, Dict, Iterable, List
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip linters inside a Zulip dev environment.")
@@ -18,6 +19,7 @@ except ImportError as e:
 
 class Record(object):
     def __init__(self, func):
+        # type: (Callable[[str], None]) -> None
         self.depth = 0
         self.i = 0
         self.line = 1
@@ -25,9 +27,11 @@ class Record(object):
         self.matcher = func
 
 def validate(fn, check_indent=True):
+    # type: (str, bool) -> None
     text = open(fn).read()
 
     def NoStartTag(end_tag):
+        # type: (str) -> None
         raise Exception('''
             No start tag
             fn: %s
@@ -37,12 +41,14 @@ def validate(fn, check_indent=True):
             ''' % (fn, end_tag, state.line, state.col))
 
     def start_tag_matcher(s, start_tag):
+        # type: (str, str) -> None
         start_line = state.line
         start_col = state.col
         state.depth += 1
 
         old_matcher = state.matcher
         def f(end_tag):
+            # type: (str) -> None
             problem = None
             if start_tag != end_tag:
                 problem = 'Mismatched tag.'
@@ -66,6 +72,7 @@ def validate(fn, check_indent=True):
     state = Record(NoStartTag)
 
     def advance(n):
+        # type: (int) -> None
         for _ in range(n):
             state.i += 1
             if state.i >= 0 and text[state.i - 1] == '\n':
@@ -75,6 +82,7 @@ def validate(fn, check_indent=True):
                 state.col += 1
 
     def looking_at(s):
+        # type: (str) -> bool
         return text[state.i:state.i+len(s)] == s
 
     while state.i < len(text):
@@ -135,6 +143,7 @@ def validate(fn, check_indent=True):
         state.matcher("(NO TAG)")
 
 def is_django_block_tag(tag):
+    # type: (str) -> bool
     return tag in [
         'autoescape',
         'block',
@@ -149,6 +158,7 @@ def is_django_block_tag(tag):
     ]
 
 def get_handlebars_tag(text, i):
+    # type: (str, int) -> str
     end = i + 2
     while end < len(text) -1 and text[end] != '}':
         end += 1
@@ -158,6 +168,7 @@ def get_handlebars_tag(text, i):
     return s
 
 def get_django_tag(text, i):
+    # type: (str, int) -> str
     end = i + 2
     while end < len(text) -1 and text[end] != '%':
         end += 1
@@ -167,6 +178,7 @@ def get_django_tag(text, i):
     return s
 
 def get_html_tag(text, i):
+    # type: (str, int) -> str
     quote_count = 0
     end = i + 1
     while end < len(text) and (text[end] != '>' or quote_count % 2 != 0):
@@ -179,21 +191,25 @@ def get_html_tag(text, i):
     return s
 
 def check_our_files():
+    # type: () -> None
     parser = optparse.OptionParser()
     parser.add_option('--modified', '-m',
         action='store_true', default=False,
         help='Only check modified files')
     (options, _) = parser.parse_args()
 
-    by_lang = lister.list_files(
-        modified_only = options.modified,
-        ftypes=['handlebars', 'html'],
-        group_by_ftype=True)
+    by_lang = cast(
+        Dict[str, List[str]],
+        lister.list_files(
+            modified_only=options.modified,
+            ftypes=['handlebars', 'html'],
+            group_by_ftype=True))
 
     check_handlebar_templates(by_lang['handlebars'], options.modified)
     check_html_templates(by_lang['html'], options.modified)
 
 def check_handlebar_templates(templates, modified_only):
+    # type: (Iterable[str], bool) -> None
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.handlebars')]
     if not modified_only:
@@ -202,6 +218,7 @@ def check_handlebar_templates(templates, modified_only):
         validate(fn, check_indent=True)
 
 def check_html_templates(templates, modified_only):
+    # type: (Iterable[str], bool) -> None
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
     # The file base.html has a bit of funny HTML that we can't parse here yet.
