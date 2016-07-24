@@ -62,7 +62,6 @@ bots/githook-post-receive
 tools/deprecated/inject-messages/inject-messages
 tools/deprecated/review
 tools/update-deployment
-tools/zulip-export/zulip-export
 """.split()
 
 exclude_scripts_py2 = [] # type: List[str]
