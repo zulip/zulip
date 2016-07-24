@@ -4,17 +4,21 @@ import sys
 import re
 import json
 
+from typing import Any, Dict, List
+
 def debug(obj):
     print(json.dumps(obj, indent=4))
 
 def parse_file(fn):
+    # type: (str) -> Dict[str, Any]
     text = open(fn).read()
     tags = re.findall('{+\s*(.*?)\s*}+', text)
-    root = {}
+    root = {} # type: Dict[str, Any]
     context = root
-    stack = []
+    stack = [] # type: List[Dict[str, Any]]
 
     def set_var(var, val):
+        # type: (str, Any) -> None
         num_levels_up = len(re.findall('\.\.', var))
         if num_levels_up:
             var = var.split('/')[-1]
@@ -48,7 +52,7 @@ def parse_file(fn):
 
         if tag.startswith('#with '):
             var = tag.split()[1]
-            new_context = {}
+            new_context = {} # type: Dict[str, Any]
             context[var] = new_context
             stack.append(context)
             context = new_context
@@ -87,6 +91,7 @@ def parse_file(fn):
         set_var(tag, '')
 
     def clean_this(obj):
+        # type: (Any) -> Any
         if isinstance(obj, list):
             return [clean_this(item) for item in obj]
         if isinstance(obj, dict):
@@ -103,5 +108,3 @@ if __name__ == '__main__':
         root = parse_file(fn)
         debug(root)
         print()
-
-
