@@ -45,13 +45,15 @@ subprocess.check_call('tools/setup/generate-test-credentials')
 
 subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 
-log = open('frontend_tests/casper_tests/server.log', 'w')
+subprocess.check_call(['mkdir', '-p', 'var/casper'])
+
+log = open('var/casper/server.log', 'w')
 
 def assert_server_running(server):
     # type: (subprocess.Popen) -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
-        raise RuntimeError('Server died unexpectedly! Check frontend_tests/casper_tests/server.log')
+        raise RuntimeError('Server died unexpectedly! Check var/casper/server.log')
 
 def server_is_up(server):
     # type: (subprocess.Popen) -> bool
@@ -106,7 +108,7 @@ def run_tests(files):
     if ret != 0:
         print("""
 Oops, the frontend tests failed. Tips for debugging:
- * Check the frontend test server logs at frontend_tests/casper_tests/server.log
+ * Check the frontend test server logs at var/casper/server.log
  * Check the screenshots of failed tests at /tmp/casper-failure*.png
  * Try remote debugging the test web browser as described in docs/testing.rst
 """, file=sys.stderr)

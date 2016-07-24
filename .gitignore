@@ -2,7 +2,6 @@
 *~
 /all_messages_log.*
 /event_log/*
-frontend_tests/casper_tests/server.log
 frontend_tests/casper_lib/test_credentials.js
 /prod-static
 /errors/*
