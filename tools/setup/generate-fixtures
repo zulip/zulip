@@ -8,9 +8,9 @@ function migration_status {
 template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='zulip_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
 
 if [ "$template_grep_error_code" == "0" ]; then
-    migration_status zerver/fixtures/available-migrations
+    migration_status var/available-migrations
     if [ -e zerver/fixtures/migration-status ] &&
-        cmp -s zerver/fixtures/available-migrations zerver/fixtures/migration-status &&
+        cmp -s var/available-migrations var/migration-status &&
         [ "$1" != "--force" ]; then
         "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
         psql -h localhost postgres zulip_test << EOF
@@ -33,7 +33,7 @@ EOF
 sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 python manage.py migrate --noinput --settings=zproject.test_settings
-migration_status "zerver/fixtures/migration-status"
+migration_status "var/migration-status"
 
 # This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
 python manage.py populate_db --settings=zproject.test_settings --test-suite -n30 \
