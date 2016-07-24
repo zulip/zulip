@@ -67,8 +67,8 @@ for ln in sys.stdin:
             else:
                 send_deployment_finished_message(branch, "deployment of `%s` failed!" % (newrev[:12],))
 
-            if newrev == '0000000000000000000000000000000000000000':
-                # 0000000000000000000000000000000000000000 means we're deleting the ref
+            if newrev == '0'*40:
+                # 00...0 means we're deleting the ref
                 commits = ''
             else:
                 commits = subprocess.check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
