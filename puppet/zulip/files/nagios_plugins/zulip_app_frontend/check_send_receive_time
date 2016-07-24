@@ -150,7 +150,7 @@ send_zulip(zulip_sender, {
     "to": recipient.email,
     })
 
-msg_content = []
+msg_content = [] # type: List[str]
 
 while msg_to_send not in msg_content:
     messages = get_zulips()

@@ -57,7 +57,6 @@ api/integrations/twitter/twitter-search-bot
 bots/check-mirroring
 bots/gcal-bot
 bots/githook-post-receive
-puppet/zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time
 tools/check-templates
 tools/compile-handlebars-templates
 tools/deprecated/inject-messages/inject-messages
