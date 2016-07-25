@@ -86,8 +86,9 @@ Here's how we recommend doing it:
   templating off a short one (like `stash.py` or `zendesk.py`), since
   the longer ones usually just have more complex parsing which can
   obscure what's common to all webhook integrations.  In addition to
-  writing the integration itself, you'll need to add an entry in
-  `zproject/urls.py` for your webhook; search for `webhook` in that
+  writing the integration itself, you'll need to create `Integration`
+  object and add it to `WEBHOOK_INTEGRATIONS` in
+  `zerver/lib/integrations.py'; search for `webhook` in that
   file to find the existing ones (and please add yours in the
   alphabetically correct place).
 
