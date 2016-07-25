@@ -36,7 +36,7 @@ of settings needed by the Zulip Django app.  As a result, there are a
 few files involved in the Zulip settings for server administrations.
 In a production environment, we have:
 
-* `/etc/zulip/settings.py` (generated from
+* `/etc/zulip/settings.py` (the template is in the Zulip repo at
   `zproject/prod_settings_template.py`) is the main system
   administration facing settings file for Zulip.  It contains all the
   server-specific settings, such as how to send outgoing email, the
@@ -50,7 +50,10 @@ In a production environment, we have:
   `scripts/setup/generate-secrets.py` as part of installation)
   contains secrets used by the Zulip installation.  These are read
   using the standard Python `ConfigParser`, and accessed in
-  `zproject/settings.py` by the `get_secret` function.
+  `zproject/settings.py` by the `get_secret` function.  All
+  secrets/API keys/etc. used by the Zulip Django application should be
+  stored here, and read using the `get_secret` function in
+  `zproject/settings.py`.
 
 * `zproject/settings.py` is the main Django settings file for Zulip.
   It contains all the settings that are constant for all Zulip
@@ -78,7 +81,9 @@ When adding a new server setting to Zulip, you will typically add it
 in two or three places:
 
 * In DEFAULT_SETTINGS in `zproject/settings.py`, with a default value
-  for production environments.
+  for production environments.  If the settings has a secret key,
+  you'll add a `get_secret` call in `zproject/settings.py` (and the
+  user will add the value when they configure the feature).
 
 * In an appropriate section of `zproject/prod_settings_template.py`,
   with documentation in the comments explaining the settings's
