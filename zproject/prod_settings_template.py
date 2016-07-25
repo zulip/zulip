@@ -228,7 +228,7 @@ EMAIL_GATEWAY_PATTERN = ""
 # You will need to configure authentication for the email mirror
 # command to access the IMAP mailbox below and in zulip-secrets.conf.
 #
-# The IMAP login; username here and password as email_gateway_login in
+# The IMAP login; username here and password as email_gateway_password in
 # zulip-secrets.conf.
 EMAIL_GATEWAY_LOGIN = ""
 # The IMAP server & port to connect to
