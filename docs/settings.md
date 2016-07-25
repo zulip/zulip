@@ -9,6 +9,16 @@ set via the /#administration page in the Zulip web application) and
 apply to a single Zulip realm/organization (which for most Zulip
 servers is the only realm on the server).
 
+Philosophically, the goals of the settings system are to make it
+convenient for:
+
+* Zulip server administrations to configure
+Zulip's featureset for their server without needing to patch Zulip
+* Realm administrators to configure settings for their organization
+independently without needing to talk with the server administrator.
+* Secrets (passwords, API keys, etc.) to be stored in a separate place
+from shareable configuration.
+
 ## Server settings
 
 Zulip uses the [Django settings
