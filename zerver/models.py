@@ -43,6 +43,7 @@ from six import binary_type, text_type
 import time
 import datetime
 
+# TODO: see #1379 to eliminate bugdown dependencies
 bugdown = None # type: Any
 
 MAX_SUBJECT_LENGTH = 60
@@ -807,6 +808,7 @@ class Message(ModelReprMixin, models.Model):
         These are only on this Django object and are not saved in the
         database.
         """
+        # TODO: see #1379 to eliminate bugdown dependencies
         global bugdown
         if bugdown is None:
             import zerver.lib.bugdown as bugdown
@@ -833,6 +835,7 @@ class Message(ModelReprMixin, models.Model):
         # type: (text_type, bool) -> bool
         """Set the content on the message.
         """
+        # TODO: see #1379 to eliminate bugdown dependencies
         global bugdown
         if bugdown is None:
             import zerver.lib.bugdown as bugdown
@@ -855,6 +858,7 @@ class Message(ModelReprMixin, models.Model):
     def maybe_render_content(self, domain, save = False):
         # type: (Optional[text_type], bool) -> bool
         """Render the markdown if there is no existing rendered_content"""
+        # TODO: see #1379 to eliminate bugdown dependencies
         global bugdown
         if bugdown is None:
             import zerver.lib.bugdown as bugdown
@@ -964,6 +968,7 @@ class Message(ModelReprMixin, models.Model):
             recipient_type_id,
     ):
         # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
+        # TODO: see #1379 to eliminate bugdown dependencies
         global bugdown
         if bugdown is None:
             import zerver.lib.bugdown as bugdown
@@ -1030,6 +1035,7 @@ class Message(ModelReprMixin, models.Model):
                     # If we don't have a message object passed in, we get one here.  The cost
                     # of going to the DB here should be overshadowed by the cost of rendering
                     # and updating the row.
+                    # TODO: see #1379 to eliminate bugdown dependencies
                     message = Message.objects.select_related().get(id=message_id)
 
                 # It's unfortunate that we need to have side effects on the message
