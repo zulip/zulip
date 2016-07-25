@@ -646,14 +646,15 @@ function ajaxUnsubscribe(stream) {
     });
 }
 
-function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
+function ajaxSubscribeForCreation(stream, principals, default_permissions, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {"subscriptions": JSON.stringify([{"name": stream}]),
                "principals": JSON.stringify(principals),
                "invite_only": JSON.stringify(invite_only),
-               "announce": JSON.stringify(announce)
+               "announce": JSON.stringify(announce),
+               "default_permissions": JSON.stringify(default_permissions)
         },
         success: function (data) {
             $("#create_stream_name").val("");
@@ -850,10 +851,17 @@ $(function () {
                 return $(elem).val();
             }
         );
+        var default_permissions = _.map(
+            $("#stream_creation_form input:checkbox[name=permission]:checked"),
+            function (elem) {
+                return $(elem).val();
+            }
+        );
         // You are always subscribed to streams you create.
         principals.push(page_params.email);
         ajaxSubscribeForCreation(stream,
             principals,
+            default_permissions,
             $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
             $('#announce-new-stream input').prop('checked')
             );

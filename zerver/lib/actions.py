@@ -22,7 +22,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_users, parse_sub_permissions
+    get_old_unclaimed_attachments, get_cross_realm_users, parse_sub_permissions, \
+    get_permission_val
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -792,11 +793,16 @@ def do_create_stream(realm, stream_name):
     subscribers = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
     bulk_add_subscriptions([stream], subscribers)
 
-def create_stream_if_needed(realm, stream_name, invite_only=False):
-    # type: (Realm, text_type, bool) -> Tuple[Stream, bool]
+def create_stream_if_needed(realm, stream_name, default_permissions=None, invite_only=False):
+    # type: (Realm, text_type, Optional[List[text_type]], bool) -> Tuple[Stream, bool]
+    if default_permissions:
+        permission_val = get_permission_val(default_permissions)
+    else:
+        permission_val = get_permission_val(['can_read', 'can_write'])
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
-        defaults={'name': stream_name, 'invite_only': invite_only})
+        defaults={'name': stream_name, 'invite_only': invite_only,
+                  'default_permissions': permission_val})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if not invite_only:

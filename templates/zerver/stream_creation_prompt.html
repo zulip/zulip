@@ -29,6 +29,28 @@
           </div>
           <br />
           <div class="control-group">
+            <label class="control-label" for="default_permissions"><b>{% trans %}Select stream default permissions{% endtrans %}</b></label><br />
+            <div class="controls" id="default_permissions">
+              <label class="checkbox">
+                <input type="checkbox" name="permission" value="can_read" checked disabled /> Can read
+              </label>
+              <br />
+              <label class="checkbox">
+                <input type="checkbox" name="permission" value="can_write" /> Can write
+              </label>
+              <br />
+              <label class="checkbox">
+                <input type="checkbox" name="permission" value="can_moderate" /> Can moderate
+              </label>
+              <br />
+              <label class="checkbox">
+                <input type="checkbox" name="permission" value="can_add_remove_users" /> Can add or remove users
+              </label>
+              <br />
+            </div>
+          </div>
+          <br />
+          <div class="control-group">
             <label class="control-label" for="people_to_add"><b>{% trans %}People to add{% endtrans %}</b></label><br />
             <div class="controls" id="people_to_add"></div>
           </div>

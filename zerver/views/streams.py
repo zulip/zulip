@@ -31,8 +31,8 @@ from six.moves import urllib
 import six
 from six import text_type
 
-def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
+def list_to_streams(streams_raw, user_profile, default_permissions=None, autocreate=False, invite_only=False):
+    # type: (Iterable[text_type], Optional[List[text_type]], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -76,6 +76,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         for stream_name in rejects:
             stream, created = create_stream_if_needed(user_profile.realm,
                                                       stream_name,
+                                                      default_permissions = default_permissions,
                                                       invite_only=invite_only)
             if created:
                 created_streams.append(stream)
@@ -291,10 +292,11 @@ def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
                               validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
+                              default_permissions = REQ(validator=check_list(check_string), default=None),
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, bool, Optional[List[text_type]], bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, Optional[List[text_type]], bool, Optional[List[text_type]], bool) -> HttpResponse
     stream_names = []
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"].strip()
@@ -306,7 +308,8 @@ def add_subscriptions_backend(request, user_profile,
 
     # Enforcement of can_create_streams policy is inside list_to_streams.
     existing_streams, created_streams = \
-        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+        list_to_streams(stream_names, user_profile, default_permissions= default_permissions, \
+                        autocreate=True, invite_only=invite_only)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
