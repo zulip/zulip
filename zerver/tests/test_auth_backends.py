@@ -2,6 +2,7 @@
 from django.conf import settings
 from django.test import TestCase
 from django_auth_ldap.backend import _LDAPUser
+from django.test.client import RequestFactory
 from typing import Any, Callable, Dict
 
 import mock
@@ -17,7 +18,10 @@ from zerver.models import \
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend
+    ZulipLDAPUserPopulator, DevAuthBackend, GitHubBackend
+
+from social.strategies.django_strategy import DjangoStrategy
+from social.storage.django_orm import BaseDjangoStorage
 
 from six import text_type
 import ujson
@@ -151,6 +155,67 @@ class AuthBackendTest(TestCase):
         with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
             self.verify_backend(ZulipRemoteUserBackend(),
                                 email_to_username=email_to_username)
+
+    def test_github_backend(self):
+        email = 'hamlet@zulip.com'
+        good_kwargs = dict(response=dict(email=email), return_data=dict())
+        bad_kwargs = dict()  # type: Dict[str, str]
+        self.verify_backend(GitHubBackend(),
+                            good_kwargs=good_kwargs,
+                            bad_kwargs=bad_kwargs)
+
+class GitHubBackendTest(AuthedTestCase):
+    def setUp(self):
+        self.email = 'hamlet@zulip.com'
+        self.name = 'Hamlet'
+        self.backend = GitHubBackend()
+        self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
+        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile.backend = self.backend
+
+    def test_github_backend_do_auth(self):
+        def do_auth(return_data=dict(), *args, **kwargs):
+            return self.user_profile
+
+        with mock.patch('zerver.views.login_or_register_remote_user') as result, \
+                 mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                            side_effect=do_auth):
+            response=dict(email=self.email, name=self.name)
+            self.backend.do_auth(response=response)
+            result.assert_called_with(None, self.email, self.user_profile,
+                                      self.name)
+
+    def test_github_backend_inactive_user(self):
+        def do_auth_inactive(return_data=dict(), *args, **kwargs):
+            return_data['inactive_user'] = True
+            return self.user_profile
+
+        with mock.patch('zerver.views.login_or_register_remote_user') as result, \
+                mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                           side_effect=do_auth_inactive):
+            response=dict(email=self.email, name=self.name)
+            user = self.backend.do_auth(response=response)
+            result.assert_not_called()
+            self.assertIs(user, None)
+
+    def test_github_backend_new_user(self):
+        rf = RequestFactory()
+        request = rf.get('/complete')
+        request.session = {}
+        request.user = self.user_profile
+        self.backend.strategy.request = request
+
+        def do_auth(return_data=dict(), *args, **kwargs):
+            return_data['valid_attestation'] = True
+            return None
+
+        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth):
+            response=dict(email='nonexisting@phantom.com', name='Ghost')
+            result = self.backend.do_auth(response=response)
+            self.assert_in_response('action="/register/"', result)
+            self.assert_in_response('Your e-mail does not match any '
+                                    'existing open organization.', result)
 
 class FetchAPIKeyTest(AuthedTestCase):
     def setUp(self):
