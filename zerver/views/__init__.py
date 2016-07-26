@@ -22,7 +22,7 @@ from django.middleware.csrf import get_token
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
-    PreregistrationUser, get_client, MitUser, UserActivity, PushDeviceToken, \
+    PreregistrationUser, get_client, MitUser, UserActivity, \
     get_stream, UserPresence, get_recipient, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
@@ -1215,60 +1215,6 @@ def json_set_muted_topics(request, user_profile,
     # type: (HttpRequest, UserProfile, List[List[text_type]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
-
-def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=None):
-    # type: (HttpRequest, UserProfile, str, int, Optional[str]) -> HttpResponse
-    if token_str == '' or len(token_str) > 4096:
-        return json_error(_('Empty or invalid length token'))
-
-    # If another user was previously logged in on the same device and didn't
-    # properly log out, the token will still be registered to the wrong account
-    PushDeviceToken.objects.filter(token=token_str).delete()
-
-    # Overwrite with the latest value
-    token, created = PushDeviceToken.objects.get_or_create(user=user_profile,
-                                                           token=token_str,
-                                                           kind=kind,
-                                                           ios_app_id=ios_app_id)
-    if not created:
-        token.last_updated = now()
-        token.save(update_fields=['last_updated'])
-
-    return json_success()
-
-@has_request_variables
-def add_apns_device_token(request, user_profile, token=REQ(), appid=REQ(default=settings.ZULIP_IOS_APP_ID)):
-    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
-    return add_push_device_token(request, user_profile, token, PushDeviceToken.APNS, ios_app_id=appid)
-
-@has_request_variables
-def add_android_reg_id(request, user_profile, token_str=REQ("token")):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    return add_push_device_token(request, user_profile, token_str, PushDeviceToken.GCM)
-
-def remove_push_device_token(request, user_profile, token_str, kind):
-    # type: (HttpRequest, UserProfile, str, int) -> HttpResponse
-    if token_str == '' or len(token_str) > 4096:
-        return json_error(_('Empty or invalid length token'))
-
-    try:
-        token = PushDeviceToken.objects.get(token=token_str, kind=kind)
-        token.delete()
-    except PushDeviceToken.DoesNotExist:
-        return json_error(_("Token does not exist"))
-
-    return json_success()
-
-@has_request_variables
-def remove_apns_device_token(request, user_profile, token=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    return remove_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
-
-@has_request_variables
-def remove_android_reg_id(request, user_profile, token=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    return remove_push_device_token(request, user_profile, token, PushDeviceToken.GCM)
-
 
 def generate_204(request):
     # type: (HttpRequest) -> HttpResponse

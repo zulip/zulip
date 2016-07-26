@@ -177,11 +177,11 @@ v1_api_and_json_patterns = [
     # Endpoint used by mobile devices to register their push
     # notification credentials
     url(r'^users/me/apns_device_token$', 'zerver.lib.rest.rest_dispatch',
-        {'POST': 'zerver.views.add_apns_device_token',
-         'DELETE': 'zerver.views.remove_apns_device_token'}),
+        {'POST': 'zerver.views.push_notifications.add_apns_device_token',
+         'DELETE': 'zerver.views.push_notifications.remove_apns_device_token'}),
     url(r'^users/me/android_gcm_reg_id$', 'zerver.lib.rest.rest_dispatch',
-        {'POST': 'zerver.views.add_android_reg_id',
-         'DELETE': 'zerver.views.remove_android_reg_id'}),
+        {'POST': 'zerver.views.push_notifications.add_android_reg_id',
+         'DELETE': 'zerver.views.push_notifications.remove_android_reg_id'}),
 
     # users/me -> zerver.views.user_settings
     url(r'^users/me/api_key/regenerate$', 'zerver.lib.rest.rest_dispatch',
