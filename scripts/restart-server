@@ -38,7 +38,7 @@ logging.info("Starting workers")
 subprocess.check_call(["supervisorctl", "start", "zulip-workers:*"])
 
 using_sso = subprocess.check_output(['./scripts/get-django-setting', 'USING_APACHE_SSO'])
-if using_sso.strip() == 'True':
+if using_sso.strip() == b'True':
     logging.info("Restarting Apache WSGI process...")
     subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
 
