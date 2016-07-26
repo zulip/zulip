@@ -255,5 +255,7 @@
   "Users can no longer edit their past messages!": "Users can no longer edit their past messages!", 
   "Name changed!": "Name changed!", 
   "Please specify at least one recipient": "Please specify at least one recipient", 
-  "Display Settings": "Display Settings"
+  "Display Settings": "Display Settings",
+  "User invited successfully.": "User invited successfully.",
+  "User invited successfully._plural": "Users invited successfully."
 }
