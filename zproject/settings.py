@@ -969,6 +969,7 @@ else:
 ########################################################################
 SOCIAL_AUTH_GITHUB_KEY = get_secret('social_auth_github_key')
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 SOCIAL_AUTH_GITHUB_SCOPE = ['email']
 
 ########################################################################
