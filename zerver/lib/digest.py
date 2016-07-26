@@ -103,7 +103,7 @@ def gather_new_users(user_profile, threshold):
     # type: (UserProfile, datetime.datetime) -> Tuple[int, List[text_type]]
     # Gather information on users in the realm who have recently
     # joined.
-    if user_profile.realm.domain == "mit.edu":
+    if user_profile.realm.is_zephyr_mirror_realm:
         new_users = [] # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(
@@ -115,7 +115,7 @@ def gather_new_users(user_profile, threshold):
 
 def gather_new_streams(user_profile, threshold):
     # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[text_type]]]
-    if user_profile.realm.domain == "mit.edu":
+    if user_profile.realm.is_zephyr_mirror_realm:
         new_streams = [] # type: List[Stream]
     else:
         new_streams = list(get_active_streams(user_profile.realm).filter(

@@ -1779,6 +1779,7 @@ class HomeTest(AuthedTestCase):
             "initial_presences",
             "initial_servertime",
             "is_admin",
+            "is_zephyr_mirror_realm",
             "language_list",
             "last_event_id",
             "left_side_userlist",

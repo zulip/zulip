@@ -33,7 +33,7 @@ function selectText(element) {
 }
 
 function should_list_all_streams() {
-    return page_params.domain !== 'mit.edu';
+    return !page_params.is_zephyr_mirror_realm;
 }
 
 exports.stream_id = function (stream_name) {
@@ -244,7 +244,7 @@ function create_sub(stream_name, attrs) {
 
     sub = _.defaults(raw_attrs, {
         name: stream_name,
-        render_subscribers: page_params.domain !== 'mit.edu' || attrs.invite_only === true,
+        render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
         in_home_view: true,
         invite_only: false,
@@ -391,7 +391,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         if (sub.render_subscribers) {
             // TODO: having a completely empty settings div messes
             // with Bootstrap's collapser.  We currently just ensure
-            // that it's not empty on the MIT realm, even though it
+            // that it's not empty for Zephyr mirror realms, even though it
             // looks weird
             sub_row.find(".regular_subscription_settings").collapse('hide');
         }

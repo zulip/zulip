@@ -32,7 +32,8 @@ def update_active_status_backend(request, user_profile, status=REQ(),
                              new_user_input)
 
     ret = get_status_list(user_profile)
-    if user_profile.realm.domain == "mit.edu":
+    if user_profile.realm.is_zephyr_mirror_realm:
+        # Presence is disabled in zephyr mirroring realms
         try:
             activity = UserActivity.objects.get(user_profile = user_profile,
                                                 query="get_events_backend",
