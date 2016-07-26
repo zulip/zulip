@@ -173,7 +173,7 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.get_pointer_backend',
          'PUT': 'zerver.views.update_pointer_backend'}),
     url(r'^users/me/presence$', 'zerver.lib.rest.rest_dispatch',
-        {'POST': 'zerver.views.update_active_status_backend'}),
+        {'POST': 'zerver.views.presence.update_active_status_backend'}),
     # Endpoint used by mobile devices to register their push
     # notification credentials
     url(r'^users/me/apns_device_token$', 'zerver.lib.rest.rest_dispatch',
