@@ -29,7 +29,7 @@ from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Recipient, UserMessage, bulk_get_recipients, get_recipient, \
-    get_user_profile_by_email, get_stream, valid_stream_name, \
+    get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
     stringify_message_dict, \
     resolve_email_to_domain, get_realm, get_active_streams, \
@@ -322,8 +322,16 @@ def narrow_parameter(json):
     return list(map(convert_term, data))
 
 def is_public_stream(stream, realm):
-    if not valid_stream_name(stream):
-        raise JsonableError(_("Invalid stream name"))
+    """
+    Determine whether a stream is public, so that
+    our caller can decide whether we can get
+    historical messages for a narrowing search.
+
+    Because of the way our search is currently structured,
+    we may be passed an invalid stream here.  We return
+    False in that situation, and subsequent code will do
+    validation and raise the appropriate JsonableError.
+    """
     stream = get_stream(stream, realm)
     if stream is None:
         return False
