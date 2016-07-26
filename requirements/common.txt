@@ -12,7 +12,7 @@ Markdown==2.1.1
 MarkupSafe==0.23
 
 # Needed for Image Processing
-Pillow==2.8.2
+Pillow==3.3.0
 
 # Needed for markdown processing
 Pygments==2.0.2
