@@ -127,7 +127,7 @@ sourcemap==0.1.8
 statsd==3.2.1
 
 # Tornado used for server->client push system
-tornado==2.4.1
+tornado==3.1.1
 
 # Needed for Python static typing
 typing==3.5.2.2
