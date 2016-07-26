@@ -230,11 +230,26 @@ class FileUploadTest(AuthedTestCase):
         message = Message.objects.get(id=msg_id)
         f1_attachment = Attachment.objects.get(path_id=f1_path_id)
         f2_attachment = Attachment.objects.get(path_id=f2_path_id)
-        f3_attachment = Attachment.objects.get(path_id=f2_path_id)
-
+        f3_attachment = Attachment.objects.get(path_id=f3_path_id)
         self.assertTrue(message not in f1_attachment.messages.all())
         self.assertTrue(message in f2_attachment.messages.all())
         self.assertTrue(message in f3_attachment.messages.all())
+
+        # Delete all the attachment from the message
+        new_body = "(deleted)"
+        result = self.client.post("/json/update_message", {
+            'message_id': msg_id,
+            'content': new_body
+        })
+        self.assert_json_success(result)
+
+        message = Message.objects.get(id=msg_id)
+        f1_attachment = Attachment.objects.get(path_id=f1_path_id)
+        f2_attachment = Attachment.objects.get(path_id=f2_path_id)
+        f3_attachment = Attachment.objects.get(path_id=f3_path_id)
+        self.assertTrue(message not in f1_attachment.messages.all())
+        self.assertTrue(message not in f2_attachment.messages.all())
+        self.assertTrue(message not in f3_attachment.messages.all())
 
     def tearDown(self):
         # type: () -> None
