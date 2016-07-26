@@ -17,7 +17,7 @@ legacy_urls = [
     url(r'^json/subscriptions/property$',   'zerver.views.streams.json_subscription_property'),
     url(r'^json/get_subscribers$',          'zerver.views.streams.json_get_subscribers'),
     url(r'^json/fetch_api_key$',            'zerver.views.json_fetch_api_key'),
-    url(r'^json/get_active_statuses$',      'zerver.views.json_get_active_statuses'),
+    url(r'^json/get_active_statuses$',      'zerver.views.presence.json_get_active_statuses'),
     url(r'^json/tutorial_send_message$',    'zerver.views.tutorial.json_tutorial_send_message'),
     url(r'^json/tutorial_status$',          'zerver.views.tutorial.json_tutorial_status'),
     url(r'^json/report_error$',             'zerver.views.report.json_report_error'),
