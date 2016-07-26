@@ -24,7 +24,7 @@ states = {
 }
 
 pattern = re.compile(r'(\w+)\t(\d+)')
-output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], universal_newlines=True)
 
 status = 0
 max_count = 0
