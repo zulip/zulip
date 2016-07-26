@@ -1126,14 +1126,16 @@ def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_
     * check_user_subscribed is a function that when called with no
       arguments, will report whether the user is subscribed to the stream
     """
-    if user_profile is not None and user_profile.realm_id != stream_dict["realm_id"]:
-        raise ValidationError("Requesting user not on given realm")
+    if user_profile is None:
+        raise ValidationError("Missing user to validate access for")
+
+    if user_profile.realm_id != stream_dict["realm_id"]:
+        raise ValidationError("Requesting user not in given realm")
 
     if stream_dict["realm__domain"] == "mit.edu" and not stream_dict["invite_only"]:
         raise JsonableError(_("You cannot get subscribers for public streams in this realm"))
 
-    if (user_profile is not None and stream_dict["invite_only"] and
-        not check_user_subscribed()):
+    if (stream_dict["invite_only"] and not check_user_subscribed()):
         raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
 
 # sub_dict is a dictionary mapping stream_id => whether the user is subscribed to that stream
