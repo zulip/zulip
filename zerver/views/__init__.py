@@ -30,7 +30,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     internal_send_message, update_user_presence, do_events_register, \
-    get_status_dict, do_change_enable_offline_email_notifications, \
+    do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, \
     get_default_subs, user_email_is_unique, do_invite_users, do_refer_friend, \
     compute_mit_user_fullname, do_set_muted_topics, clear_followup_emails_queue, \
@@ -1154,42 +1154,6 @@ def api_fetch_google_client_id(request):
     if not settings.GOOGLE_CLIENT_ID:
         return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
     return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
-
-def get_status_list(requesting_user_profile):
-    # type: (UserProfile) -> Dict[str, Any]
-    return {'presences': get_status_dict(requesting_user_profile),
-            'server_timestamp': time.time()}
-
-@has_request_variables
-def update_active_status_backend(request, user_profile, status=REQ(),
-                                 new_user_input=REQ(validator=check_bool, default=False)):
-    # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
-    status_val = UserPresence.status_from_string(status)
-    if status_val is None:
-        raise JsonableError(_("Invalid presence status: %s") % (status,))
-    else:
-        update_user_presence(user_profile, request.client, now(), status_val,
-                             new_user_input)
-
-    ret = get_status_list(user_profile)
-    if user_profile.realm.domain == "mit.edu":
-        try:
-            activity = UserActivity.objects.get(user_profile = user_profile,
-                                                query="get_events_backend",
-                                                client__name="zephyr_mirror")
-
-            ret['zephyr_mirror_active'] = \
-                (activity.last_visit.replace(tzinfo=None) >
-                 datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
-        except UserActivity.DoesNotExist:
-            ret['zephyr_mirror_active'] = False
-
-    return json_success(ret)
-
-@authenticated_json_post_view
-def json_get_active_statuses(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return json_success(get_status_list(user_profile))
 
 # Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
