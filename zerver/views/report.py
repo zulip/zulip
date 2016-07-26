@@ -87,7 +87,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     try:
-        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"])
+        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"], universal_newlines=True)
     except Exception:
         version = None
 
