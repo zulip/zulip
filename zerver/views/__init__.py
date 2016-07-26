@@ -405,8 +405,9 @@ def maybe_send_to_registration(request, email, full_name=''):
             # Explanation: http://stackoverflow.com/a/5605354/90777
             urllib.parse.quote_plus(full_name.encode('utf8')))))
     else:
+        url = reverse('register')
         return render_to_response('zerver/accounts_home.html',
-                                  {'form': form, 'current_url': request.get_full_path},
+                                  {'form': form, 'current_url': lambda: url},
                                   request=request)
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
