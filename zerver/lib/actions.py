@@ -176,7 +176,7 @@ def notify_new_user(user_profile, internal=False):
 # * subscribe the user to newsletter if newsletter_data is specified
 def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None):
     # type: (UserProfile, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> None
-    mit_beta_user = user_profile.realm.domain == "mit.edu"
+    mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     try:
         streams = prereg_user.streams.all()
     except AttributeError:
@@ -896,7 +896,7 @@ def check_stream_name(stream_name):
 def send_pm_if_empty_stream(sender, stream, stream_name):
     # type: (UserProfile, Stream, text_type) -> None
     # TODO: It's not clear whether stream can be None.  Some cleanup is needed.
-    if sender.realm.domain == 'mit.edu' or sender.realm.deactivated:
+    if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
 
     if sender.is_bot and sender.bot_owner is not None:
@@ -1132,7 +1132,7 @@ def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_
     if user_profile.realm_id != stream_dict["realm_id"]:
         raise ValidationError("Requesting user not in given realm")
 
-    if stream_dict["realm__domain"] == "mit.edu" and not stream_dict["invite_only"]:
+    if user_profile.realm.is_zephyr_mirror_realm and not stream_dict["invite_only"]:
         raise JsonableError(_("You cannot get subscribers for public streams in this realm"))
 
     if (stream_dict["invite_only"] and not check_user_subscribed()):
@@ -1340,7 +1340,7 @@ def bulk_add_subscriptions(streams, users):
 
     def fetch_stream_subscriber_emails(stream):
         # type: (Stream) -> List[text_type]
-        if stream.realm.domain == "mit.edu" and not stream.invite_only:
+        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             return []
         return emails_by_stream[stream.id]
 
@@ -1357,7 +1357,7 @@ def bulk_add_subscriptions(streams, users):
         notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_emails)
 
     for stream in streams:
-        if stream.realm.domain == "mit.edu" and not stream.invite_only:
+        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             continue
 
         new_users = [user for user in users if (user.id, stream.id) in new_streams]
@@ -2187,7 +2187,7 @@ def do_update_user_presence(user_profile, client, log_time, status):
             update_fields.append("status")
         presence.save(update_fields=update_fields)
 
-    if not user_profile.realm.domain == "mit.edu" and (created or became_online):
+    if not user_profile.realm.is_zephyr_mirror_realm and (created or became_online):
         # Push event to all users in the realm so they see the new user
         # appear in the presence list immediately, or the newly online
         # user without delay.  Note that we won't send an update here for a
@@ -2652,8 +2652,8 @@ def gather_subscriptions(user_profile):
 
 def get_status_dict(requesting_user_profile):
     # type: (UserProfile) -> Dict[text_type, Dict[text_type, Dict[str, Any]]]
-    # Return no status info for MIT
     if requesting_user_profile.realm.presence_disabled:
+        # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict)
 
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
@@ -2983,7 +2983,7 @@ def do_send_confirmation_email(invitee, referrer):
                'support_email': settings.ZULIP_ADMINISTRATOR,
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
 
-    if referrer.realm.domain == 'mit.edu':
+    if referrer.realm.is_zephyr_mirror_realm:
         subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
         body_template_path = 'confirmation/mituser_invite_email_body.txt'
 
@@ -3268,8 +3268,8 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
-    # Listing public streams are disabled for the mit.edu realm.
-    include_public = include_public and user_profile.realm.domain != "mit.edu"
+    # Listing public streams are disabled for Zephyr mirroring realms.
+    include_public = include_public and not user_profile.realm.is_zephyr_mirror_realm
     # Start out with all streams in the realm with subscribers
     query = get_occupied_streams(user_profile.realm)
 

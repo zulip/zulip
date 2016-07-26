@@ -189,9 +189,19 @@ class Realm(ModelReprMixin, models.Model):
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
     @property
-    def presence_disabled(self):
+    def is_zephyr_mirror_realm(self):
         # type: () -> bool
         return self.domain == "mit.edu"
+
+    @property
+    def webathena_enabled(self):
+        # type: () -> bool
+        return self.is_zephyr_mirror_realm
+
+    @property
+    def presence_disabled(self):
+        # type: () -> bool
+        return self.is_zephyr_mirror_realm
 
     class Meta(object):
         permissions = (
@@ -576,8 +586,8 @@ class Stream(ModelReprMixin, models.Model):
 
     def is_public(self):
         # type: () -> bool
-        # All streams are private at MIT.
-        return self.realm.domain != "mit.edu" and not self.invite_only
+        # All streams are private in Zephyr mirroring realms.
+        return not self.invite_only and not self.realm.is_zephyr_mirror_realm
 
     class Meta(object):
         unique_together = ("name", "realm")
@@ -826,7 +836,7 @@ class Message(ModelReprMixin, models.Model):
 
         if not domain:
             domain = self.sender.realm.domain
-        if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
+        if self.sending_client.name == "zephyr_mirror" and self.sender.realm.is_zephyr_mirror_realm:
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
             domain = u"zephyr_mirror"

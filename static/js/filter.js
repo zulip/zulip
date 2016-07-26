@@ -1,7 +1,7 @@
 var Filter = (function () {
 
-function mit_edu_stream_name_match(message, operand) {
-    // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
+function zephyr_stream_name_match(message, operand) {
+    // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
     // TODO: hoist the regex compiling out of the closure
     var m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
@@ -13,15 +13,15 @@ function mit_edu_stream_name_match(message, operand) {
     return related_regexp.test(message.stream);
 }
 
-function mit_edu_topic_name_match(message, operand) {
-    // MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
+function zephyr_topic_name_match(message, operand) {
+    // Zephyr users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
     // (foo, foo.d, foo.d.d, etc)
     // TODO: hoist the regex compiling out of the closure
     var m = /^(.*?)(?:\.d)*$/i.exec(operand);
     var base_topic = m[1];
     var related_regexp;
 
-    // Additionally, MIT users expect the empty instance and
+    // Additionally, Zephyr users expect the empty instance and
     // instance "personal" to be the same.
     if (base_topic === ''
         || base_topic.toLowerCase() === 'personal'
@@ -80,8 +80,8 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         operand = operand.toLowerCase();
-        if (page_params.domain === "mit.edu") {
-            return mit_edu_stream_name_match(message, operand);
+        if (page_params.is_zephyr_mirror_realm) {
+            return zephyr_stream_name_match(message, operand);
         } else {
             return (message.stream.toLowerCase() === operand);
         }
@@ -92,8 +92,8 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         operand = operand.toLowerCase();
-        if (page_params.domain === "mit.edu") {
-            return mit_edu_topic_name_match(message, operand);
+        if (page_params.is_zephyr_mirror_realm) {
+            return zephyr_topic_name_match(message, operand);
         } else {
             return (message.subject.toLowerCase() === operand);
         }

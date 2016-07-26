@@ -142,7 +142,7 @@ class NarrowBuilder(object):
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
 
-        if self.user_profile.realm.domain == "mit.edu":
+        if self.user_profile.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
             # (unsocial, ununsocial, social.d, etc)
             m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
@@ -163,7 +163,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query, operand, maybe_negate):
-        if self.user_profile.realm.domain == "mit.edu":
+        if self.user_profile.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
             m = re.search(r'^(.*?)(?:\.d)*$', operand, re.IGNORECASE)
@@ -656,10 +656,12 @@ def create_mirrored_message_users(request, user_profile, recipients):
 
 def same_realm_zephyr_user(user_profile, email):
     # type: (UserProfile, text_type) -> bool
-    # Are the sender and recipient both @mit.edu addresses?
-    # We have to handle this specially, inferring the domain from the
-    # e-mail address, because the recipient may not existing in Zulip
-    # and we may need to make a stub MIT user on the fly.
+    #
+    # Are the sender and recipient both addresses in the same Zephyr
+    # mirroring realm?  We have to handle this specially, inferring
+    # the domain from the e-mail address, because the recipient may
+    # not existing in Zulip and we may need to make a stub Zephyr
+    # mirroring user on the fly.
     try:
         validators.validate_email(email)
     except ValidationError:
@@ -667,7 +669,7 @@ def same_realm_zephyr_user(user_profile, email):
 
     domain = resolve_email_to_domain(email)
 
-    return user_profile.realm.domain == "mit.edu" and domain == "mit.edu"
+    return user_profile.realm.domain == domain and user_profile.realm.is_zephyr_mirror_realm
 
 def same_realm_irc_user(user_profile, email):
     # type: (UserProfile, text_type) -> bool
@@ -757,7 +759,7 @@ def send_message_backend(request, user_profile,
             create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
             return json_error(_("Invalid mirrored message"))
-        if client.name == "zephyr_mirror" and user_profile.realm.domain != "mit.edu":
+        if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
             return json_error(_("Invalid mirrored realm"))
         if (client.name == "irc_mirror" and message_type_name != "private" and
             not message_to[0].startswith("#")):
