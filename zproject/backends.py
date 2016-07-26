@@ -71,6 +71,56 @@ class ZulipAuthMixin(object):
         except UserProfile.DoesNotExist:
             return None
 
+class SocialAuthMixin(ZulipAuthMixin):
+    def get_email_address(self):
+        raise NotImplementedError
+
+    def get_full_name(self):
+        raise NotImplementedError
+
+    def authenticate(self, *args, **kwargs):
+        return_data = kwargs.get('return_data', {})
+
+        email_address = self.get_email_address(*args, **kwargs)
+        if not email_address:
+            return None
+
+        try:
+            user_profile = get_user_profile_by_email(email_address)
+        except UserProfile.DoesNotExist:
+            return_data["valid_attestation"] = True
+            return None
+
+        if not user_profile.is_active:
+            return_data["inactive_user"] = True
+            return None
+
+        if user_profile.realm.deactivated:
+            return_data["inactive_realm"] = True
+            return None
+
+        return user_profile
+
+    def process_do_auth(self, user_profile, *args, **kwargs):
+        # This function needs to be imported from here due to the cyclic
+        # dependency.
+        from zerver.views import login_or_register_remote_user
+
+        return_data = kwargs.get('return_data', {})
+
+        inactive_user = return_data.get('inactive_user')
+        inactive_realm = return_data.get('inactive_realm')
+
+        if inactive_user or inactive_realm:
+            return None
+
+        request = self.strategy.request
+        email_address = self.get_email_address(*args, **kwargs)
+        full_name = self.get_full_name(*args, **kwargs)
+
+        return login_or_register_remote_user(request, email_address,
+                                             user_profile, full_name)
+
 class ZulipDummyBackend(ZulipAuthMixin):
     """
     Used when we want to log you in but we don't know which backend to use.
@@ -217,50 +267,20 @@ class DevAuthBackend(ZulipAuthMixin):
     def authenticate(self, username, return_data=None):
         return common_get_active_user_by_email(username, return_data=return_data)
 
-class GitHubBackend(ZulipAuthMixin, GithubOAuth2):
-    def authenticate(self, *args, **kwargs):
+class GitHubBackend(SocialAuthMixin, GithubOAuth2):
+    def get_email_address(self, *args, **kwargs):
         try:
-            email_address = kwargs['response']['email']
-            return_data = kwargs['return_data']
+            return kwargs['response']['email']
         except KeyError:
             return None
 
+    def get_full_name(self, *args, **kwargs):
         try:
-            user_profile = get_user_profile_by_email(email_address)
-        except UserProfile.DoesNotExist:
-            return_data["valid_attestation"] = True
-            return None
-
-        if not user_profile.is_active:
-            return_data["inactive_user"] = True
-            return None
-
-        if user_profile.realm.deactivated:
-            return_data["inactive_realm"] = True
-            return None
-
-        return user_profile
+            return kwargs['response']['name']
+        except KeyError:
+            return ''
 
     def do_auth(self, *args, **kwargs):
-        # This function needs to be imported from here due to the cyclic
-        # dependency.
-        from zerver.views import login_or_register_remote_user
-
         kwargs['return_data'] = {}
-
         user_profile = super(GitHubBackend, self).do_auth(*args, **kwargs)
-
-        return_data = kwargs['return_data']
-        inactive_user = return_data.get('inactive_user')
-        inactive_realm = return_data.get('inactive_realm')
-
-        if inactive_user or inactive_realm:
-            return None
-
-        request = self.strategy.request
-        details = kwargs['response']
-        email_address = details.get('email')
-        full_name = details.get('name')
-
-        return login_or_register_remote_user(request, email_address,
-                                             user_profile, full_name)
+        return self.process_do_auth(user_profile, *args, **kwargs)
