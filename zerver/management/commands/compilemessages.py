@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from django.core.management.commands import compilemessages
 from django.conf import settings
 
+import polib
 
 class Command(compilemessages.Command):
 
@@ -15,11 +16,17 @@ class Command(compilemessages.Command):
         super(Command, self).handle(*args, **options)
         self.extract_language_options()
 
+    def get_po_filename(self, locale_path, locale):
+        po_template = '{}/{}/LC_MESSAGES/django.po'
+        return po_template.format(locale_path, locale)
+
+    def get_json_filename(self, locale_path, locale):
+        return  "{}/{}/translations.json".format(locale_path, locale)
+
     def extract_language_options(self):
         locale_path = "{}/locale".format(settings.STATIC_ROOT)
         output_path = "{}/language_options.json".format(locale_path)
 
-        po_template = '{}/{}/LC_MESSAGES/django.po'
         data = {'languages': []}  # type: Dict[str, List[Dict[str, str]]]
         lang_name_re = re.compile('"Language-Team: (.*?) \(')
 
@@ -30,14 +37,17 @@ class Command(compilemessages.Command):
         for locale in locales:
             info = {}
             if locale == 'en':
-                data['languages'].append({'code': 'en', 'name': 'English'})
+                data['languages'].append({
+                    'code': 'en',
+                    'name': 'English',
+                })
                 continue
             if locale == 'zh-CN':
                 continue
             if locale == 'zh_CN':
                 name = 'Simplified Chinese'
             else:
-                filename = po_template.format(locale_path, locale)
+                filename = self.get_po_filename(locale_path, locale)
                 if not os.path.exists(filename):
                     continue
 
@@ -52,11 +62,33 @@ class Command(compilemessages.Command):
                     else:
                         raise Exception("Unknown language %s" % (locale,))
 
+            percentage = self.get_translation_percentage(locale_path, locale)
+
             info['name'] = name
             info['code'] = locale
+            info['percent_translated'] = percentage
 
             if info:
                 data['languages'].append(info)
 
         with open(output_path, 'w') as writer:
             ujson.dump(data, writer, indent=2)
+
+    def get_translation_percentage(self, locale_path, locale):
+        # backend stats
+        po = polib.pofile(self.get_po_filename(locale_path, locale))
+        not_translated = len(po.untranslated_entries())
+        total = len(po.translated_entries()) + not_translated
+
+        # There is a difference between frontend and backend files for Chinese
+        if locale == 'zh_CN':
+            locale = 'zh-CN'
+
+        # frontend stats
+        with open(self.get_json_filename(locale_path, locale)) as reader:
+            for key, value in ujson.load(reader).items():
+                total += 1
+                if key == value:
+                    not_translated += 1
+
+        return "{}%".format((total - not_translated) * 100 // total)

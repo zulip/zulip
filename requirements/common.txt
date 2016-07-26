@@ -138,3 +138,6 @@ git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c42
 
 # Needed for the email mirror
 -r emailmirror.txt
+
+# To parse po files
+polib==1.0.7
