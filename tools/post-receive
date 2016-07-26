@@ -33,7 +33,7 @@ import os
 import sys
 import subprocess
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zerver.lib.str_utils import force_str
+from zerver.lib.str_utils import force_str, force_bytes
 from zulip_tools import ENDC, FAIL, subprocess_text_output
 
 def update_deployment(server, refname):
@@ -58,7 +58,7 @@ for ln in sys.stdin:
     if refname in deployments:
         p = subprocess.Popen("/home/zulip/zulip/bots/githook-post-receive",
                              stdin=subprocess.PIPE)
-        p.communicate(input=ln)
+        p.communicate(input=force_bytes(ln))
 
         if deployments[refname]:
             server, branch = deployments[refname]

@@ -45,11 +45,11 @@ def get_changed_source_files(other_checkout):
     try:
         git_dir = os.path.join(other_checkout, '.git')
         old_commit_sha1 = subprocess.check_output(['git', 'rev-parse', 'HEAD'],
-                                                  env={'GIT_DIR': git_dir})
+                                                  env={'GIT_DIR': git_dir}, universal_newlines=True)
         old_commit_sha1 = old_commit_sha1.rstrip()
 
         git_diff = subprocess.check_output(['git', 'diff', '--name-only',
-                                            old_commit_sha1])
+                                            old_commit_sha1], universal_newlines=True)
     except subprocess.CalledProcessError:
         # If git returned an error, assume we can't reuse any files, and
         # regenerate everything.
@@ -130,5 +130,5 @@ for js_group, filespec in six.iteritems(JS_SPECS):
     js = subprocess.check_output(cmd, shell=True)
 
     # Write out the JS
-    with open(out_file, 'w') as fp:
+    with open(out_file, 'wb') as fp:
         fp.write(js)
