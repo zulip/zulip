@@ -644,6 +644,17 @@ class GetOldMessagesTest(AuthedTestCase):
             self.assert_json_error_contains(result,
                 "Invalid narrow operator: unknown operator")
 
+    def test_non_string_narrow_operand_in_dict(self):
+        """
+        We expect search operands to be strings, not integers.
+        """
+        self.login("hamlet@zulip.com")
+        not_a_string = 42
+        narrow = [dict(operator='stream', operand=not_a_string)]
+        params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
+        result = self.client.get("/json/messages", params)
+        self.assert_json_error_contains(result, 'elem["operand"] is not a string')
+
     def exercise_bad_narrow_operand(self, operator, operands, error_msg):
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
         for operand in operands:
