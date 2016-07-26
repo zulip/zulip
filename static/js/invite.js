@@ -65,10 +65,10 @@ exports.initialize = function () {
         },
         success: function (resp, statusText, xhr, form) {
             $('#submit-invitation').button('reset');
-            $('#invitee_emails').val('');
-            invite_status.text('Users invited successfully.')
+            invite_status.text(i18n.t('User invited successfully.', {'count': (invitee_emails.val().match(/@/g) || [] ).length}))
                           .addClass('alert-success')
                           .show();
+            invitee_emails.val('');
 
             if (page_params.development_environment) {
                 $('#dev_env_msg').text('In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
