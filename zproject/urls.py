@@ -121,7 +121,7 @@ urls = list(i18n_urls)
 v1_api_and_json_patterns = [
     # realm-level calls
     url(r'^realm$', 'zerver.lib.rest.rest_dispatch',
-        {'PATCH': 'zerver.views.update_realm'}),
+        {'PATCH': 'zerver.views.realm.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', 'zerver.views.generate_204'),
