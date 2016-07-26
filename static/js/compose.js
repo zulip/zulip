@@ -903,8 +903,8 @@ $(function () {
     // Show a warning if a user @-mentions someone who will not receive this message
     $(document).on('usermention_completed.zulip', function (event, data) {
         // Legacy strangeness: is_composing_message can be false, "stream", or "private"
-        // Disable on MIT since we never have subscriber lists there
-        if (is_composing_message !== "stream" || page_params.domain === 'mit.edu') {
+        // Disable for Zephyr mirroring realms, since we never have subscriber lists there
+        if (is_composing_message !== "stream" || page_params.is_zephyr_mirror_realm) {
             return;
         }
 

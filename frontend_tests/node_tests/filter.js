@@ -269,7 +269,7 @@ function get_predicate(operators) {
 }());
 
 (function test_mit_exceptions() {
-    global.page_params.domain = 'mit.edu';
+    global.page_params.is_zephyr_mirror_realm = true;
 
     var predicate = get_predicate([['stream', 'Foo'], ['topic', 'personal']]);
     assert(predicate({type: 'stream', stream: 'foo', subject: 'personal'}));
