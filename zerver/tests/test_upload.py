@@ -266,6 +266,7 @@ class AvatarTest(AuthedTestCase):
 
     correct_files = [
         ('img.png', 'png_resized.png'),
+        ('img.jpg', None), # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
         ('img.tif', 'tif_resized.png')
     ]
@@ -341,10 +342,11 @@ class AvatarTest(AuthedTestCase):
             base = '/user_avatars/'
             self.assertEquals(base, url[:len(base)])
 
-            rfp = open(os.path.join(TEST_AVATAR_DIR, rfname), 'rb')
-            response = self.client.get(url)
-            data = b"".join(response.streaming_content)
-            self.assertEquals(rfp.read(), data)
+            if rfname is not None:
+                rfp = open(os.path.join(TEST_AVATAR_DIR, rfname), 'rb')
+                response = self.client.get(url)
+                data = b"".join(response.streaming_content)
+                self.assertEquals(rfp.read(), data)
 
     def test_invalid_avatars(self):
         # type: () -> None

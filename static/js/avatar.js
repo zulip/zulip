@@ -12,7 +12,7 @@ function is_image_format(file) {
         'image/jpeg',
         'image/png',
         'image/gif',
-        'image/svg+xml'
+        'image/tiff'
     ];
     return _.indexOf(supported_types, type) >= 0;
 }
