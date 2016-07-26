@@ -24,7 +24,8 @@ def get_loc_over_ssh(host, func):
     try:
         return subprocess.check_output(['ssh', host, '-l', 'zulip',
                                         'psql -t -c "SELECT %s()"' % (func,)],
-                                       stderr=subprocess.STDOUT)
+                                       stderr=subprocess.STDOUT,
+                                       universal_newlines=True)
     except subprocess.CalledProcessError as e:
         report('CRITICAL', 'ssh failed: %s: %s' % (str(e), e.output))
 

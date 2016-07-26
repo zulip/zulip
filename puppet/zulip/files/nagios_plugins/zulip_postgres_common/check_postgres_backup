@@ -23,7 +23,7 @@ def report(state, msg):
     exit(states[state])
 
 if subprocess.check_output(['psql', 'postgres', '-t', '-c',
-                            'SELECT pg_is_in_recovery()']).strip() != 'f':
+                            'SELECT pg_is_in_recovery()']).strip() != b'f':
     report('OK', 'this is not the primary')
 
 try:
