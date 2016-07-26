@@ -1713,7 +1713,7 @@ class HelloWorldHookTests(WebhookTestCase):
     # Note: Include a test function per each distinct message condition your integration supports
     def test_hello_message(self):
         expected_subject = u"Hello World";
-        expected_message = u"Hello! I am happy to be here! :smile: \nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
+        expected_message = u"Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Marilyn Monroe](https://en.wikipedia.org/wiki/Marilyn_Monroe)**";
 
         # use fixture named helloworld_hello
         self.send_and_test_stream_message('hello', expected_subject, expected_message, content_type="application/x-www-form-urlencoded")

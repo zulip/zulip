@@ -1173,6 +1173,19 @@
           <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
         </p>
 
+        <p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
+        <div class="codehilite">
+          <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+./manage.py send_webhook_fixture_message \
+> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
+> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'</pre>
+        </div>
+
+        <p>Or, use curl:</p>
+        <div class="codehilite">
+          <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=&lt;api_key&gt;</pre>
+        </div>
+
         <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
 
         <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />

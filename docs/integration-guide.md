@@ -62,6 +62,14 @@ with the product at all.
   don't have an API or webhook we can use -- sometimes the right API
   is just not properly documented.
 
+* A helpful tool for testing your integration is
+  [UltraHook](http://www.ultrahook.com/), which allows you to receive webhook
+  calls via your local Zulip dev environment. This enables you to do end-to-end
+  testing with live data from the service you're integrating and can help you
+  spot why something isn't working or if the service is using custom HTTP
+  headers.
+
+
 ## Writing Webhook integrations
 
 New Zulip webhook integrations can take just a few hours to write,
@@ -120,7 +128,7 @@ Here's how we recommend doing it:
 ### Files that need to be created
 
 Select a name for your webhook and use it consistently. The examples below are
-for a webhook named 'mywebhook'.
+for a webhook named 'MyWebHook'.
 
 * `static/images/integrations/logos/mywebhook.png`: An image to represent
   your integration in the user interface. Generally this Should be the logo of the
@@ -180,7 +188,9 @@ tests](#step-3-create-tests) or [Testing](testing.html) for further details.
 #### Step 1: Create main webhook code
 
 The majority of the code for your webhook integration will be in a single
-python file in `zerver/views/webhooks/`.
+python file in `zerver/views/webhooks/`. The name of this file should be the
+name of your webhook, all lower-case, with file extension `.py`:
+`mywebhook.py`.
 
 The Hello World integration is in `zerver/views/webhooks/helloworld.py`:
 
@@ -192,15 +202,22 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.validator import check_dict, check_string
 
+from zerver.models import Client, UserProfile
+
+from django.http import HttpRequest, HttpResponse
+import six
+from typing import Dict, Any, Iterable, Optional
+
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
 def api_helloworld_webhook(request, user_profile, client,
                            payload=REQ(argument_type='body'),
                            stream=REQ(default='test'),
                            topic=REQ(default='Hello World')):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], six.text_type, Optional[six.text_type]) -> HttpResponse
 
   # construct the body of the message
-  body = 'Hello! I am happy to be here! :smile: '
+  body = 'Hello! I am happy to be here! :smile:'
 
   # try to add the Wikipedia article of the day
   # return appropriate error if not successful
@@ -208,7 +225,7 @@ def api_helloworld_webhook(request, user_profile, client,
       body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
       body += body_template.format(**payload)
   except KeyError as e:
-      return json_error(_("Missing key {} in JSON").format(e.message))
+      return json_error(_("Missing key {} in JSON").format(str(e)))
 
   # send the message
   check_send_message(user_profile, client, 'stream', [stream], topic, body)
@@ -223,29 +240,39 @@ function `api_helloworld_webook`, decorating it with `api_key_only_webhook_view`
 `has_request_variables`.
 
 You must pass the name of your webhook to the `api_key_only_webhook_view`
-decorator. Here we have used `HelloWorld`.
+decorator. Here we have used `HelloWorld`. To be consistent with Zulip code
+style, use the name of the product you are integrating in camel case, spelled
+as the product spells its own name (except always first letter upper-case).
 
-You may name your webhook function whatever you like, though it's a good idea
-to be consistent with other webhook integrations. We recommend following the
-format `api_webhookname_webhook`.
+You should name your webhook function as such `api_webhookname_webhook` where
+`webhookname` is the name of your webhook and is always lower-case.
 
-At minimum, the webhook function must accept `request`, `user_profile`, and
-`client`. You may also want to define additional parameters using the `REQ`
-object.
+At minimum, the webhook function must accept `request` (Django
+[HttpRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/#django.http.HttpRequest)
+object), `user_profile` (Zulip's user object), and `client` (Zulip's analogue
+of UserAgent). You may also want to define additional parameters using the
+`REQ` object.
 
 In the example above, we have defined `payload` which is populated from the
 body of the http request, `stream` with a default of `test` (available by
 default in Zulip dev environment), and `topic` with a default of `Hello World`.
 
+The line that begins `# type` is a mypy type annotation. See [this
+page](mypy.html) for details about how to properly annotate your webhook
+functions.
+
 In the body of the function we define the body of the message as `Hello! I am
-happy to be here! :smile: `. The `:smile:` indicates an emoji. Then we append a
+happy to be here! :smile:`. The `:smile:` indicates an emoji. Then we append a
 link to the Wikipedia article of the day as provided by the json payload. If
 the json payload does not include data for `featured_title` and `featured_url`
 we catch a `KeyError` and use `json_error` to return the appropriate
 information: a 400 http status code with relevant details.
 
-Then we send a public (stream) message with `check_send_message`.  Finally, we
-return `json_success()`.
+Then we send a public (stream) message with `check_send_message` which will
+validate the message and then send it.  
+
+Finally, we return a 200 http status with a JSON format success message via
+`json_success()`.
 
 #### Step 2: Create an api endpoint for the webhook
 
@@ -301,10 +328,6 @@ After which you should see:
 Using either method will create a message in Zulip:
 
 ![Image of Hello World webhook message](images/helloworld-webhook.png)
-
-Another helpful tool for testing your integration is to use
-[UltraHook](http://www.ultrahook.com/), which allows you to receive webhook
-calls via your local Zulip dev environment.
 
 #### Step 3: Create tests
 
@@ -412,6 +435,19 @@ And second, a div with the usage instructions:
       <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
     </p>
 
+    <p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
+    <div class="codehilite">
+      <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+./manage.py send_webhook_fixture_message \
+> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
+> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'</pre>
+    </div>
+
+    <p>Or, use curl:</p>
+    <div class="codehilite">
+      <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key></pre>
+    </div>
+
     <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
 
     <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
@@ -426,7 +462,7 @@ details, including how to easily create the message screenshot.
 
 #### Step 5: Preparing a pull request to zulip/zulip
 
-When you have finished your webook integration and are ready for it to be
+When you have finished your webhook integration and are ready for it to be
 available in the Zulip product, follow these steps to prepare your pull
 request:
 
@@ -436,7 +472,9 @@ request:
    through your code to double-check that you've followed Zulip's guidelines.
 3. Take a look at your git history to ensure your commits have been clear and
    logical (see [Version Control](version-control.html) for tips). If not,
-   consider revising them with `git rebase --interactive`.
+   consider revising them with `git rebase --interactive`. For most webhooks,
+   you'll want to squash your changes into a single commit and include a good,
+   clear commit message.
 4. Push code to your fork.
 5. Submit a pull request to zulip/zulip.
 

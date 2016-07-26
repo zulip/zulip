@@ -5,15 +5,21 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.validator import check_dict, check_string
+from zerver.models import Client, UserProfile
+
+from django.http import HttpRequest, HttpResponse
+import six
+from typing import Dict, Any, Iterable, Optional
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
 def api_helloworld_webhook(request, user_profile, client,
                            payload=REQ(argument_type='body'), stream=REQ(default='test'),
                            topic=REQ(default='Hello World')):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], six.text_type, Optional[six.text_type]) -> HttpResponse
 
     # construct the body of the message
-    body = 'Hello! I am happy to be here! :smile: '
+    body = 'Hello! I am happy to be here! :smile:'
 
     # try to add the Wikipedia article of the day
     # return appropriate error if not successful
