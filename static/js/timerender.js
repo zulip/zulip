@@ -13,7 +13,7 @@ function now () { return new XDate(); }
 // Given an XDate object 'time', return a two-element list containing
 //   - a string for the current human-formatted version
 //   - a boolean for if it will need to be updated when the day changes
-function render_now (time) {
+exports.render_now = function (time) {
     var start_of_today = set_to_start_of_day(now());
     var start_of_other_day = set_to_start_of_day(time.clone());
 
@@ -41,7 +41,7 @@ function render_now (time) {
         // Can't use &nbsp; as that represents the literal string "&nbsp;".
         return [time.toString("MMM\xa0dd"), false];
     }
-}
+};
 
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
@@ -90,10 +90,10 @@ function render_date_span(elem, time_str, time_above_str) {
 exports.render_date = function (time, time_above) {
     var id = "timerender" + next_timerender_id;
     next_timerender_id++;
-    var rendered_time = render_now(time);
+    var rendered_time = exports.render_now(time);
     var node = $("<span />").attr('id', id);
     if (time_above !== undefined) {
-        var rendered_time_above = render_now(time_above);
+        var rendered_time_above = exports.render_now(time_above);
         node = render_date_span(node, rendered_time[0], rendered_time_above[0]);
     } else {
         node = render_date_span(node, rendered_time[0]);
@@ -119,10 +119,10 @@ exports.update_timestamps = function () {
             if (element !== null) {
                 var time = elem[1];
                 var time_above;
-                var rendered_time = render_now(time);
+                var rendered_time = exports.render_now(time);
                 if (elem.length === 3) {
                     time_above = elem[2];
-                    var rendered_time_above = render_now(time_above);
+                    var rendered_time_above = exports.render_now(time_above);
                     render_date_span($(element), rendered_time[0], rendered_time_above[0]);
                 } else {
                     render_date_span($(element), rendered_time[0]);
