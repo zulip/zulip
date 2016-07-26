@@ -147,7 +147,8 @@ def accounts_register(request):
             del request.session['authenticated_full_name']
         except KeyError:
             pass
-        if domain == "mit.edu":
+        if realm is not None and realm.is_zephyr_mirror_realm and domain == "mit.edu":
+            # for MIT users, we can get an authoritative name from Hesiod
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
@@ -285,8 +286,8 @@ def webathena_kerberos_login(request, user_profile,
     # type (HttpRequest, UserProfile, str) -> HttpResponse
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))
-    if not user_profile.realm.domain == "mit.edu":
-        return json_error(_("Webathena login only for mit.edu realm"))
+    if not user_profile.realm.webathena_enabled:
+        return json_error(_("Webathena login not enabled"))
 
     try:
         parsed_cred = ujson.loads(cred)
@@ -1000,6 +1001,7 @@ def home(request):
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
         presence_disabled     = user_profile.realm.presence_disabled,
+        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
     )
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
@@ -1036,7 +1038,7 @@ def home(request):
                                    'pipeline': settings.PIPELINE_ENABLED,
                                    'show_invites': show_invites,
                                    'is_admin': user_profile.is_realm_admin,
-                                   'show_webathena': user_profile.realm.domain == "mit.edu",
+                                   'show_webathena': user_profile.realm.webathena_enabled,
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
                                    'product_name': product_name

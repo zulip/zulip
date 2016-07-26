@@ -1280,7 +1280,8 @@ class SubscriptionAPITest(AuthedTestCase):
                         streams,
                         dict(principals=ujson.dumps(['starnine@mit.edu'])),
                 )
-        # Make sure MIT does not get any tornado subscription events
+        # Make sure Zephyr mirroring realms such as MIT do not get
+        # any tornado subscription events
         self.assert_length(events, 0, True)
         self.assert_length(queries, 7)
 
