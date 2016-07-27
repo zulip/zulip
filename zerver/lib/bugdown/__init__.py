@@ -1018,9 +1018,11 @@ class Bugdown(markdown.Extension):
         if settings.CAMO_URI:
             md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
 
-        if self.getConfig("realm") == "mit.edu/zephyr_mirror":
-            # Disable almost all inline patterns for mit.edu users' traffic that is mirrored
-            # Note that inline_interesting_links is a treeprocessor and thus is not removed
+        if self.getConfig("realm") == "zephyr_mirror":
+            # Disable almost all inline patterns for zephyr mirror
+            # users' traffic that is mirrored.  Note that
+            # inline_interesting_links is a treeprocessor and thus is
+            # not removed
             for k in md.inlinePatterns.keys():
                 if k not in ["autolink"]:
                     del md.inlinePatterns[k]
@@ -1086,7 +1088,7 @@ def maybe_update_realm_filters(domain):
         for domain, filters in six.iteritems(all_filters):
             make_realm_filters(domain, filters)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
-        make_realm_filters("mit.edu/zephyr_mirror", [])
+        make_realm_filters("zephyr_mirror", [])
     else:
         realm_filters = realm_filters_for_domain(domain)
         if domain not in realm_filter_data or realm_filter_data[domain] != realm_filters:
