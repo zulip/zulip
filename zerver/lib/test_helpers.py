@@ -187,6 +187,10 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
+def subject_topic_awareness(test_obj, new_topics=False):
+    return test_obj.settings(CATCH_TOPIC_MIGRATION_BUGS=new_topics)
+
+
 class DummyHandler(object):
     def __init__(self):
         # type: (Callable) -> None

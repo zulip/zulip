@@ -778,9 +778,21 @@ def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
+class Topic(ModelReprMixin, models.Model):
+    recipient = models.ForeignKey(Recipient) # type: Recipient
+    name = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
+
+    class Meta(object):
+        unique_together = ("recipient", "name")
+
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Topic: recipient %d, %s>" % (self.recipient_id, self.name)
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
+    topic = models.ForeignKey(Topic, null=True)
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
     content = models.TextField() # type: text_type
     rendered_content = models.TextField(null=True) # type: Optional[text_type]
@@ -795,11 +807,10 @@ class Message(ModelReprMixin, models.Model):
 
     def topic_name(self):
         # type: () -> text_type
-        """
-        Please start using this helper to facilitate an
-        eventual switch over to a separate topic table.
-        """
-        return self.subject
+        if self.topic:
+            return self.topic.name
+        else:
+            return self.subject
 
     def __unicode__(self):
         # type: () -> text_type
@@ -904,7 +915,7 @@ class Message(ModelReprMixin, models.Model):
                 last_edit_time = self.last_edit_time,
                 edit_history = self.edit_history,
                 content = self.content,
-                subject = self.subject,
+                subject = self.topic_name(),
                 pub_date = self.pub_date,
                 rendered_content = self.rendered_content,
                 rendered_content_version = self.rendered_content_version,
@@ -922,6 +933,14 @@ class Message(ModelReprMixin, models.Model):
         )
 
     @staticmethod
+    def get_topic_name_from_raw_data(row):
+        # TODO: inline this when topic id transition finishes
+        if row['topic__name']:
+            return row['topic__name']
+        else:
+            return row['subject']
+
+    @staticmethod
     def build_dict_from_raw_db_row(row, apply_markdown):
         # type: (Dict[str, Any], bool) -> Dict[str, Any]
         '''
@@ -935,7 +954,7 @@ class Message(ModelReprMixin, models.Model):
                 last_edit_time = row['last_edit_time'],
                 edit_history = row['edit_history'],
                 content = row['content'],
-                subject = row['subject'],
+                subject = Message.get_topic_name_from_raw_data(row),
                 pub_date = row['pub_date'],
                 rendered_content = row['rendered_content'],
                 rendered_content_version = row['rendered_content_version'],
@@ -1106,6 +1125,7 @@ class Message(ModelReprMixin, models.Model):
             'sender__realm__domain',
             'sender__avatar_source',
             'sender__is_mirror_dummy',
+            'topic__name',
         ]
         return Message.objects.filter(id__in=needed_ids).values(*fields)
 
@@ -1157,19 +1177,31 @@ class Message(ModelReprMixin, models.Model):
         self.has_image = bool(Message.content_has_image(content))
         self.has_link = bool(Message.content_has_link(content))
 
+    def update_topic(self):
+        # type: () -> None
+        if self.subject and not self.topic:
+            self.topic, _ = Topic.objects.get_or_create(
+                name=self.subject,
+                recipient=self.recipient)
+        if self.subject:
+            if getattr(settings, 'CATCH_TOPIC_MIGRATION_BUGS', False):
+                self.subject = 'CATCH_TOPIC_MIGRATION_BUGS'
+
+
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender, **kwargs):
     # type: (Any, **Any) -> None
     if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
         message = kwargs['instance']
         message.update_calculated_fields()
+        message.update_topic()
 
 def get_context_for_message(message):
     # type: (Message) -> Sequence[Message]
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
-        subject=message.subject,
+        topic_id=message.topic_id,
         id__lt=message.id,
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]

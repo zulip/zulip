@@ -14,11 +14,13 @@ from zerver.lib.test_helpers import (
     message_ids, message_stream_count,
     most_recent_message,
     queries_captured,
+    subject_topic_awareness,
 )
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Client, Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
+    Client, Message, Realm, Recipient,
+    Stream, UserMessage, UserProfile, Attachment, Topic,
     get_realm, get_stream, get_user_profile_by_email,
 )
 
@@ -320,7 +322,7 @@ class StreamMessagesTest(AuthedTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 7)
+        self.assert_length(queries, 8)
 
     def test_message_mentions(self):
         user_profile = get_user_profile_by_email("iago@zulip.com")
@@ -383,6 +385,44 @@ class StreamMessagesTest(AuthedTestCase):
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
 
+class MessageTopicTest(TestCase):
+    def test_message_hooks(self):
+        # type: () -> None
+        realm = get_realm("zulip.com")
+        sender = get_user_profile_by_email('othello@zulip.com')
+        stream, _ = create_stream_if_needed(realm, 'devel')
+        stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        sending_client, _ = Client.objects.get_or_create(name="test suite")
+
+        messages = []
+        for i in range(3):
+            message = Message(
+                sender=sender,
+                recipient=stream_recipient,
+                subject='lunch',
+                content='whatever %d' % (i,),
+                pub_date=datetime.datetime.now(),
+                sending_client=sending_client,
+                last_edit_time=datetime.datetime.now(),
+                edit_history='[]'
+            )
+            with subject_topic_awareness(self, new_topics=True):
+                message.save()
+            messages.append(message)
+
+        lunch_topics = Topic.objects.filter(
+            name='lunch',
+            recipient=stream_recipient,
+        )
+        self.assertEqual(len(lunch_topics), 1)
+        topic_id = lunch_topics[0].id
+
+        # Make sure we write legacy/new fields.
+        for message in messages:
+            msg = Message.objects.get(id=message.id)
+            self.assertEqual(msg.topic_id, topic_id)
+            self.assertNotEqual(msg.subject, 'lunch')
+
 class MessageDictTest(AuthedTestCase):
     @slow(1.6, 'builds lots of messages')
     def test_bulk_message_fetching(self):
@@ -406,7 +446,8 @@ class MessageDictTest(AuthedTestCase):
                     last_edit_time=datetime.datetime.now(),
                     edit_history='[]'
                 )
-                message.save()
+                with subject_topic_awareness(self, new_topics=True):
+                    message.save()
 
         ids = [row['id'] for row in Message.objects.all().values('id')]
         num_ids = len(ids)
@@ -722,13 +763,15 @@ class MessagePOSTTest(AuthedTestCase):
         user.realm.save()
 
 class EditMessageTest(AuthedTestCase):
-    def check_message(self, msg_id, subject=None, content=None):
+    def check_message(self, msg_id, subject=None, content=None, edited=True):
         msg = Message.objects.get(id=msg_id)
         cached = msg.to_dict(False)
         uncached = msg.to_dict_uncached_helper(False)
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.topic_name(), subject)
+            if edited:
+                self.assertEqual(msg.topic.name, subject)
         if content:
             self.assertEqual(msg.content, content)
         return msg
@@ -746,10 +789,11 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_success(result)
         self.check_message(msg_id, content="after edit")
 
-        result = self.client.post("/json/update_message", {
-            'message_id': msg_id,
-            'subject': 'edited'
-        })
+        with subject_topic_awareness(self, new_topics=True): # edit
+            result = self.client.post("/json/update_message", {
+                'message_id': msg_id,
+                'subject': 'edited'
+            })
         self.assert_json_success(result)
         self.check_message(msg_id, subject="edited")
 
@@ -797,7 +841,8 @@ class EditMessageTest(AuthedTestCase):
             params_dict = { 'message_id': id_, 'subject': new_subject }
             if not topic_only:
                 params_dict['content'] = new_content
-            result = self.client.post("/json/update_message", params_dict)
+            with subject_topic_awareness(self): # edit
+                result = self.client.post("/json/update_message", params_dict)
             self.assert_json_success(result)
             if topic_only:
                 self.check_message(id_, subject=new_subject)
@@ -813,7 +858,8 @@ class EditMessageTest(AuthedTestCase):
             params_dict = { 'message_id': id_, 'subject': new_subject }
             if not topic_only:
                 params_dict['content'] = new_content
-            result = self.client.post("/json/update_message", params_dict)
+            with subject_topic_awareness(self): # edit
+                result = self.client.post("/json/update_message", params_dict)
             message = Message.objects.get(id=id_)
             self.assert_json_error(result, error)
             self.check_message(id_, subject=old_subject, content=old_content)
@@ -850,58 +896,60 @@ class EditMessageTest(AuthedTestCase):
 
     def test_propagate_topic_forward(self):
         self.login("hamlet@zulip.com")
-        id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
-            subject="topic1")
-        id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic2")
-        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+        with subject_topic_awareness(self, new_topics=True): # edit
+            id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+                subject="topic1")
+            id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic2")
+            id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
 
-        result = self.client.post("/json/update_message", {
-            'message_id': id1,
-            'subject': 'edited',
-            'propagate_mode': 'change_later'
-        })
+            result = self.client.post("/json/update_message", {
+                'message_id': id1,
+                'subject': 'edited',
+                'propagate_mode': 'change_later'
+            })
         self.assert_json_success(result)
 
         self.check_message(id1, subject="edited")
         self.check_message(id2, subject="edited")
-        self.check_message(id3, subject="topic1")
-        self.check_message(id4, subject="topic2")
+        self.check_message(id3, subject="topic1", edited=False)
+        self.check_message(id4, subject="topic2", edited=False)
         self.check_message(id5, subject="edited")
 
     def test_propagate_all_topics(self):
         self.login("hamlet@zulip.com")
-        id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
-            subject="topic1")
-        id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic2")
-        id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
-        id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic3")
+        with subject_topic_awareness(self, new_topics=True): # edit
+            id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
+                subject="topic1")
+            id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic2")
+            id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic1")
+            id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                subject="topic3")
 
-        result = self.client.post("/json/update_message", {
-            'message_id': id2,
-            'subject': 'edited',
-            'propagate_mode': 'change_all'
-        })
+            result = self.client.post("/json/update_message", {
+                'message_id': id2,
+                'subject': 'edited',
+                'propagate_mode': 'change_all'
+            })
         self.assert_json_success(result)
 
         self.check_message(id1, subject="edited")
         self.check_message(id2, subject="edited")
-        self.check_message(id3, subject="topic1")
-        self.check_message(id4, subject="topic2")
+        self.check_message(id3, subject="topic1", edited=False)
+        self.check_message(id4, subject="topic2", edited=False)
         self.check_message(id5, subject="edited")
-        self.check_message(id6, subject="topic3")
+        self.check_message(id6, subject="topic3", edited=False)
 
 class MirroredMessageUsersTest(TestCase):
     class Request(object):

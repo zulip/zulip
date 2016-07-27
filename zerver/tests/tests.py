@@ -12,6 +12,7 @@ from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
     simulated_queue_client, tornado_redirected_to_list, AuthedTestCase,
     most_recent_usermessage, most_recent_message,
+    subject_topic_awareness,
 )
 from zerver.lib.test_runner import slow
 
@@ -1913,19 +1914,20 @@ class TestMissedMessages(AuthedTestCase):
         tokens = [str(random.getrandbits(32)) for _ in range(30)]
         mock_random_token.side_effect = tokens
 
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '3')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '4')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '5')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '6')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '7')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '8')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '9')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '10')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
-        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
+        with subject_topic_awareness(self, new_topics=True): # emails
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '3')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '4')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '5')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '6')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '7')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '8')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '9')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '10')
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
+            msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
 
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
@@ -1951,9 +1953,10 @@ class TestMissedMessages(AuthedTestCase):
         tokens = [str(random.getrandbits(32)) for _ in range(30)]
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
-                                   Recipient.PERSONAL,
-                                   'Extremely personal message!')
+        with subject_topic_awareness(self, new_topics=True): # emails
+            msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+                                       Recipient.PERSONAL,
+                                       'Extremely personal message!')
 
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
