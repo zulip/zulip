@@ -1212,8 +1212,8 @@ def set_stream_color(user_profile, stream_name, color=None):
     subscription.save(update_fields=["color"])
     return color
 
-def get_subscribers_to_streams(streams):
-    # type: (Iterable[Stream]) -> Dict[UserProfile, List[Stream]]
+def get_subscribers_to_streams(streams, requesting_user=None):
+    # type: (Iterable[Stream], Optional[UserProfile]) -> Dict[UserProfile, List[Stream]]
     """ Return a dict where the keys are user profiles, and the values are
     arrays of all the streams within 'streams' to which that user is
     subscribed.
@@ -1222,7 +1222,7 @@ def get_subscribers_to_streams(streams):
     subscribes_to = {} # type: Dict[UserProfile, List[Stream]]
     for stream in streams:
         try:
-            subscribers = get_subscribers(stream)
+            subscribers = get_subscribers(stream, requesting_user=requesting_user)
         except JsonableError:
             # We can't get a subscriber list for this stream. Probably MIT.
             continue
@@ -1437,7 +1437,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
     # FIXME: This code was mostly a copy-paste from notify_subscriptions_added.
     #        We have since streamlined how we do notifications for adds, and
     #        we should do the same for removes.
-    notifications_for = get_subscribers_to_streams(streams)
+    notifications_for = get_subscribers_to_streams(streams, requesting_user=user_profile)
 
     for event_recipient, notifications in six.iteritems(notifications_for):
         # Don't send a peer subscription notice to yourself.
