@@ -1203,11 +1203,6 @@ def get_subscriber_ids(stream):
     ids = [row['user_profile_id'] for row in rows]
     return ids
 
-def get_other_subscriber_ids(stream, user_profile_id):
-    # type: (Stream, int) -> List[int]
-    ids = get_subscriber_ids(stream)
-    return [id for id in ids if id != user_profile_id]
-
 def maybe_get_subscriber_emails(stream):
     # type: (Stream) -> List[text_type]
     """ Alternate version of get_subscriber_emails that takes a Stream object only
