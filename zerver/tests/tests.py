@@ -1525,7 +1525,7 @@ class UserPresenceTests(AuthedTestCase):
 
     def test_no_mit(self):
         # type: () -> None
-        """MIT never gets a list of users"""
+        """Zephyr mirror realms such as MIT never get a list of users"""
         self.login("espuser@mit.edu")
         result = self.client.post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
@@ -1796,6 +1796,7 @@ class HomeTest(AuthedTestCase):
             "password_auth_enabled",
             "people_list",
             "poll_timeout",
+            "presence_disabled",
             "product_name",
             "prompt_for_invites",
             "realm_allow_message_editing",
