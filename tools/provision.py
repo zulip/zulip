@@ -100,11 +100,16 @@ APT_DEPENDENCIES = {
     ],
 }
 
+TSEARCH_VERSION_MAP = {
+    'trusty': '0.1.3',
+    'xenial': '0.2',
+}
+TSEARCH_VERSION = TSEARCH_VERSION_MAP[codename]
+
 # tsearch-extras is an extension to postgres's built-in full-text search.
 # TODO: use a real APT repository
-TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
+TSEARCH_URL_PATTERN = "https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/{}_{}_{}.deb"
 TSEARCH_PACKAGE_NAME = "postgresql-%s-tsearch-extras" % (POSTGRES_VERSION,)
-TSEARCH_VERSION = "0.1.3"
 TSEARCH_URL = TSEARCH_URL_PATTERN.format(TSEARCH_PACKAGE_NAME, TSEARCH_VERSION, arch)
 TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
