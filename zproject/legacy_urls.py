@@ -7,6 +7,7 @@ legacy_urls = [
     url(r'^json/rename_stream$',            'zerver.views.streams.json_rename_stream'),
     url(r'^json/make_stream_public$',       'zerver.views.streams.json_make_stream_public'),
     url(r'^json/make_stream_private$',      'zerver.views.streams.json_make_stream_private'),
+    url(r'^json/change_mandatory_status$',  'zerver.views.streams.json_change_stream_mandatory_status'),
     url(r'^json/invite_users$',             'zerver.views.json_invite_users'),
     url(r'^json/bulk_invite_users$',        'zerver.views.json_bulk_invite_users'),
     url(r'^json/settings/change$',          'zerver.views.user_settings.json_change_settings'),

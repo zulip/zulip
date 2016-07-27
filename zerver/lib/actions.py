@@ -1274,6 +1274,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     audible_notifications=subscription.audible_notifications,
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
+                    mandatory = stream.mandatory,
                     subscribers=stream_emails(stream))
             for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
@@ -1793,6 +1794,24 @@ def do_make_stream_private(realm, stream_name):
 
     stream.invite_only = True
     stream.save(update_fields=['invite_only'])
+
+def do_change_mandatory_status(realm, stream_name, mandatory_status):
+    # type: (Realm, text_type, bool) -> None
+    stream_name = stream_name.strip()
+    stream = get_stream(stream_name, realm)
+
+    if not stream:
+        raise JsonableError(_('Unknown stream "%s"') % (stream_name,))
+    stream.mandatory = mandatory_status
+    stream.save(update_fields=['mandatory'])
+    event = dict(
+        op="update",
+        type="stream",
+        name=stream_name,
+        property="mandatory",
+        value=mandatory_status
+    )
+    send_event(event, stream_user_ids(stream))
 
 def do_rename_stream(realm, old_name, new_name, log=True):
     # type: (Realm, text_type, text_type, bool) -> Dict[str, text_type]
@@ -2586,7 +2605,7 @@ def gather_subscriptions_helper(user_profile):
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id", \
-        "realm__domain", "email_token", "description")
+        "realm__domain", "email_token", "description", "mandatory")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -2631,6 +2650,7 @@ def gather_subscriptions_helper(user_profile):
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
                        'pin_to_top': sub["pin_to_top"],
+                       'mandatory': stream["mandatory"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
