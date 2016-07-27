@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+from collections import defaultdict
+import ujson
+
+def analyze_url_coverage():
+    fn = 'var/url_coverage.txt' # TODO: make path more robust, maybe use json suffix
+    calls = []
+    for line in open(fn):
+        calls.append(ujson.loads(line))
+
+    show_slow_endpoints(calls)
+    show_best_coverage(calls)
+    show_which_tests_ran_endpoints(calls)
+
+def show_slow_endpoints(calls):
+    tups = []
+    for call in calls:
+        tups.append((call['delay'], call['url'], call['method']))
+
+    tups.sort(reverse=True)
+
+    num = 10
+    print('%d slowest endpoints' % (num,))
+
+    for delay, url, method in tups[:num]:
+        print('%.03f %s %s' % (delay, url, method))
+
+    print()
+
+def show_best_coverage(calls):
+    count = defaultdict(int) # type: Dict[str, int]
+
+    for call in calls:
+        count[call['url']] += 1
+
+    counts = [(v, k) for k, v in count.items()]
+    counts.sort(reverse=True)
+    num = 10
+
+    print('%d best covered endpoints' % (num,))
+    for cnt, url in counts[:num]:
+        print('%3d %s' % (cnt, url))
+
+    print()
+
+def show_which_tests_ran_endpoints(calls):
+    test_name_dct = defaultdict(list) # type: Dict[str, List[str]]
+
+    for call in calls:
+        url = call['url']
+        test_name_dct[url].append(call['test_name'])
+
+    for k in sorted(test_name_dct):
+        print(k)
+        for test_name in sorted(test_name_dct[k]):
+            print('    %s' % (test_name,))
+        print()
+
+    print()
+
+if __name__ == '__main__':
+    analyze_url_coverage()
