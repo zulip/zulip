@@ -1,13 +1,17 @@
 var common = require('../casper_lib/common.js').common;
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
+var stream_name = "Scotland";
 
 common.start_and_log_in();
 
 casper.then(function () {
     casper.test.info('Administration page');
     casper.click('a[href^="#administration"]');
+});
+
+casper.waitForSelector('#administration.tab-pane.active', function () {
+    casper.test.info('Administration page is active');
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#administration/, 'URL suggests we are on administration page');
-    casper.test.assertExists('#administration.tab-pane.active', 'Administration page is active');
 });
 
 // Test only admins may create streams Setting
@@ -15,6 +19,9 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_adm
     casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
     casper.click('form.admin-realm-form input.btn');
 
+});
+
+casper.then(function () {
     // Test setting was activated
     casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Only Admins may now create new streams!');
@@ -30,22 +37,25 @@ casper.then(function () {
     casper.click('a[href^="#subscriptions"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
+});
 
-    casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
-        // Test Setting was saved
+casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
+    // Test Setting was saved
+    casper.test.assertEval(function () {
+        return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
+    }, 'Only admins may create streams Setting saved');
+
+    // Deactivate setting
+    casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
+    casper.click('form.admin-realm-form input.btn');
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Any user may now create new streams!');
         casper.test.assertEval(function () {
-            return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
-        }, 'Only admins may create streams Setting saved');
-
-        // Deactivate setting
-        casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
-        casper.click('form.admin-realm-form input.btn');
-        casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-            casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Any user may now create new streams!');
-            casper.test.assertEval(function () {
-                return !(document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
-            }, 'Only admins may create streams Setting deactivated');
-        });
+            return !(document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked);
+        }, 'Only admins may create streams Setting deactivated');
     });
 });
 
@@ -58,22 +68,28 @@ casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]', function () {
     casper.click('#do_deactivate_user_button');
 });
 
-casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"].deactivated_user', function () {
-    casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Reactivate');
-    casper.click('.user_row[id="user_cordelia@zulip.com"] .reactivate');
+casper.then(function () {
+    casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"].deactivated_user', function () {
+        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Reactivate');
+        casper.click('.user_row[id="user_cordelia@zulip.com"] .reactivate');
+    });
 });
 
-casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]:not(.deactivated_user)', function () {
-    casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
+casper.then(function () {
+    casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]:not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
+    });
 });
 
-// Test Deactivated users section of admin page
-casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]', function () {
-    casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
-    casper.click('.user_row[id="user_cordelia@zulip.com"] .deactivate');
-    casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
-    casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
-    casper.click('#do_deactivate_user_button');
+casper.then(function () {
+    // Test Deactivated users section of admin page
+    casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]', function () {
+        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
+        casper.click('.user_row[id="user_cordelia@zulip.com"] .deactivate');
+        casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
+        casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
+        casper.click('#do_deactivate_user_button');
+    });
 });
 
 casper.then(function () {
@@ -91,7 +107,9 @@ casper.then(function () {
         casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Reactivate');
         casper.click('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] .reactivate');
     });
+});
 
+casper.then(function () {
     casper.waitForSelector('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] button:not(.reactivate)', function () {
         casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
     });
@@ -100,41 +118,56 @@ casper.then(function () {
     casper.click("#administration a[aria-controls='organization']");
 });
 
-// Test bot deactivation and reactivation
-casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]', function () {
-    casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
-    casper.click('.user_row[id="user_new-user-bot@zulip.com"] .deactivate');
-});
-
-casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"].deactivated_user', function () {
-    casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Reactivate');
-    casper.click('.user_row[id="user_new-user-bot@zulip.com"] .reactivate');
-});
-casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]:not(.deactivated_user)', function () {
-    casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
-});
-
-// Test custom realm emoji
-casper.waitForSelector('.admin-emoji-form', function () {
-    casper.fill('form.admin-emoji-form', {
-        'name': 'MouseFace',
-        'url': 'http://localhost:9991/static/images/integrations/logos/jenkins.png'
+casper.then(function () {
+    // Test bot deactivation and reactivation
+    casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]', function () {
+        casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
+        casper.click('.user_row[id="user_new-user-bot@zulip.com"] .deactivate');
     });
-    casper.click('form.admin-emoji-form input.btn');
 });
 
-casper.waitUntilVisible('div#admin-emoji-status', function () {
-    casper.test.assertSelectorHasText('div#admin-emoji-status', 'Custom emoji added!');
+casper.then(function () {
+    casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"].deactivated_user', function () {
+        casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Reactivate');
+        casper.click('.user_row[id="user_new-user-bot@zulip.com"] .reactivate');
+    });
 });
 
-casper.waitForSelector('.emoji_row', function () {
-    casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
-    casper.test.assertExists('.emoji_row img[src="http://localhost:9991/static/images/integrations/logos/jenkins.png"]');
-    casper.click('.emoji_row button.delete');
+casper.then(function () {
+    casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]:not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
+    });
 });
 
-casper.waitWhileSelector('.emoji_row', function () {
-    casper.test.assertDoesntExist('.emoji_row');
+casper.then(function () {
+    // Test custom realm emoji
+    casper.waitForSelector('.admin-emoji-form', function () {
+        casper.fill('form.admin-emoji-form', {
+            'name': 'MouseFace',
+            'url': 'http://localhost:9991/static/images/integrations/logos/jenkins.png'
+        });
+        casper.click('form.admin-emoji-form input.btn');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('div#admin-emoji-status', function () {
+        casper.test.assertSelectorHasText('div#admin-emoji-status', 'Custom emoji added!');
+    });
+});
+
+casper.then(function () {
+    casper.waitForSelector('.emoji_row', function () {
+        casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
+        casper.test.assertExists('.emoji_row img[src="http://localhost:9991/static/images/integrations/logos/jenkins.png"]');
+        casper.click('.emoji_row button.delete');
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileSelector('.emoji_row', function () {
+        casper.test.assertDoesntExist('.emoji_row');
+    });
 });
 
 function get_suggestions(str) {
@@ -166,7 +199,6 @@ casper.then(function () {
     casper.click('a[href^="#subscriptions"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
-    var stream_name = "Scotland";
     // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona etc).
     // I used 'O' to make sure that it works even if there are multiple suggestions.
     // Capital 'O' is used instead of small 'o' to make sure that the suggestions are not case sensitive.
@@ -175,14 +207,21 @@ casper.then(function () {
     casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
     });
+});
+
+casper.then(function () {
     casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
         casper.click('.default_stream_row[id='+stream_name+'] button.remove-default-stream');
     });
+});
+
+casper.then(function () {
     casper.waitWhileSelector('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertDoesntExist('.default_stream_row[id='+stream_name+']');
     });
 });
+
 // TODO: Test stream deletion
 
 // Test turning message editing off and on
@@ -220,6 +259,7 @@ casper.then(function () {
         $('.popover_edit_message').click();
     });
 });
+
 casper.waitForSelector(".message_edit_content", function () {
     casper.evaluate(function () {
         var msg = $('#zhome .message_row:last');
@@ -228,9 +268,11 @@ casper.waitForSelector(".message_edit_content", function () {
     });
 });
 
-// check that the message was indeed edited
-casper.waitWhileVisible("textarea.message_edit_content", function () {
-    casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+casper.then(function () {
+    // check that the message was indeed edited
+    casper.waitWhileVisible("textarea.message_edit_content", function () {
+        casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+    });
 });
 
 // Commented out due to Issue #1243
@@ -259,6 +301,9 @@ casper.then(function () {
 casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
     casper.click('form.admin-realm-form input.btn');
+});
+
+casper.then(function () {
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
         casper.test.assertEval(function () {
@@ -365,57 +410,72 @@ casper.then(function () {
     casper.test.assertExists('#administration.tab-pane.active', 'Administration page is active');
 });
 
-casper.waitForSelector('form.admin-realm-form input.btn', function () {
-    // deactivate message editing
-    casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
-        casper.evaluate(function () {
-            $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
-        });
-        casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
-        casper.click('form.admin-realm-form input.btn');
-        casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-            casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
-            casper.test.assertEval(function () {
-                return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
-            }, 'Allow message editing Setting de-activated');
-            casper.test.assertEval(function () {
-                return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '4';
-            }, 'Message content edit limit now 4');
-        });
-    });
+casper.waitForSelector('form.admin-realm-form input.btn');
 
+// deactivate message editing
+casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+    casper.evaluate(function () {
+        $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
+    });
+    casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
+    casper.click('form.admin-realm-form input.btn');
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
+        casper.test.assertEval(function () {
+            return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
+        }, 'Allow message editing Setting de-activated');
+        casper.test.assertEval(function () {
+            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '4';
+        }, 'Message content edit limit now 4');
+    });
+});
+
+casper.then(function () {
     // allow message editing again, and check that the old edit limit is still there
     casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
         casper.click('form.admin-realm-form input.btn');
-        casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-            casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 4 minutes old.');
-            casper.test.assertEval(function () {
-                return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
-            }, 'Allow message editing Setting activated');
-            casper.test.assertEval(function () {
-                return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '4';
-            }, 'Message content edit limit still 4');
-        });
     });
+});
 
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit topics for all their messages, and the content of messages which are less than 4 minutes old.');
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
+        }, 'Allow message editing Setting activated');
+        casper.test.assertEval(function () {
+            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '4';
+        }, 'Message content edit limit still 4');
+    });
+});
+
+casper.then(function () {
     // allow arbitrary message editing
     casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('0');
         });
         casper.click('form.admin-realm-form input.btn');
-        casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-            casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit the content and topics of all their past messages!');
-            casper.test.assertEval(function () {
-                return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
-            }, 'Allow message editing Setting still activated');
-            casper.test.assertEval(function () {
-                return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '0';
-            }, 'Message content edit limit is 0');
-        });
     });
+});
 
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can now edit the content and topics of all their past messages!');
+        casper.test.assertEval(function () {
+            return document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked;
+        }, 'Allow message editing Setting still activated');
+        casper.test.assertEval(function () {
+            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '0';
+        }, 'Message content edit limit is 0');
+    });
+});
+
+casper.then(function () {
     // disallow message editing, with illegal edit limit value. should be fixed by admin.js
     casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
         casper.evaluate(function () {
@@ -423,18 +483,20 @@ casper.waitForSelector('form.admin-realm-form input.btn', function () {
         });
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
         casper.click('form.admin-realm-form input.btn');
-        casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
-            casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
-            casper.test.assertEval(function () {
-                return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
-            }, 'Allow message editing Setting de-activated');
-            casper.test.assertEval(function () {
-                return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '10';
-            }, 'Message content edit limit has been reset to its default');
-        });
     });
 });
 
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-message-editing-status', 'Users can no longer edit their past messages!');
+        casper.test.assertEval(function () {
+            return !(document.querySelector('input[type="checkbox"][id="id_realm_allow_message_editing"]').checked);
+        }, 'Allow message editing Setting de-activated');
+        casper.test.assertEval(function () {
+            return $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val() === '10';
+        }, 'Message content edit limit has been reset to its default');
+    });
+});
 
 common.then_log_out();
 
