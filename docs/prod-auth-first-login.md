@@ -1,76 +1,89 @@
-# Logging in and creating users
+# Log in and create users
 
 (As you read and follow the instructions in this section, if you run
 into trouble, check out the troubleshooting advice in [the next major
 section](prod-health-check-debug.html).)
 
-Once you've finished installing Zulip, configuring your settings.py
-file, and initializing the database, it's time to login to your new
-installation.  By default, initialize-database creates 1 realm that
-you can join, the `ADMIN_DOMAIN` realm (defined in
-`/etc/zulip/settings.py`).
+Once you've finished installing Zulip, configuring your `settings.py`
+file, and initializing the database, it's time to create your organization and
+your user.
 
-The `ADMIN_DOMAIN` realm is by default configured with the following settings:
-* `restricted_to_domain=True`: Only people with emails ending with @ADMIN_DOMAIN can join.
-* `invite_required=False`: An invitation is not required to join the realm.
-* `invite_by_admin_only=False`: You don't need to be an admin user to invite other users.
-* `mandatory_topics=False`: Users are not required to specify a topic when sending messages.
+## Create your organization and user
 
-If you would like to change these settings, you can do so using the
-Django management python shell (as the zulip user):
+You create your organization and user from the Zulip web app via a unique,
+one-time link you create with the Zulip management console, `manage.py`:
 
 ```
-cd /home/zulip/deployments/current
-./manage.py shell
-from zerver.models import *
-r = get_realm(settings.ADMIN_DOMAIN)
-r.restricted_to_domain=False # Now anyone anywhere can login
-r.save() # save to the database
+cd deployments/current
+./manage.py generate_realm_creation_link
 ```
 
-If you realize you set `ADMIN_DOMAIN` wrong, in addition to fixing the
-value in settings.py, you will also want to do a similar manage.py
-process to set `r.domain = "newexample.com"`.  If you've already
-changed `ADMIN_DOMAIN` in settings.py, you can use
-`Realm.objects.all()` in the management shell to find the list of
-realms and pass the domain of the realm that is not "zulip.com" to
-`get_realm`.
+Note: You always need to run `manage.py` as the Zulip user. To start an interactive
+shell as the Zulip user, use `sudo -u zulip -i`.
 
-Depending what authentication backend you're planning to use, you will
-need to do some additional setup documented in the `settings.py` template:
+Open the link generated with your web browser. You'll see the create realm
+(organization) page:
 
-* For Google authentication, you need to follow the configuration
-  instructions around `GOOGLE_OAUTH2_CLIENT_ID` and `GOOGLE_CLIENT_ID`.
+![Image of Zulip create realm page](images/zulip-create-realm.png)
 
-* For Email authentication, you will need to follow the configuration
-  instructions for outgoing SMTP from Django.  You can use `./manage.py
-  send_test_email username@example.com` to test whether you've
-  successfully configured outgoing SMTP.
+Enter your email address. You should use an address that matches the domain
+with which you want this realm (organization) to be associated.
 
-You should be able to login now.  If you get an error, check
-`/var/log/zulip/errors.log` for a traceback, and consult the next
-section for advice on how to debug.  If you aren't able to figure it
-out, email zulip-help@googlegroups.com with the traceback and we'll
-try to help you out!
+Once you provide your email address, click *Create organization* and you'll be
+emailed a confirmation link.
 
-You will likely want to make your own user account an admin user,
-which you can do via the following management command:
+![Image of Zulip confirmation link page](images/zulip-confirmation.png)
+
+Check your email and click this link. You'll be prompted to finish setting up
+your organization and your user:
+
+![Image of Zulip ](images/zulip-create-user-and-org.png)
+
+Complete this form and you'll be ready to log in!
+
+Your user will automatically have administrator access. You will have a special
+"Administration" tab linked to from the upper-right gear menu in the Zulip app
+that lets you deactivate other users, manage streams, change the Realm
+settings, etc.
+
+![Image of Zulip admin settings page](images/zulip-admin-settings.png)
+
+## Grant administrator access
+
+You can make any user an administrator on the command line with the `knight`
+management command:
 
 ```
 ./manage.py knight username@example.com -f
 ```
 
-Now that you are an administrator, you will have a special
-"Administration" tab linked to from the upper-right gear menu in the
-Zulip app that lets you deactivate other users, manage streams, change
-the Realm settings you may have edited using manage.py shell above,
-etc.
+### Creating api super users with manage.py
 
-You can also use `./manage.py knight` with the
-`--permission=api_super_user` argument to create API super users,
-which are needed to mirror messages to streams from other users for
-the IRC and Jabber mirroring integrations (see
-`bots/irc-mirror.py` and `bots/jabber_mirror.py` for some detail on these).
+If you need to manage IRC, Jabber, or Zephyr mirrors, you will need to create
+api super users. To do this, use `./manage.py knight` with the
+`--permission=api_super_user` argument
+
+(See `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
+these).
+
+## Making changes to realm settings
+
+If you would like to change the default realm settings, you can do so using the
+Django management python shell (as the zulip user; `sudo -u zulip -i`):
+
+```
+cd /home/zulip/deployments/current
+./manage.py shell
+from zerver.models import *
+r = get_realm("REALM_DOMAIN")
+r.restricted_to_domain=False # Now anyone anywhere can login
+r.save() # save to the database
+```
+
+You can use `Realm.objects.all()` in the management shell to find the list of
+realms and pass the domain of the realm that is not "zulip.com" to `get_realm`.
+
+## Other useful manage.py commands
 
 There are a large number of useful management commands under
 `zerver/manangement/commands/`; you can also see them listed using
@@ -81,6 +94,14 @@ with no UI in the Administration page is `./manage.py realm_filters`,
 which allows you to configure certain patterns in messages to be
 automatically linkified, e.g., whenever someone mentions "T1234", it
 could be auto-linkified to ticket 1234 in your team's Trac instance.
+
+## If you can't login
+
+If you get an error, check `/var/log/zulip/errors.log` for a traceback, and
+consult the next section for advice on how to debug.  If you aren't able to
+figure it out, email zulip-help@googlegroups.com with the traceback and we'll
+try to help you out!
+
 
 Next step: [Checking that Zulip is healthy and debugging the services
 it depends on](prod-health-check-debug.html).
