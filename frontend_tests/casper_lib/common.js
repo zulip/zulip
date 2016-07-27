@@ -83,7 +83,7 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    casper.start('http://localhost:9981/accounts/login', function () {
+    casper.start('http://127.0.0.1:9981/accounts/login', function () {
         exports.initialize_casper(viewport);
         log_in(credentials);
     });
