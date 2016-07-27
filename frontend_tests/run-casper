@@ -25,7 +25,7 @@ except ImportError as e:
 # on how to use remote debugging
 #
 
-os.environ["TORNADO_SERVER"] = "http://localhost:9983"
+os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
 
 usage = """%prog [options]
     test-js-with-casper # Run all test files
@@ -60,7 +60,7 @@ def server_is_up(server):
     assert_server_running(server)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
-        return requests.get('http://localhost:9981/accounts/home').status_code == 200
+        return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
     except:
         return False
 

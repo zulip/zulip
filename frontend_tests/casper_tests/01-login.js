@@ -1,7 +1,7 @@
 var common = require('../casper_lib/common.js').common;
 
 // Start of test script.
-casper.start('http://localhost:9981/', common.initialize_casper);
+casper.start('http://127.0.0.1:9981/', common.initialize_casper);
 
 casper.then(function () {
     casper.test.assertHttpStatus(302);
