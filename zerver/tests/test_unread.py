@@ -99,7 +99,7 @@ class UnreadCountTests(AuthedTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
 
-        result = self.client.post("/json/messages/flags",
+        result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps(self.unread_msg_ids),
                                    "op": "add",
                                    "flag": "read"})
@@ -113,7 +113,7 @@ class UnreadCountTests(AuthedTestCase):
                 found += 1
         self.assertEqual(found, 2)
 
-        result = self.client.post("/json/messages/flags",
+        result = self.client_post("/json/messages/flags",
                                   {"messages": ujson.dumps([self.unread_msg_ids[1]]),
                                    "op": "remove", "flag": "read"})
         self.assert_json_success(result)
@@ -134,12 +134,12 @@ class UnreadCountTests(AuthedTestCase):
                        self.send_message("hamlet@zulip.com", "cordelia@zulip.com",
                                          Recipient.PERSONAL, "test2")]
 
-        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
+        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
                                                                  "op": "add",
                                                                  "flag": "read"})
         self.assert_json_success(result)
 
-        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                  "op": "remove",
                                                                  "flag": "read",
                                                                  "all": ujson.dumps(True)})
@@ -159,7 +159,7 @@ class UnreadCountTests(AuthedTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+            result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                "op": "add",
                                                                "flag": "read",
                                                                "stream_name": "test_stream"})
@@ -194,7 +194,7 @@ class UnreadCountTests(AuthedTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         invalid_stream_name = ""
-        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                            "op": "add",
                                                            "flag": "read",
                                                            "stream_name": invalid_stream_name})
@@ -210,7 +210,7 @@ class UnreadCountTests(AuthedTestCase):
         unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello", "Denmark2")
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+            result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                                "op": "add",
                                                                "flag": "read",
                                                                "topic_name": "test_topic",
@@ -244,7 +244,7 @@ class UnreadCountTests(AuthedTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         invalid_topic_name = "abc"
-        result = self.client.post("/json/messages/flags", {"messages": ujson.dumps([]),
+        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                            "op": "add",
                                                            "flag": "read",
                                                            "topic_name": invalid_topic_name,
