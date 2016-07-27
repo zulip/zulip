@@ -109,7 +109,7 @@ class TestMissedPersonalMessageEmailMessages(AuthedTestCase):
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
                                                      "to": "othello@zulip.com"})
@@ -148,7 +148,7 @@ class TestMissedHuddleMessageEmailMessages(AuthedTestCase):
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
         # Iago and Othello will receive the message.
         self.login("othello@zulip.com")
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
                                                      "to": ujson.dumps(["cordelia@zulip.com",
@@ -196,7 +196,7 @@ class TestDigestEmailMessages(AuthedTestCase):
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
                                                      "client": "test suite",
                                                      "to": "othello@zulip.com"})

@@ -78,7 +78,7 @@ class TestGenerateRealmCreationLink(AuthedTestCase):
 
             # Create Realm with generated link
             self.assertIsNone(get_realm(domain))
-            result = self.client.post(generated_link, {'email': email})
+            result = self.client_post(generated_link, {'email': email})
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s@%s" % (username, domain)))

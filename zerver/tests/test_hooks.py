@@ -80,7 +80,7 @@ class JiraHookTests(WebhookTestCase):
         # type: () -> None
         url = self.build_webhook_url()
 
-        result = self.client.post(url,
+        result = self.client_post(url,
                                   self.get_body('unknown'),
                                   stream_name="jira",
                                   content_type="application/json")
@@ -301,7 +301,7 @@ class GithubV1HookTests(WebhookTestCase):
 
         prior_count = Message.objects.count()
 
-        result = self.client.post(self.URL_TEMPLATE, data)
+        result = self.client_post(self.URL_TEMPLATE, data)
         self.assert_json_success(result)
 
         after_count = Message.objects.count()
@@ -433,7 +433,7 @@ class GithubV2HookTests(WebhookTestCase):
 
         prior_count = Message.objects.count()
 
-        result = self.client.post(self.URL_TEMPLATE, data)
+        result = self.client_post(self.URL_TEMPLATE, data)
         self.assert_json_success(result)
 
         after_count = Message.objects.count()
@@ -1064,7 +1064,7 @@ class TeamcityHookTests(WebhookTestCase):
         # type: () -> None
         expected_message = u"Your personal build of Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbsdown:\nDetails: [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv), [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)"
         payload = ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, 'personal')))
-        self.client.post(self.url, payload, content_type="application/json")
+        self.client_post(self.url, payload, content_type="application/json")
         msg = self.get_last_message()
 
         self.assertEqual(msg.content, expected_message)
@@ -1408,7 +1408,7 @@ class CrashlyticsHookTests(WebhookTestCase):
         last_message_before_request = self.get_last_message()
         payload = self.get_body('verification')
         url = self.build_webhook_url()
-        result = self.client.post(url, payload, content_type="application/json")
+        result = self.client_post(url, payload, content_type="application/json")
         last_message_after_request = self.get_last_message()
         self.assert_json_success(result)
         self.assertEqual(last_message_after_request.pk, last_message_before_request.pk)

@@ -52,7 +52,7 @@ class StreamAdminTest(AuthedTestCase):
         params = {
             'stream_name': 'private_stream'
         }
-        result = self.client.post("/json/make_stream_public", params)
+        result = self.client_post("/json/make_stream_public", params)
         self.assert_json_error(result, 'You are not invited to this stream.')
 
         do_add_subscription(user_profile, stream)
@@ -61,7 +61,7 @@ class StreamAdminTest(AuthedTestCase):
         params = {
             'stream_name': 'private_stream'
         }
-        result = self.client.post("/json/make_stream_public", params)
+        result = self.client_post("/json/make_stream_public", params)
         self.assert_json_success(result)
         stream = Stream.objects.get(name='private_stream', realm=realm)
         self.assertFalse(stream.invite_only)
@@ -78,7 +78,7 @@ class StreamAdminTest(AuthedTestCase):
         params = {
             'stream_name': 'public_stream'
         }
-        result = self.client.post("/json/make_stream_private", params)
+        result = self.client_post("/json/make_stream_private", params)
         self.assert_json_success(result)
         stream = Stream.objects.get(name='public_stream', realm=realm)
         self.assertTrue(stream.invite_only)
@@ -139,7 +139,7 @@ class StreamAdminTest(AuthedTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+            result = self.client_post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
         self.assert_json_success(result)
 
         event = events[1]['event']
@@ -172,7 +172,7 @@ class StreamAdminTest(AuthedTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
 
-        result = self.client.post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        result = self.client_post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_change_stream_description(self):
@@ -288,7 +288,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertNotIn(deactivated_stream_name, public_streams)
 
         # Even if you could guess the new name, you can't subscribe to it.
-        result = self.client.post(
+        result = self.client_post(
             "/json/users/me/subscriptions",
             {"subscriptions": ujson.dumps([{"name": deactivated_stream_name}])})
         self.assert_json_error(
@@ -355,7 +355,7 @@ class StreamAdminTest(AuthedTestCase):
         if other_user_subbed:
             do_add_subscription(other_user_profile, stream, no_log=True)
 
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/remove",
             {"subscriptions": ujson.dumps([stream.name]),
              "principals": ujson.dumps([other_email])})
@@ -465,7 +465,7 @@ class StreamAdminTest(AuthedTestCase):
         stream_name = u"hümbüǵ"
         stream, _ = create_stream_if_needed(realm, stream_name)
 
-        result = self.client.post("/json/subscriptions/remove",
+        result = self.client_post("/json/subscriptions/remove",
                                   {"subscriptions": ujson.dumps([stream.name]),
                                    "principals": ujson.dumps(["baduser@zulip.com"])})
         self.assert_json_error(
@@ -548,7 +548,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         sub = old_subs[0]
         stream_name = sub['name']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "color",
                                                 "stream": stream_name,
@@ -581,7 +581,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@zulip.com"
         self.login(test_email)
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "color",
                                                 "value": "#ffffff"}])})
@@ -614,7 +614,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "color",
                                                 "stream": subs[0]["name"]}])})
@@ -636,7 +636,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         sub = old_subs[0]
         stream_name = sub['name']
         new_pin_to_top = not sub['pin_to_top']
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "pin_to_top",
                                                 "stream": stream_name,
@@ -659,7 +659,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
 
         property_name = "in_home_view"
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": "bad",
@@ -669,7 +669,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                '%s is not a boolean' % (property_name,))
 
         property_name = "desktop_notifications"
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": "bad",
@@ -679,7 +679,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                '%s is not a boolean' % (property_name,))
 
         property_name = "audible_notifications"
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": "bad",
@@ -689,7 +689,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                '%s is not a boolean' % (property_name,))
 
         property_name = "color"
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": False,
@@ -704,7 +704,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.login(test_email)
 
         stream_name = "invalid_stream"
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "in_home_view",
                                                 "stream": stream_name,
@@ -720,7 +720,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
-        result = self.client.post(
+        result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "bad",
                                                 "value": "bad",
@@ -1379,7 +1379,7 @@ class SubscriptionAPITest(AuthedTestCase):
          "removed": ["Denmark", "Scotland", "Verona"],
          "not_subscribed": ["Rome"], "result": "success"}
         """
-        result = self.client.post("/json/subscriptions/remove",
+        result = self.client_post("/json/subscriptions/remove",
                                   {"subscriptions": ujson.dumps(subscriptions)})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1420,7 +1420,7 @@ class SubscriptionAPITest(AuthedTestCase):
         random_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
         streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
-        result = self.client.post("/json/subscriptions/remove",
+        result = self.client_post("/json/subscriptions/remove",
                                   {"subscriptions": ujson.dumps(streams_to_remove)})
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
@@ -1432,7 +1432,7 @@ class SubscriptionAPITest(AuthedTestCase):
         subscribed values passed in as parameters. (If subscribed should not be
         present, pass in None.)
         """
-        result = self.client.post("/json/subscriptions/exists",
+        result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream})
         json = ujson.loads(result.content)
         self.assertIn("exists", json)
@@ -1484,7 +1484,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         # currently, the only invalid stream name is the empty string
         invalid_stream_name = ""
-        result = self.client.post("/json/subscriptions/exists",
+        result = self.client_post("/json/subscriptions/exists",
                                   {"stream": invalid_stream_name})
         self.assert_json_error(result, "Invalid characters in stream name")
 
@@ -1494,7 +1494,7 @@ class SubscriptionAPITest(AuthedTestCase):
         Call /json/subscriptions/exist on an existing stream and autosubscribe to it.
         """
         stream_name = self.streams[0]
-        result = self.client.post("/json/subscriptions/exists",
+        result = self.client_post("/json/subscriptions/exists",
                                   {"stream": stream_name, "autosubscribe": True})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1873,7 +1873,7 @@ class GetSubscribersTest(AuthedTestCase):
         json_get_subscribers also returns the list of subscribers for a stream.
         """
         stream_name = "unknown_stream"
-        result = self.client.post("/json/get_subscribers", {"stream": stream_name})
+        result = self.client_post("/json/get_subscribers", {"stream": stream_name})
         self.assert_json_error(result, "Stream does not exist: %s" % (stream_name,))
 
     def test_json_get_subscribers(self):
@@ -1884,7 +1884,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         expected_subscribers = gather_subscriptions(self.user_profile)[0][0]['subscribers']
-        result = self.client.post("/json/get_subscribers", {"stream": stream_name})
+        result = self.client_post("/json/get_subscribers", {"stream": stream_name})
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertIn('subscribers', result_dict)
