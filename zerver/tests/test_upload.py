@@ -61,13 +61,13 @@ class FileUploadTest(AuthedTestCase):
 
         # Download file via API
         self.client_post('/accounts/logout/')
-        response = self.client.get(uri, **auth_headers)
+        response = self.client_get(uri, **auth_headers)
         data = b"".join(response.streaming_content)
         self.assertEquals(b"zulip!", data)
 
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
-        response = self.client.get(uri)
+        response = self.client_get(uri)
         data = b"".join(response.streaming_content)
         self.assertEquals(b"zulip!", data)
 
@@ -118,7 +118,7 @@ class FileUploadTest(AuthedTestCase):
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
-        response = self.client.get(uri)
+        response = self.client_get(uri)
         data = b"".join(response.streaming_content)
         self.assertEquals(b"zulip!", data)
 
@@ -296,12 +296,12 @@ class AvatarTest(AuthedTestCase):
         cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
         with self.settings(ENABLE_GRAVATAR=True):
-            response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+            response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
             redirect_url = response['Location']
             self.assertEqual(redirect_url, avatar_url(cordelia) + '&foo=bar')
 
         with self.settings(ENABLE_GRAVATAR=False):
-            response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+            response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
             redirect_url = response['Location']
             self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
@@ -312,7 +312,7 @@ class AvatarTest(AuthedTestCase):
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
-        response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+        response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
@@ -323,7 +323,7 @@ class AvatarTest(AuthedTestCase):
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_SYSTEM
         cordelia.save()
-        response = self.client.get("/avatar/cordelia@zulip.com?foo=bar")
+        response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
@@ -334,7 +334,7 @@ class AvatarTest(AuthedTestCase):
         # but this test just validates the current code's behavior.
         self.login("hamlet@zulip.com")
 
-        response = self.client.get("/avatar/nonexistent_user@zulip.com?foo=bar")
+        response = self.client_get("/avatar/nonexistent_user@zulip.com?foo=bar")
         redirect_url = response['Location']
         actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&foo=bar'
         self.assertEqual(redirect_url, actual_url)
@@ -360,7 +360,7 @@ class AvatarTest(AuthedTestCase):
 
             if rfname is not None:
                 rfp = open(os.path.join(TEST_AVATAR_DIR, rfname), 'rb')
-                response = self.client.get(url)
+                response = self.client_get(url)
                 data = b"".join(response.streaming_content)
                 self.assertEquals(rfp.read(), data)
 
@@ -478,7 +478,7 @@ class S3Test(AuthedTestCase):
         base = '/user_uploads/'
         self.assertEquals(base, uri[:len(base)])
 
-        response = self.client.get(uri)
+        response = self.client_get(uri)
         redirect_url = response['Location']
 
         self.assertEquals(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
