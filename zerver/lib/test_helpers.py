@@ -60,14 +60,6 @@ API_KEYS = {} # type: Dict[text_type, text_type]
 skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
 
 @contextmanager
-def stub(obj, name, f):
-    # type: (Any, str, Callable[..., Any]) -> Generator[None, None, None]
-    old_f = getattr(obj, name)
-    setattr(obj, name, f)
-    yield
-    setattr(obj, name, old_f)
-
-@contextmanager
 def simulated_queue_client(client):
     # type: (type) -> Generator[None, None, None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
