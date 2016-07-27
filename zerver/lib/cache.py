@@ -313,12 +313,21 @@ def update_user_profile_caches(user_profiles):
         items_for_remote_cache[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
     cache_set_many(items_for_remote_cache)
 
+def delete_user_profile_caches(user_profiles):
+    # type: (Iterable[UserProfile]) -> None
+    keys = []
+    for user_profile in user_profiles:
+        keys.append(user_profile_by_email_cache_key(user_profile.email))
+        keys.append(user_profile_by_id_cache_key(user_profile.id))
+
+    cache_delete_many(keys)
+
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(sender, **kwargs):
     # type: (Any, **Any) -> None
     user_profile = kwargs['instance']
-    update_user_profile_caches([user_profile])
+    delete_user_profile_caches([user_profile])
 
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
@@ -345,7 +354,7 @@ def flush_realm(sender, **kwargs):
     # type: (Any, **Any) -> None
     realm = kwargs['instance']
     users = realm.get_active_users()
-    update_user_profile_caches(users)
+    delete_user_profile_caches(users)
 
     if realm.deactivated:
         cache_delete(active_user_dicts_in_realm_cache_key(realm))
