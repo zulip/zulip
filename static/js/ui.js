@@ -488,8 +488,7 @@ $(function () {
         $("#edit-message-hotkey-help").hide();
     }
 
-    // Some MIT-specific customizations
-    if (page_params.domain === 'mit.edu') {
+    if (page_params.presence_disabled) {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }

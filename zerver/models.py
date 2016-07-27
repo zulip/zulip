@@ -188,6 +188,11 @@ class Realm(ModelReprMixin, models.Model):
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
+    @property
+    def presence_disabled(self):
+        # type: () -> bool
+        return self.domain == "mit.edu"
+
     class Meta(object):
         permissions = (
             ('administer', "Administer a realm"),

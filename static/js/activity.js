@@ -216,8 +216,8 @@ function filter_and_sort(users) {
 exports._filter_and_sort = filter_and_sort;
 
 exports.update_users = function (user_list) {
-    if (page_params.domain === 'mit.edu') {
-        return;  // MIT realm doesn't have a presence list
+    if (page_params.presence_disabled) {
+        return;
     }
 
     var users = exports.presence_info;
@@ -278,8 +278,8 @@ function actually_update_users_for_search() {
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
 exports.update_huddles = function () {
-    if (page_params.domain === 'mit.edu') {
-        return;  // MIT realm doesn't have a presence list
+    if (page_params.presence_disabled) {
+        return;
     }
 
     var section = $('#group-pm-list').expectOne();
