@@ -2653,7 +2653,7 @@ def gather_subscriptions(user_profile):
 def get_status_dict(requesting_user_profile):
     # type: (UserProfile) -> Dict[text_type, Dict[text_type, Dict[str, Any]]]
     # Return no status info for MIT
-    if requesting_user_profile.realm.domain == 'mit.edu':
+    if requesting_user_profile.realm.presence_disabled:
         return defaultdict(dict)
 
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
