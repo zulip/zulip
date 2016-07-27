@@ -3472,7 +3472,7 @@ li.show-more-private-messages a {
     display: none;
 }
 
-.change-stream-privacy {
+.change-stream-privacy, .change-stream-mandatory-status {
     width: 100%;
     text-align: center;
 }

@@ -452,6 +452,7 @@ function populate_subscriptions(subs, subscribed) {
                                            desktop_notifications: elem.desktop_notifications,
                                            audible_notifications: elem.audible_notifications,
                                            pin_to_top: elem.pin_to_top,
+                                           mandatory: elem.mandatory,
                                            subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
@@ -1152,6 +1153,36 @@ $(function () {
             "Error making stream private",
             true
         );
+    });
+
+    $("#subscriptions_table").on("click", ".toggle-stream-mandatory", function (e) {
+
+        var stream_name = $(e.target).attr("data-stream-name");
+        var sub_row = $(e.target).closest('.subscription_row');
+
+        $("#subscriptions-status").hide();
+        var mandatory_status = !stream_data.get_sub(stream_name).mandatory;
+        var data = {
+            "stream_name": stream_name,
+            "mandatory_status": mandatory_status
+        };
+
+        channel.post({
+            url: "/json/change_mandatory_status",
+            data: data,
+            success: function (data) {
+                var sub = stream_data.get_sub(stream_name);
+                sub.mandatory = mandatory_status;
+                var feedback_div = sub_row.find(".change-stream-mandatory-feedback").expectOne();
+                ui.report_success(i18n.t("Updated mandatory stream status to ") + mandatory_status.toString(),
+                                    feedback_div);
+            },
+            error: function (xhr) {
+                var feedback_div = sub_row.find(".change-stream-mandatory-feedback").expectOne();
+                ui.report_error(i18n.t("Could not update mandatory status"),
+                                xhr, feedback_div);
+            }
+        });
     });
 
     $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {

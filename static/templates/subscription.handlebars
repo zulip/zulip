@@ -90,6 +90,17 @@
               <input type="submit" name="change-stream-description" value="{{t 'Change stream description' }}" class="btn btn-danger change-stream-description-button" tabindex="-1" />
             </form>
           </div>
+          <div class="change-stream-mandatory-status">
+            <button class="btn btn-danger toggle-stream-mandatory" data-stream-name="{{name}}" tabindex="-1">
+              {{#if mandatory}}
+              {{t "Make stream optional"}}
+              {{else}}
+              {{t "Make stream mandatory" }}
+              {{/if}}
+            </button>
+            <div class="change-stream-mandatory-feedback"></div>
+          </div>
+          <br/>
           <div class="change-stream-privacy">
             {{partial "change_stream_privacy"}}
           </div>
