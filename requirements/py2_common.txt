@@ -1,6 +1,6 @@
 -r common.txt
 
-enum34==1.0.4
+enum34==1.1.6
 
 # Used for Hesiod lookups, etc.
 pydns==2.3.6
