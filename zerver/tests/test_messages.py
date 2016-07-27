@@ -26,9 +26,12 @@ from zerver.lib.actions import (
     check_message, check_send_message,
     create_stream_if_needed,
     do_add_subscription, do_create_user,
+    get_client,
 )
 
 from zerver.lib.upload import create_attachment
+
+from zerver.views.messages import create_mirrored_message_users
 
 import datetime
 import DNS
@@ -899,6 +902,176 @@ class EditMessageTest(AuthedTestCase):
         self.check_message(id4, subject="topic2")
         self.check_message(id5, subject="edited")
         self.check_message(id6, subject="topic3")
+
+class MirroredMessageUsersTest(TestCase):
+    class Request(object):
+        pass
+
+    def test_invalid_sender(self):
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        recipients = []
+        request = self.Request()
+        request.POST = dict() # no sender
+
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user, recipients)
+
+        self.assertEqual(valid_input, False)
+        self.assertEqual(mirror_sender, None)
+
+    def test_invalid_client(self):
+        client = get_client(name='banned_mirror') # Invalid!!!
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        sender = user
+
+        recipients = []
+        request = self.Request()
+        request.POST = dict(
+            sender=sender.email,
+            type='private')
+        request.client = client
+
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user, recipients)
+
+        self.assertEqual(valid_input, False)
+        self.assertEqual(mirror_sender, None)
+
+    def test_invalid_email(self):
+        invalid_email = 'alice AT example.com'
+        recipients = [invalid_email]
+
+        # We use an MIT user here to maximize code coverage
+        user = get_user_profile_by_email('starnine@mit.edu')
+        sender = user
+
+        for client_name in ['zephyr_mirror', 'irc_mirror', 'jabber_mirror']:
+            client = get_client(name=client_name)
+
+            request = self.Request()
+            request.POST = dict(
+                sender=sender.email,
+                type='private')
+            request.client = client
+
+            (valid_input, mirror_sender) = \
+                create_mirrored_message_users(request, user, recipients)
+
+            self.assertEqual(valid_input, False)
+            self.assertEqual(mirror_sender, None)
+
+    def test_zephyr_mirror_new_recipient(self):
+        """Test mirror dummy user creation for PM recipients"""
+        client = get_client(name='zephyr_mirror')
+
+        user = get_user_profile_by_email('starnine@mit.edu')
+        sender = get_user_profile_by_email('sipbtest@mit.edu')
+        new_user_email = 'bob_the_new_user@mit.edu'
+
+        recipients = [user.email, new_user_email]
+
+        # Now make the request.
+        request = self.Request()
+        request.POST = dict(
+            sender=sender.email,
+            type='private')
+        request.client = client
+
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user, recipients)
+
+        self.assertTrue(valid_input)
+        self.assertEqual(mirror_sender, sender)
+
+        realm_users = UserProfile.objects.filter(realm=sender.realm)
+        realm_emails = {user.email for user in realm_users}
+        self.assertIn(user.email, realm_emails)
+        self.assertIn(new_user_email, realm_emails)
+
+        bob = get_user_profile_by_email(new_user_email)
+        self.assertTrue(bob.is_mirror_dummy)
+
+    def test_zephyr_mirror_new_sender(self):
+        """Test mirror dummy user creation for sender when sending to stream"""
+        client = get_client(name='zephyr_mirror')
+
+        user = get_user_profile_by_email('starnine@mit.edu')
+        sender_email = 'new_sender@mit.edu'
+
+        recipients = ['stream_name']
+
+        # Now make the request.
+        request = self.Request()
+        request.POST = dict(
+            sender=sender_email,
+            type='stream')
+        request.client = client
+
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user, recipients)
+
+        self.assertTrue(valid_input)
+        self.assertEqual(mirror_sender.email, sender_email)
+        self.assertTrue(mirror_sender.is_mirror_dummy)
+
+    def test_irc_mirror(self):
+        client = get_client(name='irc_mirror')
+
+        sender = get_user_profile_by_email('hamlet@zulip.com')
+        user = sender
+
+        recipients = ['alice@zulip.com', 'bob@irc.zulip.com', 'cordelia@zulip.com']
+
+        # Now make the request.
+        request = self.Request()
+        request.POST = dict(
+            sender=sender.email,
+            type='private')
+        request.client = client
+
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user, recipients)
+
+        self.assertEqual(valid_input, True)
+        self.assertEqual(mirror_sender, sender)
+
+        realm_users = UserProfile.objects.filter(realm=sender.realm)
+        realm_emails = {user.email for user in realm_users}
+        self.assertIn('alice@zulip.com', realm_emails)
+        self.assertIn('bob@irc.zulip.com', realm_emails)
+
+        bob = get_user_profile_by_email('bob@irc.zulip.com')
+        self.assertTrue(bob.is_mirror_dummy)
+
+    def test_jabber_mirror(self):
+        client = get_client(name='jabber_mirror')
+
+        sender = get_user_profile_by_email('hamlet@zulip.com')
+        user = sender
+
+        recipients = ['alice@zulip.com', 'bob@zulip.com', 'cordelia@zulip.com']
+
+        # Now make the request.
+        request = self.Request()
+        request.POST = dict(
+            sender=sender.email,
+            type='private')
+        request.client = client
+
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user, recipients)
+
+        self.assertEqual(valid_input, True)
+        self.assertEqual(mirror_sender, sender)
+
+        realm_users = UserProfile.objects.filter(realm=sender.realm)
+        realm_emails = {user.email for user in realm_users}
+        self.assertIn('alice@zulip.com', realm_emails)
+        self.assertIn('bob@zulip.com', realm_emails)
+
+        bob = get_user_profile_by_email('bob@zulip.com')
+        self.assertTrue(bob.is_mirror_dummy)
 
 class StarTests(AuthedTestCase):
 
