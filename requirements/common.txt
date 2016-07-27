@@ -24,10 +24,7 @@ SQLAlchemy==0.7.8
 boto==2.38.0
 
 certifi==2015.4.28
-cffi==1.5.2
 chardet==2.3.0
-
-cryptography==1.4
 
 # Needed for integrations
 defusedxml==0.4.1
@@ -61,10 +58,7 @@ google-api-python-client==1.4.0
 
 # Needed for the email mirror
 html2text==2015.6.6
-
 httplib2==0.9.1
-idna==2.0
-ipaddress==1.0.7
 
 # Needed for JWT-based auth
 jwt==0.3.2
@@ -87,12 +81,8 @@ postmonkey==1.0b0
 # Needed to access our database
 psycopg2==2.6
 
-# Python wrapper around OpenSSL
-pyOpenSSL==0.15.1
-
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
-pycparser==2.14
 pycrypto==2.6.1
 
 # Needed for memcached usage
