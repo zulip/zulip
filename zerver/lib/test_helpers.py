@@ -241,6 +241,9 @@ class AuthedTestCase(TestCase):
     def client_post(self, url, info={}, **kwargs):
         return self.client.post(url, info, **kwargs)
 
+    def client_get(self, url, info={}, **kwargs):
+        return self.client.get(url, info, **kwargs)
+
     def login_with_return(self, email, password=None):
         # type: (text_type, Optional[text_type]) -> HttpResponse
         if password is None:
@@ -323,7 +326,7 @@ class AuthedTestCase(TestCase):
         # type: (int, int, int) -> List[Dict[str, Any]]
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after}
-        result = self.client.get("/json/messages", dict(post_params))
+        result = self.client_get("/json/messages", dict(post_params))
         data = ujson.loads(result.content)
         return data['messages']
 

@@ -72,7 +72,7 @@ class TestGenerateRealmCreationLink(AuthedTestCase):
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Check realm creation page is accessible
-            result = self.client.get(generated_link)
+            result = self.client_get(generated_link)
             self.assertEquals(result.status_code, 200)
             self.assert_in_response(u"Let's get started…", result)
 
@@ -82,11 +82,11 @@ class TestGenerateRealmCreationLink(AuthedTestCase):
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s@%s" % (username, domain)))
-            result = self.client.get(result["Location"])
+            result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
             # Generated link used for creating realm
-            result = self.client.get(generated_link)
+            result = self.client_get(generated_link)
             self.assertEquals(result.status_code, 200)
             self.assert_in_response("The organization creation link has been expired or is not valid.", result)
 
@@ -94,7 +94,7 @@ class TestGenerateRealmCreationLink(AuthedTestCase):
         with self.settings(OPEN_REALM_CREATION=False):
             # Realm creation attempt with an invalid link should fail
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
-            result = self.client.get(random_link)
+            result = self.client_get(random_link)
             self.assertEquals(result.status_code, 200)
             self.assert_in_response("The organization creation link has been expired or is not valid.", result)
 
@@ -107,6 +107,6 @@ class TestGenerateRealmCreationLink(AuthedTestCase):
             obj.date_created = obj.date_created - timedelta(days=settings.REALM_CREATION_LINK_VALIDITY_DAYS + 1)
             obj.save()
 
-            result = self.client.get(generated_link)
+            result = self.client_get(generated_link)
             self.assertEquals(result.status_code, 200)
             self.assert_in_response("The organization creation link has been expired or is not valid.", result)

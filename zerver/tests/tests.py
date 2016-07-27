@@ -195,7 +195,7 @@ class PermissionTest(AuthedTestCase):
         do_change_is_admin(admin, True)
 
         # Make sure we see is_admin flag in /json/users
-        result = self.client.get('/json/users')
+        result = self.client_get('/json/users')
         self.assert_json_success(result)
         members = ujson.loads(result.content)['members']
         hamlet = find_dict(members, 'email', 'hamlet@zulip.com')
@@ -445,7 +445,7 @@ class ActivityTest(AuthedTestCase):
                 last_visit=last_visit
             )
         with queries_captured() as queries:
-            self.client.get('/activity')
+            self.client_get('/activity')
 
         self.assert_length(queries, 12)
 
@@ -535,7 +535,7 @@ class ActivateTest(AuthedTestCase):
 class BotTest(AuthedTestCase):
     def assert_num_bots_equal(self, count):
         # type: (int) -> None
-        result = self.client.get("/json/bots")
+        result = self.client_get("/json/bots")
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(count, len(json['bots']))
@@ -595,7 +595,7 @@ class BotTest(AuthedTestCase):
             event['event']
         )
 
-        users_result = self.client.get('/json/users')
+        users_result = self.client_get('/json/users')
         members = ujson.loads(users_result.content)['members']
         bots = [m for m in members if m['email'] == 'hambot-bot@zulip.com']
         self.assertEqual(len(bots), 1)
@@ -866,7 +866,7 @@ class BotTest(AuthedTestCase):
 
     def get_bot(self):
         # type: () -> Dict[str, Any]
-        result = self.client.get("/json/bots")
+        result = self.client_get("/json/bots")
         bots = ujson.loads(result.content)['bots']
         return bots[0]
 
@@ -1382,7 +1382,7 @@ class GetProfileTest(AuthedTestCase):
         user_profile = get_user_profile_by_email(email)
         self.send_message(email, "Verona", Recipient.STREAM, "hello")
 
-        result = self.client.get("/api/v1/users/me", **self.api_auth(email))
+        result = self.client_get("/api/v1/users/me", **self.api_auth(email))
 
         max_id = most_recent_message(user_profile).id
 
@@ -1439,7 +1439,7 @@ class GetProfileTest(AuthedTestCase):
     def test_get_all_profiles_avatar_urls(self):
         # type: () -> None
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
-        result = self.client.get("/api/v1/users", **self.api_auth('hamlet@zulip.com'))
+        result = self.client_get("/api/v1/users", **self.api_auth('hamlet@zulip.com'))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
@@ -1639,7 +1639,7 @@ class AlertWordTests(AuthedTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
 
-        result = self.client.get('/json/users/me/alert_words')
+        result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
 
         data = ujson.loads(result.content)
@@ -1653,7 +1653,7 @@ class AlertWordTests(AuthedTestCase):
         self.assert_json_success(result)
 
 
-        result = self.client.get('/json/users/me/alert_words')
+        result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
@@ -1668,7 +1668,7 @@ class AlertWordTests(AuthedTestCase):
         result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
         self.assert_json_success(result)
 
-        result = self.client.get('/json/users/me/alert_words')
+        result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['two', 'three'])
@@ -1683,7 +1683,7 @@ class AlertWordTests(AuthedTestCase):
         result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
         self.assert_json_success(result)
 
-        result = self.client.get('/json/users/me/alert_words')
+        result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
@@ -1703,7 +1703,7 @@ class AlertWordTests(AuthedTestCase):
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-        result = self.client.get('/json/users/me/alert_words')
+        result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
@@ -1826,7 +1826,7 @@ class HomeTest(AuthedTestCase):
         email = "hamlet@zulip.com"
 
         # Verify fails if logged-out
-        result = self.client.get('/')
+        result = self.client_get('/')
         self.assertEqual(result.status_code, 302)
 
         # Verify succeeds once logged-in
@@ -1834,7 +1834,7 @@ class HomeTest(AuthedTestCase):
         with \
                 patch('zerver.lib.actions.request_event_queue', return_value=42), \
                 patch('zerver.lib.actions.get_user_events', return_value=[]):
-            result = self.client.get('/', dict(stream='Denmark'))
+            result = self.client_get('/', dict(stream='Denmark'))
         html = result.content.decode('utf-8')
 
         for html_bit in html_bits:
