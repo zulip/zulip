@@ -94,18 +94,14 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
 APT_DEPENDENCIES = {
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.3",
+        "postgresql-9.3-tsearch-extras",
     ],
     "xenial": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.5",
+        "postgresql-9.5-tsearch-extras",
     ],
 }
 
-# tsearch-extras is an extension to postgres's built-in full-text search.
-# TODO: use a real APT repository
-TSEARCH_URL_PATTERN = "https://github.com/zulip/zulip-dist-tsearch-extras/raw/master/{}_{}_{}.deb?raw=1"
-TSEARCH_PACKAGE_NAME = "postgresql-%s-tsearch-extras" % (POSTGRES_VERSION,)
-TSEARCH_VERSION = "0.1.3"
-TSEARCH_URL = TSEARCH_URL_PATTERN.format(TSEARCH_PACKAGE_NAME, TSEARCH_VERSION, arch)
 TSEARCH_STOPWORDS_PATH = "/usr/share/postgresql/%s/tsearch_data/" % (POSTGRES_VERSION,)
 REPO_STOPWORDS_PATH = os.path.join(
     ZULIP_PATH,
@@ -158,13 +154,14 @@ def install_npm():
 
 def main():
     # type: () -> int
+
+    # npm install and management commands expect to be run from the root of the
+    # project.
+    os.chdir(ZULIP_PATH)
+
+    run(["sudo", "./scripts/lib/setup-apt-repo"])
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
-
-    if subprocess.call(['dpkg', '-s', TSEARCH_PACKAGE_NAME]):
-        temp_deb_path = subprocess_text_output(["mktemp", "package_XXXXXX.deb", "--tmpdir"])
-        run(["wget", "-O", temp_deb_path, TSEARCH_URL])
-        run(["sudo", "dpkg", "--install", temp_deb_path])
 
     if TRAVIS:
         if PY2:
@@ -194,10 +191,6 @@ def main():
         ])
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
-
-    # npm install and management commands expect to be run from the root of the
-    # project.
-    os.chdir(ZULIP_PATH)
 
     # create log directory `zulip/var/log`
     run(["mkdir", "-p", LOG_DIR_PATH])
