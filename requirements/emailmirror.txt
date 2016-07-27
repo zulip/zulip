@@ -2,4 +2,4 @@ git+https://github.com/mailgun/talon.git@7cdd7a8f35aa066d56af5c918b6f7dd6ee084ce
 cchardet==1.0.0
 cssselect==0.9.2
 lxml==3.6.0
-regex==2016.6.19
+regex==2016.7.21
