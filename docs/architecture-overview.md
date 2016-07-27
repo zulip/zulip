@@ -21,11 +21,11 @@ integrations with
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
 [Trello](https://github.com/zulip/trello-to-zulip); [node.js API
 bindings](https://github.com/zulip/zulip-node); and our [full-text
-search PostgreSQL extension](https://github.com/zulip/tsearch_extras) .
+search PostgreSQL extension](https://github.com/zulip/tsearch_extras).
 
 Our mobile clients are separate code repositories:
 [Android](https://github.com/zulip/zulip-android), [iOS
-(stable)](https://github.com/zulip/zulip-ios) , and [our experimental
+(stable)](https://github.com/zulip/zulip-ios), and [our experimental
 React Native iOS app](https://github.com/zulip/zulip-mobile). Our
 [desktop application](https://github.com/zulip/zulip-desktop) is also a
 separate repository.
@@ -44,7 +44,7 @@ similar groups ranging in size from a small team to more than a thousand
 users. It features real-time notifications, message persistence and
 search, public group conversations (*streams*), invite-only streams,
 private one-on-one and group conversations, inline image previews, team
-presence/a buddy list, a rich API, Markdown message support, and several
+presence/buddy list, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
 users who connect to Zulip using dedicated iOS, Android, Linux, Windows,
 and Mac OS X clients, as well as people using modern web browsers or
@@ -147,7 +147,7 @@ Tornado and Django are set up, as well as a number of background
 processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
 expensive (in terms of performance) and don't have to be synchronous
--- e.g., sending emails or updating analytics. Also see [the queuing
+--- e.g., sending emails or updating analytics. Also see [the queuing
 guide](queuing.html).
 
 ### memcached
