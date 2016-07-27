@@ -582,6 +582,9 @@ class Stream(ModelReprMixin, models.Model):
         max_length=32, default=generate_email_token_for_stream) # type: text_type
     description = models.CharField(max_length=1024, default=u'') # type: text_type
 
+    # User cannot mute or unsubscribe to stream by himself.
+    mandatory = models.BooleanField(default=False) # type: bool
+
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     deactivated = models.BooleanField(default=False) # type: bool
 
