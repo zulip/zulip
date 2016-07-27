@@ -10,8 +10,8 @@ Zulip community.  From when Zulip was released as open source in late
 September 2015 through today (mid-April, 2016), over 300 pull requests
 have been submitted to the various Zulip repositories (and over 250
 have been merged!), the vast majority of which are submitted by
-Zulip's users around the world (as opposed to the small core team who
-review and merge the pull requests).
+Zulip's users around the world (as opposed to the small core team that
+reviews and merges the pull requests).
 
 In any project, there can be a lot of value in periodically putting
 together a roadmap detailing the major areas where the project is
@@ -45,8 +45,8 @@ Without further ado, below is the Zulip 2016 roadmap.
 
 The top problem for the Zulip project is the state of the mobile apps.
 The Android app has started seeing rapid progress thanks to a series
-of contributions by Lisa Neigut of Recurse Center, and we believe to
-be on a good path.  The iOS app has fewer features than Android and
+of contributions by Lisa Neigut of Recurse Center, and we believe it
+is on a good path.  The iOS app has fewer features than Android and
 has more bugs, but more importantly is in need of an experienced iOS
 developer who has time to drive the project.
 
@@ -129,7 +129,7 @@ initial goal is working well with only 2GB of RAM).
 ## Performance
 
 Performance is essential for a communication tool.  While some things
-are already quite good (E.g. narrowing and message sending is speedy),
+are already quite good (e.g. narrowing and message sending is speedy),
 this is an area where one can always improve.  There are a few known
 performance opportunities:
 
@@ -163,7 +163,7 @@ of its size, it takes work to keep it that way.
 ## Deployment and upgrade process
 
 * <strike>[Support backwards-incompatible upgrades to Python libraries](https://github.com/zulip/zulip/issues/717)</strike>
-* [Minimize the downtime required in Zulip upgrade process](https://github.com/zulip/zulip/issues/646)
+* [Minimize the downtime required in the Zulip upgrade process](https://github.com/zulip/zulip/issues/646)
 
 ## Security
 
@@ -220,7 +220,8 @@ process and make bots that receive messages just as easy to build.
 ## Android app
 
 The Zulip Android app is ahead of the iOS app in terms of feature set,
-so this section serves to document the goals for Zulip on mobile.
+but there is still a lot of work to do. Most of the things listed below
+will eventually apply to the iOS app as well.
 
 * <strike>[Support using a non-zulip.com server](https://github.com/zulip/zulip-android/issues/1)</strike>
 * [Support Google authentication with a non-Zulip.com server](https://github.com/zulip/zulip-android/issues/49)
@@ -247,7 +248,7 @@ the app with more specific improvements.
 
 ## Desktop apps
 
-The top goal for the desktop apps is to rebuild it in modern toolchain
+The top goal for the desktop apps is to rebuild it in a modern toolchain
 (probably Electron) so that it's easy for a wide range of developers
 to contribute to the apps.
 

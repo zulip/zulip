@@ -6,7 +6,7 @@
   recommend against installing with less than 2GB of RAM**, as you will
   likely experience OOM issues.  In the future we expect Zulip's RAM
   requirements to decrease to support smaller installations (see
-  https://github.com/zulip/zulip/issues/32).
+  [https://github.com/zulip/zulip/issues/32](https://github.com/zulip/zulip/issues/32)).
 * At least 10GB of free disk for production use (more may be required
   if you intend to store uploaded files locally rather than in S3
   and your team uses that feature extensively)
@@ -26,8 +26,8 @@ following [these
 instructions](readme-symlink.html#installing-the-zulip-development-environment),
 since then you don't need to worry about setting up SSL certificates
 and an authentication mechanism.  Or, you can check out the
-[developers' chatroom (a public, running Zulip
-instance)](http://zulip.tabbott.net/).
+[developers' chatroom](http://zulip.tabbott.net/) (a public, running Zulip
+instance).
 
 For more details, see [full instructions for installing Zulip in
 production](prod-install.html).

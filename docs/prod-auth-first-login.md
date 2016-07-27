@@ -67,7 +67,7 @@ Zulip app that lets you deactivate other users, manage streams, change
 the Realm settings you may have edited using manage.py shell above,
 etc.
 
-You can also use `manage.py knight` with the
+You can also use `./manage.py knight` with the
 `--permission=api_super_user` argument to create API super users,
 which are needed to mirror messages to streams from other users for
 the IRC and Jabber mirroring integrations (see

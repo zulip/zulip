@@ -31,7 +31,7 @@ paths will be familiar to Django developers.
 
 * `zerver/lib/bugdown/` [Backend Markdown processor](markdown.html).
 
-* `zproject/backends.py` [Authenticate backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
+* `zproject/backends.py` [Authentication backends](https://docs.djangoproject.com/en/1.8/topics/auth/customizing/).
 
 -------------------------------------------------------------------
 
@@ -139,7 +139,7 @@ This is used to deploy essentially all configuration in production.
 
 * `confirmation` Email confirmation system.
 
-* `analytics` Analytics for Zulip server administrator (needs work to
+* `analytics` Analytics for the Zulip server administrator (needs work to
   be useful to normal Zulip sites).
 
 * `corporate` The old Zulip.com website.  Not included in production
