@@ -1,0 +1,18 @@
+#!/bin/bash
+set -x
+set -x
+
+apt-get install -y lsb-release
+
+# First, install any updates from the apt repo that may be needed
+wget -qO - https://zulip.com/dist/keys/zulip-ppa.asc | apt-key add -
+release=$(lsb_release -sc)
+if [ "$release" = "trusty" ] || [ "$release" = "xenial" ]; then
+    cat >/etc/apt/sources.list.d/zulip.list <<EOF
+deb http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
+deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
+EOF
+else
+    echo "Unsupported release $release."
+    exit 1
+fi
