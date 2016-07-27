@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
-    AuthedTestCase, queries_captured, stub, tornado_redirected_to_list
+    AuthedTestCase, queries_captured, tornado_redirected_to_list
 )
 
 from zerver.decorator import (
@@ -31,6 +31,7 @@ from zerver.lib.actions import (
 )
 
 from django.http import HttpResponse
+import mock
 import random
 import ujson
 import six
@@ -1111,16 +1112,16 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_user_settings_for_adding_streams(self):
         # type: () -> None
-        with stub(UserProfile, 'can_create_streams', lambda self: False):
+        with mock.patch('zerver.models.UserProfile.can_create_streams', return_value=False):
             result = self.common_subscribe_to_streams(self.test_email, ['stream1'])
             self.assert_json_error(result, 'User cannot create streams.')
 
-        with stub(UserProfile, 'can_create_streams', lambda self: True):
+        with mock.patch('zerver.models.UserProfile.can_create_streams', return_value=True):
             result = self.common_subscribe_to_streams(self.test_email, ['stream2'])
             self.assert_json_success(result)
 
         # User should still be able to subscribe to an existing stream
-        with stub(UserProfile, 'can_create_streams', lambda self: False):
+        with mock.patch('zerver.models.UserProfile.can_create_streams', return_value=False):
             result = self.common_subscribe_to_streams(self.test_email, ['stream2'])
             self.assert_json_success(result)
 
