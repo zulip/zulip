@@ -555,12 +555,6 @@ class PushDeviceToken(models.Model):
     # [optional] Contains the app id of the device if it is an iOS device
     ios_app_id = models.TextField(null=True) # type: Optional[text_type]
 
-class MitUser(models.Model):
-    email = models.EmailField(unique=True) # type: text_type
-    # status: whether an object has been confirmed.
-    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
-    status = models.IntegerField(default=0) # type: int
-
 def generate_email_token_for_stream():
     # type: () -> text_type
     return generate_random_token(32)

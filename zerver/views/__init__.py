@@ -22,7 +22,7 @@ from django.middleware.csrf import get_token
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
-    PreregistrationUser, get_client, MitUser, UserActivity, \
+    PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
@@ -89,7 +89,6 @@ def accounts_register(request):
     prereg_user = confirmation.content_object
     email = prereg_user.email
     realm_creation = prereg_user.realm_creation
-    mit_beta_user = isinstance(confirmation.content_object, MitUser)
     try:
         existing_user_profile = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -102,16 +101,14 @@ def accounts_register(request):
     if unique_open_realm is not None:
         realm = unique_open_realm
         domain = realm.domain
-    elif not mit_beta_user and prereg_user.referred_by:
+    elif prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
-        #
-        # MitUsers can't be referred and don't have a referred_by field.
         realm = prereg_user.referred_by.realm
         domain = realm.domain
         if not email_allowed_for_realm(email, realm):
             return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
-    elif not mit_beta_user and prereg_user.realm:
+    elif prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
         # happens if you sign up through a special URL for an open
         # realm.
@@ -694,11 +691,6 @@ def create_preregistration_user(email, request, realm_creation=False):
                                                   realm=get_realm(domain),
                                                   realm_creation=realm_creation)
 
-    # MIT users who are not explicitly signing up for an open realm
-    # require special handling (They may already have an (inactive)
-    # account, for example)
-    if split_email_to_domain(email) == "mit.edu":
-        return MitUser.objects.get_or_create(email=email)[0]
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
 def accounts_home_with_domain(request, domain):
