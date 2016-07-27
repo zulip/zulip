@@ -162,7 +162,7 @@ casper.waitForSelector("#default_language", function () {
     casper.test.info("Opening German page through i18n url.");
 });
 
-casper.thenOpen('http://localhost:9981/de/#settings');
+casper.thenOpen('http://127.0.0.1:9981/de/#settings');
 
 casper.waitForSelector("#settings-change-box", function check_url_preference() {
     casper.test.info("Checking the i18n url language precedence.");
