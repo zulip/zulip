@@ -90,8 +90,12 @@ class ConfirmationManager(models.Manager):
         })
         if additional_context is not None:
             context.update(additional_context)
+        if obj.realm is not None and obj.realm.is_zephyr_mirror_realm:
+            template_name = "mituser"
+        else:
+            template_name = obj._meta.model_name
         templates = [
-            'confirmation/%s_confirmation_email_subject.txt' % obj._meta.model_name,
+            'confirmation/%s_confirmation_email_subject.txt' % (template_name,),
             'confirmation/confirmation_email_subject.txt',
         ]
         if subject_template_path:
@@ -100,7 +104,7 @@ class ConfirmationManager(models.Manager):
             template = loader.select_template(templates)
         subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
         templates = [
-            'confirmation/%s_confirmation_email_body.txt' % obj._meta.model_name,
+            'confirmation/%s_confirmation_email_body.txt' % (template_name,),
             'confirmation/confirmation_email_body.txt',
         ]
         if body_template_path:
