@@ -1,2 +1,5 @@
 -r py2_common.txt
 -r dev.txt
+
+# Needed for running tools/run-dev.py
+-r twisted.txt
