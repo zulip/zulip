@@ -235,7 +235,7 @@ class DevFetchAPIKeyTest(AuthedTestCase):
 class DevGetEmailsTest(AuthedTestCase):
     def test_success(self):
         # type: () -> None
-        result = self.client.get("/api/v1/dev_get_emails")
+        result = self.client_get("/api/v1/dev_get_emails")
         self.assert_json_success(result)
         self.assert_in_response("direct_admins", result)
         self.assert_in_response("direct_users", result)
@@ -243,13 +243,13 @@ class DevGetEmailsTest(AuthedTestCase):
     def test_dev_auth_disabled(self):
         # type: () -> None
         with mock.patch('zerver.views.dev_auth_enabled', return_value=False):
-            result = self.client.get("/api/v1/dev_get_emails")
+            result = self.client_get("/api/v1/dev_get_emails")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
 class FetchAuthBackends(AuthedTestCase):
     def test_fetch_auth_backend_format(self):
         # type: () -> None
-        result = self.client.get("/api/v1/get_auth_backends")
+        result = self.client_get("/api/v1/get_auth_backends")
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(set(data.keys()),
@@ -261,7 +261,7 @@ class FetchAuthBackends(AuthedTestCase):
         # type: () -> None
         backends = [GoogleMobileOauth2Backend(), DevAuthBackend()]
         with mock.patch('django.contrib.auth.get_backends', return_value=backends):
-            result = self.client.get("/api/v1/get_auth_backends")
+            result = self.client_get("/api/v1/get_auth_backends")
             self.assert_json_success(result)
             data = ujson.loads(result.content)
             self.assertEqual(data, {
