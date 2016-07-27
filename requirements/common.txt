@@ -146,8 +146,5 @@ git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns-2.0.
 # Needed for Twitter card integration
 git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5
 
-# Needed for the email mirror and for running tools/run-dev.py
--r twisted.txt
-
 # Needed for the email mirror
 -r emailmirror.txt
