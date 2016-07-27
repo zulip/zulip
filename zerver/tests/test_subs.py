@@ -282,7 +282,7 @@ class StreamAdminTest(AuthedTestCase):
         self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
-        result = self.client.get("/json/streams?include_subscribed=false")
+        result = self.client_get("/json/streams?include_subscribed=false")
         public_streams = [s["name"] for s in ujson.loads(result.content)["streams"]]
         self.assertNotIn(active_name, public_streams)
         self.assertNotIn(deactivated_stream_name, public_streams)
@@ -599,7 +599,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
 
-        result = self.client.get(
+        result = self.client_get(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "in_home_view",
                                                 "stream": subs[0]["name"],
@@ -898,7 +898,7 @@ class SubscriptionAPITest(AuthedTestCase):
         Calling /api/v1/users/me/subscriptions should successfully return your subscriptions.
         """
         email = self.test_email
-        result = self.client.get("/api/v1/users/me/subscriptions", **self.api_auth(email))
+        result = self.client_get("/api/v1/users/me/subscriptions", **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
@@ -1559,7 +1559,7 @@ class GetPublicStreamsTest(AuthedTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
 
-        result = self.client.get("/json/streams?include_subscribed=false")
+        result = self.client_get("/json/streams?include_subscribed=false")
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1577,8 +1577,8 @@ class GetPublicStreamsTest(AuthedTestCase):
         self.login(email)
 
         # Check it correctly lists the user's subs with include_public=false
-        result = self.client.get("/api/v1/streams?include_public=false", **self.api_auth(email))
-        result2 = self.client.get("/api/v1/users/me/subscriptions", **self.api_auth(email))
+        result = self.client_get("/api/v1/streams?include_public=false", **self.api_auth(email))
+        result2 = self.client_get("/api/v1/users/me/subscriptions", **self.api_auth(email))
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1594,7 +1594,7 @@ class GetPublicStreamsTest(AuthedTestCase):
                          sorted([s["name"] for s in json2["subscriptions"]]))
 
         # Check it correctly lists all public streams with include_subscribed=false
-        result = self.client.get("/api/v1/streams?include_public=true&include_subscribed=false",
+        result = self.client_get("/api/v1/streams?include_public=true&include_subscribed=false",
                                  **self.api_auth(email))
         self.assert_json_success(result)
 
@@ -1605,7 +1605,7 @@ class GetPublicStreamsTest(AuthedTestCase):
                          sorted(all_streams))
 
         # Check non-superuser can't use include_all_active
-        result = self.client.get("/api/v1/streams?include_all_active=true",
+        result = self.client_get("/api/v1/streams?include_all_active=true",
                                  **self.api_auth(email))
         self.assertEqual(result.status_code, 400)
 
@@ -1639,7 +1639,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result1)
         result2 = self.common_subscribe_to_streams(email, ["Normandy"], invite_only=False)
         self.assert_json_success(result2)
-        result = self.client.get("/api/v1/users/me/subscriptions", **self.api_auth(email))
+        result = self.client_get("/api/v1/users/me/subscriptions", **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
@@ -1692,7 +1692,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
-        result = self.client.get("/api/v1/streams/%s/members" % (stream_name,),
+        result = self.client_get("/api/v1/streams/%s/members" % (stream_name,),
                                  **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1728,7 +1728,7 @@ class GetSubscribersTest(AuthedTestCase):
         # type: (text_type, Optional[str]) -> HttpResponse
         if email is None:
             email = self.email
-        return self.client.get("/api/v1/streams/%s/members" % (stream_name,),
+        return self.client_get("/api/v1/streams/%s/members" % (stream_name,),
                                **self.api_auth(email))
 
     def make_successful_subscriber_request(self, stream_name):

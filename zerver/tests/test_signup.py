@@ -31,7 +31,7 @@ from six.moves import range
 import six
 from six import text_type
 
-class PublicURLTest(TestCase):
+class PublicURLTest(AuthedTestCase):
     """
     Account creation URLs are accessible even when not logged in. Authenticated
     URLs redirect to a page.
@@ -92,7 +92,7 @@ class PublicURLTest(TestCase):
     def test_get_gcid_when_not_configured(self):
         # type: () -> None
         with self.settings(GOOGLE_CLIENT_ID=None):
-            resp = self.client.get("/api/v1/fetch_google_client_id")
+            resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
                 msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
             )
@@ -102,7 +102,7 @@ class PublicURLTest(TestCase):
     def test_get_gcid_when_configured(self):
         # type: () -> None
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
-            resp = self.client.get("/api/v1/fetch_google_client_id")
+            resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
                 msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
             )
@@ -223,7 +223,7 @@ class LoginTest(AuthedTestCase):
         self.assertEquals(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
                 "/accounts/send_confirm/%s@%s" % (username, domain)))
-        result = self.client.get(result["Location"])
+        result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
         # Visit the confirmation link.
@@ -237,7 +237,7 @@ class LoginTest(AuthedTestCase):
         else:
             raise ValueError("Couldn't find a confirmation email.")
 
-        result = self.client.get(confirmation_url)
+        result = self.client_get(confirmation_url)
         self.assertEquals(result.status_code, 200)
 
         # Pick a password and agree to the ToS.
@@ -246,7 +246,7 @@ class LoginTest(AuthedTestCase):
         self.assertTrue(result["Location"].endswith("/invite/"))
 
         # Invite other users to join you.
-        result = self.client.get(result["Location"])
+        result = self.client_get(result["Location"])
         self.assert_in_response("You're the first one here!", result)
 
         # Reset the outbox for our invites.
@@ -500,7 +500,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         unsubscribe_link = one_click_unsubscribe_link(user_profile,
                                                       "missed_messages")
-        result = self.client.get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
 
         self.assertEqual(result.status_code, 200)
         # Circumvent user_profile caching.
@@ -523,7 +523,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-        result = self.client.get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
 
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
@@ -550,7 +550,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
-        result = self.client.get(urllib.parse.urlparse(unsubscribe_link).path)
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
 
         # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
@@ -578,7 +578,7 @@ class RealmCreationTest(AuthedTestCase):
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s@%s" % (username, domain)))
-            result = self.client.get(result["Location"])
+            result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
             # Visit the confirmation link.
@@ -592,7 +592,7 @@ class RealmCreationTest(AuthedTestCase):
             else:
                 raise ValueError("Couldn't find a confirmation email.")
 
-            result = self.client.get(confirmation_url)
+            result = self.client_get(confirmation_url)
             self.assertEquals(result.status_code, 200)
 
             result = self.submit_reg_form_for_user(username, password, domain)
@@ -607,5 +607,5 @@ class RealmCreationTest(AuthedTestCase):
 
             self.assertTrue(result["Location"].endswith("/invite/"))
 
-            result = self.client.get(result["Location"])
+            result = self.client_get(result["Location"])
             self.assert_in_response("You're the first one here!", result)

@@ -88,7 +88,7 @@ class JsonTranslationTestCase(AuthedTestCase):
         mock_gettext.return_value = dummy_value
 
         self.login("hamlet@zulip.com")
-        result = self.client.get("/de/accounts/login/jwt/")
+        result = self.client_get("/de/accounts/login/jwt/")
 
         self.assert_json_error_contains(result,
                                         dummy_value,
