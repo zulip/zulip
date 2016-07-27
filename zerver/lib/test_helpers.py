@@ -234,6 +234,7 @@ def write_instrumentation_report():
                 line = ujson.dumps(call)
                 f.write(line + '\n')
         print('URL coverage report is in %s' % (fn,))
+        print('Try running: ./tools/analyze-url-coverage')
 
 class AuthedTestCase(TestCase):
     '''
