@@ -96,11 +96,11 @@ os.setpgrp()
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['python', 'manage.py', 'rundjango'] +
-          manage_args + ['localhost:%d' % (django_port,)],
+          manage_args + ['127.0.0.1:%d' % (django_port,)],
         ['python', '-u', 'manage.py', 'runtornado'] +
-          manage_args + ['localhost:%d' % (tornado_port,)],
+          manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
-        ['env', 'PGHOST=localhost', # Force password authentication using .pgpass
+        ['env', 'PGHOST=127.0.0.1', # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates']]
 if options.test:
     # Webpack doesn't support 2 copies running on the same system, so
@@ -123,13 +123,13 @@ class Resource(resource.Resource):
             request.uri.startswith('/json/events') or
             request.uri.startswith('/api/v1/events') or
             request.uri.startswith('/sockjs')):
-            return proxy.ReverseProxyResource('localhost', tornado_port, '/'+name)
+            return proxy.ReverseProxyResource('127.0.0.1', tornado_port, '/'+name)
 
         elif (request.uri.startswith('/webpack') or
               request.uri.startswith('/socket.io')):
-            return proxy.ReverseProxyResource('localhost', webpack_port, '/'+name)
+            return proxy.ReverseProxyResource('127.0.0.1', webpack_port, '/'+name)
 
-        return proxy.ReverseProxyResource('localhost', django_port, '/'+name)
+        return proxy.ReverseProxyResource('127.0.0.1', django_port, '/'+name)
 
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)
