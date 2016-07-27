@@ -37,35 +37,25 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import six
-from typing import Any
+from typing import Any, List, Generator
 
 from argparse import ArgumentParser
-import email
 import os
-from email.header import decode_header
 import logging
-import re
 import sys
 import posix
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import decode_email_address
-from zerver.lib.notifications import convert_html_to_markdown
-from zerver.lib.upload import upload_message_image
 from zerver.lib.queue import queue_json_publish
-from zerver.models import Stream, get_user_profile_by_email, UserProfile
 from zerver.lib.email_mirror import logger, process_message, \
     extract_and_validate, ZulipEmailForwardError, \
     mark_missed_message_address_as_used, is_missed_message_address
 
-from twisted.internet import protocol, reactor, ssl
-if six.PY2:
-    from twisted.mail import imap4
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../api"))
-import zulip
+import email
+from email.message import Message
+from imaplib import IMAP4_SSL
 
 ## Setup ##
 
@@ -78,71 +68,28 @@ file_handler.setFormatter(formatter)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
-## IMAP callbacks ##
-
-def logout(result, proto):
-    # Log out.
-    return proto.logout()
-
-def delete(result, proto):
-    # Close the connection, which also processes any flags that were
-    # set on messages.
-    return proto.close().addCallback(logout, proto)
-
-def fetch(result, proto, mailboxes):
-    if not result:
-        return proto.logout()
-
-    # Make sure we forward the messages in time-order.
-    message_uids = sorted(result.keys())
-    for uid in message_uids:
-        message = email.message_from_string(result[uid]["RFC822"])
-        process_message(message)
-    # Delete the processed messages from the Inbox.
-    message_set = ",".join([result[key]["UID"] for key in message_uids])
-    d = proto.addFlags(message_set, ["\\Deleted"], uid=True, silent=False)
-    d.addCallback(delete, proto)
-
-    return d
-
-def examine_mailbox(result, proto, mailbox):
-    # Fetch messages from a particular mailbox.
-    return proto.fetchMessage("1:*", uid=True).addCallback(fetch, proto, mailbox)
-
-def select_mailbox(result, proto):
-    # Select which mailbox we care about.
-    mbox = [x for x in result if settings.EMAIL_GATEWAY_IMAP_FOLDER in x[2]][0][2]
-    return proto.select(mbox).addCallback(examine_mailbox, proto, result)
-
-def list_mailboxes(res, proto):
-    # List all of the mailboxes for this account.
-    return proto.list("", "*").addCallback(select_mailbox, proto)
-
-def connected(proto):
-    d = proto.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
-    d.addCallback(list_mailboxes, proto)
-    d.addErrback(login_failed)
-    return d
-
-def login_failed(failure):
-    return failure
-
-def done(_):
-    # type: (Any) -> None
-    reactor.callLater(0, reactor.stop)
-
-py3_warning = "email-mirror is not available on python 3."
-
-def main():
-    # type: () -> None
-    if six.PY2:
-        imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
-        d = imap_client.connectSSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT,
-                                   ssl.ClientContextFactory())
-        d.addCallbacks(connected, login_failed)
-        d.addBoth(done)
-    else:
-        print(py3_warning)
+def get_imap_messages():
+    # type: () -> Generator[Message, None, None]
+    mbox = IMAP4_SSL(settings.EMAIL_GATEWAY_IMAP_SERVER, settings.EMAIL_GATEWAY_IMAP_PORT)
+    mbox.login(settings.EMAIL_GATEWAY_LOGIN, settings.EMAIL_GATEWAY_PASSWORD)
+    try:
+        mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
+        try:
+            status, num_ids_data = mbox.search(None, 'ALL') # type: bytes, List[bytes]
+            for msgid in num_ids_data[0].split():
+                status, msg_data = mbox.fetch(msgid, '(RFC822)')
+                msg_as_bytes = msg_data[0][1]
+                if six.PY2:
+                    message = email.message_from_string(msg_as_bytes)
+                else:
+                    message = email.message_from_bytes(msg_as_bytes)
+                yield message
+                mbox.store(msgid, '+FLAGS', '\\Deleted')
+            mbox.expunge()
+        finally:
+            mbox.close()
+    finally:
+        mbox.logout()
 
 class Command(BaseCommand):
     help = __doc__
@@ -154,9 +101,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        if six.PY3:
-            print(py3_warning)
-            return
         rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", options['recipient'])
         if rcpt_to is not None:
             if is_missed_message_address(rcpt_to):
@@ -175,7 +119,7 @@ class Command(BaseCommand):
 
             # Read in the message, at most 25MiB. This is the limit enforced by
             # Gmail, which we use here as a decent metric.
-            message = sys.stdin.read(25*1024*1024)
+            msg_text = sys.stdin.read(25*1024*1024)
 
             if len(sys.stdin.read(1)) != 0:
                 # We're not at EOF, reject large mail.
@@ -185,7 +129,7 @@ class Command(BaseCommand):
             queue_json_publish(
                     "email_mirror",
                     {
-                        "message": message,
+                        "message": msg_text,
                         "rcpt_to": rcpt_to
                     },
                     lambda x: None
@@ -198,5 +142,5 @@ class Command(BaseCommand):
                 print("Please configure the Email Mirror Gateway in /etc/zulip/, "
                       "or specify $ORIGINAL_RECIPIENT if piping a single mail.")
                 exit(1)
-            reactor.callLater(0, main)
-            reactor.run()
+            for message in get_imap_messages():
+                process_message(message)
