@@ -41,16 +41,18 @@ def get_registration_string(domain):
                                 'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
     return register_account_string
 
-def has_valid_realm(value):
-    # type: (str) -> bool
-    # Checks if there is a realm without invite_required
-    # matching the domain of the input e-mail.
+def get_valid_realm(value):
+    # type: (str) -> Optional[Realm]
+    """Checks if there is a realm without invite_required
+    matching the domain of the input e-mail."""
     realm = get_realm(resolve_email_to_domain(value))
-    return realm is not None and not realm.invite_required
+    if realm is None or realm.invite_required:
+        return None
+    return realm
 
 def not_mit_mailing_list(value):
     # type: (str) -> bool
-    # I don't want ec-discuss signed up for Zulip
+    """Prevent MIT mailing lists from signing up for Zulip"""
     if "@mit.edu" in value:
         username = value.rsplit("@", 1)[0]
         # Check whether the user exists and can get mail.
@@ -94,11 +96,33 @@ class HomepageForm(forms.Form):
 
     def clean_email(self):
         # type: () -> str
+        """Returns the email if and only if the user's email address is
+        allowed to join the realm they are trying to join."""
         data = self.cleaned_data['email']
-        if (get_unique_open_realm() or
-            completely_open(self.domain) or
-            (has_valid_realm(data) and not_mit_mailing_list(data))):
+        # If the server has a unique open realm, pass
+        if get_unique_open_realm():
             return data
+
+        # If a realm is specified and that realm is open, pass
+        if completely_open(self.domain):
+            return data
+
+        # If no realm is specified, fail
+        realm = get_valid_realm(data)
+        if realm is None:
+            raise ValidationError(mark_safe(SIGNUP_STRING))
+
+        # If it's a clear realm not used for Zephyr mirroring, pass
+        if not realm.is_zephyr_mirror_realm:
+            return data
+
+        # At this point, the user is trying to join a Zephyr mirroring
+        # realm.  We confirm that they are a real account (not a
+        # mailing list), and if so, let them in.
+        if not_mit_mailing_list(data):
+            return data
+
+        # Otherwise, the user is an MIT mailing list, and we return failure
         raise ValidationError(mark_safe(SIGNUP_STRING))
 
 class RealmCreationForm(forms.Form):
