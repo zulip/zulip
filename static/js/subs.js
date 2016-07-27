@@ -140,6 +140,9 @@ function update_in_home_view(sub, value) {
 
 exports.toggle_home = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
+    if (sub.mandatory === true && sub.in_home_view) {
+        return;
+    }
     update_in_home_view(sub, ! sub.in_home_view);
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
 };
