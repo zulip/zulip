@@ -1192,13 +1192,13 @@ def get_subscriber_emails(stream, requesting_user=None):
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
-def maybe_get_subscriber_emails(stream):
-    # type: (Stream) -> List[text_type]
+def maybe_get_subscriber_emails(stream, user_profile):
+    # type: (Stream, UserProfile) -> List[text_type]
     """ Alternate version of get_subscriber_emails that takes a Stream object only
     (not a name), and simply returns an empty list if unable to get a real
     subscriber list (because we're on the MIT realm). """
     try:
-        subscribers = get_subscriber_emails(stream)
+        subscribers = get_subscriber_emails(stream, requesting_user=user_profile)
     except JsonableError:
         subscribers = []
     return subscribers
@@ -1408,7 +1408,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         send_event(event, active_user_ids(user_profile.realm))
 
     if did_subscribe:
-        emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream)}
+        emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream, user_profile)}
         notify_subscriptions_added(user_profile, [(subscription, stream)],
                                    lambda stream: emails_by_stream[stream.id], no_log)
 
