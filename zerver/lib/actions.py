@@ -1192,17 +1192,6 @@ def get_subscriber_emails(stream, requesting_user=None):
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
-def get_subscriber_ids(stream):
-    # type: (Stream) -> List[int]
-    try:
-        subscriptions = get_subscribers_query(stream, None)
-    except JsonableError:
-        return []
-
-    rows = subscriptions.values('user_profile_id')
-    ids = [row['user_profile_id'] for row in rows]
-    return ids
-
 def maybe_get_subscriber_emails(stream):
     # type: (Stream) -> List[text_type]
     """ Alternate version of get_subscriber_emails that takes a Stream object only
