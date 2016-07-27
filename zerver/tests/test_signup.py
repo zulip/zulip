@@ -40,7 +40,7 @@ class PublicURLTest(TestCase):
     def fetch(self, method, urls, expected_status):
         # type: (str, List[str], int) -> None
         for url in urls:
-            response = getattr(self.client, method)(url) # e.g. self.client.post(url) if method is "post"
+            response = getattr(self.client, method)(url) # e.g. self.client_post(url) if method is "post"
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
                     expected_status, response.status_code, method, url))
@@ -177,7 +177,7 @@ class LoginTest(AuthedTestCase):
     def test_logout(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        self.client.post('/accounts/logout/')
+        self.client_post('/accounts/logout/')
         self.assertIsNone(get_session_dict_user(self.client.session))
 
     def test_non_ascii_login(self):
@@ -192,11 +192,11 @@ class LoginTest(AuthedTestCase):
         self.register("test", password)
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-        self.client.post('/accounts/logout/')
+        self.client_post('/accounts/logout/')
         self.assertIsNone(get_session_dict_user(self.client.session))
 
         # Logging in succeeds.
-        self.client.post('/accounts/logout/')
+        self.client_post('/accounts/logout/')
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -216,7 +216,7 @@ class LoginTest(AuthedTestCase):
         Realm.objects.create(domain=domain, name="Test Inc.")
 
         # Start the signup process by supplying an email address.
-        result = self.client.post('/accounts/home/', {'email': email})
+        result = self.client_post('/accounts/home/', {'email': email})
 
         # Check the redirect telling you to check your mail for a confirmation
         # link.
@@ -256,7 +256,7 @@ class LoginTest(AuthedTestCase):
         params = {
             'invitee_emails': ujson.dumps(invitees)
         }
-        result = self.client.post('/json/bulk_invite_users', params)
+        result = self.client_post('/json/bulk_invite_users', params)
         self.assert_json_success(result)
 
         # We really did email these users, and they have PreregistrationUser
@@ -284,7 +284,7 @@ class InviteUserTest(AuthedTestCase):
         streams should be a list of strings.
         """
 
-        return self.client.post("/json/invite_users",
+        return self.client_post("/json/invite_users",
                 {"invitee_emails": users,
                     "stream": streams})
 
@@ -303,7 +303,7 @@ class InviteUserTest(AuthedTestCase):
         params = {
             'invitee_emails': ujson.dumps(invitees)
         }
-        result = self.client.post('/json/bulk_invite_users', params)
+        result = self.client_post('/json/bulk_invite_users', params)
         self.assert_json_success(result)
         self.check_sent_emails(invitees)
 
@@ -370,7 +370,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(
-            self.client.post("/json/invite_users", {"invitee_emails": "foo@zulip.com"}),
+            self.client_post("/json/invite_users", {"invitee_emails": "foo@zulip.com"}),
             "You must specify at least one stream for invitees to join.")
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
@@ -396,7 +396,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(
-            self.client.post("/json/invite_users",
+            self.client_post("/json/invite_users",
                              {"invitee_emails": "hamlet@zulip.com",
                               "stream": ["Denmark"]}),
             "We weren't able to invite anyone.")
@@ -415,7 +415,7 @@ earl-test@zulip.com""", ["Denmark"]))
         existing = ["hamlet@zulip.com", "othello@zulip.com"]
         new = ["foo-test@zulip.com", "bar-test@zulip.com"]
 
-        result = self.client.post("/json/invite_users",
+        result = self.client_post("/json/invite_users",
                                   {"invitee_emails": "\n".join(existing + new),
                                    "stream": ["Denmark"]})
         self.assert_json_error(result,
@@ -574,7 +574,7 @@ class RealmCreationTest(AuthedTestCase):
 
         with self.settings(OPEN_REALM_CREATION=True):
             # Create new realm with the email
-            result = self.client.post('/create_realm/', {'email': email})
+            result = self.client_post('/create_realm/', {'email': email})
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s@%s" % (username, domain)))

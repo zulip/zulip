@@ -52,7 +52,7 @@ class FileUploadTest(AuthedTestCase):
 
         # Upload file via API
         auth_headers = self.api_auth('hamlet@zulip.com')
-        result = self.client.post('/api/v1/user_uploads', {'file': fp}, **auth_headers)
+        result = self.client_post('/api/v1/user_uploads', {'file': fp}, **auth_headers)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
@@ -60,7 +60,7 @@ class FileUploadTest(AuthedTestCase):
         self.assertEquals(base, uri[:len(base)])
 
         # Download file via API
-        self.client.post('/accounts/logout/')
+        self.client_post('/accounts/logout/')
         response = self.client.get(uri, **auth_headers)
         data = b"".join(response.streaming_content)
         self.assertEquals(b"zulip!", data)
@@ -82,7 +82,7 @@ class FileUploadTest(AuthedTestCase):
         fp2 = StringIO("pshaw!")
         fp2.name = "b.txt"
 
-        result = self.client.post("/json/upload_file", {'f1': fp, 'f2': fp2})
+        result = self.client_post("/json/upload_file", {'f1': fp, 'f2': fp2})
         self.assert_json_error(result, "You may only upload one file at a time")
 
     def test_no_file_upload_failure(self):
@@ -92,7 +92,7 @@ class FileUploadTest(AuthedTestCase):
         """
         self.login("hamlet@zulip.com")
 
-        result = self.client.post("/json/upload_file")
+        result = self.client_post("/json/upload_file")
         self.assert_json_error(result, "You must specify a file to upload")
 
     # This test will go through the code path for uploading files onto LOCAL storage
@@ -108,7 +108,7 @@ class FileUploadTest(AuthedTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
 
-        result = self.client.post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/upload_file", {'file': fp})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)
@@ -138,14 +138,14 @@ class FileUploadTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
-        result = self.client.post("/json/upload_file", {'file': d1})
+        result = self.client_post("/json/upload_file", {'file': d1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d1_path_id = re.sub('/user_uploads/', '', uri)
 
         d2 = StringIO("zulip!")
         d2.name = "dummy_2.txt"
-        result = self.client.post("/json/upload_file", {'file': d2})
+        result = self.client_post("/json/upload_file", {'file': d2})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d2_path_id = re.sub('/user_uploads/', '', uri)
@@ -177,7 +177,7 @@ class FileUploadTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         d1 = StringIO("zulip!")
         d1.name = "dummy_1.txt"
-        result = self.client.post("/json/upload_file", {'file': d1})
+        result = self.client_post("/json/upload_file", {'file': d1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         d1_path_id = re.sub('/user_uploads/', '', uri)
@@ -199,12 +199,12 @@ class FileUploadTest(AuthedTestCase):
         f3.name = "file3.txt"
 
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/upload_file", {'file': f1})
+        result = self.client_post("/json/upload_file", {'file': f1})
         json = ujson.loads(result.content)
         uri = json["uri"]
         f1_path_id = re.sub('/user_uploads/', '', uri)
 
-        result = self.client.post("/json/upload_file", {'file': f2})
+        result = self.client_post("/json/upload_file", {'file': f2})
         json = ujson.loads(result.content)
         uri = json["uri"]
         f2_path_id = re.sub('/user_uploads/', '', uri)
@@ -214,14 +214,14 @@ class FileUploadTest(AuthedTestCase):
                "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         msg_id = self.send_message("hamlet@zulip.com", "test", Recipient.STREAM, body, "test")
 
-        result = self.client.post("/json/upload_file", {'file': f3})
+        result = self.client_post("/json/upload_file", {'file': f3})
         json = ujson.loads(result.content)
         uri = json["uri"]
         f3_path_id = re.sub('/user_uploads/', '', uri)
 
         new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
                    "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
-        result = self.client.post("/json/update_message", {
+        result = self.client_post("/json/update_message", {
             'message_id': msg_id,
             'content': new_body
         })
@@ -238,7 +238,7 @@ class FileUploadTest(AuthedTestCase):
 
         # Delete all the attachments from the message
         new_body = "(deleted)"
-        result = self.client.post("/json/update_message", {
+        result = self.client_post("/json/update_message", {
             'message_id': msg_id,
             'content': new_body
         })
@@ -267,7 +267,7 @@ class AvatarTest(AuthedTestCase):
         fp1 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
         fp2 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
 
-        result = self.client.post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
+        result = self.client_post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     def test_no_file_upload_failure(self):
@@ -277,7 +277,7 @@ class AvatarTest(AuthedTestCase):
         """
         self.login("hamlet@zulip.com")
 
-        result = self.client.post("/json/set_avatar")
+        result = self.client_post("/json/set_avatar")
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     correct_files = [
@@ -350,7 +350,7 @@ class AvatarTest(AuthedTestCase):
             self.login("hamlet@zulip.com")
             fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
 
-            result = self.client.post("/json/set_avatar", {'file': fp})
+            result = self.client_post("/json/set_avatar", {'file': fp})
             self.assert_json_success(result)
             json = ujson.loads(result.content)
             self.assertIn("avatar_url", json)
@@ -374,7 +374,7 @@ class AvatarTest(AuthedTestCase):
             self.login("hamlet@zulip.com")
             fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
 
-            result = self.client.post("/json/set_avatar", {'file': fp})
+            result = self.client_post("/json/set_avatar", {'file': fp})
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
 
     def tearDown(self):
@@ -400,7 +400,7 @@ class LocalStorageTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
-        result = self.client.post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/upload_file", {'file': fp})
 
         json = ujson.loads(result.content)
         uri = json["uri"]
@@ -470,7 +470,7 @@ class S3Test(AuthedTestCase):
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
 
-        result = self.client.post("/json/upload_file", {'file': fp})
+        result = self.client_post("/json/upload_file", {'file': fp})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("uri", json)

@@ -19,7 +19,7 @@ class TranslationTestCase(AuthedTestCase):
     aware.
     """
 
-    # e.g. self.client.post(url) if method is "post"
+    # e.g. self.client_post(url) if method is "post"
     def fetch(self, method, url, expected_status, **kwargs):
         # type: (str, str, int, **Any) -> HttpResponse
         response = getattr(self.client, method)(url, **kwargs)
@@ -75,7 +75,7 @@ class JsonTranslationTestCase(AuthedTestCase):
         mock_gettext.return_value = dummy_value
 
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/refer_friend",
+        result = self.client_post("/json/refer_friend",
                                   HTTP_ACCEPT_LANGUAGE='de')
 
         self.assert_json_error_contains(result,

@@ -68,7 +68,7 @@ class RateLimitTests(AuthedTestCase):
 
     def send_api_message(self, email, api_key, content):
         # type: (text_type, text_type, text_type) -> HttpResponse
-        return self.client.post("/api/v1/send_message", {"type": "stream",
+        return self.client_post("/api/v1/send_message", {"type": "stream",
                                                                    "to": "Verona",
                                                                    "client": "test suite",
                                                                    "content": content,
@@ -133,7 +133,7 @@ class APNSTokenTests(AuthedTestCase):
         email = "cordelia@zulip.com"
         self.login(email)
 
-        result = self.client.post('/json/users/me/apns_device_token', {'token': "test_token"})
+        result = self.client_post('/json/users/me/apns_device_token', {'token': "test_token"})
         self.assert_json_success(result)
 
     def test_delete_token(self):
@@ -142,7 +142,7 @@ class APNSTokenTests(AuthedTestCase):
         self.login(email)
 
         token = "test_token"
-        result = self.client.post('/json/users/me/apns_device_token', {'token': token})
+        result = self.client_post('/json/users/me/apns_device_token', {'token': token})
         self.assert_json_success(result)
 
         result = self.client_delete('/json/users/me/apns_device_token', {'token': token})
@@ -154,7 +154,7 @@ class GCMTokenTests(AuthedTestCase):
         email = "cordelia@zulip.com"
         self.login(email)
 
-        result = self.client.post('/json/users/me/apns_device_token', {'token': "test_token"})
+        result = self.client_post('/json/users/me/apns_device_token', {'token': "test_token"})
         self.assert_json_success(result)
 
     def test_delete_token(self):
@@ -163,7 +163,7 @@ class GCMTokenTests(AuthedTestCase):
         self.login(email)
 
         token = "test_token"
-        result = self.client.post('/json/users/me/android_gcm_reg_id', {'token': token})
+        result = self.client_post('/json/users/me/android_gcm_reg_id', {'token': token})
         self.assert_json_success(result)
 
         result = self.client.delete('/json/users/me/android_gcm_reg_id', urllib.parse.urlencode({'token': token}))
@@ -174,9 +174,9 @@ class GCMTokenTests(AuthedTestCase):
         token = "test_token"
 
         self.login("cordelia@zulip.com")
-        result = self.client.post('/json/users/me/android_gcm_reg_id', {'token': token})
+        result = self.client_post('/json/users/me/android_gcm_reg_id', {'token': token})
         self.assert_json_success(result)
 
         self.login("hamlet@zulip.com")
-        result = self.client.post('/json/users/me/android_gcm_reg_id', {'token': token})
+        result = self.client_post('/json/users/me/android_gcm_reg_id', {'token': token})
         self.assert_json_success(result)

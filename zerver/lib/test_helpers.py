@@ -230,11 +230,14 @@ class AuthedTestCase(TestCase):
         encoded = urllib.parse.urlencode(info)
         return self.client.delete(url, encoded, **kwargs)
 
+    def client_post(self, url, info={}, **kwargs):
+        return self.client.post(url, info, **kwargs)
+
     def login_with_return(self, email, password=None):
         # type: (text_type, Optional[text_type]) -> HttpResponse
         if password is None:
             password = initial_password(email)
-        return self.client.post('/accounts/login/',
+        return self.client_post('/accounts/login/',
                                 {'username': email, 'password': password})
 
     def login(self, email, password=None, fails=False):
@@ -247,7 +250,7 @@ class AuthedTestCase(TestCase):
 
     def register(self, username, password, domain="zulip.com"):
         # type: (text_type, text_type, text_type) -> HttpResponse
-        self.client.post('/accounts/home/',
+        self.client_post('/accounts/home/',
                          {'email': username + "@" + domain})
         return self.submit_reg_form_for_user(username, password, domain=domain)
 
@@ -259,7 +262,7 @@ class AuthedTestCase(TestCase):
         If things are working correctly the account should be fully
         registered after this call.
         """
-        return self.client.post('/accounts/register/',
+        return self.client_post('/accounts/register/',
                                 {'full_name': username, 'password': password,
                                  'key': find_key_by_email(username + '@' + domain),
                                  'terms': True})
@@ -397,7 +400,7 @@ class AuthedTestCase(TestCase):
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
-        result = self.client.post("/api/v1/users/me/subscriptions", post_data, **self.api_auth(email))
+        result = self.client_post("/api/v1/users/me/subscriptions", post_data, **self.api_auth(email))
         return result
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
@@ -405,7 +408,7 @@ class AuthedTestCase(TestCase):
         if stream_name is not None:
             self.subscribe_to_stream(email, stream_name)
 
-        result = self.client.post(url, payload, **post_params)
+        result = self.client_post(url, payload, **post_params)
         self.assert_json_success(result)
 
         # Check the correct message was sent
