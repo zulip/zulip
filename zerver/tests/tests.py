@@ -465,7 +465,7 @@ class UserChangesTest(AuthedTestCase):
         self.login(email)
         user = get_user_profile_by_email(email)
         old_api_key = user.api_key
-        result = self.client.post('/json/users/me/api_key/regenerate')
+        result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = ujson.loads(result.content)['api_key']
         self.assertNotEqual(old_api_key, new_api_key)
@@ -495,7 +495,7 @@ class ActivateTest(AuthedTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertFalse(user.is_active)
 
-        result = self.client.post('/json/users/hamlet@zulip.com/reactivate')
+        result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_success(result)
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
@@ -515,7 +515,7 @@ class ActivateTest(AuthedTestCase):
         self.assert_json_error(result, 'No such user')
 
         # Can not reactivate a nonexistent user.
-        result = self.client.post('/json/users/nonexistent@zulip.com/reactivate')
+        result = self.client_post('/json/users/nonexistent@zulip.com/reactivate')
         self.assert_json_error(result, 'No such user')
 
     def test_api_with_insufficient_permissions(self):
@@ -529,7 +529,7 @@ class ActivateTest(AuthedTestCase):
         self.assert_json_error(result, 'Insufficient permission')
 
         # Can not reactivate a user
-        result = self.client.post('/json/users/hamlet@zulip.com/reactivate')
+        result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_error(result, 'Insufficient permission')
 
 class BotTest(AuthedTestCase):
@@ -547,7 +547,7 @@ class BotTest(AuthedTestCase):
             'short_name': 'hambot',
         }
         bot_info.update(extras)
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         return ujson.loads(result.content)
 
@@ -564,7 +564,7 @@ class BotTest(AuthedTestCase):
             full_name='',
             short_name='',
             )
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Bad name or username')
         self.assert_num_bots_equal(0)
 
@@ -613,7 +613,7 @@ class BotTest(AuthedTestCase):
             full_name='Duplicate',
             short_name='hambot',
             )
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Username already in use')
 
     def test_add_bot_with_user_avatar(self):
@@ -640,7 +640,7 @@ class BotTest(AuthedTestCase):
                 file1=fp1,
                 file2=fp2,
                 )
-            result = self.client.post("/json/bots", bot_info)
+            result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'You may only upload one file at a time')
         self.assert_num_bots_equal(0)
 
@@ -716,7 +716,7 @@ class BotTest(AuthedTestCase):
              'short_name': 'hambot',
              'default_sending_stream': 'Denmark',
          }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_add_bot_with_default_events_register_stream(self):
@@ -781,7 +781,7 @@ class BotTest(AuthedTestCase):
              'short_name': 'hambot',
              'default_events_register_stream': 'Denmark',
          }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_add_bot_with_default_all_public_streams(self):
@@ -855,7 +855,7 @@ class BotTest(AuthedTestCase):
         # Have Othello try to mess with Hamlet's bots.
         self.login("othello@zulip.com")
 
-        result = self.client.post("/json/bots/hambot-bot@zulip.com/api_key/regenerate")
+        result = self.client_post("/json/bots/hambot-bot@zulip.com/api_key/regenerate")
         self.assert_json_error(result, 'Insufficient permission')
 
         bot_info = {
@@ -876,7 +876,7 @@ class BotTest(AuthedTestCase):
         self.create_bot()
         bot = self.get_bot()
         old_api_key = bot['api_key']
-        result = self.client.post('/json/bots/hambot-bot@zulip.com/api_key/regenerate')
+        result = self.client_post('/json/bots/hambot-bot@zulip.com/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = ujson.loads(result.content)['api_key']
         self.assertNotEqual(old_api_key, new_api_key)
@@ -886,7 +886,7 @@ class BotTest(AuthedTestCase):
     def test_update_api_key_for_invalid_user(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        result = self.client.post('/json/bots/nonexistentuser@zulip.com/api_key/regenerate')
+        result = self.client_post('/json/bots/nonexistentuser@zulip.com/api_key/regenerate')
         self.assert_json_error(result, 'No such user')
 
     def test_patch_bot_full_name(self):
@@ -896,7 +896,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'full_name': 'Fred',
@@ -917,7 +917,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
         profile = get_user_profile_by_email('hambot-bot@zulip.com')
@@ -949,7 +949,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_sending_stream': 'Denmark',
@@ -970,7 +970,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_sending_stream': 'Rome',
@@ -991,7 +991,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_sending_stream': '',
@@ -1017,7 +1017,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
         bot_info = {
@@ -1044,7 +1044,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
         bot_info = {
@@ -1060,7 +1060,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_sending_stream': 'missing',
@@ -1075,7 +1075,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_events_register_stream': 'Denmark',
@@ -1101,7 +1101,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_events_register_stream': 'Denmark',
@@ -1127,7 +1127,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_events_register_stream': 'Denmark',
@@ -1142,7 +1142,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_events_register_stream': '',
@@ -1163,7 +1163,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_events_register_stream': 'missing',
@@ -1178,7 +1178,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_all_public_streams': ujson.dumps(True),
@@ -1199,7 +1199,7 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'default_all_public_streams': ujson.dumps(False),
@@ -1220,13 +1220,13 @@ class BotTest(AuthedTestCase):
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
-        result = self.client.post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_info = {
             'full_name': 'Fred',
             'method': 'PATCH'
         }
-        result = self.client.post("/json/bots/hambot-bot@zulip.com", bot_info)
+        result = self.client_post("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
         full_name = ujson.loads(result.content)['full_name']
@@ -1257,14 +1257,14 @@ class ChangeSettingsTest(AuthedTestCase):
         # type: (str, str) -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        json_result = self.client.post(pattern,
+        json_result = self.client_post(pattern,
                                        {param: ujson.dumps(True)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.assertEqual(getattr(user_profile, param), True)
 
-        json_result = self.client.post(pattern,
+        json_result = self.client_post(pattern,
                                        {param: ujson.dumps(False)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
@@ -1278,7 +1278,7 @@ class ChangeSettingsTest(AuthedTestCase):
         settings correctly and returns correct values.
         """
         self.login("hamlet@zulip.com")
-        json_result = self.client.post("/json/settings/change",
+        json_result = self.client_post("/json/settings/change",
             dict(
                 full_name='Foo Bar',
                 old_password=initial_password('hamlet@zulip.com'),
@@ -1291,7 +1291,7 @@ class ChangeSettingsTest(AuthedTestCase):
         self.check_well_formed_change_settings_response(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 full_name, "Foo Bar")
-        self.client.post('/accounts/logout/')
+        self.client_post('/accounts/logout/')
         self.login("hamlet@zulip.com", "foobar1")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
@@ -1330,7 +1330,7 @@ class ChangeSettingsTest(AuthedTestCase):
         new_password and confirm_password must match
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/settings/change",
+        result = self.client_post("/json/settings/change",
             dict(
                 new_password="mismatched_password",
                 confirm_password="not_the_same",
@@ -1345,7 +1345,7 @@ class ChangeSettingsTest(AuthedTestCase):
         new_password and confirm_password must match
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/settings/change",
+        result = self.client_post("/json/settings/change",
             dict(
                 old_password='bad_password',
                 new_password="ignored",
@@ -1362,7 +1362,7 @@ class ChangeSettingsTest(AuthedTestCase):
         probably use a patch interface for these changes.)
         """
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/settings/change",
+        result = self.client_post("/json/settings/change",
             dict(
                 old_password='ignored',
             )
@@ -1454,7 +1454,7 @@ class UserPresenceTests(AuthedTestCase):
     def test_get_empty(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/get_active_statuses")
+        result = self.client_post("/json/get_active_statuses")
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1477,16 +1477,16 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(list(json['presences'].keys()), ['hamlet@zulip.com'])
             return json['presences'][email][client]['timestamp']
 
-        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         test_result(result)
 
-        result = self.client.post("/json/get_active_statuses", {})
+        result = self.client_post("/json/get_active_statuses", {})
         timestamp = test_result(result)
 
         email = "othello@zulip.com"
         self.login(email)
-        self.client.post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client.post("/json/get_active_statuses", {})
+        self.client_post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
@@ -1500,8 +1500,8 @@ class UserPresenceTests(AuthedTestCase):
         self.login("hamlet@zulip.com")
         client = 'website'
 
-        self.client.post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client.post("/json/get_active_statuses", {})
+        self.client_post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/get_active_statuses", {})
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -1509,15 +1509,15 @@ class UserPresenceTests(AuthedTestCase):
 
         email = "othello@zulip.com"
         self.login("othello@zulip.com")
-        self.client.post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client.post("/json/get_active_statuses", {})
+        self.client_post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
 
-        self.client.post("/json/users/me/presence", {'status': 'active'})
-        result = self.client.post("/json/get_active_statuses", {})
+        self.client_post("/json/users/me/presence", {'status': 'active'})
+        result = self.client_post("/json/get_active_statuses", {})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'active')
@@ -1527,7 +1527,7 @@ class UserPresenceTests(AuthedTestCase):
         # type: () -> None
         """MIT never gets a list of users"""
         self.login("espuser@mit.edu")
-        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'], {})
@@ -1535,12 +1535,12 @@ class UserPresenceTests(AuthedTestCase):
     def test_same_realm(self):
         # type: () -> None
         self.login("espuser@mit.edu")
-        self.client.post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client.post("/accounts/logout/")
+        self.client_post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/accounts/logout/")
 
         # Ensure we don't see hamlet@zulip.com information leakage
         self.login("hamlet@zulip.com")
-        result = self.client.post("/json/users/me/presence", {'status': 'idle'})
+        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
@@ -1559,7 +1559,7 @@ class AlertWordTests(AuthedTestCase):
         params = {
             'alert_words': ujson.dumps(['milk', 'cookies'])
         }
-        result = self.client.post('/json/users/me/alert_words', params)
+        result = self.client_post('/json/users/me/alert_words', params)
         self.assert_json_success(result)
         user = get_user_profile_by_email(email)
         words = user_alert_words(user)
@@ -1680,7 +1680,7 @@ class AlertWordTests(AuthedTestCase):
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-        result = self.client.post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
+        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
         self.assert_json_success(result)
 
         result = self.client.get('/json/users/me/alert_words')
@@ -1860,7 +1860,7 @@ class MutedTopicsTests(AuthedTestCase):
 
         url = '/json/set_muted_topics'
         data = {'muted_topics': '[["stream", "topic"]]'}
-        result = self.client.post(url, data)
+        result = self.client_post(url, data)
         self.assert_json_success(result)
 
         user = get_user_profile_by_email(email)
@@ -1868,7 +1868,7 @@ class MutedTopicsTests(AuthedTestCase):
 
         url = '/json/set_muted_topics'
         data = {'muted_topics': '[["stream2", "topic2"]]'}
-        result = self.client.post(url, data)
+        result = self.client_post(url, data)
         self.assert_json_success(result)
 
         user = get_user_profile_by_email(email)

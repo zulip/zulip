@@ -412,7 +412,7 @@ class DeactivatedRealmTest(AuthedTestCase):
         realm = get_realm("zulip.com")
         do_deactivate_realm(get_realm("zulip.com"))
 
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
                                                      "to": "othello@zulip.com"})
@@ -425,13 +425,13 @@ class DeactivatedRealmTest(AuthedTestCase):
         realm.deactivated = True
         realm.save()
 
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
                                                      "to": "othello@zulip.com"})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
-        result = self.client.post("/api/v1/messages", {"type": "private",
+        result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
                                                        "client": "test suite",
                                                        "to": "othello@zulip.com"},
@@ -452,7 +452,7 @@ class DeactivatedRealmTest(AuthedTestCase):
         self.login(email)
         realm.deactivated = True
         realm.save()
-        result = self.client.post("/json/fetch_api_key", {"password": test_password})
+        result = self.client_post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
     def test_login_deactivated_realm(self):
@@ -474,7 +474,7 @@ class DeactivatedRealmTest(AuthedTestCase):
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         data = self.fixture_data('jira', "created")
-        result = self.client.post(url, data,
+        result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
@@ -518,14 +518,14 @@ class FetchAPIKeyTest(AuthedTestCase):
         email = "cordelia@zulip.com"
 
         self.login(email)
-        result = self.client.post("/json/fetch_api_key", {"password": initial_password(email)})
+        result = self.client_post("/json/fetch_api_key", {"password": initial_password(email)})
         self.assert_json_success(result)
 
     def test_fetch_api_key_wrong_password(self):
         email = "cordelia@zulip.com"
 
         self.login(email)
-        result = self.client.post("/json/fetch_api_key", {"password": "wrong_password"})
+        result = self.client_post("/json/fetch_api_key", {"password": "wrong_password"})
         self.assert_json_error_contains(result, "password is incorrect")
 
 class InactiveUserTest(AuthedTestCase):
@@ -539,7 +539,7 @@ class InactiveUserTest(AuthedTestCase):
         self.login(email)
         do_deactivate_user(user_profile)
 
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
                                                      "to": "othello@zulip.com"})
@@ -551,13 +551,13 @@ class InactiveUserTest(AuthedTestCase):
         user_profile.is_active = False
         user_profile.save()
 
-        result = self.client.post("/json/messages", {"type": "private",
+        result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
                                                      "client": "test suite",
                                                      "to": "othello@zulip.com"})
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
-        result = self.client.post("/api/v1/messages", {"type": "private",
+        result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
                                                        "client": "test suite",
                                                        "to": "othello@zulip.com"},
@@ -577,7 +577,7 @@ class InactiveUserTest(AuthedTestCase):
         self.login(email)
         user_profile.is_active = False
         user_profile.save()
-        result = self.client.post("/json/fetch_api_key", {"password": test_password})
+        result = self.client_post("/json/fetch_api_key", {"password": test_password})
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
     def test_login_deactivated_user(self):
@@ -604,7 +604,7 @@ class InactiveUserTest(AuthedTestCase):
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         data = self.fixture_data('jira', "created")
-        result = self.client.post(url, data,
+        result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
@@ -730,7 +730,7 @@ class TestAuthenticatedJsonPostViewDecorator(AuthedTestCase):
 
     def _do_test(self, user_email):
         data = {"status": '"started"'}
-        return self.client.post(r'/json/tutorial_status', data)
+        return self.client_post(r'/json/tutorial_status', data)
 
     def _login(self, user_email, password=None):
         if password:
