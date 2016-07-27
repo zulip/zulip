@@ -829,7 +829,7 @@ class Message(ModelReprMixin, models.Model):
         if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
-            domain = u"mit.edu/zephyr_mirror"
+            domain = u"zephyr_mirror"
         rendered_content = bugdown.convert(content, domain, self)
 
         self.is_me_message = Message.is_status_message(content, rendered_content)
