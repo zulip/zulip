@@ -642,7 +642,7 @@ PIPELINE = {
 JS_SPECS = {
     'common': {
         'source_filenames': (
-            'third/jquery/jquery-1.8.3.js',
+            'third/jquery/jquery-1.7.2.js',
             'third/underscore/underscore.js',
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
