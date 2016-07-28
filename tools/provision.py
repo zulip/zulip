@@ -13,7 +13,7 @@ PY2 = sys.version_info[0] == 2
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ZULIP_PATH)
-from zulip_tools import run, subprocess_text_output, OKBLUE, ENDC
+from zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 
 SUPPORTED_PLATFORMS = {
@@ -239,7 +239,11 @@ def main():
     install_npm()
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
-    setup_node_modules()
+    try:
+        setup_node_modules()
+    except subprocess.CalledProcessError:
+        print(WARNING + "`npm install` failed; retrying..." + ENDC)
+        setup_node_modules()
 
     print()
     print(OKBLUE + "Zulip development environent setup succeeded!" + ENDC)
