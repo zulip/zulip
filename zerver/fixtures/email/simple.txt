@@ -1,0 +1,7 @@
+To: {stream_to_address}
+From: {sender}
+Subject: Testing Email Mirror
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+This is a plain-text message for testing Zulip.
