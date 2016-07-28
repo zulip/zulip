@@ -254,14 +254,12 @@ class AdminCreateUserTest(AuthedTestCase):
         self.assert_json_error(result, "Missing 'email' argument")
 
         result = self.client_put("/json/users", dict(
-            user_profile=admin,
             email='romeo@not-zulip.com',
             )
         )
         self.assert_json_error(result, "Missing 'password' argument")
 
         result = self.client_put("/json/users", dict(
-            user_profile=admin,
             email='romeo@not-zulip.com',
             password='xxxx',
             )
@@ -269,7 +267,6 @@ class AdminCreateUserTest(AuthedTestCase):
         self.assert_json_error(result, "Missing 'full_name' argument")
 
         result = self.client_put("/json/users", dict(
-            user_profile=admin,
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
@@ -278,7 +275,6 @@ class AdminCreateUserTest(AuthedTestCase):
         self.assert_json_error(result, "Missing 'short_name' argument")
 
         result = self.client_put("/json/users", dict(
-            user_profile=admin,
             email='broken',
             password='xxxx',
             full_name='Romeo Montague',
@@ -288,7 +284,6 @@ class AdminCreateUserTest(AuthedTestCase):
         self.assert_json_error(result, "Bad name or username")
 
         result = self.client_put("/json/users", dict(
-            user_profile=admin,
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
@@ -300,7 +295,6 @@ class AdminCreateUserTest(AuthedTestCase):
 
         # HAPPY PATH STARTS HERE
         valid_params = dict(
-            user_profile=admin,
             email='romeo@zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
