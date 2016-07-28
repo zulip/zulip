@@ -39,7 +39,7 @@ These instructions should be followed as root.
   instructions for using it with Zulip (run it all as root):
 
   ```
-  sudo apt-get install -y git bc openssl
+  apt-get install -y git bc openssl
   git clone https://github.com/letsencrypt/letsencrypt /opt/letsencrypt
   cd /opt/letsencrypt
   ./letsencrypt-auto certonly --standalone
