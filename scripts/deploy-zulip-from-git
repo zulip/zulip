@@ -12,10 +12,10 @@ LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
 
 ZULIP_COM = config_file.get('machine', 'deploy_type') in ['zulip.com-prod',
                                                           'zulip.com-staging']
-if ZULIP_COM:
-    git_url = "git@git.zulip.net:eng/zulip.git"
-else:
+try:
     git_url = config_file.get('deployment', 'git_repo_url')
+except (configparser.NoSectionError, configparser.NoOptionError):
+    git_url = "https://github.com/zulip/zulip.git"
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
