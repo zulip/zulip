@@ -9,7 +9,7 @@ from django.test.signals import template_rendered
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
-    get_all_templates, write_instrumentation_report,
+    get_all_templates, write_instrumentation_reports,
     )
 
 import os
@@ -188,5 +188,5 @@ class Runner(DiscoverRunner):
         failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
         self.teardown_test_environment()
         if not failed:
-            write_instrumentation_report()
+            write_instrumentation_reports()
         return failed
