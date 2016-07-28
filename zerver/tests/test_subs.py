@@ -92,7 +92,7 @@ class StreamAdminTest(AuthedTestCase):
         do_add_subscription(user_profile, stream, no_log=True)
         do_change_is_admin(user_profile, True)
 
-        result = self.client.delete('/json/streams/new_stream')
+        result = self.client_delete('/json/streams/new_stream')
         self.assert_json_success(result)
         subscription_exists = Subscription.objects.filter(
             user_profile=user_profile,
@@ -111,7 +111,7 @@ class StreamAdminTest(AuthedTestCase):
         stream, _ = create_stream_if_needed(realm, 'new_stream')
         do_change_is_admin(user_profile, True)
 
-        result = self.client.delete('/json/streams/unknown_stream')
+        result = self.client_delete('/json/streams/unknown_stream')
         self.assert_json_error(result, 'No such stream name')
 
     def test_deactivate_stream_backend_requires_realm_admin(self):
@@ -123,7 +123,7 @@ class StreamAdminTest(AuthedTestCase):
         stream, _ = create_stream_if_needed(realm, 'new_stream')
         do_add_subscription(user_profile, stream, no_log=True)
 
-        result = self.client.delete('/json/streams/new_stream')
+        result = self.client_delete('/json/streams/new_stream')
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_rename_stream(self):
@@ -251,7 +251,7 @@ class StreamAdminTest(AuthedTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client.delete('/json/streams/' + active_name)
+            result = self.client_delete('/json/streams/' + active_name)
         self.assert_json_success(result)
 
         deletion_events = [e['event'] for e in events if e['event']['type'] == 'subscription']
@@ -323,7 +323,7 @@ class StreamAdminTest(AuthedTestCase):
         priv_stream = self.set_up_stream_for_deletion(
             "privstream", subscribed=False, invite_only=True)
 
-        result = self.client.delete('/json/streams/' + priv_stream.name)
+        result = self.client_delete('/json/streams/' + priv_stream.name)
         self.assert_json_error(
             result, "Cannot administer invite-only streams this way")
 
