@@ -225,16 +225,40 @@ def instrument_url(f):
             return result
         return wrapper
 
-def write_instrumentation_report():
+def write_instrumentation_reports():
+    # type: () -> None
     if INSTRUMENTING:
+        calls = INSTRUMENTED_CALLS
         var_dir = 'var' # TODO make sure path is robust here
         fn = os.path.join(var_dir, 'url_coverage.txt')
         with open(fn, 'w') as f:
-            for call in INSTRUMENTED_CALLS:
+            for call in calls:
                 line = ujson.dumps(call)
                 f.write(line + '\n')
+
         print('URL coverage report is in %s' % (fn,))
         print('Try running: ./tools/analyze-url-coverage')
+
+        # Find our untested urls.
+        from zproject.urls import urlpatterns
+        untested_patterns = []
+        for pattern in urlpatterns:
+            for call in calls:
+                url = call['url']
+                if url.startswith('/'):
+                    url = url[1:]
+                if pattern.regex.match(url):
+                    break
+            else:
+                untested_patterns.append(pattern.regex.pattern)
+
+        fn = os.path.join(var_dir, 'untested_url_report.txt')
+        with open(fn, 'w') as f:
+            f.write('untested urls\n')
+            for untested_pattern in sorted(untested_patterns):
+                f.write('  %s\n' % (untested_pattern,))
+        print('Untested-url report is in %s' % (fn,))
+
 
 class AuthedTestCase(TestCase):
     '''
