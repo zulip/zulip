@@ -244,6 +244,22 @@ for writing Casper tests in addition to the debugging notes below:
     <http://docs.casperjs.org/en/latest/modules/casper.html#waitforselector>
     and the various assert statements available are documented here:
     <http://docs.casperjs.org/en/latest/modules/tester.html#the-tester-prototype>
+-   'waitFor' functions cannot be chained together in certain
+    conditions. Mainly, when the wait can cause a race condition. This
+    includes functions that start with 'waitFor', like
+    `waitForSelector`. For example, don't do this:
+
+        casper.waitForSelector('tag 1');
+        casper.waitForSelector('tag 2');
+
+    Instead, if you want to avoid race condition, wrap the second
+    `waitFor` in a `then` function like this:
+
+        casper.waitForSelector('tag 1');
+        casper.then(function () {
+            casper.waitForSelector('tag 2');
+        });
+
 -   Casper uses CSS3 selectors; you can often save time by testing and
     debugging your selectors on the relevant page of the Zulip
     development app in the Chrome JavaScript console by using e.g.
