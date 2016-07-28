@@ -28,6 +28,8 @@ parser.add_argument("deploy_path", metavar="deploy_path",
                     help="Path to deployment directory")
 parser.add_argument("--skip-puppet", dest="skip_puppet", action='store_true',
                     help="Skip doing puppet/apt upgrades.")
+parser.add_argument("--skip-migrations", dest="skip_migrations", action='store_true',
+                    help="Skip doing migrations.")
 args = parser.parse_args()
 
 deploy_path = args.deploy_path
@@ -52,8 +54,9 @@ if not args.skip_puppet:
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
     subprocess.check_call(["apt-get", "upgrade"])
 
-logging.info("Applying database migrations...")
-subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
+if not args.skip_migrations:
+    logging.info("Applying database migrations...")
+    subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
 
 logging.info("Restarting Zulip...")
 subprocess.check_call(["cp", "-rT", os.path.join(deploy_path, 'prod-static/serve'),
