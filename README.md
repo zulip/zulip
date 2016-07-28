@@ -46,7 +46,9 @@ please skim our [commit message style guidelines][doc-commit-style].
 * **Testing**. The Zulip automated tests all run automatically when
 you submit a pull request, but you can also run them all in your
 development environment following the instructions in the [testing
-docs][doc-test].
+docs][doc-test]. You can also try out [our new desktop
+client][electron], which is in alpha; we'd appreciate testing and
+[feedback](https://github.com/zulip/zulip-electron/issues/new).
 
 * **Developer Documentation**.  Zulip has a growing collection of
 developer documentation on [Read The Docs][doc].  Recommended reading
@@ -64,8 +66,9 @@ zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
 app (including most integrations); the [desktop][], [Android][], and
-[iOS][] apps, are separate repositories, as is [our experimental React
-Native iOS app][ios-exp].
+[iOS][] apps, are separate repositories, as are our [experimental
+React Native iOS app][ios-exp] and [alpha Electron desktop
+app][electron].
 
 * **Glue code**. We maintain a [Hubot adapter][hubot-adapter] and several
 integrations ([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][],
@@ -84,6 +87,7 @@ contributing!
 [doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
 [doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [doc-test]: http://zulip.readthedocs.io/en/latest/testing.html
+[electron]: https://github.com/zulip/zulip-electron
 [gg-devel]: https://groups.google.com/forum/#!forum/zulip-devel
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
