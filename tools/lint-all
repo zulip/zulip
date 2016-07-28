@@ -278,6 +278,13 @@ python_rules = cast(RuleList, [
      'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
     {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
      'description': 'REQ\'s first argument already defaults to parameter name'},
+    {'pattern': 'self\.client\.(get|post|patch|put|delete)',
+     'exclude': set(['zilencer/tests.py']),
+     'description': '''
+        Do not call self.client directly for put/patch/post/get.
+        See WRAPPER_COMMENT in test_helpers.py
+        '''},
+
     ]) + whitespace_rules
 bash_rules = [
     {'pattern': '#!.*sh [-xe]',

@@ -204,12 +204,27 @@ class POSTRequestMock(object):
         self.META = {'PATH_INFO': 'test'}
 
 class AuthedTestCase(TestCase):
-    # Helper because self.client.patch annoying requires you to urlencode
+    '''
+    WRAPPER_COMMENT:
+
+    We wrap calls to self.client.{patch,put,get,post,delete} for various
+    reasons.  Some of this has to do with fixing encodings before calling
+    into the Django code.  Some of this has to do with providing a future
+    path for instrumentation.  Some of it's just consistency.
+
+    The linter will prevent direct calls to self.client.foo, so the wrapper
+    functions have to fake out the linter by using a local variable called
+    django_client to fool the regext.
+    '''
 
     def client_patch(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        """
+        We need to urlencode, since Django's function won't do it for us.
+        """
         encoded = urllib.parse.urlencode(info)
-        return self.client.patch(url, encoded, **kwargs)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.patch(url, encoded, **kwargs)
 
     def client_patch_multipart(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
@@ -222,7 +237,8 @@ class AuthedTestCase(TestCase):
         automatically, but not patch.)
         """
         encoded = encode_multipart(BOUNDARY, info)
-        return self.client.patch(
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.patch(
             url,
             encoded,
             content_type=MULTIPART_CONTENT,
@@ -231,18 +247,22 @@ class AuthedTestCase(TestCase):
     def client_put(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
-        return self.client.put(url, encoded, **kwargs)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.put(url, encoded, **kwargs)
 
     def client_delete(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
-        return self.client.delete(url, encoded, **kwargs)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.delete(url, encoded, **kwargs)
 
     def client_post(self, url, info={}, **kwargs):
-        return self.client.post(url, info, **kwargs)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.post(url, info, **kwargs)
 
     def client_get(self, url, info={}, **kwargs):
-        return self.client.get(url, info, **kwargs)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.get(url, info, **kwargs)
 
     def login_with_return(self, email, password=None):
         # type: (text_type, Optional[text_type]) -> HttpResponse
