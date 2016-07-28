@@ -11,6 +11,7 @@
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
       <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
     {% endif %}
+      <li><a href="#electron" data-toggle="tab">Cross-platform desktop</a></li>
       <li><a href="#mac" data-toggle="tab">Mac</a></li>
       <li><a href="#linux" data-toggle="tab">Linux</a></li>
       <li><a href="#windows" data-toggle="tab">Windows</a></li>
@@ -46,6 +47,35 @@
 
       </div>
       {% endif %}
+      <div class="tab-pane" id="electron">
+        <p>{% trans %}The beta version
+          of <a href="https://github.com/zulip/zulip-electron">our new
+          cross-platform desktop client</a> is ready for you to try
+          now, and should work on Mac, Windows, and Linux. (It's
+          implemented
+          in <a href="http://electron.atom.io/">Electron</a>, a
+          desktop app framework (maintained by GitHub) that uses
+          Chromium and Node.js, so in the future we'll be able to
+          concentrate on writing JavaScript instead of futzing with
+          Qt/WebKit and C++.){% endtrans %}</p>
+        <p>{% trans %}You'll have to install it using the command
+          line, and there might be some rough edges; if you run into
+          anything that doesn't feel
+          right, <a href="https://github.com/zulip/zulip-electron/issues/new">please
+          let us know</a>.{% endtrans %}</p>
+
+        <p style="text-align: center">
+          <a href="https://github.com/zulip/zulip-electron/"
+          class="btn btn-large btn-primary
+          btn-app-download"><i class="icon-vector-download"></i>
+          {% trans %}Download the beta of Zulip for desktop{% endtrans %}</a>
+        </p>
+
+        <img class="full-width-screenshot"
+        src="/static/images/app-screenshots/zulip-desktop-electron.png"
+        alt="screenshot of the cross-platform Zulip app" />
+      </div>
+
       <div class="tab-pane" id="mac">
         <p>{% trans %}You love your Mac. And you love Zulip. So what could be
         better than a Zulip app for Mac? Enjoy notifications for
