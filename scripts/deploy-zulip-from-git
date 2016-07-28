@@ -8,6 +8,7 @@ import logging
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
+LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
 
 ZULIP_COM = config_file.get('machine', 'deploy_type') in ['zulip.com-prod',
                                                           'zulip.com-staging']
@@ -20,7 +21,7 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
-    get_deployment_lock, release_deployment_lock
+    get_deployment_lock, release_deployment_lock, su_to_zulip
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
@@ -40,10 +41,20 @@ get_deployment_lock(error_rerun_script)
 
 try:
     deploy_path = make_deploy_path()
+    if not os.path.exists(LOCAL_GIT_CACHE_DIR):
+        os.chdir('/srv/')
+        logging.info("Cloning the repository")
+        subprocess.check_call(["git", "clone", "-q", git_url, "--mirror", LOCAL_GIT_CACHE_DIR],
+                              stdout=open('/dev/null', 'w'))
+        subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
 
-    logging.info("Cloning the repository")
-    subprocess.check_call(["git", "clone", "-q", "-b", refname, git_url, deploy_path],
-                          stdout=open('/dev/null', 'w'))
+    logging.info("Fetching the latest commits")
+    os.chdir(LOCAL_GIT_CACHE_DIR)
+    subprocess.check_call(["git", "fetch", "-q"], preexec_fn=su_to_zulip)
+
+    subprocess.check_call(["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
+                          stdout=open('/dev/null', 'w'),
+                          preexec_fn=su_to_zulip)
 
     os.chdir(deploy_path)
 
