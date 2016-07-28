@@ -1,7 +1,15 @@
 #!/bin/bash
 # Checks for any Zulip queue workers that are leaking memory and thus have a high vsize
 datafile=$(mktemp)
-ps -o vsize,size,pid,user,command --sort -vsize $(pgrep -f '^python.* /home/zulip/deployments/current/manage.py process_queue') > "$datafile"
+
+# We expect other Nagios checks to monitor for whether no queue
+# workers are running, so we give that condition a pass
+processes=$(pgrep -f '^python.* /home/zulip/deployments/current/manage.py process_queue')
+if [ -z "$processes" ]; then
+    echo "No workers running"
+    exit 0
+fi
+ps -o vsize,size,pid,user,command --sort -vsize $processes > "$datafile"
 cat "$datafile"
 top_worker=$(cat "$datafile" | head -n2 | tail -n1)
 top_worker_memory_usage=$(echo "$top_worker" | cut -f1 -d" ")
