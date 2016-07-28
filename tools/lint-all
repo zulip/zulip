@@ -242,7 +242,7 @@ python_rules = cast(RuleList, [
     {'pattern': '\Wjson_error\(_\(?\w+\)',
      'exclude': set(['tools/lint-all']),
      'description': 'Argument to json_error should be a literal string enclosed by _()'},
-    {'pattern': '\Wjson_error\([^_].+\)',
+    {'pattern': '\Wjson_error\([^_].+[),]$',
      'exclude': set(['tools/lint-all']),
      'exclude_line': set([
          # function definition
