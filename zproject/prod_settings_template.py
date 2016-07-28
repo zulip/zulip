@@ -222,7 +222,7 @@ EMAIL_GATEWAY_PATTERN = ""
 # form username+%s@example.com (which is what you will set as
 # EMAIL_GATEWAY_PATTERN); your email provider should deliver those
 # emails to the username@example.com inbox.  Then you run in a cron
-# job `./manage.py email-mirror` (see puppet/zulip/files/cron.d/email-mirror),
+# job `./manage.py email_mirror` (see puppet/zulip/files/cron.d/email-mirror),
 # which will check that inbox and batch-process any new messages.
 #
 # You will need to configure authentication for the email mirror
