@@ -11,7 +11,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient,
+    Recipient, get_realm,
 )
 
 from zerver.lib.actions import (
@@ -35,6 +35,12 @@ import time
 import re
 import ujson
 import mock
+import os
+import sys
+from os.path import dirname, abspath
+from six.moves import cStringIO as StringIO
+
+from typing import Any, Callable, Mapping, Union
 
 
 class TestStreamEmailMessagesSuccess(AuthedTestCase):
@@ -282,3 +288,36 @@ class TestReplyExtraction(AuthedTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, 'Reply')
+
+MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email")
+
+class TestCommandMTA(TestCase):
+
+    @mock.patch('zerver.lib.queue.queue_json_publish')
+    def test_success(self, mock_queue_json_publish):
+        # type: (mock.Mock) -> None
+
+        sender = "hamlet@zulip.com"
+        stream = get_stream("Denmark", get_realm("zulip.com"))
+        stream_to_address = encode_email_address(stream)
+
+        template_path = os.path.join(MAILS_DIR, "simple.txt")
+        with open(template_path) as template_file:
+            mail_template = template_file.read()
+        mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
+
+        def check_queue_json_publish(queue_name, event, processor):
+            # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None]) -> None
+            self.assertEqual(queue_name, "email_mirror")
+            self.assertEqual(event, {"rcpt_to": stream_to_address, "message": mail})
+        mock_queue_json_publish.side_effect = check_queue_json_publish
+
+        original_stdin = sys.stdin
+        try:
+            sys.stdin = StringIO(mail)
+
+            from zerver.management.commands import email_mirror
+            command = email_mirror.Command()
+            command.handle(recipient=stream_to_address)
+        finally:
+            sys.stdin = original_stdin
