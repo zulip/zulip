@@ -66,7 +66,7 @@ function populate_users (realm_people_data) {
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
 }
 
-function populate_streams (streams_data) {
+function populate_streams(streams_data) {
     var streams_table = $("#admin_streams_table").expectOne();
     all_streams = streams_data;
     streams_table.find("tr.stream_row").remove();
@@ -94,7 +94,7 @@ function get_non_default_streams_names(streams_data) {
 
     _.each(streams_data.streams, function (stream) {
         if (default_streams_names.indexOf(stream.name) < 0) {
-           non_default_streams_names.push(stream.name);
+            non_default_streams_names.push(stream.name);
         }
     });
     return non_default_streams_names;
@@ -131,8 +131,12 @@ exports.populate_emoji = function (emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
     _.each(emoji_data, function (data, name) {
-        emoji_table.append(templates.render('admin_emoji_list', {emoji: {name: name, source_url: data.source_url,
-                                                                         display_url: data.display_url}}));
+        emoji_table.append(templates.render('admin_emoji_list', {
+            emoji: {
+                name: name, source_url: data.source_url,
+                display_url: data.display_url
+            }
+        }));
     });
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
@@ -143,10 +147,10 @@ exports.reset_realm_default_language = function () {
 
 function _setup_page() {
     var options = {
-        realm_name:                 page_params.realm_name,
-        domain:                     page_params.domain,
+        realm_name: page_params.realm_name,
+        domain: page_params.domain,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
-        realm_invite_required:      page_params.realm_invite_required,
+        realm_invite_required: page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
