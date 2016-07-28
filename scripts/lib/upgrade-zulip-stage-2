@@ -5,6 +5,7 @@
 # always run from the new version of Zulip, so any bug fixes take
 # effect on the very next upgrade.
 from __future__ import print_function
+import argparse
 import subprocess
 import os
 import sys
@@ -22,11 +23,12 @@ if os.getuid() != 0:
     logging.error("Must be run as root.")
     sys.exit(1)
 
-if len(sys.argv) != 2:
-    print(FAIL + "Usage: %s <deploy path>" % (sys.argv[0],) + ENDC)
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("deploy_path", metavar="deploy_path",
+                    help="Path to deployment directory")
+args = parser.parse_args()
 
-deploy_path = sys.argv[1]
+deploy_path = args.deploy_path
 
 logging.info("Upgrading system packages...")
 subprocess.check_call(["apt-get", "update"])
