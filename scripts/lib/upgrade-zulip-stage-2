@@ -45,9 +45,11 @@ subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-produ
 if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
    subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
-logging.info("Stopping Zulip...")
-subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
-                       "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
+if not (args.skip_puppet and args.skip_migrations):
+    # If we're running either puppet or migrations, we shut the server down for the duration
+    logging.info("Stopping Zulip...")
+    subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
+                           "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
 
 if not args.skip_puppet:
     logging.info("Applying puppet changes...")
