@@ -13,7 +13,7 @@ PY2 = sys.version_info[0] == 2
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.append(ZULIP_PATH)
-from zulip_tools import run, subprocess_text_output
+from zulip_tools import run, subprocess_text_output, OKBLUE, ENDC
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 
 SUPPORTED_PLATFORMS = {
@@ -240,6 +240,9 @@ def main():
     # Run npm install last because it can be flaky, and that way one
     # only needs to rerun `npm install` to fix the installation.
     setup_node_modules()
+
+    print()
+    print(OKBLUE + "Zulip development environent setup succeeded!" + ENDC)
     return 0
 
 if __name__ == "__main__":
