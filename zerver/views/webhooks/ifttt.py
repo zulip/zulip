@@ -20,6 +20,6 @@ def api_iftt_app_webhook(request, user_profile, client,
     if subject is None:
         return json_error(_("Subject can't be empty"))
     if content is None:
-        return json_error(_("Body can't be empty"))
+        return json_error(_("Content can't be empty"))
     check_send_message(user_profile, client, "stream", [stream], subject, content)
     return json_success()
