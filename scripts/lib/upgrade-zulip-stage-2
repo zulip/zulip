@@ -26,13 +26,16 @@ if os.getuid() != 0:
 parser = argparse.ArgumentParser()
 parser.add_argument("deploy_path", metavar="deploy_path",
                     help="Path to deployment directory")
+parser.add_argument("--skip-puppet", dest="skip_puppet", action='store_true',
+                    help="Skip doing puppet/apt upgrades.")
 args = parser.parse_args()
 
 deploy_path = args.deploy_path
 
-logging.info("Upgrading system packages...")
-subprocess.check_call(["apt-get", "update"])
-subprocess.check_call(["apt-get", "-y", "upgrade"])
+if not args.skip_puppet:
+    logging.info("Upgrading system packages...")
+    subprocess.check_call(["apt-get", "update"])
+    subprocess.check_call(["apt-get", "-y", "upgrade"])
 
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
                        os.path.join(deploy_path, "zulip-venv")])
@@ -44,9 +47,10 @@ logging.info("Stopping Zulip...")
 subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
                        "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
 
-logging.info("Applying puppet changes...")
-subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
-subprocess.check_call(["apt-get", "upgrade"])
+if not args.skip_puppet:
+    logging.info("Applying puppet changes...")
+    subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
+    subprocess.check_call(["apt-get", "upgrade"])
 
 logging.info("Applying database migrations...")
 subprocess.check_call(["./manage.py", "migrate", "--noinput"], preexec_fn=su_to_zulip)
