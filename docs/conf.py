@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Zulip'
-copyright = u'2015, The Zulip Team'
+copyright = u'2015-2016, The Zulip Team'
 author = u'The Zulip Team'
 
 # The version info for the project you're documenting, acts as replacement for
