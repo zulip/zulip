@@ -166,7 +166,7 @@ class GCMTokenTests(AuthedTestCase):
         result = self.client_post('/json/users/me/android_gcm_reg_id', {'token': token})
         self.assert_json_success(result)
 
-        result = self.client.delete('/json/users/me/android_gcm_reg_id', urllib.parse.urlencode({'token': token}))
+        result = self.client_delete('/json/users/me/android_gcm_reg_id', {'token': token})
         self.assert_json_success(result)
 
     def test_change_user(self):
