@@ -796,7 +796,7 @@ ZULIP_PATHS = [
     ("WORKER_LOG_PATH", "/var/log/zulip/workers.log"),
     ("PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.pickle"),
     ("JSON_PERSISTENT_QUEUE_FILENAME", "/home/zulip/tornado/event_queues.json"),
-    ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email-mirror.log"),
+    ("EMAIL_MIRROR_LOG_PATH", "/var/log/zulip/email_mirror.log"),
     ("EMAIL_DELIVERER_LOG_PATH", "/var/log/zulip/email-deliverer.log"),
     ("LDAP_SYNC_LOG_PATH", "/var/log/zulip/sync_ldap_user_data.log"),
     ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
