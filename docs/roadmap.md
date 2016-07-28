@@ -248,13 +248,18 @@ the app with more specific improvements.
 
 ## Desktop apps
 
-The top goal for the desktop apps is to rebuild it in a modern toolchain
-(probably Electron) so that it's easy for a wide range of developers
-to contribute to the apps.
+The top goal for the desktop apps is to rebuild it in a modern
+toolchain so that it's easy for a wide range of developers to
+contribute to the apps. The new [cross-platform
+app](https://github.com/zulip/zulip-electron) is implemented in
+[Electron](http://electron.atom.io/), a framework (maintained by
+GitHub) that uses Chromium and Node.js, so Zulip developers only need
+to write HTML, CSS, and JavaScript. The new Zulip app is in alpha as of
+early August 2016.
 
 * Migrate platform from QT/webkit to Electron
 * Desktop app doesn't recover well from entering the wrong Zulip server
-* Support having multiple Zulip realms open simultaneously
+* [Support having multiple Zulip realms open simultaneously](https://github.com/zulip/zulip-electron/issues/1)
 * Build an efficient process for testing and releasing new versions of
   the desktop apps
 
