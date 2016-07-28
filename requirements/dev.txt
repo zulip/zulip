@@ -4,7 +4,7 @@
 -r py3k.txt
 
 # Needed to compute test coverage
-coverage==4.0.3
+coverage==4.2
 
 # Needed to run pyflakes linter
 pyflakes==1.2.3
