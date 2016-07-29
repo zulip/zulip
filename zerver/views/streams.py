@@ -89,10 +89,12 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
 
 class PrincipalError(JsonableError):
     def __init__(self, principal, status_code=403):
+        # type: (text_type, int) -> None
         self.principal = principal # type: text_type
         self.status_code = status_code # type: int
 
     def to_json_error_msg(self):
+        # type: () -> text_type
         return ("User not authorized to execute queries on behalf of '%s'"
                 % (self.principal,))
 
