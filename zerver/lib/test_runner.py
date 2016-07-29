@@ -72,18 +72,13 @@ def report_slow_tests():
 
 def enforce_timely_test_completion(test_method, test_name, delay):
     # type: (Any, str, float) -> None
-    if hasattr(test_method, 'expected_run_time'):
-        # Allow for tests to run 50% slower than normal due
-        # to random variations.
-        max_delay = 1.5 * test_method.expected_run_time
+    if hasattr(test_method, 'slowness_reason'):
+        max_delay = 1.1 # seconds
     else:
-        max_delay = 0.180 # seconds
-
-    # Further adjustments for slow laptops:
-    max_delay = max_delay * 3
+        max_delay = 0.4 # seconds
 
     if delay > max_delay:
-        print('Test is TOO slow: %s (%.3f s)' % (test_name, delay))
+        print(' ** Test is TOO slow: %s (%.3f s)' % (test_name, delay))
 
 def fast_tests_only():
     # type: () -> bool
