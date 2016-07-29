@@ -28,9 +28,11 @@ page under 'Display Settings' section.
 All the translation magic happens through resource files which hold
 the translated text. Backend resource files are located at
 `static/locale/<lang_code>/LC_MESSAGES/django.po`, while frontend
-resource files are localted at `static/locale/<lang_code>/translations.json`.
-These files are uploaded to Transifex where they are translated. Once
-translated, they are downloaded back into the codebase.
+resource files are located at
+`static/locale/<lang_code>/translations.json`.  These files are
+uploaded to Transifex using `tx push`, where they can be
+translated. Once translated, they are downloaded back into the
+codebase using `tx pull`.
 
 ## Transifex Config
 
