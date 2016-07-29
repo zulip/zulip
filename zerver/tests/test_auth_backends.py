@@ -18,7 +18,7 @@ from zerver.models import \
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend, GitHubBackend
+    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend
 
 from social.strategies.django_strategy import DjangoStrategy
 from social.storage.django_orm import BaseDjangoStorage
@@ -160,15 +160,15 @@ class AuthBackendTest(TestCase):
         email = 'hamlet@zulip.com'
         good_kwargs = dict(response=dict(email=email), return_data=dict())
         bad_kwargs = dict()  # type: Dict[str, str]
-        self.verify_backend(GitHubBackend(),
+        self.verify_backend(GitHubAuthBackend(),
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
 
-class GitHubBackendTest(AuthedTestCase):
+class GitHubAuthBackendTest(AuthedTestCase):
     def setUp(self):
         self.email = 'hamlet@zulip.com'
         self.name = 'Hamlet'
-        self.backend = GitHubBackend()
+        self.backend = GitHubAuthBackend()
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
         self.user_profile = get_user_profile_by_email(self.email)
         self.user_profile.backend = self.backend

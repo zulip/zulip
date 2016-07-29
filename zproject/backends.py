@@ -59,7 +59,7 @@ def common_get_active_user_by_email(email, return_data=None):
 
 def github_auth_enabled():
     for backend in django.contrib.auth.get_backends():
-        if isinstance(backend, GitHubBackend):
+        if isinstance(backend, GitHubAuthBackend):
             return True
     return False
 
@@ -267,7 +267,7 @@ class DevAuthBackend(ZulipAuthMixin):
     def authenticate(self, username, return_data=None):
         return common_get_active_user_by_email(username, return_data=return_data)
 
-class GitHubBackend(SocialAuthMixin, GithubOAuth2):
+class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     def get_email_address(self, *args, **kwargs):
         try:
             return kwargs['response']['email']
@@ -282,5 +282,5 @@ class GitHubBackend(SocialAuthMixin, GithubOAuth2):
 
     def do_auth(self, *args, **kwargs):
         kwargs['return_data'] = {}
-        user_profile = super(GitHubBackend, self).do_auth(*args, **kwargs)
+        user_profile = super(GitHubAuthBackend, self).do_auth(*args, **kwargs)
         return self.process_do_auth(user_profile, *args, **kwargs)
