@@ -5,17 +5,31 @@ Zulip supports several different authentications methods:
 * `EmailAuthBackend` - Email/password authentication.
 * `ZulipLDAPAuthBackend` - LDAP username/password authentication.
 * `GoogleMobileOauth2Backend` - Google authentication.
+* `GitHubAuthBackend` - GitHub authentication.
 * `ZulipRemoteUserBackend` - Authentication using an existing
   Single-Sign-On (SSO) system that can set REMOTE_USER in Apache.
 * `DevAuthBackend` - Only for development, passwordless login as any user.
-* Likely more coming (e.g. there's work on [GitHub auth](https://github.com/zulip/zulip/issues/1042)).
+
+It's easy to add more, see the docs on python-social-auth below.
 
 The setup documentation for most of these is simple enough that we've
 included it inline in `/etc/zulip/settings.py`, right above to the
 settings used to configure them.  The remote user authentication
 backend is more complex since it requires interfacing with a generic
 third-party authentication system, and so we've documented it in
-detail here.
+detail below.
+
+## Adding additional methods using python-social-auth
+
+The implementation for GitHubAuthBackend is a small wrapper around the
+popular [python-social-auth] library.  So if you'd like to integrate
+Zulip with another authentication provider (e.g. Facebook, Twitter,
+etc.), you can do this by writing a class similar to
+`GitHubAuthBackend` in `zproject/backends.py` and adding a few
+settings.  Pull requests to add new backends are welcome; they should
+be tested using the framework in `test_auth_backends.py`.
+
+[python-social-auth]: http://psa.matiasaguirre.net/
 
 ## Remote User SSO Authentication
 
