@@ -71,6 +71,7 @@ class TranslationTestCase(AuthedTestCase):
 class JsonTranslationTestCase(AuthedTestCase):
     @mock.patch('zerver.lib.request._')
     def test_json_error(self, mock_gettext):
+        # type: (Any) -> None
         dummy_value = "Some other language '%s'"
         mock_gettext.return_value = dummy_value
 
@@ -84,6 +85,7 @@ class JsonTranslationTestCase(AuthedTestCase):
 
     @mock.patch('zerver.views._')
     def test_jsonable_error(self, mock_gettext):
+        # type: (Any) -> None
         dummy_value = "Some other language"
         mock_gettext.return_value = dummy_value
 
@@ -97,6 +99,7 @@ class JsonTranslationTestCase(AuthedTestCase):
 
 class FrontendRegexTestCase(TestCase):
     def test_regexes(self):
+        # type: () -> None
         command = makemessages.Command()
 
         data = [
