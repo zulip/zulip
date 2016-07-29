@@ -385,6 +385,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.assert_on_error(error)
 
     def test_default_streams_events(self):
+        # type: () -> None
         default_streams_checker = check_dict([
             ('type', equals('default_streams')),
             ('default_streams', check_list(check_dict([
@@ -730,6 +731,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.assert_on_error(error)
 
     def test_subscribe_other_user_never_subscribed(self):
+        # type: () -> None
         action = lambda: self.subscribe_to_stream("othello@zulip.com", u"test_stream")
         events = self.do_test(action)
         schema_checker = check_dict([
@@ -742,7 +744,7 @@ class EventsRegisterTest(AuthedTestCase):
         self.assert_on_error(error)
 
     def test_subscribe_events(self):
-        # type: ignore # action changes type several times
+        # type: () -> None
         subscription_schema_checker = check_list(
             check_dict([
                 ('color', check_string),
@@ -792,7 +794,7 @@ class EventsRegisterTest(AuthedTestCase):
             ('name', check_string),
         ])
 
-        action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
+        action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream") # type: Callable
         events = self.do_test(action, event_types=["subscription", "realm_user"])
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
