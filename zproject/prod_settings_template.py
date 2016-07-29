@@ -29,8 +29,7 @@ AUTHENTICATION_BACKENDS = (
 #    'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
     )
 
-# Google Oauth requires a bit of configuration; you will need to go to
-# do the following:
+# To enable Google authentication, you need to do the following:
 #
 # (1) Visit https://console.developers.google.com, setup an
 # Oauth2 client ID that allows redirects to
