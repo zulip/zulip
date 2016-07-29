@@ -8,6 +8,8 @@ import traceback
 import sys
 import os
 
+if False: from typing import Any
+
 # find out python version
 major_version = int(subprocess.check_output(['python', '-c', 'import sys; print(sys.version_info[0])']))
 if major_version != 2:
@@ -27,6 +29,7 @@ from twisted.web      import proxy, server, resource
 from twisted.web.http import Request
 orig_finish = Request.finish
 def patched_finish(self):
+    # type: (Any) -> None
     if not self._disconnected:
         orig_finish(self)
 Request.finish = patched_finish
@@ -115,6 +118,8 @@ for cmd in cmds:
 
 class Resource(resource.Resource):
     def getChild(self, name, request):
+        # type: (str, server.Request) -> resource.Resource
+
         # Assume an HTTP 1.1 request
         proxy_host = request.requestHeaders.getRawHeaders('Host')
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', proxy_host)
