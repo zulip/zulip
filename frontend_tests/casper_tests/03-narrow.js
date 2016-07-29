@@ -193,6 +193,28 @@ function search_and_check(str, item, check, narrow_title) {
     un_narrow();
 }
 
+function search_silent_user(str, item) {
+    common.select_item_via_typeahead('#search_query', str, item);
+    casper.waitUntilVisible('#silent_user', function () {
+        casper.test.info("Empty feed for silent user visible.");
+        var expected_message = "\n        This user hasn't posted anything yet!"+
+                                "\n      ";
+        this.test.assertEquals(casper.fetchText('#silent_user'), expected_message);
+    });
+    un_narrow();
+}
+
+function search_non_existing_user(str, item) {
+    common.select_item_via_typeahead('#search_query', str, item);
+    casper.waitUntilVisible('#non_existing_user', function () {
+        casper.test.info("Empty feed for non existing user visible.");
+        var expected_message = "\n        This user does not exist!"+
+                                "\n      ";
+        this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
+    });
+    un_narrow();
+}
+
 casper.waitUntilVisible('#zhome', expect_home);
 
 // Test stream / recipient autocomplete in the search bar
@@ -208,6 +230,9 @@ search_and_check('stream:Verona subject:frontend+test', 'Narrow', expect_stream_
                 'frontend test - Zulip Dev - Zulip');
 search_and_check('subject:frontend+test', 'Narrow', expect_subject,
                 'home - Zulip Dev - Zulip');
+
+search_silent_user('sender:emailgateway@zulip.com', 'Narrow');
+search_non_existing_user('sender:dummyuser@zulip.com', 'Narrow');
 
 // Narrow by clicking the left sidebar.
 casper.then(function () {
