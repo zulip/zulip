@@ -300,6 +300,7 @@ def zulip_internal(view_func):
     @zulip_login_required
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
         request._query = view_func.__name__
         if request.user.realm.domain != 'zulip.com':
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
