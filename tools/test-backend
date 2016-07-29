@@ -57,6 +57,10 @@ if __name__ == "__main__":
                       dest="generate_fixtures",
                       help=("Reduce running time by not calling generate-fixtures. "
                             "This may cause spurious failures for some tests."))
+    parser.add_option('--report-slow-tests', dest='report_slow_tests',
+                      action="store_true",
+                      default=False,
+                      help="Show which tests are slowest.")
 
     (options, args) = parser.parse_args()
     if len(args) == 0:
@@ -110,6 +114,12 @@ if __name__ == "__main__":
         prof.dump_stats("/tmp/profile.data")
         print("Profile data saved to /tmp/profile.data")
         print("You can visualize it using e.g. `runsnake /tmp/profile.data`")
+
+    if options.report_slow_tests:
+        from zerver.lib.test_runner import report_slow_tests
+        # We do this even with failures, since slowness can be
+        # an important clue as to why tests fail.
+        report_slow_tests()
 
     if failures:
         print('FAILED!')

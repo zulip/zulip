@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from typing import Any, Callable, Iterable, List, Optional, Set
+from typing import Any, Callable, Iterable, List, Optional, Set, Tuple
 
 from django.test import TestCase
 from django.test.runner import DiscoverRunner
@@ -47,6 +47,28 @@ def full_test_name(test):
 def get_test_method(test):
     # type: (TestCase) -> Callable[[], None]
     return getattr(test, test._testMethodName)
+
+# Each tuple is delay, test_name, slowness_reason
+TEST_TIMINGS = [] # type: List[Tuple[float, str, str]]
+
+
+def report_slow_tests():
+    # type: () -> None
+    timings = sorted(TEST_TIMINGS, reverse=True)
+    print('SLOWNESS REPORT')
+    print(' delay test')
+    print(' ----  ----')
+    for delay, test_name, slowness_reason in timings[:15]:
+        if not slowness_reason:
+            slowness_reason = 'UNKNOWN WHY SLOW, please investigate'
+        print(' %0.3f %s\n       %s\n' % (delay, test_name, slowness_reason))
+
+    print('...')
+    for delay, test_name, slowness_reason in timings[100:]:
+        if slowness_reason:
+            print(' %.3f %s is not that slow' % (delay, test_name))
+            print('      consider removing @slow decorator')
+            print('      This may no longer be true: %s' % (slowness_reason,))
 
 def enforce_timely_test_completion(test_method, test_name, delay):
     # type: (Any, str, float) -> None
@@ -119,6 +141,8 @@ def run_test(test):
 
     delay = time.time() - start_time
     enforce_timely_test_completion(test_method, test_name, delay)
+    slowness_reason = getattr(test_method, 'slowness_reason', '')
+    TEST_TIMINGS.append((delay, test_name, slowness_reason))
 
     test._post_teardown()
     return failed
