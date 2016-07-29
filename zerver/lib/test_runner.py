@@ -17,8 +17,8 @@ import time
 import traceback
 import unittest
 
-def slow(expected_run_time, slowness_reason):
-    # type: (float, str) -> Callable[[Callable], Callable]
+def slow(slowness_reason):
+    # type: (str) -> Callable[[Callable], Callable]
     '''
     This is a decorate that annotates a test as being "known
     to be slow."  The decorator will set expected_run_time and slowness_reason
@@ -27,7 +27,6 @@ def slow(expected_run_time, slowness_reason):
     '''
     def decorator(f):
         # type: (Any) -> Any
-        f.expected_run_time = expected_run_time
         f.slowness_reason = slowness_reason
         return f
 
