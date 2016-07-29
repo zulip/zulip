@@ -878,7 +878,7 @@ def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
-    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[str]) -> int
+    # type: (UserProfile, Client, text_type, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[text_type], Optional[text_type]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
@@ -941,7 +941,7 @@ def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, str, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[int], Optional[str]) -> Dict[str, Any]
+    # type: (UserProfile, Client, text_type, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[text_type], Optional[text_type]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
@@ -2242,7 +2242,7 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     send_event(event, [user_profile.id])
 
 def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, str, str, Sequence[Message], bool, Optional[Stream], Optional[text_type]) -> int
+    # type: (UserProfile, text_type, text_type, Sequence[int], bool, Optional[Stream], Optional[text_type]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
