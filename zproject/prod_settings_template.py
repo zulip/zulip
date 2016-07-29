@@ -25,6 +25,7 @@ ADMIN_DOMAIN = 'example.com'
 AUTHENTICATION_BACKENDS = (
 #    'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
 #    'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
+#    'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
 #    'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
 #    'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
     )
@@ -42,6 +43,19 @@ AUTHENTICATION_BACKENDS = (
 # (3) put your client secret as "google_oauth2_client_secret" in
 # zulip-secrets.conf, and your client ID right here:
 # GOOGLE_OAUTH2_CLIENT_ID=<your client ID from Google>
+
+
+# To enable GitHub authentication, you will need to need to do the following:
+#
+# (1) Register an OAuth2 application with GitHub at one of:
+#   https://github.com/settings/applications
+#   https://github.com/organizations/ORGNAME/settings/applications
+# Specify e.g. https://zulip.example.com/complete/github/ as the callback URL.
+#
+# (2) Put your "Client ID" as SOCIAL_AUTH_GITHUB_KEY below and your
+# "Client secret" as social_auth_github_secret in
+# /etc/zulip/zulip-secrets.conf.
+# SOCIAL_AUTH_GITHUB_KEY = <your client ID from GitHub>
 
 # If you are using the ZulipRemoteUserBackend authentication backend,
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
