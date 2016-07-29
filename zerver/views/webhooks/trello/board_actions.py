@@ -39,7 +39,7 @@ def get_proper_action(payload, action_type):
     return action_type
 
 def get_subject(payload):
-    # # type: (Mapping[str, Any]) -> text_type
+    # type: (Mapping[str, Any]) -> text_type
     data = {
         'board_name': get_action_data(payload).get('board').get('name')
     }
