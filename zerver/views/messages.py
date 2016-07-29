@@ -9,7 +9,7 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from six import text_type
-from typing import AnyStr, Iterable, Optional, Tuple
+from typing import Any, AnyStr, Iterable, Optional, Tuple
 from zerver.lib.str_utils import force_bytes
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
@@ -28,7 +28,7 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Recipient, UserMessage, bulk_get_recipients, get_recipient, \
+    Realm, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
     stringify_message_dict, \
@@ -37,7 +37,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias
+    or_, not_, union_all, alias, Selectable
 
 import re
 import ujson
@@ -57,6 +57,7 @@ class BadNarrowOperator(JsonableError):
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
     def __init__(self, user_profile, msg_id_column):
+        # type: (UserProfile, str) -> None
         self.user_profile = user_profile
         self.msg_id_column = msg_id_column
 
@@ -279,10 +280,13 @@ def highlight_string(text, locs):
     return result.decode('utf-8')
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
+    # type: (text_type, text_type, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, text_type]
     return dict(match_content=highlight_string(rendered_content, content_matches),
                 match_subject=highlight_string(escape_html(subject), subject_matches))
 
 def narrow_parameter(json):
+    # type: (str) -> List[Dict[str, Any]]
+
     # FIXME: A hack to support old mobile clients
     if json == '{}':
         return None
@@ -321,7 +325,8 @@ def narrow_parameter(json):
 
     return list(map(convert_term, data))
 
-def is_public_stream(stream, realm):
+def is_public_stream(stream_name, realm):
+    # type: (text_type, Realm) -> bool
     """
     Determine whether a stream is public, so that
     our caller can decide whether we can get
@@ -332,13 +337,15 @@ def is_public_stream(stream, realm):
     False in that situation, and subsequent code will do
     validation and raise the appropriate JsonableError.
     """
-    stream = get_stream(stream, realm)
+    stream = get_stream(stream_name, realm)
     if stream is None:
         return False
     return stream.is_public()
 
 
 def ok_to_include_history(narrow, realm):
+    # type: (Iterable[Dict[str, Any]], Realm) -> bool
+
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public stream that might include messages that
@@ -365,12 +372,14 @@ def ok_to_include_history(narrow, realm):
     return include_history
 
 def get_stream_name_from_narrow(narrow):
+    # type: (Iterable[Dict[str, Any]]) -> Optional[text_type]
     for term in narrow:
         if term['operator'] == 'stream':
             return term['operand'].lower()
     return None
 
 def exclude_muting_conditions(user_profile, narrow):
+    # type: (UserProfile, Iterable[Dict[str, Any]]) -> List[Selectable]
     conditions = []
     stream_name = get_stream_name_from_narrow(narrow)
 
@@ -421,6 +430,7 @@ def get_old_messages_backend(request, user_profile,
                              use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
                              apply_markdown=REQ(default=True,
                                                 converter=ujson.loads)):
+    # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool) -> HttpResponse
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
@@ -588,6 +598,7 @@ def update_message_flags(request, user_profile,
                          all=REQ(validator=check_bool, default=False),
                          stream_name=REQ(default=None),
                          topic_name=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, List[int], text_type, text_type, bool, Optional[text_type], Optional[text_type]) -> HttpResponse
     if all:
         target_count_str = "all"
     else:
@@ -620,6 +631,7 @@ def update_message_flags(request, user_profile,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):
+    # type: (HttpResponse, UserProfile, Iterable[text_type]) -> Tuple[bool, UserProfile]
     if "sender" not in request.POST:
         return (False, None)
 
@@ -703,6 +715,7 @@ def same_realm_jabber_user(user_profile, email):
 
 @authenticated_api_view(is_webhook=False)
 def api_send_message(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return send_message_backend(request, user_profile)
 
 # We do not @require_login for send_message_backend, since it is used
@@ -719,6 +732,7 @@ def send_message_backend(request, user_profile,
                          domain = REQ('domain', default=None),
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
+    # type: (HttpRequest, UserProfile, text_type, List[text_type], bool, Optional[text_type], text_type, Optional[text_type], Optional[text_type], Optional[text_type]) -> HttpResponse
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
@@ -860,12 +874,15 @@ def render_message_backend(request, user_profile, content=REQ()):
 
 @authenticated_json_post_view
 def json_messages_in_narrow(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return messages_in_narrow_backend(request, user_profile)
 
 @has_request_variables
 def messages_in_narrow_backend(request, user_profile,
                                msg_ids = REQ(validator=check_list(check_int)),
                                narrow = REQ(converter=narrow_parameter)):
+    # type: (HttpRequest, UserProfile, List[int], List[Dict[str, Any]]) -> HttpResponse
+
     # Note that this function will only work on messages the user
     # actually received
 
