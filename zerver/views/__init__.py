@@ -824,10 +824,13 @@ def get_language_list():
         languages = ujson.load(reader)
         lang_list = []
         for lang_info in languages['languages']:
-            lang_info['name'] = with_language(lang_info['name'], lang_info['code'])
+            name = lang_info['name']
+            lang_info['name'] = with_language(name, lang_info['code'])
+            if 'percent_translated' not in lang_info:
+                lang_info['percent_translated'] = 'N/A'
             lang_list.append(lang_info)
 
-        return lang_list
+        return sorted(lang_list, key=lambda i: i['name'])
 
 @zulip_login_required
 def home(request):
