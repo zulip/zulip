@@ -112,7 +112,8 @@ if __name__ == "__main__":
 
 
     if len(args) == 0:
-        suites = ["zerver.tests"]
+        suites = ["zerver.tests",
+                  "analytics.tests"]
     else:
         suites = args
 
