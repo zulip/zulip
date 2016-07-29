@@ -34,6 +34,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
         def run_threaded_workers(logger):
+            # type: (logging.Logger) -> None
             for queue_name in get_active_worker_queues():
                 logger.info('launching queue worker thread ' + queue_name)
                 td = Threaded_worker(queue_name)
