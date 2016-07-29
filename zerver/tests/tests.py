@@ -1722,7 +1722,7 @@ class AlertWordTests(AuthedTestCase):
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
 
 class HomeTest(AuthedTestCase):
-    @slow(1.0, 'big method')
+    @slow('big method')
     def test_home(self):
         # type: () -> None
 

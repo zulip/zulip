@@ -184,7 +184,7 @@ class PersonalMessagesTest(AuthedTestCase):
                                           type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
-    @slow(0.36, "checks several profiles")
+    @slow("checks several profiles")
     def test_personal_to_self(self):
         """
         If you send a personal to yourself, only you see it.
@@ -244,7 +244,7 @@ class PersonalMessagesTest(AuthedTestCase):
         self.assertEqual(most_recent_message(sender).recipient, recipient)
         self.assertEqual(most_recent_message(receiver).recipient, recipient)
 
-    @slow(0.28, "assert_personal checks several profiles")
+    @slow("assert_personal checks several profiles")
     def test_personal(self):
         """
         If you send a personal, only you and the recipient see it.
@@ -252,7 +252,7 @@ class PersonalMessagesTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         self.assert_personal("hamlet@zulip.com", "othello@zulip.com")
 
-    @slow(0.28, "assert_personal checks several profiles")
+    @slow("assert_personal checks several profiles")
     def test_non_ascii_personal(self):
         """
         Sending a PM containing non-ASCII characters succeeds.
@@ -357,7 +357,7 @@ class StreamMessagesTest(AuthedTestCase):
                                                            "api-key": user_profile.api_key})
         self.assert_json_error(result, "User not authorized for this query")
 
-    @slow(0.28, 'checks all users')
+    @slow('checks all users')
     def test_message_to_stream(self):
         """
         If you send a message to a stream, everyone subscribed to the stream
@@ -365,7 +365,7 @@ class StreamMessagesTest(AuthedTestCase):
         """
         self.assert_stream_message("Scotland")
 
-    @slow(0.37, 'checks all users')
+    @slow('checks all users')
     def test_non_ascii_stream_message(self):
         """
         Sending a stream message containing non-ASCII characters in the stream
@@ -384,7 +384,7 @@ class StreamMessagesTest(AuthedTestCase):
                                    content=u"hümbüǵ")
 
 class MessageDictTest(AuthedTestCase):
-    @slow(1.6, 'builds lots of messages')
+    @slow('builds lots of messages')
     def test_bulk_message_fetching(self):
         realm = get_realm("zulip.com")
         sender = get_user_profile_by_email('othello@zulip.com')
