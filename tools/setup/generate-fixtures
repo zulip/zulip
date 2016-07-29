@@ -9,7 +9,7 @@ template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='zulip_
 
 if [ "$template_grep_error_code" == "0" ]; then
     migration_status var/available-migrations
-    if [ -e zerver/fixtures/migration-status ] &&
+    if [ -e var/migration-status ] &&
         cmp -s var/available-migrations var/migration-status &&
         [ "$1" != "--force" ]; then
         "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
