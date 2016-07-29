@@ -548,6 +548,12 @@ function pick_empty_narrow_banner() {
         } else {
             return $("#empty_narrow_multi_private_message");
         }
+    } else if (first_operator === "sender") {
+        if (people.get_by_email(first_operand)) {
+            return $("#silent_user");
+        } else {
+            return $("#non_existing_user");
+        }
     }
     return default_banner;
 }
