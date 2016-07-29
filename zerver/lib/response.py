@@ -12,7 +12,7 @@ class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
 
     def __init__(self, realm, www_authenticate=None):
-        # type (text_type, Optional[text_type]) -> None
+        # type: (text_type, Optional[text_type]) -> None
         HttpResponse.__init__(self)
         if www_authenticate is None:
             self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
