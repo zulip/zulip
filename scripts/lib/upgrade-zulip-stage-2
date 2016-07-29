@@ -35,6 +35,7 @@ parser.add_argument("--from-git", dest="from_git", action='store_true',
 args = parser.parse_args()
 
 deploy_path = args.deploy_path
+os.chdir(deploy_path)
 
 if not args.skip_puppet:
     logging.info("Upgrading system packages...")
