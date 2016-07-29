@@ -65,9 +65,9 @@
           {% if register_link_disabled %}
           {% else %}
           <a href="{{ url('register') }}">{{ _('Register') }}</a>
+          <li><span class="little-bullet">·</span></li>
           {% endif %}
       </li>
-      <li><span class="little-bullet">·</span></li>
       <li>
           {% if open_realm_creation %}
           <a href="/create_realm">{{ _('Create new organization') }}</a>
