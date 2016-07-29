@@ -1304,7 +1304,7 @@ class SubscriptionAPITest(AuthedTestCase):
         # Make sure we don't make O(streams) queries
         self.assert_length(queries, 9)
 
-    @slow(0.15, "common_subscribe_to_streams is slow")
+    @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
         # type: () -> None
         """
@@ -1315,7 +1315,7 @@ class SubscriptionAPITest(AuthedTestCase):
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
 
-    @slow(0.15, "common_subscribe_to_streams is slow")
+    @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal_invite_only(self):
         # type: () -> None
         """
@@ -1327,7 +1327,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams,
                                                        invite_only=True)
 
-    @slow(0.15, "common_subscribe_to_streams is slow")
+    @slow("common_subscribe_to_streams is slow")
     def test_non_ascii_subscription_for_principal(self):
         # type: () -> None
         """
@@ -1649,7 +1649,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
             if sub['name'] == "Saxony":
                 self.assertEqual(sub['invite_only'], True, "Saxony was not properly marked invite-only")
 
-    @slow(0.15, "lots of queries")
+    @slow("lots of queries")
     def test_inviteonly(self):
         # type: () -> None
         # Creating an invite-only stream is allowed
@@ -1746,7 +1746,7 @@ class GetSubscribersTest(AuthedTestCase):
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         self.make_successful_subscriber_request(stream_name)
 
-    @slow(0.15, "common_subscribe_to_streams is slow")
+    @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions(self):
         # type: () -> None
         """
@@ -1778,7 +1778,7 @@ class GetSubscribersTest(AuthedTestCase):
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
         self.assert_length(queries, 4, exact=True)
 
-    @slow(0.15, "common_subscribe_to_streams is slow")
+    @slow("common_subscribe_to_streams is slow")
     def test_never_subscribed_streams(self):
         # type: () -> None
         """
@@ -1811,7 +1811,7 @@ class GetSubscribersTest(AuthedTestCase):
                 self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
         self.assert_length(queries, 4, exact=True)
 
-    @slow(0.15, "common_subscribe_to_streams is slow")
+    @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
         # type: () -> None
         """

@@ -100,7 +100,7 @@ class RateLimitTests(AuthedTestCase):
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
-    @slow(1.1, 'has to sleep to work')
+    @slow('has to sleep to work')
     def test_hit_ratelimits(self):
         # type: () -> None
         email = "cordelia@zulip.com"
