@@ -32,6 +32,7 @@ def su_to_zulip():
     pwent = pwd.getpwnam("zulip")
     os.setgid(pwent.pw_gid)
     os.setuid(pwent.pw_uid)
+    os.environ['HOME'] = os.path.abspath(os.path.join(DEPLOYMENTS_DIR, '..'))
 
 def make_deploy_path():
     # type: () -> str
