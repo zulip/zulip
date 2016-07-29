@@ -14,7 +14,7 @@ from zerver.lib.test_helpers import (
     AuthedTestCase
 )
 from zerver.models import \
-    get_realm, get_user_profile_by_email, email_to_username
+    get_realm, get_user_profile_by_email, email_to_username, UserProfile
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
@@ -157,6 +157,7 @@ class AuthBackendTest(TestCase):
                                 email_to_username=email_to_username)
 
     def test_github_backend(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         good_kwargs = dict(response=dict(email=email), return_data=dict())
         bad_kwargs = dict()  # type: Dict[str, str]
@@ -166,6 +167,7 @@ class AuthBackendTest(TestCase):
 
 class GitHubAuthBackendTest(AuthedTestCase):
     def setUp(self):
+        # type: () -> None
         self.email = 'hamlet@zulip.com'
         self.name = 'Hamlet'
         self.backend = GitHubAuthBackend()
@@ -174,7 +176,9 @@ class GitHubAuthBackendTest(AuthedTestCase):
         self.user_profile.backend = self.backend
 
     def test_github_backend_do_auth(self):
+        # type: () -> None
         def do_auth(return_data=dict(), *args, **kwargs):
+            # type: (Dict[str, Any], *Any, **Any) -> UserProfile
             return self.user_profile
 
         with mock.patch('zerver.views.login_or_register_remote_user') as result, \
@@ -186,7 +190,9 @@ class GitHubAuthBackendTest(AuthedTestCase):
                                       self.name)
 
     def test_github_backend_inactive_user(self):
+        # type: () -> None
         def do_auth_inactive(return_data=dict(), *args, **kwargs):
+            # type: (Dict[str, Any], *Any, **Any) -> UserProfile
             return_data['inactive_user'] = True
             return self.user_profile
 
@@ -199,6 +205,7 @@ class GitHubAuthBackendTest(AuthedTestCase):
             self.assertIs(user, None)
 
     def test_github_backend_new_user(self):
+        # type: () -> None
         rf = RequestFactory()
         request = rf.get('/complete')
         request.session = {}
@@ -206,6 +213,7 @@ class GitHubAuthBackendTest(AuthedTestCase):
         self.backend.strategy.request = request
 
         def do_auth(return_data=dict(), *args, **kwargs):
+            # type: (Dict[str, Any], *Any, **Any) -> UserProfile
             return_data['valid_attestation'] = True
             return None
 
