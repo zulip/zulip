@@ -450,7 +450,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.invite(external_address, ["Denmark"]),
             "Some emails did not validate, so we didn't send any invitations.")
 
-    @slow(0.20, 'inviting is slow')
     def test_invite_outside_domain_in_open_realm(self):
         # type: () -> None
         """
