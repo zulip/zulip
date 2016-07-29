@@ -264,6 +264,7 @@ class AuthedTestCase(TestCase):
                                 {'username': email, 'password': password})
 
     def login(self, email, password=None, fails=False):
+        # type: (text_type, Optional[text_type], bool) -> HttpResponse
         if password is None:
             password = initial_password(email)
         if not fails:
@@ -448,6 +449,7 @@ class AuthedTestCase(TestCase):
         return Message.objects.latest('id')
 
     def get_second_to_last_message(self):
+        # type: () -> Message
         return Message.objects.all().order_by('-id')[1]
 
 def get_all_templates():
@@ -459,7 +461,8 @@ def get_all_templates():
     path_exists = os.path.exists
 
     def is_valid_template(p, n):
-        not n.startswith('.') and not n.startswith('__init__') and isfile(p)
+        # type: (text_type, text_type) -> bool
+        return not n.startswith('.') and not n.startswith('__init__') and isfile(p)
 
     def process(template_dir, dirname, fnames):
         # type: (str, str, Iterable[str]) -> None
