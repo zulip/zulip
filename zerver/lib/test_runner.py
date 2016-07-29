@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from typing import Any, Callable, Iterable, List, Optional, Set
+from typing import Any, Callable, Iterable, List, Optional, Set, Tuple
 
 from django.test import TestCase
 from django.test.runner import DiscoverRunner
@@ -17,8 +17,8 @@ import time
 import traceback
 import unittest
 
-def slow(expected_run_time, slowness_reason):
-    # type: (float, str) -> Callable[[Callable], Callable]
+def slow(slowness_reason):
+    # type: (str) -> Callable[[Callable], Callable]
     '''
     This is a decorate that annotates a test as being "known
     to be slow."  The decorator will set expected_run_time and slowness_reason
@@ -27,7 +27,6 @@ def slow(expected_run_time, slowness_reason):
     '''
     def decorator(f):
         # type: (Any) -> Any
-        f.expected_run_time = expected_run_time
         f.slowness_reason = slowness_reason
         return f
 
@@ -48,20 +47,36 @@ def get_test_method(test):
     # type: (TestCase) -> Callable[[], None]
     return getattr(test, test._testMethodName)
 
+# Each tuple is delay, test_name, slowness_reason
+TEST_TIMINGS = [] # type: List[Tuple[float, str, str]]
+
+
+def report_slow_tests():
+    timings = sorted(TEST_TIMINGS, reverse=True)
+    print('SLOWNESS REPORT')
+    print(' delay test')
+    print(' ----  ----')
+    for delay, test_name, slowness_reason in timings[:15]:
+        if not slowness_reason:
+            slowness_reason = 'UNKNOWN WHY SLOW, please investigate'
+        print(' %0.3f %s\n       %s\n' % (delay, test_name, slowness_reason))
+
+    print('...')
+    for delay, test_name, slowness_reason in timings[100:]:
+        if slowness_reason:
+            print(' %.3f %s is not that slow' % (delay, test_name))
+            print('      consider removing @slow decorator')
+            print('      This may no longer be true: %s' % (slowness_reason,))
+
 def enforce_timely_test_completion(test_method, test_name, delay):
     # type: (Any, str, float) -> None
-    if hasattr(test_method, 'expected_run_time'):
-        # Allow for tests to run 50% slower than normal due
-        # to random variations.
-        max_delay = 1.5 * test_method.expected_run_time
+    if hasattr(test_method, 'slowness_reason'):
+        max_delay = 1.1 # seconds
     else:
-        max_delay = 0.180 # seconds
-
-    # Further adjustments for slow laptops:
-    max_delay = max_delay * 3
+        max_delay = 0.4 # seconds
 
     if delay > max_delay:
-        print('Test is TOO slow: %s (%.3f s)' % (test_name, delay))
+        print(' ** Test is TOO slow: %s (%.3f s)' % (test_name, delay))
 
 def fast_tests_only():
     # type: () -> bool
@@ -119,6 +134,8 @@ def run_test(test):
 
     delay = time.time() - start_time
     enforce_timely_test_completion(test_method, test_name, delay)
+    slowness_reason = getattr(test_method, 'slowness_reason', '')
+    TEST_TIMINGS.append((delay, test_name, slowness_reason))
 
     test._post_teardown()
     return failed
