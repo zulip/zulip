@@ -13,6 +13,8 @@ from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
+from social.backends.github import GithubOAuth2
+from django.contrib.auth import authenticate
 
 def password_auth_enabled(realm):
     if realm is not None:
@@ -55,6 +57,12 @@ def common_get_active_user_by_email(email, return_data=None):
         return None
     return user_profile
 
+def github_auth_enabled():
+    for backend in django.contrib.auth.get_backends():
+        if isinstance(backend, GitHubBackend):
+            return True
+    return False
+
 class ZulipAuthMixin(object):
     def get_user(self, user_profile_id):
         """ Get a UserProfile object from the user_profile_id. """
@@ -62,6 +70,56 @@ class ZulipAuthMixin(object):
             return get_user_profile_by_id(user_profile_id)
         except UserProfile.DoesNotExist:
             return None
+
+class SocialAuthMixin(ZulipAuthMixin):
+    def get_email_address(self):
+        raise NotImplementedError
+
+    def get_full_name(self):
+        raise NotImplementedError
+
+    def authenticate(self, *args, **kwargs):
+        return_data = kwargs.get('return_data', {})
+
+        email_address = self.get_email_address(*args, **kwargs)
+        if not email_address:
+            return None
+
+        try:
+            user_profile = get_user_profile_by_email(email_address)
+        except UserProfile.DoesNotExist:
+            return_data["valid_attestation"] = True
+            return None
+
+        if not user_profile.is_active:
+            return_data["inactive_user"] = True
+            return None
+
+        if user_profile.realm.deactivated:
+            return_data["inactive_realm"] = True
+            return None
+
+        return user_profile
+
+    def process_do_auth(self, user_profile, *args, **kwargs):
+        # This function needs to be imported from here due to the cyclic
+        # dependency.
+        from zerver.views import login_or_register_remote_user
+
+        return_data = kwargs.get('return_data', {})
+
+        inactive_user = return_data.get('inactive_user')
+        inactive_realm = return_data.get('inactive_realm')
+
+        if inactive_user or inactive_realm:
+            return None
+
+        request = self.strategy.request
+        email_address = self.get_email_address(*args, **kwargs)
+        full_name = self.get_full_name(*args, **kwargs)
+
+        return login_or_register_remote_user(request, email_address,
+                                             user_profile, full_name)
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
@@ -208,3 +266,21 @@ class DevAuthBackend(ZulipAuthMixin):
 
     def authenticate(self, username, return_data=None):
         return common_get_active_user_by_email(username, return_data=return_data)
+
+class GitHubBackend(SocialAuthMixin, GithubOAuth2):
+    def get_email_address(self, *args, **kwargs):
+        try:
+            return kwargs['response']['email']
+        except KeyError:
+            return None
+
+    def get_full_name(self, *args, **kwargs):
+        try:
+            return kwargs['response']['name']
+        except KeyError:
+            return ''
+
+    def do_auth(self, *args, **kwargs):
+        kwargs['return_data'] = {}
+        user_profile = super(GitHubBackend, self).do_auth(*args, **kwargs)
+        return self.process_do_auth(user_profile, *args, **kwargs)
