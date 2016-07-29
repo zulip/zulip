@@ -235,7 +235,6 @@ class BeanstalkHookTests(WebhookTestCase):
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    @slow(0.20, "lots of queries")
     def test_git_multiple(self):
         # type: () -> None
         expected_subject = "work-test"
