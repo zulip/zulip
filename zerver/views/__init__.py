@@ -344,7 +344,7 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
 
-    invitee_emails = set(re.split(r'[, \n]', invitee_emails_raw))
+    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
 
     stream_names = request.POST.getlist('stream')
     if not stream_names:
@@ -369,6 +369,17 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
         return json_error(data=error_data, msg=ret_error)
     else:
         return json_success()
+
+def get_invitee_emails_set(invitee_emails):
+    # type (str) -> set
+    invitee_emails_list = set(re.split(r'[,\n]', invitee_emails))
+    invitee_emails = set()
+    for email in invitee_emails_list:
+        is_email_with_name = re.search(r'<(?P<email>.*)>', email)
+        if is_email_with_name:
+            email = is_email_with_name.group('email')
+        invitee_emails.add(email.strip())
+    return invitee_emails
 
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm

@@ -6,6 +6,7 @@ from django.test import TestCase
 
 from zilencer.models import Deployment
 
+from zerver.views import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
@@ -319,6 +320,34 @@ class InviteUserTest(AuthedTestCase):
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
 
+    def test_successful_invite_user_with_name(self):
+        # type: () -> None
+        """
+        A call to /json/invite_users with valid parameters causes an invitation
+        email to be sent.
+        """
+        self.login("hamlet@zulip.com")
+        email = "alice-test@zulip.com"
+        invitee = "Alice Test <{}>".format(email)
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.check_sent_emails([email])
+
+    def test_successful_invite_user_with_name_and_normal_one(self):
+        # type: () -> None
+        """
+        A call to /json/invite_users with valid parameters causes an invitation
+        email to be sent.
+        """
+        self.login("hamlet@zulip.com")
+        email = "alice-test@zulip.com"
+        email2 = "bob-test@zulip.com"
+        invitee = "Alice Test <{}>, {}".format(email, email2)
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+        self.check_sent_emails([email, email2])
+
     def test_invite_user_signup_initial_history(self):
         # type: () -> None
         """
@@ -485,6 +514,33 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             stream, no_log=True)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
+
+class InviteeEmailsParserTests(TestCase):
+    def setUp(self):
+        self.email1 = "email1@zulip.com"
+        self.email2 = "email2@zulip.com"
+        self.email3 = "email3@zulip.com"
+
+    def test_if_emails_separated_by_commas_are_parsed_and_striped_correctly(self):
+        emails_raw = "{} ,{}, {}".format(self.email1, self.email2, self.email3)
+        expected_set = {self.email1, self.email2, self.email3}
+        self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
+
+    def test_if_emails_separated_by_newlines_are_parsed_and_striped_correctly(self):
+        emails_raw = "{}\n {}\n {} ".format(self.email1, self.email2, self.email3)
+        expected_set = {self.email1, self.email2, self.email3}
+        self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
+
+    def test_if_emails_from_email_client_separated_by_newlines_are_parsed_correctly(self):
+        emails_raw = "Email One <{}>\nEmailTwo<{}>\nEmail Three<{}>".format(self.email1, self.email2, self.email3)
+        expected_set = {self.email1, self.email2, self.email3}
+        self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
+
+    def test_if_emails_in_mixed_style_are_parsed_correctly(self):
+        emails_raw = "Email One <{}>,EmailTwo<{}>\n{}".format(self.email1, self.email2, self.email3)
+        expected_set = {self.email1, self.email2, self.email3}
+        self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
+
 
 class EmailUnsubscribeTests(AuthedTestCase):
     def test_missedmessage_unsubscribe(self):
