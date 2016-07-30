@@ -3,6 +3,8 @@ from __future__ import print_function
 import os
 import re
 import ujson
+
+from six import text_type
 from typing import Any, Dict, List
 
 from django.core.management.commands import compilemessages
@@ -13,39 +15,43 @@ import polib
 class Command(compilemessages.Command):
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         super(Command, self).handle(*args, **options)
         self.extract_language_options()
 
     def get_po_filename(self, locale_path, locale):
+        # type: (text_type, text_type) -> text_type
         po_template = '{}/{}/LC_MESSAGES/django.po'
         return po_template.format(locale_path, locale)
 
     def get_json_filename(self, locale_path, locale):
-        return  "{}/{}/translations.json".format(locale_path, locale)
+        # type: (text_type, text_type) -> text_type
+        return "{}/{}/translations.json".format(locale_path, locale)
 
     def extract_language_options(self):
-        locale_path = "{}/locale".format(settings.STATIC_ROOT)
-        output_path = "{}/language_options.json".format(locale_path)
+        # type: () -> None
+        locale_path = u"{}/locale".format(settings.STATIC_ROOT)
+        output_path = u"{}/language_options.json".format(locale_path)
 
-        data = {'languages': []}  # type: Dict[str, List[Dict[str, str]]]
+        data = {'languages': []}  # type: Dict[str, List[Dict[str, text_type]]]
         lang_name_re = re.compile('"Language-Team: (.*?) \(')
 
         locales = os.listdir(locale_path)
-        locales.append('en')
+        locales.append(u'en')
         locales = list(set(locales))
 
         for locale in locales:
             info = {}
-            if locale == 'en':
+            if locale == u'en':
                 data['languages'].append({
-                    'code': 'en',
-                    'name': 'English',
+                    'code': u'en',
+                    'name': u'English',
                 })
                 continue
-            if locale == 'zh-CN':
+            if locale == u'zh-CN':
                 continue
-            if locale == 'zh_CN':
-                name = 'Simplified Chinese'
+            if locale == u'zh_CN':
+                name = u'Simplified Chinese'
             else:
                 filename = self.get_po_filename(locale_path, locale)
                 if not os.path.exists(filename):
@@ -75,6 +81,8 @@ class Command(compilemessages.Command):
             ujson.dump(data, writer, indent=2)
 
     def get_translation_percentage(self, locale_path, locale):
+        # type: (text_type, text_type) -> text_type
+
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
         not_translated = len(po.untranslated_entries())
