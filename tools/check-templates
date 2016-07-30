@@ -247,7 +247,6 @@ def check_html_templates(templates, modified_only):
             'templates/corporate/mit.html',
             'templates/corporate/privacy.html',
             'templates/corporate/terms-enterprise.html',
-            'templates/corporate/terms.html',
             'templates/corporate/zephyr-mirror.html',
             'templates/corporate/zephyr.html',
             'templates/zerver/accounts_home.html',
