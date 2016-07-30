@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
@@ -195,6 +196,69 @@ class POSTRequestMock(object):
         self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
+INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
+INSTRUMENTED_CALLS = []
+
+def instrument_url(f):
+    if not INSTRUMENTING:
+        return f
+    else:
+        def wrapper(self, url, info={}, **kwargs):
+            start = time.time()
+            result = f(self, url, info, **kwargs)
+            delay = time.time() - start
+            test_name = self.id()
+            if '?' in url:
+                url, extra_info = url.split('?', 1)
+            else:
+                extra_info = ''
+
+            INSTRUMENTED_CALLS.append(dict(
+                url=url,
+                status_code=result.status_code,
+                method=f.__name__,
+                delay=delay,
+                extra_info=extra_info,
+                info=info,
+                test_name=test_name,
+                kwargs=kwargs))
+            return result
+        return wrapper
+
+def write_instrumentation_reports():
+    if INSTRUMENTING:
+        calls = INSTRUMENTED_CALLS
+        var_dir = 'var' # TODO make sure path is robust here
+        fn = os.path.join(var_dir, 'url_coverage.txt')
+        with open(fn, 'w') as f:
+            for call in calls:
+                line = ujson.dumps(call)
+                f.write(line + '\n')
+
+        print('URL coverage report is in %s' % (fn,))
+        print('Try running: ./tools/analyze-url-coverage')
+
+        # Find our untested urls.
+        from zproject.urls import urlpatterns
+        untested_patterns = []
+        for pattern in urlpatterns:
+            for call in calls:
+                url = call['url']
+                if url.startswith('/'):
+                    url = url[1:]
+                if pattern.regex.match(url):
+                    break
+            else:
+                untested_patterns.append(pattern.regex.pattern)
+
+        fn = os.path.join(var_dir, 'untested_url_report.txt')
+        with open(fn, 'w') as f:
+            f.write('untested urls\n')
+            for untested_pattern in sorted(untested_patterns):
+                f.write('  %s\n' % (untested_pattern,))
+        print('Untested-url report is in %s' % (fn,))
+
+
 class AuthedTestCase(TestCase):
     '''
     WRAPPER_COMMENT:
@@ -209,6 +273,7 @@ class AuthedTestCase(TestCase):
     django_client to fool the regext.
     '''
 
+    @instrument_url
     def client_patch(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         """
@@ -218,6 +283,7 @@ class AuthedTestCase(TestCase):
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.patch(url, encoded, **kwargs)
 
+    @instrument_url
     def client_patch_multipart(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         """
@@ -236,22 +302,26 @@ class AuthedTestCase(TestCase):
             content_type=MULTIPART_CONTENT,
             **kwargs)
 
+    @instrument_url
     def client_put(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.put(url, encoded, **kwargs)
 
+    @instrument_url
     def client_delete(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.delete(url, encoded, **kwargs)
 
+    @instrument_url
     def client_post(self, url, info={}, **kwargs):
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.post(url, info, **kwargs)
 
+    @instrument_url
     def client_get(self, url, info={}, **kwargs):
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.get(url, info, **kwargs)
