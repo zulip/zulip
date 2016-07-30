@@ -1,5 +1,49 @@
 # Web frontend unit tests (zjsunit)
 
+Zulip uses an internal testing framework called **zjsunit** to
+unit test the project's front end JavaScript code.  The tests that run
+under this lightweight framework are casually called "node
+tests," because they are run using **node.js**, or simply
+"JS unit tests." These tests serve a different purpose than
+our Casper tests, which are end-to-end in nature.  Our 
+unit tests attempt to test our front-end JS methods mostly
+in isolation.
+
+You can run the tests as follows:
+
+```
+/srv/zulip$ ./tools/test-js-with-node 
+running tests for activity
+running tests for alert_words
+running tests for bot_data
+running tests for composebox_typeahead
+running tests for dict
+running tests for echo
+running tests for filter
+running tests for hashchange
+running tests for i18n
+running tests for message_list
+running tests for message_list_view
+running tests for muting
+running tests for narrow
+running tests for people
+running tests for presence_list_performance
+running tests for search_suggestion
+running tests for server_events
+running tests for stream_color
+running tests for stream_data
+running tests for stream_list
+running tests for templates
+running tests for unread
+running tests for util
+To see more output, open var/test-js-with-node/index.html
+```
+
+The source code for the tests shown above (e.g. activity, alert_words, etc.)
+can be found here: [frontend_tests/node_tests](https://github.com/zulip/zulip/tree/master/frontend_tests/node_tests)
+
+The framework code can be found in the directory `frontend_tests/zjsunit`.
+
 ## Writing test for new code with zjsunit
 
 As an alternative to the black-box whole-app testing, you can unit test
