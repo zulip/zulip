@@ -1,7 +1,6 @@
 global.assert = require('assert');
 var fs = require('fs');
 var path = require('path');
-var Handlebars = require('handlebars');
 require('third/string-prototype-codepointat/codepointat.js');
 
 global.Dict = require('js/dict');
@@ -13,6 +12,11 @@ var namespace = require('./namespace.js');
 global.set_global = namespace.set_global;
 global.patch_builtin = namespace.patch_builtin;
 global.add_dependencies = namespace.add_dependencies;
+
+// Set up helpers to render templates.
+var render = require('./render.js');
+global.use_template = render.use_template;
+global.make_sure_all_templates_have_been_compiled = render.make_sure_all_templates_have_been_compiled;
 
 // Run all the JS scripts in our test directory.  Tests do NOT run
 // in isolation.
@@ -40,32 +44,6 @@ if (oneFileFilter.length > 0) {
     testsDifference = _.difference(oneFileFilter, tests);
 }
 tests.sort();
-
-function template_dir() {
-    return __dirname + '/../../static/templates/';
-}
-
-global.make_sure_all_templates_have_been_compiled = function () {
-    var dir = template_dir();
-    var fns = fs.readdirSync(dir).filter(function (fn) {
-        return (/\.handlebars/).test(fn);
-    });
-
-    _.each(fns, function (fn) {
-        var name = fn.split('.')[0];
-        if (!Handlebars.templates[name]) {
-            throw "The file " + fn + " has no test coverage.";
-        }
-    });
-};
-
-global.use_template = function (name) {
-    if (Handlebars.templates === undefined) {
-        Handlebars.templates = {};
-    }
-    var data = fs.readFileSync(template_dir() + name + '.handlebars').toString();
-    Handlebars.templates[name] = Handlebars.compile(data);
-};
 
 function stylesheets() {
     // TODO: Automatically get all relevant styles.
