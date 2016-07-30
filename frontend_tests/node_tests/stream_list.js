@@ -1,4 +1,4 @@
-set_global('$', function () {});
+global.stub_out_jquery();
 
 add_dependencies({
     Handlebars: 'handlebars',
