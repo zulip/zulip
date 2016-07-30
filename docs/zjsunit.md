@@ -44,40 +44,6 @@ can be found here: [frontend_tests/node_tests](https://github.com/zulip/zulip/tr
 
 The framework code can be found in the directory `frontend_tests/zjsunit`.
 
-## Writing test for new code with zjsunit
-
-As an alternative to the black-box whole-app testing, you can unit test
-individual JavaScript files that use the module pattern. For example, to
-test the `foobar.js` file, you would first add the following to the
-bottom of `foobar.js`:
-
->     if (typeof module !== 'undefined') {
->         module.exports = foobar;
->     }
-
-This makes `foobar.js` follow the CommonJS module pattern, so it can be
-required in Node.js, which runs our tests.
-
-Now create `frontend_tests/node_tests/foobar.js`. At the top, require
-the [Node.js assert module](http://nodejs.org/api/assert.html), and the
-module you're testing, like so:
-
->     var assert = require('assert');
->     var foobar = require('js/foobar.js');
-
-
-Define and call some tests using the [assert
-module](http://nodejs.org/api/assert.html). Note that for "equal"
-asserts, the *actual* value comes first, the *expected* value second.
-
->     (function test_somefeature() {
->         assert.strictEqual(foobar.somefeature('baz'), 'quux');
->         assert.throws(foobar.somefeature('Invalid Input'));
->     }());
-
-The test runner (`index.js`) automatically runs all .js files in the
-frontend\_tests/node directory.
-
 ## HTML output
 
 The JavaScript unit tests can generate output to be viewed in the
@@ -116,6 +82,37 @@ individual files. You can also click a filename to see the specific
 statements and branches not tested. 100% branch coverage isn't
 necessarily possible, but getting to at least 80% branch coverage is a
 good goal.
+
+## Writing test for new code with zjsunit
+
+When writing JS unit tests, make sure that the files you are testing
+use the CommonJS module pattern. For example, to
+test the `foobar.js` file, you would first add the following to the
+bottom of `foobar.js`:
+
+>     if (typeof module !== 'undefined') {
+>         module.exports = foobar;
+>     }
+
+Now create `frontend_tests/node_tests/foobar.js`. At the top, require
+the [Node.js assert module](http://nodejs.org/api/assert.html), and the
+module you're testing, like so:
+
+>     var assert = require('assert');
+>     var foobar = require('js/foobar.js');
+
+
+Define and call some tests using the [assert
+module](http://nodejs.org/api/assert.html). Note that for "equal"
+asserts, the *actual* value comes first, the *expected* value second.
+
+>     (function test_somefeature() {
+>         assert.strictEqual(foobar.somefeature('baz'), 'quux');
+>         assert.throws(foobar.somefeature('Invalid Input'));
+>     }());
+
+The test runner (`index.js`) automatically runs all .js files in the
+frontend\_tests/node directory.
 
 ## Handling dependencies in unit tests
 
