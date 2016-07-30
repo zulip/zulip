@@ -1,5 +1,6 @@
 global.assert = require('assert');
 var fs = require('fs');
+var path = require('path');
 var Handlebars = require('handlebars');
 require('third/string-prototype-codepointat/codepointat.js');
 
@@ -79,14 +80,32 @@ global.use_template = function (name) {
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
-var output_fn = 'var/.test-js-with-node.html';
+var mkdir_p = function (path) {
+    // This works like mkdir -p in Unix.
+    try {
+        fs.mkdirSync(path);
+    } catch(e) {
+        if ( e.code !== 'EEXIST' ) {
+            throw e;
+        }
+    }
+    return path;
+};
+
+var output_dir = (function () {
+    mkdir_p('var');
+    var dir = mkdir_p('var/test-js-with-node');
+    return dir;
+}());
+
+var output_fn = path.join(output_dir, 'output.html');
 
 (function () {
     var data = '';
 
-    data += '<link href="./static/styles/zulip.css" rel="stylesheet">\n';
-    data += '<link href="./static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
-    data += '<link href="./static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
+    data += '<link href="../../static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
     data += '<style type="text/css">.collapse {height: inherit}</style>\n';
     data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
     data += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
