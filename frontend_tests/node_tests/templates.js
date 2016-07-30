@@ -493,6 +493,15 @@ function render(template_name, args) {
     assert.equal(title.text().trim(), 'You have a notification');
 }());
 
+(function propagate_notification_change() {
+    var html = render('propagate_notification_change');
+    global.write_handlebars_output("propagate_notification_change", html);
+
+    var button_area = $(html).find(".propagate-notifications-controls");
+    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
+    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
+}());
+
 (function sidebar_subject_list() {
     var args = {
         want_show_more_topics_links: true,
@@ -754,15 +763,6 @@ function render(template_name, args) {
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
-}());
-
-(function notification_docs() {
-    var html = render('propagate_notification_change');
-    global.write_handlebars_output("propagate_notification_change", html);
-
-    var button_area = $(html).find(".propagate-notifications-controls");
-    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
-    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
 }());
 
 (function settings_tab() {
