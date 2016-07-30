@@ -80,6 +80,19 @@ global.use_template = function (name) {
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
+function stylesheets() {
+    // TODO: Automatically get all relevant styles.
+    var data = '';
+    data += '<link href="../../static/styles/fonts.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/portico.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
+    data += '<link href="../../static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
+    data += '<link href="../../static/third/bootstrap-notify/css/bootstrap-notify.css" rel="stylesheet">\n';
+
+    return data;
+}
+
 var mkdir_p = function (path) {
     // This works like mkdir -p in Unix.
     try {
@@ -99,18 +112,27 @@ var output_dir = (function () {
 }());
 
 var output_fn = path.join(output_dir, 'output.html');
+var index_fn = path.join(output_dir, 'index.html');
 
 (function () {
     var data = '';
 
-    data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
-    data += '<link href="../../static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
-    data += '<link href="../../static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
+    data += stylesheets();
     data += '<style type="text/css">.collapse {height: inherit}</style>\n';
     data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
     data += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
     data += '<h1>Output of node unit tests</h1>\n';
     fs.writeFileSync(output_fn, data);
+
+    data = '';
+    data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
+    data += '<h2>Regular output</h2>\n';
+    data += '<p>Any test can output HTML to be viewed here:</p>\n';
+    data += '<a href="output.html">Output of non-template.js tests</a><br />';
+    data += '<hr />\n';
+    data += '<h2>Handlebar output</h2>\n';
+    data += '<p>These are specifically from templates.js</p>\n';
+    fs.writeFileSync(index_fn, data);
 }());
 
 global.write_test_output = function (label, output) {
@@ -123,9 +145,39 @@ global.write_test_output = function (label, output) {
     fs.appendFileSync(output_fn, data);
 };
 
-global.write_handlebars_output = function (label, output) {
-    global.write_test_output(label + '.handlebars', output);
-};
+global.write_handlebars_output = (function () {
+    var last_label = '';
+
+    return function (label, output) {
+        if (last_label && (last_label >= label)) {
+            // This is kind of an odd requirement, but it allows us
+            // to render output on the fly in alphabetical order, and
+            // it has a nice side effect of making our source code
+            // easier to scan.
+
+            console.info(last_label);
+            console.info(label);
+            throw "Make sure your template tests are alphabetical in templates.js";
+        }
+        last_label = label;
+
+        var href = label + '.handlebars.html';
+        var fn = path.join(output_dir, href);
+
+        // Update the index
+        var a = '<a href="' + href +  '">' + label + '</a><br />';
+        fs.appendFileSync(index_fn, a);
+
+        // Write out own HTML file.
+        var data = '';
+        data += stylesheets();
+        data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
+        data += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
+        data += '<b>' + href + '</b><hr />\n';
+        data += output;
+        fs.writeFileSync(fn, data);
+    };
+}());
 
 global.append_test_output = function (output) {
     fs.appendFileSync(output_fn, output);
@@ -151,8 +203,8 @@ if (oneFileFilter.length > 0 && testsDifference.length > 0) {
         console.log(filename + " does not exist");
     });
     if (oneFileFilter.length > testsDifference.length) {
-        console.info("To see more output, open " + output_fn);
+        console.info("To see more output, open " + index_fn);
     }
 } else {
-    console.info("To see more output, open " + output_fn);
+    console.info("To see more output, open " + index_fn);
 }
