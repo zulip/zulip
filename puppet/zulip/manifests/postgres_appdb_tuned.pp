@@ -70,6 +70,7 @@ vm.dirty_background_ratio = 5
 
   $random_page_cost = zulipconf("postgresql", "random_page_cost", undef)
   $effective_io_concurrency = zulipconf("postgresql", "effective_io_concurrency", undef)
+  $replication = zulipconf("postgresql", "replication", undef)
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
     require => Package["postgresql-${zulip::base::postgres_version}"],
