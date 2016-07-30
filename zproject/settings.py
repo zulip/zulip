@@ -591,7 +591,7 @@ PIPELINE = {
     'YUI_BINARY': '/usr/bin/env yui-compressor',
     'STYLESHEETS': {
         # If you add a style here, please update stylesheets()
-        # in frontend_tests/node_tests/index.js as needed.
+        # in frontend_tests/zjsunit/output.js as needed.
         'activity': {
             'source_filenames': ('styles/activity.css',),
             'output_filename':  'min/activity.css'
