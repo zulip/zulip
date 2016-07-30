@@ -18,8 +18,7 @@ set_global('document', {
     }
 });
 
-var people = require("js/people.js");
-people.test_set_people_dict({
+global.people.test_set_people_dict({
     'alice@zulip.com': {
         full_name: 'Alice Smith'
     },
