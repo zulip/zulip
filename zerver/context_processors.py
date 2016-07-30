@@ -12,7 +12,6 @@ def add_settings(request):
         # will render even if the appropriate context is not provided
         # to the template
         'not_voyager':               not settings.VOYAGER,
-        'zulip_com':                 settings.ZULIP_COM,
         'custom_logo_url':           settings.CUSTOM_LOGO_URL,
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
