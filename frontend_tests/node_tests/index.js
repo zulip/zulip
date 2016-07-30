@@ -123,6 +123,10 @@ global.write_test_output = function (label, output) {
     fs.appendFileSync(output_fn, data);
 };
 
+global.write_handlebars_output = function (label, output) {
+    global.write_test_output(label + '.handlebars', output);
+};
+
 global.append_test_output = function (output) {
     fs.appendFileSync(output_fn, output);
 };
