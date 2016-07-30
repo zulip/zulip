@@ -78,10 +78,8 @@ function render(template_name, args) {
         }
     };
 
-    var html = '<div style="height: 250px">';
-    html += render('settings_tab', args);
-    html += "</div>";
+    var html = render('settings_tab', args);
     var div = $(html).find("div.notification-reminder");
     assert.equal(div.text().trim(), 'Some French text with Zulip');
-    global.write_test_output("actions_popover_content.handlebars", html);
+    global.write_test_output("test_tr_tag settings", html);
 }());
