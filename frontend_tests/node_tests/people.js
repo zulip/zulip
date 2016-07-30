@@ -2,13 +2,7 @@ add_dependencies({
     util: 'js/util.js'
 });
 
-set_global('$', function () {
-    return {
-        on: function () {
-            return;
-        }
-    };
-});
+global.stub_out_jquery();
 
 var people = require("js/people.js");
 

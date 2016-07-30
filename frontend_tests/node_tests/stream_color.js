@@ -1,4 +1,4 @@
-set_global('$', function (f) {});
+global.stub_out_jquery();
 
 var stream_color = require('js/stream_color.js');
 
