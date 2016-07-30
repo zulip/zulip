@@ -1,11 +1,4 @@
-set_global('$', function () {
-    return {
-        on: function () {
-            return;
-        }
-    };
-});
-$.fn = {};
+global.stub_out_jquery();
 
 add_dependencies({
     util: 'js/util.js',
