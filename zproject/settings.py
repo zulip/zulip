@@ -169,6 +169,9 @@ for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
     if setting_name not in vars():
         vars()[setting_name] = setting_val
 
+# Extend ALLOWED_HOSTS with localhost (needed to RPC to Tornado).
+ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
+
 # These are the settings that we will check that the user has filled in for
 # production deployments before starting the app.  It consists of a series
 # of pairs of (setting name, default value that it must be changed from)
@@ -182,7 +185,7 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
-                     ("ALLOWED_HOSTS", "*"),
+                     ("ALLOWED_HOSTS", ["*", '127.0.0.1', 'localhost']),
                      ]
 
 if ADMINS == "":

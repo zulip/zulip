@@ -34,6 +34,7 @@ ADMIN_DOMAIN = 'travis.example.com'
 AUTHENTICATION_BACKENDS = ( 'zproject.backends.EmailAuthBackend', )
 NOREPLY_EMAIL_ADDRESS = 'noreply@travis.example.com'
 DEFAULT_FROM_EMAIL = "Zulip <zulip@travis.example.com>"
+ALLOWED_HOSTS = []
 EOF
 
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
