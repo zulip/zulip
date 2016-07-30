@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Dict, Iterable, List, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, TypeVar
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
@@ -367,10 +367,10 @@ class WorkerTest(TestCase):
         @queue_processors.assign_queue('unreliable_worker')
         class UnreliableWorker(queue_processors.QueueProcessingWorker):
             def consume(self, data):
-                # type: (str) -> None
-                if data == 'unexpected behaviour':
+                # type: (Mapping[str, Any]) -> None
+                if data["type"] == 'unexpected behaviour':
                     raise Exception('Worker task not performing as expected!')
-                processed.append(data)
+                processed.append(data["type"])
 
             def _log_problem(self):
                 # type: () -> None
@@ -380,7 +380,7 @@ class WorkerTest(TestCase):
 
         fake_client = self.FakeClient()
         for msg in ['good', 'fine', 'unexpected behaviour', 'back to normal']:
-            fake_client.queue.append(('unreliable_worker', msg))
+            fake_client.queue.append(('unreliable_worker', {'type': msg}))
 
         fn = os.path.join(settings.QUEUE_ERROR_DIR, 'unreliable_worker.errors')
         try:
@@ -396,7 +396,7 @@ class WorkerTest(TestCase):
         self.assertEqual(processed, ['good', 'fine', 'back to normal'])
         line = open(fn).readline().strip()
         event = ujson.loads(line.split('\t')[1])
-        self.assertEqual(event, 'unexpected behaviour')
+        self.assertEqual(event["type"], 'unexpected behaviour')
 
     def test_worker_noname(self):
         # type: () -> None
@@ -405,7 +405,7 @@ class WorkerTest(TestCase):
                 # type: () -> None
                 super(TestWorker, self).__init__()
             def consume(self, data):
-                # type: (str) -> None
+                # type: (Mapping[str, Any]) -> None
                 pass
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             TestWorker()
