@@ -356,6 +356,19 @@ function render(template_name, args) {
     assert.equal(starred_title, "Unstar this message");
 }());
 
+(function message_edit_form() {
+    var args = {
+        "topic": "lunch",
+        "content": "Let's go to lunch!",
+        "is_stream": true
+    };
+    var html = render('message_edit_form', args);
+    global.write_handlebars_output("message_edit_form", html);
+
+    var textarea = $(html).find("textarea.message_edit_content");
+    assert.equal(textarea.text(), "Let's go to lunch!");
+}());
+
 (function message_group() {
     var messages = [
         {
@@ -409,19 +422,6 @@ function render(template_name, args) {
     assert.equal(highlighted_subject_word, 'two');
 
     global.write_handlebars_output("message_group", html);
-}());
-
-(function message_edit_form() {
-    var args = {
-        "topic": "lunch",
-        "content": "Let's go to lunch!",
-        "is_stream": true
-    };
-    var html = render('message_edit_form', args);
-    global.write_handlebars_output("message_edit_form", html);
-
-    var textarea = $(html).find("textarea.message_edit_content");
-    assert.equal(textarea.text(), "Let's go to lunch!");
 }());
 
 (function message_info_popover_content() {
