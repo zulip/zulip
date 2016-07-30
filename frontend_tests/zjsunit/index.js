@@ -19,7 +19,11 @@ if (process.argv[2] ) {
       .map(function (filename) {return filename.replace(/\.js$/i, '');});
 }
 
-var tests = fs.readdirSync(__dirname)
+// tests_dir is where we find our specific unit tests (as opposed
+// to framework code)
+var tests_dir = __dirname.replace(/zjsunit/, 'node_tests');
+
+var tests = fs.readdirSync(tests_dir)
   .filter(function (filename) {return (/\.js$/i).test(filename);})
   .map(function (filename) {return filename.replace(/\.js$/i, '');});
 
@@ -184,11 +188,8 @@ global.append_test_output = function (output) {
 };
 
 tests.forEach(function (filename) {
-    if (filename === 'index') {
-        return;
-    }
     console.info('running tests for ' + filename);
-    require('./' + filename);
+    require(path.join(tests_dir, filename));
 
     dependencies.forEach(function (name) {
         delete global[name];
