@@ -125,5 +125,5 @@ class TemplateTestCase(AuthedTestCase):
         # type: () -> None
         response = self.client_get("/terms/")
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("Thanks for using our products and services (\"Services\"). " in response.content)
-        self.assertTrue("By using our Services, you are agreeing to these terms" in response.content)
+        self.assert_in_response(u"Thanks for using our products and services (\"Services\"). ", response)
+        self.assert_in_response(u"By using our Services, you are agreeing to these terms", response)
