@@ -466,7 +466,8 @@ def client_is_exempt_from_rate_limiting(request):
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
     return ((request.client and request.client.name.lower() == 'internal')
-           and (is_local_addr(request.META['REMOTE_ADDR']) or settings.DEBUG))
+           and (is_local_addr(request.META['REMOTE_ADDR']) or
+                settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT

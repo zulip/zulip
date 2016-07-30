@@ -263,7 +263,7 @@ class RateLimitTestCase(TestCase):
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
                 with self.errors_disallowed():
-                    with self.settings(DEBUG=True):
+                    with self.settings(DEBUG_RATE_LIMITING=True):
                         self.assertEqual(f(req), 'some value')
 
         self.assertFalse(rate_limit_mock.called)
