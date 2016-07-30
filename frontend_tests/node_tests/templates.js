@@ -72,20 +72,6 @@ function render(template_name, args) {
     global.write_handlebars_output("actions_popover_content", html);
 }());
 
-(function admin_tab() {
-    var args = {
-        realm_name: 'Zulip'
-    };
-    var html = render('admin_tab', args);
-    var admin_features = ["admin_users_table", "admin_bots_table",
-                          "admin_streams_table", "admin_deactivated_users_table"];
-    _.each(admin_features, function (admin_feature) {
-        assert.notEqual($(html).find("#" + admin_feature).length, 0);
-    });
-    assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
-    global.write_handlebars_output("admin_tab", html);
-}());
-
 (function admin_default_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
@@ -134,6 +120,20 @@ function render(template_name, args) {
     var span = $(html).find(".stream_name:first");
     assert.equal(span.text(), "devel");
     global.write_handlebars_output("admin_streams_list", html);
+}());
+
+(function admin_tab() {
+    var args = {
+        realm_name: 'Zulip'
+    };
+    var html = render('admin_tab', args);
+    var admin_features = ["admin_users_table", "admin_bots_table",
+                          "admin_streams_table", "admin_deactivated_users_table"];
+    _.each(admin_features, function (admin_feature) {
+        assert.notEqual($(html).find("#" + admin_feature).length, 0);
+    });
+    assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
+    global.write_handlebars_output("admin_tab", html);
 }());
 
 (function admin_user_list() {
