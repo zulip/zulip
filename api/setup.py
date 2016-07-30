@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from typing import Any, Generator, List, Tuple
+if False: from typing import Any, Generator, List, Tuple
 
 import os
 import sys
@@ -10,6 +10,7 @@ import sys
 import itertools
 
 def version():
+    # type: () -> str
     version_py = os.path.join(os.path.dirname(__file__), "zulip", "__init__.py")
     with open(version_py) as in_handle:
         version_line = next(itertools.dropwhile(lambda x: not x.startswith("__version__"),
@@ -46,7 +47,7 @@ package_info = dict(
                                            "examples/print-messages", "examples/recent-messages"])] + \
         list(recur_expand('share/zulip', 'integrations/')),
     scripts=["bin/zulip-send"],
-)
+) # type: Dict[str, Any]
 
 setuptools_info = dict(
     install_requires=['requests>=0.12.1',
