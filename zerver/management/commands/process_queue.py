@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from types import FrameType
 from typing import Any
 
 from argparse import ArgumentParser
@@ -51,6 +52,7 @@ class Command(BaseCommand):
             worker.setup()
 
             def signal_handler(signal, frame):
+                # type: (int, FrameType) -> None
                 logger.info("Worker %d disconnecting from queue %s" % (worker_num, queue_name))
                 worker.stop()
                 sys.exit(0)
