@@ -8,6 +8,12 @@ global.Dict = require('js/dict');
 global._ = require('third/underscore/underscore.js');
 var _ = global._;
 
+// Set up our namespace helpers.
+var namespace = require('./namespace.js');
+global.set_global = namespace.set_global;
+global.patch_builtin = namespace.patch_builtin;
+global.add_dependencies = namespace.add_dependencies;
+
 // Run all the JS scripts in our test directory.  Tests do NOT run
 // in isolation.
 
@@ -34,29 +40,6 @@ if (oneFileFilter.length > 0) {
     testsDifference = _.difference(oneFileFilter, tests);
 }
 tests.sort();
-
-
-var dependencies = [];
-var old_builtins = {};
-
-global.set_global = function (name, val) {
-    global[name] = val;
-    dependencies.push(name);
-    return val;
-};
-
-global.patch_builtin = function (name, val) {
-    old_builtins[name] = global[name];
-    global[name] = val;
-    return val;
-};
-
-global.add_dependencies = function (dct) {
-    _.each(dct, function (fn, name) {
-        var obj = require(fn);
-        set_global(name, obj);
-    });
-};
 
 function template_dir() {
     return __dirname + '/../../static/templates/';
@@ -190,13 +173,7 @@ global.append_test_output = function (output) {
 tests.forEach(function (filename) {
     console.info('running tests for ' + filename);
     require(path.join(tests_dir, filename));
-
-    dependencies.forEach(function (name) {
-        delete global[name];
-    });
-    dependencies = [];
-    _.extend(global, old_builtins);
-    old_builtins = {};
+    namespace.restore();
 });
 
 if (oneFileFilter.length > 0 && testsDifference.length > 0) {
