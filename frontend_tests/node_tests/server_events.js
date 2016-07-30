@@ -11,13 +11,8 @@ set_global('document', {});
 set_global('window', {
     addEventListener: noop
 });
-set_global('$', function () {
-    return {
-        hide: noop,
-        trigger: noop
-    };
-});
-global.$.now = noop;
+
+global.stub_out_jquery();
 
 // Prevent the get_events loop and watchdog from running
 patch_builtin('setTimeout', noop);

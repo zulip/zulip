@@ -10,12 +10,8 @@ add_dependencies({
 
 
 set_global('document', null);
-set_global('$', function () {
-    return {
-        on: function () {},
-        trigger: function () {}
-    };
-});
+
+global.stub_out_jquery();
 
 set_global('feature_flags', {});
 set_global('Filter', function () {});

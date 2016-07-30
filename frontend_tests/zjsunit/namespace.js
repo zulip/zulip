@@ -39,6 +39,18 @@ exports.restore = function () {
     old_builtins = {};
 };
 
+exports.stub_out_jquery = function () {
+    set_global('$', function () {
+        return {
+            on: function () {},
+            trigger: function () {},
+            hide: function () {}
+        };
+    });
+    $.fn = {};
+    $.now = function () {};
+};
+
 return exports;
 }());
 module.exports = namespace;

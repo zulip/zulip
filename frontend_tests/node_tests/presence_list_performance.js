@@ -1,12 +1,5 @@
 // TODO: de-dup with activity.js
-set_global('$', function () {
-    return {
-        on: function () {
-            return;
-        }
-    };
-});
-$.fn = {};
+global.stub_out_jquery();
 
 set_global('document', {
     hasFocus: function () {
