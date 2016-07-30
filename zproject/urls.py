@@ -105,6 +105,10 @@ i18n_urls = [
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 ]
 
+# If a Terms of Service is supplied, add that route
+if settings.TERMS_OF_SERVICE:
+    i18n_urls += [url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html'))]
+
 # Make a copy of i18n_urls so that they appear without prefix for english
 urls = list(i18n_urls)
 

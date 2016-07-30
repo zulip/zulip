@@ -1,4 +1,6 @@
 from django.template import Library
+from django.utils.safestring import mark_safe
+from django.utils.functional import memoize
 
 register = Library()
 
@@ -36,3 +38,20 @@ def display_list(values, display_limit):
         display_string += and_n_others(values, display_limit)
 
     return display_string
+
+memoize_cache = {} # type: Dict[str, str]
+
+@register.filter(name='render_markdown_path', is_safe=True)
+def render_markdown_path(markdown_file_path):
+    # type: (str) -> str
+    """
+    Given a path to a markdown file, return the rendered html
+    """
+    open("/home/zulip/zulip/called", 'a').write("render_markdown_path: " + repr(markdown_file_path)+ "\n")
+    import markdown
+    def path_to_html(path):
+        markdown_string = open(path).read()
+        return markdown.markdown(markdown_string, safe_mode='escape')
+
+    html = memoize(path_to_html, memoize_cache, 1)(markdown_file_path)
+    return mark_safe(html)

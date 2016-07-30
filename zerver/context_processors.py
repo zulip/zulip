@@ -7,6 +7,7 @@ from zproject.backends import (password_auth_enabled, dev_auth_enabled,
 
 def add_settings(request):
     realm = request.user.realm if hasattr(request.user, "realm") else None
+    open("context", 'a').write(repr(settings.TERMS_OF_SERVICE)+"\n")
     return {
         # We use the not_voyager variable name so that templates
         # will render even if the appropriate context is not provided
@@ -17,6 +18,7 @@ def add_settings(request):
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
+        'terms_of_service':          settings.TERMS_OF_SERVICE,
         'login_url':                 settings.HOME_NOT_LOGGED_IN,
         'only_sso':                  settings.ONLY_SSO,
         'external_api_path':         settings.EXTERNAL_API_PATH,
