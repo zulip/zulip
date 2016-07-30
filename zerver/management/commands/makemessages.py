@@ -30,13 +30,14 @@ http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja
 """
 from __future__ import absolute_import
 
-from typing import Any, Dict, Iterable, Mapping, Set, Tuple
+from typing import Any, Dict, Iterable, Optional, Mapping, Set, Tuple
 
 from argparse import ArgumentParser
 import os
 import re
 import glob
 import json
+from six import text_type
 from six.moves import filter
 from six.moves import map
 from six.moves import zip
@@ -46,8 +47,8 @@ from django.utils.translation import trans_real
 from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings
 
-strip_whitespace_right = re.compile(r"(%s-?\s*(trans|pluralize).*?-%s)\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
-strip_whitespace_left = re.compile(r"\s+(%s-\s*(endtrans|pluralize).*?-?%s)" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
+strip_whitespace_right = re.compile(u"(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
+strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 
 regexes = ['{{#tr .*?}}(.*?){{/tr}}',
            '{{t "(.*?)"\W*}}',
@@ -61,9 +62,9 @@ regexes = ['{{#tr .*?}}(.*?){{/tr}}',
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 
 def strip_whitespaces(src):
-    # type: (str) -> str
-    src = strip_whitespace_left.sub(r'\1', src)
-    src = strip_whitespace_right.sub(r'\1', src)
+    # type: (text_type) -> text_type
+    src = strip_whitespace_left.sub(u'\\1', src)
+    src = strip_whitespace_right.sub(u'\\1', src)
     return src
 
 class Command(makemessages.Command):
@@ -116,6 +117,7 @@ class Command(makemessages.Command):
         trans_real.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
         def my_templatize(src, origin=None):
+            # type: (text_type, Optional[text_type]) -> text_type
             new_src = strip_whitespaces(src)
             return old_templatize(new_src, origin)
 
