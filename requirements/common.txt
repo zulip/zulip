@@ -29,6 +29,9 @@ boto==2.42.0
 certifi==2016.8.8
 chardet==2.3.0
 
+# Required by pyopenssl
+cryptography==1.4
+
 # Needed for integrations
 defusedxml==0.4.1
 
