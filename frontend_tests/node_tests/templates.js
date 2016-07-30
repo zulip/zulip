@@ -193,6 +193,37 @@ function render(template_name, args) {
     assert.equal(count.text(), 99);
 }());
 
+(function bookend() {
+    // Do subscribed/unsubscribed cases here.
+    var args = {
+        bookend_content: "subscribed to stream",
+        trailing: true,
+        subscribed: true
+    };
+    var html;
+    var all_html = '';
+
+    html = render('bookend', args);
+
+    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            \n            Unsubscribe");
+
+    all_html += html;
+
+    args = {
+        bookend_content: "Not subscribed to stream",
+        trailing: true,
+        subscribed: false
+    };
+
+    html = render('bookend', args);
+    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            \n            Subscribe');
+
+    all_html += '<hr />';
+    all_html += html;
+
+    global.write_handlebars_output("bookend", all_html);
+}());
+
 (function bot_avatar_row() {
     var html = '';
     html += '<div id="settings">';
@@ -656,32 +687,6 @@ function render(template_name, args) {
     var a = $(html).find("a.narrow_to_topic");
     assert.equal(a.text().trim(), 'Narrow to topic lunch');
 
-}());
-
-(function subscribed_trailing_bookend() {
-    var args = {
-        bookend_content: "subscribed to stream",
-        trailing: true,
-        subscribed: true
-    };
-    var html = '';
-    html += render('bookend', args);
-
-    global.write_handlebars_output("bookend", html);
-    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            \n            Unsubscribe");
-}());
-
-(function unsubscribed_trailing_bookend() {
-    var args = {
-        bookend_content: "Not subscribed to stream",
-        trailing: true,
-        subscribed: false
-    };
-    var html = '';
-    html += render('bookend', args);
-
-    global.write_handlebars_output("bookend", html);
-    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            \n            Subscribe');
 }());
 
 (function tutorial() {
