@@ -2,6 +2,14 @@
 var path = require('path');
 var fs = require('fs');
 
+set_global('$', function () {
+    return {
+        on: function () {
+            return;
+        }
+    };
+});
+
 set_global('page_params', {realm_emoji: {
   burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
             source_url: '/static/third/gemoji/images/emoji/burrito.png'}

@@ -1,4 +1,13 @@
-set_global('$', function () {});
+// TODO: de-dup with activity.js
+set_global('$', function () {
+    return {
+        on: function () {
+            return;
+        }
+    };
+});
+$.fn = {};
+
 set_global('document', {
     hasFocus: function () {
         return true;
@@ -43,6 +52,26 @@ activity.presence_info = {
     'mark@zulip.com': {status: activity.IDLE},
     'norbert@zulip.com': {status: activity.ACTIVE}
 };
+
+
+// TODO: de-dup with activity.js
+people.test_set_people_dict({
+    'alice@zulip.com': {
+        full_name: 'Alice Smith'
+    },
+    'fred@zulip.com': {
+        full_name: "Fred Flintstone"
+    },
+    'jill@zulip.com': {
+        full_name: 'Jill Hill'
+    },
+    'mark@zulip.com': {
+        full_name: 'Marky Mark'
+    },
+    'norbert@zulip.com': {
+        full_name: 'Norbert Oswald'
+    }
+});
 
 (function test_presence_list_full_update() {
     var users = activity.update_users();

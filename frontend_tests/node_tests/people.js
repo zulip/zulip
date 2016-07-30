@@ -2,6 +2,14 @@ add_dependencies({
     util: 'js/util.js'
 });
 
+set_global('$', function () {
+    return {
+        on: function () {
+            return;
+        }
+    };
+});
+
 var people = require("js/people.js");
 
 set_global('page_params', {
