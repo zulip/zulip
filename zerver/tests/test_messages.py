@@ -38,6 +38,7 @@ import DNS
 import mock
 import time
 import ujson
+from six import text_type
 from six.moves import range
 
 class TestCrossRealmPMs(AuthedTestCase):
@@ -909,7 +910,7 @@ class MirroredMessageUsersTest(TestCase):
 
     def test_invalid_sender(self):
         user = get_user_profile_by_email('hamlet@zulip.com')
-        recipients = []
+        recipients = [] # type: List[text_type]
         request = self.Request()
         request.POST = dict() # no sender
 
@@ -925,7 +926,7 @@ class MirroredMessageUsersTest(TestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         sender = user
 
-        recipients = []
+        recipients = [] # type: List[text_type]
         request = self.Request()
         request.POST = dict(
             sender=sender.email,
