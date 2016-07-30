@@ -31,15 +31,17 @@ import signal
 
 from .zephyr_mirror_backend import parse_args
 
+(options, args) = parse_args()
+
+sys.path[:0] = [os.path.join(options.root_path, 'api')]
+from typing import Any
+
 def die(signal, frame):
     # We actually want to exit, so run os._exit (so as not to be caught and restarted)
     os._exit(1)
 
 signal.signal(signal.SIGINT, die)
 
-(options, args) = parse_args()
-
-sys.path[:0] = [os.path.join(options.root_path, 'api')]
 from zulip import RandomExponentialBackoff
 
 args = [os.path.join(options.root_path, "user_root", "zephyr_mirror_backend.py")]
