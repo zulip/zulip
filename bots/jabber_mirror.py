@@ -27,10 +27,13 @@ import subprocess
 import os
 import traceback
 import signal
+from types import FrameType
+from typing import Any
 from zulip import RandomExponentialBackoff
 
 def die(signal, frame):
-    # We actually want to exit, so run os._exit (so as not to be caught and restarted)
+    # type: (int, FrameType) -> None
+    """We actually want to exit, so run os._exit (so as not to be caught and restarted)"""
     os._exit(1)
 
 signal.signal(signal.SIGINT, die)
