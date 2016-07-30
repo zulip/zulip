@@ -502,6 +502,49 @@ function render(template_name, args) {
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
 }());
 
+(function settings_tab() {
+    var page_param_checkbox_options = {
+        stream_desktop_notifications_enabled: true,
+        stream_sounds_enabled: true, desktop_notifications_enabled: true,
+        sounds_enabled: true, enable_offline_email_notifications: true,
+        enable_offline_push_notifications: true, enable_digest_emails: true,
+        autoscroll_forever: true, default_desktop_notifications: true
+    };
+    var page_params = $.extend(page_param_checkbox_options, {
+        fullname: "Alyssa P. Hacker", password_auth_enabled: true,
+        avatar_url: "https://google.com",
+        domain: "zulip.com"
+    });
+
+    var checkbox_ids = ["enable_stream_desktop_notifications",
+                        "enable_stream_sounds", "enable_desktop_notifications",
+                        "enable_sounds", "enable_offline_push_notifications",
+                        "enable_digest_emails", "autoscroll_forever",
+                        "default_desktop_notifications"];
+
+    // Render with all booleans set to true.
+    var html = render('settings_tab', {page_params: page_params});
+    global.write_handlebars_output("settings_tab", html);
+
+    // All checkboxes should be checked.
+    _.each(checkbox_ids, function (checkbox) {
+        assert.equal($(html).find("#" + checkbox).is(":checked"), true);
+    });
+
+    // Re-render with checkbox booleans set to false.
+    _.each(page_param_checkbox_options, function (value, option) {
+        page_params[option] = false;
+    });
+
+    html = render('settings_tab', {page_params: page_params});
+
+    // All checkboxes should be unchecked.
+    _.each(checkbox_ids, function (checkbox) {
+        assert.equal($(html).find("#" + checkbox).is(":checked"), false);
+    });
+
+}());
+
 (function sidebar_subject_list() {
     var args = {
         want_show_more_topics_links: true,
@@ -763,49 +806,6 @@ function render(template_name, args) {
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
-}());
-
-(function settings_tab() {
-    var page_param_checkbox_options = {
-        stream_desktop_notifications_enabled: true,
-        stream_sounds_enabled: true, desktop_notifications_enabled: true,
-        sounds_enabled: true, enable_offline_email_notifications: true,
-        enable_offline_push_notifications: true, enable_digest_emails: true,
-        autoscroll_forever: true, default_desktop_notifications: true
-    };
-    var page_params = $.extend(page_param_checkbox_options, {
-        fullname: "Alyssa P. Hacker", password_auth_enabled: true,
-        avatar_url: "https://google.com",
-        domain: "zulip.com"
-    });
-
-    var checkbox_ids = ["enable_stream_desktop_notifications",
-                        "enable_stream_sounds", "enable_desktop_notifications",
-                        "enable_sounds", "enable_offline_push_notifications",
-                        "enable_digest_emails", "autoscroll_forever",
-                        "default_desktop_notifications"];
-
-    // Render with all booleans set to true.
-    var html = render('settings_tab', {page_params: page_params});
-    global.write_handlebars_output("settings_tab", html);
-
-    // All checkboxes should be checked.
-    _.each(checkbox_ids, function (checkbox) {
-        assert.equal($(html).find("#" + checkbox).is(":checked"), true);
-    });
-
-    // Re-render with checkbox booleans set to false.
-    _.each(page_param_checkbox_options, function (value, option) {
-        page_params[option] = false;
-    });
-
-    html = render('settings_tab', {page_params: page_params});
-
-    // All checkboxes should be unchecked.
-    _.each(checkbox_ids, function (checkbox) {
-        assert.equal($(html).find("#" + checkbox).is(":checked"), false);
-    });
-
 }());
 
 // By the end of this test, we should have compiled all our templates.  Ideally,
