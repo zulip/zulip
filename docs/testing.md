@@ -194,7 +194,27 @@ asserts, the *actual* value comes first, the *expected* value second.
 The test runner (`index.js`) automatically runs all .js files in the
 frontend\_tests/node directory.
 
-## Coverage reports
+#### HTML output
+
+The JavaScript unit tests can generate output to be viewed in the
+browser.  The best examples of this are in `frontend_tests/node_tests/templates.js`.
+
+The main use case for this mechanism is to be able to unit test
+templates and see how they are rendered without the complications
+of the surrounding app.  (Obviously, you still need to test the
+app itself!)  The HTML output can also help to debug the unit tests.
+
+Each test calls a method named `write_handlebars_output` after it
+renders a template with similar data.  This API is still evolving,
+but you should be able to look at existing code for patterns.
+
+When you run `tools/test-js-with-node`, it will present you with a
+message like "To see more output, open var/test-js-with-node/index.html."
+Basically, you just need to open the file in the browser.  (If you are
+running a VM, this might require switching to another terminal window
+to launch the `open` command.)
+
+#### Coverage reports
 
 You can automatically generate coverage reports for the JavaScript unit
 tests. To do so, install istanbul:
