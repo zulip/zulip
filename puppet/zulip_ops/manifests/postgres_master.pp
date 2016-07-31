@@ -29,4 +29,11 @@ class zulip_ops::postgres_master {
     require => Package["postgresql-${zulip::base::postgres_version}", "xfsprogs", "mdadm"],
     creates => "/dev/md0"
   }
+
+  # This one will probably fail most of the time
+  exec {"give_nagios_user_access":
+    command  => "su postgres -c -- bash -c 'psql -v ON_ERROR_STOP=1 zulip < /usr/share/postgresql/${zulip::base::postgres_version}/zulip_nagios_setup.sql' && touch /usr/share/postgresql/${zulip::base::postgres_version}/zulip_nagios_setup.sql.applied",
+    creates  => "/usr/share/postgresql/${zulip::base::postgres_version}/zulip_nagios_setup.sql.applied",
+    require  => Package["postgresql-${zulip::base::postgres_version}"],
+  }
 }
