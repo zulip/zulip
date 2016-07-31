@@ -657,3 +657,6 @@ checkpoint_completion_target = 0.7
 <% if scope["zulip::postgres_appdb_tuned::random_page_cost"] -%>
 random_page_cost = <%= scope["zulip::postgres_appdb_tuned::random_page_cost"] %>
 <% end -%>
+<% if scope["zulip::postgres_appdb_tuned::effective_io_concurrency"] -%>
+effective_io_concurrency = <%= scope["zulip::postgres_appdb_tuned::effective_io_concurrency"] %>
+<% end -%>
