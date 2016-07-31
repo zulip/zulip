@@ -5,7 +5,16 @@ class zulip::camo {
                     ]
   package { $camo_packages: ensure => "installed" }
 
-  # The configuration file is generated at install time
+  $camo_key = zulipsecret("secrets", "camo_key", '')
+
+  file { "/etc/default/camo":
+    require => Package[camo],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    content => template("zulip/camo_defaults.template.erb"),
+  }
 }
 
 
