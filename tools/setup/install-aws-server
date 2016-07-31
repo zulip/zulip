@@ -37,6 +37,10 @@ if ! [ -e "$server_private_key_file" ]; then
     exit 1
 fi
 
+if [ -n "$zulip_confdir" ]; then
+    zulipconf_file="$zulip_confdir/zulip.conf"
+    secrets_file="$zulip_confdir/zulip-secrets.conf"
+fi
 if [ -z "$secrets_file" ]; then
     echo "Specify secrets_file via environment."
     exit 1
@@ -69,6 +73,9 @@ set -e
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file".pub root@"$server":/root/.ssh/id_rsa.pub
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$secrets_file" root@"$server":/etc/zulip/zulip-secrets.conf
+if [ -e "$zulipconf_file" ]; then
+    scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$zulipconf_file" root@"$server":/etc/zulip/zulip.conf
+fi
 
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 # Finish setting up the SSH private key
