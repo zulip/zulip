@@ -1,5 +1,4 @@
-Maintaining and upgrading Zulip in production
-=============================================
+# Maintaining and upgrading Zulip in production
 
 We recommend reading this entire section before doing your first
 upgrade.
