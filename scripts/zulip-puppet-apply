@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+import os
 import sys
 import subprocess
 import six.moves.configparser as configparser
@@ -15,6 +16,10 @@ if len(extra_args) and extra_args[0] in ('-f', '--force'):
 
 config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
+
+if not os.path.exists("/etc/puppet/hiera.yaml"):
+    # Suppress warnings about hiera.yaml not existing.
+    subprocess.check_call(["touch", "/etc/puppet/hiera.yaml"])
 
 puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
