@@ -106,8 +106,6 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-cd /home/zulip/deployments/current
-
 set +x
 cat <<EOF
 
