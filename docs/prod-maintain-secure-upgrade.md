@@ -18,7 +18,8 @@ upgrade.
   in advance, we recommend doing upgrades at off hours.
 
   You can create your own release tarballs from a copy of zulip.git
-  repository using `tools/build-release-tarball`.
+  repository using `tools/build-release-tarball`.  See also the
+  [section on deploying from a Git repository](#deploying-zulip-from-a-git-repository).
 
 * **Warning**: If you have modified configuration files installed by
   Zulip (e.g. the nginx configuration), the Zulip upgrade process will
@@ -75,6 +76,41 @@ upgrade.
   of the Zulip daemons, the service automatically restarts itself
   every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
   precise configuration.
+
+## Deploying Zulip from a git repository
+
+Starting with version 1.4, the Zulip server supports doing deployments
+from a Git repository.  To configure this, you will need to add
+`zulip::static_asset_compiler` to your `/etc/zulip/zulip.conf` file's
+`puppet_classes` entry, like this:
+
+```
+puppet_classes = zulip::voyager, zulip::static_asset_compiler
+```
+
+Then, run `scripts/zulip-puppet-apply` to install the dependencies for
+building Zulip's static assets.  You can configure the `git`
+repository that you'd like to use by adding a section like this to
+`/etc/zulip/zulip.conf`; by default it uses the main `zulip`
+repository (shown below).
+
+```
+[deployment]
+git_repo_url = https://github.com/zulip/zulip.git
+```
+
+Once that is done (and assuming the currently installed version of
+Zulip is new enough that this script exists), you can do deployments
+by running as root:
+
+```
+# /home/zulip/deployments/current/scripts/deploy-zulip-from-git <branch>
+```
+
+and Zulip will automatically fetch the relevant branch from the
+specified repository, build the static assets, and deploy that
+version.  Currently, the upgrade process is slow, but it doesn't need
+to be; there is ongoing work on optimizing it.
 
 ## Backups for Zulip
 
