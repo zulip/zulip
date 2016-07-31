@@ -661,6 +661,10 @@ random_page_cost = <%= scope["zulip::postgres_appdb_tuned::random_page_cost"] %>
 effective_io_concurrency = <%= scope["zulip::postgres_appdb_tuned::effective_io_concurrency"] %>
 <% end -%>
 
+<% if scope["zulip::postgres_appdb_tuned::listen_addresses"] -%>
+listen_addresses = <%= scope["zulip::postgres_appdb_tuned::listen_addresses"] %>
+<% end -%>
+
 <% if scope["zulip::postgres_appdb_tuned::replication"] -%>
 # Master replication settings (ignored on standby)
 wal_level = hot_standby
