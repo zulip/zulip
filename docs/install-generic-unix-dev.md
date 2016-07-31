@@ -5,7 +5,7 @@ Installing manually on UNIX-based platforms
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
 * [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
 * [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-* [Fedora/CentOS](#common-to-fedora-centos-instructions)
+* [Fedora/CentOS common steps](#common-to-fedora-centos-instructions)
 * [Steps for all systems](#all-systems)
 
 If you really want to install everything manually, the below instructions
@@ -102,7 +102,7 @@ sudo dnf install libffi-devel memcached rabbitmq-server \
     nodejs npm yuicompressor closure-compiler gettext
 ```
 
-Finally continue with the [All Systems](#all-systems) instructions below.
+Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
 
 ### On CentOS 7 Core (experimental):
 
