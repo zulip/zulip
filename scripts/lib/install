@@ -15,8 +15,8 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
-/root/zulip/scripts/lib/setup-apt-repo
-
+# Add the Zulip PPA
+apt-add-repository --enable-source --yes ppa:tabbott/zulip
 apt-get update
 apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python python-six crudini $ADDITIONAL_PACKAGES
