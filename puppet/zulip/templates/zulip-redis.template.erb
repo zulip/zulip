@@ -1,0 +1,9 @@
+# Zulip custom redis configuration
+
+# Disable saving to disk to optimize performance
+save ""
+
+<% if @redis_password != '' -%>
+# Set a Redis password based on zulip-secrets.conf
+requirepass '<%= @redis_password %>'
+<% end -%>
