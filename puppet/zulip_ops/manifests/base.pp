@@ -32,6 +32,7 @@ class zulip_ops::base {
                         "strace",
                         "host",
                         "git",
+                        "nagios-plugins-contrib",
                          ]
   package { $org_base_packages: ensure => "installed" }
 
