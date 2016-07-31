@@ -76,7 +76,7 @@ upgrade.
   every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
   precise configuration.
 
-### Backups for Zulip
+## Backups for Zulip
 
 There are several pieces of data that you might want to back up:
 
@@ -105,7 +105,7 @@ computed using a hash of avatar_salt and user's email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
-#### Restoration
+### Restoration
 
 To restore from backups, the process is basically the reverse of the above:
 
@@ -138,7 +138,7 @@ Contributions to more fully automate this process or make this section
 of the guide much more explicit and detailed are very welcome!
 
 
-#### Postgres streaming replication
+### Postgres streaming replication
 
 Zulip has database configuration for using Postgres streaming
 replication; you can see the configuration in these files:
@@ -152,7 +152,7 @@ this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
 
 
-### Monitoring Zulip
+## Monitoring Zulip
 
 The complete Nagios configuration (sans secret keys) used to
 monitor zulip.com is available under `puppet/zulip_internal` in the
@@ -201,7 +201,7 @@ If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
 encouraged!
 
-### Scalability of Zulip
+## Scalability of Zulip
 
 This section attempts to address the considerations involved with
 running Zulip with a large team (>1000 users).
@@ -258,7 +258,7 @@ running Zulip with a large team (>1000 users).
 Questions, concerns, and bug reports about this area of Zulip are very
 welcome!  This is an area we are hoping to improve.
 
-### Security Model
+## Security Model
 
 This section attempts to document the Zulip security model.  Since
 this is new documentation, it likely does not cover every issue; if
@@ -267,7 +267,7 @@ questions on the Zulip development mailing list (or if you think
 you've found a security bug, please report it to support@zulip.com so
 we can do a responsible security announcement).
 
-#### Secure your Zulip server like your email server
+### Secure your Zulip server like your email server
 
 * It's reasonable to think about security for a Zulip server like you
   do security for a team email server -- only trusted administrators
@@ -283,7 +283,7 @@ we can do a responsible security announcement).
   entire message history, and thus someone with control over the
   server has access to that data as well.
 
-#### Encryption and Authentication
+### Encryption and Authentication
 
 * Traffic between clients (web, desktop and mobile) and the Zulip is
   encrypted using HTTPS.  By default, all Zulip services talk to each
@@ -302,7 +302,7 @@ we can do a responsible security announcement).
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
-#### Messages and History
+### Messages and History
 
 * Zulip message content is rendering using a specialized Markdown
   parser which escapes content to protect against cross-site scripting
@@ -336,7 +336,7 @@ we can do a responsible security announcement).
   version of a message, so that future versions of Zulip could support
   displaying the diffs between previous versions.
 
-#### Users and Bots
+### Users and Bots
 
 * There are three types of users in a Zulip realm: Administrators,
   normal users, and bots.  Administrators have the ability to
@@ -389,7 +389,7 @@ we can do a responsible security announcement).
   by another user (an important feature for implementing integrations
   like the Jabber, IRC, and Zephyr mirrors).
 
-#### User-uploaded content
+### User-uploaded content
 
 * Zulip supports user-uploaded files; ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
@@ -420,7 +420,7 @@ we can do a responsible security announcement).
   messages when a message contains a link to an image.  You can
   control this using the `INLINE_IMAGE_PREVIEW` setting.
 
-#### Final notes and security response
+### Final notes and security response
 
 If you find some aspect of Zulip that seems inconsistent with this
 security model, please report it to support@zulip.com so that we can
