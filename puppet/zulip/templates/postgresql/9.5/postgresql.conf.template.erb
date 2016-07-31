@@ -654,18 +654,18 @@ work_mem = <%= scope["zulip::postgres_appdb_tuned::work_mem"] %>MB
 shared_buffers = <%= scope["zulip::postgres_appdb_tuned::shared_buffers"] %>MB
 wal_buffers = 4MB
 checkpoint_completion_target = 0.7
-<% if scope["zulip::postgres_appdb_tuned::random_page_cost"] -%>
-random_page_cost = <%= scope["zulip::postgres_appdb_tuned::random_page_cost"] %>
+<% if @random_page_cost != '' -%>
+random_page_cost = <%= @random_page_cost %>
 <% end -%>
-<% if scope["zulip::postgres_appdb_tuned::effective_io_concurrency"] -%>
-effective_io_concurrency = <%= scope["zulip::postgres_appdb_tuned::effective_io_concurrency"] %>
-<% end -%>
-
-<% if scope["zulip::postgres_appdb_tuned::listen_addresses"] -%>
-listen_addresses = <%= scope["zulip::postgres_appdb_tuned::listen_addresses"] %>
+<% if @effective_io_concurrency != '' -%>
+effective_io_concurrency = <%= @effective_io_concurrency %>
 <% end -%>
 
-<% if scope["zulip::postgres_appdb_tuned::replication"] -%>
+<% if @listen_addresses != '' -%>
+listen_addresses = <%= @listen_addresses %>
+<% end -%>
+
+<% if @replication != '' -%>
 # Master replication settings (ignored on standby)
 wal_level = hot_standby
 max_wal_senders = 5
