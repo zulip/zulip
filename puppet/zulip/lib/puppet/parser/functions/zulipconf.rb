@@ -4,7 +4,7 @@ module Puppet::Parser::Functions
     joined = args.join(" ")
     output = `/usr/bin/crudini --get /etc/zulip/zulip.conf #{joined} 2>&1`; result=$?.success?
     if result
-      output
+      output.strip()
     else
       default
     end
