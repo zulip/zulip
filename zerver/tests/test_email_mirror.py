@@ -39,6 +39,7 @@ import os
 import sys
 from os.path import dirname, abspath
 from six.moves import cStringIO as StringIO
+from django.conf import settings
 
 from typing import Any, Callable, Mapping, Union
 
@@ -192,6 +193,23 @@ class TestMissedHuddleMessageEmailMessages(AuthedTestCase):
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
         self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
+
+class TestMissedMessageAddressWithEmptyGateway(AuthedTestCase):
+    def test_address_with_empty_gateway(self):
+        self.login("othello@zulip.com")
+        result = self.client_post("/json/messages", {"type": "private",
+                                                     "content": "test_receive_missed_message_email_messages",
+                                                     "client": "test suite",
+                                                     "to": ujson.dumps(["cordelia@zulip.com",
+                                                                        "iago@zulip.com"])})
+        self.assert_json_success(result)
+
+        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        usermessage = most_recent_usermessage(user_profile)
+        with self.settings(EMAIL_GATEWAY_PATTERN=''):
+            mm_address = create_missed_message_address(user_profile, usermessage.message)
+            self.assertEqual(mm_address, settings.NOREPLY_EMAIL_ADDRESS)
+
 
 class TestDigestEmailMessages(AuthedTestCase):
     @mock.patch('zerver.lib.digest.enough_traffic')
