@@ -28,15 +28,6 @@ class zulip_internal::loadbalancer {
     notify => Service["nginx"],
   }
 
-  file { "/etc/default/camo":
-    require => Package[camo],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_internal/camo_defaults",
-  }
-
   file { '/etc/log2zulip.conf':
     ensure     => file,
     owner      => "zulip",
