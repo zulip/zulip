@@ -16,6 +16,10 @@ try:
     git_url = config_file.get('deployment', 'git_repo_url')
 except (configparser.NoSectionError, configparser.NoOptionError):
     git_url = "https://github.com/zulip/zulip.git"
+try:
+    deploy_options = config_file.get('deployment', 'deploy_options').strip().split()
+except (configparser.NoSectionError, configparser.NoOptionError):
+    deploy_options = []
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -73,7 +77,7 @@ try:
                                os.path.join(deploy_path, "static/images/logo")])
 
     subprocess.check_call(["sudo", os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
-                           deploy_path, "--skip-migrations", "--skip-puppet", "--from-git"])
+                           deploy_path, "--from-git"] + deploy_options)
 
     logging.info("Deployment complete")
     subprocess.check_call(["./scripts/purge-old-deployments"])
