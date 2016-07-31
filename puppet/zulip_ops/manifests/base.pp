@@ -78,6 +78,23 @@ class zulip_ops::base {
     subscribe  => File['/etc/ssh/sshd_config'],
   }
 
+  file { '/root/.emacs':
+    ensure     => file,
+    mode       => 600,
+    owner      => "root",
+    group      => "root",
+    source     => 'puppet:///modules/zulip_ops/dot_emacs.el',
+  }
+
+  file { '/home/zulip/.emacs':
+    ensure     => file,
+    mode       => 600,
+    owner      => "zulip",
+    group      => "zulip",
+    source     => 'puppet:///modules/zulip_ops/dot_emacs.el',
+    require    => User['zulip'],
+  }
+
   file { '/root/.ssh/authorized_keys':
     ensure     => file,
     mode       => 600,
