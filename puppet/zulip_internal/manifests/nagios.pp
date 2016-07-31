@@ -1,4 +1,5 @@
 class zulip_internal::nagios {
+  include zulip_internal::base
   include zulip_internal::apache
   include zulip::nagios
 
