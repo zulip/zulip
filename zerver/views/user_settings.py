@@ -21,7 +21,9 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
+from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Realm
+from zerver.views import get_available_language_codes
 
 def name_changes_disabled(realm):
     # type: (Realm) -> bool
@@ -116,7 +118,10 @@ def json_language_setting(request, user_profile, default_language=REQ(validator=
     result = {}
     if (default_language is not None and
             user_profile.default_language != default_language):
-        do_change_default_language(user_profile, default_language)
+        if default_language in get_available_language_codes():
+            do_change_default_language(user_profile, default_language)
+        else:
+            raise JsonableError(_("Invalid language '%s'" % (default_language,)))
 
     result['default_language'] = default_language
 
