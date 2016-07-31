@@ -654,4 +654,6 @@ work_mem = <%= scope["zulip::postgres_appdb_tuned::work_mem"] %>MB
 shared_buffers = <%= scope["zulip::postgres_appdb_tuned::shared_buffers"] %>MB
 wal_buffers = 4MB
 checkpoint_completion_target = 0.7
-random_page_cost = 2.0
+<% if scope["zulip::postgres_appdb_tuned::random_page_cost"] -%>
+random_page_cost = <%= scope["zulip::postgres_appdb_tuned::random_page_cost"] %>
+<% end -%>
