@@ -35,23 +35,38 @@ sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python-dev \
     hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
-    puppet gettext
+    puppet gettext postgresql
 
+# Next, install Zulip's tsearch-extras postgresql extension
+# If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
+cd zulip
+sudo apt-add-repository -yus ppa:tabbott/zulip
+# On 14.04
+sudo apt-get install postgresql-9.3-tsearch-extras
+# On 16.04
+sudo apt-get install postgresql-9.5-tsearch-extras
+
+
+# Otherwise, you can download a .deb directly
 # If on 12.04 or wheezy:
-sudo apt-get install postgresql-9.1
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
 sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
 
 # If on 14.04:
-sudo apt-get install postgresql-9.3
-wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
-sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.2_amd64.deb
+https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
+sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
 
 # If on 15.04 or jessie:
-sudo apt-get install postgresql-9.4
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
+
+# If on 16.04 or stretch
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.2_amd64.deb
+sudo dpkg -i postgresql-9.5-tsearch-extras_0.2_amd64.deb
 ```
+
+Alternatively, you can always build the package from [tsearch-extras
+git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
