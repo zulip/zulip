@@ -46,6 +46,8 @@ fi
 
 # puppet apply
 mkdir -p /etc/zulip
+# Silence puppet warnings about hiera.yaml not existing
+touch /etc/puppet/hiera.yaml
 echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
