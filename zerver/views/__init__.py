@@ -832,6 +832,12 @@ def get_language_list():
 
         return sorted(lang_list, key=lambda i: i['name'])
 
+def get_available_language_codes():
+    # type: () -> List[text_type]
+    language_list = get_language_list()
+    codes = [language['code'] for language in language_list]
+    return codes
+
 @zulip_login_required
 def home(request):
     # type: (HttpRequest) -> HttpResponse
