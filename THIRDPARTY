@@ -42,13 +42,6 @@ Files: puppet/apt/*
 Copyright: 2011, Evolving Web Inc.
 License: Expat
 
-Files: puppet/common/*
-Copyright: 2007, David Schmitt
-License: BSD-3-Clause
-Comment: https://github.com/DavidS/puppet-common
- Distribution includes a file `lib/puppet/parser/functions/ip_to_cron.rb` which
- we removed due to unclear license
-
 Files: puppet/stdlib/*
 Copyright: 2011, Krzysztof Wilczynski
  2011, Puppet Labs Inc

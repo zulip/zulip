@@ -25,8 +25,6 @@ import sys
 
 exclude_trees = """
 static/third
-puppet/common
-puppet/puppet-common
 puppet/apt
 puppet/puppet-apt
 certs
