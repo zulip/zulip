@@ -68,6 +68,8 @@ vm.dirty_background_ratio = 5
   $effective_cache_size = $total_memory_mb * 10 / 32
   $maintenance_work_mem = $total_memory_mb / 32
 
+  $random_page_cost = zulipconf("postgresql", "random_page_cost", undef)
+
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
     require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
