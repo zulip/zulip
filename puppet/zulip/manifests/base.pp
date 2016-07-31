@@ -6,6 +6,8 @@ class zulip::base {
                      "netcat",
                      # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
                      "nagios-plugins-basic",
+                     # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
+                     "crudini",
                      ]
   package { $base_packages: ensure => "installed" }
 
