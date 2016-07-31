@@ -8,6 +8,8 @@ class zulip::base {
                      "nagios-plugins-basic",
                      # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
                      "crudini",
+                     # Used for tools like sponge
+                     "moreutils",
                      ]
   package { $base_packages: ensure => "installed" }
 
