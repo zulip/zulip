@@ -400,6 +400,12 @@ try:
         return result
 
     @lint
+    def css():
+        # type: () -> int
+        result = subprocess.call(['tools/check-css'])
+        return result
+
+    @lint
     def jslint():
         # type: () -> int
         result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
