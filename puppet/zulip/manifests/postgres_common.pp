@@ -9,8 +9,6 @@ class zulip::postgres_common {
                         "python-dateutil", # TODO: use a virtualenv instead
                         # our dictionary
                         "hunspell-en-us",
-                        # Used to read /etc/zulip/zulip.conf for database backups
-                        "crudini",
                         ]
   define safepackage ( $ensure = present ) {
     if !defined(Package[$title]) {
