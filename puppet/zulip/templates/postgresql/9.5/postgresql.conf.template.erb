@@ -675,3 +675,13 @@ archive_command = '/usr/local/bin/env-wal-e wal-push %p'
 # Standby replication settings (ignored on master)
 hot_standby = on
 <% end -%>
+
+<% if @ssl_cert_file != '' -%>
+ssl_cert_file = '<%= @ssl_cert_file %>'		# (change requires restart)
+<% end -%>
+<% if @ssl_key_file != '' -%>
+ssl_key_file = '<%= @ssl_key_file %>'		# (change requires restart)
+<% end -%>
+<% if @ssl_ca_file != '' -%>
+ssl_ca_file = '<%= @ssl_ca_file %>'		# (change requires restart)
+<% end -%>

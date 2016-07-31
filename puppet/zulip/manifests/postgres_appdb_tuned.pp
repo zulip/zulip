@@ -73,6 +73,10 @@ vm.dirty_background_ratio = 5
   $replication = zulipconf("postgresql", "replication", undef)
   $listen_addresses = zulipconf("postgresql", "listen_addresses", undef)
 
+  $ssl_cert_file = zulipconf("postgresql", "ssl_cert_file", undef)
+  $ssl_key_file = zulipconf("postgresql", "ssl_key_file", undef)
+  $ssl_ca_file = zulipconf("postgresql", "ssl_ca_file", undef)
+
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
     require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
