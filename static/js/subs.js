@@ -919,10 +919,19 @@ $(function () {
         }
         var sub = stream_data.get_sub(stream_name);
 
-        if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
+        if (sub !== undefined) {
+            if (sub !== undefined && sub.subscribed) {
+                ajaxUnsubscribe(stream_name);
+            } else {
+                ajaxSubscribe(stream_name);
+            }
         } else {
-            ajaxSubscribe(stream_name);
+            var is_never_sub = _.some(page_params.neversubbed_info, function (stream) {
+                                return stream.name === stream_name;
+                            });
+            if (is_never_sub) {
+                ajaxSubscribe(stream_name);
+            }
         }
         $('.empty_feed_notice').hide();
         $('#empty_narrow_message').show();
