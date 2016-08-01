@@ -200,6 +200,18 @@ function search_non_existing_user(str, item) {
     un_narrow();
 }
 
+function search_non_existing_stream(str, item, narrow_title) {
+    common.select_item_via_typeahead('#search_query', str, item);
+    casper.waitForSelector('#non_existing_stream_message', function () {
+        var expected_message = "\n        This stream does not exist. "+
+            "Manage your streams and subscriptions on \n"+
+            "          your streams page.\n        \n      ";
+        this.test.assertEquals(casper.fetchText('#non_existing_stream_message'), expected_message);
+    });
+    casper.then(check_narrow_title(narrow_title));
+    un_narrow();
+}
+
 // Narrow by clicking links.
 
 casper.then(function () {
@@ -272,6 +284,12 @@ search_and_check('subject:frontend+test', 'Narrow', expect_subject,
 search_silent_user('sender:emailgateway@zulip.com', 'Narrow');
 
 search_non_existing_user('sender:dummyuser@zulip.com', 'Narrow');
+
+// Searching non existing Stream
+search_non_existing_stream('stream:abc', 'Narrow',
+                'abc - Zulip Dev - Zulip');
+search_non_existing_stream('stream:abc topic:abc1', 'Narrow',
+                'abc1 - Zulip Dev - Zulip');
 
 // Narrow by clicking the left sidebar.
 casper.then(function () {

@@ -539,9 +539,26 @@ function pick_empty_narrow_banner() {
             // You have no private messages.
             return $("#empty_narrow_all_private_message");
         }
-    } else if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
-        // You are narrowed to a stream to which you aren't subscribed.
-        return $("#nonsubbed_stream_narrow_message");
+    } else if (first_operator === "stream") {
+        var sub = stream_data.get_sub(first_operand);
+
+        if (sub === undefined) {
+            // Checks if narrowed to never subscribed stream
+            var never_sub = _.some(page_params.neversubbed_info, function (stream) {
+                return stream.name === first_operand;
+            });
+            if (never_sub) {
+                return $("#nonsubbed_stream_narrow_message");
+            } else {
+                return $("#non_existing_stream_message");
+            }
+        } else if (!stream_data.is_subscribed(first_operand) && sub.invite_only) {
+            // You are narrowed to a invite only stream to which you aren't subscribed
+            return $("#non_existing_stream_message");
+        } else if (!stream_data.is_subscribed(first_operand)) {
+            // You are narrowed to a stream to which you aren't subscribed.
+            return $("#nonsubbed_stream_narrow_message");
+        }
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
         return $("#empty_search_narrow_message");
