@@ -1,5 +1,6 @@
 from django.db import models
 
+from zerver.models import Realm
 from zerver.lib.str_utils import ModelReprMixin
 
 class RealmCount(ModelReprMixin, models.Model):
