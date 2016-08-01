@@ -85,59 +85,76 @@ def validate(fn, check_indent=True):
         # type: (str) -> bool
         return text[state.i:state.i+len(s)] == s
 
+    def looking_at_html_start():
+        # type: () -> bool
+        return looking_at("<") and not looking_at("</")
+
+    def looking_at_html_end():
+        # type: () -> bool
+        return looking_at("</")
+
+    def looking_at_handlebars_start():
+        # type: () -> bool
+        return looking_at("{{#") or looking_at("{{^")
+
+    def looking_at_handlebars_end():
+        # type: () -> bool
+        return looking_at("{{/")
+
+    def looking_at_django_start():
+        # type: () -> bool
+        return looking_at("{% ") and not looking_at("{% end")
+
+    def looking_at_django_end():
+        # type: () -> bool
+        return looking_at("{% end")
+
+    def special_html_tag(s, tag):
+        # type: (str, str) -> bool
+        return (s.startswith('<!--') or
+               s.endswith('/>') or
+               tag in ['link', 'meta', '!DOCTYPE'])
+
     while state.i < len(text):
 
         # HTML tags
-        if looking_at("<") and not looking_at("</"):
+        if looking_at_html_start():
             s = get_html_tag(text, state.i)
             tag = s[1:-1].split()[0]
-            ignore = (s.startswith('<!--') or
-                      s.endswith('/>') or
-                      tag in ['link', 'meta', '!DOCTYPE'])
-            if not ignore:
+            if not special_html_tag(s, tag):
                 start_tag_matcher(s, tag)
             advance(len(s))
-            continue
-
-        if looking_at("</"):
+        elif looking_at_html_end():
             s = get_html_tag(text, state.i)
             end_tag = s[2:-1]
             state.matcher(end_tag)
             advance(len(s))
-            continue
 
-        # Handlebar tags
-        if looking_at("{{#") or looking_at("{{^"):
+        elif looking_at_handlebars_start():
             s = get_handlebars_tag(text, state.i)
             tag = s[3:-2].split()[0]
             start_tag_matcher(s, tag)
             advance(len(s))
-            continue
-
-        if looking_at("{{/"):
+        elif looking_at_handlebars_end():
             s = get_handlebars_tag(text, state.i)
             end_tag = s[3:-2]
             state.matcher(end_tag)
             advance(len(s))
-            continue
 
-        # Django tags
-        if looking_at("{% ") and not looking_at("{% end"):
+        elif looking_at_django_start():
             s = get_django_tag(text, state.i)
             tag = s[3:-2].split()[0]
             if is_django_block_tag(tag):
                 start_tag_matcher(s, tag)
             advance(len(s))
-            continue
-
-        if looking_at("{% end"):
+        elif looking_at_django_end():
             s = get_django_tag(text, state.i)
             end_tag = s[6:-3]
             state.matcher(end_tag)
             advance(len(s))
-            continue
 
-        advance(1)
+        else:
+            advance(1)
 
     if state.depth != 0:
         state.matcher("(NO TAG)")
