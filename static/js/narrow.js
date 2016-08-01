@@ -524,8 +524,12 @@ function pick_empty_narrow_banner() {
     var first_term = current_filter.operators()[0];
     var first_operator = first_term.operator;
     var first_operand = first_term.operand;
+    var num_operators = current_filter.operators().length;
 
-    if (first_operator === "is") {
+    if (num_operators !== 1) {
+        // For multi-operator narrows, we just use the default banner
+        return default_banner;
+    } else if (first_operator === "is") {
         if (first_operand === "starred") {
             // You have no starred messages.
             return $("#empty_star_narrow_message");
