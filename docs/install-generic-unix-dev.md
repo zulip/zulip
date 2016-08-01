@@ -68,6 +68,8 @@ sudo dpkg -i postgresql-9.5-tsearch-extras_0.2_amd64.deb
 Alternatively, you can always build the package from [tsearch-extras
 git](https://github.com/zulip/tsearch_extras).
 
+You can also follow RoseHosting's step-by-step guide on how to Install [Zulip on Ubuntu](https://www.rosehosting.com/blog/install-zulip-on-ubuntu/)
+
 Now continue with the [All Systems](#all-systems) instructions below.
 
 #### Using the [official Zulip PPA](https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages) (for 14.04 Trusty):
