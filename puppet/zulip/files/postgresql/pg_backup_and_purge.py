@@ -3,9 +3,6 @@
 from __future__ import print_function
 
 import sys
-sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
-
 import glob
 import subprocess
 import sys
@@ -13,7 +10,7 @@ import logging
 import dateutil.parser
 import pytz
 from datetime import datetime, timedelta
-from typing import List
+if False: from typing import List
 
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
