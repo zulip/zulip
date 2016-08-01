@@ -6,7 +6,6 @@
 /errors/*
 *.sw[po]
 *.DS_Store
-event_queues.pickle
 stats/
 zerver/fixtures/test_data1.json
 .kdev4
@@ -18,7 +17,6 @@ coverage/
 .kateproject.d/
 .kateproject
 *.kate-swp
-event_queues.json
 .vagrant
 /zproject/dev-secrets.conf
 static/js/bundle.js
