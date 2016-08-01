@@ -47,4 +47,11 @@ class zulip::postgres_common {
     source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge.py",
     require => File["/usr/local/bin/env-wal-e"],
   }
+
+  # Use arcane puppet virtual resources to add postgres user to zulip group
+  @user { 'postgres':
+    groups     => ['ssl-cert'],
+    membership => minimum,
+  }
+  User <| title == postgres |> { groups +> "zulip" }
 }
