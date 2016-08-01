@@ -348,7 +348,7 @@ CAMO_URI = '/external_content/'
 #
 # By default, Zulip connects to redis running locally on the machine,
 # but Zulip also supports connecting to redis over the network;
-# to use a remote RabbitMQ instance, set REDIS_HOST here.
+# to use a remote Redis instance, set REDIS_HOST here.
 # REDIS_HOST = '127.0.0.1'
 # For a different redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
