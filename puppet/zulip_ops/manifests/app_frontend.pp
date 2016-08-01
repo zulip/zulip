@@ -62,4 +62,13 @@ class zulip_ops::app_frontend {
     content => template("zulip_ops/supervisor/conf.d/redis_tunnel.conf.template.erb"),
     notify => Service["supervisor"],
   }
+  # Need redis_password in its own file for Nagios
+  file { '/var/lib/nagios/redis_password':
+    ensure     => file,
+    mode       => 600,
+    owner      => "nagios",
+    group      => "nagios",
+    content    => zulipsecret('secrets', 'redis_password', ''),
+  }
+
 }
