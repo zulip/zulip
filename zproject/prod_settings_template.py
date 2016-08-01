@@ -362,6 +362,8 @@ CAMO_URI = '/external_content/'
 # REDIS_HOST = '127.0.0.1'
 # For a different redis port set the REDIS_PORT here.
 # REDIS_PORT = 6379
+# If you set redis_password in zulip-secrets.conf, Zulip will use that password
+# to connect to the redis server.
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True

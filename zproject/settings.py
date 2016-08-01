@@ -412,6 +412,7 @@ RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
     ]
 DEBUG_RATE_LIMITING = DEBUG
+REDIS_PASSWORD = get_secret('redis_password')
 
 ########################################################################
 # SECURITY SETTINGS
