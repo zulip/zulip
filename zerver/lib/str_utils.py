@@ -83,7 +83,9 @@ class ModelReprMixin(object):
     """
     def __unicode__(self):
         # type: () -> text_type
-        raise NotImplementedError("__unicode__ is not implemented in subclass of ModelReprMixin")
+        # Originally raised an exception, but Django (e.g. the ./manage.py shell)
+        # was catching the exception and not displaying any sort of error
+        return u"Implement __unicode__ in your subclass of ModelReprMixin!"
 
     def __str__(self):
         # type: () -> str
