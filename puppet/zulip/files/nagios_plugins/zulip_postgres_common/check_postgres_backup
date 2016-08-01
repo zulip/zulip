@@ -5,9 +5,6 @@ import subprocess
 from datetime import datetime, timedelta
 
 import sys
-sys.path.append('/home/zulip/deployments/current')
-import scripts.lib.setup_path_on_import
-
 import dateutil.parser
 import pytz
 
