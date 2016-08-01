@@ -8,6 +8,7 @@ class zulip_ops::app_frontend {
                    "autossh",
                    ]
   package { $app_packages: ensure => "installed" }
+  $hosts_domain = zulipconf("nagios", "hosts_domain", undef)
 
   file { "/etc/logrotate.d/zulip":
     ensure => file,
@@ -50,5 +51,15 @@ class zulip_ops::app_frontend {
   }
   file { "/etc/cron.d/check-apns-tokens":
     ensure => absent,
+  }
+
+  file { "/etc/supervisor/conf.d/redis_tunnel.conf":
+    require => Package["supervisor", "autossh"],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    content => template("zulip_ops/supervisor/conf.d/redis_tunnel.conf.template.erb"),
+    notify => Service["supervisor"],
   }
 }
