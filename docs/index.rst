@@ -69,8 +69,6 @@ Contents:
    install-ubuntu-without-vagrant-dev
    install-generic-unix-dev
    using-dev-environment
-   test-suite-dev
-
 
 .. _tutorial-docs:
 
