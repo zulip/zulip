@@ -7,10 +7,8 @@
 
     <h3 class="apps-instructions-header">{% trans %}Installation instructions{% endtrans %}</h3>
     <ul class="nav nav-tabs" id="apps-tabs">
-    {% if not_voyager %}
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
       <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
-    {% endif %}
       <li><a href="#electron" data-toggle="tab">Cross-platform desktop</a></li>
       <li><a href="#mac" data-toggle="tab">Mac</a></li>
       <li><a href="#linux" data-toggle="tab">Linux</a></li>
@@ -19,7 +17,6 @@
     </ul>
 
     <div class="tab-content">
-    {% if not_voyager %}
       <div class="tab-pane active" id="android">
         <img class="screenshot android-screenshot pull-left" src="/static/images/app-screenshots/zulip-android.png" alt="screenshot of the Zulip app on Android" />
 
@@ -46,7 +43,6 @@
         </a>
 
       </div>
-      {% endif %}
       <div class="tab-pane" id="electron">
         <p>{% trans %}The beta version
           of <a href="https://github.com/zulip/zulip-electron">our new
