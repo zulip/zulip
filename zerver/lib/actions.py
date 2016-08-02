@@ -2783,7 +2783,8 @@ def get_realm_user_dicts(user_profile):
     return [{'email'     : userdict['email'],
              'is_admin'  : userdict['is_realm_admin'],
              'is_bot'    : userdict['is_bot'],
-             'full_name' : userdict['full_name']}
+             'full_name' : userdict['full_name'],
+             'id'        : userdict['id']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 # Fetch initial data.  When event_types is not specified, clients want
