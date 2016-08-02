@@ -47,7 +47,7 @@ from zerver.decorator import require_post, authenticated_json_post_view, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
-from zerver.lib.i18n import get_language_list
+from zerver.lib.i18n import get_language_list, get_language_name
 from zerver.lib.response import json_success, json_error
 from zerver.lib.str_utils import force_str
 from zerver.lib.utils import statsd, generate_random_token
@@ -947,6 +947,7 @@ def home(request):
         left_side_userlist    = register_ret['left_side_userlist'],
         default_language      = register_ret['default_language'],
         language_list         = get_language_list(),
+        default_language_name = get_language_name(register_ret['default_language']),
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
