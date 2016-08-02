@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django.db.models import Sum
+from django.db.models import Sum, Count
 
 from optparse import make_option
 
@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('-s', '--start_time',
-                    dest='start-time', # seems like stylistically, should be start, start_time, or start-time?
+                    dest='start-time', # seems like start_time is not supported?
                     type='str',
                     help='The interval start time in UTC as a str(datetime).'),
         make_option('-e', '--end-time',
@@ -38,16 +38,15 @@ class Command(BaseCommand):
                    .filter(property = property) \
                    .filter(interval = interval)) > 0
 
-    def insert_counts(self, realms, realm_values, property, start_time, interval):
+    def insert_counts(self, realm_ids, rows, property, start_time, interval):
         values = defaultdict(int)
-        for realm_value in realm_values:
-            values[realm_value['realm']] = realm_value['values']
-        RealmCount.objects.bulk_create([RealmCount(domain = realm['domain'],
-                                                   realm_id = realm['id'],
+        for row in rows:
+            values[row['realm']] = row['value']
+        RealmCount.objects.bulk_create([RealmCount(realm_id = realm_id,
                                                    property = property,
-                                                   value = values[realm['id']],
+                                                   value = values[realm_id],
                                                    start_time = start_time,
-                                                   interval = interval) for realm in realms])
+                                                   interval = interval) for realm_id in realm_ids])
 
     def process(self, realms, property, value_function, start_time, interval):
         if not self.is_already_inserted(property, start_time, interval):
