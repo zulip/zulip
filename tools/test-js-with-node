@@ -9,7 +9,7 @@ INDEX_JS=frontend_tests/zjsunit/index.js
 NODEJS=$(which nodejs || which node)
 if [ "$1" = "cover" ]; then
   # Run a coverage test with Istanbul.
-  istanbul cover "$INDEX_JS"
+  istanbul cover "$INDEX_JS" && echo "Test(s) passed. SUCCESS!" || echo "FAIL - Test(s) failed"
 
 elif [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo "Usage:
@@ -22,5 +22,5 @@ elif [ "$1" = "-h" -o "$1" = "--help" ]; then
 else
   # Normal testing, no coverage analysis.
   # Run the index.js test runner, which runs all the other tests.
-  "$NODEJS" --stack-trace-limit=100 "$INDEX_JS" $@
+  "$NODEJS" --stack-trace-limit=100 "$INDEX_JS" $@ && echo "Test(s) passed. SUCCESS!" || echo "FAIL - Test(s) failed"
 fi
