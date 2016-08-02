@@ -1812,6 +1812,7 @@ class HomeTest(AuthedTestCase):
             "debug_mode",
             "default_desktop_notifications",
             "default_language",
+            "default_language_name",
             "desktop_notifications_enabled",
             "development_environment",
             "domain",
