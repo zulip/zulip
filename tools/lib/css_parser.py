@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import Callable, List, Tuple
+from six.moves import range
+from typing import Callable, List, Tuple, Union
 
 ####### Helpers
 
@@ -12,6 +13,7 @@ class Token(object):
         self.col = col
 
 class CssParserException(Exception):
+    # TODO: Have callers pass in line numbers.
     pass
 
 def find_end_brace(tokens, i):
@@ -91,10 +93,10 @@ def parse_sections(tokens):
     return section_list
 
 def parse_section(tokens, pre_fluff, post_fluff):
-    # TODO: add annotation
+    # type: (List[Token], str, str) -> Union[CssNestedSection, CssSection]
     assert not ws(tokens[0].s)
     if tokens[-1].s != '}': # caller should strip trailing fluff
-        for t in tokens: print(repr(t.s))
+        # for t in tokens: print(repr(t.s))
         raise CssParserException('found extraneous stuff at the end of a section')
 
     first_token = tokens[0].s
@@ -112,7 +114,7 @@ def parse_section(tokens, pre_fluff, post_fluff):
         return nested_section
     else:
         i, selector_list = parse_selectors_section(tokens)
-        declaration_block = parse_declartion_block(tokens[i:])
+        declaration_block = parse_declaration_block(tokens[i:])
         section = CssSection(
             tokens=tokens,
             selector_list=selector_list,
@@ -183,7 +185,7 @@ def parse_selector(tokens):
     )
     return selector
 
-def parse_declartion_block(tokens):
+def parse_declaration_block(tokens):
     # type: (List[Token]) -> CssDeclarationBlock
     assert tokens[0].s == '{' # caller should strip leading fluff
     assert tokens[-1].s == '}' # caller should strip trailing fluff
@@ -250,7 +252,7 @@ def parse_value(tokens):
 
 class CssSectionList(object):
     def __init__(self, tokens, sections):
-        # type: (List[Token], List[CssSection]) -> None
+        # type: (List[Token], List[Union[CssNestedSection, CssSection]]) -> None
         self.tokens = tokens
         self.sections = sections
 

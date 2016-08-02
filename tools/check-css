@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 from __future__ import print_function
-from lib.css_parser import parse
+from lib.css_parser import parse, CssParserException
 import os
 import sys
 import glob
@@ -29,8 +29,12 @@ def check_our_files():
     # type: () -> None
     fns = glob.glob('static/styles/*.css')
     for fn in fns:
-        print('Validating %s' % (fn,))
-        validate(fn)
+        try:
+            validate(fn)
+        except CssParserException as e:
+            print('CssParserException raised while parsing file %s' % (fn,))
+            print(e)
+            sys.exit(1)
 
 if __name__ == '__main__':
     check_our_files()
