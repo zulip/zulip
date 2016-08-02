@@ -47,7 +47,8 @@ from zerver.decorator import require_post, authenticated_json_post_view, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
-from zerver.lib.i18n import get_language_list, get_language_name
+from zerver.lib.i18n import get_language_list, get_language_name, \
+    get_language_list_for_templates
 from zerver.lib.response import json_success, json_error
 from zerver.lib.str_utils import force_str
 from zerver.lib.utils import statsd, generate_random_token
@@ -64,7 +65,7 @@ import ujson
 import simplejson
 import re
 from six import text_type
-from six.moves import urllib
+from six.moves import urllib, zip_longest, zip, range
 import base64
 import time
 import logging
@@ -946,8 +947,9 @@ def home(request):
         enter_sends           = user_profile.enter_sends,
         left_side_userlist    = register_ret['left_side_userlist'],
         default_language      = register_ret['default_language'],
-        language_list         = get_language_list(),
         default_language_name = get_language_name(register_ret['default_language']),
+        language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
+        language_list         = get_language_list(),
         referrals             = register_ret['referrals'],
         realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
