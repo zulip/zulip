@@ -2300,8 +2300,17 @@ div.floating_recipient {
 }
 
 .settings-section #default_language {
-    width: 150px;
-    margin-left: 20px !important;
+    text-decoration: none;
+    vertical-align: bottom;
+}
+
+.settings-section #default_language_modal table {
+    width: 90%;
+    margin-top: 20px;
+}
+
+.settings-section #default_language_modal td {
+    padding-left: 80px;
 }
 
 .settings-section .inline {
