@@ -66,4 +66,4 @@ installation guide][dev-install].
 Running the test suite
 ======================
 
-See [the developer testing guide](https://zulip.readthedocs.org/en/latest/test-suite-dev.html).
+See [the developer testing guide](https://zulip.readthedocs.org/en/latest/testing.html).

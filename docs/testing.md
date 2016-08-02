@@ -2,12 +2,6 @@
 
 ## Running tests
 
-
-To run the full Zulip test suite, do this:
-```
-./tools/test-all
-```
-
 Zulip tests must be run inside a Zulip development environment; if
 you're using Vagrant, you will need to enter the Vagrant environment
 before running the tests:
@@ -15,6 +9,11 @@ before running the tests:
 ```
 vagrant ssh
 cd /srv/zulip
+```
+
+Then, to run the full Zulip test suite, do this:
+```
+./tools/test-all
 ```
 
 This runs the linter (`tools/lint-all`) plus all of our test suites;
