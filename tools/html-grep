@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
+from lib.html_grep import grep
+import optparse
+import sys
+
+from six.moves import filter
+try:
+    import lister
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip linters inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
+
+def check_our_files():
+    # type: () -> None
+    parser = optparse.OptionParser()
+    parser.add_option('--modified', '-m',
+        action='store_true', default=False,
+        help='Only check modified files')
+    (options, args) = parser.parse_args()
+
+    files = lister.list_files(
+        modified_only=options.modified,
+        ftypes=['handlebars', 'html'],
+    )
+
+    fns = [fn for fn in files if (not 'casperjs' in fn) and (not 'puppet/zulip' in fn)]
+    grep(fns, set(args))
+
+if __name__ == '__main__':
+    check_our_files()
