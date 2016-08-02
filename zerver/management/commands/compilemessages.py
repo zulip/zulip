@@ -33,7 +33,7 @@ class Command(compilemessages.Command):
         locale_path = u"{}/locale".format(settings.STATIC_ROOT)
         output_path = u"{}/language_options.json".format(locale_path)
 
-        data = {'languages': []}  # type: Dict[str, List[Dict[str, text_type]]]
+        data = {'languages': []}  # type: Dict[str, List[Dict[str, Any]]]
         lang_name_re = re.compile('"Language-Team: (.*?) \(')
 
         locales = os.listdir(locale_path)
@@ -41,7 +41,7 @@ class Command(compilemessages.Command):
         locales = list(set(locales))
 
         for locale in locales:
-            info = {}
+            info = {}  # type: Dict[str, Any]
             if locale == u'en':
                 data['languages'].append({
                     'code': u'en',
@@ -81,7 +81,7 @@ class Command(compilemessages.Command):
             ujson.dump(data, writer, indent=2)
 
     def get_translation_percentage(self, locale_path, locale):
-        # type: (text_type, text_type) -> text_type
+        # type: (text_type, text_type) -> int
 
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
@@ -99,4 +99,4 @@ class Command(compilemessages.Command):
                 if key == value:
                     not_translated += 1
 
-        return "{}%".format((total - not_translated) * 100 // total)
+        return (total - not_translated) * 100 // total
