@@ -174,7 +174,7 @@ class GitHubAuthBackendTest(AuthedTestCase):
         self.user_profile.backend = self.backend
 
     def test_github_backend_do_auth(self):
-        def do_auth(return_data=dict(), *args, **kwargs):
+        def do_auth(*args, **kwargs):
             return self.user_profile
 
         with mock.patch('zerver.views.login_or_register_remote_user') as result, \
@@ -186,7 +186,8 @@ class GitHubAuthBackendTest(AuthedTestCase):
                                       self.name)
 
     def test_github_backend_inactive_user(self):
-        def do_auth_inactive(return_data=dict(), *args, **kwargs):
+        def do_auth_inactive(*args, **kwargs):
+            return_data = kwargs['return_data']
             return_data['inactive_user'] = True
             return self.user_profile
 
@@ -205,7 +206,8 @@ class GitHubAuthBackendTest(AuthedTestCase):
         request.user = self.user_profile
         self.backend.strategy.request = request
 
-        def do_auth(return_data=dict(), *args, **kwargs):
+        def do_auth(*args, **kwargs):
+            return_data = kwargs['return_data']
             return_data['valid_attestation'] = True
             return None
 
