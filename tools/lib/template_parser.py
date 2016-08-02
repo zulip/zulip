@@ -271,9 +271,9 @@ class TagInfo(object):
         # type: () -> str
         s = self.tag
         if self.classes:
-            s += '(.' + ','.join(self.classes) + ')'
+            s += '.' + '.'.join(self.classes)
         if self.ids:
-            s += '(#' + ','.join(self.ids) + ')'
+            s += '#' + '#'.join(self.ids)
         return s
 
 def get_tag_info(token):
@@ -316,8 +316,30 @@ class HtmlTreeBranch(object):
             for word in tag.words:
                 self.words.add(word)
 
+    def staircase_text(self):
+        # type: () -> str
+        '''
+        produces representation of a node in staircase-like format:
+
+            html
+                body.main-section
+                    p#intro
+
+        '''
+        res = '\n'
+        indent = ' ' * 4
+        for t in self.tags:
+            res += indent + t.text() + '\n'
+            indent += ' ' * 4
+        return res
+
     def text(self):
         # type: () -> str
+        '''
+        produces one-line representation of branch:
+
+        html body.main-section p#intro
+        '''
         return ' '.join(t.text() for t in self.tags)
 
 def html_branches(fn):

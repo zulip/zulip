@@ -53,7 +53,7 @@ class Grepper(object):
         branches.sort(key=lambda branch: (branch.fn, branch.line))
         for branch in branches:
             print('%s %d' % (branch.fn, branch.line))
-            print('    ' + branch.text())
+            print(branch.staircase_text())
             print('')
 
 def grep(fns, words):
