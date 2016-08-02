@@ -143,10 +143,14 @@ casper.waitForSelector('#create_alert_word_form', function () {
 
 casper.then(function change_default_language() {
     casper.test.info('Changing the default language');
-    casper.evaluate(function () {
-        $('#default_language').val('zh_CN').change();
-    });
+    casper.waitForSelector('#default_language');
 });
+
+casper.thenClick('#default_language');
+
+casper.waitUntilVisible('#default_language_modal');
+
+casper.thenClick('a[data-code="zh_CN"]');
 
 casper.waitUntilVisible('#display-settings-status', function () {
     casper.test.assertSelectorHasText('#display-settings-status', '简体中文 is now the default language');
@@ -157,8 +161,8 @@ casper.waitUntilVisible('#display-settings-status', function () {
 casper.waitForSelector("#default_language", function () {
     casper.test.info("Checking if we are on Chinese page.");
     casper.test.assertEvalEquals(function () {
-        return $('#default_language').val();
-    }, 'zh_CN');
+        return $('#default_language_name').text();
+    }, '简体中文');
     casper.test.info("Opening German page through i18n url.");
 });
 
@@ -170,10 +174,13 @@ casper.waitForSelector("#settings-change-box", function check_url_preference() {
         return document.documentElement.lang;
     }, 'de');
     casper.test.info("Changing language back to English.");
-    casper.evaluate(function () {
-        $('#default_language').val('en').change();
-    });
 });
+
+casper.thenClick('#default_language');
+
+casper.waitUntilVisible('#default_language_modal');
+
+casper.thenClick('a[data-code="en"]');
 
 /*
  * Changing the language back to English so that subsequent tests pass.
