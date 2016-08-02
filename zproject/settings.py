@@ -157,6 +157,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'REMOTE_POSTGRES_SSLMODE': '',
                     'GOOGLE_CLIENT_ID': '',
                     'SOCIAL_AUTH_GITHUB_KEY': None,
+                    'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
+                    'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
                     'DBX_APNS_CERT_FILE': None,
                     'DBX_APNS_KEY_FILE': None,
                     'EXTRA_INSTALLED_APPS': [],
@@ -977,6 +979,10 @@ else:
 SOCIAL_AUTH_GITHUB_SECRET = get_secret('social_auth_github_secret')
 SOCIAL_AUTH_LOGIN_ERROR_URL = '/login/'
 SOCIAL_AUTH_GITHUB_SCOPE = ['email']
+SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
+SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
+SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
+SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
 ########################################################################
 # EMAIL SETTINGS
