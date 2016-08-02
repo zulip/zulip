@@ -8,10 +8,6 @@ from zproject.backends import (password_auth_enabled, dev_auth_enabled,
 def add_settings(request):
     realm = request.user.realm if hasattr(request.user, "realm") else None
     return {
-        # We use the not_voyager variable name so that templates
-        # will render even if the appropriate context is not provided
-        # to the template
-        'not_voyager':               not settings.VOYAGER,
         'custom_logo_url':           settings.CUSTOM_LOGO_URL,
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
