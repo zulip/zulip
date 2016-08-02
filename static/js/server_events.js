@@ -133,15 +133,32 @@ function dispatch_normal_event(event) {
                 if (event.op === 'peer_add') {
                     js_event_type = 'peer_subscribe.zulip';
 
-                    stream_data.add_subscriber(sub, event.user_email);
+                    if (stream_data.neversubbed_streams_map.hasOwnProperty(sub)) {
+                        // Add user to never subscribed stream subscriber's list.
+                        var new_subscriber = people.get_by_email(event.user_email);
+                        stream_data.neversubbed_streams_map[sub].subscribers.push(new_subscriber.id);
+                    } else {
+                        // Add user to stream's subscriber list
+                        stream_data.add_subscriber(sub, event.user_email);
+                    }
                 } else if (event.op === 'peer_remove') {
                     js_event_type = 'peer_unsubscribe.zulip';
 
-                    stream_data.remove_subscriber(sub, event.user_email);
+                    if (stream_data.neversubbed_streams_map.hasOwnProperty(sub)) {
+                        // Remove user from never subscribed stream subscriber's list
+                        var remove_user = people.get_by_email(event.user_email);
+                        var index = _.indexOf(stream_data.neversubbed_streams_map[sub].subscribers, remove_user.id);
+                        stream_data.neversubbed_streams_map[sub].subscribers.splice(index, 1);
+                    } else {
+                        // Remove user from stream's subscriber list
+                        stream_data.remove_subscriber(sub, event.user_email);
+                    }
                 }
 
                 $(document).trigger(js_event_type, {stream_name: sub,
                                                     user_email: event.user_email});
+                var stream = stream_data.get_sub(sub);
+                subs.rerender_subscribers_count(stream);
             });
 
         }
