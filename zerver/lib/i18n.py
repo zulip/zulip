@@ -6,7 +6,7 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 from six import text_type
-from typing import Any
+from typing import Any, List, Dict, Optional
 
 import os
 import ujson
@@ -32,9 +32,14 @@ def get_language_list():
 
         return sorted(lang_list, key=lambda i: i['name'])
 
+def get_language_name(code):
+    # type: (str) -> Optional[text_type]
+    for lang in get_language_list():
+        if lang['code'] == code:
+            return lang['name']
+
 def get_available_language_codes():
     # type: () -> List[text_type]
     language_list = get_language_list()
     codes = [language['code'] for language in language_list]
     return codes
-
