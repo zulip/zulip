@@ -161,8 +161,6 @@ function _setup_page() {
     $("#show_api_key_box").hide();
     $("#api_key_button_box").show();
 
-    $('#default_language').val(page_params.default_language);
-
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
@@ -419,12 +417,20 @@ function _setup_page() {
         });
     });
 
-    $("#default_language").change(function () {
+    $("#default_language_modal .language").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#default_language_modal').modal('hide');
+
         var data = {};
-        var setting_value = $("#default_language").val();
+        var setting_value = $(e.target).attr('data-code');
         data.default_language = JSON.stringify(setting_value);
+
+        var new_language = $(e.target).attr('data-name');
+        $('#default_language_name').text(new_language);
+
         var context = {};
-        context.lang = $("#default_language option:selected").text();
+        context.lang = new_language;
 
         channel.patch({
             url: '/json/language_setting',
@@ -439,6 +445,11 @@ function _setup_page() {
         });
     });
 
+    $('#default_language').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#default_language_modal').modal('show');
+    });
 
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
