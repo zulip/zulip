@@ -22,6 +22,8 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
 
 from social.strategies.django_strategy import DjangoStrategy
 from social.storage.django_orm import BaseDjangoStorage
+from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
+    GithubOAuth2
 
 from six import text_type
 import ujson
@@ -184,6 +186,44 @@ class GitHubAuthBackendTest(AuthedTestCase):
             self.backend.do_auth(response=response)
             result.assert_called_with(None, self.email, self.user_profile,
                                       self.name)
+
+    def test_github_backend_do_auth_for_default(self):
+        def authenticate(*args, **kwargs):
+            assert isinstance(kwargs['backend'], GithubOAuth2) == True
+
+        with mock.patch('social.backends.github.GithubOAuth2.user_data',
+                         return_value=dict()), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth'), \
+                mock.patch('social.strategies.django_strategy.'
+                           'DjangoStrategy.authenticate', side_effect=authenticate):
+            response=dict(email=self.email, name=self.name)
+            self.backend.do_auth('fake-access-token', response=response)
+
+    def test_github_backend_do_auth_for_team(self):
+        def authenticate(*args, **kwargs):
+            assert isinstance(kwargs['backend'], GithubTeamOAuth2) == True
+
+        with mock.patch('social.backends.github.GithubTeamOAuth2.user_data',
+                         return_value=dict()), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth'), \
+                mock.patch('social.strategies.django_strategy.'
+                           'DjangoStrategy.authenticate', side_effect=authenticate):
+            response=dict(email=self.email, name=self.name)
+            with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
+                self.backend.do_auth('fake-access-token', response=response)
+
+    def test_github_backend_do_auth_for_org(self):
+        def authenticate(*args, **kwargs):
+            assert isinstance(kwargs['backend'], GithubOrganizationOAuth2) == True
+
+        with mock.patch('social.backends.github.GithubOrganizationOAuth2.user_data',
+                         return_value=dict()), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth'), \
+                mock.patch('social.strategies.django_strategy.'
+                           'DjangoStrategy.authenticate', side_effect=authenticate):
+            response=dict(email=self.email, name=self.name)
+            with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
+                self.backend.do_auth('fake-access-token', response=response)
 
     def test_github_backend_inactive_user(self):
         def do_auth_inactive(*args, **kwargs):
