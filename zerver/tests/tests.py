@@ -1834,6 +1834,7 @@ class HomeTest(AuthedTestCase):
             "is_admin",
             "is_zephyr_mirror_realm",
             "language_list",
+            "language_list_dbl_col",
             "last_event_id",
             "left_side_userlist",
             "login_page",
