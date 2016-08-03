@@ -1,0 +1,40 @@
+
+body {
+    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+input,
+button,
+select,
+textarea {
+    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+textarea,
+input {
+    font-family: 'Humbug', Helvetica, Arial, sans-serif;
+}
+
+.header-main .logo {
+    font-variant: small-caps;
+}
+
+#search_query {
+    font-family: 'Humbug';
+}
+
+.hotkeys_table .hotkey {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+.operator_value {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+.operator {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+.stream-email {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}

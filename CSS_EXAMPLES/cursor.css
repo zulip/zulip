@@ -1,0 +1,88 @@
+
+a {
+    cursor: pointer;
+}
+
+#user_presences .user_sidebar_entry:hover,
+#group-pms .group-pms-sidebar-entry:hover {
+    cursor: pointer;
+}
+
+ul.filters li:hover .arrow {
+    cursor: pointer;
+}
+
+ul.filters li .arrow:hover {
+    cursor: pointer;
+}
+
+ul.filters li.expanded_subject:hover .topic-sidebar-arrow {
+    cursor: pointer;
+}
+
+ul.filters li.expanded_subject .topic-sidebar-arrow:hover {
+    cursor: pointer;
+}
+
+.messages-expand,
+.messages-collapse {
+    cursor: pointer;
+}
+
+a.message_label_clickable:hover {
+    cursor: pointer;
+}
+
+.on_hover_topic_edit:hover,
+.always_visible_topic_edit:hover {
+    cursor: pointer;
+}
+
+.edit_content:hover {
+    cursor: pointer;
+}
+
+.actions_hovered .message_time,
+.actions_hovered .info {
+    cursor: pointer;
+}
+
+.messagebox {
+    cursor: pointer;
+}
+
+#send_message_form .messagebox {
+    cursor: default;
+}
+
+.send-status-close:hover {
+    cursor:  pointer;
+}
+
+#close-subscriptions-status {
+    cursor: pointer;
+}
+
+.streams_popover .sp-container {
+    cursor: pointer;
+}
+
+.empty-star:hover {
+    cursor: pointer;
+}
+
+.star:hover {
+    cursor:  pointer;
+}
+
+#restore-draft:hover {
+    cursor:  pointer;
+}
+
+#home .alert-bar .close-alert-icon:hover {
+    cursor: pointer;
+}
+
+#share-the-love-expand-collapse {
+    cursor: pointer;
+}

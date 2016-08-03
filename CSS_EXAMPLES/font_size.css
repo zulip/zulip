@@ -1,0 +1,506 @@
+
+input,
+button,
+select,
+textarea {
+    line-height: normal;
+}
+
+blockquote p {
+    font-weight: normal;
+}
+
+textarea,
+label {
+    font-size:   inherit;
+    line-height: inherit;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"]
+{
+    font-size: inherit;
+}
+
+li,
+.table th,
+.table td {
+    line-height: inherit;
+}
+
+.btn {
+    font-size:  inherit;
+    line-height: 100%;
+}
+
+.btn-large {
+    font-size: 115%;
+}
+
+.header-main .logo {
+    font-size: 120%;
+    font-weight: 900;
+    line-height: 18px;
+}
+
+strong {
+    font-weight: 600;
+}
+
+code {
+    font-size: 0.857em;
+}
+
+pre {
+    font-size: 0.857em;
+    line-height: inherit;
+}
+
+.edit-profile {
+    font-weight: 300;
+    font-size: 12px;
+}
+
+.sidebar-title,
+.share-the-love-title {
+    font-size: 11px;
+    font-weight: normal;
+}
+
+#message_edit_tooltip,
+#streams_inline_cog,
+#streams_filter_icon {
+    font-size: 13px;
+}
+
+#stream_filters {
+    font-weight: normal;
+}
+
+.user-device-indicator {
+    font-size: 20px;
+    line-height: 0px;
+}
+
+li.active-filter,
+li.active-sub-filter {
+    font-weight: 600 !important;
+}
+
+#global_filters .global-filter {
+    font-size: 16px;
+    font-weight: 300;
+}
+
+#global_filters .global-filter i {
+    font-size: 14px;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count,
+#stream_filters .count {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count
+{
+    line-height: 13px;
+}
+
+.subject_count {
+    line-height: 1em;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.private_message_count {
+    line-height: 1em;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+ul.filters .arrow {
+    font-size: 0.8em;
+}
+
+ul.filters .topic-sidebar-arrow {
+    font-size: 0.7em;
+}
+
+.include-sender .message_edit_notice {
+    line-height: 14px;
+}
+
+.sender-status .message_edit_notice {
+    line-height: 18px;
+}
+
+.message_edit_notice {
+    font-size: 10px;
+    font-weight: 300;
+    line-height: 0px;
+}
+
+.message_time {
+    font-size: 11px;
+    font-weight: 300;
+    line-height: 20px;
+}
+
+.message_header {
+    font-weight:    600;
+    line-height:    14px;
+}
+
+.stream_label {
+    font-weight: normal;
+    line-height: 17px;
+}
+
+.stream_label .invite-stream-icon {
+    font-size: 12px;
+    line-height: 17px;
+}
+
+.stream_topic {
+    line-height: 17px;
+}
+
+.message_header .icon-vector-narrow {
+    font-size: 0.6em;
+}
+
+.compose_table .right_part .icon-vector-narrow {
+    font-size: 0.6em;
+}
+
+.compose_table #private-message .you_text {
+    line-height: 25px;
+}
+
+.compose_table .pm_recipient #private_message_recipient {
+    line-height: 23px;
+}
+
+.message_header_private_message .message_label_clickable {
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 17px;
+}
+
+.sender_name {
+    font-weight: 700;
+    line-height: 12px;
+    font-size: 14px;
+}
+
+.sender-status {
+    line-height: 18px;
+    font-size: 14px;
+}
+
+.sender_name-in-status {
+    font-weight: 700;
+}
+
+.small {
+    font-size: 80%;
+}
+
+.tiny {
+    font-size: 60%;
+}
+
+.message_content {
+    line-height: 17px;
+    font-size: 14px;
+}
+
+.message_edit_content {
+    line-height: 18px;
+}
+
+.topic_edit {
+    line-height: 22px;
+}
+
+#message_edit_topic {
+    line-height: 0px;
+    font-size: 14px;
+}
+
+blockquote p {
+    line-height: inherit;
+    font-size:   inherit;
+}
+
+#send-status {
+    line-height: 20px;
+}
+
+.send-status-close {
+    font-size:   17px;
+    font-weight: bold;
+}
+
+#out-of-view-notification {
+    font-weight: 400;
+    font-size: 12px;
+}
+
+#out-of-view-notification .close {
+    font-size:   17px;
+    font-weight: bold;
+}
+
+#connection-error {
+    font-size: 13px;
+}
+
+.streamname {
+    font-weight: bold;
+}
+
+#send_controls {
+    font-size: 0.8em;
+}
+
+#send_controls #compose-send-button {
+    font-weight: 600;
+}
+
+#send_controls #compose-send-button:hover {
+    font-weight: 600;
+}
+
+#tab_list {
+    line-height: 40px;
+    font-size: 16px;
+}
+
+#tab_list li {
+    font-weight: 300;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    line-height: 12px;
+    font-size: 9px;
+    font-weight: normal;
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
+    font-size: 20px;
+}
+
+#searchbox .input-append .icon-vector-search {
+    font-size: 20px;
+}
+
+#search_query {
+    font-size: 18px;
+    font-weight: 300;
+    line-height: 27px;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    font-size: 18px;
+}
+
+#search_arrows {
+    font-size: 90%;
+}
+
+.loading_indicator_text {
+    font-size:   33px;
+    font-weight: bold;
+    line-height: 38px;
+}
+
+.settings-section .loading_indicator_text {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+.message_inline_image_title {
+    font-weight: bold;
+}
+
+.popover-title {
+    font-size:   inherit;
+    line-height: inherit;
+}
+
+.hotkeys_table {
+    font-size: 90%;
+}
+
+.hotkeys_table .hotkey {
+    font-weight: bold;
+    font-size: 90%;
+}
+
+#stream_filters .subscription_block {
+    line-height: 12px;
+}
+
+.subscription_name,
+.subscription_description {
+    line-height: 1em;
+}
+
+.subscription-name-row,
+.subscription-description-row {
+    line-height: 47px;
+}
+
+.subscription-description-row {
+    font-weight: 300;
+}
+
+#close-subscriptions-status {
+    font-size: 17px;
+}
+
+.subject-name {
+    line-height: 1.3em;
+}
+
+.conversation-partners {
+    line-height: 1.2em;
+}
+
+.subscription_header .subscription_lock {
+    font-size: 23px;
+}
+
+.subscription-type {
+    font-weight: 300;
+}
+
+.subscription-control-label {
+    line-height: 18px;
+}
+
+.mute-note {
+    font-size: 90%;
+}
+
+button.topic_edit_save,
+button.topic_edit_cancel {
+    font-size: 12px;
+}
+
+.sub_arrow {
+    line-height: 47px;
+}
+
+.sub_settings_title {
+    line-height: 30px;
+    font-weight: 300;
+    font-size: 16px;
+}
+
+.settings-dropdown-caret {
+    font-size: 14px;
+}
+
+#sending-indicator {
+    font-weight: bold;
+}
+
+.stream-privacy {
+    font-size: 15px;
+}
+
+ul.expanded_subjects {
+    font-weight: normal;
+}
+
+ul.expanded_private_messages {
+    font-weight: 300;
+    font-size: 84%;
+}
+
+.star {
+    font-size: 14px;
+}
+
+.info {
+    font-size: 15px;
+}
+
+.date_row span {
+    font-size: 0.8em;
+}
+
+#compose a.message-control-button {
+    font-size: 14px;
+}
+
+#message_edit_form .edit-control-label {
+    font-size: 80%;
+}
+
+#topic_edit_form {
+    line-height: 22px;
+}
+
+#administration h1,
+#settings h1,
+#subscriptions h1 {
+    font-size: 25px;
+    font-weight: 300;
+}
+
+#administration .administration-icon,
+#settings .settings-icon,
+#subscriptions .streams-icon {
+    font-size: 20px;
+}
+
+#home .alert-bar-contents {
+    font-weight: 400;
+}
+
+#home .alert-bar .alert-icon {
+    font-size: 20px;
+    line-height: 5px;
+}
+
+#home .alert-bar .close-alert-icon {
+    line-height: 38px;
+    font-size: 15px;
+}
+
+#share-the-love {
+    line-height: 18px;
+}
+
+li.show-more-topics a {
+    font-size: 75%;
+}
+
+li.show-more-private-messages a {
+    font-size: 90%
+
+}

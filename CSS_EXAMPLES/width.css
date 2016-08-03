@@ -1,0 +1,986 @@
+
+body,
+html {
+    width: 100%;
+}
+
+.ztable_comp_col1 {
+    width: 10px;
+}
+
+.header {
+    width: 100%;
+}
+
+.app {
+    width: 100%;
+}
+
+.app-main,
+.header-main {
+    width: 100%;
+    max-width: 1400px;
+    min-width: 950px;
+}
+
+.fixed-app {
+    width: 100%;
+    left: 0px;
+}
+
+.column-left,
+.column-right {
+    width: 250px;
+    max-width: 250px;
+}
+
+.column-left {
+    left: 0px;
+}
+
+.column-right {
+    right: 0px;
+}
+
+.app-main .column-left .left-sidebar {
+    width: 242px;
+    padding-left: 0px;
+}
+
+.app-main .column-right .right-sidebar {
+    padding-left: 15px;
+    width: 235px;
+}
+
+.column-middle {
+    margin-right: 250px;
+    margin-left: 250px;
+}
+
+.header-main .logoimage {
+    width: auto;
+}
+
+#user-settings-avatar {
+    width: 100px;
+}
+
+.notvisible {
+    width: 0px !important;
+    min-width: 0px !important;
+}
+
+.sidebar-nav {
+    max-width: 250px;
+}
+
+#left-sidebar #user-list,
+#left-sidebar #group-pm-list {
+    padding-left: 10px;
+}
+
+#message_edit_tooltip,
+#streams_inline_cog,
+#streams_filter_icon {
+    margin-left: 6px;
+}
+
+.message-edit-tooltip-inner {
+    width: 200px;
+    right: 7px;
+}
+
+.tooltip {
+    max-width: 10em;
+}
+
+#stream-filters-container .ps-scrollbar-y-rail {
+    right: 0px !important;
+    width: 4px !important;
+}
+
+#stream-filters-container .ps-scrollbar-y {
+    width: 4px !important;
+}
+
+.stream-list-filter {
+    margin-left: 1ex;
+}
+
+#user_presences,
+#group-pms {
+    margin-left: 0;
+}
+
+.user-status-indicator,
+.group-pm-status-indicator {
+    width: 8px;
+    margin-right: 0.5em;
+}
+
+.user-device-indicator {
+    right: 12px;
+}
+
+.user-with-count .user-device-indicator {
+    right: 35px;
+}
+
+#invite-user-link i {
+    margin-right: 5px;
+}
+
+ul.filters {
+    margin-left: 0px;
+}
+
+.filter-icon {
+    width: 18px;
+    margin-right: 5px;
+}
+
+.stream-pin-icon {
+    margin-right: 4px !important;
+    margin-left: 3px;
+}
+
+.group-pms-sidebar-entry .selectable_sidebar_block {
+    width: 235px;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    width: 218px;
+}
+
+.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
+    width: 204px;
+}
+
+.group-pm-link {
+    margin-left: 17px;
+}
+
+.user_sidebar_entry.user-with-count .selectable_sidebar_block {
+    width: 200px;
+}
+
+.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
+    width: 180px;
+}
+
+.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
+    width: 170px;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count,
+#stream_filters .count {
+    right: 20px;
+}
+
+.group-pms-sidebar-entry .count {
+    right: 2px;
+}
+
+#stream_filters .count,
+#global_filters .count {
+    margin-left: 0.5em;
+}
+
+.subject_count {
+    right: 20px;
+}
+
+.private_message_count {
+    right: 10px;
+}
+
+ul.filters i {
+    padding-right: 0.25em;
+    width: 13px;
+}
+
+li.actual-dropdown-menu i {
+    width: 14px;
+}
+
+ul.filters .arrow {
+    right: 0px;
+}
+
+.include-sender .message_edit_notice {
+    margin-left: 0px;
+    width: auto;
+}
+
+.message_edit_notice {
+    width: 45px;
+    left: 0px;
+}
+
+.message_time {
+    right: -80px;
+}
+
+.message_controls {
+    right: -38px;
+}
+
+.message_list .stream_label {
+    margin-left: 0px;
+}
+
+.stream_label:after {
+    left: 100%;
+    width: 0px;
+}
+
+.stream_label:before {
+    left: 100%;
+    width:  0px;
+}
+
+.stream_topic {
+    margin-left: -5px;
+}
+
+.copy-paste-text {
+    width: 0px;
+}
+
+.compose_table .pm_recipient {
+    margin-right: 30px;
+}
+
+.compose_table #private-message .you_text {
+    width: 4em;
+}
+
+.compose_table .pm_recipient #private_message_recipient {
+    margin-left: 4em;
+}
+
+.compose_table #private-message .right_part {
+    padding-right: 4em;
+}
+
+.compose_table #compose-lock-icon {
+    width: 0px;
+}
+
+.compose_table #compose-lock-icon i {
+    left: 5px;
+}
+
+.unread_marker {
+    left: 2px;
+}
+
+.unread-marker-fill {
+    width: 3px;
+}
+
+.sender-status {
+    left: 45px;
+    padding-right: 35px;
+}
+
+.sender_name-in-status {
+    margin-right: 3px;
+}
+
+.edit_content {
+    width: 0px;
+}
+
+.edit_content i {
+    left: 0.4em;
+}
+
+div.message_table {
+    margin-left: auto;
+    width: 100%;
+}
+
+table.compose_table {
+    margin-left: auto;
+    width: 100%;
+}
+
+.message_content {
+    padding-left: 46px;
+}
+
+#message_edit_topic {
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.message_edit_topic_propagate {
+    width: 400px;
+}
+
+.message_length_controller {
+    margin-left: 5px;
+    margin-right: 35px;
+}
+
+div.message_content table {
+    padding-right: 10px;
+    width: 99%;
+}
+
+.messagebox blockquote {
+    padding-left: 5px;
+    margin-left: 10px;
+}
+
+#send_message_form .message_content {
+    margin-right: 0px;
+}
+
+#below-compose-content {
+    width: 100%;
+}
+
+.inline_profile_picture {
+    width: 35px;
+    margin-right: 11px;
+}
+
+#compose {
+    left: 0px;
+    width: 100%;
+}
+
+#compose-container {
+    width: 100%;
+    max-width: 1400px;
+}
+
+.compose-content {
+    margin-left: 250px;
+    margin-right: 250px;
+}
+
+#compose_close {
+    right: -4px;
+}
+
+#compose_invite_users {
+    margin-right: 10px;
+}
+
+.compose_invite_close {
+    width: 10px;
+}
+
+.compose_invite_user_error {
+    margin-right: 10px;
+}
+
+#send-status {
+    width: 90%;
+}
+
+#out-of-view-notification {
+    width: 100%;
+    padding-right: 5px;
+}
+
+#out-of-view-notification .close {
+    right: 5px;
+}
+
+textarea.new_message_textarea {
+    width: 99%;
+}
+
+#stream.recipient_box {
+    width: 20%;
+    min-width: 120px;
+}
+
+#subject.recipient_box {
+    width: 25%;
+    min-width: 140px;
+}
+
+#stream.recipient_box.lock-padding {
+    padding-left: 18px;
+}
+
+#private_message_recipient.recipient_box {
+    width: 100%;
+}
+
+#send_controls {
+    right: -7px;
+}
+
+#send_controls .compose_checkbox_label {
+    margin-right: 2px;
+}
+
+#navbar-spacer {
+    width: 100%;
+}
+
+#searchbox {
+    width: 100%;
+}
+
+#tab_list li.inactive:after {
+    left: 100%;
+    width:  0px;
+}
+
+#tab_list li.inactive:before {
+    left: 100%;
+    width:  0px;
+}
+
+#tab_list a {
+    width: 100%;
+    max-width: 120px;
+}
+
+#tab_list li.active {
+    padding-left: 17px;
+    padding-right: 10px;
+    max-width: 120px;
+}
+
+#tab_list li.active.root {
+    padding-left: 10px;
+}
+
+#tab_list li.stream a,
+#tab_list li.private_message a {
+    padding-left: 17px;
+    padding-right: 4px;
+}
+
+#tab_list li.root a {
+    padding-right: 2px;
+}
+
+#tab_bar_underpadding {
+    width: 100%;
+}
+
+#navbar-buttons {
+    margin-left: 15px;
+}
+
+#streamlist-toggle {
+    left: 0px;
+}
+
+#streamlist-toggle-button {
+    width: 40px;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    min-width: 12px;
+    right: 4px;
+}
+
+#userlist-toggle {
+    right: 0px;
+}
+
+#userlist-toggle-button {
+    width: 40px;
+}
+
+.nav .dropdown-menu {
+    left: auto;
+    right: 0px;
+    min-width: 180px;
+}
+
+.nav .dropdown-menu:after {
+    width: 0px;
+    right: 10px;
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
+    padding-left: 0px !important;
+    right: 0px;
+}
+
+#searchbox .input-append {
+    width: 100%;
+}
+
+#searchbox .input-append .icon-vector-search {
+    left: 10px;
+}
+
+.navbar-search {
+    width: auto;
+}
+
+#search_query {
+    width: 100%;
+    padding-left: 35px;
+    padding-right: 20px;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    right: 2px;
+}
+
+div.floating_recipient {
+    width: 100%;
+}
+
+.sticky .message_header {
+    width: 100%;
+    left: 0px;
+}
+
+.sticky .message-header-wrapper {
+    max-width: 1400px;
+}
+
+.sticky .message-header-contents {
+    margin-left: 250px;
+    margin-right: 251px;
+}
+
+.loading_indicator_spinner {
+    width: 38px;
+}
+
+.loading_indicator_text {
+    margin-left: 20px;
+}
+
+.settings-section .loading_indicator_spinner {
+    width: 12px;
+}
+
+.settings-section #default_language {
+    width: 150px;
+    margin-left: 20px !important;
+}
+
+.twitter-image,
+.message_inline_image {
+    margin-left: 5px;
+}
+
+.message_inline_ref {
+    margin-left: 5px;
+}
+
+.twitter-image img,
+.message_inline_image img,
+.message_inline_ref img {
+    margin-right: 10px;
+}
+
+.popover {
+    width: auto;
+}
+
+.popover-left,
+.popover-right {
+    max-width: 200px;
+}
+
+.hotkeys_table {
+    width: 245px;
+    margin-right: 10px;
+}
+
+.hotkeys_table th {
+    width: 245px;
+}
+
+#loading_more_messages_indicator_box_container {
+    left: 50%;
+}
+
+#loading_more_messages_indicator_box {
+    left: -50%;
+}
+
+.subscription-email-hint-image {
+    width: 80px;
+    padding-right: 60px;
+}
+
+.color_swatch {
+    width: 18px;
+}
+
+.administration,
+.subscriptions {
+    padding-left: 15px;
+}
+
+#subscriptions_table .subscription_block {
+    padding-left: 0.5em;
+}
+
+#stream_filters .subscription_block {
+    margin-right: 15px;
+    padding-left: 33px;
+}
+
+#stream_filters .subscription_block.stream-with-count {
+    margin-right: 38px;
+}
+
+.subscription_name,
+.subscription_description {
+    width: 100%;
+}
+
+#subscriptions-status {
+    left: 300px;
+    right: 300px;
+    max-width: 800px;
+}
+
+#close-subscriptions-status {
+    right: 8px;
+}
+
+.subject-name {
+    width: 100%;
+}
+
+.conversation-partners {
+    width: 90%;
+}
+
+.subscription_header .subscription_name {
+    width: auto;
+}
+
+.subscription_header .subscription_lock {
+    margin-left: 12px;
+    margin-right: 1px;
+}
+
+.subscription_settings {
+    width: 100%;
+}
+
+.subscription-type {
+    width: 80%;
+}
+
+.stream-email {
+    width: 80%;
+}
+
+.sp-preview {
+    width: 20px;
+}
+
+.sp-replacer {
+    margin-right: 12px;
+}
+
+.subscription-config {
+    width: 270px;
+}
+
+.stream-email .email-address {
+    width: 90%;
+}
+
+.streams_popover .colorpicker-container {
+    margin-right: 10px;
+}
+
+.sub_setting_control {
+    margin-right: 10px;
+}
+
+.sub_unsub_button {
+    min-width: 140px;
+    margin-right: 10px;
+}
+
+.stream_sub_unsub_button {
+    min-width: 140px;
+    margin-right: 10px;
+}
+
+button.topic_edit_save,
+button.topic_edit_cancel {
+    width: 18px;
+}
+
+#create_stream_name {
+    width: 220px;
+}
+
+#create_stream_button {
+    min-width: 140px;
+    margin-left: 15px;
+}
+
+.subscriber-list {
+    width: auto;
+}
+
+.subscriber-name {
+    padding-left: 8px;
+}
+
+.subscriber-email {
+    margin-left: 20px;
+    padding-right: 8px;
+}
+
+.add-subscriber-button,
+.stream-rename-button {
+    margin-left: 5px;
+}
+
+.settings-dropdown-caret {
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+#notifications-area {
+    right: 20px;
+    width: 200px;
+}
+
+.notifications-gravatar img {
+    max-width: 25px;
+    padding-left: 4px;
+}
+
+#subscription-status {
+    width: 200px;
+    left: 50%;
+    margin-left: -100px;
+}
+
+.emoji {
+    width: 25px;
+}
+
+.streamlist_swatch {
+    width: 11px;
+    left: 10px;
+}
+
+.stream-privacy {
+    left: 11px;
+}
+
+ul.expanded_subjects {
+    margin-left: 0px;
+}
+
+ul.expanded_private_messages {
+    margin-left: 0px;
+}
+
+li.show-more-topics,
+li.expanded_subject {
+    padding-left: 33px;
+}
+
+li.show-more-private-messages,
+li.expanded_private_message {
+    padding-left: 24px;
+}
+
+.expanded_subject .subject_box,
+#private .expanded_private_message .subject_box {
+    margin-right: 38px;
+}
+
+.expanded_subject.zero-subject-unreads .subject_box,
+#private .expanded_private_messages.zero-subject-unreads .subject_box {
+    margin-right: 15px;
+}
+
+.twitter-avatar {
+    width: 48px;
+    margin-right: .75em;
+}
+
+#pw_strength {
+    width: 220px;
+}
+
+.date_row .date-direction {
+    padding-right: 5px;
+}
+
+.date_row .date-line {
+    width: 33%;
+}
+
+.date_row span:before,
+.date_row span:after {
+    width: 50%;
+}
+
+.date_row span:before {
+    right: 0.5em;
+    margin-left: -50%;
+}
+
+.date_row span:after {
+    left: 0.5em;
+    margin-right: -50%;
+}
+
+#restore-draft {
+    margin-right: 1em;
+}
+
+#compose a.message-control-button {
+    width: 14px;
+    margin-right: 8px;
+}
+
+#enter_sends {
+    margin-right: 5px;
+}
+
+#topics_header,
+#userlist-header,
+#sharethelove-header,
+#group-pm-header {
+    margin-right: 10px;
+}
+
+#streams_header {
+    margin-right: 0px;
+    padding-left: 10px;
+}
+
+.message_edit {
+    margin-left: 47px;
+}
+
+#message_edit_form .edit-control-label {
+    width: auto;
+    margin-right: 10px;
+}
+
+#message_edit_form .edit-controls {
+    margin-left: 35px;
+    margin-right: -7px;
+}
+
+#message_edit_form textarea {
+    width: 100%;
+    min-width: 206px;
+}
+
+#topic_edit_form {
+    padding-left: 20px;
+    padding-right: 3px;
+    margin-left: -15px;
+}
+
+.message_body_gravatar {
+    width: 20px;
+}
+
+.user-mention {
+    margin-right: 2px;
+}
+
+#administration .administration-icon,
+#settings .settings-icon,
+#subscriptions .streams-icon {
+    margin-right: 10px;
+}
+
+#home .alert-bar-container {
+    width: 100%;
+    left: 0px;
+}
+
+#home .alert-bar {
+    width: 100%;
+    max-width: 1210px;
+}
+
+#home .alert-bar .alert-icon {
+    margin-right: 10px;
+}
+
+#home .alert-bar .close-alert-icon {
+    width: 28px;
+    right: 0px;
+}
+
+.message-pane {
+    padding-left: 0.3em;
+}
+
+.screen {
+    left: 0;
+}
+
+#tutorial-stream {
+    width: 250px;
+}
+
+#tutorial-subject {
+    width: 250px;
+}
+
+.btn-skip {
+    left: -10px;
+    margin-right: 25px;
+}
+
+#share-the-love {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+#share-the-love-expand-collapse h4 {
+    padding-left: 1em;
+}
+
+#share-the-love-expand-collapse .toggle {
+    left: 0px;
+}
+
+#share-the-love .still-have-invites {
+    margin-right: 10px;
+}
+
+#share-the-love .no-more-invites {
+    margin-right: 10px;
+}
+
+#share-the-love .invite-count-area {
+    margin-right: 10px;
+}
+
+.change-stream-privacy {
+    width: 100%;
+}
+
+.user-list-filter ,
+.add-user-list-filter {
+    width: 80%;
+}
+
+.inline-subscribe-error {
+    margin-left: 5px;
+}

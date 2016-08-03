@@ -1,0 +1,1604 @@
+
+body,
+html {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+.header {
+    position: fixed;
+    height: 40px;
+}
+
+.app {
+    height: 100%;
+    overflow-y: scroll;
+}
+
+.app-main,
+.header-main {
+    margin: 0px auto;
+    padding: 0px;
+    position: relative;
+}
+
+.app-main {
+    height: 100%;
+    min-height: 100%;
+}
+
+.fixed-app {
+    position: fixed;
+}
+
+.column-left {
+    position: absolute;
+    top: 0px;
+}
+
+.column-right {
+    position: absolute;
+    top: 0px;
+}
+
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
+    position: fixed;
+    margin-top: 50px;
+}
+
+.app-main .column-middle {
+    min-height: 100%;
+}
+
+.column-middle {
+    position: relative;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"]
+{
+    height:    1.4em;
+}
+
+.btn {
+    height:     auto;
+}
+
+.header-main .logo {
+    display: inline-block;
+    position: relative;
+}
+
+.header-main .logoimage {
+    height: 40px;
+}
+
+#user-settings-avatar {
+    height: 100px;
+    margin-top: 10px;
+}
+
+.notvisible {
+    min-height: 0px !important;
+    height: 0px !important;
+    overflow: hidden !important;
+    position: absolute !important;
+}
+
+.position-relative {
+    position: relative;
+}
+
+.codehilite {
+    display: block !important;
+}
+
+pre {
+    overflow-x: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.sidebar-nav {
+    padding: 0px 10px 20px 0px;
+    margin-top: 1em;
+    overflow: hidden;
+}
+
+#left-sidebar .brand {
+    display: table-row;
+}
+
+.new_message_button {
+    padding-top: 1.1em;
+}
+
+.sidebar-title,
+.share-the-love-title {
+    display: inline;
+}
+
+#message_edit_tooltip,
+#streams_inline_cog,
+#streams_filter_icon {
+    float: right;
+    margin-top: 3px;
+}
+
+.message-edit-tooltip-inner {
+    position: absolute;
+    top: -18px;
+}
+
+#stream_filters {
+    overflow: visible;
+    margin: 2px 0px 2px 0px;
+    padding: 0;
+}
+
+#stream-filters-container {
+    overflow-y: hidden;
+    position: relative;
+}
+
+.narrow-filter {
+    display: block;
+    position: relative;
+}
+
+#user_presences,
+#group-pms {
+    list-style-position: inside;
+    overflow: hidden;
+}
+
+#user_presences:hover,
+#group-pms:hover {
+    overflow-y: auto;
+}
+
+#user_presences li {
+    overflow: hidden;
+}
+
+#user_presences li,
+#group-pms li {
+    list-style-type: none;
+}
+
+.user-status-indicator,
+.group-pm-status-indicator {
+    display: block;
+    height: 8px;
+    float: left;
+    position: relative;
+    top: 5px;
+}
+
+.user-device-indicator {
+    display: inline-block;
+    position: absolute;
+    top: 0px;
+}
+
+ul.filters {
+    list-style-type: none;
+}
+
+ul.filters hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+li.active-filter,
+li.active-sub-filter {
+    position: relative;
+}
+
+.filter-icon {
+    display: inline-block;
+}
+
+#global_filters .global-filter {
+    position: relative;
+    padding: 1px 10px;
+}
+
+.group-pms-sidebar-entry .selectable_sidebar_block {
+    display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    display: block;
+}
+
+.group-pm-link {
+    display: block;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    overflow: hidden;
+}
+
+.user_sidebar_entry.user-with-count .count {
+    display: inherit;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count,
+#stream_filters .count {
+    position: absolute;
+    top: 4px;
+    padding: 2px 3px 1px 3px;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count
+{
+    top: 2px;
+}
+
+.subject_count {
+    display: block;
+    position: absolute;
+    top: 2px;
+    padding: 2px 3px 0px 3px;
+}
+
+.private_message_count {
+    display: block;
+    position: absolute;
+    top: 2px;
+    padding: 2px 3px 0px 3px;
+}
+
+ul.filters i {
+    display: inline-block;
+}
+
+li.actual-dropdown-menu i {
+    display: inline-block;
+}
+
+ul.filters .arrow {
+    position: absolute;
+    top: 2px;
+}
+
+ul.filters li:hover .arrow {
+    display: inline;
+}
+
+ul.filters li .arrow:hover {
+    display: inline;
+}
+
+ul.filters .topic-sidebar-arrow {
+    top: 1px;
+}
+
+ul.filters li.expanded_subject:hover .topic-sidebar-arrow {
+    display: inline !important;
+}
+
+ul.filters li.expanded_subject .topic-sidebar-arrow:hover {
+    display: inline;
+}
+
+.message_area_padder {
+    margin-top: 68px;
+    overflow: visible;
+}
+
+.message_comp {
+    padding: 10px 10px 8px 5px;
+}
+
+td.pointer {
+    vertical-align: top;
+    padding-top: 10px;
+}
+
+.include-sender .message_edit_notice {
+    display: inline-block;
+    vertical-align: top;
+    position: static;
+    padding: 0px;
+}
+
+.message_edit_notice {
+    position: absolute;
+    top: 16px;
+}
+
+.include-sender .message_time {
+    top: -4px;
+}
+
+.message_time {
+    display: block;
+    vertical-align: middle;
+    padding: 1px;
+    position: absolute;
+}
+
+.status-time {
+    top: 8px !important;
+}
+
+.message_controls {
+    display: inline-block;
+    position: absolute;
+    top: 2px;
+}
+
+.include-sender .message_controls {
+    top: -3px;
+}
+
+.message_data {
+    vertical-align: top;
+    padding: 0px;
+    position: relative;
+}
+
+.message_header {
+    vertical-align: middle;
+    overflow:       hidden;
+    position: relative;
+}
+
+.message_list .recipient_row {
+    margin-bottom: 10px;
+}
+
+.stream_label {
+    display: inline-block;
+    padding: 3px 4px 2px 4px;
+    height: 17px;
+    position: relative;
+}
+
+.stream_label:after {
+    top: 50%;
+    height: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -11px;
+    -moz-transform: scale(.9999);
+}
+
+.stream_label:before {
+    top: 50%;
+    height: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -14px;
+    -moz-transform: scale(.9999);
+}
+
+.stream_topic {
+    display: inline-block;
+    padding: 3px 6px 2px 12px;
+    height: 17px;
+}
+
+.summary_row .message_header {
+    padding: 5px 0px 4px 5px;
+}
+
+.message_header .icon-vector-narrow {
+    position: relative;
+    top: -1px;
+}
+
+.copy-paste-text {
+    position: absolute;
+    float: left;
+}
+
+.compose_table .right_part {
+    padding: 0px;
+}
+
+.compose_table .right_part .icon-vector-narrow {
+    position: relative;
+}
+
+.compose_table .compose_checkbox_label {
+    display: inline-block;
+}
+
+.compose_table .pm_recipient {
+    position: relative;
+    height: 25px;
+}
+
+.compose_table #private-message .you_text {
+    position: absolute;
+    height: 25px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.compose_table .pm_recipient #private_message_recipient {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    height: 23px;
+}
+
+.compose_table #compose-lock-icon {
+    position: relative;
+}
+
+.compose_table #compose-lock-icon i {
+    position: absolute;
+    top: 3px;
+}
+
+.messagebox-bottom {
+    height: 3px;
+}
+
+.message_header_private_message .message_label_clickable {
+    display: inline-block;
+    padding: 3px 4px 2px 4px;
+    height: 17px;
+}
+
+.messagebox {
+    position: relative;
+}
+
+.messagebox .message_top_line {
+    position: relative;
+}
+
+.recipient_row .message_row:first-child .unread_marker {
+    top: 0px;
+}
+
+.unread_marker {
+    display: block;
+    position: absolute;
+    top: 0px;
+    padding-bottom: 2px;
+    height: 100%;
+}
+
+.unread-marker-fill {
+    height: 100%;
+}
+
+.message_sender {
+    height: 0px;
+    vertical-align: top;
+    position: relative;
+}
+
+.sender_name {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.sender-status {
+    display: block;
+    top: -26px;
+    padding-bottom: 6px;
+    vertical-align: middle;
+    position: relative;
+}
+
+.message_controls.sender-status-controls {
+    top: 10px;
+}
+
+.edit_content {
+    height: 0px;
+    display: inline-block;
+    position: relative;
+}
+
+.edit_content i {
+    position: absolute;
+    display: block;
+    top: -0.9em;
+    padding: 1px 2px;
+}
+
+.message_top_line {
+    position: relative;
+}
+
+.include-sender .message_top_line {
+    margin-top: 6px;
+}
+
+.message-right {
+    float: right;
+}
+
+.message_hovered .info,
+.message_hovered .empty-star {
+    visibility: visible;
+}
+
+.message_row {
+    position: relative;
+}
+
+table.compose_table {
+    table-layout: fixed;
+}
+
+div.focused_table {
+    display: block;
+}
+
+.include-sender .message_content {
+    margin-top: -16px;
+}
+
+.message_content {
+    display: block;
+    position: relative;
+}
+
+.message_edit_countdown_timer {
+    display: inline;
+}
+
+.message_edit_tooltip {
+    display: inline;
+}
+
+.message-edit-timer-control-group {
+    float: right;
+}
+
+#message_edit_topic {
+    height: 20px;
+    margin-top: -1px;
+    display: inline-block;
+    padding: 0px;
+}
+
+#message_edit_topic:focus {
+    outline: none;
+}
+
+.message_edit_topic_propagate {
+    display: inline-block;
+}
+
+.message_content.condensed {
+    max-height: 8.5em;
+    overflow: hidden;
+}
+
+.message_content.collapsed {
+    max-height: 0em;
+    overflow: hidden;
+}
+
+div.message_content table {
+    margin: 5px 5px 5px 5px;
+}
+
+div.message_content div {
+    display: table-row;
+    vertical-align: inherit;
+}
+
+div.message_content div {
+    padding: 4px;
+}
+
+div.message_content div {
+    padding: 4px;
+}
+
+blockquote {
+    margin-bottom: 6px;
+}
+
+.messagebox {
+    vertical-align: top;
+}
+
+.messagebox-content {
+    padding: 4px 90px 1px 10px;
+}
+
+.last_message .messagebox-content {
+    padding-bottom: 1px;
+}
+
+.messagebox p {
+    margin: 3px 0px 3px 0px;
+}
+
+#send_message_form {
+    margin: 0px;
+}
+
+#send_message_form .messagebox {
+    padding: 0px;
+}
+
+#enter-sends-label {
+    margin-bottom: 0px;
+    margin-top: 2px;
+}
+
+#compose-send-button {
+    height: 31px;
+}
+
+#below-compose-content {
+    margin-top: 6px;
+}
+
+.bookend {
+    padding-top: 10px;
+}
+
+.prev_is_same_sender.messagebox {
+    padding-top: 0px;
+}
+
+.prev_is_same_sender.message_data {
+    padding-top: 0px;
+}
+
+.next_is_same_sender {
+    padding-bottom: 0px;
+}
+
+.inline_profile_picture {
+    display: inline-block;
+    height: 35px;
+    vertical-align: top;
+}
+
+#compose {
+    position: fixed;
+    bottom: 0px;
+}
+
+#compose-container {
+    margin: auto;
+}
+
+.compose-content {
+    padding: 8px 15px 8px 10px;
+    position: relative;
+}
+
+#compose_close {
+    position: absolute;
+    top: 5px;
+}
+
+.compose_invite_user {
+    padding: 4px 0px 4px 0px;
+}
+
+.compose_invite_close {
+    display: inline;
+    margin-top: 4px;
+}
+
+.compose-all-everyone-controls,
+.compose_invite_user_controls {
+    float: right;
+}
+
+.compose_invite_link {
+    height: 20px;
+    margin-bottom: 3px;
+}
+
+.compose_invite_user_error {
+    padding: 3px 8px 3px 8px;
+}
+
+#send-status {
+    padding: 8px 14px 8px 14px;
+}
+
+.send-status-close {
+    float:       right;
+}
+
+#out-of-view-notification {
+    display: inline-block;
+    position: relative;
+    top: -8px;
+}
+
+.compose-notifications-content {
+    padding: 4px 10px 4px 10px;
+}
+
+.composition-area {
+    position: relative;
+}
+
+#out-of-view-notification .close {
+    position: absolute;
+    top: 5px;
+}
+
+.home-error-bar {
+    margin-top: 5px;
+}
+
+.home-error-bar .alert {
+    margin-bottom: auto;
+}
+
+textarea.new_message_textarea {
+    display: table-cell;
+    height: 1.5em;
+    max-height: 22em;
+    margin-bottom: 0px;
+    resize: none;
+    margin-top: 6px;
+}
+
+input.recipient_box {
+    margin: 0px;
+    height: 1.1em;
+}
+
+#left-of-compose {
+    vertical-align: top;
+    padding-top: 3px;
+}
+
+#send_controls {
+    float: right;
+    position: relative;
+    height: 2.2em;
+}
+
+#send_controls .compose_checkbox_label input {
+    position: relative;
+    top: -3px;
+}
+
+#send_controls #compose-send-button {
+    height: 2.2em;
+}
+
+#send_controls #compose-send-button:hover {
+    height: 2.2em;
+}
+
+#navbar-spacer {
+    height: 40px;
+}
+
+.brand.skinny-user-gravatar {
+    display: table-cell;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+#searchbox {
+    height: 40px;
+}
+
+#tab_bar {
+    padding-top: 0px;
+    overflow: hidden;
+    float: left;
+    height: 40px;
+}
+
+#tab_list {
+    list-style: none;
+    margin: 0px 0px 0px 0px;
+    height: 40px;
+}
+
+#tab_list li {
+    list-style-type: none;
+    display: inline-block;
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+    height: 40px;
+}
+
+#tab_list li.inactive:after {
+    top: 50%;
+    height: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -25px;
+    -moz-transform: scale(.9999);
+}
+
+#tab_list li.inactive:before {
+    top: 50%;
+    height: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -28px;
+    -moz-transform: scale(.9999);
+}
+
+#tab_list a {
+    display: inline-block;
+    padding: 0px 8px;
+    overflow: hidden;
+}
+
+#tab_list li.active {
+    overflow: hidden;
+}
+
+#tab_list .root {
+    margin: 0px;
+}
+
+#tab_bar_underpadding {
+    position: absolute;
+    top: 40px;
+    height: 20px;
+}
+
+#navbar-buttons {
+    margin-top: 7px;
+    display: inline-block;
+    float: right;
+}
+
+#navbar-buttons ul.nav {
+    margin: 0px;
+}
+
+#streamlist-toggle {
+    position: absolute;
+    top: 0px;
+    vertical-align: middle;
+}
+
+#streamlist-toggle-button {
+    display: block;
+    position: relative;
+    height: 19px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    position: absolute;
+    height: 12px;
+    top: 4px;
+    padding: 1px 1px 1px 1px;
+}
+
+#userlist-toggle {
+    position: absolute;
+    top: 0px;
+    vertical-align: middle;
+}
+
+#userlist-toggle-button {
+    display: block;
+    height: 19px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
+.nav .dropdown-menu {
+    top: 30px;
+}
+
+.nav .dropdown-menu:after {
+    position: absolute;
+    height: 0px;
+    top: -7px;
+    display: inline-block;
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
+    display: block;
+    position: absolute;
+    top: 3px;
+}
+
+#searchbox .input-append {
+    position: relative;
+}
+
+#searchbox .input-append .icon-vector-search {
+    padding: 0px;
+    position: absolute;
+    top: 10px;
+}
+
+.navbar-search {
+    margin-top: 0px;
+    float: none;
+    overflow: hidden;
+    height: 40px;
+}
+
+#search_query {
+    height: 40px;
+    padding: 0px;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    position: absolute;
+    top: 6px;
+    height: 30px;
+    padding: 4px;
+}
+
+#search_arrows {
+    margin-bottom: 5px;
+}
+
+div.floating_recipient {
+    position: relative;
+}
+
+#floating_recipient_bar {
+    top: 50px;
+}
+
+.recipient_row.sticky {
+    margin-top: 22px;
+}
+
+.sticky .message_header {
+    position: fixed;
+    top: 50px;
+}
+
+.sticky .message-header-wrapper {
+    margin: auto;
+}
+
+#bottom_whitespace {
+    display: block;
+    height: 300px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.loading_indicator_spinner {
+    height: 38px;
+    float: left;
+}
+
+.settings-section .loading_indicator_text {
+    vertical-align: middle;
+    display: inline-block;
+    float: none;
+}
+
+.settings-section .loading_indicator_spinner {
+    height: 12px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.settings-section .inline {
+    display: inline !important;
+}
+
+.twitter-image,
+.message_inline_image {
+    margin-bottom: 5px;
+    height: 100px;
+    display: block !important;
+}
+
+.message_inline_ref {
+    margin-bottom: 5px;
+    height: 50px;
+    display: block !important;
+}
+
+.twitter-image img,
+.message_inline_image img,
+.message_inline_ref img {
+    height: auto;
+    max-height: 100%;
+    float: left;
+}
+
+.popover-title {
+    overflow-x: hidden;
+}
+
+.popover hr {
+    margin-top:    5px;
+    margin-bottom: 5px;
+}
+
+.hotkeys_table {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#loading_more_messages_indicator {
+    margin: 10px;
+}
+
+#loading_more_messages_indicator_box_container {
+    position: absolute;
+}
+
+#loading_more_messages_indicator_box {
+    position: relative;
+    top: 25px;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
+}
+
+#subs_page_loading_indicator {
+    margin: 10px auto;
+}
+
+.subscriber_list_loading_indicator {
+    margin: 10px auto;
+}
+
+#fmt_help_table {
+    table-layout: fixed;
+}
+
+.subscription-email-hint-image {
+    float: right;
+}
+
+.color_swatch {
+    display: inline-block;
+    height: 18px;
+    padding: 0;
+    margin: 0 0 0 10px;
+    vertical-align: middle;
+}
+
+.administration,
+.subscriptions {
+    margin-top: 55px;
+}
+
+#subscriptions_table .subscription_block {
+    vertical-align: middle;
+    display: inline-block;
+}
+
+#stream_filters .subscription_block {
+    padding-bottom: 3px;
+    padding-top: 4px;
+}
+
+.subscription_name,
+.subscription_description {
+    overflow: hidden;
+}
+
+#stream_filters .subscription_name {
+    display: inline-block;
+}
+
+#subscriptions-status {
+    position: fixed;
+    display: block;
+    margin: 0px auto;
+    top: 55px;
+}
+
+#close-subscriptions-status {
+    position: absolute;
+    top: 8px;
+}
+
+.subject-name {
+    display: block;
+    overflow: hidden;
+}
+
+.conversation-partners {
+    display: block;
+    overflow: hidden;
+}
+
+.subscription_header {
+    min-height: 47px;
+}
+
+.subscription_header .subscription_lock {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.subscription_settings {
+    position: relative;
+    top: -1px;
+}
+
+.subscription_settings ul {
+    list-style-type: none;
+}
+
+.subscription-type {
+    padding: 5px;
+    margin: auto;
+}
+
+.stream-email {
+    margin: auto;
+    margin-top: 5px;
+    padding: 5px;
+}
+
+.subscription-control-label {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 5px;
+}
+
+.subscription-config {
+    margin: auto;
+    margin-top: 25px;
+}
+
+.stream-email-box,
+.subscriber_list_settings,
+.rename-stream {
+    margin: 20px 15px 20px 15px;
+}
+
+.stream-email .email-address {
+    display: block;
+    margin: auto;
+    word-break: break-all;
+}
+
+.sub_setting_control[type="checkbox"] {
+    margin: 0 30px 5px 20px;
+}
+
+#user-checkboxes .checkbox {
+    display: block;
+}
+
+.streams_popover .colorpicker-container {
+    display: inline-block;
+}
+
+.sub_setting_control {
+    display: inline-block;
+}
+
+.sub_unsub_button {
+    float: right;
+    margin-top: 9px;
+}
+
+.stream_sub_unsub_button {
+    margin-top: 9px;
+}
+
+button.primary {
+    padding: 2px;
+}
+
+button.primary:focus {
+    outline: none;
+}
+
+button.topic_edit_save,
+button.topic_edit_cancel {
+    height: 18px;
+    margin-top: -1px;
+}
+
+.sub_arrow {
+    float: right;
+    padding: 0 15px 0 0;
+}
+
+#create_stream_name {
+    margin-top: 10px;
+}
+
+#create_stream_button {
+    margin-top: 10px;
+}
+
+.sub_settings_title {
+    margin: 10px 0;
+}
+
+.new-stream-name,
+.stream-rename-button {
+    margin-top: 10px;
+}
+
+.settings_committed {
+    margin: 10px;
+}
+
+.subscriber_list_container {
+    margin-top: 10px;
+    display: inline-block;
+    margin: auto;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.subscriber-list {
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+.subscriber-name,
+.subscriber-email {
+    padding: 5px;
+}
+
+.subscriber_list_add {
+    margin: auto;
+}
+
+.remove-subscriber-form {
+    margin: 0px 0px 0px 0px;
+}
+
+.modal {
+    overflow: hidden;
+    margin-top: 0;
+    top: 5%;
+    outline: 0;
+}
+
+.modal-body {
+    max-height: 60vh;
+}
+
+.modal form {
+    margin-bottom: 0px;
+}
+
+#invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+}
+
+#notifications-area {
+    position: fixed;
+    bottom: 0px;
+    height: auto;
+}
+
+.notifications-gravatar img {
+    max-height: 25px;
+    padding-top: 4px;
+}
+
+.empty_feed_notice {
+    padding: 3em 4em;
+}
+
+#subscription-status {
+    position: absolute;
+    bottom: 30px;
+}
+
+.emoji {
+    height: 25px;
+    position: relative;
+    top: 3px;
+    margin-top: -7px;
+}
+
+#sending-indicator {
+    float: left;
+}
+
+.streamlist_swatch {
+    display: block;
+    height: 11px;
+    vertical-align: middle;
+    float: left;
+    position: absolute;
+    top: 5px;
+}
+
+.stream-privacy {
+    position: absolute;
+    top: 3px;
+}
+
+ul.expanded_subjects {
+    list-style-type: none;
+    padding-bottom: 2px;
+}
+
+ul.expanded_private_messages {
+    list-style-type: none;
+    padding-bottom: 2px;
+}
+
+li.show-more-topics,
+li.expanded_subject {
+    position: relative;
+}
+
+li.show-more-private-messages,
+li.expanded_private_message {
+    position: relative;
+    padding-bottom: 1px;
+    padding-top: 2px;
+}
+
+.all-streams-padding {
+    padding-top: 5px;
+    margin-bottom: -5px;
+}
+
+.expanded_subject .subject_box,
+#private .expanded_private_message .subject_box {
+    display: block;
+}
+
+.expanded_subject.zero-subject-unreads .subject_box,
+#private .expanded_private_messages.zero-subject-unreads .subject_box {
+    display: block;
+}
+
+.twitter-tweet {
+    padding: .5em .75em;
+    margin-bottom: 0.25em;
+}
+
+.twitter-avatar {
+    float: left;
+    height: 48px;
+}
+
+.star {
+    display: inline-block;
+}
+
+.info {
+    display: inline-block;
+}
+
+.settings_separator {
+    margin-top:    2em;
+    margin-bottom: 2em;
+}
+
+#pw_strength {
+    height: 25px;
+    margin-bottom: 0px;
+}
+
+.form-horizontal .label_for_text {
+    padding-top: 0;
+}
+
+.sub-unsub-message,
+.date_row {
+    padding-bottom: 10px;
+}
+
+.date_row .date-direction {
+    display: inline-block;
+}
+
+.date_row .date-line {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0px 5px 0px 5px;
+}
+
+.date_row span {
+    display: block;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.date_row span:before,
+.date_row span:after {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    height: 0px;
+}
+
+#restore-draft {
+    float: left;
+    padding-top: 2px;
+}
+
+#sending-indicator {
+    padding-top: 2px;
+}
+
+#compose a.message-control-button {
+    display: block;
+    height: 14px;
+    padding-top: 5px;
+    float: left;
+}
+
+#enter_sends {
+    margin-top: 0px;
+}
+
+#global_filters {
+    margin-bottom: 20px;
+}
+
+#topics_header,
+#userlist-header,
+#sharethelove-header,
+#group-pm-header {
+    margin-top: 5px;
+}
+
+#feedback_section {
+    padding-bottom: 10px;
+}
+
+.message_edit {
+    margin-top: 5px;
+}
+
+#message_edit_form .edit-control-label {
+    float: left;
+    vertical-align: top;
+    padding-top: 0px;
+}
+
+#message_edit_form textarea {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+#message_edit_form .control-group {
+    margin-bottom: 5px;
+}
+
+#topic_edit_form {
+    display: inline-block;
+    margin: 0 0 10px 0;
+    height: 22px;
+}
+
+.message_body_gravatar {
+    height: 20px;
+    margin: 2px 2px 2px 0px;
+    vertical-align: text-bottom;
+}
+
+.user-mention {
+    padding: 0 0.2em;
+    display: inline-block;
+    margin-bottom: 1px;
+}
+
+#subscriptions h1 {
+    padding-top: 40px;
+}
+
+#home {
+    margin-top: 41px;
+}
+
+#home .alert-bar-container {
+    position: fixed;
+    top: 41px;
+}
+
+#home .alert-bar {
+    margin: auto;
+}
+
+#home .alert-bar-contents {
+    padding: 10px 35px 10px 10px;
+    display: inline-block;
+    position: relative;
+}
+
+#home .alert-bar .close-alert-icon {
+    display: block;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+}
+
+.tutorial-done-button {
+    margin-top: 9px;
+    margin-bottom: 8px;
+}
+
+.btn-skip {
+    position: relative;
+}
+
+#share-the-love {
+    margin-bottom: 5px;
+}
+
+#share-the-love-expand-collapse {
+    position: relative;
+}
+
+#share-the-love-expand-collapse .toggle {
+    position: absolute;
+    top: 50%;
+    margin-top: -8px;
+}
+
+#share-the-love input,
+#share-the-love p {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#referral-form label {
+    margin: 0;
+}
+
+#share-the-love .still-have-invites {
+    clear: both;
+}
+
+#share-the-love .no-more-invites {
+    clear: both;
+}
+
+#share-the-love .alert {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#referral-form {
+    margin-bottom: 0;
+}

@@ -1,0 +1,357 @@
+
+.header-main .logo {
+    text-shadow: none;
+    letter-spacing: 2px;
+    text-decoration: none;
+}
+
+pre {
+    white-space: pre;
+    word-wrap: normal;
+}
+
+pre code {
+    white-space: pre;
+}
+
+.preserve_spaces {
+    white-space: pre-wrap;
+}
+
+.sidebar-nav {
+    text-overflow: ellipsis;
+}
+
+.logout {
+    white-space: nowrap;
+}
+
+#streams_header a {
+    text-decoration: none;
+}
+
+#user_presences li {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#invite-user-link i {
+    text-decoration: none;
+}
+
+.filter-icon {
+    text-align: center;
+}
+
+.user_sidebar_entry .selectable_sidebar_block {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count,
+#stream_filters .count {
+    letter-spacing: 0.6px;
+}
+
+.subject_count {
+    letter-spacing: 0.6px;
+}
+
+.private_message_count {
+    letter-spacing: 0.6px;
+}
+
+#compose_buttons {
+    text-align: center;
+}
+
+.message_edit_notice {
+    text-align: right;
+}
+
+.include-sender .message_edit_notice:before {
+    content: "(";
+}
+
+.include-sender .message_edit_notice:after {
+    content: ")";
+}
+
+.message_time {
+    text-align: right;
+}
+
+.message_data {
+    text-align: left;
+}
+
+.message_header {
+    text-align:     left;
+    text-overflow:  ellipsis;
+    white-space:    nowrap;
+}
+
+.stream_label {
+    text-decoration: none;
+}
+
+.stream_label:hover {
+    text-decoration: none;
+}
+
+.stream_label:after {
+    content: " ";
+}
+
+.stream_label:before {
+    content: " ";
+}
+
+.copy-paste-text {
+    text-indent: -99999px;
+}
+
+.actions_hovered .actions_link {
+    text-decoration: underline;
+}
+
+.message_edit_countdown_timer {
+    text-align: right;
+}
+
+.message_length_controller {
+    text-align: center;
+}
+
+.message_length_controller:hover {
+    text-decoration: underline;
+}
+
+div.message_content div {
+    text-align: left;
+}
+
+.messagebox {
+    word-wrap: break-word;
+}
+
+.send-status-close {
+    text-shadow: 0 1px 0 white;
+}
+
+.compose-notifications-content {
+    text-align: center;
+}
+
+#out-of-view-notification .close {
+    text-shadow: 0 1px 0 white;
+}
+
+.brand.skinny-user-gravatar {
+    white-space: nowrap;
+}
+
+#tab_bar {
+    text-overflow: ellipsis;
+    letter-spacing: normal;
+}
+
+#tab_list {
+    white-space: nowrap;
+}
+
+#tab_list li {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#tab_list li.inactive:after {
+    content: " ";
+}
+
+#tab_list li.inactive:before {
+    content: " ";
+}
+
+#tab_list a {
+    text-decoration: none;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#tab_list li.active {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#navbar-buttons {
+    white-space: nowrap;
+}
+
+#streamlist-toggle {
+    text-align: center;
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+}
+
+#userlist-toggle {
+    text-align: center;
+}
+
+#userlist-toggle-button {
+    text-decoration: none;
+}
+
+.nav .dropdown-menu:after {
+    content: '';
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
+    text-shadow: none;
+}
+
+#navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
+    text-shadow: none;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    text-align: center;
+    text-shadow: none;
+}
+
+#search_arrows {
+    letter-spacing: -.3em;
+}
+
+#search_arrows input {
+    letter-spacing: normal;
+}
+
+.popover-title {
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.popover_info {
+    text-align: center;
+}
+
+.hotkeys_table .hotkey {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.subscription_name,
+.subscription_description {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#add_new_subscription {
+    text-align: center;
+}
+
+.subject-name {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.subscription_settings form {
+    text-align: center;
+}
+
+.subscription-type {
+    text-align: center;
+}
+
+.stream-email {
+    text-align: center;
+}
+
+.stream-email .email-address {
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.sub_button_row {
+    text-align: center;
+}
+
+.subscriber-list-box {
+    text-align: center;
+}
+
+.subscriber_list_container {
+    text-align: left;
+}
+
+.subscriber_list_add {
+    text-align: center;
+}
+
+.empty_feed_notice h4 {
+    text-align: center;
+}
+
+#subscription-status {
+    text-align: center;
+}
+
+#empty_narrow_private_message p,
+#empty_narrow_message p {
+    text-align: center;
+}
+
+.sub-unsub-message,
+.date_row {
+    text-align: center;
+}
+
+.date_row span {
+    text-transform: uppercase;
+    text-shadow: 1px 1px 0px #fff;
+}
+
+.date_row span:before,
+.date_row span:after {
+    content: " ";
+}
+
+#compose a.message-control-button {
+    text-decoration: none;
+    text-align: center;
+}
+
+#feedback_section {
+    text-align: left;
+}
+
+.user-mention {
+    white-space: nowrap;
+}
+
+#home .alert-bar {
+    text-align: center;
+}
+
+.tutorial-done-button {
+    text-align: right;
+}
+
+.deactivated_user {
+    text-decoration: line-through;
+}
+
+.change-stream-privacy {
+    text-align: center;
+}
