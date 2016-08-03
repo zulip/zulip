@@ -85,7 +85,7 @@ def check_html_templates(templates, modified_only):
             'templates/zerver/right-sidebar.html',
             'templates/zerver/search_operators.html',
         ]
-        validate(fn, check_indent=(fn not in bad_files))
+        validate(fn=fn, check_indent=(fn not in bad_files))
 
 def check_handlebar_templates(templates, modified_only):
     # type: (Iterable[str], bool) -> None
@@ -94,7 +94,7 @@ def check_handlebar_templates(templates, modified_only):
     if not modified_only:
         assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
-        validate(fn, check_indent=True)
+        validate(fn=fn, check_indent=True)
 
 if __name__ == '__main__':
     check_our_files()
