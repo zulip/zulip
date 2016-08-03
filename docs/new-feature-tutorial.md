@@ -6,7 +6,7 @@ as an example of the specific steps needed to add a new feature: adding
 a new option to the application that is dynamically synced through the
 data system in real-time to all browsers the user may have open.
 
-## General Process
+## General Process in brief
 
 ### Adding a field to the database
 
@@ -14,9 +14,11 @@ data system in real-time to all browsers the user may have open.
 `zerver/ models.py`. Add a new field in the appropriate class.
 
 **Create and run the migration:** To create and apply a migration, run:
-:
 
-./manage.py makemigrations ./manage.py migrate
+```
+./manage.py makemigrations
+./manage.py migrate
+```
 
 **Test your changes:** Once you've run the migration, restart memcached
 on your development server (`/etc/init.d/memcached restart`) and then
@@ -34,6 +36,10 @@ based on the event you just created.
 
 **Backend implementation:** Make any other modifications to the backend
 required for your change.
+
+**New views:** Add any new application views to `zerver/urls.py`. This
+includes both views that serve HTML (new pages on Zulip) as well as new
+API endpoints that serve JSON-formatted data.
 
 **Testing:** At the very least, add a test of your event data flowing
 through the system in `test_events.py`.
@@ -73,12 +79,51 @@ repo](https://github.com/zulip/zulip/commit/5b7f3466baee565b8e5099bcbd3e1ccdbdb0
 (Note that Zulip has since been upgraded from Django 1.6 to 1.8, so the
 migration format has changed.)
 
+### Update the model
+
 First, update the database and model to store the new setting. Add a new
-boolean field, `realm_invite_by_admins_only`, to the Realm model in
+boolean field, `invite_by_admins_only`, to the Realm model in
 `zerver/models.py`.
 
-Then create a Django migration that adds a new field,
-`invite_by_admins_only`, to the `zerver_realm` table.
+``` diff
+--- a/zerver/models.py
++++ b/zerver/models.py
+@@ -139,6 +139,7 @@ class Realm(ModelReprMixin, models.Model):
+     restricted_to_domain = models.BooleanField(default=True) # type: bool
+     invite_required = models.BooleanField(default=False) # type: bool
++    invite_by_admins_only = models.BooleanField(default=False) # type: bool
+     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
+     mandatory_topics = models.BooleanField(default=False) # type: bool
+```
+
+### Create the migration
+
+Create the migration file: `./manage.py makemigrations`. Make sure to
+commit the generated file to git: `git add zerver/migrations/NNNN_realm_invite_by_admins_only.py`
+(NNNN is a number that is equal to the number of migrations.)
+
+If you run into problems, the [Django migration documentation](https://docs.djangoproject.com/en/1.8/topics/migrations/) is helpful.
+
+### Test your migration changes
+
+Apply the migration: `./manage.py migrate`
+
+Output:
+```
+shell $ ./manage.py migrate
+Operations to perform:
+  Synchronize unmigrated apps: staticfiles, analytics, pipeline
+  Apply all migrations: zilencer, confirmation, sessions, guardian, zerver, sites, auth, contenttypes
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+  Installing custom SQL...
+Running migrations:
+  Rendering model states... DONE
+  Applying zerver.0026_realm_invite_by_admins_only... OK
+```
+
+### Handle database interactions
 
 In `zerver/lib/actions.py`, create a new function named
 `do_set_realm_invite_by_admins_only`. This function will update the
@@ -109,6 +154,8 @@ realm. :
       send_event(event, active_user_ids(realm))
       return {}
 
+### Update application state
+
 You then need to add code that will handle the event and update the
 application state. In `zerver/lib/actions.py` update the
 `fetch_initial_state` and `apply_events` functions. :
@@ -126,6 +173,8 @@ already code that will correctly handle the realm update event type: :
         elif event['type'] == 'realm':
            field = 'realm_' + event['property']
            state[field] = event['value']
+
+### Add a new view
 
 You then need to add a view for clients to access that will call the
 newly-added `actions.py` code to update the database. This example

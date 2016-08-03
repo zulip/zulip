@@ -78,6 +78,7 @@ Contents:
 
    integration-guide
    new-feature-tutorial
+   writing-views
    life-of-a-request
 
 .. _code-docs:
