@@ -42,6 +42,9 @@ connection = None
 # by the Dropbox certs (and have an app id of com.dropbox.zulip)
 dbx_connection = None
 
+# `APNS_SANDBOX` should be a bool
+assert isinstance(settings.APNS_SANDBOX, bool)
+
 def get_apns_key(token):
     return 'apns:' + token
 
