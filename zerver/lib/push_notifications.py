@@ -15,7 +15,6 @@ import gcmclient
 from django.conf import settings
 
 import base64, binascii, logging, os, time
-from collections import OrderedDict
 from functools import partial
 
 # APNS error codes
