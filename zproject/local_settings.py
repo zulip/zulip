@@ -76,7 +76,7 @@ S3_BUCKET="humbug-user-uploads"
 S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
 S3_AVATAR_BUCKET="humbug-user-avatars"
 
-APNS_SANDBOX = "push_production"
+APNS_SANDBOX = False
 APNS_FEEDBACK = "feedback_production"
 APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
 DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dist.pem"
