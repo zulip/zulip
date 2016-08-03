@@ -88,51 +88,73 @@ def prev_interval_boundaries(datetime_object, interval):
 
 ##### put stuff into the analytics databases
 
-def is_already_inserted(self, property, analytics_interval):
-    return len(RealmCount.objects \
-               .filter(end_time = analytics_interval.end) \
-               .filter(property = property) \
-               .filter(interval = analytics_interval.name)[:1]) > 0
+def exists_row_with_values(table, **filter_args):
+    return len(table.objects.filter(**filter_args)[:1]) > 0
 
-def exists_row_with_values(self, table, valuesd):
-    queryset = table.objects.all()
-    for prop, value in valuesd.items():
-        queryset = queryset.filter(table._meta.get_field(prop) = value)
-    return len(queryset[:1]) > 0
+def insert_count(table, valid_ids, rows, property, analytics_interval):
+    table.objects.bulk_create([table(property = property,
+                                     end_time = analytics_interval.end,
+                                     interval = analytics_interval.name,
+                                     **row)
+                               for row in rows if row['id'] in valid_ids])
 
-
-def insert_counts(self, realm_ids, values, property, analytics_interval):
-    valuesd = defaultdict(int)
-    for row in values:
-        valuesd[row['realm']] = row['value']
+def insert_realmcount(realm_ids, realm_rows, property, analytics_interval):
+    values = defaultdict(int)
+    for row in realm_rows:
+        values[row['realm']] = row['value']
     RealmCount.objects.bulk_create([RealmCount(realm_id = realm_id,
                                                property = property,
-                                               value = valuesd[realm_id],
+                                               value = values[realm_id],
                                                end_time = analytics_interval.end,
                                                interval = analytics_interval.name)
                                     for realm_id in realm_ids])
 
-def process(realm_ids, property, value_function, analytics_interval):
-    if not is_already_inserted(
-    if not is_already_inserted(property, analytics_interval):
+def process_realmcount(realm_ids, property, value_function, analytics_interval):
+    if not exists_row_with_values(RealmCount,
+                                  end_time = analytics_interval.end,
+                                  interval = analytics_interval.name,
+                                  property =  property):
         values = value_function(analytics_interval)
-        insert_counts(realm_ids, values, property, analytics_interval)
+        insert_realmcount(realm_ids, values, property, analytics_interval)
+
+def insert_usercount(user_ids, user_rows, property, analytics_interval):
+    realm_values = defaultdict(int)
+    for row in user_rows:
+        realm_values[row['userprofile']] = (row['realm'], row['value'])
+    UserCount.objects.bulk_create([UserCount(user_id = user_id
+                                             realm_id = realm_values[user_id][0],
+                                             property = property,
+                                             value = realm_values[user_id][1],
+                                             end_time = analytics_interval.end,
+                                             interval = analytics_interval.name)
+                                   for user_id in user_ids])
+
+def process_usercount(user_ids, property, value_function, analytics_interval):
+    if not exists_row_with_values(UserCount,
+                                  end_time = analytics_interval.end,
+                                  interval = analytics_interval.name,
+                                  property =  property):
+        rows = value_function(analytics_interval)
+        insert_usercount(user_ids, rows, property, analytics_interval)
+
+
 
 
 ##### aggregators
 
 def aggregate_user_to_realm(self, property, analytics_interval):
-    return UserCount.objects.filter(end_time = analytics_interval.end) \
-                            .filter(interval = analytics_interval.name) \
-                            .filter(property = property) \
-                            .values('realm') \
-                            .annotate(value=Sum('value'))
+    return UserCount.objects \
+            .filter(end_time = analytics_interval.end,
+                    interval = analytics_interval.name,
+                    property = property) \
+            .values('realm') \
+            .annotate(value=Sum('value'))
 
 def aggregate_realm_hour_to_day(self, property, analytics_interval):
     return RealmCount.objects \
-                     .filter(start_time__gt = analytics_interval.end - timedelta(day=1)) \
-                     .filter(start_time__lte = analytics_interval.end) \
-                     .filter(property = property) \
+                     .filter(start_time__gt = analytics_interval.end - timedelta(day=1),
+                             start_time__lte = analytics_interval.end,
+                             property = property) \
                      .values('realm') \
                      .annotate(value=Sum('value'))
 
@@ -142,33 +164,33 @@ def aggregate_realm_hour_to_day(self, property, analytics_interval):
 # day (utc?)
 def get_active_user_count_by_realm(analytics_interval):
     return UserActivity.objects \
-                       .filter(last_visit__gte = analytics_interval.start) \
-                       .filter(last_visit__lt = analytics_interval.end) \
+                       .filter(last_visit__gte = analytics_interval.start,
+                               last_visit__lt = analytics_interval.end) \
                        pass
 
 # gauge
 def get_user_profile_count_by_realm(analytics_interval):
     return UserProfile.objects \
-                      .filter(is_bot = False) \
-                      .filter(is_active = True) \
-                      .filter(date_joined__lt = analytics_interval.end) \
+                      .filter(is_bot = False,
+                              is_active = True,
+                              date_joined__lt = analytics_interval.end) \
                       .values('realm') \
                       .annotate(value=Count('realm'))
 
 # gauge
 def get_bot_count_by_realm(analytics_interval):
     return UserProfile.objects \
-                      .filter(is_bot = True) \
-                      .filter(is_active = True) \
-                      .filter(date_joined__lt = analytics_interval.end) \
+                      .filter(is_bot = True,
+                              is_active = True,
+                              date_joined__lt = analytics_interval.end) \
                       .values('realm') \
                       .annotate(value=Count('realm'))
 
 def get_message_counts_by_user(analytics_interval):
     return Message.objects \
-                  .filter(pub_date__gte = analytics_interval.start) \
-                  .filter(pub_date__lt = analytics_interval.end) \
-                  .values('sender_id', 'sender_id__realm') \
+                  .filter(pub_date__gte = analytics_interval.start,
+                          pub_date__lt = analytics_interval.end) \
+                  .values(userprofile='sender_id', realm='sender_id__realm') \
                   .annotate(value=Count('sender_id'))
 
 

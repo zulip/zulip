@@ -40,8 +40,8 @@ class Command(BaseCommand):
 
         # note that gauge measurements will never be truly accurate (without extra work)
         for interval in compute_intervals(first, last, 'gauge', 'day'):
-            realm_ids = [realm['id'] for realm in realms if realm['date_created'] < interval.end]
-            process(realm_ids, 'user_profile_count', get_user_profile_count_by_realm, interval)
+            realm_ids = frozenset([realm['id'] for realm in realms if realm['date_created'] < interval.end])3
+            process_realmcount(realm_ids, 'user_profile_count', get_user_profile_count_by_realm, interval)
             process(realm_ids, 'bot_count', get_bot_count_by_realm, interval)
 
         for interval in compute_intervals(first, last, 'hour', 'hour'):
