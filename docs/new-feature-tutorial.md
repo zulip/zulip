@@ -80,6 +80,23 @@ boolean field, `realm_invite_by_admins_only`, to the Realm model in
 Then create a Django migration that adds a new field,
 `invite_by_admins_only`, to the `zerver_realm` table.
 
+Next, we will move on to implementing the backend part of this feature.
+Like typical apps, we will need our backend to update the database and
+send some response to the client that made the request.
+
+Beyond that, we need to orchestrate notifications to *other*
+clients (or other users, if you will) that our setting has changed.
+Clients find out about settings through two closely related code
+paths.  When a client first contacts the server, the server sends
+the client its initial state.  Subsequently, clients subscribe to
+"events," which can (among other things) indicate that settings have
+changed.  For the backend piece, we will need our action to make a call to
+`send_event` to send the event to clients that are active.  We will
+also need to modify `fetch_initial_state_data` so that future clients
+see the new changes.
+
+Anyway, getting back to implementation details...
+
 In `zerver/lib/actions.py`, create a new function named
 `do_set_realm_invite_by_admins_only`. This function will update the
 database and trigger an event to notify clients when this setting
