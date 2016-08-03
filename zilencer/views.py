@@ -19,12 +19,13 @@ from .error_notify import notify_server_error, notify_browser_error
 
 import time
 
+from six import text_type
 from typing import Dict, Optional, Any
 
 client = get_redis_client()
 
 def has_enough_time_expired_since_last_message(sender_email, min_delay):
-    # type: (str, float) -> bool
+    # type: (text_type, float) -> bool
     # This function returns a boolean, but it also has the side effect
     # of noting that a new message was received.
     key = 'zilencer:feedback:%s' % (sender_email,)
@@ -47,16 +48,16 @@ def get_ticket_number():
 
 @has_request_variables
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, Deployment, Dict[str, str]) -> HttpResponse
+    # type: (HttpRequest, Deployment, Dict[str, text_type]) -> HttpResponse
     domainish = message["sender_domain"]
     if get_realm("zulip.com") not in deployment.realms.all():
-        domainish += " via " + deployment.name
+        domainish += u" via " + deployment.name
     subject = "%s" % (message["sender_email"],)
 
     if len(subject) > 60:
         subject = subject[:57].rstrip() + "..."
 
-    content = ''
+    content = u''
     sender_email = message['sender_email']
 
     # We generate ticket numbers if it's been more than a few minutes

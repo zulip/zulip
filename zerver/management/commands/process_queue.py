@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from types import FrameType
 from typing import Any
 
 from argparse import ArgumentParser
@@ -34,6 +35,7 @@ class Command(BaseCommand):
             sys.exit(1)
 
         def run_threaded_workers(logger):
+            # type: (logging.Logger) -> None
             for queue_name in get_active_worker_queues():
                 logger.info('launching queue worker thread ' + queue_name)
                 td = Threaded_worker(queue_name)
@@ -50,6 +52,7 @@ class Command(BaseCommand):
             worker.setup()
 
             def signal_handler(signal, frame):
+                # type: (int, FrameType) -> None
                 logger.info("Worker %d disconnecting from queue %s" % (worker_num, queue_name))
                 worker.stop()
                 sys.exit(0)

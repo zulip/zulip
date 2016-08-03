@@ -251,6 +251,7 @@ def accounts_register(request):
 
 @zulip_login_required
 def accounts_accept_terms(request):
+    # type: (HttpRequest) -> HttpResponse
     email = request.user.email
     domain = resolve_email_to_domain(email)
     if request.method == "POST":
@@ -280,7 +281,7 @@ from zerver.lib.ccache import make_ccache
 @has_request_variables
 def webathena_kerberos_login(request, user_profile,
                              cred=REQ(default=None)):
-    # type (HttpRequest, UserProfile, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))
     if not user_profile.realm.webathena_enabled:
@@ -302,8 +303,8 @@ def webathena_kerberos_login(request, user_profile,
     try:
         subprocess.check_call(["ssh", "zulip@zmirror2.zulip.net", "--",
                                "/home/zulip/zulip/bots/process_ccache",
-                               user,
-                               user_profile.api_key,
+                               force_str(user),
+                               force_str(user_profile.api_key),
                                force_str(base64.b64encode(ccache))])
     except Exception:
         logging.exception("Error updating the user's ccache")
@@ -812,6 +813,7 @@ def sent_time_in_epoch_seconds(user_message):
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
 def with_language(string, language):
+    # type: (text_type, text_type) -> text_type
     old_language = translation.get_language()
     translation.activate(language)
     result = _(string)
@@ -819,6 +821,7 @@ def with_language(string, language):
     return result
 
 def get_language_list():
+    # type: () -> List[Dict[str, Any]]
     path = os.path.join(settings.STATIC_ROOT, 'locale', 'language_options.json')
     with open(path, 'r') as reader:
         languages = ujson.load(reader)

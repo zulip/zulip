@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from django.db.models import Q
 from django.conf import settings
+from django.http import HttpResponse
 from django.test import TestCase
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
@@ -38,10 +39,13 @@ import DNS
 import mock
 import time
 import ujson
+from six import text_type
 from six.moves import range
+from typing import Any, Optional
 
 class TestCrossRealmPMs(AuthedTestCase):
     def setUp(self):
+        # type: () -> None
         settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
         dep = Deployment()
         dep.base_api_url = "https://zulip.com/api/"
@@ -53,11 +57,13 @@ class TestCrossRealmPMs(AuthedTestCase):
         dep.save()
 
     def create_user(self, email):
+        # type: (text_type) -> UserProfile
         username, domain = email.split('@')
         self.register(username, 'test', domain=domain)
         return get_user_profile_by_email(email)
 
     def test_same_realm(self):
+        # type: () -> None
         """Users on the same realm can PM each other"""
         r1 = Realm.objects.create(domain='1.example.com')
         deployment = Deployment.objects.filter()[0]
@@ -75,6 +81,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         self.assertEquals(messages[0].sender.pk, user1.pk)
 
     def test_different_realms(self):
+        # type: () -> None
         """Users on the different realms can not PM each other"""
         r1 = Realm.objects.create(domain='1.example.com')
         r2 = Realm.objects.create(domain='2.example.com')
@@ -92,6 +99,7 @@ class TestCrossRealmPMs(AuthedTestCase):
             self.send_message(user1_email, user2_email, Recipient.PERSONAL)
 
     def test_three_different_realms(self):
+        # type: () -> None
         """Users on three different realms can not PM each other"""
         r1 = Realm.objects.create(domain='1.example.com')
         r2 = Realm.objects.create(domain='2.example.com')
@@ -113,6 +121,7 @@ class TestCrossRealmPMs(AuthedTestCase):
             self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
 
     def test_from_zulip_realm(self):
+        # type: () -> None
         """OG Users in the zulip.com realm can PM any realm"""
         r1 = Realm.objects.create(domain='1.example.com')
         deployment = Deployment.objects.filter()[0]
@@ -130,6 +139,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         self.assertEquals(messages[0].sender.pk, user1.pk)
 
     def test_to_zulip_realm(self):
+        # type: () -> None
         """All users can PM users in the zulip.com realm"""
         r1 = Realm.objects.create(domain='1.example.com')
         deployment = Deployment.objects.filter()[0]
@@ -147,6 +157,7 @@ class TestCrossRealmPMs(AuthedTestCase):
         self.assertEquals(messages[0].sender.pk, user1.pk)
 
     def test_zulip_realm_can_not_join_realms(self):
+        # type: () -> None
         """Adding a zulip.com user to a PM will not let you cross realms"""
         r1 = Realm.objects.create(domain='1.example.com')
         r2 = Realm.objects.create(domain='2.example.com')
@@ -169,6 +180,7 @@ class TestCrossRealmPMs(AuthedTestCase):
 class PersonalMessagesTest(AuthedTestCase):
 
     def test_auto_subbed_to_personals(self):
+        # type: () -> None
         """
         Newly created users are auto-subbed to the ability to receive
         personals.
@@ -186,6 +198,7 @@ class PersonalMessagesTest(AuthedTestCase):
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
+        # type: () -> None
         """
         If you send a personal to yourself, only you see it.
         """
@@ -209,6 +222,7 @@ class PersonalMessagesTest(AuthedTestCase):
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
     def assert_personal(self, sender_email, receiver_email, content="test content"):
+        # type: (text_type, text_type, text_type) -> None
         """
         Send a private message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
@@ -246,6 +260,7 @@ class PersonalMessagesTest(AuthedTestCase):
 
     @slow("assert_personal checks several profiles")
     def test_personal(self):
+        # type: () -> None
         """
         If you send a personal, only you and the recipient see it.
         """
@@ -254,6 +269,7 @@ class PersonalMessagesTest(AuthedTestCase):
 
     @slow("assert_personal checks several profiles")
     def test_non_ascii_personal(self):
+        # type: () -> None
         """
         Sending a PM containing non-ASCII characters succeeds.
         """
@@ -264,6 +280,7 @@ class StreamMessagesTest(AuthedTestCase):
 
     def assert_stream_message(self, stream_name, subject="test subject",
                               content="test content"):
+        # type: (text_type, text_type, text_type) -> None
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
@@ -299,6 +316,7 @@ class StreamMessagesTest(AuthedTestCase):
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
     def test_not_too_many_queries(self):
+        # type: () -> None
         recipient_list  = ['hamlet@zulip.com', 'iago@zulip.com', 'cordelia@zulip.com', 'othello@zulip.com']
         for email in recipient_list:
             self.subscribe_to_stream(email, "Denmark")
@@ -313,6 +331,7 @@ class StreamMessagesTest(AuthedTestCase):
         realm = sender.realm
 
         def send_message():
+            # type: () -> None
             check_send_message(sender, sending_client, message_type_name, [stream],
                                subject, content, forwarder_user_profile=sender, realm=realm)
 
@@ -323,6 +342,7 @@ class StreamMessagesTest(AuthedTestCase):
         self.assert_length(queries, 7)
 
     def test_message_mentions(self):
+        # type: () -> None
         user_profile = get_user_profile_by_email("iago@zulip.com")
         self.subscribe_to_stream(user_profile.email, "Denmark")
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
@@ -331,6 +351,7 @@ class StreamMessagesTest(AuthedTestCase):
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
     def test_stream_message_mirroring(self):
+        # type: () -> None
         from zerver.lib.actions import do_change_is_admin
         user_profile = get_user_profile_by_email("iago@zulip.com")
 
@@ -359,6 +380,7 @@ class StreamMessagesTest(AuthedTestCase):
 
     @slow('checks all users')
     def test_message_to_stream(self):
+        # type: () -> None
         """
         If you send a message to a stream, everyone subscribed to the stream
         receives the messages.
@@ -367,6 +389,7 @@ class StreamMessagesTest(AuthedTestCase):
 
     @slow('checks all users')
     def test_non_ascii_stream_message(self):
+        # type: () -> None
         """
         Sending a stream message containing non-ASCII characters in the stream
         name, subject, or message body succeeds.
@@ -386,6 +409,7 @@ class StreamMessagesTest(AuthedTestCase):
 class MessageDictTest(AuthedTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self):
+        # type: () -> None
         realm = get_realm("zulip.com")
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
@@ -426,6 +450,7 @@ class MessageDictTest(AuthedTestCase):
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
+        # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
@@ -455,6 +480,7 @@ class MessageDictTest(AuthedTestCase):
 class MessagePOSTTest(AuthedTestCase):
 
     def test_message_to_self(self):
+        # type: () -> None
         """
         Sending a message to a stream to which you are subscribed is
         successful.
@@ -468,6 +494,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_api_message_to_self(self):
+        # type: () -> None
         """
         Same as above, but for the API view
         """
@@ -483,6 +510,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_api_message_with_default_to(self):
+        # type: () -> None
         """
         Sending messages without a to field should be sent to the default
         stream for the user_profile.
@@ -504,6 +532,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assertEqual(sent_message.content, "Test message no to")
 
     def test_message_to_nonexistent_stream(self):
+        # type: () -> None
         """
         Sending a message to a nonexistent stream fails.
         """
@@ -517,6 +546,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Stream does not exist")
 
     def test_personal_message(self):
+        # type: () -> None
         """
         Sending a personal message to a valid username is successful.
         """
@@ -528,6 +558,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
+        # type: () -> None
         """
         Sending a personal message to an invalid email returns error JSON.
         """
@@ -539,6 +570,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Invalid email 'nonexistent'")
 
     def test_invalid_type(self):
+        # type: () -> None
         """
         Sending a message of unknown type returns error JSON.
         """
@@ -550,6 +582,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Invalid message type")
 
     def test_empty_message(self):
+        # type: () -> None
         """
         Sending a message that is empty or only whitespace should fail
         """
@@ -561,6 +594,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Message must not be empty")
 
     def test_mirrored_huddle(self):
+        # type: () -> None
         """
         Sending a mirrored huddle message works
         """
@@ -574,6 +608,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_mirrored_personal(self):
+        # type: () -> None
         """
         Sending a mirrored personal message works
         """
@@ -586,6 +621,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_duplicated_mirrored_huddle(self):
+        # type: () -> None
         """
         Sending two mirrored huddles in the row return the same ID
         """
@@ -606,6 +642,7 @@ class MessagePOSTTest(AuthedTestCase):
                          ujson.loads(result2.content)['id'])
 
     def test_long_message(self):
+        # type: () -> None
         """
         Sending a message longer than the maximum message length succeeds but is
         truncated.
@@ -622,6 +659,7 @@ class MessagePOSTTest(AuthedTestCase):
                           "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
 
     def test_long_topic(self):
+        # type: () -> None
         """
         Sending a message with a topic longer than the maximum topic length
         succeeds, but the topic is truncated.
@@ -638,6 +676,7 @@ class MessagePOSTTest(AuthedTestCase):
                           "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
 
     def test_send_forged_message_as_not_superuser(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "to": "Verona",
@@ -648,6 +687,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_not_superuser_to_different_domain(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "to": "Verona",
@@ -658,6 +698,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_superuser_to_domain_that_dont_exist(self):
+        # type: () -> None
         email = "emailgateway@zulip.com"
         user = get_user_profile_by_email(email)
         password = "test_password"
@@ -676,6 +717,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Unknown domain non-existing")
 
     def test_send_message_when_sender_is_not_set(self):
+        # type: () -> None
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
@@ -684,6 +726,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Missing sender")
 
     def test_send_message_as_not_superuser_when_type_is_not_private(self):
+        # type: () -> None
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "not-private",
                                                      "sender": "sipbtest@mit.edu",
@@ -694,6 +737,7 @@ class MessagePOSTTest(AuthedTestCase):
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_create_mirrored_message_user_returns_invalid_input(self, create_mirrored_message_users_mock):
+        # type: (Any) -> None
         create_mirrored_message_users_mock.return_value = (False, True)
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",
@@ -705,6 +749,7 @@ class MessagePOSTTest(AuthedTestCase):
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
     def test_send_message_when_client_is_zephyr_mirror_but_domain_is_not_mit_edu(self, create_mirrored_message_users_mock):
+        # type: (Any) -> None
         create_mirrored_message_users_mock.return_value = (True, True)
         email = "starnine@mit.edu"
         user = get_user_profile_by_email(email)
@@ -723,6 +768,7 @@ class MessagePOSTTest(AuthedTestCase):
 
 class EditMessageTest(AuthedTestCase):
     def check_message(self, msg_id, subject=None, content=None):
+        # type: (int, Optional[text_type], Optional[text_type]) -> Message
         msg = Message.objects.get(id=msg_id)
         cached = msg.to_dict(False)
         uncached = msg.to_dict_uncached_helper(False)
@@ -734,8 +780,9 @@ class EditMessageTest(AuthedTestCase):
         return msg
 
     def test_save_message(self):
-        # This is also tested by a client test, but here we can verify
-        # the cache against the database
+        # type: () -> None
+        """This is also tested by a client test, but here we can verify
+        the cache against the database"""
         self.login("hamlet@zulip.com")
         msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
             subject="editing", content="before edit")
@@ -754,6 +801,7 @@ class EditMessageTest(AuthedTestCase):
         self.check_message(msg_id, subject="edited")
 
     def test_edit_message_no_changes(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
                                    subject="editing", content="before edit")
@@ -763,6 +811,7 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_error(result, "Nothing to change")
 
     def test_edit_message_no_topic(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
                                    subject="editing", content="before edit")
@@ -773,6 +822,7 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_error(result, "Topic can't be empty")
 
     def test_edit_message_no_content(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
                                    subject="editing", content="before edit")
@@ -783,8 +833,10 @@ class EditMessageTest(AuthedTestCase):
         self.assert_json_error(result, "Content can't be empty")
 
     def test_edit_message_content_limit(self):
+        # type: () -> None
         def set_message_editing_params(allow_message_editing,
                                        message_content_edit_limit_seconds):
+            # type: (bool, int) -> None
             result = self.client_patch("/json/realm", {
                 'allow_message_editing': ujson.dumps(allow_message_editing),
                 'message_content_edit_limit_seconds': message_content_edit_limit_seconds
@@ -792,6 +844,7 @@ class EditMessageTest(AuthedTestCase):
             self.assert_json_success(result)
 
         def do_edit_message_assert_success(id_, unique_str, topic_only = False):
+            # type: (int, text_type, bool) -> None
             new_subject = 'subject' + unique_str
             new_content = 'content' + unique_str
             params_dict = { 'message_id': id_, 'subject': new_subject }
@@ -805,6 +858,7 @@ class EditMessageTest(AuthedTestCase):
                 self.check_message(id_, subject=new_subject, content=new_content)
 
         def do_edit_message_assert_error(id_, unique_str, error, topic_only = False):
+            # type: (int, text_type, text_type, bool) -> None
             message = Message.objects.get(id=id_)
             old_subject = message.topic_name()
             old_content = message.content
@@ -849,6 +903,7 @@ class EditMessageTest(AuthedTestCase):
         do_edit_message_assert_error(id_, 'G', "Your organization has turned off message editing.", True)
 
     def test_propagate_topic_forward(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
             subject="topic1")
@@ -875,6 +930,7 @@ class EditMessageTest(AuthedTestCase):
         self.check_message(id5, subject="edited")
 
     def test_propagate_all_topics(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
             subject="topic1")
@@ -908,8 +964,9 @@ class MirroredMessageUsersTest(TestCase):
         pass
 
     def test_invalid_sender(self):
+        # type: () -> None
         user = get_user_profile_by_email('hamlet@zulip.com')
-        recipients = []
+        recipients = [] # type: List[text_type]
         request = self.Request()
         request.POST = dict() # no sender
 
@@ -920,12 +977,13 @@ class MirroredMessageUsersTest(TestCase):
         self.assertEqual(mirror_sender, None)
 
     def test_invalid_client(self):
+        # type: () -> None
         client = get_client(name='banned_mirror') # Invalid!!!
 
         user = get_user_profile_by_email('hamlet@zulip.com')
         sender = user
 
-        recipients = []
+        recipients = [] # type: List[text_type]
         request = self.Request()
         request.POST = dict(
             sender=sender.email,
@@ -939,6 +997,7 @@ class MirroredMessageUsersTest(TestCase):
         self.assertEqual(mirror_sender, None)
 
     def test_invalid_email(self):
+        # type: () -> None
         invalid_email = 'alice AT example.com'
         recipients = [invalid_email]
 
@@ -962,6 +1021,7 @@ class MirroredMessageUsersTest(TestCase):
             self.assertEqual(mirror_sender, None)
 
     def test_zephyr_mirror_new_recipient(self):
+        # type: () -> None
         """Test mirror dummy user creation for PM recipients"""
         client = get_client(name='zephyr_mirror')
 
@@ -993,6 +1053,7 @@ class MirroredMessageUsersTest(TestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
     def test_zephyr_mirror_new_sender(self):
+        # type: () -> None
         """Test mirror dummy user creation for sender when sending to stream"""
         client = get_client(name='zephyr_mirror')
 
@@ -1016,6 +1077,7 @@ class MirroredMessageUsersTest(TestCase):
         self.assertTrue(mirror_sender.is_mirror_dummy)
 
     def test_irc_mirror(self):
+        # type: () -> None
         client = get_client(name='irc_mirror')
 
         sender = get_user_profile_by_email('hamlet@zulip.com')
@@ -1045,6 +1107,7 @@ class MirroredMessageUsersTest(TestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
     def test_jabber_mirror(self):
+        # type: () -> None
         client = get_client(name='jabber_mirror')
 
         sender = get_user_profile_by_email('hamlet@zulip.com')
@@ -1076,12 +1139,14 @@ class MirroredMessageUsersTest(TestCase):
 class StarTests(AuthedTestCase):
 
     def change_star(self, messages, add=True):
+        # type: (List[int], bool) -> HttpResponse
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
                                  "op": "add" if add else "remove",
                                  "flag": "starred"})
 
     def test_change_star(self):
+        # type: () -> None
         """
         You can set a message as starred/un-starred through
         POST /json/messages/flags.
@@ -1109,6 +1174,7 @@ class StarTests(AuthedTestCase):
                 self.assertEqual(msg['flags'], [])
 
     def test_new_message(self):
+        # type: () -> None
         """
         New messages aren't starred.
         """
@@ -1126,6 +1192,7 @@ class StarTests(AuthedTestCase):
 
 class AttachmentTest(AuthedTestCase):
     def test_basics(self):
+        # type: () -> None
         self.assertFalse(Message.content_has_attachment('whatever'))
         self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
         self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
@@ -1150,6 +1217,8 @@ class AttachmentTest(AuthedTestCase):
         self.assertTrue(Message.content_has_link('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
     def test_claim_attachment(self):
+        # type: () -> None
+
         # Create dummy DB entry
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
@@ -1177,6 +1246,7 @@ class AttachmentTest(AuthedTestCase):
 
 class LogDictTest(AuthedTestCase):
     def test_to_log_dict(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         stream_name = 'Denmark'
         topic_name = 'Copenhagen'
@@ -1205,6 +1275,7 @@ class LogDictTest(AuthedTestCase):
 
 class CheckMessageTest(AuthedTestCase):
     def test_basic_check_message_call(self):
+        # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
         client, _ = Client.objects.get_or_create(name="test suite")
         stream_name = 'integration'
@@ -1219,8 +1290,9 @@ class CheckMessageTest(AuthedTestCase):
         self.assertEqual(ret['message'].sender.email, 'othello@zulip.com')
 
     def test_bot_pm_feature(self):
-        # We send a PM to a bot's owner if their bot sends a message to
-        # an unsubscribed stream
+        # type: () -> None
+        """We send a PM to a bot's owner if their bot sends a message to
+        an unsubscribed stream"""
         parent = get_user_profile_by_email('othello@zulip.com')
         bot = do_create_user(
                 email='othello-bot@zulip.com',

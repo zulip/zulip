@@ -5,8 +5,10 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import authenticated_rest_api_view, REQ, has_request_variables
 from django.http import HttpRequest, HttpResponse
+from six import text_type
 
 def truncate(string, length):
+    # type: (text_type, int) -> text_type
     if len(string) > length:
         string = string[:length-3] + '...'
     return string

@@ -36,7 +36,6 @@ zerver/tests/test_bugdown.py
 zerver/tests/test_email_mirror.py
 zerver/tests/test_decorators.py
 zerver/tests/test_upload.py
-zerver/tests/test_messages.py
 zerver/tests/test_narrow.py
 """.split()
 
