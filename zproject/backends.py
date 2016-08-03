@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import logging
+
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
 import django.contrib.auth
@@ -13,7 +15,9 @@ from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
-from social.backends.github import GithubOAuth2
+from social.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
+    GithubTeamOAuth2
+from social.exceptions import AuthFailed
 from django.contrib.auth import authenticate
 
 def password_auth_enabled(realm):
@@ -282,5 +286,28 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def do_auth(self, *args, **kwargs):
         kwargs['return_data'] = {}
-        user_profile = super(GitHubAuthBackend, self).do_auth(*args, **kwargs)
+        user_profile = None
+
+        team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID
+        org_name = settings.SOCIAL_AUTH_GITHUB_ORG_NAME
+
+        if (team_id is None and org_name is None):
+            user_profile = GithubOAuth2.do_auth(self, *args, **kwargs)
+
+        elif (team_id):
+            backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
+            try:
+                user_profile = backend.do_auth(*args, **kwargs)
+            except AuthFailed:
+                logging.info("User profile not member of team.")
+                user_profile = None
+
+        elif (org_name):
+            backend = GithubOrganizationOAuth2(self.strategy, self.redirect_uri)
+            try:
+                user_profile = backend.do_auth(*args, **kwargs)
+            except AuthFailed:
+                logging.info("User profile not member of organisation.")
+                user_profile = None
+
         return self.process_do_auth(user_profile, *args, **kwargs)
