@@ -14,13 +14,63 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
+USAGE = '''
+    This file greps HTML files for keywords in a context-sensitive manner.
+
+    Example:
+
+        $ ./tools/html-grep '#group-pms' '.filters'
+        templates/zerver/right-sidebar.html 45
+
+            div.right-sidebar#right-sidebar
+                div#group-pm-list
+                    ul.filters.scrolling_list#group-pms
+
+    Keyword syntax:
+
+        When supplying keywords, they must correspond to HTML elements,
+        classes, or ids.  Typical keywords are:
+
+            li // search for "<li>"
+            '.modal' // search for '<foo class="modal">'
+            '#intro' // search for '<bar id="intro">'
+
+        Searches are context-sensitive in the sense that the keyword
+        may be found among parent tags of a leaf tag, not just the leaf
+        tag itself.  (Think of this as being similar to the way a
+        browser applies nested CSS styles; it looks at the whole HTML
+        tree.)
+
+    Finding files to search:
+
+        The tool currently searches your git repo for files with
+        the extension .html or .handlebars., and then it does
+        the grep against all those files.
+
+        TODO: allow specific files to be searched.
+    '''
+
 def check_our_files():
     # type: () -> None
-    parser = optparse.OptionParser()
+
+    parser = optparse.OptionParser(usage=USAGE)
     parser.add_option('--modified', '-m',
         action='store_true', default=False,
         help='Only check modified files')
+    parser.add_option('--no-filter', '-a',
+        dest='show_all',
+        action='store_true', default=False,
+        help='Show all HTML files (no filtering)')
     (options, args) = parser.parse_args()
+
+    if options.show_all:
+        keywords = [] # type: List[str]
+    else:
+        if not args:
+            print('No keywords specified...try --help or --no-filter')
+            sys.exit(1)
+        else:
+            keywords = args
 
     files = lister.list_files(
         modified_only=options.modified,
@@ -28,7 +78,7 @@ def check_our_files():
     )
 
     fns = [fn for fn in files if (not 'casperjs' in fn) and (not 'puppet/zulip' in fn)]
-    grep(fns, set(args))
+    grep(fns, set(keywords))
 
 if __name__ == '__main__':
     check_our_files()
