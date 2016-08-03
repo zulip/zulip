@@ -25,7 +25,6 @@ def find_end_brace(tokens, i):
             depth += 1
         elif s == '}':
             if depth == 0:
-                for t in tokens[i-5:i]: print(repr(t.s))
                 raise CssParserException('unexpected }')
             elif depth == 1:
                 break
@@ -95,9 +94,7 @@ def parse_sections(tokens):
 def parse_section(tokens, pre_fluff, post_fluff):
     # type: (List[Token], str, str) -> Union[CssNestedSection, CssSection]
     assert not ws(tokens[0].s)
-    if tokens[-1].s != '}': # caller should strip trailing fluff
-        # for t in tokens: print(repr(t.s))
-        raise CssParserException('found extraneous stuff at the end of a section')
+    assert tokens[-1].s == '}' # caller should strip trailing fluff
 
     first_token = tokens[0].s
     if first_token in ('@media', '@keyframes') or first_token.startswith('@-'):
@@ -173,7 +170,7 @@ def parse_selector(tokens):
             levels.append(token)
 
     if last_i is None:
-        print([repr(t.s) for t in tokens])
+        raise CssParserException('Missing selector')
 
     assert last_i is not None
     start, post_fluff = get_whitespace_and_comments(tokens, last_i)
@@ -213,8 +210,7 @@ def parse_declaration(tokens):
     i, pre_fluff = get_whitespace_and_comments(tokens, 0)
     css_property = tokens[i].s
     if tokens[i+1].s != ':':
-        print(css_property)
-        for t in tokens: print(repr(t.s))
+        # print(css_property)
         raise CssParserException('We expect a colon here')
     i += 2
     start = i
