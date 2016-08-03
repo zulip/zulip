@@ -52,7 +52,7 @@ class APNsMessage(object):
             category=None, **kwargs):
         self.frame = Frame()
         self.tokens = tokens
-        expiry = time.time() + 24 * 3600
+        expiry = int(time.time() + 24 * 3600)
         priority = 10
         payload = Payload(alert=alert, badge=badge, sound=sound,
                           category=category, custom=kwargs)
