@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import random
 from six import text_type
 from typing import Any, Dict, Optional
 
@@ -45,7 +46,7 @@ dbx_connection = None
 assert isinstance(settings.APNS_SANDBOX, bool)
 
 def get_apns_key(token):
-    return 'apns:' + token
+    return 'apns:' + str(token)
 
 class APNsMessage(object):
     def __init__(self, user, tokens, alert=None, badge=None, sound=None,
@@ -58,7 +59,7 @@ class APNsMessage(object):
                           category=category, custom=kwargs)
         for token in tokens:
             data = {'token': token, 'user': user}
-            identifier = generate_random_token(32)
+            identifier = random.getrandbits(32)
             key = get_apns_key(identifier)
             redis_client.hmset(key, data)
             redis_client.expire(key, expiry)
