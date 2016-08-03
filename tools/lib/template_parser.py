@@ -103,9 +103,16 @@ def tokenize(text):
 
     return tokens
 
-def validate(fn, check_indent=True):
-    # type: (str, bool) -> None
-    text = open(fn).read()
+def validate(fn=None, text=None, check_indent=True):
+    # type: (str, str, bool) -> None
+    assert fn or text
+
+    if fn is None:
+        fn = '<in memory file>'
+
+    if text is None:
+        text = open(fn).read()
+
     tokens = tokenize(text)
 
     class State(object):
