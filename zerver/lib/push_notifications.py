@@ -5,6 +5,7 @@ from six import text_type
 from typing import Any, Dict, Optional
 
 from zerver.models import PushDeviceToken, UserProfile
+from zerver.models import get_user_profile_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
@@ -58,7 +59,7 @@ class APNsMessage(object):
         payload = Payload(alert=alert, badge=badge, sound=sound,
                           category=category, custom=kwargs)
         for token in tokens:
-            data = {'token': token, 'user': user}
+            data = {'token': token, 'user_id': user.id}
             identifier = random.getrandbits(32)
             key = get_apns_key(identifier)
             redis_client.hmset(key, data)
@@ -79,7 +80,7 @@ def response_listener(error_response, connection):
     errmsg = ERROR_CODES[code]
     data = redis_client.hgetall(key)
     token = data['token']
-    user = data['user']
+    user = get_user_profile_by_id(int(data['user_id']))
     b64_token = hex_to_b64(token)
 
     logging.warning("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
