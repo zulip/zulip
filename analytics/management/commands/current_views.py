@@ -31,20 +31,36 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
+        last = options.get(string_to_datetime('last'), datetime.utcnow())
+        first = options.get(string_to_datetime('first'), last - timedelta(seconds=3600))
 
-        last = options.get('last', datetime.utcnow())
-        first = options.get('first', last - timedelta(hour=1))
+        # note that this includes deactivated users and realms
+        users = UserProfile.objects.annotate(created='date_joined').values('id', 'created')
+        realms = Realm.objects.annotate(created='date_created').values('id', 'created')
 
-        # note that this includes deactivated ones, and we'll have to further filter for intervals
-        realms = Realm.objects.values('id', 'date_created')
+        def existing_ids(rows, time_interval):
+            return frozenset(row['id'] for row in rows if row['created'] < time_interval.end)
 
-        # note that gauge measurements will never be truly accurate (without extra work)
-        for interval in compute_intervals(first, last, 'gauge', 'day'):
-            realm_ids = frozenset([realm['id'] for realm in realms if realm['date_created'] < interval.end])3
-            process_realmcount(realm_ids, 'user_profile_count', get_user_profile_count_by_realm, interval)
-            process(realm_ids, 'bot_count', get_bot_count_by_realm, interval)
+        realm_gauge_day_stats = {'active_humans' : get_active_humans_count_by_realm,
+                                 'active_bots'   : get_active_bots_count_by_realm}
 
-        for interval in compute_intervals(first, last, 'hour', 'hour'):
-            realm_ids = [realm['id'] for realm in realms if realm['date_created'] < interval.end]
-            process(realm_ids, 'user_profile_count', get_user_profile_count_by_realm, interval)
-            process(realm_ids, 'bot_count', get_bot_count_by_realm, interval)
+        user_hour_stats = {'messages_sent' : get_messages_sent_count_by_user}
+
+        for time_interval in timeinterval_range(first, last, 'gauge', 'day'):
+            realm_ids = existing_ids(realms, time_interval)
+            for property, value_function in realm_gauge_day_stats.items():
+                process_count(RealmCount, realm_ids, 'realm_id', value_function, property, time_interval)
+
+        for time_interval in timeinterval_range(first, last, 'hour', 'hour'):
+            realm_ids = existing_ids(realms, time_interval)
+            user_ids = existing_ids(users, time_interval)
+            for property, value_function in user_hour_stats.items():
+                process_count(UserCount, user_ids, 'userprofile_id', value_function, property, time_interval)
+                process_aggregate_count(RealmCount, realm_ids, 'realm_id', aggregate_user_to_realm, property, time_interval)
+
+        for time_interval in timeinterval_range(first, last, 'day', 'day'):
+            realm_ids = existing_ids(realms, time_interval)
+            user_ids = existing_ids(users, time_interval)
+            for property, value_function in user_hour_stats.items():
+                process_aggregate_count(UserCount, user_ids, 'userprofile_id', aggregate_user_hour_to_day, property, time_interval)
+                process_aggregate_count(RealmCount, realm_ids, 'realm_id', aggregate_user_to_realm, property, time_interval)
