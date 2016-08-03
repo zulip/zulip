@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+from __future__ import absolute_import
+from __future__ import print_function
+
+import optparse
+import os
+import sys
+import unittest
+
+if __name__ == '__main__':
+    parser = optparse.OptionParser()
+    parser.add_option('--coverage', dest='coverage',
+                      action="store_true",
+                      default=False, help='Compute test coverage.')
+    (options, _) = parser.parse_args()
+
+    def dir_join(dir1, dir2):
+        # type: (str, str) -> str
+        return os.path.abspath(os.path.join(dir1, dir2))
+
+    tools_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = dir_join(tools_dir, '..')
+    tools_test_dir = dir_join(tools_dir, 'tests')
+
+    sys.path.insert(0, root_dir)
+
+    loader = unittest.TestLoader() # type: ignore # https://github.com/python/typeshed/issues/372
+
+    if options.coverage:
+        import coverage
+        cov = coverage.Coverage(omit="*/zulip-venv-cache/*")
+        cov.start()
+
+    suite = loader.discover(start_dir=tools_test_dir, top_level_dir=root_dir)
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite) # type: ignore # https://github.com/python/typeshed/issues/372
+    if result.errors or result.failures:
+        raise Exception('Test failed!')
+
+    if options.coverage:
+        cov.stop()
+        cov.save()
+        cov.html_report(directory='var/tools_coverage')
+        print("HTML report saved to var/tools_coverage")
+
+    print('SUCCESS')
