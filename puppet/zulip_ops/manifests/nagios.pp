@@ -55,6 +55,15 @@ class zulip_ops::nagios {
     group      => "root",
     source => '/root/zulip/api/integrations/nagios/zulip_nagios.cfg',
   }
+
+  $hosts = $zulip_ops::base::hosts
+  file { '/etc/nagios3/conf.d/zulip_autossh.cfg':
+    ensure     => file,
+    mode       => 644,
+    owner      => "root",
+    group      => "root",
+    content => template('zulip_ops/nagios_autossh.template.erb'),
+  }
   file { '/etc/nagios3/zuliprc':
     ensure     => file,
     mode       => 644,

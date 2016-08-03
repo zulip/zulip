@@ -1,0 +1,7 @@
+
+define service{
+        use                             generic-service
+        host_name                       nagios
+        service_description             Number of autossh processes
+        check_command                   check_named_procs!autossh!<%= @hosts.length %>:<%= @hosts.length %>!<%= @hosts.length %>:<%= @hosts.length + 2 %>
+        }

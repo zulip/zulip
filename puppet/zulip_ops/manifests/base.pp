@@ -34,6 +34,9 @@ class zulip_ops::base {
   # Add system users here
   $users = []
 
+  # Add hosts to monitor here
+  $hosts = []
+
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
