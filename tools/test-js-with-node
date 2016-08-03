@@ -16,6 +16,7 @@ elif [ "$1" = "-h" -o "$1" = "--help" ]; then
 `basename $0`                      - to run all tests
 `basename $0` util.js              - to run tests from util.js
 `basename $0` util.js activity.js  - to run tests from util.js and activity.js
+`basename $0` cover                - to run tests and generate code coverage
 "
   exit 0
 
