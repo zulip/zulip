@@ -10,7 +10,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     split_email_to_domain, email_to_username
-from zerver.lib.actions import do_send_message, set_default_streams, \
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_message, set_default_streams, \
     do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin,\
     do_change_bot_type
 from zerver.lib.parallel import run_parallel
@@ -142,9 +142,10 @@ class Command(BaseCommand):
             do_change_is_admin(iago, True)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-            create_streams(realms, zulip_realm, stream_list)
-            recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list] # type: List[int]
 
+            create_streams(realms, zulip_realm, stream_list)
+            recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
+                                 for name in stream_list] # type: List[int]
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
@@ -156,7 +157,11 @@ class Command(BaseCommand):
                 for type_id in recipient_streams[:int(len(recipient_streams) *
                                                       float(i)/len(profiles)) + 1]:
                     r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
-                    s = Subscription(recipient=r, user_profile=profile)
+                    s = Subscription(
+                        recipient=r,
+                        user_profile=profile,
+                        color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
+
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
@@ -231,7 +236,7 @@ class Command(BaseCommand):
                 # when running populate_db for the test suite
 
                 zulip_stream_list = ["devel", "all", "announce", "design", "support", "social", "test",
-                                      "errors", "sales"]
+                                     "errors", "sales"]
                 create_streams(realms, zulip_realm, zulip_stream_list)
 
                 # Add a few default streams
@@ -241,12 +246,15 @@ class Command(BaseCommand):
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
                 profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
-                for cls in zulip_stream_list:
-                    stream = Stream.objects.get(name=cls, realm=zulip_realm)
+                for i, stream_name in enumerate(zulip_stream_list):
+                    stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
                     recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                     for profile in profiles:
                         # Subscribe to some streams.
-                        s = Subscription(recipient=recipient, user_profile=profile)
+                        s = Subscription(
+                            recipient=recipient,
+                            user_profile=profile,
+                            color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
                         subscriptions_to_add.append(s)
                 Subscription.objects.bulk_create(subscriptions_to_add)
 

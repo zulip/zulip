@@ -86,6 +86,14 @@ import copy
 # works on both str and unicode in python 2 but in python 3 it only works on str.
 SizedTextIterable = Union[Sequence[text_type], AbstractSet[text_type]]
 
+STREAM_ASSIGNMENT_COLORS = [
+    "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
+    "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
+    "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
+    "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
+    "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
+    "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
+
 # Store an event in the log for re-importing messages
 def log_event(event):
     # type: (MutableMapping[str, Any]) -> None
@@ -1100,20 +1108,13 @@ def pick_color(user_profile):
 def pick_color_helper(user_profile, subs):
     # type: (UserProfile, Iterable[Subscription]) -> text_type
     # These colors are shared with the palette in subs.js.
-    stream_assignment_colors = [
-        "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
-        "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
-        "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
-        "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
-        "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
-        "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
     used_colors = [sub.color for sub in subs if sub.active]
-    available_colors = [s for s in stream_assignment_colors if s not in used_colors]
+    available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
     if available_colors:
         return available_colors[0]
     else:
-        return stream_assignment_colors[len(used_colors) % len(stream_assignment_colors)]
+        return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
 
 def get_subscription(stream_name, user_profile):
     # type: (text_type, UserProfile) -> Subscription
