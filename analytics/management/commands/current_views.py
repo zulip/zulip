@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db.models import Sum, Count
 
+from datetime import datetime
 from optparse import make_option
 
 from zerver.models import Realm, UserProfile
@@ -18,88 +19,32 @@ class Command(BaseCommand):
     Run as a cron job that runs every hour."""
 
     option_list = BaseCommand.option_list + (
-        make_option('-s', '--start_time',
-                    dest='start-time', # seems like start_time is not supported?
+        make_option('-f', '--first',
+                    dest='first',
                     type='str',
-                    help='The interval start time in UTC as a str(datetime).'),
-        make_option('-e', '--end-time',
-                    dest='end_time',
+                    help="The analytics suite will run for every interval which has an end time in [first, last]. Both first and last should be str(datetime)'s, interpreted in UTC. Both arguments are optional; first defaults to last-1hr, and end defaults to datetime.utcnow()."),
+        make_option('-l', '--last',
+                    dest='last',
                     type='str',
-                    help='The interval end time in UTC as a str(datetime).'),
-        make_option('-g', '--gauge-time',
-                    dest='gauge_time',
-                    type='str',
-                    help='The gauge time in UTC as a str(datetime).'),
+                    help="See help for 'first'."),
     )
-
-    def is_already_inserted(self, property, start_time, interval):
-        return len(RealmCount.objects \
-                   .filter(start_time = start_time) \
-                   .filter(property = property) \
-                   .filter(interval = interval)) > 0
-
-    def insert_counts(self, realm_ids, rows, property, start_time, interval):
-        values = defaultdict(int)
-        for row in rows:
-            values[row['realm']] = row['value']
-        RealmCount.objects.bulk_create([RealmCount(realm_id = realm_id,
-                                                   property = property,
-                                                   value = values[realm_id],
-                                                   start_time = start_time,
-                                                   interval = interval) for realm_id in realm_ids])
-
-    def process(self, realms, property, value_function, start_time, interval):
-        if not self.is_already_inserted(property, start_time, interval):
-            values = value_function(start_time, interval)
-            self.insert_counts(realms, values, property, start_time, interval)
-
-    ##
-
-    def aggregate_user_to_realm(self, property, start_time, interval):
-        pass # UserCount.objects.filter(start_time = start_time).filter(interval = interval) ..
-
-    def aggregate_hour_to_day(self, property, start_time):
-        return RealmCount.objects \
-                         .filter(start_time__gte = start_time) \
-                         .filter(start_time__lt = start_time + timedelta(day = 1)) \
-                         .filter(property = property) \
-                         .values('realm') \
-                         .annotate(value=Sum('value'))
-
-    ##
-
-    def get_active_user_count_by_realm(self, gauge_time, interval):
-        pass
-
-    def get_at_risk_count_by_realm(self, gauge_time, interval):
-        pass
-
-    def get_user_profile_count_by_realm(self, gauge_time, interval):
-        pass
-
-    def get_bot_count_by_realm(self, gauge_time, interval):
-        pass
-
-    def get_message_counts_by_user(self, start_time, interval):
-        pass
-
-
-
-    def get_total_users_by_realm(self, gauge_time, interval):
-        return UserProfile.objects \
-                          .filter(date_joined__lte = gauge_time) \
-                          .values('realm') \
-                          .annotate(value=Count('realm'))
-
-    def get_active_users_by_realm(self, start_time, interval):
-        pass
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
 
-        # options: backfill or not, start_time, end_time, gauge_time
-        # check that at least one of the options is set
+        last = options.get('last', datetime.utcnow())
+        first = options.get('first', last - timedelta(hour=1))
 
-        # get list of realms, and realm->domain mapping, once for everyone
-        realms = Realm.objects.filter(date_created__lt = options['end_time']).values('id', 'domain')
-        self.process(realms, 'total_users', self.get_total_users_by_realm, options['gauge_time'], 'gauge')
+        # note that this includes deactivated ones, and we'll have to further filter for intervals
+        realms = Realm.objects.values('id', 'date_created')
+
+        # note that gauge measurements will never be truly accurate (without extra work)
+        for interval in compute_intervals(first, last, 'gauge', 'day'):
+            realm_ids = [realm['id'] for realm in realms if realm['date_created'] < interval.end]
+            process(realm_ids, 'user_profile_count', get_user_profile_count_by_realm, interval)
+            process(realm_ids, 'bot_count', get_bot_count_by_realm, interval)
+
+        for interval in compute_intervals(first, last, 'hour', 'hour'):
+            realm_ids = [realm['id'] for realm in realms if realm['date_created'] < interval.end]
+            process(realm_ids, 'user_profile_count', get_user_profile_count_by_realm, interval)
+            process(realm_ids, 'bot_count', get_bot_count_by_realm, interval)
