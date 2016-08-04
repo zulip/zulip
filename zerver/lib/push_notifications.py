@@ -92,21 +92,23 @@ def response_listener(error_response, connection):
         except PushDeviceToken.DoesNotExist:
             pass
 
-if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
+def get_connection(cert_file, key_file):
     connection = APNs(use_sandbox=settings.APNS_SANDBOX,
-                      cert_file=settings.APNS_CERT_FILE,
-                      key_file=settings.APNS_KEY_FILE,
+                      cert_file=cert_file,
+                      key_file=key_file,
                       enhanced=True)
     connection.gateway_server.register_response_listener(
         partial(response_listener, connection=connection))
 
+    return connection
+
+if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
+    connection = get_connection(settings.APNS_CERT_FILE,
+                                settings.APNS_KEY_FILE)
+
 if settings.DBX_APNS_CERT_FILE is not None and os.path.exists(settings.DBX_APNS_CERT_FILE):
-    dbx_connection = APNs(use_sandbox=settings.APNS_SANDBOX,
-                          cert_file=settings.DBX_APNS_CERT_FILE,
-                          key_file=settings.DBX_APNS_KEY_FILE,
-                          enhanced=True)
-    dbx_connection.gateway_server.register_response_listener(
-        partial(response_listener, connection=dbx_connection))
+    dbx_connection = get_connection(settings.DBX_APNS_CERT_FILE,
+                                    settings.DBX_APNS_KEY_FILE)
 
 def num_push_devices_for_user(user_profile, kind = None):
     # type: (UserProfile, Optional[int]) -> PushDeviceToken
