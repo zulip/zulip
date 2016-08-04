@@ -216,11 +216,7 @@ to launch the `open` command.)
 #### Coverage reports
 
 You can automatically generate coverage reports for the JavaScript unit
-tests. To do so, install istanbul:
-
->     sudo npm install -g istanbul
-
-And run test-js-with-node with the 'cover' parameter:
+tests like this:
 
 >     tools/test-js-with-node cover
 
