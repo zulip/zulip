@@ -56,3 +56,42 @@ class APNsMessageTest(PushNotificationTest):
         data = self.redis_client.hgetall(apn.get_apns_key(200))
         self.assertEqual(data['token'], 'bbbb')
         self.assertEqual(int(data['user_id']), self.user_profile.id)
+
+class ResponseListenerTest(PushNotificationTest):
+    def get_error_response(self, **kwargs):
+        er = {'identifier': 0, 'status': 0}
+        er.update({k: v for k, v in kwargs.items() if k in er})
+        return er
+
+    def get_cache_value(self):
+        return {'token': 'aaaa', 'user_id': self.user_profile.id}
+
+    @mock.patch('logging.warn')
+    def test_cache_does_not_exist(self, mock_warn):
+        err_rsp = self.get_error_response(identifier=100, status=1)
+        apn.response_listener(err_rsp)
+        msg = "APNs key, apns:100, doesn't not exist."
+        mock_warn.assert_called_once_with(msg)
+
+    @mock.patch('logging.warn')
+    def test_cache_exists(self, mock_warn):
+        self.redis_client.hmset(apn.get_apns_key(100), self.get_cache_value())
+        err_rsp = self.get_error_response(identifier=100, status=1)
+        apn.response_listener(err_rsp)
+        b64_token = apn.hex_to_b64('aaaa')
+        errmsg = apn.ERROR_CODES[err_rsp['status']]
+        msg = ("APNS: Failed to deliver APNS notification to %s, "
+               "reason: %s" % (b64_token, errmsg))
+        mock_warn.assert_called_once_with(msg)
+
+    @mock.patch('logging.warn')
+    def test_error_code_eight(self, mock_warn):
+        self.redis_client.hmset(apn.get_apns_key(100), self.get_cache_value())
+        err_rsp = self.get_error_response(identifier=100, status=8)
+        b64_token = apn.hex_to_b64('aaaa')
+        self.assertEqual(PushDeviceToken.objects.filter(
+            user=self.user_profile, token=b64_token).count(), 1)
+        apn.response_listener(err_rsp)
+        self.assertEqual(mock_warn.call_count, 2)
+        self.assertEqual(PushDeviceToken.objects.filter(
+            user=self.user_profile, token=b64_token).count(), 0)
