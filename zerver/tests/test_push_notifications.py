@@ -95,3 +95,34 @@ class ResponseListenerTest(PushNotificationTest):
         self.assertEqual(mock_warn.call_count, 2)
         self.assertEqual(PushDeviceToken.objects.filter(
             user=self.user_profile, token=b64_token).count(), 0)
+
+class SendNotificationTest(PushNotificationTest):
+    @mock.patch('zerver.lib.push_notifications._do_push_to_apns_service')
+    def test_send_apple_push_notifiction(self, mock_send):
+        def test_send(user, message, alert):
+            self.assertEqual(user.id, self.user_profile.id)
+            self.assertEqual(set(message.tokens), set(self.tokens))
+
+        mock_send.side_effect = test_send
+        apn.send_apple_push_notification(self.user_profile, "test alert")
+        self.assertEqual(mock_send.call_count, 1)
+
+    @mock.patch('apns.GatewayConnection.send_notification_multiple')
+    def test_do_push_to_apns_service(self, mock_push):
+        msg = apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+        def test_push(message):
+            self.assertIs(message, msg.get_frame())
+
+        mock_push.side_effect = test_push
+        apn._do_push_to_apns_service(self.user_profile, msg, apn.connection)
+
+    @mock.patch('apns.GatewayConnection.send_notification_multiple')
+    def test_connection_single_none(self, mock_push):
+        apn.connection = None
+        apn.send_apple_push_notification(self.user_profile, "test alert")
+
+    @mock.patch('apns.GatewayConnection.send_notification_multiple')
+    def test_connection_both_none(self, mock_push):
+        apn.connection = None
+        apn.dbx_connection = None
+        apn.send_apple_push_notification(self.user_profile, "test alert")
