@@ -153,6 +153,7 @@ class Realm(ModelReprMixin, models.Model):
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool
+    default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: text_type
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 

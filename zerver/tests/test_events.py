@@ -41,6 +41,7 @@ from zerver.lib.actions import (
     do_set_realm_invite_required,
     do_set_realm_invite_by_admins_only,
     do_set_realm_message_editing,
+    do_set_realm_default_language,
     do_update_message,
     do_update_pointer,
     do_change_twenty_four_hour_time,
@@ -477,6 +478,18 @@ class EventsRegisterTest(AuthedTestCase):
             events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
+
+    def test_change_realm_default_language(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('default_language')),
+            ('value', check_string),
+            ])
+        events = self.do_test(lambda: do_set_realm_default_language(self.user_profile.realm, 'de'))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_change_realm_create_stream_by_admins_only(self):
         # type: () -> None

@@ -498,6 +498,18 @@ casper.then(function () {
     });
 });
 
+casper.then(function () {
+    casper.test.info("Changing realm default language");
+    casper.evaluate(function () {
+        $('#id_realm_default_language').val('de').change();
+    });
+    casper.click('form.admin-realm-form input.btn');
+});
+
+casper.waitUntilVisible('#admin-realm-default-language-status', function () {
+    casper.test.assertSelectorHasText('#admin-realm-default-language-status', 'Default language changed!');
+});
+
 common.then_log_out();
 
 casper.run(function () {

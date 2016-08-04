@@ -166,6 +166,41 @@ class RealmTest(AuthedTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.realm.deactivated)
 
+    def test_do_set_realm_default_language(self):
+        # type: () -> None
+        new_lang = "de"
+        realm = get_realm('zulip.com')
+        self.assertNotEqual(realm.default_language, new_lang)
+        # we need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        req = dict(default_language=ujson.dumps(new_lang))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm('zulip.com')
+        self.assertEqual(realm.default_language, new_lang)
+
+        # Test setting zh_CN, we set zh_HANS instead of zh_CN in db
+        chinese = "zh_CN"
+        simplified_chinese = "zh_HANS"
+        req = dict(default_language=ujson.dumps(chinese))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        realm = get_realm('zulip.com')
+        self.assertEqual(realm.default_language, simplified_chinese)
+
+        # Test to make sure that when invalid languages are passed
+        # as the default realm language, correct validation error is
+        # raised and the invalid language is not saved in db
+        invalid_lang = "invalid_lang"
+        req = dict(default_language=ujson.dumps(invalid_lang))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
+        realm = get_realm('zulip.com')
+        self.assertNotEqual(realm.default_language, invalid_lang)
+
+
 class PermissionTest(AuthedTestCase):
     def test_get_admin_users(self):
         # type: () -> None
@@ -1819,6 +1854,7 @@ class HomeTest(AuthedTestCase):
             "prompt_for_invites",
             "realm_allow_message_editing",
             "realm_create_stream_by_admins_only",
+            "realm_default_language",
             "realm_default_streams",
             "realm_emoji",
             "realm_filters",

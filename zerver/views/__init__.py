@@ -942,6 +942,7 @@ def home(request):
         realm_allow_message_editing = register_ret['realm_allow_message_editing'],
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
+        realm_default_language = register_ret['realm_default_language'],
         enter_sends           = user_profile.enter_sends,
         left_side_userlist    = register_ret['left_side_userlist'],
         default_language      = register_ret['default_language'],
@@ -992,6 +993,7 @@ def home(request):
         presence_disabled     = user_profile.realm.presence_disabled,
         is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
     )
+
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
         recipient = get_recipient(Recipient.STREAM, narrow_stream.id)

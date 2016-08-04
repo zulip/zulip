@@ -3,6 +3,8 @@ from __future__ import absolute_import
 from typing import Any, Optional
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
 from zerver.decorator import require_realm_admin, to_non_negative_int
 from zerver.lib.actions import (
     do_set_realm_create_stream_by_admins_only,
@@ -11,8 +13,10 @@ from zerver.lib.actions import (
     do_set_realm_invite_required,
     do_set_realm_message_editing,
     do_set_realm_restricted_to_domain,
+    do_set_realm_default_language,
 )
-from zerver.lib.request import has_request_variables, REQ
+from zerver.lib.i18n import get_available_language_codes
+from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.models import UserProfile
@@ -25,8 +29,13 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  invite_by_admins_only=REQ(validator=check_bool, default=None),
                  create_stream_by_admins_only=REQ(validator=check_bool, default=None),
                  allow_message_editing=REQ(validator=check_bool, default=None),
-                 message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int]) -> HttpResponse
+                 message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None),
+                 default_language=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str]) -> HttpResponse
+    # Validation for default_language
+    if default_language is not None and default_language not in get_available_language_codes():
+        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+
     realm = user_profile.realm
     data = {} # type: Dict[str, Any]
     if name is not None and realm.name != name:
@@ -54,4 +63,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
+    if default_language is not None and realm.default_language != default_language:
+        do_set_realm_default_language(realm, default_language)
+        data['default_language'] = default_language
     return json_success(data)
