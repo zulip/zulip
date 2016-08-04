@@ -85,10 +85,10 @@ def response_listener(error_response):
     user = get_user_profile_by_id(int(data['user_id']))
     b64_token = hex_to_b64(token)
 
-    logging.warning("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
+    logging.warn("APNS: Failed to deliver APNS notification to %s, reason: %s" % (b64_token, errmsg))
     if code == 8:
         # Invalid Token, remove from our database
-        logging.warning("APNS: Removing token from database due to above failure")
+        logging.warn("APNS: Removing token from database due to above failure")
         try:
             PushDeviceToken.objects.get(user=user, token=b64_token).delete()
         except PushDeviceToken.DoesNotExist:
