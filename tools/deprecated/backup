@@ -2,6 +2,7 @@
 set -ex
 
 cd /home/tabbott/zulip-backups
+mkdir -p var/event_log
 log="$(pwd)"/log
 
 # Redirect output to a log file, with timestamps.
@@ -23,7 +24,7 @@ function commit {
 
 cd message_logs
 for h in staging.zulip.net prod0.zulip.net; do
-    rsync -v zulip@$h:logs/event_log/events.* .
+    rsync -v zulip@$h:var/event_log/events.* .
 done
 git add events.*
 commit
