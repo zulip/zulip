@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.db.models import Sum, Count
+from django.utils import timezone
 
 from datetime import datetime
 from optparse import make_option
@@ -31,7 +32,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        last = options.get(string_to_datetime('last'), datetime.utcnow())
+        last = options.get(string_to_datetime('last'), timezone.now())
         first = options.get(string_to_datetime('first'), last - timedelta(seconds=3600))
 
         # note that this includes deactivated users and realms
@@ -41,6 +42,9 @@ class Command(BaseCommand):
         def existing_ids(rows, time_interval):
             return frozenset(row['id'] for row in rows if row['created'] < time_interval.end)
 
+        # probably the right way to do this is to have an AnalyticsStat
+        # class with fields for name, value_function, interval, realm or user, etc
+        # to make it more obvious what to do when you want to add a stat
         realm_gauge_day_stats = {'active_humans' : get_active_humans_count_by_realm,
                                  'active_bots'   : get_active_bots_count_by_realm}
 

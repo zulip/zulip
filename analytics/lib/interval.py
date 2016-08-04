@@ -1,16 +1,20 @@
-from datetime import datetime, timedelta
+from django.utils import timezone
+from datetime import datetime, timedelta, MINYEAR
+import pytz
 
 # Name isn't great .. fixedinterval? timerange? Trying to distinguish
 # generic intervals like 'hour' or 'quarter' from fixed intervals like
 # 'Aug 3 2016 from 9-10am'
 class TimeInterval:
-    def __init__(self, interval, end = datetime.utcnow(), floor_to_boundary = 'hour'):
+    def __init__(self, interval, end = timezone.now(), floor_to_boundary = 'hour'):
         # Not the best logic for when we have intervals like 'quarter', but okay for now
-        if floor_to_boundary is not None:
+        if floor_to_boundary is None:
+            self.end = end
+        else:
             self.end = floor_to_interval_boundary(end, floor_to_boundary)
         self.interval = interval
         if interval == 'gauge':
-            self.start = datetime(year = datetime.MINYEAR)
+            self.start = datetime(MINYEAR, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
         else:
             self.start = subtract_interval(self.end, interval)
     # add way to init with start_time and end_time, and no interval
