@@ -6,6 +6,17 @@ getting you integration merged upstream so everyone else can benefit
 from it as easy as possible while maintaining the high quality of the
 Zulip integrations library.
 
+On this page you'll find:
+
+* an overvew of the different [types of
+integrations](#types-of-integrations) possible with Zulip
+* [general advice](#general-advice) for writing integrations
+* details about writing [webhook integrations](#webhook-integrations),
+* details about writing [Python script and plugin integrations](#python-script-and-plugin-integrations)
+* a guide to [documenting your integration](#documenting-your-integration),
+* and a [detailed walkthrough](#hello-world-webhook-walkthrough) of a simple
+  "Hello World" integration.
+
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
 that help writing integration, please email
@@ -17,25 +28,25 @@ to share your ideas!
 We have several different ways that we integrate with 3rd part
 products, ordered here by which types we prefer to write:
 
-1. Webhook integrations (examples: Freshdesk, GitHub), where the
-third-party service supports posting content to a particular URI on
-our site with data about the event.  For these, you usually just need
-to add a new handler in `zerver/views/webhooks.py` (plus
-test/document/etc.).  An example commit implementing a new webhook is:
-https://github.com/zulip/zulip/pull/324.
+1. **[Webhook integrations](#webhook-integrations)** (examples: Freshdesk,
+   GitHub), where the third-party service supports posting content to a
+   particular URI on our site with data about the event.  For these, you
+   usually just need to add a new handler in `zerver/views/webhooks.py` (plus
+   test/document/etc.).  An example commit implementing a new webhook is:
+   https://github.com/zulip/zulip/pull/324.
 
-2. Python script integrations (examples: SVN, Git), where we can get
-the service to call our integration (by shelling out or otherwise),
-passing in the required data.  Our preferred model for these is to
-ship these integrations in our API release tarballs (by writing the
-integration in `api/integrations`).
+2. **[Python script integrations](#python-script-and-plugin-integrations)**
+   (examples: SVN, Git), where we can get the service to call our integration
+   (by shelling out or otherwise), passing in the required data.  Our preferred
+   model for these is to ship these integrations in our API release tarballs
+   (by writing the integration in `api/integrations`).
 
-3. Plugin integrations (examples: Jenkins, Hubot, Trac) where the user
-needs to install a plugin into their existing software.  These are
-often more work, but for some products are the only way to integrate
-with the product at all.
+3. **[Plugin integrations](#python-script-and-plugin-integrations)** (examples:
+   Jenkins, Hubot, Trac) where the user needs to install a plugin into their
+   existing software.  These are often more work, but for some products are the
+   only way to integrate with the product at all.
 
-## General advice for writing integrations
+## General advice
 
 * Consider using our Zulip markup to make the output from your
   integration especially attractive or useful (e.g.  emoji, markdown
@@ -70,7 +81,7 @@ with the product at all.
   headers.
 
 
-## Writing Webhook integrations
+## Webhook integrations
 
 New Zulip webhook integrations can take just a few hours to write,
 including tests and documentation, if you use the right process.
@@ -492,7 +503,7 @@ request:
 If you would like feedback on your integration as you go, feel free to submit
 pull requests as you go, prefixing them with `[WIP]`.
 
-## Writing Python script and plugin integrations integrations
+## Python script and plugin integrations
 
 For plugin integrations, usually you will need to consult the
 documentation for the third party software in order to learn how to
