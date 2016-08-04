@@ -99,6 +99,9 @@ function get_events_success(events) {
                 $.each(event.data, function (key, value) {
                     page_params['realm_' + key] = value;
                 });
+            } else if (event.op === 'update' && event.property === 'default_language') {
+                page_params.realm_default_language = event.value;
+                admin.reset_realm_default_language();
             }
             break;
         case 'realm_user':
