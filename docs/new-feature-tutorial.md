@@ -215,12 +215,12 @@ Since this feature also adds a checkbox to the admin page, and adds a
 new property the Realm model that can be modified from there, you also
 need to make changes to the `update_realm` function in the same file: :
 
-    # zerver/views/__init__.py
+    # zerver/views/realm.py
 
-    def update_realm(request, user_profile,
-      name=REQ(validator=check_string, default=None),
-      restricted_to_domain=REQ(validator=check_bool, default=None),
-      invite_by_admins_only=REQ(validator=check_bool,default=None)):
+    def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
+                     restricted_to_domain=REQ(validator=check_bool, default=None),
+                     invite_required=REQ(validator=check_bool, default=None),
+                     ...more arguments):
 
       # ...
 
