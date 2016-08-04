@@ -5,7 +5,7 @@ from zerver.lib.str_utils import ModelReprMixin
 
 # only would ever touch by hand
 class Anomaly(ModelReprMixin, models.Model):
-    info = models.CharField() # type: text_type
+    info = models.CharField(max_length=1000) # type: text_type
 
     def __unicode__(self):
         # type: () -> text_type
