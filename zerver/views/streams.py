@@ -16,7 +16,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream, get_subscribers_details
+    do_remove_default_stream, get_subscribers_details, get_subscription
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -145,12 +145,14 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     return json_success()
 
 @authenticated_json_post_view
-@require_realm_admin
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ(), new_name=REQ()):
     # type: (HttpRequest, UserProfile, text_type, text_type) -> HttpResponse
-    do_rename_stream(user_profile.realm, old_name, new_name)
-    return json_success()
+    stream = get_subscription(old_name, user_profile)
+    if 'can_moderate' in stream.permissions_list() or user_profile.is_realm_admin:
+        do_rename_stream(user_profile.realm, old_name, new_name)
+        return json_success()
+    return json_error(_("Must be a realm administrator or stream moderator"))
 
 @authenticated_json_post_view
 @require_realm_admin
