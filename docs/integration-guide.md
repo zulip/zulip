@@ -148,7 +148,7 @@ register a url for the webhook of the form `api/v1/external/mywebhook`
 and associate with the function called `api_mywebhook_webhook` in
 `zerver/views/webhooks/mywebhook.py`.
 
-### Walkthrough of `Hello World` webhook
+## `Hello World` webhook Walkthrough
 
 Below explains each part of a simple webhook integration, called **Hello
 World**. This webhook sends a "hello" message to the `test` stream and includes
@@ -158,7 +158,7 @@ receives in the http request.
 Use this walkthrough to learn how to write your first webhook
 integration.
 
-#### Step 0: Create fixtures
+### Step 0: Create fixtures
 
 The first step in creating a webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
@@ -189,7 +189,7 @@ for each distinct message condition your webhook supports. You'll also need a
 corresponding fixture for each of these tests. See [Step 3: Create
 tests](#step-3-create-tests) or [Testing](testing.html) for further details.
 
-#### Step 1: Create main webhook code
+### Step 1: Create main webhook code
 
 The majority of the code for your webhook integration will be in a single
 python file in `zerver/views/webhooks/`. The name of this file should be the
@@ -278,7 +278,7 @@ validate the message and then send it.
 Finally, we return a 200 http status with a JSON format success message via
 `json_success()`.
 
-#### Step 2: Create an api endpoint for the webhook
+### Step 2: Create an api endpoint for the webhook
 
 In order for a webhook to be externally available, it must be mapped to a url.
 This is done in `zproject/urls.py`. Look for the lines:
@@ -333,7 +333,7 @@ Using either method will create a message in Zulip:
 
 ![Image of Hello World webhook message](images/helloworld-webhook.png)
 
-#### Step 3: Create tests
+### Step 3: Create tests
 
 Every webhook integraton should have a corresponding test class in
 `zerver/tests/test_hooks.py`.
@@ -410,7 +410,7 @@ Running zerver.tests.test_hooks.HelloWorldHookTests.test_hello_message
 DONE!
 ```
 
-#### Step 4: Create documentation
+### Step 4: Create documentation
 
 Next, we add end-user documentation for our webhook integration to
 `templates/zerver/integrations.html`.
@@ -469,7 +469,7 @@ blocks for Github and Hubot, respectively.
 See [Documenting your integration](#documenting-your-integration) for further
 details, including how to easily create the message screenshot.
 
-#### Step 5: Preparing a pull request to zulip/zulip
+### Step 5: Preparing a pull request to zulip/zulip
 
 When you have finished your webhook integration and are ready for it to be
 available in the Zulip product, follow these steps to prepare your pull
