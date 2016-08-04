@@ -31,7 +31,12 @@ logging.info("Stopping workers")
 subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
 logging.info("Stopping server core")
 subprocess.check_call(["supervisorctl", "stop", "zulip-senders:* zulip-django zulip-tornado"])
-subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
+
+current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
+last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
+if os.readlink(current_symlink) != deploy_path:
+    subprocess.check_call(["ln", '-nsf', os.readlink(current_symlink), last_symlink])
+    subprocess.check_call(["ln", '-nsf', deploy_path, current_symlink])
 logging.info("Starting server core")
 subprocess.check_call(["supervisorctl", "start", "zulip-tornado zulip-django zulip-senders:*"])
 logging.info("Starting workers")
