@@ -80,7 +80,6 @@ products, ordered here by which types we prefer to write:
   spot why something isn't working or if the service is using custom HTTP
   headers.
 
-
 ## Webhook integrations
 
 New Zulip webhook integrations can take just a few hours to write,
@@ -127,6 +126,9 @@ Here's how we recommend doing it:
 * Finally, write documentation for the integration; there's a
   [detailed guide](#documenting-your-integration) below.
 
+See the [Hello World webhook Walkthrough](#hello-world-webhook-walkthrough)
+below for a detailed look at how to write a simple webhook.
+
 ### Files that need to be created
 
 Select a name for your webhook and use it consistently. The examples below are
@@ -157,6 +159,83 @@ for a webhook named 'MyWebHook'.
 register a url for the webhook of the form `api/v1/external/mywebhook`
 and associate with the function called `api_mywebhook_webhook` in
 `zerver/views/webhooks/mywebhook.py`.
+
+## Python script and plugin integrations
+
+For plugin integrations, usually you will need to consult the
+documentation for the third party software in order to learn how to
+write the integration.  But we have a few notes on how to do these:
+
+* You should always send messages by POSTing to URLs of the form
+`https://zulip.example.com/v1/messages/`, not the legacy
+`/api/v1/send_message` message sending API.
+
+* We usually build Python script integration with (at least) 2 files:
+`zulip_foo_config.py`` containing the configuration for the
+integration including the bots' API keys, plus a script that reads
+from this configuration to actually do the work (that way, it's
+possible to update the script without breaking users' configurations).
+
+* Be sure to test your integration carefully and document how to
+  install it (see notes on documentation below).
+
+* You should specify a clear HTTP User-Agent for your integration. The
+user agent should at a minimum identify the integration and version
+number, separated by a slash. If possible, you should collect platform
+information and include that in `()`s after the version number. Some
+examples of ideal UAs are:
+
+```
+ZulipDesktop/0.7.0 (Ubuntu; 14.04)
+ZulipJenkins/0.1.0 (Windows; 7.2)
+ZulipMobile/0.5.4 (Android; 4.2; maguro)
+```
+
+## Documenting your integration
+
+Every Zulip integration must be documented in
+`templates/zerver/integrations.html`.  Usually, this involves a few
+steps:
+
+* Make sure you've added your integration to
+  `zerver/lib/integrations.py`; this results in your integration
+  appearing on the `/integrations` page.  You'll need to add a logo
+  image for your integration under the
+  `static/images/integrations/logos/<name>.png`, where `<name>` is the
+  name of the integration, all in lower case.
+
+* Add an `integration-instructions` class block also in the
+  alphabetically correct place, explaining all the steps required to
+  setup the integration, including what URLs to use, etc.  If there
+  are any screens in the product involved, take a few screenshots with
+  the input fields filled out with sample values in order to make the
+  instructions really easy to follow.  For the screenshots, use
+  something like `github-bot@example.com` for the email addresses and
+  an obviously fake API key like `abcdef123456790`.
+
+* Finally, generate a message sent by the integration and take a
+  screenshot of the message to provide an example message in the
+  documentation. If your new integration is a webhook integration,
+  you can generate such a message from your test fixtures
+  using `send_webhook_fixture_message`:
+
+  ```
+  ./manage.py send_webhook_fixture_message \
+       --fixture=zerver/fixtures/pingdom/pingdom_imap_down_to_up.json \
+       '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
+  ```
+
+  When generating the screenshot of a sample message, give your test
+  bot a nice name like "GitHub Bot", use the project's logo as the
+  bot's avatar, and take the screenshots showing the stream/topic bar
+  for the message, not just the message body.
+
+When writing documentation for your integration, be sure to use the
+`{{ external_api_uri }}` template variable, so that your integration
+documentation will provide the correct URL for whatever server it is
+deployed on.  If special configuration is required to set the SITE
+variable, you should document that too, inside an `{% if
+api_site_required %}` check.
 
 ## `Hello World` webhook Walkthrough
 
@@ -503,79 +582,4 @@ request:
 If you would like feedback on your integration as you go, feel free to submit
 pull requests as you go, prefixing them with `[WIP]`.
 
-## Python script and plugin integrations
 
-For plugin integrations, usually you will need to consult the
-documentation for the third party software in order to learn how to
-write the integration.  But we have a few notes on how to do these:
-
-* You should always send messages by POSTing to URLs of the form
-`https://zulip.example.com/v1/messages/`, not the legacy
-`/api/v1/send_message` message sending API.
-
-* We usually build Python script integration with (at least) 2 files:
-`zulip_foo_config.py`` containing the configuration for the
-integration including the bots' API keys, plus a script that reads
-from this configuration to actually do the work (that way, it's
-possible to update the script without breaking users' configurations).
-
-* Be sure to test your integration carefully and document how to
-  install it (see notes on documentation below).
-
-* You should specify a clear HTTP User-Agent for your integration. The
-user agent should at a minimum identify the integration and version
-number, separated by a slash. If possible, you should collect platform
-information and include that in `()`s after the version number. Some
-examples of ideal UAs are:
-
-```
-ZulipDesktop/0.7.0 (Ubuntu; 14.04)
-ZulipJenkins/0.1.0 (Windows; 7.2)
-ZulipMobile/0.5.4 (Android; 4.2; maguro)
-```
-
-## Documenting your integration
-
-Every Zulip integration must be documented in
-`templates/zerver/integrations.html`.  Usually, this involves a few
-steps:
-
-* Make sure you've added your integration to
-  `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.  You'll need to add a logo
-  image for your integration under the
-  `static/images/integrations/logos/<name>.png`, where `<name>` is the
-  name of the integration, all in lower case.
-
-* Add an `integration-instructions` class block also in the
-  alphabetically correct place, explaining all the steps required to
-  setup the integration, including what URLs to use, etc.  If there
-  are any screens in the product involved, take a few screenshots with
-  the input fields filled out with sample values in order to make the
-  instructions really easy to follow.  For the screenshots, use
-  something like `github-bot@example.com` for the email addresses and
-  an obviously fake API key like `abcdef123456790`.
-
-* Finally, generate a message sent by the integration and take a
-  screenshot of the message to provide an example message in the
-  documentation. If your new integration is a webhook integration,
-  you can generate such a message from your test fixtures
-  using `send_webhook_fixture_message`:
-
-  ```
-  ./manage.py send_webhook_fixture_message \
-       --fixture=zerver/fixtures/pingdom/pingdom_imap_down_to_up.json \
-       '--url=/api/v1/external/pingdom?stream=stream_name&api_key=api_key'
-  ```
-
-  When generating the screenshot of a sample message, give your test
-  bot a nice name like "GitHub Bot", use the project's logo as the
-  bot's avatar, and take the screenshots showing the stream/topic bar
-  for the message, not just the message body.
-
-When writing documentation for your integration, be sure to use the
-`{{ external_api_uri }}` template variable, so that your integration
-documentation will provide the correct URL for whatever server it is
-deployed on.  If special configuration is required to set the SITE
-variable, you should document that too, inside an `{% if
-api_site_required %}` check.
