@@ -36,6 +36,7 @@
                 <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
                 <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
                 <div class="alert" id="admin-realm-message-editing-status"></div>
+                <div class="alert" id="admin-realm-default-language-status"></div>
                 <label for="realm_name" class="control-label">{{t "Your organization's name" }}</label>
                 <div class="controls">
                   <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
@@ -114,6 +115,16 @@
                          class="admin-realm-message-content-edit-limit-minutes"
                          value="{{ realm_message_content_edit_limit_minutes }}"
                     {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+                </div>
+              </div>
+              <div class="control-group">
+                <label for="realm_default_language" class="control-label">{{t "Default Language" }}:</label>
+                <div class="controls">
+                  <select name="realm_default_language" id="id_realm_default_language">
+                    {{#each language_list}}
+                    <option value='{{this.code}}'>{{this.name}}</option>
+                    {{/each}}
+                  </select>
                 </div>
               </div>
               <div class="controls organization-submission">

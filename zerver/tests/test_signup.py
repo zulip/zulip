@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     set_default_streams,
 )
 
+from zerver.lib.actions import do_set_realm_default_language
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
 from zerver.lib.test_helpers import AuthedTestCase, find_key_by_email, queries_captured
@@ -664,3 +665,45 @@ class RealmCreationTest(AuthedTestCase):
 
             result = self.client_get(result["Location"])
             self.assert_in_response("You're the first one here!", result)
+
+class UserSignUpTest(AuthedTestCase):
+
+    def test_user_default_language(self):
+        """
+        Check if the default language of new user is the default language
+        of the realm.
+        """
+        username = "newguy"
+        email = "newguy@zulip.com"
+        domain = "zulip.com"
+        password = "newpassword"
+        realm = get_realm(domain)
+        do_set_realm_default_language(realm, "de")
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+                "/accounts/send_confirm/%s@%s" % (username, domain)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_url = confirmation_link_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
+
+        result = self.client_get(confirmation_url)
+        self.assertEquals(result.status_code, 200)
+        # Pick a password and agree to the ToS.
+        result = self.submit_reg_form_for_user(username, password, domain)
+        self.assertEquals(result.status_code, 302)
+
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(user_profile.default_language, realm.default_language)
+        outbox.pop()

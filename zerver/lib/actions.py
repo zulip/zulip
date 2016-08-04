@@ -427,6 +427,25 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_default_language(realm, default_language):
+    # type: (Realm, text_type) -> None
+
+    if default_language == 'zh_CN':
+        # NB: remove this once we upgrade to Django 1.9
+        # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
+        # Django 1.9
+        default_language= 'zh_HANS'
+
+    realm.default_language = default_language
+    realm.save(update_fields=['default_language'])
+    event = dict(
+            type="realm",
+            op="update",
+            property="default_language",
+            value=default_language
+            )
+    send_event(event, active_user_ids(realm))
+
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """
@@ -2710,6 +2729,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
+        state['realm_default_language'] = user_profile.realm.default_language
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain

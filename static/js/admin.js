@@ -137,6 +137,10 @@ exports.populate_emoji = function (emoji_data) {
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
 
+exports.reset_realm_default_language = function () {
+    $("#id_realm_default_language").val(page_params.realm_default_language);
+};
+
 function _setup_page() {
     var options = {
         realm_name:                 page_params.realm_name,
@@ -146,7 +150,9 @@ function _setup_page() {
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
-        realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60)
+        realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
+        language_list: page_params.language_list,
+        realm_default_language: page_params.realm_default_language
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -157,9 +163,12 @@ function _setup_page() {
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
     $("#admin-realm-message-editing-status").expectOne().hide();
+    $("#admin-realm-default-language-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $("#admin-emoji-name-status").expectOne().hide();
     $("#admin-emoji-url-status").expectOne().hide();
+
+    $("#id_realm_default_language").val(page_params.realm_default_language);
 
     // create loading indicators
     loading.make_indicator($('#admin_page_users_loading_indicator'));
@@ -360,12 +369,15 @@ function _setup_page() {
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
+        var default_language_status = $("#admin-realm-default-language-status").expectOne();
+
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
         create_stream_by_admins_only_status.hide();
         message_editing_status.hide();
+        default_language_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -377,6 +389,7 @@ function _setup_page() {
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+        var new_default_language = $("#id_realm_default_language").val();
 
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
         // is irrelevant.  Hence if allow_message_editing is unchecked, and
@@ -398,7 +411,8 @@ function _setup_page() {
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
-            message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60)
+            message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
+            default_language: JSON.stringify(new_default_language)
         };
 
         channel.patch({
@@ -454,6 +468,11 @@ function _setup_page() {
                     // message_content_edit_limit_seconds could have been changed earlier
                     // in this function, so update the field just in case
                     $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
+                }
+                if (response_data.default_language !== undefined) {
+                    if (response_data.default_language) {
+                        ui.report_success(i18n.t("Default language changed!"), default_language_status);
+                    }
                 }
             },
             error: function (xhr, error) {
