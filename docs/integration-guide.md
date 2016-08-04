@@ -113,7 +113,8 @@ Here's how we recommend doing it:
   can't run without Internet access and some sort of credentials for
   the service.
 
-* Finally, write documentation for the integration (see below)!
+* Finally, write documentation for the integration; there's a
+  [detailed guide](#documenting-your-integration) below.
 
 ### Files that need to be updated
 
