@@ -8,14 +8,15 @@ Zulip integrations library.
 
 On this page you'll find:
 
-* an overvew of the different [types of
-integrations](#types-of-integrations) possible with Zulip
-* [general advice](#general-advice) for writing integrations
-* details about writing [webhook integrations](#webhook-integrations),
-* details about writing [Python script and plugin integrations](#python-script-and-plugin-integrations)
-* a guide to [documenting your integration](#documenting-your-integration),
-* and a [detailed walkthrough](#hello-world-webhook-walkthrough) of a simple
-  "Hello World" integration.
+* An overvew of the different [types of integrations](#types-of-integrations)
+  possible with Zulip.
+* [General advice](#general-advice) for writing integrations.
+* Details about writing [webhook integrations](#webhook-integrations).
+* Details about writing [Python script and plugin
+  integrations](#python-script-and-plugin-integrations).
+* A guide to [documenting your integration](#documenting-your-integration).
+* A [detailed walkthrough](#hello-world-webhook-walkthrough) of a simple "Hello
+  World" integration.
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
