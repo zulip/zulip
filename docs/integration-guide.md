@@ -527,9 +527,12 @@ Every Zulip integration must be documented in
 `templates/zerver/integrations.html`.  Usually, this involves a few
 steps:
 
-* Add an `integration-lozenge` class block in the alphabetically
-  correct place in the main integration list, using the logo for the
-  integrated software.
+* Make sure you've added your integration to
+  `zerver/lib/integrations.py`; this results in your integration
+  appearing on the `/integrations` page.  You'll need to add a logo
+  image for your integration under the
+  `static/images/integrations/logos/<name>.png`, where `<name>` is the
+  name of the integration, all in lower case.
 
 * Add an `integration-instructions` class block also in the
   alphabetically correct place, explaining all the steps required to
