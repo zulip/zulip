@@ -148,19 +148,23 @@ def send_apple_push_notification(user, alert, **extra_data):
 
     devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
     # Plain b64 token kept for debugging purposes
-    tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token) for device in devices]
+    tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
+              for device in devices]
 
-    logging.info("APNS: Sending apple push notification to devices: %s" % (tokens,))
-    zulip_message = APNsMessage(user,
-        [token[0] for token in tokens if token[1] in (settings.ZULIP_IOS_APP_ID, None)],
-        alert=alert, **extra_data)
+    for conn, app_ids in [
+            (connection, [settings.ZULIP_IOS_APP_ID, None]),
+            (dbx_connection, [settings.DBX_IOS_APP_ID])]:
 
-    dbx_message = APNsMessage(user,
-        [token[0] for token in tokens if token[1] in (settings.DBX_IOS_APP_ID,)],
-        alert=alert, **extra_data)
-
-    _do_push_to_apns_service(user, zulip_message, connection)
-    _do_push_to_apns_service(user, dbx_message, dbx_connection)
+        valid_devices = [device for device in tokens if device[1] in app_ids]
+        valid_tokens = [device[0] for device in valid_devices]
+        if valid_tokens:
+            logging.info("APNS: Sending apple push notification "
+                         "to devices: %s" % (valid_devices,))
+            zulip_message = APNsMessage(user, valid_tokens, alert=alert, **extra_data)
+            _do_push_to_apns_service(user, zulip_message, conn)
+        else:
+            logging.warn("APNS: Not sending notification because "
+                         "tokens didn't match devices: %s" % (app_ids,))
 
 # NOTE: This is used by the check_apns_tokens manage.py command. Do not call it otherwise, as the
 # feedback() call can take up to 15s
