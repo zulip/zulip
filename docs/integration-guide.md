@@ -123,8 +123,11 @@ Here's how we recommend doing it:
   integration](#documenting-your-integration) for details.
 * `zerver/test_hooks.py`: Edit to include tests for your webbook. See [Testing
   and writing tests](testing.html) for details.
-* `zproject/urls.py`: Edit to add externally available url of the webhook and
-  associate with the function added to `zerver/views/webhooks/mywebhook.py`
+* `zerver/lib/integrations.py`: Add your integration to
+`WEBHOOK_INTEGRATIONS` to register it.  This will automatically
+register a url for the webhook of the form `api/v1/external/mywebhook`
+and associate with the function called `api_mywebhook_webhook` in
+`zerver/views/webhooks/mywebhook.py`.
 
 ### Files that need to be created
 
