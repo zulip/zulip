@@ -178,8 +178,8 @@ def check_apns_feedback():
         since_date = timestamp_to_datetime(since)
         logging.info("Found unavailable token %s, unavailable since %s" % (token, since_date))
 
-        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updates__lt=since_date,
-                                       type=PushDeviceToken.APNS).delete()
+        PushDeviceToken.objects.filter(token=hex_to_b64(token), last_updated__lt=since_date,
+                                       kind=PushDeviceToken.APNS).delete()
     logging.info("Finished checking feedback for stale tokens")
 
 
