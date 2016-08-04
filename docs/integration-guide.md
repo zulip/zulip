@@ -116,19 +116,6 @@ Here's how we recommend doing it:
 * Finally, write documentation for the integration; there's a
   [detailed guide](#documenting-your-integration) below.
 
-### Files that need to be updated
-
-* `templates/zerver/integrations.html`: Edit to add end-user documentation and
-  integration icon. See [Documenting your
-  integration](#documenting-your-integration) for details.
-* `zerver/test_hooks.py`: Edit to include tests for your webbook. See [Testing
-  and writing tests](testing.html) for details.
-* `zerver/lib/integrations.py`: Add your integration to
-`WEBHOOK_INTEGRATIONS` to register it.  This will automatically
-register a url for the webhook of the form `api/v1/external/mywebhook`
-and associate with the function called `api_mywebhook_webhook` in
-`zerver/views/webhooks/mywebhook.py`.
-
 ### Files that need to be created
 
 Select a name for your webhook and use it consistently. The examples below are
@@ -147,6 +134,19 @@ for a webhook named 'MyWebHook'.
   integration. See [Testing and writing tests](testing.html) for details.
 * `zerver/views/webhooks/mywebhook.py`: Includes the main webhook integration
   function including any needed helper functions.
+
+### Files that need to be updated
+
+* `templates/zerver/integrations.html`: Edit to add end-user documentation and
+  integration icon. See [Documenting your
+  integration](#documenting-your-integration) for details.
+* `zerver/test_hooks.py`: Edit to include tests for your webbook. See [Testing
+  and writing tests](testing.html) for details.
+* `zerver/lib/integrations.py`: Add your integration to
+`WEBHOOK_INTEGRATIONS` to register it.  This will automatically
+register a url for the webhook of the form `api/v1/external/mywebhook`
+and associate with the function called `api_mywebhook_webhook` in
+`zerver/views/webhooks/mywebhook.py`.
 
 ### Walkthrough of `Hello World` webhook
 
