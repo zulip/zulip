@@ -77,6 +77,8 @@ def response_listener(error_response):
         return
 
     code = error_response['status']
+    assert isinstance(code, int)
+
     errmsg = ERROR_CODES[code]
     data = redis_client.hgetall(key)
     token = data['token']
