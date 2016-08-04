@@ -1,4 +1,5 @@
 import mock
+import time
 from typing import Any
 
 from django.test import TestCase
@@ -126,3 +127,15 @@ class SendNotificationTest(PushNotificationTest):
         apn.connection = None
         apn.dbx_connection = None
         apn.send_apple_push_notification(self.user_profile, "test alert")
+
+class APNsFeedbackTest(PushNotificationTest):
+    @mock.patch('apns.FeedbackConnection.items')
+    def test_feedback(self, mock_items):
+        update_time = apn.timestamp_to_datetime(int(time.time()) - 10000)
+        PushDeviceToken.objects.all().update(last_updated=update_time)
+        mock_items.return_value = [
+            ('aaaa', int(time.time())),
+        ]
+        self.assertEqual(PushDeviceToken.objects.all().count(), 2)
+        apn.check_apns_feedback()
+        self.assertEqual(PushDeviceToken.objects.all().count(), 1)
