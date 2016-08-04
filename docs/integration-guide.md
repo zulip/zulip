@@ -137,9 +137,8 @@ for a webhook named 'MyWebHook'.
 
 ### Files that need to be updated
 
-* `templates/zerver/integrations.html`: Edit to add end-user documentation and
-  integration icon. See [Documenting your
-  integration](#documenting-your-integration) for details.
+* `templates/zerver/integrations.html`: Edit to add end-user documentation. See
+  [Documenting your integration](#documenting-your-integration) for details.
 * `zerver/test_hooks.py`: Edit to include tests for your webbook. See [Testing
   and writing tests](testing.html) for details.
 * `zerver/lib/integrations.py`: Add your integration to
@@ -273,7 +272,7 @@ we catch a `KeyError` and use `json_error` to return the appropriate
 information: a 400 http status code with relevant details.
 
 Then we send a public (stream) message with `check_send_message` which will
-validate the message and then send it.  
+validate the message and then send it.
 
 Finally, we return a 200 http status with a JSON format success message via
 `json_success()`.
@@ -281,23 +280,27 @@ Finally, we return a 200 http status with a JSON format success message via
 ### Step 2: Create an api endpoint for the webhook
 
 In order for a webhook to be externally available, it must be mapped to a url.
-This is done in `zproject/urls.py`. Look for the lines:
+This is done in `zerver/lib/integrations.py`.
+
+Look for the lines beginning with:
 
 ```
-# Incoming webhook URLs
-urls += [
-    # Sorted integration-specific webhook callbacks.
+WEBHOOK_INTEGRATIONS = [
 ```
 
 And you'll find the entry for Hello World:
 
 ```
-url(r'^api/v1/external/helloworld$',  'zerver.views.webhooks.helloworld.api_helloworld_webhook'),
+  WebhookIntegration('helloworld', display_name='Hello World'),
 ```
 
 This tells the Zulip api to call the `api_helloworld_webhook` function in
 `zerver/views/webhooks/helloworld.py` when it receives a request at
 `/api/v1/external/helloworld`.
+
+This line also tells Zulip to generate an entry for Hello World on the Zulip
+integrations page using `static/images/integrations/logos/helloworld.png` as its
+icon.
 
 At this point, if you're following along and/or writing your own Hello World
 webhook, you have written enough code to test your integration.
@@ -415,19 +418,16 @@ DONE!
 Next, we add end-user documentation for our webhook integration to
 `templates/zerver/integrations.html`.
 
-First, add a `div` that displays the logo of your integration and a link to its
-documentation:
+There are two parts to the end-user documentation on this page.
 
-```
- <div class="integration-lozenge integration-helloworld">
-   <a class="integration-link integration-helloworld" href="#helloworld">
-      <img class="integration-logo" src="/static/images/integrations/logos/helloworld.png" alt="Hello World logo" />
-      <span class="integration-label">Hello World</span>
-   </a>
- </div>
-```
+The first is a `div` with class `integration-lozenge` for each integration.
+This div shows the logo of your webhook, its name, and a link to its
+installation and usage instructions.
 
-And second, a div with the usage instructions:
+Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
+in `zerver/lib/integratins.py`, this div will be generated automatically.
+
+The second part is a `div` with the webhook's usage instructions:
 
 ```
 <div id="helloworld" class="integration-instructions">
@@ -463,8 +463,10 @@ And second, a div with the usage instructions:
 </div>
 ```
 
-Both blocks should fall alphabetically so we add these two divs between the
-blocks for Github and Hubot, respectively.
+These documentation blocks should fall alphabetically. For the
+`integration-lozenge` div this happens automatically when the html is
+generated. For the `integration-instructions` div, we have added the div
+between the blocks for Github and Hubot, respectively.
 
 See [Documenting your integration](#documenting-your-integration) for further
 details, including how to easily create the message screenshot.
