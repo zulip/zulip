@@ -2,6 +2,22 @@ from typing import Dict, List, Optional
 from django.conf import settings
 from django.conf.urls import url
 
+"""This module declares all of the (documented) integrations available
+in the Zulip server.  The Integration class is used as part of
+generating the documentation on the /integrations page, while the
+WebhookIntegration class is also used to generate the URLs in
+`zproject/urls.py` for webhook integrations.
+
+To add a new non-webhook integration, add code to the INTEGRATIONS
+dictionary below.
+
+To add a new webhook integration, declare a WebhookIntegration in the
+WEBHOOK_INTEGRATIONS list below (it will be automatically added to
+INTEGRATIONS).
+
+Over time, we expect this registry to grow additional convenience
+features for writing and configuring integrations efficiently.
+"""
 
 class Integration(object):
     DEFAULT_LOGO_STATIC_PATH = 'static/images/integrations/logos/{name}.png'
