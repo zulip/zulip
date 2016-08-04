@@ -69,7 +69,7 @@ class APNsMessage(object):
     def get_frame(self):
         return self.frame
 
-def response_listener(error_response, connection):
+def response_listener(error_response):
     identifier = error_response['identifier']
     key = get_apns_key(identifier)
     if not redis_client.exists(key):
@@ -97,9 +97,7 @@ def get_connection(cert_file, key_file):
                       cert_file=cert_file,
                       key_file=key_file,
                       enhanced=True)
-    connection.gateway_server.register_response_listener(
-        partial(response_listener, connection=connection))
-
+    connection.gateway_server.register_response_listener(response_listener)
     return connection
 
 if settings.APNS_CERT_FILE is not None and os.path.exists(settings.APNS_CERT_FILE):
