@@ -1,6 +1,5 @@
 *.pyc
 *~
-/all_messages_log.*
 /prod-static
 /errors/*
 *.sw[po]
