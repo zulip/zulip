@@ -60,6 +60,7 @@ try:
                           stdout=open('/dev/null', 'w'),
                           preexec_fn=su_to_zulip)
 
+    subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "next")])
     os.chdir(deploy_path)
 
     if ZULIP_COM:
