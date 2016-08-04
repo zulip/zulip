@@ -418,6 +418,8 @@ window.addEventListener("beforeunload", function (event) {
     exports.cleanup_event_queue();
 });
 
+// For unit testing
+exports._get_events_success = get_events_success;
 
 return exports;
 
