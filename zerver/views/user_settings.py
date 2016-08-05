@@ -18,12 +18,12 @@ from zerver.lib.actions import do_change_password, \
     do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
     do_change_left_side_userlist, do_change_default_language
 from zerver.lib.avatar import avatar_url
+from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Realm
-from zerver.views import get_available_language_codes
 
 def name_changes_disabled(realm):
     # type: (Realm) -> bool

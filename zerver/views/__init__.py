@@ -47,9 +47,10 @@ from zerver.decorator import require_post, authenticated_json_post_view, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
+from zerver.lib.i18n import get_language_list
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import statsd, generate_random_token
 from zerver.lib.str_utils import force_str
+from zerver.lib.utils import statsd, generate_random_token
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
@@ -823,35 +824,6 @@ def sent_time_in_epoch_seconds(user_message):
     # We have USE_TZ = True, so our datetime objects are timezone-aware.
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
-
-def with_language(string, language):
-    # type: (text_type, text_type) -> text_type
-    old_language = translation.get_language()
-    translation.activate(language)
-    result = _(string)
-    translation.activate(old_language)
-    return result
-
-def get_language_list():
-    # type: () -> List[Dict[str, Any]]
-    path = os.path.join(settings.STATIC_ROOT, 'locale', 'language_options.json')
-    with open(path, 'r') as reader:
-        languages = ujson.load(reader)
-        lang_list = []
-        for lang_info in languages['languages']:
-            name = lang_info['name']
-            lang_info['name'] = with_language(name, lang_info['code'])
-            if 'percent_translated' not in lang_info:
-                lang_info['percent_translated'] = 'N/A'
-            lang_list.append(lang_info)
-
-        return sorted(lang_list, key=lambda i: i['name'])
-
-def get_available_language_codes():
-    # type: () -> List[text_type]
-    language_list = get_language_list()
-    codes = [language['code'] for language in language_list]
-    return codes
 
 @zulip_login_required
 def home(request):
