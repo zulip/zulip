@@ -33,6 +33,8 @@ exports.index_fn = index_fn;
 
 function stylesheets() {
     // TODO: Automatically get all relevant styles.
+    //       Note that we specifically do NOT use media.css here,
+    //       since we are focused on showing components in isolation.
     var data = '';
     data += '<link href="../../static/styles/fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/portico.css" rel="stylesheet">\n';
