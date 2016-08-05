@@ -6,6 +6,7 @@ set -e
 set -x
 
 ./tools/lint-all
+./tools/test-tools
 ./tools/test-backend --coverage --no-verbose-coverage
 ./tools/test-management
 ./tools/test-migrations
