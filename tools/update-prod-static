@@ -28,7 +28,7 @@ subprocess.check_call(["mkdir", "-p", "var/log"])
 fp = open('var/log/update-prod-static.log', 'w')
 
 # Install node packages
-subprocess.check_call(['npm', 'install'], stdout=fp, stderr=fp);
+subprocess.check_call(['npm', 'install', '--production'], stdout=fp, stderr=fp);
 
 # Compile Handlebars templates and minify JavaScript.
 subprocess.check_call(['python', 'tools/minify-js']
