@@ -298,7 +298,7 @@ call a helper function instead.
 ### HTML / CSS
 
 Don't use the `style=` attribute. Instead, define logical classes and
-put your styles in `zulip.css`.
+put your styles in external files such as `zulip.css`.
 
 Don't use the tag name in a selector unless you have to. In other words,
 use `.foo` instead of `span.foo`. We shouldn't have to care if the tag
