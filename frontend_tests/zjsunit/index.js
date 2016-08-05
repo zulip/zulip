@@ -30,10 +30,14 @@ global.write_handlebars_output = output.write_handlebars_output;
 global.write_test_output = output.write_test_output;
 global.append_test_output = output.append_test_output;
 
+var noop = function () {};
 
 output.start_writing();
 
 files.forEach(function (file) {
+    global.patch_builtin('setTimeout', noop);
+    global.patch_builtin('setInterval', noop);
+
     console.info('running tests for ' + file.name);
     require(file.full_name);
     namespace.restore();
