@@ -30,16 +30,17 @@ Now you're going to install Zulip dependencies in the image:
 
 ```
 docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/tools/provision.py --docker
-docker ps -af ancestor=user/zulipdev
-docker commit -m "Zulip installed" <container id> user/zulipdev:v2
+$ /usr/bin/python /srv/zulip/provision.py --docker
+<ctrl-d> to exit bash
+
+docker commit -m "Zulip installed" $(docker ps -l -q) user/zulipdev:v2
 ```
 
 Finally you can run the docker server with:
 
 ```
 docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev:v2 \
-    /srv/zulip/tools/start-dockers
+    /srv/zulip/scripts/start-dockers
 ```
 
 If you want to connect to the Docker instance to build a release
