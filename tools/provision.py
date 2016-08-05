@@ -159,8 +159,7 @@ def main():
     # project.
     os.chdir(ZULIP_PATH)
 
-    # Add the Zulip PPA and install apt dependencies
-    run(["sudo", "apt-add-repository", "--enable-source", "--yes", "ppa:tabbott/zulip"])
+    run(["sudo", "./scripts/lib/setup-apt-repo"])
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
