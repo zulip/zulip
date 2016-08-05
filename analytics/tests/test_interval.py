@@ -10,7 +10,7 @@ class TimeIntervalTest(TestCase):
         self.assertEqual(time_interval.start, datetime(2016, 4, 28, 3, 0, 0))
         self.assertEqual(time_interval.end, datetime(2016, 4, 29, 3, 0, 0))
 
-    def test_leap_second(self):
+    def test_datetime_leap_second(self):
         after_leap = datetime(2015, 7, 1)
         self.assertEqual(subtract_interval(after_leap, 'hour'), datetime(2015, 6, 30, 23))
 

@@ -8,8 +8,20 @@ from analytics.lib.interval import TimeInterval
 
 from datetime import timedelta
 
-
 class TestDataCollectors(TestCase):
+    def create_user(self, email, **kwargs):
+        defaults = {'realm' : self.realm,
+                    'full_name' : 'full_name',
+                    'short_name' : 'short_name',
+                    'pointer' : -1,
+                    'last_pointer_updater' : 'seems unused?',
+                    'api_key' : '42'}
+        for key, value in defaults.items():
+            kwargs[key] = kwargs.get(key, value)
+        user = UserProfile(email=email, **kwargs)
+        user.save()
+        return user
+
     def assertRealmValueEqual(self, rows, value, realm_id = None):
         if realm_id is None:
             realm_id = self.realm_id
@@ -17,33 +29,44 @@ class TestDataCollectors(TestCase):
             if row['realm_id'] == realm_id:
                 self.assertEqual(row['value'], value)
                 return
-        self.assertIn(realm_id, [])
+        self.assertEqual(0, value)
+
+    def assertUserValueEqual(self, rows, value, user_id = None):
+        if user_id is None:
+            user_id = self.user_id
+        for row in rows:
+            if row['userprofile_id'] == user_id:
+                self.assertEqual(row['value'], value)
+                return
+        self.assertIn(user_id, [])
 
     def setUp(self):
-        end = timezone.now() + timedelta(seconds = 1200) # 20 minutes
-        self.gauge_interval = TimeInterval('gauge', end)
-        self.hour_interval = TimeInterval('hour', end)
-        self.day_interval = TimeInterval('day', end)
+        # almost every test will need a time_interval, realm, and user
+        end = timezone.now() + timedelta(seconds = 7200) # 2 hours
+        self.day_interval = TimeInterval('day', end, 'hour')
         self.realm = Realm(domain='analytics.test', name='Realm Test')
         self.realm.save()
+        # don't pull the realm object back from the database every time we need its id
+        self.realm_id = self.realm.id
+        self.user = self.create_user('email', date_joined = end - timedelta(seconds = 7200))
+        self.user_id = self.user.id
 
     def test_human_and_bot_count_by_realm(self):
-        # create a human and bot, and check that is_bot, is_active, and some
-        # basic time_interval constraints are being upheld
-        human = UserProfile(email = 'email1', realm = self.realm, date_joined = self.end - timedelta(seconds = 7200))
-        human.save()
-        self.assertRealmValueEqual(get_human_count_by_realm(self.day_interval), 1)
-        self.assertRealmValueEqual(get_human_count_by_realm(self.hour_interval), 0)
-        self.assertRealmValueEqual(get_bot_count_by_realm(self.day_interval), 0)
-        bot = UserProfile(email = 'email2', realm = realm, is_bot = True)
-        human.is_active = False
-        human.save()
-        self.assertRealmValueEqual(get_human_count_by_realm(self.day_interval), 0)
-        self.assertRealmValueEqual(get_bot_count_by_realm(self.hour_interval), 1)
-        bot.is_active = False
-        bot.save()
-        self.assertRealmValueEqual(get_bot_count_by_realm(self.hour_interval), 0)
+        def assert_user_counts(humans, bots):
+            self.assertRealmValueEqual(get_human_count_by_realm(self.day_interval), humans)
+            self.assertRealmValueEqual(get_bot_count_by_realm(self.day_interval), bots)
+        def set_active_bot(is_active, is_bot):
+            self.user.is_active = is_active
+            self.user.is_bot = is_bot
+            self.user.save(update_fields=['is_active', 'is_bot'])
+        # (is_active, is_bot) starts as True, False
+        assert_user_counts(1, 0)
+        set_active_bot(True, True)
+        assert_user_counts(0, 1)
+        set_active_bot(False, True)
+        assert_user_counts(0, 0)
+        set_active_bot(False, False)
+        assert_user_counts(0, 0)
 
     def test_messages_sent_count_by_user(self):
-        user = UserProfile(email = 'email1', realm = self.realm, is_bot=True)
-        user.save()
+        pass
