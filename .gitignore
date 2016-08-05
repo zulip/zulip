@@ -5,7 +5,6 @@
 *.sw[po]
 *.DS_Store
 stats/
-zerver/fixtures/test_data1.json
 .kdev4
 .idea
 zulip.kdev4
