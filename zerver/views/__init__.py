@@ -371,9 +371,9 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
     else:
         return json_success()
 
-def get_invitee_emails_set(invitee_emails):
-    # type: (str) -> set
-    invitee_emails_list = set(re.split(r'[,\n]', invitee_emails))
+def get_invitee_emails_set(invitee_emails_raw):
+    # type: (str) -> Set[str]
+    invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
         is_email_with_name = re.search(r'<(?P<email>.*)>', email)
