@@ -48,6 +48,7 @@ bugdown = None # type: Any
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
+MAX_LANGUAGE_ID_LENGTH = 50 # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[text_type], AbstractSet[text_type])
 
@@ -425,7 +426,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False) # type: bool
-    default_language = models.CharField(default=u'en', max_length=50) # type: text_type
+    default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: text_type
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
