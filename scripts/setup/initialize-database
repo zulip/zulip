@@ -21,7 +21,15 @@ if ! python manage.py initialize_voyager_db; then
     exit 1
 fi
 
-supervisorctl restart all
+# Check if the supervisor socket exists.  If not, it could be:
+#
+# A) A normal installation went bad (supervisor hasn't started)
+# B) We are in a Docker container and don't have supervisor running
+#
+# In either case, it doesn't make sense to restart supervisor jobs
+if [ -e "/var/run/supervisor.sock" ]; then
+    supervisorctl restart all
+fi
 
 set +x
 echo "Congratulations!  You have successfully configured your Zulip database."
