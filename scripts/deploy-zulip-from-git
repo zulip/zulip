@@ -79,7 +79,5 @@ try:
 
     subprocess.check_call(["sudo", os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
                            deploy_path, "--from-git"] + deploy_options)
-
-    subprocess.check_call(["./scripts/purge-old-deployments"])
 finally:
     release_deployment_lock()
