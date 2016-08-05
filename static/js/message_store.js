@@ -329,6 +329,25 @@ exports.update_messages = function update_messages(events) {
             });
         }
 
+        if (event.orig_content !== undefined) {
+            // Most correctly, we should do this for topic edits as
+            // well; but we don't use the data except for content
+            // edits anyway.
+            var edit_history_entry = {
+                edited_by: event.edited_by,
+                prev_content: event.orig_content,
+                prev_rendered_content: event.orig_rendered_content,
+                prev_rendered_content_version: event.prev_rendered_content_version,
+                timestamp: event.edit_timestamp,
+            };
+            // Add message's edit_history in message dict
+            // For messages that are edited, edit_history needs to be added to message in frontend.
+            if (msg.edit_history === undefined) {
+                msg.edit_history = [];
+            }
+            msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+        }
+
         msg.last_edit_timestamp = event.edit_timestamp;
         delete msg.last_edit_timestr;
 
