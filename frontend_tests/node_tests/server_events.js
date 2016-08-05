@@ -1,4 +1,5 @@
 var assert = require('assert');
+var _ = global._;
 
 add_dependencies({
     util: 'js/util.js',
@@ -14,13 +15,10 @@ set_global('window', {
 
 global.stub_out_jquery();
 
-// Prevent the get_events loop and watchdog from running
-patch_builtin('setTimeout', noop);
-patch_builtin('setInterval', noop);
-
 set_global('blueslip', {});
 set_global('channel', {});
 set_global('home_msg_list', {
+    select_id: noop,
     selected_id: function () {return 1;}
 });
 set_global('page_params', {test_suite: false});
@@ -28,10 +26,34 @@ set_global('reload', {
     is_in_progress: function () {return false;}
 });
 
+var page_params = global.page_params;
+
+set_global('echo', {
+    process_from_server: function (messages) {
+        return messages;
+    },
+    set_realm_filters: noop
+});
+
 var server_events = require('js/server_events.js');
+
+// Start blueslip tests here
 
 var setup = function (results) {
     server_events.home_view_loaded();
+    set_global('message_store', {
+        insert_new_messages: function () {
+            throw Error('insert error');
+        },
+        update_messages: function () {
+            throw Error('update error');
+        }
+    });
+    set_global('subs', {
+        update_subscription_properties: function () {
+            throw Error('subs update error');
+        }
+    });
     global.blueslip.error = function (msg, more_info, stack) {
         results.msg = msg;
         results.more_info = more_info;
@@ -54,7 +76,7 @@ var setup = function (results) {
     server_events.restart_get_events();
 
     assert.equal(results.msg, 'Failed to process an event\n' +
-                              'subs is not defined');
+                              'subs update error');
     assert.equal(results.more_info.event.type , 'stream');
     assert.equal(results.more_info.event.op , 'update');
     assert.equal(results.more_info.event.id , 1);
@@ -74,7 +96,7 @@ var setup = function (results) {
     server_events.restart_get_events();
 
     assert.equal(results.msg, 'Failed to insert new messages\n' +
-                               'echo is not defined');
+                               'insert error');
     assert.equal(results.more_info, undefined);
 }());
 
@@ -90,6 +112,6 @@ var setup = function (results) {
     server_events.restart_get_events();
 
     assert.equal(results.msg, 'Failed to update messages\n' +
-                              'message_store is not defined');
+                              'update error');
     assert.equal(results.more_info, undefined);
 }());
