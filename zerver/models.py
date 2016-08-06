@@ -1344,6 +1344,14 @@ def parse_sub_permissions(permission_val):
         mask <<= 1
     return permissions
 
+def get_permission_val(permissions):
+    # type: (List[text_type]) -> int
+    permission_val = 0
+    for permission in permissions:
+        permissionattr = getattr(Stream.default_permissions, permission)
+        permission_val += permissionattr.mask
+    return permission_val
+
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
     # type: (int) -> UserProfile
