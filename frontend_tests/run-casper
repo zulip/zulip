@@ -64,8 +64,8 @@ def server_is_up(server):
     except:
         return False
 
-def run_tests(files):
-    # type: (Iterable[str]) -> None
+def run_tests(realms_have_subdomains, files):
+    # type: (bool, Iterable[str]) -> None
     test_files = []
     for file in files:
         if not os.path.exists(file):
@@ -78,7 +78,7 @@ def run_tests(files):
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
-    cmd = "frontend_tests/casperjs/bin/casperjs %s test " % (remote_debug,)
+    cmd = "frontend_tests/casperjs/bin/casperjs %s test --subdomains=%s " % (remote_debug, realms_have_subdomains,)
     if test_files:
         cmd += ' '.join(test_files)
     else:
@@ -115,5 +115,14 @@ Oops, the frontend tests failed. Tips for debugging:
 
         sys.exit(ret)
 
-run_tests(args)
+# Run tests with REALMS_HAVE_SUBDOMAINS set to True
+run_tests(False, args)
+os.environ["SESSION_COOKIE_DOMAIN"] = ".zulipdev.com"
+os.environ["EXTERNAL_HOST"] = "zulipdev.com:9981"
+os.environ["REALMS_HAVE_SUBDOMAINS"] = "True"
+# Run tests with REALMS_HAVE_SUBDOMAINS set to True
+if len(args) == 0:
+    run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"])
+else:
+    run_tests(True, args)
 sys.exit(0)

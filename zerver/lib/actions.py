@@ -1848,12 +1848,12 @@ def do_change_stream_description(realm, stream_name, new_description):
                  value=new_description)
     send_event(event, stream_user_ids(stream))
 
-def do_create_realm(domain, name, restricted_to_domain=True):
-    # type: (text_type, text_type, bool) -> Tuple[Realm, bool]
+def do_create_realm(domain, name, restricted_to_domain=True, subdomain=None):
+    # type: (text_type, text_type, bool, Optional[text_type]) -> Tuple[Realm, bool]
     realm = get_realm(domain)
     created = not realm
     if created:
-        realm = Realm(domain=domain, name=name,
+        realm = Realm(domain=domain, name=name, subdomain=subdomain,
                       restricted_to_domain=restricted_to_domain)
         realm.save()
 

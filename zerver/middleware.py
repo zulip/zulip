@@ -10,16 +10,18 @@ from zerver.lib.response import json_error
 from zerver.lib.request import JsonableError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
-from zerver.lib.utils import statsd
+from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches
+from zerver.models import flush_per_request_caches, resolve_subdomain_to_realm
 from zerver.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
+from zproject.jinja2 import render_to_response
+from django.shortcuts import redirect
 
 import logging
 import time
@@ -346,6 +348,17 @@ class FlushDisplayRecipientCache(object):
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
+        if settings.REALMS_HAVE_SUBDOMAINS:
+            if (not request.path.startswith("/static/") and not request.path.startswith("/api/")
+                and not request.path.startswith("/json/")):
+                subdomain = get_subdomain(request)
+                if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
+                    return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
+                                              settings.EXTERNAL_HOST))
+                if (request.get_host() != settings.EXTERNAL_HOST and subdomain is not None):
+                    realm = resolve_subdomain_to_realm(subdomain)
+                    if (realm is None):
+                        return render_to_response("zerver/invalid_realm.html")
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie.

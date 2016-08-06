@@ -1,3 +1,4 @@
+var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 var common = (function () {
 
 var exports = {};
@@ -83,7 +84,13 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    casper.start('http://127.0.0.1:9981/accounts/login', function () {
+    var log_in_url = "";
+    if (REALMS_HAVE_SUBDOMAINS) {
+        log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
+    } else {
+        log_in_url = "http://localhost:9981/accounts/login";
+    }
+    casper.start(log_in_url, function () {
         exports.initialize_casper(viewport);
         log_in(credentials);
     });

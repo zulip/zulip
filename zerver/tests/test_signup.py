@@ -664,3 +664,48 @@ class RealmCreationTest(AuthedTestCase):
 
             result = self.client_get(result["Location"])
             self.assert_in_response("You're the first one here!", result)
+
+    def test_create_realm_with_subdomain(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "test.com"
+        email = "user1@test.com"
+        subdomain = "test"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        self.assertIsNone(get_realm(domain))
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.settings(OPEN_REALM_CREATION=True):
+            # Create new realm with the email
+            result = self.client_post('/create_realm/', {'email': email})
+            self.assertEquals(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith(
+                    "/accounts/send_confirm/%s@%s" % (username, domain)))
+            result = self.client_get(result["Location"])
+            self.assert_in_response("Check your email so we can get started.", result)
+            # Visit the confirmation link.
+            from django.core.mail import outbox
+            for message in reversed(outbox):
+                if email in message.to:
+                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                    confirmation_url = confirmation_link_pattern.search(
+                        message.body).groups()[0]
+                    break
+            else:
+                raise ValueError("Couldn't find a confirmation email.")
+
+            result = self.client_get(confirmation_url)
+            self.assertEquals(result.status_code, 200)
+
+            result = self.submit_reg_form_for_user(username, password, domain=domain, realm_name=realm_name, realm_subdomain=subdomain)
+            self.assertEquals(result.status_code, 302)
+
+            # Make sure the realm is created
+            realm = get_realm(domain)
+
+            self.assertIsNotNone(realm)
+            self.assertEqual(realm.domain, domain)
+            self.assertEqual(realm.name, realm_name)
+            self.assertEqual(realm.subdomain, subdomain)
+            self.assertEqual(get_user_profile_by_email(email).realm, realm)
