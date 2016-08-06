@@ -9,8 +9,8 @@ from django.contrib.sites.models import Site
 from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
-    split_email_to_domain, email_to_username
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_message, set_default_streams, \
+    split_email_to_domain, email_to_username, get_permission_val
+from zerver.lib.actions import do_send_message, set_default_streams, \
     do_activate_user, do_deactivate_user, do_change_password, do_change_is_admin,\
     do_change_bot_type
 from zerver.lib.parallel import run_parallel
@@ -114,6 +114,7 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         # type: (**Any) -> None
+        permissions = get_permission_val(['can_read', 'can_write'])
         if options["percent_huddles"] + options["percent_personals"] > 100:
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
@@ -160,8 +161,8 @@ class Command(BaseCommand):
                     s = Subscription(
                         recipient=r,
                         user_profile=profile,
-                        color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
-
+                        color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
+                        permissions=permissions)
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
@@ -254,7 +255,8 @@ class Command(BaseCommand):
                         s = Subscription(
                             recipient=recipient,
                             user_profile=profile,
-                            color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
+                            color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
+                            permissions=permissions)
                         subscriptions_to_add.append(s)
                 Subscription.objects.bulk_create(subscriptions_to_add)
 
