@@ -36,7 +36,7 @@ class Command(BaseCommand):
         first = options.get(string_to_datetime('first'), last - timedelta(seconds=3600))
 
         # note that this includes deactivated users and realms
-        users = UserProfile.objects.annotate(created='date_joined').values('id', 'created')
+        users = UserProfile.objects.annotate(created='date_joined').values('id', 'realm_id', 'created')
         realms = Realm.objects.annotate(created='date_created').values('id', 'created')
 
         def existing_ids(rows, time_interval):

@@ -2,6 +2,8 @@ from django.utils import timezone
 from datetime import datetime, timedelta, MINYEAR
 import pytz
 
+MIN_TIME = datetime(MINYEAR, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+
 # Name isn't great .. fixedinterval? timerange? Trying to distinguish
 # generic intervals like 'hour' or 'quarter' from fixed intervals like
 # 'Aug 3 2016 from 9-10am'
@@ -14,21 +16,24 @@ class TimeInterval:
             self.end = floor_to_interval_boundary(end, floor_to_boundary)
         self.interval = interval
         if interval == 'gauge':
-            self.start = datetime(MINYEAR, 1, 1, 0, 0, 0, tzinfo=pytz.UTC)
+            self.start = MIN_TIME
         else:
             self.start = subtract_interval(self.end, interval)
     # add way to init with start_time and end_time, and no interval
 
-# I think the right way to do the next two is to have an interval class
+# Perhaps the right way to do the next two functions is to have an interval class
 # (subclassed to hourinterval, dayinterval, etc) with methods like floor and
 # subtract. Seems like overkill for now, though.
 def floor_to_interval_boundary(datetime_object, interval):
     # type: (datetime, text_type) -> datetime
     # datetime objects are (year, month, day, hour, minutes, seconds, microseconds)
-    if interval == 'hour':
-        return datetime(*datetime_object.timetuple()[:4])
-    elif interval == 'day':
-        return datetime(*datetime_object.timetuple()[:3])
+    if interval == 'day':
+        return datetime(*datetime_object.timetuple()[:3], tzinfo=datetime_object.tzinfo)
+    elif interval == 'hour':
+        return datetime(*datetime_object.timetuple()[:4], tzinfo=datetime_object.tzinfo)
+    elif interval == '15min':
+        timetuple = datetime_object.timetuple()
+        return datetime(*timetuple[:4], timetuple[5] - timetuple[5] % 15, tzinfo=datetime_object.tzinfo)
     else:
         raise ValueError("Unknown interval", interval)
 

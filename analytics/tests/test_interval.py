@@ -20,3 +20,5 @@ class TimeIntervalTest(TestCase):
         first_hour = floor_to_interval_boundary(first, 'hour')
         self.assertEqual(len(timeinterval_range(first_hour, first_hour + timedelta(days = 1), 'day', 'hour')), 25)
         self.assertEqual(len(timeinterval_range(first_hour, first_hour + timedelta(days = 1), 'day', 'day')), 1)
+
+        # TODO: test UTC / timezone flooring stuff

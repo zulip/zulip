@@ -70,3 +70,6 @@ class TestDataCollectors(TestCase):
 
     def test_messages_sent_count_by_user(self):
         pass
+
+    def test_aggregate_user_to_realm(self):
+        process_count(UserCount, [self.user_id]
