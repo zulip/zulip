@@ -66,7 +66,12 @@ def tokenize(text):
         if looking_at_html_start():
             s = get_html_tag(text, state.i)
             tag = s[1:-1].split()[0]
-            kind = 'html_start'
+            if is_special_html_tag(s, tag):
+                kind = 'html_special'
+            elif s.endswith('/>'):
+                kind = 'html_singleton'
+            else:
+                kind = 'html_start'
         elif looking_at_html_end():
             s = get_html_tag(text, state.i)
             tag = s[2:-1]
@@ -171,11 +176,9 @@ def validate(fn=None, text=None, check_indent=True):
     for token in tokens:
         kind = token.kind
         tag = token.tag
-        s = token.s
 
         if kind == 'html_start':
-            if not is_special_html_tag(s, tag):
-                start_tag_matcher(token)
+            start_tag_matcher(token)
         elif kind == 'html_end':
             state.matcher(token)
 
@@ -204,7 +207,6 @@ def validate(fn=None, text=None, check_indent=True):
 def is_special_html_tag(s, tag):
     # type: (str, str) -> bool
     return (s.startswith('<!--') or
-           s.endswith('/>') or
            tag in ['link', 'meta', '!DOCTYPE'])
 
 def is_django_block_tag(tag):
@@ -384,11 +386,12 @@ def html_tag_tree(text):
     stack = [top_level]
 
     for token in tokens:
-        if token.kind == 'html_start':
+        if token.kind in ('html_start', 'html_singleton'):
             if not is_special_html_tag(token.s, token.tag):
                 parent = stack[-1]
                 node= Node(token=token, parent=parent)
                 parent.children.append(node)
+            if token.kind == 'html_start':
                 stack.append(node)
         elif token.kind == 'html_end':
             stack.pop()
