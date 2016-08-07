@@ -8,6 +8,9 @@ from lib.css_parser import (
     CssSection,
     CssDeclarationBlock,
 )
+from lib.html_grep import (
+    Grepper,
+)
 import os
 import sys
 import glob
@@ -202,7 +205,7 @@ def selector_split(word):
     s = word[0]
     while i < len(word):
         c = word[i]
-        if c in '.#:':
+        if c in '.#:[':
             pieces.append(s)
             s = c
         else:
@@ -211,8 +214,119 @@ def selector_split(word):
     pieces.append(s)
     return pieces
                 
-def validate(fn):
+def is_container(s):
+    return s.endswith('_box') or s.endswith('_box_container')
+
+def is_add_class(s):
+    exceptions = [
+        # elem.append for .date
+        ('timerender.js', 'date-direction'),
+        ('timerender.js', 'date-line'),
+    ]
+
+    exceptions += [
+        # code generated
+        ('admin.js', 'reactivate'),
+        ('admin.js', 'deactivated_user'),
+        ('admin.js', 'deactivate'),
+        ('admin.js', 'remove-admin'),
+        ('admin.js', 'make-admin'),
+        ('compose.js', 'lock-padding'),
+        ('compose_fade.js', 'faded'),
+        ('compose_fade.js', 'unfaded'),
+        ('condense.js', 'collapsed'),
+        ('custom_markdown.js', 'btn-default'),
+        ('message_list.js', 'fast_fade'),
+        ('message_list.js', 'slow_fade'),
+        ('message_list_view.js', 'user-mention-me'),
+        ('narrow.js', 'narrowed_view'),
+        ('narrow.js', 'focused_table'),
+        ('signup.js', 'help-inline'),
+        ('stream_list.js', 'zoom-in'),
+        ('stream_list.js', 'zoom-out'),
+        ('stream_list.js', 'out_of_home_view'),
+        ('stream_list.js', 'private-stream-swatch'),
+        ('stream_list.js', 'stream-with-count'),
+        ('stream_list.js', 'user-with-count'),
+        ('stream_list.js', 'group-with-count'),
+        ('stream_list.js', 'new_messages'),
+        ('stream_list.js', 'new_messages_fadeout'),
+        ('subs.js', 'muted-sub'),
+        ('subs.js', 'subscribed-button'),
+        ('subs.js', 'in'),
+        ('subs.js', 'icon-vector-chevron-up'),
+        ('subs.js', 'icon-vector-chevron-down'),
+        ('ui.js', 'message_hovered'),
+        ('ui.js', 'icon-vector-star'),
+        ('ui.js', 'icon-vector-star-empty'),
+        ('ui.js', 'right-userlist'),
+        ('ui.js', 'sender_name_hovered'),
+        ('ui.js', 'window_blurred'),
+        ('ui.js', 'selected_message'),
+    ]
+
+    for fn, selector in exceptions:
+        if s == '.' + selector:
+            return True
+
+def is_bugdown_class(s):
+    # type : (str) -> bool
+    # These come from zerver/lib/bugdown/__init__.py
+    bugdown_classes = [
+        '.emoji',
+        '.inline-preview-twitter',
+        '.inline-subscribe',
+        '.inline-subscribe-button',
+        '.inline-subscribe-error',
+        '.message_body_gravatar',
+        '.message_inline_image_desc',
+        '.message_inline_image_title',
+        '.message_inline_ref',
+        '.twitter-avatar',
+        '.twitter-image',
+        '.twitter-img_div',
+        '.twitter-tweet',
+        '.user-mention',
+    ]
+    return s in bugdown_classes
+
+GENERIC_KEYWORDS = [
+    'active',
+    'alert',
+    'danger',
+    'condensed',
+    'disabled',
+    'error',
+    'expanded',
+    'hide',
+    'notdisplayed',
+    'popover',
+    'success',
+    'text-error',
+    'warning',
+]
+
+def is_generic(s):
+    for kw in GENERIC_KEYWORDS:
+        if kw in s:
+            return True
+
+def possibly_obsolete(s):
+    if s == '#private':
+        return True # dubious, see fd66d9f7 for when it was added
+    if s == '#subscription-status':
+        return True
+
+def exempt_but_probably_fine(s):
+    if 'highlight' in s:
+        return True # part of signup.js
+        
+
+def hunt_down_selectors(fn, prefix):
     # type: (str) -> None
+    fns = glob.glob('static/templates/*.handlebars')
+    fns += glob.glob('templates/zerver/*.html')
+    grepper = Grepper(fns)
     text = open(fn).read()
     section_list = parse(text)
     words = set()
@@ -220,11 +334,33 @@ def validate(fn):
         for selector in section.selector_list.selectors:
             for level in selector.levels:
                 for s in selector_split(level.s):
-                    words.add(s) 
+                    if possibly_obsolete(s):
+                        continue
+                    if is_generic(s):
+                        continue
+                    if exempt_but_probably_fine(s):
+                        continue
+                    if is_bugdown_class(s):
+                        continue
+                    if s.startswith(prefix) and not possibly_obsolete(s):
+                        if prefix == '#':
+                            if not is_container(s):
+                                words.add(s) 
+                        else:   
+                            if not is_add_class(s):
+                                words.add(s)
     word_list = list(words)
     word_list.sort()
+    dubious = []
     for w in word_list:
+        cnt = grepper.grep(set([w]))
+        if cnt == 0:
+            dubious.append(w)
+
+    print('\nDUBIOUS CLASSES\n')
+    for w in dubious:
         print(w)
+
 
 def check_our_files():
     # type: () -> None
@@ -232,7 +368,7 @@ def check_our_files():
     fns = glob.glob('static/styles/zulip.css')
     for fn in fns:
         try:
-            validate(fn)
+            hunt_down_selectors(fn, prefix='.')
             # split(fn)
         except CssParserException as e:
             print('CssParserException raised while parsing file %s' % (fn,))
