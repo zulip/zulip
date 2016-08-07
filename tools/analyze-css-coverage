@@ -193,6 +193,23 @@ def triage(in_doc, test_declaration):
             doc2.append_declarations(section, no)
 
     return doc1, doc2
+
+def selector_split(word):
+    # return [word]
+    assert len(word)
+    pieces = []
+    i = 1
+    s = word[0]
+    while i < len(word):
+        c = word[i]
+        if c in '.#:':
+            pieces.append(s)
+            s = c
+        else:
+            s += c
+        i += 1
+    pieces.append(s)
+    return pieces
                 
 def validate(fn):
     # type: (str) -> None
@@ -202,7 +219,8 @@ def validate(fn):
     for section in section_list.sections:
         for selector in section.selector_list.selectors:
             for level in selector.levels:
-                words.add(level.s) 
+                for s in selector_split(level.s):
+                    words.add(s) 
     word_list = list(words)
     word_list.sort()
     for w in word_list:
@@ -214,8 +232,8 @@ def check_our_files():
     fns = glob.glob('static/styles/zulip.css')
     for fn in fns:
         try:
-            # validate(fn)
-            split(fn)
+            validate(fn)
+            # split(fn)
         except CssParserException as e:
             print('CssParserException raised while parsing file %s' % (fn,))
             print(e)
