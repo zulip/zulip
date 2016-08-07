@@ -14,6 +14,7 @@ cache:
     - $HOME/node
 env:
   global:
+    - COVERAGE_FILE=var/.coverage
     - COVERALLS_PARALLEL=true
     - COVERALLS_SERVICE_NAME=travis-pro
     - COVERALLS_REPO_TOKEN=hnXUEBKsORKHc8xIENGs9JjktlTb2HKlG
