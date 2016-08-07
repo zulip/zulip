@@ -1783,11 +1783,6 @@ input.recipient_box {
     width: 100%;
 }
 
-#left-of-compose {
-    vertical-align: top;
-    padding-top: 3px;
-}
-
 #send_controls {
     float: right;
     position: relative;
