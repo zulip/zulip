@@ -1824,13 +1824,6 @@ input.recipient_box {
 }
 
 
-#navbar-spacer {
-    /* A spacer that is exactly a navbar size, so that all content
-    gets pushed unerneath it */
-    width: 100%;
-    height: 40px;
-}
-
 .brand.skinny-user-gravatar {
     display: table-cell;
     padding-top: 0px;
