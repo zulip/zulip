@@ -303,6 +303,7 @@ def get_tag_info(token):
         m = re.search(regex, s)
         if m:
             for g in m.groups():
+                g = re.sub('({{.*?}})', ' ', g)
                 lst += g.split()
 
     return TagInfo(tag=tag, classes=classes, ids=ids, token=token)
