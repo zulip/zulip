@@ -402,6 +402,12 @@ try:
         return result
 
     @lint
+    def add_class():
+        # type: () -> int
+        result = subprocess.call(['tools/find-add-class'])
+        return result
+
+    @lint
     def css():
         # type: () -> int
         result = subprocess.call(['tools/check-css'])
