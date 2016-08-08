@@ -731,6 +731,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
                                                   additional_context=context)
 
 def redirect_to_email_login_url(email):
+    # type: (str) -> HttpResponseRedirect
     login_url = reverse('django.contrib.auth.views.login')
     redirect_url = login_url + '?email=' + urllib.parse.quote_plus(email)
     return HttpResponseRedirect(redirect_url)
@@ -775,6 +776,7 @@ def create_realm(request, creation_key=None):
                               request=request)
 
 def confirmation_key(request):
+    # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
 
 def accounts_home(request):
