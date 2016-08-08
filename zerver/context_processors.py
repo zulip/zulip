@@ -1,11 +1,14 @@
 from __future__ import absolute_import
 
+from typing import Dict, Any
+from django.http import HttpRequest
 from django.conf import settings
 import ujson
 from zproject.backends import (password_auth_enabled, dev_auth_enabled,
                                google_auth_enabled, github_auth_enabled)
 
 def add_settings(request):
+    # type: (HttpRequest) -> Dict[str, Any]
     realm = request.user.realm if hasattr(request.user, "realm") else None
     return {
         'custom_logo_url':           settings.CUSTOM_LOGO_URL,
@@ -30,6 +33,7 @@ def add_settings(request):
     }
 
 def add_metrics(request):
+    # type: (HttpRequest) -> Dict[str, str]
     return {
         'dropboxAppKey': settings.DROPBOX_APP_KEY
     }
