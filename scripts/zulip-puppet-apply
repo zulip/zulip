@@ -8,10 +8,14 @@ import six.moves.configparser as configparser
 import re
 
 force = False
+test = False
 extra_args = sys.argv[1:]
 
 if len(extra_args) and extra_args[0] in ('-f', '--force'):
     force = True
+    extra_args = extra_args[1:]
+if len(extra_args) and extra_args[0] in ('-t', '--test'):
+    test = True
     extra_args = extra_args[1:]
 
 config = configparser.RawConfigParser()
@@ -43,6 +47,9 @@ if not force:
         print("puppet: There were errors, aborting.")
         sys.exit(1)
     # Now ret=2, so there were changes but no errors
+    elif test:
+        print("puppet: changes detected.")
+        sys.exit(1)
 
     do_apply = None
     while do_apply != 'y':
