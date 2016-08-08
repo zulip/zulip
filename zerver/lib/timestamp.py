@@ -12,6 +12,10 @@ def datetime_to_timestamp(datetime_object):
     # type: (datetime.datetime) -> int
     return calendar.timegm(datetime_object.timetuple())
 
+def utc_datetime_to_psql_timestamptz(datetime_object):
+    # type: (datetime.datetime) -> str
+    return calendar.timegm(datetime_object.timetuple())
+
 def datetime_to_string(datetime_object):
     # type: (datetime.datetime) -> text_type
     return datetime_object.strftime('%Y-%m-%d %H:%M:%S')

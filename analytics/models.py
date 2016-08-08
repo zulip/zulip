@@ -3,6 +3,8 @@ from django.db import models
 from zerver.models import Realm, UserProfile, Stream
 from zerver.lib.str_utils import ModelReprMixin
 
+from analytics.lib.interval import MIN_TIME
+
 class AnalyticsMixin(object):
     # should be the unique one first! TODO: explain what extended id is
     @staticmethod

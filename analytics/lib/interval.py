@@ -33,7 +33,7 @@ def floor_to_interval_boundary(datetime_object, interval):
         return datetime(*datetime_object.timetuple()[:4], tzinfo=datetime_object.tzinfo)
     elif interval == '15min':
         timetuple = datetime_object.timetuple()
-        return datetime(*timetuple[:4], timetuple[5] - timetuple[5] % 15, tzinfo=datetime_object.tzinfo)
+        return datetime(*timetuple[:4], minutes = timetuple[5] - timetuple[5] % 15, tzinfo=datetime_object.tzinfo)
     else:
         raise ValueError("Unknown interval", interval)
 

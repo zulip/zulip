@@ -14,15 +14,6 @@ from django.template import loader
 
 from collections import Counter, defaultdict
 
-class AnalyticsStat:
-    def __init__(self, property, zerver_table, filter_args, aggregate_by, smallest_interval, frequency):
-        self.property = property
-        self.zerver_table = zerver_table
-        self.filter_args = filter_args
-        self.aggregate_by = aggregate_by
-        self.smallest_interval = smallest_interval
-        self.frequency = frequency
-
 class Command(BaseCommand):
     help = """Fills RealmCount table.
 
