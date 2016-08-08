@@ -6,6 +6,7 @@ import unittest
 
 try:
     from tools.lib.template_parser import (
+        html_tag_tree,
         is_django_block_tag,
         tokenize,
         validate,
@@ -74,3 +75,11 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'django_end')
         self.assertEqual(token.tag, 'if')
+
+    def test_html_tag_tree(self):
+        # type: () -> None
+        html = '''
+        <body><p>Hello world</p></body>
+        '''
+        tree = html_tag_tree(html)
+        self.assertEqual(tree.children[0].children[0].token.s, '<p>')
