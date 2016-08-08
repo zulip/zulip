@@ -15,7 +15,8 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.test_runner import slow
 
-from zerver.models import UserProfile, Recipient, \
+from zerver.models import \
+    Topic, UserProfile, Recipient, \
     Realm, Client, UserActivity, \
     get_user_profile_by_email, split_email_to_domain, get_realm, \
     get_client, get_stream, Message, get_unique_open_realm, \
@@ -25,6 +26,7 @@ from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
 from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.actions import \
+    create_stream_if_needed, \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
@@ -1870,6 +1872,29 @@ class HomeTest(AuthedTestCase):
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
+
+class TopicBasicsTest(TestCase):
+    def test_topic_basics(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        stream, _ = create_stream_if_needed(realm, 'devel')
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        topic, created = Topic.objects.get_or_create(
+            recipient=recipient,
+            name='python',
+        )
+        self.assertTrue(created)
+        expected = '<Topic: recipient %d, python>' % (recipient.id,)
+        self.assertEqual(str(topic), expected)
+
+        # test case insensitity
+        # (We have to manage calls get_or_create somewhat manually
+        #  here.)
+        topic, created = Topic.objects.get_or_create(
+            recipient=recipient,
+            name__iexact='pYtHoN',
+        )
+        self.assertFalse(created)
 
 class MutedTopicsTests(AuthedTestCase):
     def test_json_set(self):
