@@ -3333,6 +3333,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago):
         attachment.delete()
 
 def check_attachment_reference_change(prev_content, message):
+    # type: (text_type, Message) -> None
     new_content = message.content
     prev_attachments = set(attachment_url_re.findall(prev_content))
     new_attachments = set(attachment_url_re.findall(new_content))
