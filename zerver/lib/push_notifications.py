@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import random
 from six import text_type
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, SupportsInt
 
 from zerver.models import PushDeviceToken, UserProfile
 from zerver.models import get_user_profile_by_id
@@ -47,11 +47,13 @@ dbx_connection = None
 assert isinstance(settings.APNS_SANDBOX, bool)
 
 def get_apns_key(identifer):
+    # type: (SupportsInt) -> str
     return 'apns:' + str(identifer)
 
 class APNsMessage(object):
     def __init__(self, user, tokens, alert=None, badge=None, sound=None,
             category=None, **kwargs):
+        # type: (UserProfile, List[text_type], text_type, int, text_type, text_type, **Any) -> None
         self.frame = Frame()
         self.tokens = tokens
         expiry = int(time.time() + 24 * 3600)
@@ -67,9 +69,11 @@ class APNsMessage(object):
             self.frame.add_item(token, payload, identifier, expiry, priority)
 
     def get_frame(self):
+        # type: () -> Frame
         return self.frame
 
 def response_listener(error_response):
+    # type: (Dict[str, SupportsInt]) -> None
     identifier = error_response['identifier']
     key = get_apns_key(identifier)
     if not redis_client.exists(key):
@@ -95,6 +99,7 @@ def response_listener(error_response):
             pass
 
 def get_connection(cert_file, key_file):
+    # type: (str, str) -> APNs
     connection = APNs(use_sandbox=settings.APNS_SANDBOX,
                       cert_file=cert_file,
                       key_file=key_file,
