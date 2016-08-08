@@ -5,6 +5,7 @@ from __future__ import division
 from typing import Any, Callable, Optional, Sequence, TypeVar
 from six import text_type, binary_type
 import base64
+import errno
 import hashlib
 import os
 from time import sleep
@@ -113,3 +114,14 @@ def log_statsd_event(name):
 def generate_random_token(length):
     # type: (int) -> text_type
     return base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower()
+
+def mkdir_p(path):
+    # type: (str) -> None
+    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if e.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
