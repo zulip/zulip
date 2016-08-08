@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import os
 import shutil
+from typing import List, Any, Tuple
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import CachedFilesMixin, StaticFilesStorage
@@ -9,6 +10,7 @@ from pipeline.storage import PipelineMixin
 
 class AddHeaderMixin(object):
     def post_process(self, paths, dry_run=False, **kwargs):
+        # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
         if dry_run:
             return []
 
@@ -55,6 +57,7 @@ class AddHeaderMixin(object):
 
 class RemoveUnminifiedFilesMixin(object):
     def post_process(self, paths, dry_run=False, **kwargs):
+        # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
         if dry_run:
             return []
 
