@@ -493,6 +493,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_incoming_webhook(self):
+        # type: () -> bool
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
     @staticmethod
@@ -893,6 +894,7 @@ class Message(ModelReprMixin, models.Model):
         return self.to_dict_uncached(apply_markdown)
 
     def to_dict_uncached(self, apply_markdown):
+        # type: (bool) -> binary_type
         return stringify_message_dict(self.to_dict_uncached_helper(apply_markdown))
 
     def to_dict_uncached_helper(self, apply_markdown):
