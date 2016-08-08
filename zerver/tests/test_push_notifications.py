@@ -35,7 +35,7 @@ class PushNotificationTest(TestCase):
         self.redis_client = apn.redis_client = MockRedis()  # type: ignore
         apn.dbx_connection = apn.get_connection('fake-cert', 'fake-key')
         self.user_profile = get_user_profile_by_email(email)
-        self.tokens = ['aaaa', 'bbbb']
+        self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
                 kind=PushDeviceToken.APNS,
