@@ -2929,10 +2929,6 @@ textarea.new_message_textarea {
     margin-right: 2px;
 }
 
-#navbar-spacer {
-    width: 100%;
-}
-
 #searchbox {
     width: 100%;
 }
@@ -4266,11 +4262,6 @@ input.recipient_box {
     height: 1.1em;
 }
 
-#left-of-compose {
-    vertical-align: top;
-    padding-top: 3px;
-}
-
 #send_controls {
     float: right;
     position: relative;
@@ -4288,10 +4279,6 @@ input.recipient_box {
 
 #send_controls #compose-send-button:hover {
     height: 2.2em;
-}
-
-#navbar-spacer {
-    height: 40px;
 }
 
 .brand.skinny-user-gravatar {
