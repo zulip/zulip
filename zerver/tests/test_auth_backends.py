@@ -96,7 +96,7 @@ class AuthBackendTest(TestCase):
         user_profile.save()
         # Verify if a realm has password auth disabled, correct password is rejected
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
-            self.assertIsNone(EmailAuthBackend().authenticate(email, dict(password=password)))
+            self.assertIsNone(EmailAuthBackend().authenticate(email, password))
 
     def test_google_backend(self):
         # type: () -> None
