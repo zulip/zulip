@@ -29,11 +29,20 @@ include apt
 for pclass in re.split(r'\s*,\s*', config.get('machine', 'puppet_classes')):
     puppet_config += "include %s\n" % (pclass,)
 
-puppet_cmd = ["puppet", "apply", "--modulepath=/root/zulip/puppet", "-e", puppet_config]
+puppet_cmd = ["puppet", "apply", "--detailed-exitcodes",
+              "--modulepath=/root/zulip/puppet", "-e", puppet_config]
 puppet_cmd += extra_args
 
+
 if not force:
-    subprocess.check_call(puppet_cmd + ['--noop', '--show_diff'])
+    ret = subprocess.call(puppet_cmd + ['--noop', '--show_diff'])
+    if ret == 0:
+        print("puppet: No changes detected.")
+        sys.exit(0)
+    elif ret in [4, 6]:
+        print("puppet: There were errors, aborting.")
+        sys.exit(1)
+    # Now ret=2, so there were changes but no errors
 
     do_apply = None
     while do_apply != 'y':
@@ -42,7 +51,7 @@ if not force:
         if do_apply == '' or do_apply == 'n':
             sys.exit(0)
 
-ret = subprocess.call(puppet_cmd + ['--detailed-exitcodes'])
+ret = subprocess.call(puppet_cmd)
 # ret = 0 => no changes, no errors
 # ret = 2 => changes, no errors
 # ret = 4 => no changes, yes errors
