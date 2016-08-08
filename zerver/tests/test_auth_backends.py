@@ -192,7 +192,9 @@ class GitHubAuthBackendTest(AuthedTestCase):
                                       self.name)
 
     def test_github_backend_do_auth_for_default(self):
+        # type: () -> None
         def authenticate(*args, **kwargs):
+            # type: (*Any, **Any) -> None
             assert isinstance(kwargs['backend'], GithubOAuth2) == True
 
         with mock.patch('social.backends.github.GithubOAuth2.user_data',
@@ -204,7 +206,9 @@ class GitHubAuthBackendTest(AuthedTestCase):
             self.backend.do_auth('fake-access-token', response=response)
 
     def test_github_backend_do_auth_for_team(self):
+        # type: () -> None
         def authenticate(*args, **kwargs):
+            # type: (*Any, **Any) -> None
             assert isinstance(kwargs['backend'], GithubTeamOAuth2) == True
 
         with mock.patch('social.backends.github.GithubTeamOAuth2.user_data',
@@ -217,7 +221,9 @@ class GitHubAuthBackendTest(AuthedTestCase):
                 self.backend.do_auth('fake-access-token', response=response)
 
     def test_github_backend_do_auth_for_org(self):
+        # type: () -> None
         def authenticate(*args, **kwargs):
+            # type: (*Any, **Any) -> None
             assert isinstance(kwargs['backend'], GithubOrganizationOAuth2) == True
 
         with mock.patch('social.backends.github.GithubOrganizationOAuth2.user_data',
