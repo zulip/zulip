@@ -44,6 +44,16 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+    def test_validate_django(self):
+        # type: () -> None
+        my_html = '''
+            {% include "some_other.html" %}
+            {% if foo %}
+                <p>bar</p>
+            {% endif %}
+            '''
+        validate(text=my_html)
+
     def test_tokenize(self):
         # type: () -> None
         tag = '<meta whatever>bla'
