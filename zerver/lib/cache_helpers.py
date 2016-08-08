@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from six import text_type
+from six import text_type, binary_type
 from typing import Any, Dict, Callable, Tuple
 
 # This file needs to be different from cache.py because cache.py
@@ -30,7 +30,7 @@ def message_fetch_objects():
                                                     id__gt=max_id - MESSAGE_CACHE_SIZE)
 
 def message_cache_items(items_for_remote_cache, message):
-    # type: (Dict[text_type, Tuple[Message]], Message) -> None
+    # type: (Dict[text_type, Tuple[binary_type]], Message) -> None
     items_for_remote_cache[to_dict_cache_key_id(message.id, True)] = (message.to_dict_uncached(True),)
 
 def user_cache_items(items_for_remote_cache, user_profile):
