@@ -46,8 +46,8 @@ dbx_connection = None
 # `APNS_SANDBOX` should be a bool
 assert isinstance(settings.APNS_SANDBOX, bool)
 
-def get_apns_key(token):
-    return 'apns:' + str(token)
+def get_apns_key(identifer):
+    return 'apns:' + str(identifer)
 
 class APNsMessage(object):
     def __init__(self, user, tokens, alert=None, badge=None, sound=None,
