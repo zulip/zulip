@@ -89,7 +89,7 @@ class AuthBackendTest(TestCase):
 
     def test_email_auth_backend_disabled_password_auth(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        email = u"hamlet@zulip.com"
         user_profile = get_user_profile_by_email(email)
         password = "testpassword"
         user_profile.set_password(password)
