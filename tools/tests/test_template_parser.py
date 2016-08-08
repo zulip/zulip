@@ -35,6 +35,15 @@ class ParserTest(unittest.TestCase):
             </table>'''
         validate(text=my_html)
 
+    def test_validate_handlebars(self):
+        # type: () -> None
+        my_html = '''
+            {{#with stream}}
+                <p>{{stream}}</p>
+            {{/with}}
+            '''
+        validate(text=my_html)
+
     def test_tokenize(self):
         # type: () -> None
         tag = '<meta whatever>bla'
