@@ -76,10 +76,10 @@ class ZulipAuthMixin(object):
             return None
 
 class SocialAuthMixin(ZulipAuthMixin):
-    def get_email_address(self):
+    def get_email_address(self, *args, **kwargs):
         raise NotImplementedError
 
-    def get_full_name(self):
+    def get_full_name(self, *args, **kwargs):
         raise NotImplementedError
 
     def authenticate(self, *args, **kwargs):
