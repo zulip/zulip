@@ -368,8 +368,8 @@ def check_our_files():
     fns = glob.glob('static/styles/zulip.css')
     for fn in fns:
         try:
-            hunt_down_selectors(fn, prefix='.')
-            # split(fn)
+            # hunt_down_selectors(fn, prefix='.')
+            split(fn)
         except CssParserException as e:
             print('CssParserException raised while parsing file %s' % (fn,))
             print(e)
