@@ -8,7 +8,6 @@ var is_composing_message = false;
 // get an error message too.
 // undefined: no @all/@everyone in message; false: user typed @all/@everyone; true: user clicked YES
 var user_acknowledged_all_everyone;
-var all_everyone_re = /(@\*{2}(all|everyone)\*{2})|(@(all|everyone))/;
 
 var message_snapshot;
 var empty_subject_placeholder = "(no topic)";
@@ -376,7 +375,7 @@ exports.restore_message = function () {
     compose.start(snapshot_copy.type, snapshot_copy);
 
     if (snapshot_copy.content !== undefined &&
-        all_everyone_re.test(snapshot_copy.content)) {
+        util.is_all_or_everyone_mentioned(snapshot_copy.content)) {
         show_all_everyone_warnings();
     }
 };
@@ -774,7 +773,7 @@ function validate_stream_message() {
     }
 
     // check if @all or @everyone is in the message
-    if (all_everyone_re.test(exports.message_content())) {
+    if (util.is_all_or_everyone_mentioned(exports.message_content())) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
