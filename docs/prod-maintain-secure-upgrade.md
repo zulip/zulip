@@ -12,82 +12,103 @@ secure Zulip installation, including:
 
 ## Upgrading
 
-We recommend reading this entire section before doing your first
-upgrade.
+**We recommend reading this entire section before doing your first
+upgrade.**
 
-* To upgrade to a new version of the zulip server, download the
-  appropriate release tarball from
-  https://www.zulip.com/dist/releases/ and then run as root:
-  ```
-  /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
-  ```
+To upgrade to a new version of the zulip server, download the appropriate
+release tarball from
+[https://www.zulip.com/dist/releases/](https://www.zulip.com/dist/releases/)
 
-  The upgrade process will shut down the service, run `apt-get
-  upgrade`, a puppet apply, and any database migrations, and then
-  bring the service back up.  This will result in some brief downtime
-  for the service, which should be under 30 seconds unless there is an
-  expensive transition involved.  Unless you have tested the upgrade
-  in advance, we recommend doing upgrades at off hours.
+You also have the option of creating your own release tarballs from a copy of
+zulip.git repository using `tools/build-release-tarball`. And, starting with
+Zulip version 1.4, you can deploy updates [directly from a Git
+repository](#deploying-zulip-from-a-git-repository).
 
-  You can create your own release tarballs from a copy of zulip.git
-  repository using `tools/build-release-tarball`.  See also the
-  [section on deploying from a Git repository](#deploying-zulip-from-a-git-repository).
+Next, run as root:
 
-* **Warning**: If you have modified configuration files installed by
-  Zulip (e.g. the nginx configuration), the Zulip upgrade process will
-  overwrite your configuration when it does the `puppet apply`.  You
-  can test whether this will happen assuming no upstream changes to
-  the configuration using `scripts/zulip-puppet-apply` (without the
-  `-f` option), which will do a test puppet run and output and changes
-  it would make.  Using this list, you can save a copy of any files
-  that you've modified, do the upgrade, and then restore your
-  configuration.  If you need to do this, please report the issue so
-  that we can make the Zulip puppet configuration flexible enough to
-  handle your setup.
+```
+/home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
+```
 
-* The Zulip upgrade script automatically logs output to
-  /var/log/zulip/upgrade.log; please use those logs to include output
-  that shows all errors in any bug reports.
+The upgrade process will shut down the Zulip service and then run `apt-get upgrade`, a
+puppet apply, any database migrations, and then bring the Zulip service back
+up. Upgrading will result in some brief downtime for the service, which should be
+under 30 seconds unless there is an expensive transition involved. Unless you
+have tested the upgrade in advance, we recommend doing upgrades at off hours.
 
-* The Zulip upgrade process works by creating a new deployment under
-  /home/zulip/deployments/ containing a complete copy of the Zulip
-  server code, and then moving the symlinks at
-  `/home/zulip/deployments/current` and `/root/zulip` as part of the
-  upgrade process.  This means that if the new version isn't working,
-  you can quickly downgrade to the old version by using
-  `/home/zulip/deployments/<date>/scripts/restart-server` to return to
-  a previous version that you've deployed (the version is specified
-  via the path to the copy of `restart-server` you call).
+### Preserving local changes to configuration files
 
-* To update your settings, simply edit `/etc/zulip/settings.py` and then
-  run `/home/zulip/deployments/current/scripts/restart-server` to
-  restart the server
+**Warning**: If you have modified configuration files installed by
+Zulip (e.g. the nginx configuration), the Zulip upgrade process will
+overwrite your configuration when it does the `puppet apply`.
 
-* You are responsible for running `apt-get upgrade` on your system on
-  a regular basis to ensure that it is up to date with the latest
-  security patches.
+You can test whether this will happen assuming no upstream changes to
+the configuration using `scripts/zulip-puppet-apply` (without the
+`-f` option), which will do a test puppet run and output and changes
+it would make. Using this list, you can save a copy of any files
+that you've modified, do the upgrade, and then restore your
+configuration.
 
-* To use the Zulip API with your Zulip server, you will need to use the
-  API endpoint of e.g. `https://zulip.example.com/api`.  Our Python
-  API example scripts support this via the
-  `--site=https://zulip.example.com` argument.  The API bindings
-  support it via putting `site=https://zulip.example.com` in your
-  .zuliprc.
+If you need to do this, please report the issue so
+that we can make the Zulip puppet configuration flexible enough to
+handle your setup.
 
-  Every Zulip integration supports this sort of argument (or e.g. a
-  `ZULIP_SITE` variable in a zuliprc file or the environment), but this
-  is not yet documented for some of the integrations (the included
-  integration documentation on `/integrations` will properly document
-  how to do this for most integrations).  Pull requests welcome to
-  document this for those integrations that don't discuss this!
+### Upgrade log location
 
-* Similarly, you will need to instruct your users to specify the URL
-  for your Zulip server when using the Zulip desktop and mobile apps.
+The Zulip upgrade script automatically logs output to
+`/var/log/zulip/upgrade.log`. Please use those logs to include output that
+shows all errors in any bug reports.
 
-* As a measure to mitigate the impact of potential memory leaks in one
-  of the Zulip daemons, the service automatically restarts itself
-  every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
-  precise configuration.
+### Rolling back to a prior version
+
+The Zulip upgrade process works by creating a new deployment under
+`/home/zulip/deployments/` containing a complete copy of the Zulip server code,
+and then moving the symlinks at `/home/zulip/deployments/current` and
+`/root/zulip` as part of the upgrade process.
+
+This means that if the new version isn't working,
+you can quickly downgrade to the old version by using
+`/home/zulip/deployments/<date>/scripts/restart-server` to return to
+a previous version that you've deployed (the version is specified
+via the path to the copy of `restart-server` you call).
+
+### Update settings
+
+If required, you can update your settings by editing `/etc/zulip/settings.py`
+and then run `/home/zulip/deployments/current/scripts/restart-server` to
+restart the server.
+
+### Ubuntu system updates
+
+While the Zulip upgrade script runs `apt-get upgrade`, you are responsible for
+running this on your system on a regular basis between Zulip upgrades to
+ensure that it is up to date with the latest security patches.
+
+### API and your Zulip URL
+
+To use the Zulip API with your Zulip server, you will need to use the
+API endpoint of e.g. `https://zulip.example.com/api`.  Our Python
+API example scripts support this via the
+`--site=https://zulip.example.com` argument.  The API bindings
+support it via putting `site=https://zulip.example.com` in your
+.zuliprc.
+
+Every Zulip integration supports this sort of argument (or e.g. a
+`ZULIP_SITE` variable in a zuliprc file or the environment), but this
+is not yet documented for some of the integrations (the included
+integration documentation on `/integrations` will properly document
+how to do this for most integrations).  Pull requests welcome to
+document this for those integrations that don't discuss this!
+
+Similarly, you will need to instruct your users to specify the URL
+for your Zulip server when using the Zulip desktop and mobile apps.
+
+### Preventing memory leaks
+
+As a measure to mitigate the impact of potential memory leaks in one
+of the Zulip daemons, the service automatically restarts itself
+every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
+precise configuration.
 
 ## Deploying from a git repository
 
