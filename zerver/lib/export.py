@@ -4,6 +4,7 @@ import datetime
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from django.conf import settings
+from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils import timezone
 import glob
@@ -847,13 +848,7 @@ def do_import_realm(import_dir):
     import_message_data(import_dir)
 
     # Do attachments AFTER message data is loaded.
-    fix_datetime_fields(data, 'zerver_attachment', 'create_time')
-    re_map_foreign_keys(data, 'zerver_attachment', 'owner', related_table="user_profile")
-    convert_to_id_fields(data, 'zerver_attachment', 'realm')
-    # TODO: Handle the `messages` keys.
-    # fix_foreign_keys(data, 'zerver_attachment', 'messages')
-    bulk_import_model(data, Attachment, 'zerver_attachment')
-
+    import_attachments(data)
 
 def import_message_data(import_dir):
     # type: (Path) -> None
@@ -883,4 +878,66 @@ def import_message_data(import_dir):
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
 
         dump_file_id += 1
+
+def import_attachments(data):
+    # type: (TableData) -> None
+
+    # Clean up the data in zerver_attachment that is not
+    # relevant to our many-to-many import.
+    fix_datetime_fields(data, 'zerver_attachment', 'create_time')
+    re_map_foreign_keys(data, 'zerver_attachment', 'owner', related_table="user_profile")
+    convert_to_id_fields(data, 'zerver_attachment', 'realm')
+
+    # Configure ourselves.  Django models many-to-many (m2m)
+    # relations asymmetrically. The parent here refers to the
+    # Model that has the ManyToManyField.  It is assumed here
+    # the child models have been loaded, but we are in turn
+    # responsible for loading the parents and the m2m rows.
+    parent_model = Attachment
+    parent_db_table_name = 'zerver_attachment'
+    parent_singular = 'attachment'
+    child_singular = 'message'
+    child_plural = 'messages'
+    m2m_table_name = 'zerver_attachment_messages'
+    parent_id = 'attachment_id'
+    child_id = 'message_id'
+
+    # First, build our list of many-to-many (m2m) rows.
+    # We do this in a slightly convoluted way to anticipate
+    # a future where we may need to call re_map_foreign_keys.
+
+    m2m_rows = [] # type: List[Record]
+    for parent_row in data[parent_db_table_name]:
+        for fk_id in parent_row[child_plural]:
+            m2m_row = {} # type: Record
+            m2m_row[parent_singular] = parent_row['id']
+            m2m_row[child_singular] = fk_id
+            m2m_rows.append(m2m_row)
+
+    # Create our table data for insert.
+    m2m_data = {m2m_table_name: m2m_rows} # type: TableData
+    convert_to_id_fields(m2m_data, m2m_table_name, parent_singular)
+    convert_to_id_fields(m2m_data, m2m_table_name, child_singular)
+    m2m_rows = m2m_data[m2m_table_name]
+
+    # Next, delete out our child data from the parent rows.
+    for parent_row in data[parent_db_table_name]:
+        del parent_row[child_plural]
+
+    # Next, load the parent rows.
+    bulk_import_model(data, parent_model, parent_db_table_name)
+
+    # Now, go back to our m2m rows.
+    # TODO: Do this the kosher Django way.  We may find a
+    # better way to do this in Django 1.9 particularly.
+    with connection.cursor() as cursor:
+        sql_template = '''
+            insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
+                                                           parent_id,
+                                                           child_id)
+        for row in m2m_rows:
+            cursor.execute(sql_template, [row[parent_id],
+                                          row[child_id]])
+
+    logging.info('Successfully imported M2M table %s' % (m2m_table_name,))
 
