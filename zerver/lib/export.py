@@ -23,15 +23,30 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     get_display_recipient, Attachment
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p
+from six import text_type
 from six.moves import range
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
+
+# Custom mypy types follow:
+Record = Dict[str, Any]
+TableName = str
+TableData = Dict[TableName, List[Record]]
+Field = str
+Path = text_type
+
+# The keys of our MessageOutput variables are normally
+# List[Record], but when we write partials, we can get
+# lists of integers or a single integer.
+# TODO: tighten this up with a union.
+MessageOutput = Dict[str, Any]
 
 realm_tables = [("zerver_defaultstream", DefaultStream),
                 ("zerver_realmemoji", RealmEmoji),
                 ("zerver_realmalias", RealmAlias),
-                ("zerver_realmfilter", RealmFilter)]
+                ("zerver_realmfilter", RealmFilter)] # List[Tuple[TableName, Any]]
 
 def floatify_datetime_fields(data, table, field):
+    # type: (TableData, TableName, Field) -> None
     for item in data[table]:
         orig_dt = item[field]
         if orig_dt is None:
@@ -47,6 +62,7 @@ def floatify_datetime_fields(data, table, field):
 # Export common, public information about the realm that we can share
 # with all realm users
 def export_realm_data(realm, response):
+    # type: (Realm, TableData) -> None
     response['zerver_realm'] = [model_to_dict(x) for x in Realm.objects.filter(id=realm.id)]
     floatify_datetime_fields(response, 'zerver_realm', 'date_created')
 
@@ -61,6 +77,7 @@ def export_realm_data(realm, response):
 # response['zerver_userprofile_mirrordummy'] export so that
 # conversations with those users can still be exported.
 def export_with_admin_auth(realm, response, include_invite_only=True, include_private=True):
+    # type: (Realm, TableData, bool, bool) -> None
     response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
                                       for x in UserProfile.objects.filter(realm=realm)]
     if realm.domain == "zulip.com":
@@ -150,6 +167,7 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     floatify_datetime_fields(response, 'zerver_attachment', 'create_time')
 
 def fetch_usermessages(realm, message_ids, user_profile_ids, message_filename):
+    # type: (Realm, Set[int], Set[int], Path) -> List[Record]
     # UserMessage export security rule: You can export UserMessages
     # for the messages you exported for the users in your realm.
     user_message_query = UserMessage.objects.filter(user_profile__realm=realm,
@@ -166,6 +184,7 @@ def fetch_usermessages(realm, message_ids, user_profile_ids, message_filename):
     return user_message_chunk
 
 def export_usermessages_batch(input_path, output_path):
+    # type: (Path, Path) -> None
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
     objects."""
@@ -176,11 +195,12 @@ def export_usermessages_batch(input_path, output_path):
     del output['zerver_userprofile_ids']
     realm = Realm.objects.get(id=output['realm_id'])
     del output['realm_id']
-    output['zerver_usermessage'] = fetch_usermessages(realm, message_ids, user_profile_ids, output_path)
+    output['zerver_usermessage'] = fetch_usermessages(realm, set(message_ids), user_profile_ids, output_path)
     write_message_export(output_path, output)
     os.unlink(input_path)
 
 def write_message_export(message_filename, output):
+    # type: (Path, MessageOutput) -> None
     with open(message_filename, "w") as f:
         f.write(ujson.dumps(output, indent=4))
     logging.info("Dumped to %s" % (message_filename,))
@@ -188,6 +208,7 @@ def write_message_export(message_filename, output):
 def export_messages(realm, user_profile_ids, recipient_ids,
                     chunk_size=1000, output_dir=None,
                     threads=0):
+    # type: (Realm, Set[int], Set[int], int, Path, int) -> None
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
@@ -216,7 +237,8 @@ def export_messages(realm, user_profile_ids, recipient_ids,
         message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
         logging.info("Fetched Messages for %s" % (message_filename,))
 
-        output = {'zerver_message': message_chunk}
+        output = {} # type: MessageOutput
+        output['zerver_message'] = message_chunk
         floatify_datetime_fields(output, 'zerver_message', 'pub_date')
         floatify_datetime_fields(output, 'zerver_message', 'last_edit_time')
 
@@ -236,6 +258,7 @@ def export_messages(realm, user_profile_ids, recipient_ids,
     # TODO: Add asserts that every message was sent in the realm and every recipient is available above.
 
 def export_bucket(realm, bucket_name, output_dir, avatar_bucket=False):
+    # type: (Realm, str, Path, bool) -> None
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
@@ -319,12 +342,14 @@ def export_bucket(realm, bucket_name, output_dir, avatar_bucket=False):
         ujson.dump(records, records_file, indent=4)
 
 def export_uploads_local(realm, output_dir):
+    # type: (Realm, Path) -> None
     export_uploads_local_helper(realm, os.path.join(output_dir, "uploads"),
                                 os.path.join(settings.LOCAL_UPLOADS_DIR, "files"))
     export_avatars_local_helper(realm, os.path.join(output_dir, "avatars"),
                                 os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"))
 
 def export_uploads_local_helper(realm, output_dir, local_dir):
+    # type: (Realm, Path, Path) -> None
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -354,6 +379,7 @@ def export_uploads_local_helper(realm, output_dir, local_dir):
         ujson.dump(records, records_file, indent=4)
 
 def export_avatars_local_helper(realm, output_dir, local_dir):
+    # type: (Realm, Path, Path) -> None
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -387,8 +413,8 @@ def export_avatars_local_helper(realm, output_dir, local_dir):
                 user.email, local_path))
             fn = os.path.basename(local_path)
             output_path = os.path.join(output_dir, fn)
-            mkdir_p(os.path.dirname(output_path))
-            subprocess.check_call(["cp", "-a", local_path, output_path])
+            mkdir_p(str(os.path.dirname(output_path)))
+            subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,
                           user_profile_id=user.id,
@@ -409,12 +435,14 @@ def export_avatars_local_helper(realm, output_dir, local_dir):
         ujson.dump(records, records_file, indent=4)
 
 def export_uploads(realm, output_dir):
+    # type: (Realm, Path) -> None
     os.makedirs(os.path.join(output_dir, "uploads"))
     export_bucket(realm, settings.S3_AVATAR_BUCKET, os.path.join(output_dir, "avatars"), True)
     export_bucket(realm, settings.S3_AUTH_UPLOADS_BUCKET, os.path.join(output_dir, "uploads"))
 
 def do_export_realm(realm, output_dir, threads=0):
-    response = {} # type: Dict[str, Any]
+    # type: (Realm, Path, int) -> None
+    response = {} # type: TableData
 
     logging.info("Exporting realm configuration")
     export_realm_data(realm, response)
@@ -439,8 +467,9 @@ def do_export_realm(realm, output_dir, threads=0):
     if threads > 0:
         # Start parallel jobs to export the UserMessage objects
         def run_job(shard):
+            # type: (str) -> int
             subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
-                             output_dir, '--thread', shard])
+                             str(output_dir), '--thread', shard])
             return 0
         for (status, job) in run_parallel(run_job, [str(x) for x in range(0, threads)], threads=threads):
             print("Shard %s finished, status %s" % (job, status))
@@ -448,7 +477,8 @@ def do_export_realm(realm, output_dir, threads=0):
     logging.info("Finished exporting %s" % (realm.domain))
 
 def do_export_user(user_profile, output_dir):
-    response = {} # type: Dict[str, Any]
+    # type: (UserProfile, Path) -> None
+    response = {} # type: TableData
 
     export_single_user(user_profile, response)
     export_file = os.path.join(output_dir, "user.json")
@@ -458,6 +488,7 @@ def do_export_user(user_profile, output_dir):
     export_messages_single_user(user_profile, output_dir=output_dir)
 
 def export_single_user(user_profile, response):
+    # type: (UserProfile, TableData) -> None
     response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
                                       for x in [user_profile]]
     floatify_datetime_fields(response, 'zerver_userprofile', 'date_joined')
@@ -476,6 +507,7 @@ def export_single_user(user_profile, response):
     floatify_datetime_fields(response, 'zerver_stream', 'date_created')
 
 def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
+    # type: (UserProfile, int, Path) -> None
     user_message_query = UserMessage.objects.filter(user_profile=user_profile)
     min_id = -1
     dump_file_id = 1
@@ -513,6 +545,7 @@ def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
 id_maps = defaultdict(dict) # type: defaultdict[str, Dict[int, int]]
 
 def fix_datetime_fields(data, table, field_name):
+    # type: (TableData, TableName, Field) -> None
     for item in data[table]:
         if item[field_name] is None:
             item[field_name] = None
@@ -521,6 +554,7 @@ def fix_datetime_fields(data, table, field_name):
             item[field_name] = timezone.make_aware(v, timezone=timezone.utc)
 
 def fix_foreign_keys(data, table, field_name, id_map_table = ''):
+    # type: (TableData, TableName, Field, TableName) -> None
     for item in data[table]:
         val = item[field_name]
         new_val = id_maps[id_map_table].get(item[field_name], val)
@@ -528,11 +562,14 @@ def fix_foreign_keys(data, table, field_name, id_map_table = ''):
         del item[field_name]
 
 def fix_bitfield_keys(data, table, field_name):
+    # type: (TableData, TableName, Field) -> None
     for item in data[table]:
         item[field_name] = item[field_name + '_mask']
         del item[field_name + '_mask']
 
 def bulk_import_model(data, model, table, dump_file_id=None):
+    # type: (TableData, Any, TableName, str) -> None
+    # TODO, deprecate dump_file_id
     model.objects.bulk_create(model(**item) for item in data[table])
     if dump_file_id is None:
         logging.info("Successfully imported %s from %s." % (model, table))
@@ -544,6 +581,7 @@ def bulk_import_model(data, model, table, dump_file_id=None):
 # check if a Client object already exists, and so we need to support
 # remap all Client IDs to the values in the new DB.
 def bulk_import_client(data, model, table):
+    # type: (TableData, Any, TableName) -> None
     for item in data[table]:
         try:
             client = Client.objects.get(name=item['name'])
@@ -552,6 +590,7 @@ def bulk_import_client(data, model, table):
         id_maps['client'][item['id']] = client.id
 
 def import_uploads_local(import_dir, avatar_bucket=False):
+    # type: (Path, bool) -> None
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())
@@ -575,6 +614,7 @@ def import_uploads_local(import_dir, avatar_bucket=False):
         shutil.copy(orig_file_path, file_path)
 
 def import_uploads_s3(bucket_name, import_dir, avatar_bucket=False):
+    # type: (str, Path, bool) -> None
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
 
@@ -610,18 +650,19 @@ def import_uploads_s3(bucket_name, import_dir, avatar_bucket=False):
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
 def import_uploads(import_dir, avatar_bucket=False):
+    # type: (Path, bool) -> None
     if avatar_bucket:
         logging.info("Importing avatars")
     else:
         logging.info("Importing uploaded files")
     if settings.LOCAL_UPLOADS_DIR:
-        return import_uploads_local(import_dir, avatar_bucket=avatar_bucket)
+        import_uploads_local(import_dir, avatar_bucket=avatar_bucket)
     else:
         if avatar_bucket:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        return import_uploads_s3(bucket_name, import_dir, avatar_bucket=avatar_bucket)
+        import_uploads_s3(bucket_name, import_dir, avatar_bucket=avatar_bucket)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
@@ -642,6 +683,7 @@ def import_uploads(import_dir, avatar_bucket=False):
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and Foreign Keys) to do the import correctly.
 def do_import_realm(import_dir):
+    # type: (Path) -> None
     logging.info("Importing realm dump %s" % (import_dir,))
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
