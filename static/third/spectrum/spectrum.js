@@ -32,7 +32,10 @@
         showAlpha: false,
         theme: "sp-light",
         palette: ['fff', '000'],
-        selectionPalette: []
+        selectionPalette: [],
+
+        // custom container
+        container: null
     },
     spectrums = [],
     IE = !!/msie/i.exec( window.navigator.userAgent ),
@@ -133,7 +136,6 @@
     }
 
     function spectrum(element, o) {
-
         var opts = instanceOptions(o, element),
             flat = opts.flat,
             showPaletteOnly = opts.showPaletteOnly,
@@ -165,7 +167,7 @@
             draggingClass = "sp-dragging";
 
         var doc = element.ownerDocument,
-            body = doc.body,
+            body = opts.container || doc.body,
             boundElement = $(element),
             container = $(markup, doc).addClass(theme),
             dragger = container.find(".sp-color"),
@@ -817,7 +819,7 @@
     * Define a jQuery plugin
     */
     var dataID = "spectrum.id";
-    $.fn.spectrum = function (opts, extra) {
+    $.fn.spectrum = function (opts, extra, container) {
         if (typeof opts == "string") {
             if (opts == "get") {
                 return spectrums[this.eq(0).data(dataID)].get();
@@ -843,7 +845,7 @@
 
         // Initializing a new one
         return this.spectrum("destroy").each(function () {
-            var spect = spectrum(this, opts);
+            var spect = spectrum(this, opts, container);
             $(this).data(dataID, spect.id);
         });
     };
