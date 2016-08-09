@@ -3473,6 +3473,9 @@ li.expanded_private_message {
 
 /* This must be synced with viewport.is_narrow */
 @media (max-width: 975px) {
+    #user-info .username {
+      display: none;
+    }
 
     .screen-full-show {
         display: none !important;
