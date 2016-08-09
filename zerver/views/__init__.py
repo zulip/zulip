@@ -422,7 +422,7 @@ def maybe_send_to_registration(request, email, full_name=''):
                                   request=request)
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
-    # type: (HttpRequest, str, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, text_type, UserProfile, text_type) -> HttpResponse
     if user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, the client specified a remote user
         # but no associated user account exists. Send them over to the
