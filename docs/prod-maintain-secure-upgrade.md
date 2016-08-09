@@ -1,5 +1,17 @@
 # Securing, maintaining, and upgrading
 
+This page covers topics that will help you maintain a healthy, up-to-date, and
+secure Zulip installation, including:
+
+- [Upgrading](#upgrading)
+- [Deploying from a git repository](#deploying-from-a-git-repository)
+- [Backing up and restoring](#backing-up-and-restoring)
+- [Monitoring](#monitoring)
+- [Scalability](#scalability)
+- [Security Model](#security-model)
+
+## Upgrading
+
 We recommend reading this entire section before doing your first
 upgrade.
 
@@ -77,7 +89,7 @@ upgrade.
   every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
   precise configuration.
 
-## Deploying Zulip from a git repository
+## Deploying from a git repository
 
 Starting with version 1.4, the Zulip server supports doing deployments
 from a Git repository.  To configure this, you will need to add
@@ -112,7 +124,7 @@ specified repository, build the static assets, and deploy that
 version.  Currently, the upgrade process is slow, but it doesn't need
 to be; there is ongoing work on optimizing it.
 
-## Backups for Zulip
+## Backing up and restoring
 
 There are several pieces of data that you might want to back up:
 
@@ -188,7 +200,7 @@ this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
 
 
-## Monitoring Zulip
+## Monitoring
 
 The complete Nagios configuration (sans secret keys) used to
 monitor zulip.com is available under `puppet/zulip_internal` in the
@@ -237,7 +249,7 @@ If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
 encouraged!
 
-## Scalability of Zulip
+## Scalability
 
 This section attempts to address the considerations involved with
 running Zulip with a large team (>1000 users).
