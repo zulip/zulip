@@ -819,7 +819,7 @@
     * Define a jQuery plugin
     */
     var dataID = "spectrum.id";
-    $.fn.spectrum = function (opts, extra, container) {
+    $.fn.spectrum = function (opts, extra) {
         if (typeof opts == "string") {
             if (opts == "get") {
                 return spectrums[this.eq(0).data(dataID)].get();
@@ -845,7 +845,7 @@
 
         // Initializing a new one
         return this.spectrum("destroy").each(function () {
-            var spect = spectrum(this, opts, container);
+            var spect = spectrum(this, opts);
             $(this).data(dataID, spect.id);
         });
     };
