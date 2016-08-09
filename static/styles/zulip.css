@@ -198,33 +198,6 @@ li,
     width: auto;
 }
 
-.header-main .column-right #user-info {
-    float: right;
-    margin-right: 40px;
-}
-
-.header-main .column-left #org-info {
-    vertical-align: top;
-    display: inline-block;
-}
-
-#org-info .organization,
-#user-info .username {
-  margin-top: 10px;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-#org-info .organization {
-  max-width: 155px;
-}
-
-#user-info .username {
-  max-width: 180px;
-}
-
 #user-settings-avatar {
     width: 100px;
     height: 100px;
@@ -3477,9 +3450,6 @@ li.expanded_private_message {
 
 /* This must be synced with viewport.is_narrow */
 @media (max-width: 975px) {
-    #user-info .username {
-      display: none;
-    }
 
     .screen-full-show {
         display: none !important;
