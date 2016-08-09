@@ -34,6 +34,7 @@ matrix:
       sudo: required
 # command to run tests
 script:
+  - unset GEM_PATH
   - ./tools/travis/$TEST_SUITE
 sudo: required
 services:
