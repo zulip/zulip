@@ -32,10 +32,7 @@
         showAlpha: false,
         theme: "sp-light",
         palette: ['fff', '000'],
-        selectionPalette: [],
-
-        // custom container
-        container: null
+        selectionPalette: []
     },
     spectrums = [],
     IE = !!/msie/i.exec( window.navigator.userAgent ),
@@ -167,7 +164,7 @@
             draggingClass = "sp-dragging";
 
         var doc = element.ownerDocument,
-            body = opts.container || doc.body,
+            body = doc.body,
             boundElement = $(element),
             container = $(markup, doc).addClass(theme),
             dragger = container.find(".sp-color"),
