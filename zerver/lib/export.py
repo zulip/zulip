@@ -45,26 +45,40 @@ realm_tables = [("zerver_defaultstream", DefaultStream),
                 ("zerver_realmalias", RealmAlias),
                 ("zerver_realmfilter", RealmFilter)] # List[Tuple[TableName, Any]]
 
-def floatify_datetime_fields(data, table, field):
-    # type: (TableData, TableName, Field) -> None
+
+DATE_FIELDS = {
+    'zerver_attachment': ['create_time'],
+    'zerver_message': ['last_edit_time', 'pub_date'],
+    'zerver_realm': ['date_created'],
+    'zerver_stream': ['date_created'],
+    'zerver_useractivity': ['last_visit'],
+    'zerver_useractivityinterval': ['start', 'end'],
+    'zerver_userpresence': ['timestamp'],
+    'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
+} # type: Dict[TableName, List[Field]]
+
+
+def floatify_datetime_fields(data, table):
+    # type: (TableData, TableName) -> None
     for item in data[table]:
-        orig_dt = item[field]
-        if orig_dt is None:
-            continue
-        if timezone.is_naive(orig_dt):
-            logging.warning("Naive datetime:", item)
-            dt = timezone.make_aware(orig_dt)
-        else:
-            dt = orig_dt
-        utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
-        item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+        for field in DATE_FIELDS[table]:
+            orig_dt = item[field]
+            if orig_dt is None:
+                continue
+            if timezone.is_naive(orig_dt):
+                logging.warning("Naive datetime:", item)
+                dt = timezone.make_aware(orig_dt)
+            else:
+                dt = orig_dt
+            utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
+            item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
 
 # Export common, public information about the realm that we can share
 # with all realm users
 def export_realm_data(realm, response):
     # type: (Realm, TableData) -> None
     response['zerver_realm'] = [model_to_dict(x) for x in Realm.objects.filter(id=realm.id)]
-    floatify_datetime_fields(response, 'zerver_realm', 'date_created')
+    floatify_datetime_fields(response, 'zerver_realm')
 
     for (table, model) in realm_tables:
         response[table] = [model_to_dict(x) for x in
@@ -88,9 +102,7 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
         get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
         get_user_profile_by_email(settings.WELCOME_BOT),
     ]]
-    floatify_datetime_fields(response, 'zerver_userprofile', 'date_joined')
-    floatify_datetime_fields(response, 'zerver_userprofile', 'last_login')
-    floatify_datetime_fields(response, 'zerver_userprofile', 'last_reminder')
+    floatify_datetime_fields(response, 'zerver_userprofile')
     user_profile_ids = set(userprofile["id"] for userprofile in response['zerver_userprofile'])
     user_recipients = [model_to_dict(x)
                        for x in Recipient.objects.filter(type=Recipient.PERSONAL)
@@ -102,22 +114,21 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
 
     response["zerver_userpresence"] = [model_to_dict(x) for x in
                                        UserPresence.objects.filter(user_profile__in=user_profile_ids)]
-    floatify_datetime_fields(response, 'zerver_userpresence', 'timestamp')
+    floatify_datetime_fields(response, 'zerver_userpresence')
 
     response["zerver_useractivity"] = [model_to_dict(x) for x in
                                        UserActivity.objects.filter(user_profile__in=user_profile_ids)]
-    floatify_datetime_fields(response, 'zerver_useractivity', 'last_visit')
+    floatify_datetime_fields(response, 'zerver_useractivity')
 
     response["zerver_useractivityinterval"] = [model_to_dict(x) for x in
                                                UserActivityInterval.objects.filter(user_profile__in=user_profile_ids)]
-    floatify_datetime_fields(response, 'zerver_useractivityinterval', 'start')
-    floatify_datetime_fields(response, 'zerver_useractivityinterval', 'end')
+    floatify_datetime_fields(response, 'zerver_useractivityinterval')
 
     stream_query = Stream.objects.filter(realm=realm)
     if not include_invite_only:
         stream_query = stream_query.filter(invite_only=False)
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
-    floatify_datetime_fields(response, 'zerver_stream', 'date_created')
+    floatify_datetime_fields(response, 'zerver_stream')
     stream_ids = set(x["id"] for x in response['zerver_stream'])
     stream_recipients = [model_to_dict(x)
                          for x in Recipient.objects.filter(type=Recipient.STREAM,
@@ -164,7 +175,7 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
 
     response["zerver_attachment"] = [model_to_dict(x) for x in
                                      Attachment.objects.filter(realm=realm)]
-    floatify_datetime_fields(response, 'zerver_attachment', 'create_time')
+    floatify_datetime_fields(response, 'zerver_attachment')
 
 def fetch_usermessages(realm, message_ids, user_profile_ids, message_filename):
     # type: (Realm, Set[int], Set[int], Path) -> List[Record]
@@ -239,8 +250,7 @@ def export_messages(realm, user_profile_ids, recipient_ids,
 
         output = {} # type: MessageOutput
         output['zerver_message'] = message_chunk
-        floatify_datetime_fields(output, 'zerver_message', 'pub_date')
-        floatify_datetime_fields(output, 'zerver_message', 'last_edit_time')
+        floatify_datetime_fields(output, 'zerver_message')
 
         if threads > 0:
             message_filename += '.partial'
@@ -491,9 +501,7 @@ def export_single_user(user_profile, response):
     # type: (UserProfile, TableData) -> None
     response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
                                       for x in [user_profile]]
-    floatify_datetime_fields(response, 'zerver_userprofile', 'date_joined')
-    floatify_datetime_fields(response, 'zerver_userprofile', 'last_login')
-    floatify_datetime_fields(response, 'zerver_userprofile', 'last_reminder')
+    floatify_datetime_fields(response, 'zerver_userprofile')
 
     response["zerver_subscription"] = [model_to_dict(x) for x in
                                        Subscription.objects.filter(user_profile=user_profile)]
@@ -504,7 +512,7 @@ def export_single_user(user_profile, response):
 
     stream_query = Stream.objects.filter(id__in=stream_ids)
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
-    floatify_datetime_fields(response, 'zerver_stream', 'date_created')
+    floatify_datetime_fields(response, 'zerver_stream')
 
 def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
     # type: (UserProfile, int, Path) -> None
@@ -533,8 +541,7 @@ def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
         logging.info("Fetched Messages for %s" % (message_filename,))
 
         output = {'zerver_message': message_chunk}
-        floatify_datetime_fields(output, 'zerver_message', 'pub_date')
-        floatify_datetime_fields(output, 'zerver_message', 'last_edit_time')
+        floatify_datetime_fields(output, 'zerver_message')
 
         write_message_export(message_filename, output)
         min_id = max(user_message_ids)
