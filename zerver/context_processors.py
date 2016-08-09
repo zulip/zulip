@@ -6,10 +6,22 @@ from zproject.backends import (password_auth_enabled, dev_auth_enabled,
                                google_auth_enabled, github_auth_enabled)
 
 def add_settings(request):
-    realm = request.user.realm if hasattr(request.user, "realm") else None
+    # type: (HttpRequest) -> Dict[str, Any]
+    realm = request.user.realm
+
+    if (realm):
+        full_name = request.user.full_name
+        realm_name = realm.name
+    else:
+        realm = None
+        full_name = None
+        realm_name = None
+
     return {
         'custom_logo_url':           settings.CUSTOM_LOGO_URL,
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
+        'full_name':                 full_name,
+        'realm_name':                realm_name,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
         'terms_of_service':          settings.TERMS_OF_SERVICE,
