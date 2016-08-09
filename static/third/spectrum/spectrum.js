@@ -133,6 +133,7 @@
     }
 
     function spectrum(element, o) {
+
         var opts = instanceOptions(o, element),
             flat = opts.flat,
             showPaletteOnly = opts.showPaletteOnly,
