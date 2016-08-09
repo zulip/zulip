@@ -114,9 +114,11 @@ class ResponseListenerTest(PushNotificationTest):
             user=self.user_profile, token=b64_token).count(), 0)
 
 class SendNotificationTest(PushNotificationTest):
+    @mock.patch('logging.warn')
+    @mock.patch('logging.info')
     @mock.patch('zerver.lib.push_notifications._do_push_to_apns_service')
-    def test_send_apple_push_notifiction(self, mock_send):
-        # type: (mock.MagicMock) -> None
+    def test_send_apple_push_notifiction(self, mock_send, mock_info, mock_warn):
+        # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
         def test_send(user, message, alert):
             # type: (UserProfile, Message, str) -> None
             self.assertEqual(user.id, self.user_profile.id)
@@ -137,23 +139,27 @@ class SendNotificationTest(PushNotificationTest):
         mock_push.side_effect = test_push
         apn._do_push_to_apns_service(self.user_profile, msg, apn.connection)
 
+    @mock.patch('logging.warn')
+    @mock.patch('logging.info')
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
-    def test_connection_single_none(self, mock_push):
-        # type: (mock.MagicMock) -> None
+    def test_connection_single_none(self, mock_push, mock_info, mock_warn):
+        # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
         apn.send_apple_push_notification(self.user_profile, "test alert")
 
+    @mock.patch('logging.error')
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
-    def test_connection_both_none(self, mock_push):
-        # type: (mock.MagicMock) -> None
+    def test_connection_both_none(self, mock_push, mock_error):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
         apn.dbx_connection = None
         apn.send_apple_push_notification(self.user_profile, "test alert")
 
 class APNsFeedbackTest(PushNotificationTest):
+    @mock.patch('logging.info')
     @mock.patch('apns.FeedbackConnection.items')
-    def test_feedback(self, mock_items):
-        # type: (mock.MagicMock) -> None
+    def test_feedback(self, mock_items, mock_info):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
         update_time = apn.timestamp_to_datetime(int(time.time()) - 10000)
         PushDeviceToken.objects.all().update(last_updated=update_time)
         mock_items.return_value = [
