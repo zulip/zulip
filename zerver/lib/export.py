@@ -6,7 +6,6 @@ from boto.s3.connection import S3Connection
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils import timezone
-from collections import defaultdict
 import glob
 import logging
 import os
@@ -560,7 +559,29 @@ def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
 
 # Code from here is the realm import code path
 
-id_maps = defaultdict(dict) # type: defaultdict[str, Dict[int, int]]
+# id_maps is a dictionary that maps table names to dictionaries
+# that map old ids to new ids.  We use this in
+# re_map_foreign_keys and other places.
+#
+# We explicity initialize id_maps with the tables that support
+# id re-mapping.
+#
+# Code reviewers: give these tables extra scrutiny, as we need to
+# make sure to reload related tables AFTER we re-map the ids.
+id_maps = {
+    'client': {},
+    'user_profile': {},
+} # type: Dict[str, Dict[int, int]]
+
+def update_id_map(table, old_id, new_id):
+    # type: (TableName, int, int) -> None
+    if table not in id_maps:
+        raise Exception('''
+            Table %s is not initialized in id_maps, which could
+            mean that we have not thought through circular
+            dependencies.
+            ''' % (table,))
+    id_maps[table][old_id] = new_id
 
 def fix_datetime_fields(data, table, field_name):
     # type: (TableData, TableName, Field) -> None
@@ -636,7 +657,7 @@ def bulk_import_client(data, model, table):
             client = Client.objects.get(name=item['name'])
         except Client.DoesNotExist:
             client = Client.objects.create(name=item['name'])
-        id_maps['client'][item['id']] = client.id
+        update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
 def import_uploads_local(import_dir, avatar_bucket=False):
     # type: (Path, bool) -> None
@@ -774,7 +795,9 @@ def do_import_realm(import_dir):
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
         logging.info("Adding to ID map: %s %s" % (item['id'], get_user_profile_by_email(item['email']).id))
-        id_maps["user_profile"][item['id']] = get_user_profile_by_email(item['email']).id
+        new_user_id = get_user_profile_by_email(item['email']).id
+        update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
+
     fix_datetime_fields(data, 'zerver_userprofile', 'date_joined')
     fix_datetime_fields(data, 'zerver_userprofile', 'last_login')
     fix_datetime_fields(data, 'zerver_userprofile', 'last_reminder')
