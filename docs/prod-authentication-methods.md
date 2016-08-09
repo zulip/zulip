@@ -1,4 +1,4 @@
-# Supported authentication methods
+# Authentication methods
 
 Zulip supports several different authentications methods:
 

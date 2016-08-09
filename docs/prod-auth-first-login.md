@@ -1,5 +1,4 @@
-Authentication and logging into Zulip the first time
-====================================================
+# Logging in and creating users
 
 (As you read and follow the instructions in this section, if you run
 into trouble, check out the troubleshooting advice in [the next major

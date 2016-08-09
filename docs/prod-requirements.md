@@ -1,4 +1,4 @@
-# Requirements for Zulip in production
+# Requirements
 
 * Server running Ubuntu 14.04 Trusty
 * At least 2 CPUs for production use with 100+ users
