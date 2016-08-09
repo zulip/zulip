@@ -1,5 +1,4 @@
-Checking Zulip is healthy and debugging the services it depends on
-==================================================================
+# Checking status and debugging
 
 You can check if the zulip application is running using:
 ```

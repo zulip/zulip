@@ -1,4 +1,4 @@
-# Requirements for Zulip in production
+# Requirements
 
 Note that if you just want to play around with Zulip and see what it looks
 like, it is easier to install it in a development environment
