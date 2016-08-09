@@ -843,6 +843,20 @@ def do_import_realm(import_dir):
     import_uploads(os.path.join(import_dir, "avatars"), avatar_bucket=True)
     import_uploads(os.path.join(import_dir, "uploads"))
 
+    # Import zerver_message and zerver_usermessage
+    import_message_data(import_dir)
+
+    # Do attachments AFTER message data is loaded.
+    fix_datetime_fields(data, 'zerver_attachment', 'create_time')
+    re_map_foreign_keys(data, 'zerver_attachment', 'owner', related_table="user_profile")
+    convert_to_id_fields(data, 'zerver_attachment', 'realm')
+    # TODO: Handle the `messages` keys.
+    # fix_foreign_keys(data, 'zerver_attachment', 'messages')
+    bulk_import_model(data, Attachment, 'zerver_attachment')
+
+
+def import_message_data(import_dir):
+    # type: (Path) -> None
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
@@ -870,9 +884,3 @@ def do_import_realm(import_dir):
 
         dump_file_id += 1
 
-    fix_datetime_fields(data, 'zerver_attachment', 'create_time')
-    re_map_foreign_keys(data, 'zerver_attachment', 'owner', related_table="user_profile")
-    convert_to_id_fields(data, 'zerver_attachment', 'realm')
-    # TODO: Handle the `messages` keys.
-    # fix_foreign_keys(data, 'zerver_attachment', 'messages')
-    bulk_import_model(data, Attachment, 'zerver_attachment')
