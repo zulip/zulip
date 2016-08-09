@@ -94,6 +94,7 @@ class TemplateTestCase(AuthedTestCase):
                 email=get_form_value(email),
             ),
             current_url=lambda: 'www.zulip.com',
+            integrations_dict={},
             referrer=dict(
                 full_name='John Doe',
                 realm=dict(name='zulip.com'),
