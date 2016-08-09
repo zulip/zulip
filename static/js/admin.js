@@ -101,8 +101,10 @@ function get_non_default_streams_names(streams_data) {
 }
 
 exports.update_default_streams_table = function () {
-    $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-    populate_default_streams(page_params.realm_default_streams);
+    if ($('#administration').hasClass('active')) {
+        $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
+        populate_default_streams(page_params.realm_default_streams);
+    }
 };
 
 function make_stream_default(stream_name) {
