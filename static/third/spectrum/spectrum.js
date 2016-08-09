@@ -32,7 +32,10 @@
         showAlpha: false,
         theme: "sp-light",
         palette: ['fff', '000'],
-        selectionPalette: []
+        selectionPalette: [],
+
+        // custom container
+        container: null
     },
     spectrums = [],
     IE = !!/msie/i.exec( window.navigator.userAgent ),
@@ -132,8 +135,7 @@
         return opts;
     }
 
-    function spectrum(element, o, optionalSelector) {
-
+    function spectrum(element, o) {
         var opts = instanceOptions(o, element),
             flat = opts.flat,
             showPaletteOnly = opts.showPaletteOnly,
@@ -165,7 +167,7 @@
             draggingClass = "sp-dragging";
 
         var doc = element.ownerDocument,
-            body = optionalSelector || doc.body,
+            body = opts.container || doc.body,
             boundElement = $(element),
             container = $(markup, doc).addClass(theme),
             dragger = container.find(".sp-color"),

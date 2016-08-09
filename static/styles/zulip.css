@@ -2708,6 +2708,10 @@ div.floating_recipient {
     display: none;
 }
 
+.sp-container {
+  z-index: 100;
+}
+
 .streams_popover .sp-container {
     background: white;
     cursor: pointer;
