@@ -7,6 +7,7 @@ from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils import timezone
 from collections import defaultdict
+import glob
 import logging
 import os
 import ujson
@@ -320,7 +321,8 @@ def export_bucket(realm, bucket_name, output_dir, avatar_bucket=False):
 def export_uploads_local(realm, output_dir):
     export_uploads_local_helper(realm, os.path.join(output_dir, "uploads"),
                                 os.path.join(settings.LOCAL_UPLOADS_DIR, "files"))
-    # TODO: Export local avatars as well.
+    export_avatars_local_helper(realm, os.path.join(output_dir, "avatars"),
+                                os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"))
 
 def export_uploads_local_helper(realm, output_dir, local_dir):
     if not os.path.exists(output_dir):
@@ -348,6 +350,61 @@ def export_uploads_local_helper(realm, output_dir, local_dir):
 
         if (count % 100 == 0):
             logging.info("Finished %s" % (count,))
+    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
+        ujson.dump(records, records_file, indent=4)
+
+def export_avatars_local_helper(realm, output_dir, local_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    count = 0
+    records = []
+
+    users = list(UserProfile.objects.filter(realm=realm))
+    users += [
+        get_user_profile_by_email(settings.NOTIFICATION_BOT),
+        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
+        get_user_profile_by_email(settings.WELCOME_BOT),
+    ]
+    for user in users:
+        if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
+            continue
+        # NOTE: There is an avatar source called AVATAR_FROM_SYSTEM,
+        #       but I'm not sure we support it any more.  If we
+        #       have system-generated avatars, then arguably we
+        #       don't need to export them, but it's probably
+        #       expedient to just copy them over.  The more
+        #       common case is AVATAR_FROM_USER, which is handled
+        #       here as well.  AVATAR_FROM_GRAVATAR refers to
+        #       avatars hosted by gravatar.com, and for them,
+        #       we have no files to worry about exporting
+
+        avatar_hash = user_avatar_hash(user.email)
+        wildcard = os.path.join(local_dir, avatar_hash + '.*')
+
+        for local_path in glob.glob(wildcard):
+            logging.info('Copying avatar file for user %s from %s' % (
+                user.email, local_path))
+            fn = os.path.basename(local_path)
+            output_path = os.path.join(output_dir, fn)
+            mkdir_p(os.path.dirname(output_path))
+            subprocess.check_call(["cp", "-a", local_path, output_path])
+            stat = os.stat(local_path)
+            record = dict(realm_id=realm.id,
+                          user_profile_id=user.id,
+                          user_profile_email=user.email,
+                          s3_path=fn,
+                          path=fn,
+                          size=stat.st_size,
+                          last_modified=stat.st_mtime,
+                          content_type=None)
+            records.append(record)
+
+            count += 1
+
+            if (count % 100 == 0):
+                logging.info("Finished %s" % (count,))
+
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
