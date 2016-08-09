@@ -211,7 +211,7 @@ class GCMSuccessTest(GCMTest):
         self.assertEqual(mock_info.call_count, 2)
         c1 = call("GCM: Sent 1111 as 0")
         c2 = call("GCM: Sent 2222 as 1")
-        mock_info.assert_has_calls([c1, c2])
+        mock_info.assert_has_calls([c1, c2], any_order=True)
         mock_warning.assert_not_called()
 
 class GCMCanonicalTest(GCMTest):
@@ -323,4 +323,4 @@ class GCMFailureTest(GCMTest):
         apn.send_android_push_notification(self.user_profile, data)
         c1 = call("GCM: Delivery to %s failed: 1" % (token,))
         c2 = call("GCM: delivery needs a retry but ignoring")
-        mock_warn.assert_has_calls([c1, c2])
+        mock_warn.assert_has_calls([c1, c2], any_order=True)
