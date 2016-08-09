@@ -1,5 +1,4 @@
-Installing Zulip in production
-==============================
+# Installing
 
 Ensure you have an Ubuntu system that satisfies [the installation
 requirements](prod-requirements.html).

@@ -1,4 +1,4 @@
-# Maintaining and upgrading Zulip in production
+# Securing, maintaining, and upgrading
 
 This page covers topics that will help you maintain a healthy, up-to-date, and
 secure Zulip installation, including:
