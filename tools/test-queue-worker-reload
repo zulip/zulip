@@ -72,16 +72,8 @@ if __name__ == '__main__':
 
     print("Attempting to modify a file")
     subprocess.call(['touch', 'zerver/lib/actions.py'])
-    log_output = check_worker_launch(logfile)
+    check_worker_launch(logfile)
 
     run_dev.send_signal(signal.SIGINT)
     run_dev.wait()
     logfile.close()
-
-    if 'zerver/lib/actions.py modified; restarting server' in log_output:
-        print('Worker threads succesfully autoreloaded')
-        sys.exit(0)
-    else:
-        print("Error autoreloading queue workers. Dumping logs")
-        print(log_output)
-        sys.exit(1)
