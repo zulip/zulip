@@ -58,7 +58,8 @@ class TemplateTestCase(AuthedTestCase):
             try:
                 template.render(context)
             except Exception:
-                logging.exception("Exception while rendering '{}'".format(template.template.name))
+                logging.error("Exception while rendering '{}'".format(template.template.name))
+                raise
 
     def get_context(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
