@@ -383,6 +383,7 @@ exports.warn = function blueslip_warn (msg, more_info) {
 
 exports.error = function blueslip_error (msg, more_info, stack) {
     if (page_params.debug_mode) {
+        console.log(stack);
         throw new BlueslipError(msg, more_info);
     } else {
         if (stack === undefined) {
