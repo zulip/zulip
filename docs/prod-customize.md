@@ -3,7 +3,17 @@
 Once you've got Zulip setup, you'll likely want to configure it the
 way you like.  There are four big things to focus on:
 
-(1) Integrations.  We recommend setting up integrations for the major
+1. [Integrations](#integrations)
+2. [Streams and Topics](#streams-and-topics)
+3. [Notification settings](#notification-settings)
+4. [Mobile and desktop apps](#mobile-and-desktop-apps)
+
+Lastly, read about Zulip's other [great features](#all-other-features), and
+then [enjoy your Zulip installation](#enjoy-your-zulip-installation)!
+
+## Integrations
+
+We recommend setting up integrations for the major
 tools that your team works with.  For example, if you're a software
 development team, you may want to start with integrations for your
 version control, issue tracker, CI system, and monitoring tools.
@@ -27,7 +37,9 @@ send notifications into Zulip; e.g. notifications of new customer
 signups, new error reports, or daily reports on the team's key
 metrics; this can often spawn discussions in response to the data.
 
-(2) Streams and Topics.  If it feels like a stream has too much
+## Streams and Topics
+
+If it feels like a stream has too much
 traffic about a topic only of interest to some of the subscribers,
 consider adding or renaming streams until you feel like your team is
 working productively.
@@ -56,14 +68,18 @@ command to set default streams for users within a realm:
 python manage.py set_default_streams --domain=example.com --streams=foo,bar,...
 ```
 
-(3) Notification settings.  Zulip gives you a great deal of control
+## Notification settings
+
+Zulip gives you a great deal of control
 over which messages trigger desktop notifications; you can configure
 these extensively in the `/#settings` page (get there from the gear
 menu).  If you find the desktop notifications annoying, consider
 changing the settings to only trigger desktop notifications when you
 receive a PM or are @-mentioned.
 
-(4) The mobile and desktop apps.  Currently, the Zulip Desktop app
+## Mobile and desktop apps
+
+Currently, the Zulip Desktop app
 only supports talking to servers with a properly signed SSL
 certificate, so you may find that you get a blank screen when you
 connect to a Zulip server using a self-signed certificate.
@@ -80,11 +96,15 @@ For announcements about improvements to the apps, make sure to join
 the zulip-announce@googlegroups.com list so that you can receive the
 announcements when these become available.
 
-(5) All the other features: Hotkeys, emoji, search filters,
+## All other features
+
+Hotkeys, emoji, search filters,
 @-mentions, etc.  Zulip has lots of great features, make sure your
 team knows they exist and how to use them effectively.
 
-(6) Enjoy your Zulip installation!  If you discover things that you
+## Enjoy your Zulip installation!  
+
+If you discover things that you
 wish had been documented, please contribute documentation suggestions
 either via a GitHub issue or pull request; we love even small
 contributions, and we'd love to make the Zulip documentation cover
