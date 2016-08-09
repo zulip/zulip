@@ -2,142 +2,236 @@ from django.db import connection
 from django.db.models import F, Count, Sum
 from zerver.models import Realm, UserProfile, Message
 from analytics.lib.interval import TimeInterval
-
-##### put stuff into the analytics databases
-
-# it seems likely that it is possible to do the whole process at the
-# database level using F expressions (namely, without pulling anything into
-# python). Currently the 'for row in rows ..' is the only place stuff is
-# being pulled out of the db.
-
-# TODO: need to insert valid_ids that don't show up!!
+from datetime import timedelta
 
 class AnalyticsStat:
-    def __init__(self, property, zerver_table, filter_args, aggregate_by, smallest_interval, frequency):
+    def __init__(self, property, zerver_table, filter_args, analytics_table, smallest_interval, frequency):
         self.property = property
         self.zerver_table = zerver_table
+        # might have to do something different for bitfields
         self.filter_args = filter_args
-        self.aggregate_by = aggregate_by
+        self.analytics_table = analytics_table
         self.smallest_interval = smallest_interval
         self.frequency = frequency
 
-count_tables = {'realm' : RealmCount, 'user' : UserCount, 'stream' : StreamCount}
-count_functions = {(UserProfile, 'realm') : count_user_by_realm,
-                   (Message, 'user') : count_message_by_user,
-                   (Message, 'stream') : count_message_by_stream,
-                   (Stream, 'realm') : count_stream_by_realm}
+COUNT_TYPES = frozenset(['zerver_pull', 'time_aggregate', 'cross_table_aggregate'])
 
-def process_count(stat, time_interval):
-    table = count_tables[stat.aggregate_by]
-    # check if there is at least one row with the filter args
-    # note that this will create problems for aborted jobs, since e.g. there will be rows for
-    # for some but not all realms, say
+# todo: incorporate these two arguments into a universal do_pull function.
+def pull_function(stat):
+    return {(UserProfile, RealmCount) : do_pull_user_by_realm,
+            (Message, UserCount) : do_pull_message_by_user,
+            (Message, StreamCount) : do_pull_message_by_stream,
+            (Stream, RealmCount) : do_pull_stream_by_realm}[(stat.zerver_table, stat.analytics_table)]
+
+# todo: collapse these three?
+def process_count(table, count_type, stat, time_interval, **kwargs):
+    # what happens if there are 0 users, or 0 streams, or 0 realms?
     if not table.object.filter(property = stat.property,
                                end_time = time_interval.end,
                                interval = time_interval.interval).exists():
-        count_functions[(stat.zerver_table, stat.aggregate_by)](stat, time_interval)
+        if count_type == 'zerver_pull':
+            action = pull_function(stat)
+        elif count_type == 'time_aggregate':
+            action = do_aggregate_hour_to_day
+        elif count_type == 'cross_table_aggregate':
+            action = do_aggregate_to_summary_table
+        else:
+            raise ValueError('Unknown count_type')
+        action(stat, time_interval, **kwargs)
 
-def process_aggregate_count(table, valid_ids, id_field, aggregate_function, property, time_interval):
-    return process_count(table, valid_ids, id_field,
-                         aggregate_function(property, time_interval),
-                         property, time_interval)
+def process_pull_count(stat, time_interval):
+    # what happens if there are 0 users, or 0 streams, or 0 realms?
+    if not stat.analytics_table.object.filter(property = stat.property,
+                                              end_time = time_interval.end,
+                                              interval = time_interval.interval).exists():
+        pull_function(stat)(stat.property, stat.filter_args, time_interval)
 
-## aggregators. Possibly to be written more generally once we have a StreamCount, and more intervals
+def process_day_count(stat, time_interval):
+    if time_interval.interval != 'day':
+        raise ValueError('time_interval.interval should be day')
+    if not stat.analytics_table.object.filter(property = stat.property,
+                                              end_time = time_interval.end,
+                                              interval = time_interval.interval).exists():
+        do_aggregate_hour_to_day(stat.analytics_table, stat.property, time_interval.end)
 
-def aggregate_user_to_realm(property, time_interval):
-    return UserCount.objects \
-                    .filter(property = property,
-                            end_time = time_interval.end,
-                            interval = time_interval.interval) \
-                    .values('realm') \
-                    .annotate(realm_id=F('realm'), value=Sum('value')) \
-                    .values('realm_id', 'value')
+def process_summary_count(stat, time_interval, from_table, to_table)
+    if not to_table.object.filter(property = stat.property,
+                                  end_time = time_interval.end,
+                                  interval = time_interval.interval).exists():
+        do_aggregate_to_summary_table(stat.property, time_interval, from_table, to_table)
 
-def aggregate_realm_hour_to_day(property, time_interval):
-    return RealmCount.objects \
-                     .filter(interval = 'hour',
-                             property = property,
-                             end_time__gt = time_interval.end - timedelta(days=1),
-                             end_time__lte = time_interval.end) \
-                     .values('realm') \
-                     .annotate(realm_id=F('realm'), value=Sum('value')) \
-                     .values('realm_id', 'value')
 
-def aggregate_user_hour_to_day(property, time_interval):
-    return UserCount.objects \
-                    .filter(interval = 'hour',
-                            property = property,
-                            end_time__gt = time_interval.end - timedelta(days=1),
-                            end_time__lte = time_interval.end) \
-                     .values('user', 'realm') \
-                     .annotate(userprofile_id=F('user'), realm_id=F('realm'), value=Sum('value')) \
-                     .values('userprofile_id', 'realm_id', 'value')
+
+# only two summary tables at the moment: RealmCount and InstallationCount.
+# will have to generalize this a bit if more are added
+def do_aggregate_to_summary_table(stat, time_interval, table, to_table):
+    if to_table == RealmTable:
+        id_cols = 'realm_id,'
+        group_by = 'GROUP BY realm_id'
+    elif to_table = InstallationTable:
+        id_cols = ''
+        group_by = ''
+    else:
+        raise ValueError("%s is not a summary table" % (to_table,))
+
+    query = """
+        INSERT INTO %(to_table)s (%(id_cols)s value, property, end_time, interval)
+        SELECT %(id_cols)s sum(value), property, end_time, interval
+        FROM %(from_table)s WHERE
+        (
+            property = '%(property)s' AND
+            end_time = %%s AND
+            interval = %(interval)s
+        )
+        %(group_by)s
+    """ % {'to_table': to_table._meta.db_table,
+           'id_cols' : id_cols,
+           'from_table' : from_table._meta.db_table,
+           'property' : stat.property,
+           'interval' : time_interval.interval,
+           'group_by' : group_by}
+    cursor = connection.cursor()
+    # todo: check if cursor supports the %(key)s syntax
+    cursor.execute(query, (time_interval.end,))
+    cursor.close()
+
+def do_aggregate_hour_to_day(stat, end_time):
+    table = stat.analytics_table
+    id_cols = ''.join([col + ', ' for col in table.extended_id()])
+    group_by = 'GROUP BY %s' % table.extended_id()[0] if id_cols else ''
+    query = """
+        INSERT INTO %(table)s (%(id_cols)s value, property, end_time, interval)
+        SELECT %(id_cols)s sum(value), property, %%s, 'day'
+        FROM %(table)s WHERE
+        (
+            property = '%(property)s' AND
+            end_time > %%s AND
+            end_time <= %%s AND
+            interval = hour
+        )
+        %(group_by)s
+    """ % {'table': table._meta.db_table,
+           'id_cols' : id_cols,
+           'property' : stat.
+           'group_by' : group_by}
+    cursor = connection.cursor()
+    cursor.execute(query, (end_time, end_time - timedelta(days = 1), end_time))
+    cursor.close()
 
 ## methods that hit the prod databases directly
 # No left joins in Django ORM yet, so have to use raw SQL :(
-def count_user_by_realm(stat, time_interval):
+def do_pull_user_by_realm(stat, time_interval):
     join_args = ' '.join('AND user_.%s = %s' % (key, value) for
                          key, value in stat.filter_args.items())
     query = """
         INSERT INTO analytics_realmcount
             (realm_id, value, property, end_time, interval)
         SELECT
-            realm.id, count(user_.id), %s, %s, %s
+            realm.id, count(*), '%(property)s', %%s, '%(interval)s'
         FROM zerver_realm as realm
         LEFT JOIN zerver_userprofile as user_
         ON
         (
             user_.realm_id = realm.id AND
-            user_.date_joined >= %s AND
-            user_.date_joined < %s AND
-            realm.date_created < %s
-            %s
+            user_.date_joined >= %%s AND
+            user_.date_joined < %%s AND
+            realm.date_created < %%s
+            %(join_args)s
         )
         GROUP BY realm.id
-        """
+        """ % {'property' : stat.property,
+               'interval' : time_interval.interval,
+               'join_args' : join_args}
     cursor = connection.cursor()
-    cursor.execute(query, (stat.property, time_interval.end, time_interval.interval, \
-                           time_interval.start, time_interval.end, time_interval.end, join_args))
-    rows = cursor.fetchall()
+    cursor.execute(query, (time_interval.end, time_interval.start, time_interval.end, time_interval.end))
+    cursor.close()
+
+def do_pull_user_by_realm
+
+
+def do_pull_message_by_user(stat, time_interval):
+    join_args = ' '.join('AND user_.%s = %s' % (key, value) for
+                         key, value in stat.filter_args.items())
+    query = """
+        INSERT INTO analytics_usercount
+            (realm_id, user_id, value, property, end_time, interval)
+        SELECT
+            realm.id, user_.id, count(*), '%(property)s', %%s, '%(interval)s'
+        FROM zerver_userprofile as user_
+        LEFT JOIN zerver_message as message
+        ON
+        (
+            message.sender_id = user_.id AND
+            message.pub_date >= %%s AND
+            message.pub_date < %%s AND
+            user_.date_joined < %%s
+            %(join_args)s
+        )
+        GROUP BY user_.id
+        """ % {'property' : stat.property,
+               'interval' : time_interval.interval,
+               'join_args' : join_args}
+    cursor = connection.cursor()
+    cursor.execute(query, (time_interval.end, time_interval.start, time_interval.end, time_interval.end))
+    cursor.close()
+
+def do_pull_message_by_stream(stat, time_interval):
+    pass
+
+
+## not going to work, since need additional joins for e.g. the recipient table
+def do_pull_from_zerver(property, filter_args, time_interval):
+    zerver_fields = {}
+    zerver_fields['created'] = {Message : 'pub_date', UserProfile : 'date_joined', Realm : 'date_created'}
+    zerver_fields['realm_id'] = {Message : 'sender.realm_id', UserProfile : 'realm_id'}
+    zerver_fields['user_id'] = {Message : 'sender_id'}
+
+    extended_id = stat.analytics_table.extended_id()
+    join_args = ' '.join('AND user_.%s = %s' % (key, value) for
+                         key, value in filter_args.items())
+    insert_str = ''.join(col + ', ' for col in extended_id)
+    select_str = ''.join(zerver_fields[col][stat.zerver_table] + ', '
+                         for col in extended_id)
+
+    query = """
+        INSERT INTO %(analytics_table)s
+            (%(insert_str)s value, property, end_time, interval)
+        SELECT
+            %(select_str)s COUNT(*), '%(property)s', %%s, '%(interval)s'
+        FROM %(zerver_key_table)s
+        LEFT JOIN %(zerver_table)s
+        ON
+        (
+            %(zerver_table)s.%(id)s = %(zerver_key_table)s.%(key_id)s AND
+            %(zerver_table)s.%(created)s >= %%s AND
+            %(zerver_table)s.%(created)s < %%s AND
+            %(zerver_key_table)s.%(key_created)s < %%s
+            %(join_args)s
+        )
+        GROUP BY %(zerver_key_table)s.%(key_id)s
+        """ % {'analytics_table' : stat.analytics_table,
+               'insert_str' : insert_str,
+               'select_str' : select_str,
+               'property' : stat.property,
+               'interval' : time_interval.interval,
+               'zerver_key_table' : stat.analytics_table.key_model()._meta.db_table,
+               'zerver_table' : stat.zerver_table._meta.db_table,
+               # possibly wrong
+               'id' : zerver_fields[extended_id[0]][stat.zerver_table]
+               'join_args' : join_args}
+    cursor = connection.cursor()
+    cursor.execute(query, (time_interval.end, time_interval.start, time_interval.end, time_interval.end))
     cursor.close()
 
 
 
-###
 
-def count_message_by_user(time_interval, **filter_args):
-    return Message.objects \
-                  .filter(date_joined__gte = time_interval.start,
-                          date_joined__lt = time_interval.end,
-                          **filter_args) \
-                  .values('sender') \
-                  .annotate(userprofile_id=F('sender_id'), realm_id=F('sender_id__realm'), value=Count('sender_id')) \
-                  .values('userprofile_id', 'realm_id', 'value')
+get stream count from messages
 
-def get_human_count_by_realm(time_interval):
-    return UserProfile.objects \
-                      .filter(is_bot = False,
-                              is_active = True,
-                              date_joined__gte = time_interval.start,
-                              date_joined__lt = time_interval.end) \
-                      .values('realm') \
-                      .annotate(realm_id=F('realm'), value=Count('realm')) \
-                      .values('realm_id', 'value')
-
-def get_bot_count_by_realm(time_interval):
-    return UserProfile.objects \
-                      .filter(is_bot = True,
-                              is_active = True,
-                              date_joined__gte = time_interval.start,
-                              date_joined__lt = time_interval.end) \
-                      .values('realm') \
-                      .annotate(realm_id=F('realm'), value=Count('realm')) \
-                      .values('realm_id', 'value')
-
-def get_messages_sent_count_by_user(time_interval):
-    return Message.objects \
-                  .filter(pub_date__gte = time_interval.start,
-                          pub_date__lt = time_interval.end) \
-                  .values('sender') \
-                  .annotate(userprofile_id=F('sender_id'), realm_id=F('sender_id__realm'), value=Count('sender_id')) \
-                  .values('userprofile_id', 'realm_id', 'value')
+select message.recipient, count(*), property, end_time, interval
+from zerver_stream left join zerver_message on
+zerver_stream.id = zerver_message.recipient.type_id
+where
+stream created early enough
+message created early enough
+etc

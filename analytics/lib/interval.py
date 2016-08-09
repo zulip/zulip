@@ -22,8 +22,8 @@ class TimeInterval:
     # add way to init with start_time and end_time, and no interval
 
 # Perhaps the right way to do the next two functions is to have an interval class
-# (subclassed to hourinterval, dayinterval, etc) with methods like floor and
-# subtract. Seems like overkill for now, though.
+# (subclassed to hourinterval, dayinterval, etc) with methods like floor,
+# subtract, and subinterval. Seems like overkill for now, though.
 def floor_to_interval_boundary(datetime_object, interval):
     # type: (datetime, text_type) -> datetime
     # datetime objects are (year, month, day, hour, minutes, seconds, microseconds)
@@ -31,18 +31,28 @@ def floor_to_interval_boundary(datetime_object, interval):
         return datetime(*datetime_object.timetuple()[:3], tzinfo=datetime_object.tzinfo)
     elif interval == 'hour':
         return datetime(*datetime_object.timetuple()[:4], tzinfo=datetime_object.tzinfo)
-    elif interval == '15min':
+    elif interval == '15min': # unused
         timetuple = datetime_object.timetuple()
         return datetime(*timetuple[:4], minutes = timetuple[5] - timetuple[5] % 15, tzinfo=datetime_object.tzinfo)
     else:
-        raise ValueError("Unknown interval", interval)
+        raise ValueError("Unknown or unfloorable interval", interval)
 
 # don't have to worry about leap seconds, since datetime doesn't support it
 def subtract_interval(datetime_object, interval):
-    if interval == 'hour':
-        return datetime_object - timedelta(seconds = 3600)
     if interval == 'day':
         return datetime_object - timedelta(days = 1)
+    elif interval == 'hour':
+        return datetime_object - timedelta(seconds = 3600)
+    else:
+        raise ValueError("Unknown or unarithmetic interval", interval)
+
+def subintervals(interval):
+    if interval == 'day':
+        return ('day', 'hour')
+    elif interval == 'hour':
+        return ('hour',)
+    elif interval == 'gauge':
+        return ('gauge',)
     else:
         raise ValueError("Unknown interval", interval)
 
