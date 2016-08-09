@@ -58,6 +58,14 @@ DATE_FIELDS = {
 } # type: Dict[TableName, List[Field]]
 
 
+def make_raw(query):
+    # type: (Any) -> List[Record]
+    '''
+    Takes a Django query and returns a JSONable list
+    of dictionaries corresponding to the database rows.
+    '''
+    return [model_to_dict(x) for x in query]
+
 def floatify_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
     for item in data[table]:
@@ -77,13 +85,15 @@ def floatify_datetime_fields(data, table):
 # with all realm users
 def export_realm_data(realm, response):
     # type: (Realm, TableData) -> None
-    response['zerver_realm'] = [model_to_dict(x) for x in Realm.objects.filter(id=realm.id)]
+    response['zerver_realm'] = make_raw(Realm.objects.filter(id=realm.id))
     floatify_datetime_fields(response, 'zerver_realm')
 
     for (table, model) in realm_tables:
-        response[table] = [model_to_dict(x) for x in
-                           model.objects.filter(realm_id=realm.id)] # type: ignore # Iterating through types
-    response["zerver_client"] = [model_to_dict(x) for x in Client.objects.select_related()]
+        # mypy does not know that model is a Django model that
+        # supports "objects"
+        table_query =  model.objects.filter(realm_id=realm.id) # type: ignore
+        response[table] =  make_raw(table_query)
+    response["zerver_client"] = make_raw(Client.objects.select_related())
 
 # To export only some users, you can tweak the below UserProfile query
 # to give the target users, but then you should create any users not
@@ -104,24 +114,24 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     ]]
     floatify_datetime_fields(response, 'zerver_userprofile')
     user_profile_ids = set(userprofile["id"] for userprofile in response['zerver_userprofile'])
-    user_recipients = [model_to_dict(x)
-                       for x in Recipient.objects.filter(type=Recipient.PERSONAL)
-                       if x.type_id in user_profile_ids]
+    user_recipient_query = Recipient.objects.filter(type=Recipient.PERSONAL,
+                                                    type_id__in=user_profile_ids)
+    user_recipients = make_raw(user_recipient_query)
     user_recipient_ids = set(x["id"] for x in user_recipients)
     user_subscription_query = Subscription.objects.filter(user_profile__in=user_profile_ids,
                                                           recipient_id__in=user_recipient_ids)
-    user_subscription_dicts = [model_to_dict(x) for x in user_subscription_query]
+    user_subscription_dicts = make_raw(user_subscription_query)
 
-    response["zerver_userpresence"] = [model_to_dict(x) for x in
-                                       UserPresence.objects.filter(user_profile__in=user_profile_ids)]
+    user_presence_query = UserPresence.objects.filter(user_profile__in=user_profile_ids)
+    response["zerver_userpresence"] = make_raw(user_presence_query)
     floatify_datetime_fields(response, 'zerver_userpresence')
 
-    response["zerver_useractivity"] = [model_to_dict(x) for x in
-                                       UserActivity.objects.filter(user_profile__in=user_profile_ids)]
+    user_activity_query = UserActivity.objects.filter(user_profile__in=user_profile_ids)
+    response["zerver_useractivity"] = make_raw(user_activity_query)
     floatify_datetime_fields(response, 'zerver_useractivity')
 
-    response["zerver_useractivityinterval"] = [model_to_dict(x) for x in
-                                               UserActivityInterval.objects.filter(user_profile__in=user_profile_ids)]
+    user_activity_interval_query = UserActivityInterval.objects.filter(user_profile__in=user_profile_ids)
+    response["zerver_useractivityinterval"] = make_raw(user_activity_interval_query)
     floatify_datetime_fields(response, 'zerver_useractivityinterval')
 
     stream_query = Stream.objects.filter(realm=realm)
@@ -130,15 +140,15 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
     floatify_datetime_fields(response, 'zerver_stream')
     stream_ids = set(x["id"] for x in response['zerver_stream'])
-    stream_recipients = [model_to_dict(x)
-                         for x in Recipient.objects.filter(type=Recipient.STREAM,
-                                                           type_id__in=stream_ids)]
 
+    stream_recipient_query = Recipient.objects.filter(type=Recipient.STREAM,
+                                                      type_id__in=stream_ids)
+    stream_recipients = make_raw(stream_recipient_query)
     stream_recipient_ids = set(x["id"] for x in stream_recipients)
 
     stream_subscription_query = Subscription.objects.filter(user_profile__in=user_profile_ids,
                                                             recipient_id__in=stream_recipient_ids)
-    stream_subscription_dicts = [model_to_dict(x) for x in stream_subscription_query]
+    stream_subscription_dicts = make_raw(stream_subscription_query)
 
     if include_private:
         # First we get all huddles involving someone in the realm.
@@ -163,9 +173,9 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
         huddle_recipient_ids = set(sub.recipient_id for sub in huddle_subs)
         huddle_ids = set(sub.recipient.type_id for sub in huddle_subs)
 
-        huddle_subscription_dicts = [model_to_dict(x) for x in huddle_subs]
-        huddle_recipients = [model_to_dict(r) for r in Recipient.objects.filter(id__in=huddle_recipient_ids)]
-        response['zerver_huddle'] = [model_to_dict(h) for h in Huddle.objects.filter(id__in=huddle_ids)]
+        huddle_subscription_dicts = make_raw(huddle_subs)
+        huddle_recipients = make_raw(Recipient.objects.filter(id__in=huddle_recipient_ids))
+        response['zerver_huddle'] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
     else:
         huddle_recipients = []
         huddle_subscription_dicts = []
@@ -173,8 +183,8 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     response["zerver_recipient"] = user_recipients + stream_recipients + huddle_recipients
     response["zerver_subscription"] = user_subscription_dicts + stream_subscription_dicts + huddle_subscription_dicts
 
-    response["zerver_attachment"] = [model_to_dict(x) for x in
-                                     Attachment.objects.filter(realm=realm)]
+    attachment_query = Attachment.objects.filter(realm=realm)
+    response["zerver_attachment"] = make_raw(attachment_query)
     floatify_datetime_fields(response, 'zerver_attachment')
 
 def fetch_usermessages(realm, message_ids, user_profile_ids, message_filename):
@@ -239,7 +249,7 @@ def export_messages(realm, user_profile_ids, recipient_ids,
     dump_file_id = 1
     while True:
         actual_query = message_query.filter(id__gt=min_id)[0:chunk_size]
-        message_chunk = [model_to_dict(m) for m in actual_query]
+        message_chunk = make_raw(actual_query)
         message_ids = set(m['id'] for m in message_chunk)
 
         if len(message_chunk) == 0:
@@ -503,11 +513,12 @@ def export_single_user(user_profile, response):
                                       for x in [user_profile]]
     floatify_datetime_fields(response, 'zerver_userprofile')
 
-    response["zerver_subscription"] = [model_to_dict(x) for x in
-                                       Subscription.objects.filter(user_profile=user_profile)]
+    subscription_query = Subscription.objects.filter(user_profile=user_profile)
+    response["zerver_subscription"] = make_raw(subscription_query)
     recipient_ids = set(s["recipient"] for s in response["zerver_subscription"])
-    response["zerver_recipient"] = [model_to_dict(x) for x in
-                                    Recipient.objects.filter(id__in=recipient_ids)]
+
+    recipient_query = Recipient.objects.filter(id__in=recipient_ids)
+    response["zerver_recipient"] = make_raw(recipient_query)
     stream_ids = set(x["type_id"] for x in response["zerver_recipient"] if x["type"] == Recipient.STREAM)
 
     stream_query = Stream.objects.filter(id__in=stream_ids)
