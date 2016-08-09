@@ -2,6 +2,9 @@
 <div class="header-main rightside-userlist" id="top_navbar">
   <div class="column-left">
     <a class="brand logo" href="#"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="logoimage" alt="{{product_name}}" content="{{product_name}}" /></a>
+    <div id="org-info">
+      <div class="organization">{{ realm_name }}</div>
+    </div>
   </div>
   <div class="column-middle" id="navbar-middle">
     <div class="column-middle-inner">
@@ -128,6 +131,9 @@
                 </ul>
               </li>
             </ul>
+        </div>
+        <div id="user-info">
+          <div class="username">{{ full_name }}</div>
         </div>
   </div>
 </div>
