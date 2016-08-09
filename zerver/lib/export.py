@@ -571,12 +571,43 @@ def fix_datetime_fields(data, table, field_name):
             v = datetime.datetime.utcfromtimestamp(item[field_name])
             item[field_name] = timezone.make_aware(v, timezone=timezone.utc)
 
-def fix_foreign_keys(data, table, field_name, id_map_table = ''):
-    # type: (TableData, TableName, Field, TableName) -> None
+def convert_to_id_fields(data, table, field_name):
+    # type: (TableData, TableName, Field) -> None
+    '''
+    When Django gives us dict objects via model_to_dict, the foreign
+    key fields are `foo`, but we want `foo_id` for the bulk insert.
+    This function handles the simple case where we simply rename
+    the fields.  For cases where we need to munge ids in the
+    database, see re_map_foreign_keys.
+    '''
     for item in data[table]:
-        val = item[field_name]
-        new_val = id_maps[id_map_table].get(item[field_name], val)
-        item[field_name + "_id"] = new_val
+        item[field_name + "_id"] = item[field_name]
+        del item[field_name]
+
+def re_map_foreign_keys(data, table, field_name, related_table, verbose=True):
+    # type: (TableData, TableName, Field, TableName, bool) -> None
+    '''
+    We occasionally need to assign new ids to rows during the
+    import/export process, to accomodate things like existing rows
+    already being in tables.  See bulk_import_client for more context.
+
+    The tricky part is making sure that foreign key references
+    are in sync with the new ids, and this fixer function does
+    the re-mapping.  (It also appends `_id` to the field.)
+    '''
+    lookup_table = id_maps[related_table]
+    for item in data[table]:
+        old_id = item[field_name]
+        if old_id in lookup_table:
+            new_id = lookup_table[old_id]
+            if verbose:
+                logging.info('Remapping %s%s from %s to %s' % (table,
+                                                              field_name + '_id',
+                                                              old_id,
+                                                              new_id))
+        else:
+            new_id = old_id
+        item[field_name + "_id"] = new_id
         del item[field_name]
 
 def fix_bitfield_keys(data, table, field_name):
@@ -714,7 +745,7 @@ def do_import_realm(import_dir):
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
-    fix_foreign_keys(data, 'zerver_realm', 'notifications_stream')
+    convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
     fix_datetime_fields(data, 'zerver_realm', 'date_created')
     realm = Realm(**data['zerver_realm'][0])
     if realm.notifications_stream_id is not None:
@@ -728,15 +759,15 @@ def do_import_realm(import_dir):
     # Email tokens will automatically be randomly generated when the
     # Stream objects are created by Django.
     fix_datetime_fields(data, 'zerver_stream', 'date_created')
-    fix_foreign_keys(data, 'zerver_stream', 'realm')
+    convert_to_id_fields(data, 'zerver_stream', 'realm')
     bulk_import_model(data, Stream, 'zerver_stream')
 
     realm.notifications_stream_id = notifications_stream_id
     realm.save()
 
-    fix_foreign_keys(data, "zerver_defaultstream", 'stream')
+    convert_to_id_fields(data, "zerver_defaultstream", 'stream')
     for (table, model) in realm_tables:
-        fix_foreign_keys(data, table, 'realm')
+        convert_to_id_fields(data, table, 'realm')
         bulk_import_model(data, model, table)
 
     # Remap the user IDs for notification_bot and friends to their
@@ -747,10 +778,10 @@ def do_import_realm(import_dir):
     fix_datetime_fields(data, 'zerver_userprofile', 'date_joined')
     fix_datetime_fields(data, 'zerver_userprofile', 'last_login')
     fix_datetime_fields(data, 'zerver_userprofile', 'last_reminder')
-    fix_foreign_keys(data, 'zerver_userprofile', 'realm')
-    fix_foreign_keys(data, 'zerver_userprofile', 'bot_owner', id_map_table="user_profile")
-    fix_foreign_keys(data, 'zerver_userprofile', 'default_sending_stream')
-    fix_foreign_keys(data, 'zerver_userprofile', 'default_events_register_stream')
+    convert_to_id_fields(data, 'zerver_userprofile', 'realm')
+    re_map_foreign_keys(data, 'zerver_userprofile', 'bot_owner', related_table="user_profile")
+    convert_to_id_fields(data, 'zerver_userprofile', 'default_sending_stream')
+    convert_to_id_fields(data, 'zerver_userprofile', 'default_events_register_stream')
     for user_profile_dict in data['zerver_userprofile']:
         user_profile_dict['password'] = None
         user_profile_dict['api_key'] = random_api_key()
@@ -766,23 +797,23 @@ def do_import_realm(import_dir):
         bulk_import_model(data, Huddle, 'zerver_huddle')
 
     bulk_import_model(data, Recipient, 'zerver_recipient')
-    fix_foreign_keys(data, 'zerver_subscription', 'user_profile', id_map_table="user_profile")
-    fix_foreign_keys(data, 'zerver_subscription', 'recipient')
+    re_map_foreign_keys(data, 'zerver_subscription', 'user_profile', related_table="user_profile")
+    convert_to_id_fields(data, 'zerver_subscription', 'recipient')
     bulk_import_model(data, Subscription, 'zerver_subscription')
 
     fix_datetime_fields(data, 'zerver_userpresence', 'timestamp')
-    fix_foreign_keys(data, 'zerver_userpresence', 'user_profile', id_map_table="user_profile")
-    fix_foreign_keys(data, 'zerver_userpresence', 'client', id_map_table='client')
+    re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data, 'zerver_userpresence', 'client', related_table='client')
     bulk_import_model(data, UserPresence, 'zerver_userpresence')
 
     fix_datetime_fields(data, 'zerver_useractivity', 'last_visit')
-    fix_foreign_keys(data, 'zerver_useractivity', 'user_profile', id_map_table="user_profile")
-    fix_foreign_keys(data, 'zerver_useractivity', 'client', id_map_table='client')
+    re_map_foreign_keys(data, 'zerver_useractivity', 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data, 'zerver_useractivity', 'client', related_table='client')
     bulk_import_model(data, UserActivity, 'zerver_useractivity')
 
     fix_datetime_fields(data, 'zerver_useractivityinterval', 'start')
     fix_datetime_fields(data, 'zerver_useractivityinterval', 'end')
-    fix_foreign_keys(data, 'zerver_useractivityinterval', 'user_profile', id_map_table="user_profile")
+    re_map_foreign_keys(data, 'zerver_useractivityinterval', 'user_profile', related_table="user_profile")
     bulk_import_model(data, UserActivityInterval, 'zerver_useractivityinterval')
 
     # Import uploaded files and avatars
@@ -799,9 +830,9 @@ def do_import_realm(import_dir):
             data = ujson.load(f)
 
         logging.info("Importing message dump %s" % (message_filename,))
-        fix_foreign_keys(data, 'zerver_message', 'sender', id_map_table="user_profile")
-        fix_foreign_keys(data, 'zerver_message', 'recipient')
-        fix_foreign_keys(data, 'zerver_message', 'sending_client', id_map_table='client')
+        re_map_foreign_keys(data, 'zerver_message', 'sender', related_table="user_profile")
+        convert_to_id_fields(data, 'zerver_message', 'recipient')
+        re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message', 'pub_date')
         fix_datetime_fields(data, 'zerver_message', 'last_edit_time')
         bulk_import_model(data, Message, 'zerver_message')
@@ -809,16 +840,16 @@ def do_import_realm(import_dir):
         # Due to the structure of these message chunks, we're
         # guaranteed to have already imported all the Message objects
         # for this batch of UserMessage objects.
-        fix_foreign_keys(data, 'zerver_usermessage', 'message')
-        fix_foreign_keys(data, 'zerver_usermessage', 'user_profile', id_map_table="user_profile")
+        convert_to_id_fields(data, 'zerver_usermessage', 'message')
+        re_map_foreign_keys(data, 'zerver_usermessage', 'user_profile', related_table="user_profile")
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
 
         dump_file_id += 1
 
     fix_datetime_fields(data, 'zerver_attachment', 'create_time')
-    fix_foreign_keys(data, 'zerver_attachment', 'owner', id_map_table="user_profile")
-    fix_foreign_keys(data, 'zerver_attachment', 'realm')
+    re_map_foreign_keys(data, 'zerver_attachment', 'owner', related_table="user_profile")
+    convert_to_id_fields(data, 'zerver_attachment', 'realm')
     # TODO: Handle the `messages` keys.
     # fix_foreign_keys(data, 'zerver_attachment', 'messages')
     bulk_import_model(data, Attachment, 'zerver_attachment')
