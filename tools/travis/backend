@@ -10,4 +10,4 @@ set -x
 ./tools/test-management
 ./tools/test-migrations
 ./tools/test-run-dev
-#./tools/test-queue-worker-reload
+./tools/test-queue-worker-reload
