@@ -7,9 +7,9 @@ from zproject.backends import (password_auth_enabled, dev_auth_enabled,
 
 def add_settings(request):
     # type: (HttpRequest) -> Dict[str, Any]
-    realm = request.user.realm
 
-    if (realm):
+    if (hasattr(request.user, "realm")):
+        realm = request.user.realm
         full_name = request.user.full_name
         realm_name = realm.name
     else:
