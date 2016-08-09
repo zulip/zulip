@@ -374,7 +374,7 @@ def export_uploads_local_helper(realm, output_dir, local_dir):
 
     count = 0
     records = []
-    for attachment in Attachment.objects.all():
+    for attachment in Attachment.objects.filter(realm_id=realm.id):
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
         mkdir_p(os.path.dirname(output_path))
