@@ -34,7 +34,8 @@
             },
             backend: backendOptions,
             detection: detectionOptions,
-            cache: cacheOptions
+            cache: cacheOptions,
+            fallbackLng: 'en'
         }, function () {
             var i;
             initialized = true;
