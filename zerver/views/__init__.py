@@ -30,7 +30,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     internal_send_message, update_user_presence, do_events_register, \
     do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, \
+    do_change_enable_digest_emails, do_change_tos_version, \
     get_default_subs, user_email_is_unique, do_invite_users, do_refer_friend, \
     compute_mit_user_fullname, do_set_muted_topics, clear_followup_emails_queue, \
     do_update_pointer, realm_user_count
@@ -224,6 +224,7 @@ def accounts_register(request):
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
+        do_change_tos_version(user_profile, settings.TOS_VERSION)
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
         # more fancy than this is required.
@@ -253,27 +254,22 @@ def accounts_register(request):
 @zulip_login_required
 def accounts_accept_terms(request):
     # type: (HttpRequest) -> HttpResponse
-    email = request.user.email
-    domain = resolve_email_to_domain(email)
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
-            full_name = form.cleaned_data['full_name']
-            send_mail('Terms acceptance for ' + full_name,
-                    loader.render_to_string('zerver/tos_accept_body.txt',
-                        {'name': full_name,
-                         'email': email,
-                         'ip': request.META['REMOTE_ADDR'],
-                         'browser': request.META.get('HTTP_USER_AGENT', "Unspecified")}),
-                        settings.EMAIL_HOST_USER,
-                        ["all@zulip.com"])
-            do_change_full_name(request.user, full_name)
+            do_change_tos_version(request.user, settings.TOS_VERSION)
             return redirect(home)
-
     else:
         form = ToSForm()
+
+    email = request.user.email
+    domain = resolve_email_to_domain(email)
+    special_message_template = None
+    if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
+        special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
     return render_to_response('zerver/accounts_accept_terms.html',
-        { 'form': form, 'company_name': domain, 'email': email },
+        { 'form': form, 'company_name': domain, 'email': email, \
+          'special_message_template' : special_message_template },
         request=request)
 
 from zerver.lib.ccache import make_ccache
@@ -837,6 +833,11 @@ def home(request):
     user_profile = request.user
     request._email = request.user.email
     request.client = get_client("website")
+
+    # If a user hasn't signed the current Terms of Service, send them there
+    if settings.TERMS_OF_SERVICE is not None and settings.TOS_VERSION is not None and \
+       int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version():
+        return accounts_accept_terms(request)
 
     narrow = [] # type: List[List[text_type]]
     narrow_stream = None

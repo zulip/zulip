@@ -1,19 +1,21 @@
 {% extends "zerver/portico_signup.html" %}
 {#
-Allow the user to accept the terms, creating an email record of that fact.
+Allow the user to accept a TOS, creating an email record of that fact.
+Users only hit this page if they are coming from a migration or other update of the TOS;
+the registration flow has its own (nearly identical) copy of the fields below in register.html.
 #}
 
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
 
-<p>({{ _("Welcome! We think you'll like it here") }}.)</p>
-
-
+{% if special_message_template %}
+{% include special_message_template %}
+{% else %}
 <div class="pitch">
-    <hr/>
-    <p>{{ _("You're almost there. We just need you to do one last thing") }}.</p>
-    <h3>{{ _("Accept the Zulip terms of service") }}</h3>
+      <p>{{ _("There is a new terms of service.") }}</p>
+      <h3>{{ _("Accept the terms of service") }}</h3>
 </div>
+{% endif %}
 
 <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_accept_terms') }}">
 {{ csrf_input }}
@@ -21,19 +23,6 @@ Allow the user to accept the terms, creating an email record of that fact.
         <label for="id_email" class="control-label">{{ _("Email") }}</label>
         <div class="controls fakecontrol">
             <p>{{ email }}</p>
-        </div>
-    </div>
-    <div class="control-group">
-        <label for="id_full_name" class="control-label">{{ _("Your name") }}</label>
-        <div class="controls">
-            <input id="id_full_name" class="required" type="text" name="full_name"
-                   value="{% if form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                   maxlength="100" />
-            {% if form.full_name.errors %}
-                {% for error in form.full_name.errors %}
-                    <div class="alert alert-error">{{ error }}</div>
-                {% endfor %}
-            {% endif %}
         </div>
     </div>
 
@@ -62,14 +51,10 @@ Allow the user to accept the terms, creating an email record of that fact.
     <br />
     <div class="control-group">
         <div class="controls">
-            <input type="submit" class="btn btn-primary" value="Register" /><br />
+            <input type="submit" class="btn btn-primary" value="Enter" /><br />
             <input type="hidden" name="next" value="{{ next }}" />
         </div>
     </div>
 </form>
-
-<script type="text/javascript">
-autofocus('#id_full_name');
-</script>
 
 {% endblock %}

@@ -1636,6 +1636,15 @@ def do_change_full_name(user_profile, full_name, log=True):
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_userids(user_profile))
 
+def do_change_tos_version(user_profile, tos_version, log=True):
+    # type: (UserProfile, text_type, bool) -> None
+    user_profile.tos_version = tos_version
+    user_profile.save(update_fields=["tos_version"])
+    if log:
+        log_event({'type': 'user_change_tos_version',
+                   'user': user_profile.email,
+                   'tos_version': tos_version})
+
 def do_regenerate_api_key(user_profile, log=True):
     # type: (UserProfile, bool) -> None
     user_profile.api_key = random_api_key()

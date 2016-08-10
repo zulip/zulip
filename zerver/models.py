@@ -391,6 +391,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     last_pointer_updater = models.CharField(max_length=64) # type: text_type
     realm = models.ForeignKey(Realm) # type: Realm
     api_key = models.CharField(max_length=32) # type: text_type
+    tos_version = models.CharField(null=True, max_length=10, default=settings.TOS_VERSION) # type: text_type
 
     ### Notifications settings. ###
 
@@ -510,6 +511,13 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
             return True
         else:
             return False
+
+    def major_tos_version(self):
+        # type: () -> int
+        if self.tos_version is not None:
+            return int(self.tos_version.split('.')[0])
+        else:
+            return -1
 
 def receives_offline_notifications(user_profile):
     # type: (UserProfile) -> bool
