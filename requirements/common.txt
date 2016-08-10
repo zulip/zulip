@@ -20,6 +20,9 @@ Pygments==2.0.2
 # Needed for building complex DB queries
 SQLAlchemy==0.7.8
 
+# Needed for Tornado 4.4 compatibility
+backports-abc==0.4
+
 # Needed for S3 file uploads
 boto==2.38.0
 
@@ -103,6 +106,9 @@ rsa==3.4.2
 # Dependencies of our API
 simplejson==3.7.3
 
+# Needed for Tornado 4.4 compatibility
+singledispatch==3.4.0.3
+
 # Needed for Python 2+3 compatibility
 six==1.10.0
 smmap==0.9.0
@@ -117,7 +123,7 @@ sourcemap==0.1.8
 statsd==3.2.1
 
 # Tornado used for server->client push system
-tornado==3.1.1
+tornado==4.4.1
 
 # Needed for Python static typing
 typing==3.5.2.2
