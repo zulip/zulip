@@ -26,8 +26,8 @@ def random_api_key():
 # create_user (below) which will also make the Subscription and
 # Recipient objects
 def create_user_profile(realm, email, password, active, bot_type, full_name,
-                        short_name, bot_owner, is_mirror_dummy):
-    # type: (Realm, text_type, text_type, bool, Optional[int], text_type, text_type, Optional[UserProfile], bool) -> UserProfile
+                        short_name, bot_owner, is_mirror_dummy, tos_version):
+    # type: (Realm, text_type, text_type, bool, Optional[int], text_type, text_type, Optional[UserProfile], bool, Optional[text_type]) -> UserProfile
     now = timezone.now()
     email = UserManager.normalize_email(email)
 
@@ -54,15 +54,15 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
-                active=True, bot_type=None, bot_owner=None,
+                active=True, bot_type=None, bot_owner=None, tos_version=None,
                 avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 is_mirror_dummy=False, default_sending_stream=None,
                 default_events_register_stream=None,
                 default_all_public_streams=None, user_profile_id=None):
-    # type: (text_type, text_type, Realm, text_type, text_type, bool, Optional[int], Optional[UserProfile], text_type, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
+    # type: (text_type, text_type, Realm, text_type, text_type, bool, Optional[int], Optional[UserProfile], Optional[text_type], text_type, bool, Optional[Stream], Optional[Stream], Optional[bool], Optional[int]) -> UserProfile
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
-                                       is_mirror_dummy)
+                                       is_mirror_dummy, tos_version)
     user_profile.avatar_source = avatar_source
     user_profile.default_sending_stream = default_sending_stream
     user_profile.default_events_register_stream = default_events_register_stream
