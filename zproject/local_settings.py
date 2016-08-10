@@ -69,6 +69,11 @@ else:
 
 # Terms of Service
 TERMS_OF_SERVICE = 'corporate/terms.md'
+# Major version number (the stuff before the first '.') has to be an integer.
+# Users will be asked to re-sign the TOS only when the major version number increases.
+# A TOS_VERSION of None has a major version number of -1.
+# TOS_VERSION = '1.0'
+# FIRST_TIME_TOS_TEMPLATE = 'zulipchat_migration_tos.html'
 
 # Legacy zulip.com bucket used for old-style S3 uploads.
 S3_BUCKET="humbug-user-uploads"

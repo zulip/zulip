@@ -78,7 +78,6 @@ class RegistrationForm(forms.Form):
         terms = forms.BooleanField(required=True)
 
 class ToSForm(forms.Form):
-    full_name = forms.CharField(max_length=100)
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
