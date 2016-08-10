@@ -116,7 +116,11 @@ class Command(BaseCommand):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
         print("Exporting realm %s" % (realm.domain,))
-        do_export_realm(realm, output_dir, threads=int(options['threads']))
+        num_threads = int(options['threads'])
+        if num_threads < 1:
+            raise CommandError('You must have at least one thread.')
+
+        do_export_realm(realm, output_dir, threads=num_threads)
         print("Finished exporting to %s; tarring" % (output_dir,))
         tarball_path = output_dir.rstrip('/') + '.tar.gz'
         os.chdir(os.path.dirname(output_dir))
