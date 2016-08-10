@@ -50,7 +50,7 @@ def test_nagios(nagios_logfile):
     result = subprocess.check_output(args, env=my_env, universal_newlines=True,
                                      stderr=nagios_logfile)
 
-    if 'success' in result:
+    if result.startswith("OK:"):
         return True
 
     print(result)

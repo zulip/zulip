@@ -158,7 +158,7 @@ while msg_to_send not in msg_content:
 
     msg_content = [m['content'] for m in messages]
 
-print(zulip_recipient.deregister(queue_id))
+zulip_recipient.deregister(queue_id)
 
 if options.nagios:
     if time_diff.seconds > 3:
