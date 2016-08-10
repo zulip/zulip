@@ -28,7 +28,12 @@ fi
 
 # puppet apply
 mkdir -p /etc/zulip
-echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE" > /etc/zulip/zulip.conf
+(
+    echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE";
+    if [ -n "$TRAVIS" ]; then
+        echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
+    fi
+) > /etc/zulip/zulip.conf
 /root/zulip/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
