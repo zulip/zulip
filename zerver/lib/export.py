@@ -33,6 +33,7 @@ TableName = str
 TableData = Dict[TableName, List[Record]]
 Field = str
 Path = text_type
+Context = Dict[str, Any]
 
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
@@ -165,8 +166,8 @@ def export_realm_data(realm, response):
 # being exported in a separate
 # response['zerver_userprofile_mirrordummy'] export so that
 # conversations with those users can still be exported.
-def export_with_admin_auth(realm, response, include_invite_only=True, include_private=True):
-    # type: (Realm, TableData, bool, bool) -> None
+def export_with_admin_auth(realm, response, include_invite_only=True):
+    # type: (Realm, TableData, bool) -> None
 
     def get_primary_ids(records):
         # type: (List[Record]) -> Set[int]
@@ -236,35 +237,9 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
                                                 recipient_id__in=stream_recipient_ids)
     stream_subscription_dicts = make_raw(stream_subscription_query)
 
-    if include_private:
-        # First we get all huddles involving someone in the realm.
-        realm_huddle_subs = Subscription.objects.select_related("recipient").filter(recipient__type=Recipient.HUDDLE,
-                                                                                    user_profile__in=user_profile_ids)
-        realm_huddle_recipient_ids = set(sub.recipient_id for sub in realm_huddle_subs)
 
-        # Mark all Huddles whose recipient ID contains a cross-realm user.
-        unsafe_huddle_recipient_ids = set()
-        for sub in Subscription.objects.select_related().filter(recipient__in=realm_huddle_recipient_ids):
-            if sub.user_profile.realm != realm:
-                # In almost every case the other realm will be zulip.com
-                unsafe_huddle_recipient_ids.add(sub.recipient_id)
-
-        # Now filter down to just those huddles that are entirely within the realm.
-        #
-        # This is important for ensuring that the User objects needed
-        # to import it on the other end exist (since we're only
-        # exporting the users from this realm), at the cost of losing
-        # some of these cross-realm messages.
-        huddle_subs = [sub for sub in realm_huddle_subs if sub.recipient_id not in unsafe_huddle_recipient_ids]
-        huddle_recipient_ids = set(sub.recipient_id for sub in huddle_subs)
-        huddle_ids = set(sub.recipient.type_id for sub in huddle_subs)
-
-        huddle_subscription_dicts = make_raw(huddle_subs)
-        huddle_recipients = make_raw(Recipient.objects.filter(id__in=huddle_recipient_ids))
-        response['zerver_huddle'] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
-    else:
-        huddle_recipients = []
-        huddle_subscription_dicts = []
+    context = {'realm': realm, 'user_profile_ids': user_profile_ids}
+    huddle_subscription_dicts, huddle_recipients = fetch_huddle_objects(response, context)
 
     response["zerver_recipient"] = user_recipients + stream_recipients + huddle_recipients
     response["zerver_subscription"] = user_subscription_dicts + stream_subscription_dicts + huddle_subscription_dicts
@@ -272,6 +247,42 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     attachment_query = filter_by_realm(Attachment)
     response["zerver_attachment"] = make_raw(attachment_query)
     floatify_datetime_fields(response, 'zerver_attachment')
+
+def fetch_huddle_objects(response, context):
+    # type: (TableData, Context) -> Tuple[List[Record], List[Record]]
+
+    # We introduce a context variable here as a bit of pre-factoring
+    # for upcoming changes.
+    realm = context['realm']
+    user_profile_ids = context['user_profile_ids']
+
+    # First we get all huddles involving someone in the realm.
+    realm_huddle_subs = Subscription.objects.select_related("recipient").filter(recipient__type=Recipient.HUDDLE,
+                                                                                user_profile__in=user_profile_ids)
+    realm_huddle_recipient_ids = set(sub.recipient_id for sub in realm_huddle_subs)
+
+    # Mark all Huddles whose recipient ID contains a cross-realm user.
+    unsafe_huddle_recipient_ids = set()
+    for sub in Subscription.objects.select_related().filter(recipient__in=realm_huddle_recipient_ids):
+        if sub.user_profile.realm != realm:
+            # In almost every case the other realm will be zulip.com
+            unsafe_huddle_recipient_ids.add(sub.recipient_id)
+
+    # Now filter down to just those huddles that are entirely within the realm.
+    #
+    # This is important for ensuring that the User objects needed
+    # to import it on the other end exist (since we're only
+    # exporting the users from this realm), at the cost of losing
+    # some of these cross-realm messages.
+    huddle_subs = [sub for sub in realm_huddle_subs if sub.recipient_id not in unsafe_huddle_recipient_ids]
+    huddle_recipient_ids = set(sub.recipient_id for sub in huddle_subs)
+    huddle_ids = set(sub.recipient.type_id for sub in huddle_subs)
+
+    huddle_subscription_dicts = make_raw(huddle_subs)
+    huddle_recipients = make_raw(Recipient.objects.filter(id__in=huddle_recipient_ids))
+    response['zerver_huddle'] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
+
+    return (huddle_subscription_dicts, huddle_recipients)
 
 def fetch_usermessages(realm, message_ids, user_profile_ids, message_filename):
     # type: (Realm, Set[int], Set[int], Path) -> List[Record]
