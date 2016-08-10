@@ -822,6 +822,9 @@ function validate_private_message() {
     if (exports.recipient() === "") {
         compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
         return false;
+    } else if (page_params.is_zephyr_mirror_realm) {
+        // For Zephyr mirroring realms, the frontend doesn't know which users exist
+        return true;
     } else {
         var private_recipients = util.extract_pm_recipients(compose.recipient());
         var invalid_recipients = [];
