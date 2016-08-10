@@ -114,23 +114,32 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     ]]
     floatify_datetime_fields(response, 'zerver_userprofile')
     user_profile_ids = set(userprofile["id"] for userprofile in response['zerver_userprofile'])
+
+
     user_recipient_query = Recipient.objects.filter(type=Recipient.PERSONAL,
                                                     type_id__in=user_profile_ids)
     user_recipients = make_raw(user_recipient_query)
     user_recipient_ids = set(x["id"] for x in user_recipients)
-    user_subscription_query = Subscription.objects.filter(user_profile__in=user_profile_ids,
-                                                          recipient_id__in=user_recipient_ids)
+
+
+    def filter_by_users(model, **kwargs):
+        # type: (Any, **Any) -> Any
+        return model.objects.filter(user_profile__in=user_profile_ids, **kwargs)
+
+
+    user_subscription_query = filter_by_users(Subscription,
+                                              recipient_id__in=user_recipient_ids)
     user_subscription_dicts = make_raw(user_subscription_query)
 
-    user_presence_query = UserPresence.objects.filter(user_profile__in=user_profile_ids)
+    user_presence_query = filter_by_users(UserPresence)
     response["zerver_userpresence"] = make_raw(user_presence_query)
     floatify_datetime_fields(response, 'zerver_userpresence')
 
-    user_activity_query = UserActivity.objects.filter(user_profile__in=user_profile_ids)
+    user_activity_query = filter_by_users(UserActivity)
     response["zerver_useractivity"] = make_raw(user_activity_query)
     floatify_datetime_fields(response, 'zerver_useractivity')
 
-    user_activity_interval_query = UserActivityInterval.objects.filter(user_profile__in=user_profile_ids)
+    user_activity_interval_query = filter_by_users(UserActivityInterval)
     response["zerver_useractivityinterval"] = make_raw(user_activity_interval_query)
     floatify_datetime_fields(response, 'zerver_useractivityinterval')
 
@@ -146,8 +155,8 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     stream_recipients = make_raw(stream_recipient_query)
     stream_recipient_ids = set(x["id"] for x in stream_recipients)
 
-    stream_subscription_query = Subscription.objects.filter(user_profile__in=user_profile_ids,
-                                                            recipient_id__in=stream_recipient_ids)
+    stream_subscription_query = filter_by_users(Subscription,
+                                                recipient_id__in=stream_recipient_ids)
     stream_subscription_dicts = make_raw(stream_subscription_query)
 
     if include_private:
