@@ -391,7 +391,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     last_pointer_updater = models.CharField(max_length=64) # type: text_type
     realm = models.ForeignKey(Realm) # type: Realm
     api_key = models.CharField(max_length=32) # type: text_type
-    tos_version = models.CharField(null=True, max_length=10, default=settings.TOS_VERSION) # type: text_type
+    tos_version = models.CharField(null=True, max_length=10) # type: text_type
 
     ### Notifications settings. ###
 

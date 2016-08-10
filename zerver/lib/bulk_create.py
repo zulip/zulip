@@ -18,8 +18,8 @@ def bulk_create_realms(realm_list):
             existing_realms.add(domain)
     Realm.objects.bulk_create(realms_to_create)
 
-def bulk_create_users(realms, users_raw, bot_type=None):
-    # type: (Mapping[text_type, Realm], Set[Tuple[text_type, text_type, text_type, bool]], Optional[int]) -> None
+def bulk_create_users(realms, users_raw, bot_type=None, tos_version=None):
+    # type: (Mapping[text_type, Realm], Set[Tuple[text_type, text_type, text_type, bool]], Optional[int], Optional[text_type]) -> None
     """
     Creates and saves a UserProfile with the given email.
     Has some code based off of UserManage.create_user, but doesn't .save()
@@ -39,7 +39,7 @@ def bulk_create_users(realms, users_raw, bot_type=None):
         domain = resolve_email_to_domain(email)
         profile = create_user_profile(realms[domain], email,
                                       initial_password(email), active, bot_type,
-                                      full_name, short_name, None, False)
+                                      full_name, short_name, None, False, tos_version)
         profiles_to_create.append(profile)
     UserProfile.objects.bulk_create(profiles_to_create)
 
