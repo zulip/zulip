@@ -311,27 +311,101 @@ def export_from_config(response, config, seed_object=None, context=None):
             context=context,
         )
 
-# Export common, public information about the realm that we can share
-# with all realm users
-def export_realm_data(realm, response):
-    # type: (Realm, TableData) -> None
-    response['zerver_realm'] = make_raw(Realm.objects.filter(id=realm.id))
-    floatify_datetime_fields(response, 'zerver_realm')
+def get_realm_config():
+    # type: () -> Config
+    # This is common, public information about the realm that we can share
+    # with all realm users.
 
-    for (table, model) in realm_tables:
-        # mypy does not know that model is a Django model that
-        # supports "objects"
-        table_query =  model.objects.filter(realm_id=realm.id) # type: ignore
-        response[table] =  make_raw(table_query)
-    response["zerver_client"] = make_raw(Client.objects.all())
+    realm_config = Config(
+        table='zerver_realm',
+        is_seeded=True
+    )
+
+    Config(
+        table='zerver_defaultstream',
+        model=DefaultStream,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_realmemoji',
+        model=RealmEmoji,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_realmalias',
+        model=RealmAlias,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_realmfilter',
+        model=RealmFilter,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_client',
+        model=Client,
+        virtual_parent=realm_config,
+        use_all=True
+    )
+
+    return realm_config
+
+def get_admin_auth_config(realm_config):
+    # type: (Config) -> Config
+    user_profile_config = Config(
+        table='zerver_userprofile',
+        model=UserProfile,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+        exclude=['password', 'api_key'],
+    )
+
+    Config(
+        table='zerver_userpresence',
+        model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_useractivity',
+        model=UserActivity,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_useractivityinterval',
+        model=UserActivityInterval,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_attachment',
+        model=Attachment,
+        normal_parent=realm_config,
+        virtual_parent=user_profile_config,
+        parent_key='realm_id__in',
+    )
+
+    return user_profile_config
 
 # To export only some users, you can tweak the below UserProfile query
 # to give the target users, but then you should create any users not
 # being exported in a separate
 # response['zerver_userprofile_mirrordummy'] export so that
 # conversations with those users can still be exported.
-def export_with_admin_auth(realm, response, include_invite_only=True):
-    # type: (Realm, TableData, bool) -> None
+def export_with_admin_auth(realm, response, admin_auth_config, include_invite_only=True):
+    # type: (Realm, TableData, Config, bool) -> None
 
     def get_primary_ids(records):
         # type: (List[Record]) -> Set[int]
@@ -344,13 +418,15 @@ def export_with_admin_auth(realm, response, include_invite_only=True):
         # type: (Any, **Any) -> Any
         return model.objects.filter(realm=realm, **kwargs)
 
+    # This will populate response['zerver_userprofile'] and some
+    # other user-related tables.
+    export_from_config(
+        response=response,
+        config=admin_auth_config
+    )
     cross_realm_context = {'realm': realm}
-
-    response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
-                                      for x in filter_by_realm(UserProfile)]
     fetch_user_profile_cross_realm(response, cross_realm_context)
 
-    floatify_datetime_fields(response, 'zerver_userprofile')
     user_profile_ids = get_primary_ids(response['zerver_userprofile'])
 
 
@@ -368,18 +444,6 @@ def export_with_admin_auth(realm, response, include_invite_only=True):
     user_subscription_query = filter_by_users(Subscription,
                                               recipient_id__in=user_recipient_ids)
     user_subscription_dicts = make_raw(user_subscription_query)
-
-    user_presence_query = filter_by_users(UserPresence)
-    response["zerver_userpresence"] = make_raw(user_presence_query)
-    floatify_datetime_fields(response, 'zerver_userpresence')
-
-    user_activity_query = filter_by_users(UserActivity)
-    response["zerver_useractivity"] = make_raw(user_activity_query)
-    floatify_datetime_fields(response, 'zerver_useractivity')
-
-    user_activity_interval_query = filter_by_users(UserActivityInterval)
-    response["zerver_useractivityinterval"] = make_raw(user_activity_interval_query)
-    floatify_datetime_fields(response, 'zerver_useractivityinterval')
 
     stream_query = filter_by_realm(Stream)
     if not include_invite_only:
@@ -403,10 +467,6 @@ def export_with_admin_auth(realm, response, include_invite_only=True):
 
     response["zerver_recipient"] = user_recipients + stream_recipients + huddle_recipients
     response["zerver_subscription"] = user_subscription_dicts + stream_subscription_dicts + huddle_subscription_dicts
-
-    attachment_query = filter_by_realm(Attachment)
-    response["zerver_attachment"] = make_raw(attachment_query)
-    floatify_datetime_fields(response, 'zerver_attachment')
 
 def fetch_user_profile_cross_realm(response, context):
     # type: (TableData, Context) -> None
@@ -751,10 +811,19 @@ def do_export_realm(realm, output_dir, threads):
     # enforce this for us.
     assert threads >= 1
 
+
+    realm_config = get_realm_config()
+
     logging.info("Exporting realm configuration")
-    export_realm_data(realm, response)
+    export_from_config(
+        response=response,
+        config=realm_config,
+        seed_object=realm,
+    )
+
     logging.info("Exporting core realm data")
-    export_with_admin_auth(realm, response)
+    admin_auth_config = get_admin_auth_config(realm_config)
+    export_with_admin_auth(realm, response, admin_auth_config)
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
 
