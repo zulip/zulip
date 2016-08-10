@@ -102,8 +102,16 @@ def export_realm_data(realm, response):
 # conversations with those users can still be exported.
 def export_with_admin_auth(realm, response, include_invite_only=True, include_private=True):
     # type: (Realm, TableData, bool, bool) -> None
+
+    # Note that the filter_by_foo functions aren't composable--it shouldn't
+    # be an issue; for complex filtering, just use the ORM more directly.
+
+    def filter_by_realm(model, **kwargs):
+        # type: (Any, **Any) -> Any
+        return model.objects.filter(realm=realm, **kwargs)
+
     response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
-                                      for x in UserProfile.objects.filter(realm=realm)]
+                                      for x in filter_by_realm(UserProfile)]
     if realm.domain == "zulip.com":
         response['zerver_userprofile_crossrealm'] = []
     else:
@@ -143,7 +151,7 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     response["zerver_useractivityinterval"] = make_raw(user_activity_interval_query)
     floatify_datetime_fields(response, 'zerver_useractivityinterval')
 
-    stream_query = Stream.objects.filter(realm=realm)
+    stream_query = filter_by_realm(Stream)
     if not include_invite_only:
         stream_query = stream_query.filter(invite_only=False)
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
@@ -192,7 +200,7 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
     response["zerver_recipient"] = user_recipients + stream_recipients + huddle_recipients
     response["zerver_subscription"] = user_subscription_dicts + stream_subscription_dicts + huddle_subscription_dicts
 
-    attachment_query = Attachment.objects.filter(realm=realm)
+    attachment_query = filter_by_realm(Attachment)
     response["zerver_attachment"] = make_raw(attachment_query)
     floatify_datetime_fields(response, 'zerver_attachment')
 
