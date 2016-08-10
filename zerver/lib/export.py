@@ -208,7 +208,8 @@ def export_usermessages_batch(input_path, output_path):
     # type: (Path, Path) -> None
     """As part of the system for doing parallel exports, this runs on one
     batch of Message objects and adds the corresponding UserMessage
-    objects."""
+    objects. (This is called by the export_usermessage_batch
+    management command)."""
     with open(input_path, "r") as input_file:
         output = ujson.loads(input_file.read())
     message_ids = [item['id'] for item in output['zerver_message']]
@@ -227,9 +228,8 @@ def write_message_export(message_filename, output):
     logging.info("Dumped to %s" % (message_filename,))
 
 def export_messages(realm, user_profile_ids, recipient_ids,
-                    chunk_size=1000, output_dir=None,
-                    threads=0):
-    # type: (Realm, Set[int], Set[int], int, Path, int) -> None
+                    chunk_size=1000, output_dir=None):
+    # type: (Realm, Set[int], Set[int], int, Path) -> None
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
@@ -256,20 +256,14 @@ def export_messages(realm, user_profile_ids, recipient_ids,
             break
 
         message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
+        message_filename += '.partial'
         logging.info("Fetched Messages for %s" % (message_filename,))
 
         output = {} # type: MessageOutput
         output['zerver_message'] = message_chunk
         floatify_datetime_fields(output, 'zerver_message')
-
-        if threads > 0:
-            message_filename += '.partial'
-            output['zerver_userprofile_ids'] = list(user_profile_ids)
-            output['realm_id'] = realm.id
-        else:
-            user_message_chunk = fetch_usermessages(realm, message_ids, user_profile_ids,
-                                                    message_filename)
-            output['zerver_usermessage'] = user_message_chunk
+        output['zerver_userprofile_ids'] = list(user_profile_ids)
+        output['realm_id'] = realm.id
 
         write_message_export(message_filename, output)
         min_id = max(message_ids)
@@ -460,9 +454,14 @@ def export_uploads(realm, output_dir):
     export_bucket(realm, settings.S3_AVATAR_BUCKET, os.path.join(output_dir, "avatars"), True)
     export_bucket(realm, settings.S3_AUTH_UPLOADS_BUCKET, os.path.join(output_dir, "uploads"))
 
-def do_export_realm(realm, output_dir, threads=0):
+def do_export_realm(realm, output_dir, threads):
     # type: (Realm, Path, int) -> None
     response = {} # type: TableData
+
+    # We need at least one thread running to export
+    # UserMessage rows.  The management command should
+    # enforce this for us.
+    assert threads >= 1
 
     logging.info("Exporting realm configuration")
     export_realm_data(realm, response)
@@ -482,18 +481,21 @@ def do_export_realm(realm, output_dir, threads=0):
                            response['zerver_userprofile_crossrealm'])
     recipient_ids = set(x["id"] for x in response['zerver_recipient'])
     logging.info("Exporting messages")
-    export_messages(realm, user_profile_ids, recipient_ids, output_dir=output_dir,
-                    threads=threads)
-    if threads > 0:
-        # Start parallel jobs to export the UserMessage objects
-        def run_job(shard):
-            # type: (str) -> int
-            subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
-                             str(output_dir), '--thread', shard])
-            return 0
-        for (status, job) in run_parallel(run_job, [str(x) for x in range(0, threads)], threads=threads):
-            print("Shard %s finished, status %s" % (job, status))
-            pass
+    export_messages(realm, user_profile_ids, recipient_ids, output_dir=output_dir)
+
+    # Start parallel jobs to export the UserMessage objects
+    logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+    def run_job(shard):
+        # type: (str) -> int
+        subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
+                         str(output_dir), '--thread', shard])
+        return 0
+
+    for (status, job) in run_parallel(run_job,
+                                      [str(x) for x in range(0, threads)],
+                                      threads=threads):
+        print("Shard %s finished, status %s" % (job, status))
+
     logging.info("Finished exporting %s" % (realm.domain))
 
 def do_export_user(user_profile, output_dir):
