@@ -224,7 +224,6 @@ def accounts_register(request):
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
-        do_change_tos_version(user_profile, settings.TOS_VERSION)
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
         # more fancy than this is required.
