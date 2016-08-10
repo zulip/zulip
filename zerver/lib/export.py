@@ -93,7 +93,7 @@ def export_realm_data(realm, response):
         # supports "objects"
         table_query =  model.objects.filter(realm_id=realm.id) # type: ignore
         response[table] =  make_raw(table_query)
-    response["zerver_client"] = make_raw(Client.objects.select_related())
+    response["zerver_client"] = make_raw(Client.objects.all())
 
 # To export only some users, you can tweak the below UserProfile query
 # to give the target users, but then you should create any users not
