@@ -1,15 +1,24 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import subprocess
-import os
-import sys
-import shutil
+
 import errno
-import json
-import ujson
+import os
 import platform
 import re
+import sys
+import shutil
+import subprocess
 import traceback
+
+try:
+    # Use the Zulip virtualenv if available
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    import scripts.lib.setup_path_on_import
+except ImportError:
+    pass
+
+import json
+import ujson
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../api"))
 import zulip
