@@ -103,6 +103,10 @@ def export_realm_data(realm, response):
 def export_with_admin_auth(realm, response, include_invite_only=True, include_private=True):
     # type: (Realm, TableData, bool, bool) -> None
 
+    def get_primary_ids(records):
+        # type: (List[Record]) -> Set[int]
+        return set(x['id'] for x in records)
+
     # Note that the filter_by_foo functions aren't composable--it shouldn't
     # be an issue; for complex filtering, just use the ORM more directly.
 
@@ -121,13 +125,13 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
         get_user_profile_by_email(settings.WELCOME_BOT),
     ]]
     floatify_datetime_fields(response, 'zerver_userprofile')
-    user_profile_ids = set(userprofile["id"] for userprofile in response['zerver_userprofile'])
+    user_profile_ids = get_primary_ids(response['zerver_userprofile'])
 
 
     user_recipient_query = Recipient.objects.filter(type=Recipient.PERSONAL,
                                                     type_id__in=user_profile_ids)
     user_recipients = make_raw(user_recipient_query)
-    user_recipient_ids = set(x["id"] for x in user_recipients)
+    user_recipient_ids = get_primary_ids(user_recipients)
 
 
     def filter_by_users(model, **kwargs):
@@ -156,12 +160,12 @@ def export_with_admin_auth(realm, response, include_invite_only=True, include_pr
         stream_query = stream_query.filter(invite_only=False)
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
     floatify_datetime_fields(response, 'zerver_stream')
-    stream_ids = set(x["id"] for x in response['zerver_stream'])
+    stream_ids = get_primary_ids(response['zerver_stream'])
 
     stream_recipient_query = Recipient.objects.filter(type=Recipient.STREAM,
                                                       type_id__in=stream_ids)
     stream_recipients = make_raw(stream_recipient_query)
-    stream_recipient_ids = set(x["id"] for x in stream_recipients)
+    stream_recipient_ids = get_primary_ids(stream_recipients)
 
     stream_subscription_query = filter_by_users(Subscription,
                                                 recipient_id__in=stream_recipient_ids)
