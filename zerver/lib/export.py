@@ -255,16 +255,25 @@ def export_messages(realm, user_profile_ids, recipient_ids,
         if len(message_chunk) == 0:
             break
 
+        # Figure out the name of our shard file.
         message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
         message_filename += '.partial'
         logging.info("Fetched Messages for %s" % (message_filename,))
 
+        # Clean up our messages.
+        table_data = {} # type: TableData
+        table_data['zerver_message'] = message_chunk
+        floatify_datetime_fields(table_data, 'zerver_message')
+
+        # Build up our output for the .partial file, which needs
+        # a list of user_profile_ids to search for (as well as
+        # the realm id).
         output = {} # type: MessageOutput
-        output['zerver_message'] = message_chunk
-        floatify_datetime_fields(output, 'zerver_message')
+        output['zerver_message'] = table_data['zerver_message']
         output['zerver_userprofile_ids'] = list(user_profile_ids)
         output['realm_id'] = realm.id
 
+        # And write the data.
         write_message_export(message_filename, output)
         min_id = max(message_ids)
         dump_file_id += 1
