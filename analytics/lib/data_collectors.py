@@ -17,11 +17,11 @@ class AnalyticsStat:
 COUNT_TYPES = frozenset(['zerver_pull', 'time_aggregate', 'cross_table_aggregate'])
 
 # todo: incorporate these two arguments into a universal do_pull function.
-def pull_function(stat):
-    return {(UserProfile, RealmCount) : do_pull_user_by_realm,
-            (Message, UserCount) : do_pull_message_by_user,
-            (Message, StreamCount) : do_pull_message_by_stream,
-            (Stream, RealmCount) : do_pull_stream_by_realm}[(stat.zerver_table, stat.analytics_table)]
+def count_query(stat):
+    return {(UserProfile, RealmCount) : count_user_by_realm_query,
+            (Message, UserCount) : count_message_by_user_query,
+            (Message, StreamCount) : count_message_by_stream_query,
+            (Stream, RealmCount) : count_stream_by_realm_query}[(stat.zerver_table, stat.analytics_table)]
 
 # todo: collapse these three?
 def process_count(table, count_type, stat, time_interval, **kwargs):
@@ -30,7 +30,8 @@ def process_count(table, count_type, stat, time_interval, **kwargs):
                                end_time = time_interval.end,
                                interval = time_interval.interval).exists():
         if count_type == 'zerver_pull':
-            action = pull_function(stat)
+            kwargs['query'] = count_query(stat)
+            action = do_pull_from_zerver
         elif count_type == 'time_aggregate':
             action = do_aggregate_hour_to_day
         elif count_type == 'cross_table_aggregate':
@@ -38,29 +39,6 @@ def process_count(table, count_type, stat, time_interval, **kwargs):
         else:
             raise ValueError('Unknown count_type')
         action(stat, time_interval, **kwargs)
-
-def process_pull_count(stat, time_interval):
-    # what happens if there are 0 users, or 0 streams, or 0 realms?
-    if not stat.analytics_table.object.filter(property = stat.property,
-                                              end_time = time_interval.end,
-                                              interval = time_interval.interval).exists():
-        pull_function(stat)(stat.property, stat.filter_args, time_interval)
-
-def process_day_count(stat, time_interval):
-    if time_interval.interval != 'day':
-        raise ValueError('time_interval.interval should be day')
-    if not stat.analytics_table.object.filter(property = stat.property,
-                                              end_time = time_interval.end,
-                                              interval = time_interval.interval).exists():
-        do_aggregate_hour_to_day(stat.analytics_table, stat.property, time_interval.end)
-
-def process_summary_count(stat, time_interval, from_table, to_table)
-    if not to_table.object.filter(property = stat.property,
-                                  end_time = time_interval.end,
-                                  interval = time_interval.interval).exists():
-        do_aggregate_to_summary_table(stat.property, time_interval, from_table, to_table)
-
-
 
 # only two summary tables at the moment: RealmCount and InstallationCount.
 # will have to generalize this a bit if more are added
@@ -120,118 +98,78 @@ def do_aggregate_hour_to_day(stat, end_time):
 
 ## methods that hit the prod databases directly
 # No left joins in Django ORM yet, so have to use raw SQL :(
-def do_pull_user_by_realm(stat, time_interval):
-    join_args = ' '.join('AND user_.%s = %s' % (key, value) for
-                         key, value in stat.filter_args.items())
-    query = """
-        INSERT INTO analytics_realmcount
-            (realm_id, value, property, end_time, interval)
-        SELECT
-            realm.id, count(*), '%(property)s', %%s, '%(interval)s'
-        FROM zerver_realm as realm
-        LEFT JOIN zerver_userprofile as user_
-        ON
-        (
-            user_.realm_id = realm.id AND
-            user_.date_joined >= %%s AND
-            user_.date_joined < %%s AND
-            realm.date_created < %%s
-            %(join_args)s
-        )
-        GROUP BY realm.id
-        """ % {'property' : stat.property,
-               'interval' : time_interval.interval,
-               'join_args' : join_args}
+# written in slightly more than needed generality, to reduce copy-paste errors
+# as more of these are made / make it easy to extend to a pull_X_by_realm
+
+def do_pull_from_zerver(stat, time_interval, query):
+    zerver_table = stat.zerver_table._meta.db_table
+    join_args = ' '.join('AND %s.%s = %s' % (zerver_table, key, value) \
+                         for key, value in stat.filter_args.items())
+    query_ = query % {'zerver_table' : zerver_table,
+                      'property' : stat.property,
+                      'interval' : time_interval.interval,
+                      'join_args' : join_args}
     cursor = connection.cursor()
-    cursor.execute(query, (time_interval.end, time_interval.start, time_interval.end, time_interval.end))
+    cursor.execute(query_, {'time_start' : time_interval.start}, 'time_end' : time_interval.end)
     cursor.close()
 
-def do_pull_user_by_realm
+count_user_by_realm_query = """
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, end_time, interval)
+    SELECT
+        zerver_realm.id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
+    FROM zerver_realm
+    LEFT JOIN %(zerver_table)s
+    ON
+    (
+        %(zerver_table)s.realm_id = zerver_realm.id AND
+        %(zerver_table)s.date_joined >= %%(time_start)s AND
+        %(zerver_table)s.date_joined < %%(time_end)s AND
+        zerver_realm.date_created < %%(time_end)s
+        %(join_args)s
+    )
+    GROUP BY zerver_realm.id
+"""
 
+# currently .sender_id is only Message specific thing
+count_message_by_user_query = """
+    INSERT INTO analytics_usercount
+        (user_id, realm_id, value, property, end_time, interval)
+    SELECT
+        zerver_userprofile.id, zerver_userprofile.realm_id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
+    FROM zerver_userprofile
+    LEFT JOIN %(zerver_table)s
+    ON
+    (
+        %(zerver_table)s.sender_id = zerver_userprofile.id AND
+        %(zerver_table)s.pub_date >= %%(time_start)s AND
+        %(zerver_table)s.pub_date < %%(time_end)s AND
+        zerver_userprofile.date_joined < %%(time_end)s
+        %(join_args)s
+    )
+    GROUP BY zerver_userprofile.id
+"""
 
-def do_pull_message_by_user(stat, time_interval):
-    join_args = ' '.join('AND user_.%s = %s' % (key, value) for
-                         key, value in stat.filter_args.items())
-    query = """
-        INSERT INTO analytics_usercount
-            (realm_id, user_id, value, property, end_time, interval)
-        SELECT
-            realm.id, user_.id, count(*), '%(property)s', %%s, '%(interval)s'
-        FROM zerver_userprofile as user_
-        LEFT JOIN zerver_message as message
-        ON
-        (
-            message.sender_id = user_.id AND
-            message.pub_date >= %%s AND
-            message.pub_date < %%s AND
-            user_.date_joined < %%s
-            %(join_args)s
-        )
-        GROUP BY user_.id
-        """ % {'property' : stat.property,
-               'interval' : time_interval.interval,
-               'join_args' : join_args}
-    cursor = connection.cursor()
-    cursor.execute(query, (time_interval.end, time_interval.start, time_interval.end, time_interval.end))
-    cursor.close()
-
-def do_pull_message_by_stream(stat, time_interval):
-    pass
-
-
-## not going to work, since need additional joins for e.g. the recipient table
-def do_pull_from_zerver(property, filter_args, time_interval):
-    zerver_fields = {}
-    zerver_fields['created'] = {Message : 'pub_date', UserProfile : 'date_joined', Realm : 'date_created'}
-    zerver_fields['realm_id'] = {Message : 'sender.realm_id', UserProfile : 'realm_id'}
-    zerver_fields['user_id'] = {Message : 'sender_id'}
-
-    extended_id = stat.analytics_table.extended_id()
-    join_args = ' '.join('AND user_.%s = %s' % (key, value) for
-                         key, value in filter_args.items())
-    insert_str = ''.join(col + ', ' for col in extended_id)
-    select_str = ''.join(zerver_fields[col][stat.zerver_table] + ', '
-                         for col in extended_id)
-
-    query = """
-        INSERT INTO %(analytics_table)s
-            (%(insert_str)s value, property, end_time, interval)
-        SELECT
-            %(select_str)s COUNT(*), '%(property)s', %%s, '%(interval)s'
-        FROM %(zerver_key_table)s
-        LEFT JOIN %(zerver_table)s
-        ON
-        (
-            %(zerver_table)s.%(id)s = %(zerver_key_table)s.%(key_id)s AND
-            %(zerver_table)s.%(created)s >= %%s AND
-            %(zerver_table)s.%(created)s < %%s AND
-            %(zerver_key_table)s.%(key_created)s < %%s
-            %(join_args)s
-        )
-        GROUP BY %(zerver_key_table)s.%(key_id)s
-        """ % {'analytics_table' : stat.analytics_table,
-               'insert_str' : insert_str,
-               'select_str' : select_str,
-               'property' : stat.property,
-               'interval' : time_interval.interval,
-               'zerver_key_table' : stat.analytics_table.key_model()._meta.db_table,
-               'zerver_table' : stat.zerver_table._meta.db_table,
-               # possibly wrong
-               'id' : zerver_fields[extended_id[0]][stat.zerver_table]
-               'join_args' : join_args}
-    cursor = connection.cursor()
-    cursor.execute(query, (time_interval.end, time_interval.start, time_interval.end, time_interval.end))
-    cursor.close()
-
-
-
-
-get stream count from messages
-
-select message.recipient, count(*), property, end_time, interval
-from zerver_stream left join zerver_message on
-zerver_stream.id = zerver_message.recipient.type_id
-where
-stream created early enough
-message created early enough
-etc
+count_message_by_stream_query = """
+    INSERT INTO analytics_streamcount
+        (stream_id, realm_id, value, property, end_time, interval)
+    SELECT
+        zerver_stream.id, zerver_stream.realm_id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
+    FROM zerver_stream
+    INNER JOIN zerver_recipient
+    ON
+    (
+        zerver_recipient.type = STREAM AND
+        zerver_stream.id = zerver_recipient.type_id
+    )
+    LEFT JOIN %(zerver_table)s
+    ON
+    (
+        %(zerver_table)s.recipient_id = zerver_recipient.id AND
+        %(zerver_table)s.pub_date >= %%(time_start)s AND
+        %(zerver_table)s.pub_date < %%(time_end)s AND
+        zerver_stream.date_created < %%(time_end)s
+        %(join_args)s
+    )
+    GROUP BY zerver_stream.id
+"""
