@@ -129,13 +129,13 @@ def write_data_to_file(output_file, data):
     with open(output_file, "w") as f:
         f.write(ujson.dumps(data, indent=4))
 
-def make_raw(query):
-    # type: (Any) -> List[Record]
+def make_raw(query, exclude=None):
+    # type: (Any, List[Field]) -> List[Record]
     '''
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
     '''
-    return [model_to_dict(x) for x in query]
+    return [model_to_dict(x, exclude=exclude) for x in query]
 
 def floatify_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
@@ -151,6 +151,165 @@ def floatify_datetime_fields(data, table):
                 dt = orig_dt
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
+
+class Config(object):
+    '''
+    A Config object configures a single table for exporting (and,
+    maybe some day importing as well.
+
+    You should never mutate Config objects as part of the export;
+    instead use the data to determine how you populate other
+    data structures.
+
+    There are parent/children relationships between Config objects.
+    The parent should be instantiated first.  The child will
+    append itself to the parent's list of children.
+
+    '''
+    def __init__(self, table=None, model=None,
+                normal_parent=None, virtual_parent=None,
+                filter_args=None, custom_fetch=None, custom_tables=None,
+                concat_and_destroy=None, id_source=None, source_filter=None,
+                parent_key=None, use_all=False, is_seeded=False, exclude=None):
+        assert table or custom_tables
+        self.table = table
+        self.model = model
+        self.normal_parent = normal_parent
+        self.virtual_parent = virtual_parent
+        self.filter_args = filter_args
+        self.parent_key = parent_key
+        self.use_all = use_all
+        self.is_seeded = is_seeded
+        self.exclude = exclude
+        self.custom_fetch = custom_fetch
+        self.custom_tables = custom_tables
+        self.concat_and_destroy = concat_and_destroy
+        self.id_source = id_source
+        self.source_filter= source_filter
+        self.children = [] # type: List[Config]
+
+        if normal_parent:
+            self.parent = normal_parent
+        else:
+            self.parent = None
+
+        # If we have both a virtual_parent and a normal_parent,
+        # the virtual parent is what we use to add ourselves
+        # to the dependency tree.  This is a bit hacky, but it
+        # is caused by us segmenting our configuration for things
+        # that are public and things that are admin-only.
+        if virtual_parent:
+            virtual_parent.children.append(self)
+        elif normal_parent:
+            normal_parent.children.append(self)
+
+        if self.id_source:
+            if self.id_source[0] != self.virtual_parent.table:
+                raise Exception('''
+                    Configuration error.  To populate %s, you
+                    want data from %s, but that differs from
+                    the table name of your virtual parent (%s),
+                    which suggests you many not have set up
+                    the ordering correctly.  You may simply
+                    need to assign a virtual_parent, or there
+                    may be deeper issues going on.''' % (
+                        self.table,
+                        self.id_source[0],
+                        self.virtual_parent.table,
+                    ))
+
+
+def export_from_config(response, config, seed_object=None, context=None):
+    table = config.table
+    parent = config.parent
+    model = config.model
+
+    if context is None:
+        context = {}
+
+
+    if table:
+        exported_tables = [table]
+    else:
+        exported_tables = config.custom_tables
+
+    for t in exported_tables:
+        logging.info('Exporting via export_from_config:  %s' % (t,))
+
+    rows = None
+    if config.is_seeded:
+        rows = [seed_object]
+
+    elif config.custom_fetch:
+        config.custom_fetch(
+            response=response,
+            config=config,
+            context=context
+        )
+        if config.custom_tables:
+            for t in config.custom_tables:
+                if t not in response:
+                    raise Exception('Custom fetch failed to populate %s' % (t,))
+
+    elif config.concat_and_destroy:
+        # When we concat_and_destroy, we are working with
+        # temporary "tables" that are lists of records that
+        # should already be ready to export.
+        data = [] # type: List[Record]
+        for t in config.concat_and_destroy:
+            data += response[t]
+            del response[t]
+            logging.info('Deleted temporary %s' % (t,))
+        response[table] = data
+
+    elif config.use_all:
+        query = model.objects.all()
+        rows = list(query)
+
+    elif config.normal_parent:
+        # In this mode, our current model is figuratively Article,
+        # and normal_parent is figuratively Blog, and
+        # now we just need to get all the articles
+        # contained by the blogs.
+        model = config.model
+        parent_ids = [r['id'] for r in response[parent.table]]
+        filter_parms = {config.parent_key: parent_ids}
+        if config.filter_args:
+            filter_parms.update(config.filter_args)
+        query = model.objects.filter(**filter_parms)
+        rows = list(query)
+
+    elif config.id_source:
+        # In this mode,  we are the figurative Blog, and we now
+        # need to look at the current response to get all the
+        # blog ids from the Article rows we fetched previously.
+        model = config.model
+        # This will be a tuple of the form ('zerver_article', 'blog').
+        (child_table, field) = config.id_source
+        child_rows = response[child_table]
+        if config.source_filter:
+            child_rows = [r for r in child_rows if config.source_filter(r)]
+        lookup_ids = [r[field] for r in child_rows]
+        filter_parms = dict(id__in=lookup_ids)
+        if config.filter_args:
+            filter_parms.update(config.filter_args)
+        query = model.objects.filter(**filter_parms)
+        rows = list(query)
+
+    # Post-process rows (which won't apply to custom fetches/concats)
+    if rows is not None:
+        response[table] = make_raw(rows, exclude=config.exclude)
+        if table in DATE_FIELDS:
+            floatify_datetime_fields(response, table)
+
+    # Now walk our children.  It's extremely important to respect
+    # the order of children here.
+    for child_config in config.children:
+        export_from_config(
+            response=response,
+            config=child_config,
+            context=context,
+        )
 
 # Export common, public information about the realm that we can share
 # with all realm users
