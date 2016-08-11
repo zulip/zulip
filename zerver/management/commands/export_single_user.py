@@ -20,7 +20,7 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument('email', metavar='<realm>', type=str,
+        parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to export")
         parser.add_argument('--output',
                             dest='output_dir',
