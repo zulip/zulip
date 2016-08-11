@@ -120,6 +120,14 @@ def accounts_register(request):
         realm = get_realm(domain)
 
     if realm and realm.deactivated:
+        # The user could be trying to access a realm that was deactivated in the
+        # transition from zulip.com to zulipchat.com.
+        if hasattr(settings, 'ZULIPCOM_MIGRATORS'):
+            if realm.domain in settings.ZULIPCOM_MIGRATORS:
+                return render_to_response("zerver/transition.html")
+            else:
+                return render_to_response("zerver/sunset.html")
+
         # The user is trying to register for a deactivated realm. Advise them to
         # contact support.
         return render_to_response("zerver/deactivated.html",
