@@ -68,7 +68,7 @@ else:
     STATSD_PREFIX = 'app'
 
 # Terms of Service
-CUSTOM_TOS = '/etc/zulip/terms.md'
+TERMS_OF_SERVICE = 'corporate/terms.md'
 
 # Legacy zulip.com bucket used for old-style S3 uploads.
 S3_BUCKET="humbug-user-uploads"
