@@ -830,8 +830,9 @@ def do_export_realm(realm, output_dir, threads):
     # enforce this for us.
     assert threads >= 1
 
-
     realm_config = get_realm_config()
+
+    create_soft_link(source=output_dir, in_progress=True)
 
     logging.info("Exporting realm configuration")
     export_from_config(
@@ -871,6 +872,25 @@ def do_export_realm(realm, output_dir, threads):
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
     logging.info("Finished exporting %s" % (realm.domain))
+    create_soft_link(source=output_dir, in_progress=False)
+
+def create_soft_link(source, in_progress=True):
+    is_done = not in_progress
+    in_progress_link = '/tmp/zulip-export-in-progress'
+    done_link = '/tmp/zulip-export-most-recent'
+
+    subprocess.check_call(['rm', '-f', in_progress_link])
+    subprocess.check_call(['rm', '-f', done_link])
+
+    if in_progress:
+        new_target = in_progress_link
+    else:
+        new_target = done_link
+
+    subprocess.check_call(["ln", "-s", source, new_target])
+    if is_done:
+        logging.info('See %s for output files' % (new_target,))
+
 
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
