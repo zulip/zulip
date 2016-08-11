@@ -33,6 +33,7 @@ UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
 TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
+NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
 if PY2:
     VENV_PATH = PY2_VENV_PATH
@@ -202,6 +203,8 @@ def main():
     run(["mkdir", "-p", COVERAGE_DIR_PATH])
     # create linecoverage directory`var/linecoverage-report`
     run(["mkdir", "-p", LINECOVERAGE_DIR_PATH])
+    # create linecoverage directory`var/node-coverage`
+    run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
     if TRAVIS:
         run(["tools/setup/install-phantomjs", "--travis"])
