@@ -124,6 +124,11 @@ def sanity_check_output(data):
         if table not in data:
             logging.warn('??? NO DATA EXPORTED FOR TABLE %s!!!' % (table,))
 
+def write_data_to_file(output_file, data):
+    # type: (Path, Any) -> None
+    with open(output_file, "w") as f:
+        f.write(ujson.dumps(data, indent=4))
+
 def make_raw(query):
     # type: (Any) -> List[Record]
     '''
@@ -330,8 +335,7 @@ def export_usermessages_batch(input_path, output_path):
 
 def write_message_export(message_filename, output):
     # type: (Path, MessageOutput) -> None
-    with open(message_filename, "w") as f:
-        f.write(ujson.dumps(output, indent=4))
+    write_data_to_file(output_file=message_filename, data=output)
     logging.info("Dumped to %s" % (message_filename,))
 
 def export_partial_message_files(realm, response, chunk_size=1000, output_dir=None):
@@ -593,8 +597,7 @@ def do_export_realm(realm, output_dir, threads):
     logging.info("Exporting core realm data")
     export_with_admin_auth(realm, response)
     export_file = os.path.join(output_dir, "realm.json")
-    with open(export_file, "w") as f:
-        f.write(ujson.dumps(response, indent=4))
+    write_data_to_file(output_file=export_file, data=response)
 
     sanity_check_output(response)
 
@@ -634,8 +637,7 @@ def do_export_user(user_profile, output_dir):
 
     export_single_user(user_profile, response)
     export_file = os.path.join(output_dir, "user.json")
-    with open(export_file, "w") as f:
-        f.write(ujson.dumps(response, indent=4))
+    write_data_to_file(output_file=export_file, data=response)
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir=output_dir)
 
