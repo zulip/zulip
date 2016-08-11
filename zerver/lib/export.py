@@ -46,6 +46,61 @@ realm_tables = [("zerver_defaultstream", DefaultStream),
                 ("zerver_realmfilter", RealmFilter)] # List[Tuple[TableName, Any]]
 
 
+ALL_ZERVER_TABLES = [
+    # TODO: get a linter to ensure that this list is actually complete.
+    'zerver_attachment',
+    'zerver_attachment_messages',
+    'zerver_client',
+    'zerver_defaultstream',
+    'zerver_huddle',
+    'zerver_message',
+    'zerver_preregistrationuser',
+    'zerver_preregistrationuser_streams',
+    'zerver_pushdevicetoken',
+    'zerver_realm',
+    'zerver_realmalias',
+    'zerver_realmemoji',
+    'zerver_realmfilter',
+    'zerver_recipient',
+    'zerver_referral',
+    'zerver_scheduledjob',
+    'zerver_stream',
+    'zerver_subscription',
+    'zerver_useractivity',
+    'zerver_useractivityinterval',
+    'zerver_usermessage',
+    'zerver_userpresence',
+    'zerver_userprofile',
+    'zerver_userprofile_groups',
+    'zerver_userprofile_user_permissions',
+]
+
+NON_EXPORTED_TABLES = [
+    # These are known to either be altogether obsolete or
+    # simply inappropriate for exporting (e.g. contains transient
+    # data).
+    'zerver_preregistrationuser',
+    'zerver_preregistrationuser_streams',
+    'zerver_pushdevicetoken',
+    'zerver_referral',
+    'zerver_scheduledjob',
+    'zerver_userprofile_groups',
+    'zerver_userprofile_user_permissions',
+]
+assert set(NON_EXPORTED_TABLES).issubset(set(ALL_ZERVER_TABLES))
+
+IMPLICIT_TABLES = [
+    # ManyToMany relationships are exported implicitly.
+    'zerver_attachment_messages',
+]
+assert set(IMPLICIT_TABLES).issubset(set(ALL_ZERVER_TABLES))
+
+MESSAGE_TABLES = [
+    # message tables get special treatment, because they're so big
+    'zerver_message',
+    'zerver_usermessage',
+]
+
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'pub_date'],
@@ -57,6 +112,16 @@ DATE_FIELDS = {
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
 } # type: Dict[TableName, List[Field]]
 
+def sanity_check_output(data):
+    # (TableData) -> None
+    tables = set(ALL_ZERVER_TABLES)
+    tables -= set(NON_EXPORTED_TABLES)
+    tables -= set(IMPLICIT_TABLES)
+    tables -= set(MESSAGE_TABLES)
+
+    for table in tables:
+        if table not in data:
+            logging.warn('??? NO DATA EXPORTED FOR TABLE %s!!!' % (table,))
 
 def make_raw(query):
     # type: (Any) -> List[Record]
@@ -500,6 +565,8 @@ def do_export_realm(realm, output_dir, threads):
     export_file = os.path.join(output_dir, "realm.json")
     with open(export_file, "w") as f:
         f.write(ujson.dumps(response, indent=4))
+
+    sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
     if not settings.LOCAL_UPLOADS_DIR:
