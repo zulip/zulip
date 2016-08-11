@@ -156,3 +156,6 @@ polib==1.0.7
 # We're using this version from git to ensure compatibility with
 # Jinja2==2.8 (see https://github.com/jorgebastida/glue/pull/211).
 git+https://github.com/lorenzogil/glue@01c00cd33b9b78ea868300c266c16acd59a81bfc#egg=glue==0.11.1
+
+# Needed for cloning virtual environments
+git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6

@@ -5,6 +5,7 @@ import sys
 from os.path import dirname, abspath
 import subprocess
 from scripts.lib.zulip_tools import run
+from scripts.lib.hash_reqs import expand_reqs
 
 ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"
@@ -15,7 +16,7 @@ if 'TRAVIS' in os.environ:
 
 if False:
     # Don't add a runtime dependency on typing
-    from typing import List, Optional
+    from typing import List, Optional, Tuple, Set
 
 VENV_DEPENDENCIES = [
     "build-essential",
@@ -33,6 +34,102 @@ VENV_DEPENDENCIES = [
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
 ]
+
+def get_index_filename(venv_path):
+    # type: (str) -> str
+    return os.path.join(venv_path, 'package_index')
+
+def get_package_names(requirements_file):
+    packages = expand_reqs(requirements_file)
+    cleaned = []
+    operators = ['~=', '==', '!=', '<', '>']
+    for package in packages:
+        for operator in operators:
+            if operator in package:
+                package = package.split(operator)[0]
+
+        package = package.strip()
+        if package:
+            cleaned.append(package.lower())
+
+    return sorted(cleaned)
+
+def create_requirements_index_file(venv_path, requirements_file):
+    # type: (str, str) -> str
+    """
+    Creates a file, called package_index, in the virtual environment
+    directory that contains all the PIP packages installed in the
+    virtual environment. This file is used to determine the packages
+    that can be copied to a new virtual environment.
+    """
+    index_filename = get_index_filename(venv_path)
+    packages = get_package_names(requirements_file)
+    with open(index_filename, 'w') as writer:
+        writer.write('\n'.join(packages))
+        writer.write('\n')
+
+    return index_filename
+
+def get_venv_packages(venv_path):
+    # type: (str) -> Set[str]
+    """
+    Returns the packages installed in the virtual environment using the
+    package index file.
+    """
+    with open(get_index_filename(venv_path)) as reader:
+        return set(p.strip() for p in reader.read().split('\n') if p.strip())
+
+def try_to_copy_venv(venv_path, requirements_file):
+    # type: (str, str) -> bool
+    """
+    Tries to copy packages from an old virtual environment in the cache
+    to the new virtual environment. The algorithm works as follows:
+        1. Find a virtual environment, v, from the cache that has the
+        highest overlap with the new requirements such that:
+            a. The new requirements only add to the packages of v.
+            b. The new requirements only upgrade packages of v.
+        2. Copy the contents of v to the new virtual environment using
+        virtualenv-clone.
+        3. Delete all .pyc files in the new virtual environment.
+    """
+    venv_name = os.path.basename(venv_path)
+    new_packages = set(get_package_names(requirements_file))
+
+    overlaps = []
+    for sha1sum in os.listdir(VENV_CACHE_PATH):
+        curr_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, venv_name)
+        if (curr_venv_path == venv_path or
+                not os.path.exists(get_index_filename(curr_venv_path))):
+            continue
+
+        old_packages = get_venv_packages(curr_venv_path)
+        if not (old_packages - new_packages):
+            overlap = len(new_packages & old_packages)
+            overlaps.append((overlap, curr_venv_path))
+
+    if overlaps:
+        overlaps = sorted(overlaps)
+        source_venv_path = overlaps[-1][1]
+        print('Copying packages from {}'.format(source_venv_path))
+        clone_ve = "{}/bin/virtualenv-clone".format(source_venv_path)
+        cmd = "sudo {exe} {source} {target}".format(exe=clone_ve,
+                                                    source=source_venv_path,
+                                                    target=venv_path).split()
+        try:
+            run(cmd)
+        except Exception:
+            # Virtualenv-clone is not installed. Install it and try running
+            # the command again.
+            run("{}/bin/pip install --no-deps virtualenv-clone".format(
+                source_venv_path).split())
+            run(cmd)
+
+        run(["sudo", "chown", "-R",
+             "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        return True
+    else:
+        print("Didn't copy any packages.")
+        return False
 
 def do_patch_activate_script(venv_path):
     # type: (str) -> None
@@ -84,10 +181,17 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
 
     # Setup Python virtualenv
     run(["sudo", "rm", "-rf", venv_path])
-    run(["sudo", "mkdir", "-p", venv_path])
-    run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), venv_path])
-    run(["virtualenv"] + virtualenv_args + [venv_path])
+    if try_to_copy_venv(venv_path, requirements_file):
+        run(["sudo", "chown", "-R", "{}:{}".format(os.getuid(), os.getgid()),
+                                                   venv_path])
+    else:
+        # Create new virtualenv.
+        run(["sudo", "mkdir", "-p", venv_path])
+        run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()),
+                                             venv_path])
+        run(["virtualenv"] + virtualenv_args + [venv_path])
 
+    create_requirements_index_file(venv_path, requirements_file)
     # Switch current Python context to the virtualenv.
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
