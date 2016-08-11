@@ -239,7 +239,7 @@ def main():
         setup_node_modules()
 
     print()
-    print(OKBLUE + "Zulip development environent setup succeeded!" + ENDC)
+    print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
     return 0
 
 if __name__ == "__main__":
