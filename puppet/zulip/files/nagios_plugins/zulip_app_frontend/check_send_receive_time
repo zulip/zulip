@@ -15,6 +15,8 @@ import datetime
 import sys
 import optparse
 import random
+import subprocess
+import time
 import traceback
 import os
 
@@ -87,11 +89,15 @@ states = {
     "UNKNOWN": 3
     }
 
-def report(state, time, msg=None):
-    if msg:
-        print("%s: %s" % (state, msg))
-    else:
-        print("%s: send time was %s" % (state, time))
+def report(state, timestamp, msg=None):
+    now = int(time.time())
+    if msg is None:
+        msg = "send time was %s" % (timestamp,)
+    with open("/var/lib/nagios_state/check_send_receive_state.tmp", 'w') as f:
+        f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
+    subprocess.check_call(["mv", "/var/lib/nagios_state/check_send_receive_state.tmp",
+                           "/var/lib/nagios_state/check_send_receive_state"])
+    print("%s: %s" % (state, msg))
     exit(states[state])
 
 def send_zulip(sender, message):
