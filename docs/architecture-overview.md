@@ -67,12 +67,13 @@ instructions](prod-maintain-secure-upgrade.html#security-model).
 
 The default Zulip home screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
-hasn't viewed yet. The home screen displays the most recent messages in
-all the streams a user has joined (except for the streams they've
-muted), as well as private messages from other users, in strict
-chronological order. A user can *narrow* to view only the messages in a
-single stream, and can further narrow to focus on a *topic* (thread)
-within that stream. Each narrow has its own URL.
+hasn't viewed yet (for more on that logic, see [the guide to the
+pointer and unread counts](pointer.html)). The home screen displays
+the most recent messages in all the streams a user has joined (except
+for the streams they've muted), as well as private messages from other
+users, in strict chronological order. A user can *narrow* to view only
+the messages in a single stream, and can further narrow to focus on a
+*topic* (thread) within that stream. Each narrow has its own URL.
 
 Zulip's philosophy is to provide sensible defaults but give the user
 fine-grained control over their incoming information flow; a user can
