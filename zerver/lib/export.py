@@ -600,7 +600,13 @@ def do_export_realm(realm, output_dir, threads):
     logging.info("Exporting messages")
     export_messages(realm, user_profile_ids, recipient_ids, output_dir=output_dir)
 
-    # Start parallel jobs to export the UserMessage objects
+    # Start parallel jobs to export the UserMessage objects.
+    launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
+
+    logging.info("Finished exporting %s" % (realm.domain))
+
+def launch_user_message_subprocesses(threads, output_dir):
+    # type: (int, Path) -> None
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
     def run_job(shard):
         # type: (str) -> int
@@ -612,8 +618,6 @@ def do_export_realm(realm, output_dir, threads):
                                       [str(x) for x in range(0, threads)],
                                       threads=threads):
         print("Shard %s finished, status %s" % (job, status))
-
-    logging.info("Finished exporting %s" % (realm.domain))
 
 def do_export_user(user_profile, output_dir):
     # type: (UserProfile, Path) -> None
