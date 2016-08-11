@@ -380,7 +380,7 @@ def export_uploads_and_avatars(realm, output_dir):
         export_files_from_s3(realm, settings.S3_AVATAR_BUCKET, os.path.join(output_dir, "avatars"), True)
         export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, os.path.join(output_dir, "uploads"))
 
-def export_files_from_s3(realm, bucket_name, output_dir, avatar_bucket=False):
+def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=False):
     # type: (Realm, str, Path, bool) -> None
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
@@ -390,7 +390,7 @@ def export_files_from_s3(realm, bucket_name, output_dir, avatar_bucket=False):
 
     avatar_hash_values = set()
     user_ids = set()
-    if avatar_bucket:
+    if processing_avatars:
         bucket_list = bucket.list()
         for user_profile in UserProfile.objects.filter(realm=realm):
             avatar_hash = user_avatar_hash(user_profile.email)
@@ -410,7 +410,7 @@ def export_files_from_s3(realm, bucket_name, output_dir, avatar_bucket=False):
 
     count = 0
     for bkey in bucket_list:
-        if avatar_bucket and bkey.name not in avatar_hash_values:
+        if processing_avatars and bkey.name not in avatar_hash_values:
             continue
         key = bucket.get_key(bkey.name)
 
@@ -420,7 +420,7 @@ def export_files_from_s3(realm, bucket_name, output_dir, avatar_bucket=False):
                 raise Exception("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
             # Email gateway bot sends messages, potentially including attachments, cross-realm.
             print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
-        elif avatar_bucket:
+        elif processing_avatars:
             if 'user_profile_id' not in key.metadata:
                 raise Exception("Missing user_profile_id in key metadata: %s" % (key.metadata,))
             if int(key.metadata['user_profile_id']) not in user_ids:
@@ -439,7 +439,7 @@ def export_files_from_s3(realm, bucket_name, output_dir, avatar_bucket=False):
             record['realm_id'] = user_profile.realm_id
         record['user_profile_email'] = user_profile.email
 
-        if avatar_bucket:
+        if processing_avatars:
             dirname = output_dir
             filename = os.path.join(dirname, key.name)
             record['path'] = key.name
@@ -759,14 +759,14 @@ def bulk_import_client(data, model, table):
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads_local(import_dir, avatar_bucket=False):
+def import_uploads_local(import_dir, processing_avatars=False):
     # type: (Path, bool) -> None
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())
 
     for record in records:
-        if avatar_bucket:
+        if processing_avatars:
             # For avatars, we need to rehash the user's email with the
             # new server's avatar salt
             avatar_hash = user_avatar_hash(record['user_profile_email'])
@@ -783,7 +783,7 @@ def import_uploads_local(import_dir, avatar_bucket=False):
             subprocess.check_call(["mkdir", "-p", os.path.dirname(file_path)])
         shutil.copy(orig_file_path, file_path)
 
-def import_uploads_s3(bucket_name, import_dir, avatar_bucket=False):
+def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
     # type: (str, Path, bool) -> None
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
@@ -795,7 +795,7 @@ def import_uploads_s3(bucket_name, import_dir, avatar_bucket=False):
     for record in records:
         key = Key(bucket)
 
-        if avatar_bucket:
+        if processing_avatars:
             # For avatars, we need to rehash the user's email with the
             # new server's avatar salt
             avatar_hash = user_avatar_hash(record['user_profile_email'])
@@ -819,20 +819,20 @@ def import_uploads_s3(bucket_name, import_dir, avatar_bucket=False):
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
-def import_uploads(import_dir, avatar_bucket=False):
+def import_uploads(import_dir, processing_avatars=False):
     # type: (Path, bool) -> None
-    if avatar_bucket:
+    if processing_avatars:
         logging.info("Importing avatars")
     else:
         logging.info("Importing uploaded files")
     if settings.LOCAL_UPLOADS_DIR:
-        import_uploads_local(import_dir, avatar_bucket=avatar_bucket)
+        import_uploads_local(import_dir, processing_avatars=processing_avatars)
     else:
-        if avatar_bucket:
+        if processing_avatars:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        import_uploads_s3(bucket_name, import_dir, avatar_bucket=avatar_bucket)
+        import_uploads_s3(bucket_name, import_dir, processing_avatars=processing_avatars)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
@@ -937,7 +937,7 @@ def do_import_realm(import_dir):
     bulk_import_model(data, UserActivityInterval, 'zerver_useractivityinterval')
 
     # Import uploaded files and avatars
-    import_uploads(os.path.join(import_dir, "avatars"), avatar_bucket=True)
+    import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
     import_uploads(os.path.join(import_dir, "uploads"))
 
     # Import zerver_message and zerver_usermessage
