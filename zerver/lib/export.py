@@ -334,11 +334,18 @@ def write_message_export(message_filename, output):
         f.write(ujson.dumps(output, indent=4))
     logging.info("Dumped to %s" % (message_filename,))
 
-def export_messages(realm, user_profile_ids, recipient_ids,
-                    chunk_size=1000, output_dir=None):
-    # type: (Realm, Set[int], Set[int], int, Path) -> None
+def export_partial_message_files(realm, response, chunk_size=1000, output_dir=None):
+    # type: (Realm, TableData, int, Path) -> None
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
+
+    def get_ids(records):
+        # type: (List[Record]) -> Set[int]
+        return set(x['id'] for x in records)
+
+    user_profile_ids = get_ids(response['zerver_userprofile'] +
+                               response['zerver_userprofile_crossrealm'])
+    recipient_ids = get_ids(response['zerver_recipient'])
 
     # Basic security rule: You can export everything sent by someone
     # in your realm export (members of your realm plus Zulip realm
@@ -594,11 +601,13 @@ def do_export_realm(realm, output_dir, threads):
     logging.info("Exporting uploaded files and avatars")
     export_uploads_and_avatars(realm, output_dir)
 
-    user_profile_ids = set(x["id"] for x in response['zerver_userprofile'] +
-                           response['zerver_userprofile_crossrealm'])
-    recipient_ids = set(x["id"] for x in response['zerver_recipient'])
-    logging.info("Exporting messages")
-    export_messages(realm, user_profile_ids, recipient_ids, output_dir=output_dir)
+    # We (sort of) export zerver_message rows here.  We write
+    # them to .partial files that are subsequently fleshed out
+    # by parallel processes to add in zerver_usermessage data.
+    # This is for performance reasons, of course.  Some installations
+    # have millions of messages.
+    logging.info("Exporting .partial files messages")
+    export_partial_message_files(realm, response, output_dir=output_dir)
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
