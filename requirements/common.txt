@@ -1,6 +1,6 @@
 -r ipython.txt
 # Django itself; we use a slightly patched version
-git+https://github.com/zulip/truncated-django.git
+git+https://github.com/zulip/truncated-django.git#egg=Django==1.8
 
 GitPython==0.3.2.1
 
@@ -43,7 +43,7 @@ django-bitfield==1.8.0
 
 # Django-guardian is actually no longer used; just needed for the
 # migration that removes it.
-git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69
+git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69#egg=django-guardian==1.3
 
 # Django extension for sending data to statsd
 django-statsd-mozilla==0.3.16
@@ -143,10 +143,10 @@ uritemplate==0.6
 django-pipeline==1.6.8
 
 # Needed for iOS push notifications
-git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns-2.0.1
+git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
 
 # Needed for Twitter card integration
-git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5
+git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5#egg=python-twitter==3.1
 
 # Needed for the email mirror
 -r emailmirror.txt
