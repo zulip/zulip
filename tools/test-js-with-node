@@ -12,7 +12,7 @@ ret=0
 
 if [ "$1" = "cover" ]; then
   # Run a coverage test with Istanbul.
-  istanbul cover "$INDEX_JS" || ret=1;
+  istanbul cover "$INDEX_JS" --dir var/node-coverage || ret=1;
 
 elif [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo "Usage:
