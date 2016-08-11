@@ -84,8 +84,12 @@ def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
 
 @has_request_variables
 def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, Deployment, str, Dict[str, Any]) -> HttpResponse
-    report['deployment'] = deployment.name
+    # type: (HttpRequest, Deployment, text_type, Dict[str, Any]) -> HttpResponse
+    return do_report_error(deployment.name, type, report)
+
+def do_report_error(deployment_name, type, report):
+    # type: (text_type, text_type, Dict[str, Any]) -> HttpResponse
+    report['deployment'] = deployment_name
     if type == 'browser':
         notify_browser_error(report)
     elif type == 'server':

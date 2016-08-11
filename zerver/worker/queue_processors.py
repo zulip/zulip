@@ -275,9 +275,11 @@ class ErrorReporter(QueueProcessingWorker):
 
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
-        if not settings.DEPLOYMENT_ROLE_KEY:
-            return
-        self.staging_client.forward_error(event['type'], event['report'])
+        if settings.DEPLOYMENT_ROLE_KEY:
+            self.staging_client.forward_error(event['type'], event['report'])
+        elif settings.ZILENCER_ENABLED:
+            from zilencer.views import do_report_error
+            do_report_error(settings.DEPLOYMENT_ROLE_NAME, event['type'], event['report'])
 
 @assign_queue('slow_queries')
 class SlowQueryWorker(QueueProcessingWorker):
