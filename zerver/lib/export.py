@@ -366,7 +366,21 @@ def export_messages(realm, user_profile_ids, recipient_ids,
 
     # TODO: Add asserts that every message was sent in the realm and every recipient is available above.
 
-def export_bucket(realm, bucket_name, output_dir, avatar_bucket=False):
+def export_uploads_and_avatars(realm, output_dir):
+    # type: (Realm, Path) -> None
+    os.makedirs(os.path.join(output_dir, "uploads"))
+    if settings.LOCAL_UPLOADS_DIR:
+        # Small installations and developers will usually just store files locally.
+        export_uploads_from_local(realm, os.path.join(output_dir, "uploads"),
+                                  os.path.join(settings.LOCAL_UPLOADS_DIR, "files"))
+        export_avatars_from_local(realm, os.path.join(output_dir, "avatars"),
+                                  os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"))
+    else:
+        # Some bigger installations will have their data stored on S3.
+        export_files_from_s3(realm, settings.S3_AVATAR_BUCKET, os.path.join(output_dir, "avatars"), True)
+        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, os.path.join(output_dir, "uploads"))
+
+def export_files_from_s3(realm, bucket_name, output_dir, avatar_bucket=False):
     # type: (Realm, str, Path, bool) -> None
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
@@ -450,14 +464,7 @@ def export_bucket(realm, bucket_name, output_dir, avatar_bucket=False):
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
-def export_uploads_local(realm, output_dir):
-    # type: (Realm, Path) -> None
-    export_uploads_local_helper(realm, os.path.join(output_dir, "uploads"),
-                                os.path.join(settings.LOCAL_UPLOADS_DIR, "files"))
-    export_avatars_local_helper(realm, os.path.join(output_dir, "avatars"),
-                                os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"))
-
-def export_uploads_local_helper(realm, output_dir, local_dir):
+def export_uploads_from_local(realm, output_dir, local_dir):
     # type: (Realm, Path, Path) -> None
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -487,7 +494,7 @@ def export_uploads_local_helper(realm, output_dir, local_dir):
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
-def export_avatars_local_helper(realm, output_dir, local_dir):
+def export_avatars_from_local(realm, output_dir, local_dir):
     # type: (Realm, Path, Path) -> None
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -543,11 +550,6 @@ def export_avatars_local_helper(realm, output_dir, local_dir):
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
-def export_uploads(realm, output_dir):
-    # type: (Realm, Path) -> None
-    os.makedirs(os.path.join(output_dir, "uploads"))
-    export_bucket(realm, settings.S3_AVATAR_BUCKET, os.path.join(output_dir, "avatars"), True)
-    export_bucket(realm, settings.S3_AUTH_UPLOADS_BUCKET, os.path.join(output_dir, "uploads"))
 
 def do_export_realm(realm, output_dir, threads):
     # type: (Realm, Path, int) -> None
@@ -569,10 +571,7 @@ def do_export_realm(realm, output_dir, threads):
     sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
-    if not settings.LOCAL_UPLOADS_DIR:
-        export_uploads(realm, output_dir)
-    else:
-        export_uploads_local(realm, output_dir)
+    export_uploads_and_avatars(realm, output_dir)
 
     user_profile_ids = set(x["id"] for x in response['zerver_userprofile'] +
                            response['zerver_userprofile_crossrealm'])
