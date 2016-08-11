@@ -180,16 +180,12 @@ def export_with_admin_auth(realm, response, include_invite_only=True):
         # type: (Any, **Any) -> Any
         return model.objects.filter(realm=realm, **kwargs)
 
+    cross_realm_context = {'realm': realm}
+
     response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
                                       for x in filter_by_realm(UserProfile)]
-    if realm.domain == "zulip.com":
-        response['zerver_userprofile_crossrealm'] = []
-    else:
-        response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
-        get_user_profile_by_email(settings.NOTIFICATION_BOT),
-        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
-        get_user_profile_by_email(settings.WELCOME_BOT),
-    ]]
+    fetch_user_profile_cross_realm(response, cross_realm_context)
+
     floatify_datetime_fields(response, 'zerver_userprofile')
     user_profile_ids = get_primary_ids(response['zerver_userprofile'])
 
@@ -247,6 +243,20 @@ def export_with_admin_auth(realm, response, include_invite_only=True):
     attachment_query = filter_by_realm(Attachment)
     response["zerver_attachment"] = make_raw(attachment_query)
     floatify_datetime_fields(response, 'zerver_attachment')
+
+def fetch_user_profile_cross_realm(response, context):
+    # type: (TableData, Context) -> None
+
+    realm = context['realm']
+
+    if realm.domain == "zulip.com":
+        response['zerver_userprofile_crossrealm'] = []
+    else:
+        response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
+        get_user_profile_by_email(settings.NOTIFICATION_BOT),
+        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
+        get_user_profile_by_email(settings.WELCOME_BOT),
+    ]]
 
 def fetch_huddle_objects(response, context):
     # type: (TableData, Context) -> Tuple[List[Record], List[Record]]
