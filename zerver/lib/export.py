@@ -607,18 +607,23 @@ def do_export_user(user_profile, output_dir):
 
 def export_single_user(user_profile, response):
     # type: (UserProfile, TableData) -> None
+
+    # zerver_userprofile
     response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
                                       for x in [user_profile]]
     floatify_datetime_fields(response, 'zerver_userprofile')
 
+    # zerver_subscription
     subscription_query = Subscription.objects.filter(user_profile=user_profile)
     response["zerver_subscription"] = make_raw(subscription_query)
-    recipient_ids = set(s["recipient"] for s in response["zerver_subscription"])
 
+    # zerver_recipient
+    recipient_ids = set(s["recipient"] for s in response["zerver_subscription"])
     recipient_query = Recipient.objects.filter(id__in=recipient_ids)
     response["zerver_recipient"] = make_raw(recipient_query)
-    stream_ids = set(x["type_id"] for x in response["zerver_recipient"] if x["type"] == Recipient.STREAM)
 
+    # zerver_stream
+    stream_ids = set(x["type_id"] for x in response["zerver_recipient"] if x["type"] == Recipient.STREAM)
     stream_query = Stream.objects.filter(id__in=stream_ids)
     response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
     floatify_datetime_fields(response, 'zerver_stream')
