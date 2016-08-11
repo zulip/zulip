@@ -924,25 +924,63 @@ def do_export_user(user_profile, output_dir):
 def export_single_user(user_profile, response):
     # type: (UserProfile, TableData) -> None
 
+    config = get_single_user_config()
+    export_from_config(
+        response=response,
+        config=config,
+        seed_object=user_profile,
+    )
+
+def get_single_user_config():
+    # type: () -> Config
+
+    '''
+    Note that when we export a single user, we mostly traverse
+    the tables from the bottom up, whereas when we export a
+    whole realm, we go top down.
+
+    An analogy would be if you're exporting a whole website,
+    you visit all the blogs in the Blog table, then you visit
+    all the Articles for the Blog, then you visit all their
+    Authors.  But if you are exporting only one author,
+    you export the Author, then their Articles, then the Blogs
+    for their articles.
+    '''
+
     # zerver_userprofile
-    response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
-                                      for x in [user_profile]]
-    floatify_datetime_fields(response, 'zerver_userprofile')
+    user_profile_config = Config(
+        table='zerver_userprofile',
+        is_seeded=True,
+        exclude=['password', 'api_key'],
+    )
 
     # zerver_subscription
-    subscription_query = Subscription.objects.filter(user_profile=user_profile)
-    response["zerver_subscription"] = make_raw(subscription_query)
+    subscription_config = Config(
+        table='zerver_subscription',
+        model=Subscription,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
 
     # zerver_recipient
-    recipient_ids = set(s["recipient"] for s in response["zerver_subscription"])
-    recipient_query = Recipient.objects.filter(id__in=recipient_ids)
-    response["zerver_recipient"] = make_raw(recipient_query)
+    recipient_config = Config(
+        table='zerver_recipient',
+        model=Recipient,
+        virtual_parent=subscription_config,
+        id_source=('zerver_subscription', 'recipient'),
+    )
 
     # zerver_stream
-    stream_ids = set(x["type_id"] for x in response["zerver_recipient"] if x["type"] == Recipient.STREAM)
-    stream_query = Stream.objects.filter(id__in=stream_ids)
-    response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
-    floatify_datetime_fields(response, 'zerver_stream')
+    Config(
+        table='zerver_stream',
+        model=Stream,
+        virtual_parent=recipient_config,
+        id_source=('zerver_recipient', 'type_id'),
+        source_filter=lambda r: r['type'] == Recipient.STREAM,
+        exclude=['email_token'],
+    )
+
+    return user_profile_config
 
 def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
     # type: (UserProfile, int, Path) -> None
