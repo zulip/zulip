@@ -99,6 +99,7 @@ Contents:
 
    settings
    queuing
+   pointer
    markdown
    front-end-build-process
    schema-migrations
