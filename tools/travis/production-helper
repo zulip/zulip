@@ -3,8 +3,8 @@ set -e
 set -x
 
 apt-get install -y openssl ssl-cert
-ln -s /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
-ln -s /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
+ln -nsf /etc/ssl/certs/ssl-cert-snakeoil.pem /etc/ssl/certs/zulip.combined-chain.crt
+ln -nsf /etc/ssl/private/ssl-cert-snakeoil.key /etc/ssl/private/zulip.key
 
 tar -xf zulip-server-travis.tar.gz
 mv zulip-server-travis /root/zulip
