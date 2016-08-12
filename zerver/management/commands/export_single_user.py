@@ -16,8 +16,11 @@ from zerver.models import UserProfile, get_user_profile_by_email
 class Command(BaseCommand):
     help = """Exports message data from a Zulip user
 
-    This command exports the message history for a single Zulip user
-    """
+    This command exports the message history for a single Zulip user.
+
+    Note that this only exports the user's message history and
+    realm-public metadata needed to understand it; it does nothing
+    with (for example) any bots owned by the user."""
 
     def add_arguments(self, parser):
         parser.add_argument('email', metavar='<email>', type=str,
