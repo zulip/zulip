@@ -1,4 +1,6 @@
-The certificate's owner does not match hostname ‘localhost’
+  Self-signed certificate encountered.
+WARNING: no certificate subject alternative name matches
+	requested host name ‘localhost’.
   HTTP/1.1 302 FOUND
   Server: nginx/1.4.6 (Ubuntu)
   Content-Type: text/html; charset=utf-8

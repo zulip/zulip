@@ -146,7 +146,8 @@ whitespace_rules = [
      'description': 'Fix trailing whitespace'},
     {'pattern': '\t',
      'strip': '\n',
-     'exclude': set(['zerver/lib/bugdown/codehilite.py']),
+     'exclude': set(['zerver/lib/bugdown/codehilite.py',
+                     'tools/travis/success-http-headers.txt']),
      'description': 'Fix tab-based whitespace'},
     ] # type: RuleList
 markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
