@@ -582,6 +582,31 @@ def export_avatars_from_local(realm, output_dir, local_dir):
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+def do_write_stats_file_for_realm_export(output_dir):
+    stats_file = os.path.join(output_dir, 'stats.txt')
+    realm_file = os.path.join(output_dir, 'realm.json')
+    message_files = glob.glob(os.path.join(output_dir, 'messages-*.json'))
+    fns = sorted(message_files + [realm_file])
+
+    logging.info('Writing stats file: %s\n' % (stats_file,))
+    with open(stats_file, 'w') as f:
+        for fn in fns:
+            f.write(os.path.basename(fn) +'\n')
+            payload = open(fn).read()
+            data = ujson.loads(payload)
+            for k in sorted(data):
+                f.write('%5d %s\n' % (len(data[k]), k))
+            f.write('\n')
+
+        avatar_file = os.path.join(output_dir, 'avatars/records.json')
+        uploads_file = os.path.join(output_dir, 'uploads/records.json')
+
+        for fn in [avatar_file, uploads_file]:
+            f.write(fn+'\n')
+            payload = open(fn).read()
+            data = ujson.loads(payload)
+            f.write('%5d records\n' % len(data))
+            f.write('\n')
 
 def do_export_realm(realm, output_dir, threads):
     # type: (Realm, Path, int) -> None
