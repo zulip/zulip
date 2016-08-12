@@ -427,6 +427,7 @@ def get_admin_auth_config(realm_config):
         virtual_parent=user_profile_config,
         parent_key='realm_id__in',
         exclude=['email_token'],
+        post_process_data=sanity_check_stream_data
     )
 
     # Some of these tables are intermediate "tables" that we
@@ -498,6 +499,22 @@ def get_admin_auth_config(realm_config):
     )
 
     return user_profile_config
+
+def sanity_check_stream_data(response, config, context):
+    # type: (TableData, Config, Context) -> None
+
+    actual_streams = set([stream.name for stream in Stream.objects.all()])
+    streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
+
+    if streams_in_response != actual_streams:
+        print(streams_in_response - actual_streams)
+        print(actual_streams - streams_in_response)
+        raise Exception('''
+            zerver_stream data does not match
+            Stream.objects.all().
+
+            Please investigate!
+            ''')
 
 def fetch_user_profile_cross_realm(response, config, context):
     # type: (TableData, Config, Context) -> None
