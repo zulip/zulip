@@ -74,7 +74,7 @@ class RegistrationForm(forms.Form):
                                required=False)
     realm_name = forms.CharField(max_length=100, required=False)
 
-    if not settings.VOYAGER:
+    if settings.TERMS_OF_SERVICE:
         terms = forms.BooleanField(required=True)
 
 class ToSForm(forms.Form):
