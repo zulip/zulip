@@ -106,7 +106,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     #}
                     <input id="id_terms" class="required" type="checkbox" name="terms"
                            {% if form.terms.value() %}checked="checked"{% endif %} />
-                    {{ _('I agree to the') }} <a href="{{ external_uri_scheme }}{{ external_host }}/terms" target="_blank">{{ _('Terms of Service') }}</a>.
+                    {{ _('I agree to the') }} <a href="{{ server_uri }}/terms" target="_blank">{{ _('Terms of Service') }}</a>.
                 </label>
                 {% if form.terms.errors %}
                     {% for error in form.terms.errors %}

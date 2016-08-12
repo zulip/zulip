@@ -138,13 +138,13 @@
       <div class="feature-block left">
         <i class="icon-vector-mobile-phone icon-vector-3x feature-icon"></i>
         <h4>{% trans %}Mobile apps{% endtrans %}</h4>
-        <p>{% trans %}Check Zulip on the go with native <a href="{{ external_uri_scheme }}{{ external_host }}/apps">iOS and
+        <p>{% trans %}Check Zulip on the go with native <a href="{{ server_uri }}/apps">iOS and
         Android apps</a>{% endtrans %}.</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-desktop icon-vector-3x feature-icon"></i>
         <h4>{% trans %}Desktop apps{% endtrans %}</h4>
         <p>{% trans %}Prefer Zulip in its own window and rich, OS-level notifications?
-          Enjoy <a href="{{ external_uri_scheme }}{{ external_host }}/apps">Zulip on your desktop</a>{% endtrans %}.</p>
+          Enjoy <a href="{{ server_uri }}/apps">Zulip on your desktop</a>{% endtrans %}.</p>
       </div>
 {% endblock %}
