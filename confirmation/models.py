@@ -42,9 +42,11 @@ def check_key_is_valid(creation_key):
 def generate_key():
     return generate_random_token(40)
 
-def generate_activation_url(key):
+def generate_activation_url(key, host=None):
+    if host is None:
+        host = settings.EXTERNAL_HOST
     return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
-                        settings.EXTERNAL_HOST,
+                        host,
                         reverse('confirmation.views.confirm',
                                 kwargs={'confirmation_key': key}))
 
@@ -71,16 +73,17 @@ class ConfirmationManager(models.Manager):
             return obj
         return False
 
-    def get_link_for_object(self, obj):
+    def get_link_for_object(self, obj, host=None):
         key = generate_key()
         self.create(content_object=obj, date_sent=now(), confirmation_key=key)
-        return generate_activation_url(key)
+        return generate_activation_url(key, host=host)
 
     def send_confirmation(self, obj, email_address, additional_context=None,
-            subject_template_path=None, body_template_path=None):
+                          subject_template_path=None, body_template_path=None,
+                          host=None):
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
-        activate_url = generate_activation_url(confirmation_key)
+        activate_url = generate_activation_url(confirmation_key, host=host)
         context = Context({
             'activate_url': activate_url,
             'current_site': current_site,

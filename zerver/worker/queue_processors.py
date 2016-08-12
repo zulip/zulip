@@ -151,7 +151,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         do_send_confirmation_email(invitee, referrer)
 
         # queue invitation reminder for two days from now.
-        link = Confirmation.objects.get_link_for_object(invitee)
+        link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
         send_local_email_template_with_delay([{'email': data["email"], 'name': ""}],
                                              "zerver/emails/invitation/invitation_reminder_email",
                                              {'activate_url': link,

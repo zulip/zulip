@@ -3031,7 +3031,7 @@ def do_send_confirmation_email(invitee, referrer):
     Confirmation.objects.send_confirmation(
         invitee, invitee.email, additional_context=context,
         subject_template_path=subject_template_path,
-        body_template_path=body_template_path)
+        body_template_path=body_template_path, host=referrer.realm.host)
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
