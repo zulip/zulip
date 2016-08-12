@@ -169,6 +169,7 @@ class Config(object):
     def __init__(self, table=None, model=None,
                 normal_parent=None, virtual_parent=None,
                 filter_args=None, custom_fetch=None, custom_tables=None,
+                post_process_data=None,
                 concat_and_destroy=None, id_source=None, source_filter=None,
                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
         assert table or custom_tables
@@ -183,6 +184,7 @@ class Config(object):
         self.exclude = exclude
         self.custom_fetch = custom_fetch
         self.custom_tables = custom_tables
+        self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
         self.source_filter= source_filter
@@ -301,6 +303,13 @@ def export_from_config(response, config, seed_object=None, context=None):
         response[table] = make_raw(rows, exclude=config.exclude)
         if table in DATE_FIELDS:
             floatify_datetime_fields(response, table)
+
+    if config.post_process_data:
+        config.post_process_data(
+            response=response,
+            config=config,
+            context=context
+        )
 
     # Now walk our children.  It's extremely important to respect
     # the order of children here.
