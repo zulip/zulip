@@ -11,7 +11,9 @@ import subprocess
 import tempfile
 import ujson
 
-from zerver.lib.export import do_export_realm
+from zerver.lib.export import (
+    do_export_realm, do_write_stats_file_for_realm_export
+)
 from zerver.models import get_realm
 
 class Command(BaseCommand):
@@ -122,6 +124,9 @@ class Command(BaseCommand):
 
         do_export_realm(realm, output_dir, threads=num_threads)
         print("Finished exporting to %s; tarring" % (output_dir,))
+
+        do_write_stats_file_for_realm_export(output_dir)
+
         tarball_path = output_dir.rstrip('/') + '.tar.gz'
         os.chdir(os.path.dirname(output_dir))
         subprocess.check_call(["tar", "-czf", tarball_path, os.path.basename(output_dir)])
