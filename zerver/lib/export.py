@@ -420,16 +420,6 @@ def get_admin_auth_config(realm_config):
         parent_key='realm_id__in',
     )
 
-    stream_config = Config(
-        table='zerver_stream',
-        model=Stream,
-        normal_parent=realm_config,
-        virtual_parent=user_profile_config,
-        parent_key='realm_id__in',
-        exclude=['email_token'],
-        post_process_data=sanity_check_stream_data
-    )
-
     # Some of these tables are intermediate "tables" that we
     # create only for the export.  Think of them as similar to views.
 
@@ -457,11 +447,21 @@ def get_admin_auth_config(realm_config):
         parent_key='user_profile__in',
     )
 
-    Config(
+    stream_recipient_config = Config(
         table='_stream_recipient',
         model=Recipient,
         virtual_parent=stream_subscription_config,
         id_source=('_stream_subscription', 'recipient'),
+    )
+
+    Config(
+        table='zerver_stream',
+        model=Stream,
+        virtual_parent=stream_recipient_config,
+        id_source=('_stream_recipient', 'type_id'),
+        source_filter=lambda r: r['type'] == Recipient.STREAM,
+        exclude=['email_token'],
+        post_process_data=sanity_check_stream_data
     )
 
 
