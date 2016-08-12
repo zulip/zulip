@@ -393,7 +393,10 @@ CACHES = {
     'default': {
         'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
-        'TIMEOUT':  3600
+        'TIMEOUT':  3600,
+        'OPTIONS': {
+            'verify_keys': True,
+        }
     },
     'database': {
         'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
