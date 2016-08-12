@@ -168,6 +168,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
                     'TERMS_OF_SERVICE': None,
                     'TOS_VERSION': None,
+                    'SYSTEM_ONLY_REALMS': {"zulip.com"},
                     'FIRST_TIME_TOS_TEMPLATE': None
                     }
 
