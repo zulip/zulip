@@ -22,7 +22,6 @@ class zulip_internal::base {
                         # Useful tools in a production environment
                         "screen",
                         "strace",
-                        "moreutils",
                         "host",
                         "git",
                          ]
