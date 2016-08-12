@@ -439,21 +439,21 @@ def get_admin_auth_config(realm_config):
     )
 
     #
-
-    stream_recipient_config = Config(
-        table='_stream_recipient',
-        model=Recipient,
-        filter_args={'type': Recipient.STREAM},
-        normal_parent=stream_config,
-        parent_key='type_id__in',
+    stream_subscription_config = Config(
+        table='_stream_subscription',
+        model=Subscription,
+        normal_parent=user_profile_config,
+        filter_args={'recipient__type': Recipient.STREAM},
+        parent_key='user_profile__in',
     )
 
     Config(
-        table='_stream_subscription',
-        model=Subscription,
-        normal_parent=stream_recipient_config,
-        parent_key='recipient_id__in',
+        table='_stream_recipient',
+        model=Recipient,
+        virtual_parent=stream_subscription_config,
+        id_source=('_stream_subscription', 'recipient'),
     )
+
 
     #
 
