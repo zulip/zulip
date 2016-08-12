@@ -10,7 +10,7 @@ coverage==4.2
 pyflakes==1.2.3
 
 # Needed to sync translations from transifex
-transifex-client==0.12.1
+transifex-client==0.12.2
 
 # Dependency of transifex-client
 urllib3==1.16
