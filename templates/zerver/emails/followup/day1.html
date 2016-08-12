@@ -7,7 +7,7 @@
 <body>
 <table width="80%" style="align:center; max-width:800px" align="center">
 <tr><td>
-<a href="https://{{ external_host }}/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="Zulip" src="https://{{ external_host }}/static/images/landing-page/zulip-header.png" /></a>
+<a href="{{ external_uri_scheme }}{{ external_host }}/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="Zulip" src="{{ external_uri_scheme }}{{ external_host }}/static/images/landing-page/zulip-header.png" /></a>
 
 <h3 style="font-family:Arial; font-size:30px; margin: 5px 0px; color:#555">we love our users</h3>
 </td></tr>
@@ -17,10 +17,10 @@
 
 <p>Welcome to Zulip.</p>
 
-<p><a href="https://{{ external_host }}/hello" style="color:#08c">https://{{ external_host }}/hello</a> has a nice overview of what we're up to, but here are a few tips that'll help you get the most out of it:</p>
+<p><a href="{{ external_uri_scheme }}{{ external_host }}/hello" style="color:#08c">{{ external_uri_scheme }}{{ external_host }}/hello</a> has a nice overview of what we're up to, but here are a few tips that'll help you get the most out of it:</p>
 
 <ol>
-    <li>Zulip works best when it's always open, so <a href="https://{{ external_host }}/apps" style="color:#08c">grab our apps</a>! (Mac, Windows, Linux, Android, iOS)</li>
+    <li>Zulip works best when it's always open, so <a href="{{ external_uri_scheme }}{{ external_host }}/apps" style="color:#08c">grab our apps</a>! (Mac, Windows, Linux, Android, iOS)</li>
 
     <li>Want to <b>share files</b> in Zulip? No problem! Start a new message and click the paperclip, or just drag-and-drop the file into the textbox.</li>
 
@@ -30,7 +30,7 @@
 
     <li>Are you a keyboard power user? Learn about <b>keyboard shortcuts</b> in the Keyboard Shortcuts tab under the gear icon. (Or press '?')</li>
 
-    <li><b>Emoji</b>. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="https://{{ external_host }}/static/third/gemoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
+    <li><b>Emoji</b>. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="{{ external_uri_scheme }}{{ external_host }}/static/third/gemoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
 </ol>
 
 {% if verbose_support_offers %}
@@ -43,7 +43,7 @@
 </table>
 
 <p>
-  <a href="https://{{ external_host }}/#settings">Manage email preferences</a> |
+  <a href="{{ external_uri_scheme }}{{ external_host }}/#settings">Manage email preferences</a> |
   <a href="{{ unsubscribe_link }}">Unsubscribe from welcome emails</a> <small>(but there's only one more and aren't you a little curious?)</small>
 </p>
 
