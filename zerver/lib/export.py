@@ -952,19 +952,6 @@ def export_single_user(user_profile, response):
 def get_single_user_config():
     # type: () -> Config
 
-    '''
-    Note that when we export a single user, we mostly traverse
-    the tables from the bottom up, whereas when we export a
-    whole realm, we go top down.
-
-    An analogy would be if you're exporting a whole website,
-    you visit all the blogs in the Blog table, then you visit
-    all the Articles for the Blog, then you visit all their
-    Authors.  But if you are exporting only one author,
-    you export the Author, then their Articles, then the Blogs
-    for their articles.
-    '''
-
     # zerver_userprofile
     user_profile_config = Config(
         table='zerver_userprofile',
