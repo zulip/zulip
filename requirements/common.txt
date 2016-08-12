@@ -48,6 +48,9 @@ django-statsd-mozilla==0.3.16
 docopt==0.4.0
 fonttools==3.0
 
+#Needed for mock 2.0.0
+funcsigs==1.0.2
+
 # Needed for Android push notifications
 gcm-client==0.1.4
 
@@ -71,6 +74,9 @@ mock==1.0.1
 
 oauth2client==1.4.11
 oauthlib==1.1.2
+
+# Needed for mock>1.1.2
+pbr==1.10
 
 # Needed to access rabbitmq
 pika==0.10.0
