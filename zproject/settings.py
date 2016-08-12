@@ -114,6 +114,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'MAX_FILE_UPLOAD_SIZE': 25,
                     'ERROR_REPORTING': True,
                     'STAGING_ERROR_NOTIFICATIONS': False,
+                    'EVENT_LOGS_ENABLED': False,
                     'SAVE_FRONTEND_STACKTRACES': False,
                     'JWT_AUTH_KEYS': {},
                     'NAME_CHANGES_DISABLED': False,
@@ -822,10 +823,10 @@ ZULIP_PATHS = [
 
 # The Event log basically logs most significant database changes,
 # which can be useful for debugging.
-if VOYAGER:
-    EVENT_LOG_DIR = None
-else:
+if EVENT_LOGS_ENABLED:
     ZULIP_PATHS.append(("EVENT_LOG_DIR", "/home/zulip/logs/event_log"))
+else:
+    EVENT_LOG_DIR = None
 
 for (var, path) in ZULIP_PATHS:
     if DEVELOPMENT:
