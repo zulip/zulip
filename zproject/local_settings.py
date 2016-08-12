@@ -146,3 +146,5 @@ EXTRA_INSTALLED_APPS = [
     'zilencer',
     'corporate',
 ]
+
+EVENT_LOGS_ENABLED = True
