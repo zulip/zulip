@@ -2064,9 +2064,7 @@ class TestOpenRealms(AuthedTestCase):
         mit_realm.save()
         self.assertTrue(completely_open(mit_realm.domain))
         self.assertEquals(get_unique_open_realm(), None)
-        settings.VOYAGER = True
-        self.assertEquals(get_unique_open_realm(), mit_realm)
-        # Restore state
-        settings.VOYAGER = False
+        with self.settings(SYSTEM_ONLY_REALMS={"zulip.com"}):
+            self.assertEquals(get_unique_open_realm(), mit_realm)
         mit_realm.restricted_to_domain = True
         mit_realm.save()

@@ -76,16 +76,13 @@ def domains_for_this_deployment():
 
 def should_process_digest(domain, deployment_domains):
     # type: (str, List[str]) -> bool
-    if settings.VOYAGER:
-        # Voyager. We ship with a zulip.com realm for the feedback bot, but
-        # don't try to send e-mails to it.
-        return domain != "zulip.com"
-    elif settings.PRODUCTION:
+    if domain in settings.SYSTEM_ONLY_REALMS:
+        # Don't try to send emails to system-only realms
+        return False
+    if settings.PRODUCTION and not settings.VOYAGER:
         # zulip.com or staging.zulip.com
         return domain in deployment_domains
-    else:
-        # Development
-        return True
+    return True
 
 class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app

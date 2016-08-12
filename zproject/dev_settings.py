@@ -25,3 +25,4 @@ TERMS_OF_SERVICE = 'zproject/terms.md.template'
 
 SAVE_FRONTEND_STACKTRACES = True
 EVENT_LOGS_ENABLED = True
+SYSTEM_ONLY_REALMS = set() # type: Set[str]

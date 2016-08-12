@@ -148,3 +148,4 @@ EXTRA_INSTALLED_APPS = [
 ]
 
 EVENT_LOGS_ENABLED = True
+SYSTEM_ONLY_REALMS = set() # type: Set[str]
