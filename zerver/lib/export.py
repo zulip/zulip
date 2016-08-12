@@ -195,15 +195,21 @@ class Config(object):
         else:
             self.parent = None
 
-        # If we have both a virtual_parent and a normal_parent,
-        # the virtual parent is what we use to add ourselves
-        # to the dependency tree.  This is a bit hacky, but it
-        # is caused by us segmenting our configuration for things
-        # that are public and things that are admin-only.
-        if virtual_parent:
-            virtual_parent.children.append(self)
-        elif normal_parent:
+        if virtual_parent and normal_parent:
+            raise Exception('''
+                If you specify a normal_parent, please
+                do not create a virtual_parent.
+                ''')
+
+        if normal_parent:
             normal_parent.children.append(self)
+        elif virtual_parent:
+            virtual_parent.children.append(self)
+        elif not is_seeded:
+            raise Exception('''
+                You must specify a parent if you are
+                not using is_seeded.
+                ''')
 
         if self.id_source:
             if self.id_source[0] != self.virtual_parent.table:
@@ -365,11 +371,6 @@ def get_realm_config():
         use_all=True
     )
 
-    return realm_config
-
-def get_admin_auth_config(realm_config):
-    # type: (Config) -> Config
-
     # To export only some users, you can tweak the below UserProfile config
     # to give the target users, but then you should create any users not
     # being exported in a separate
@@ -416,7 +417,6 @@ def get_admin_auth_config(realm_config):
         table='zerver_attachment',
         model=Attachment,
         normal_parent=realm_config,
-        virtual_parent=user_profile_config,
         parent_key='realm_id__in',
     )
 
@@ -498,7 +498,7 @@ def get_admin_auth_config(realm_config):
         ]
     )
 
-    return user_profile_config
+    return realm_config
 
 def sanity_check_stream_data(response, config, context):
     # type: (TableData, Config, Context) -> None
@@ -886,23 +886,14 @@ def do_export_realm(realm, output_dir, threads):
 
     create_soft_link(source=output_dir, in_progress=True)
 
-    logging.info("Exporting realm configuration")
+    logging.info("Exporting data from get_realm_config()...")
     export_from_config(
         response=response,
         config=realm_config,
         seed_object=realm,
         context=dict(realm=realm)
     )
-
-    admin_auth_config = get_admin_auth_config(realm_config)
-
-    logging.info("Exporting core realm data")
-    admin_auth_config = get_admin_auth_config(realm_config)
-    export_from_config(
-        response=response,
-        config=admin_auth_config,
-        context=dict(realm=realm)
-    )
+    logging.info('...DONE with get_realm_config() data')
 
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
