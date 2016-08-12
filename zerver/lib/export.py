@@ -422,19 +422,20 @@ def get_admin_auth_config(realm_config):
 
     # Some of these tables are intermediate "tables" that we
     # create only for the export.  Think of them as similar to views.
-    user_recipient_config = Config(
-        table='_user_recipient',
-        model=Recipient,
-        filter_args={'type': Recipient.PERSONAL},
+
+    user_subscription_config = Config(
+        table='_user_subscription',
+        model=Subscription,
         normal_parent=user_profile_config,
-        parent_key='type_id__in', # Note! (This is not a typical fk.)
+        filter_args={'recipient__type': Recipient.PERSONAL},
+        parent_key='user_profile__in',
     )
 
     Config(
-        table='_user_subscription',
-        model=Subscription,
-        normal_parent=user_recipient_config,
-        parent_key='recipient_id__in',
+        table='_user_recipient',
+        model=Recipient,
+        virtual_parent=user_subscription_config,
+        id_source=('_user_subscription', 'recipient'),
     )
 
     #
