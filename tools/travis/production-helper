@@ -44,7 +44,7 @@ su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 echo; echo "Now testing that the newly installed server's homepage loads"; echo
 
 wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output
-grep -vi '\(Vary\|Content-Language\|expires\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
+grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
 if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
     set +x
     echo
