@@ -129,13 +129,13 @@ def write_data_to_file(output_file, data):
     with open(output_file, "w") as f:
         f.write(ujson.dumps(data, indent=4))
 
-def make_raw(query):
-    # type: (Any) -> List[Record]
+def make_raw(query, exclude=None):
+    # type: (Any, List[Field]) -> List[Record]
     '''
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
     '''
-    return [model_to_dict(x) for x in query]
+    return [model_to_dict(x, exclude=exclude) for x in query]
 
 def floatify_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
@@ -152,106 +152,345 @@ def floatify_datetime_fields(data, table):
             utc_naive  = dt.replace(tzinfo=None) - dt.utcoffset()
             item[field] = (utc_naive - datetime.datetime(1970, 1, 1)).total_seconds()
 
-# Export common, public information about the realm that we can share
-# with all realm users
-def export_realm_data(realm, response):
-    # type: (Realm, TableData) -> None
-    response['zerver_realm'] = make_raw(Realm.objects.filter(id=realm.id))
-    floatify_datetime_fields(response, 'zerver_realm')
+class Config(object):
+    '''
+    A Config object configures a single table for exporting (and,
+    maybe some day importing as well.
 
-    for (table, model) in realm_tables:
-        # mypy does not know that model is a Django model that
-        # supports "objects"
-        table_query =  model.objects.filter(realm_id=realm.id) # type: ignore
-        response[table] =  make_raw(table_query)
-    response["zerver_client"] = make_raw(Client.objects.all())
+    You should never mutate Config objects as part of the export;
+    instead use the data to determine how you populate other
+    data structures.
 
-# To export only some users, you can tweak the below UserProfile query
-# to give the target users, but then you should create any users not
-# being exported in a separate
-# response['zerver_userprofile_mirrordummy'] export so that
-# conversations with those users can still be exported.
-def export_with_admin_auth(realm, response, include_invite_only=True):
-    # type: (Realm, TableData, bool) -> None
+    There are parent/children relationships between Config objects.
+    The parent should be instantiated first.  The child will
+    append itself to the parent's list of children.
 
-    def get_primary_ids(records):
-        # type: (List[Record]) -> Set[int]
-        return set(x['id'] for x in records)
+    '''
+    def __init__(self, table=None, model=None,
+                normal_parent=None, virtual_parent=None,
+                filter_args=None, custom_fetch=None, custom_tables=None,
+                concat_and_destroy=None, id_source=None, source_filter=None,
+                parent_key=None, use_all=False, is_seeded=False, exclude=None):
+        assert table or custom_tables
+        self.table = table
+        self.model = model
+        self.normal_parent = normal_parent
+        self.virtual_parent = virtual_parent
+        self.filter_args = filter_args
+        self.parent_key = parent_key
+        self.use_all = use_all
+        self.is_seeded = is_seeded
+        self.exclude = exclude
+        self.custom_fetch = custom_fetch
+        self.custom_tables = custom_tables
+        self.concat_and_destroy = concat_and_destroy
+        self.id_source = id_source
+        self.source_filter= source_filter
+        self.children = [] # type: List[Config]
 
-    # Note that the filter_by_foo functions aren't composable--it shouldn't
-    # be an issue; for complex filtering, just use the ORM more directly.
+        if normal_parent:
+            self.parent = normal_parent
+        else:
+            self.parent = None
 
-    def filter_by_realm(model, **kwargs):
-        # type: (Any, **Any) -> Any
-        return model.objects.filter(realm=realm, **kwargs)
+        # If we have both a virtual_parent and a normal_parent,
+        # the virtual parent is what we use to add ourselves
+        # to the dependency tree.  This is a bit hacky, but it
+        # is caused by us segmenting our configuration for things
+        # that are public and things that are admin-only.
+        if virtual_parent:
+            virtual_parent.children.append(self)
+        elif normal_parent:
+            normal_parent.children.append(self)
 
-    cross_realm_context = {'realm': realm}
-
-    response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
-                                      for x in filter_by_realm(UserProfile)]
-    fetch_user_profile_cross_realm(response, cross_realm_context)
-
-    floatify_datetime_fields(response, 'zerver_userprofile')
-    user_profile_ids = get_primary_ids(response['zerver_userprofile'])
-
-
-    user_recipient_query = Recipient.objects.filter(type=Recipient.PERSONAL,
-                                                    type_id__in=user_profile_ids)
-    user_recipients = make_raw(user_recipient_query)
-    user_recipient_ids = get_primary_ids(user_recipients)
-
-
-    def filter_by_users(model, **kwargs):
-        # type: (Any, **Any) -> Any
-        return model.objects.filter(user_profile__in=user_profile_ids, **kwargs)
-
-
-    user_subscription_query = filter_by_users(Subscription,
-                                              recipient_id__in=user_recipient_ids)
-    user_subscription_dicts = make_raw(user_subscription_query)
-
-    user_presence_query = filter_by_users(UserPresence)
-    response["zerver_userpresence"] = make_raw(user_presence_query)
-    floatify_datetime_fields(response, 'zerver_userpresence')
-
-    user_activity_query = filter_by_users(UserActivity)
-    response["zerver_useractivity"] = make_raw(user_activity_query)
-    floatify_datetime_fields(response, 'zerver_useractivity')
-
-    user_activity_interval_query = filter_by_users(UserActivityInterval)
-    response["zerver_useractivityinterval"] = make_raw(user_activity_interval_query)
-    floatify_datetime_fields(response, 'zerver_useractivityinterval')
-
-    stream_query = filter_by_realm(Stream)
-    if not include_invite_only:
-        stream_query = stream_query.filter(invite_only=False)
-    response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
-    floatify_datetime_fields(response, 'zerver_stream')
-    stream_ids = get_primary_ids(response['zerver_stream'])
-
-    stream_recipient_query = Recipient.objects.filter(type=Recipient.STREAM,
-                                                      type_id__in=stream_ids)
-    stream_recipients = make_raw(stream_recipient_query)
-    stream_recipient_ids = get_primary_ids(stream_recipients)
-
-    stream_subscription_query = filter_by_users(Subscription,
-                                                recipient_id__in=stream_recipient_ids)
-    stream_subscription_dicts = make_raw(stream_subscription_query)
+        if self.id_source:
+            if self.id_source[0] != self.virtual_parent.table:
+                raise Exception('''
+                    Configuration error.  To populate %s, you
+                    want data from %s, but that differs from
+                    the table name of your virtual parent (%s),
+                    which suggests you many not have set up
+                    the ordering correctly.  You may simply
+                    need to assign a virtual_parent, or there
+                    may be deeper issues going on.''' % (
+                        self.table,
+                        self.id_source[0],
+                        self.virtual_parent.table,
+                    ))
 
 
-    context = {'realm': realm, 'user_profile_ids': user_profile_ids}
-    huddle_subscription_dicts, huddle_recipients = fetch_huddle_objects(response, context)
+def export_from_config(response, config, seed_object=None, context=None):
+    table = config.table
+    parent = config.parent
+    model = config.model
 
-    response["zerver_recipient"] = user_recipients + stream_recipients + huddle_recipients
-    response["zerver_subscription"] = user_subscription_dicts + stream_subscription_dicts + huddle_subscription_dicts
+    if context is None:
+        context = {}
 
-    attachment_query = filter_by_realm(Attachment)
-    response["zerver_attachment"] = make_raw(attachment_query)
-    floatify_datetime_fields(response, 'zerver_attachment')
 
-def fetch_user_profile_cross_realm(response, context):
-    # type: (TableData, Context) -> None
+    if table:
+        exported_tables = [table]
+    else:
+        exported_tables = config.custom_tables
 
+    for t in exported_tables:
+        logging.info('Exporting via export_from_config:  %s' % (t,))
+
+    rows = None
+    if config.is_seeded:
+        rows = [seed_object]
+
+    elif config.custom_fetch:
+        config.custom_fetch(
+            response=response,
+            config=config,
+            context=context
+        )
+        if config.custom_tables:
+            for t in config.custom_tables:
+                if t not in response:
+                    raise Exception('Custom fetch failed to populate %s' % (t,))
+
+    elif config.concat_and_destroy:
+        # When we concat_and_destroy, we are working with
+        # temporary "tables" that are lists of records that
+        # should already be ready to export.
+        data = [] # type: List[Record]
+        for t in config.concat_and_destroy:
+            data += response[t]
+            del response[t]
+            logging.info('Deleted temporary %s' % (t,))
+        response[table] = data
+
+    elif config.use_all:
+        query = model.objects.all()
+        rows = list(query)
+
+    elif config.normal_parent:
+        # In this mode, our current model is figuratively Article,
+        # and normal_parent is figuratively Blog, and
+        # now we just need to get all the articles
+        # contained by the blogs.
+        model = config.model
+        parent_ids = [r['id'] for r in response[parent.table]]
+        filter_parms = {config.parent_key: parent_ids}
+        if config.filter_args:
+            filter_parms.update(config.filter_args)
+        query = model.objects.filter(**filter_parms)
+        rows = list(query)
+
+    elif config.id_source:
+        # In this mode,  we are the figurative Blog, and we now
+        # need to look at the current response to get all the
+        # blog ids from the Article rows we fetched previously.
+        model = config.model
+        # This will be a tuple of the form ('zerver_article', 'blog').
+        (child_table, field) = config.id_source
+        child_rows = response[child_table]
+        if config.source_filter:
+            child_rows = [r for r in child_rows if config.source_filter(r)]
+        lookup_ids = [r[field] for r in child_rows]
+        filter_parms = dict(id__in=lookup_ids)
+        if config.filter_args:
+            filter_parms.update(config.filter_args)
+        query = model.objects.filter(**filter_parms)
+        rows = list(query)
+
+    # Post-process rows (which won't apply to custom fetches/concats)
+    if rows is not None:
+        response[table] = make_raw(rows, exclude=config.exclude)
+        if table in DATE_FIELDS:
+            floatify_datetime_fields(response, table)
+
+    # Now walk our children.  It's extremely important to respect
+    # the order of children here.
+    for child_config in config.children:
+        export_from_config(
+            response=response,
+            config=child_config,
+            context=context,
+        )
+
+def get_realm_config():
+    # type: () -> Config
+    # This is common, public information about the realm that we can share
+    # with all realm users.
+
+    realm_config = Config(
+        table='zerver_realm',
+        is_seeded=True
+    )
+
+    Config(
+        table='zerver_defaultstream',
+        model=DefaultStream,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_realmemoji',
+        model=RealmEmoji,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_realmalias',
+        model=RealmAlias,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_realmfilter',
+        model=RealmFilter,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_client',
+        model=Client,
+        virtual_parent=realm_config,
+        use_all=True
+    )
+
+    return realm_config
+
+def get_admin_auth_config(realm_config):
+    # type: (Config) -> Config
+
+    # To export only some users, you can tweak the below UserProfile config
+    # to give the target users, but then you should create any users not
+    # being exported in a separate
+    # response['zerver_userprofile_mirrordummy'] export so that
+    # conversations with those users can still be exported.
+    user_profile_config = Config(
+        table='zerver_userprofile',
+        model=UserProfile,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+        exclude=['password', 'api_key'],
+    )
+
+    Config(
+        custom_tables=[
+            'zerver_userprofile_crossrealm',
+        ],
+        virtual_parent=user_profile_config,
+        custom_fetch=fetch_user_profile_cross_realm,
+    )
+
+    Config(
+        table='zerver_userpresence',
+        model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_useractivity',
+        model=UserActivity,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_useractivityinterval',
+        model=UserActivityInterval,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_attachment',
+        model=Attachment,
+        normal_parent=realm_config,
+        virtual_parent=user_profile_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
+        table='zerver_stream',
+        model=Stream,
+        normal_parent=realm_config,
+        virtual_parent=user_profile_config,
+        parent_key='realm_id__in',
+        exclude=['email_token'],
+    )
+
+    # Some of these tables are intermediate "tables" that we
+    # create only for the export.  Think of them as similar to views.
+    user_recipient_config = Config(
+        table='_user_recipient',
+        model=Recipient,
+        filter_args={'type': Recipient.PERSONAL},
+        normal_parent=user_profile_config,
+        parent_key='type_id__in', # Note! (This is not a typical fk.)
+    )
+
+    Config(
+        table='_user_subscription',
+        model=Subscription,
+        normal_parent=user_recipient_config,
+        parent_key='recipient_id__in',
+    )
+
+    #
+
+    stream_recipient_config = Config(
+        table='_stream_recipient',
+        model=Recipient,
+        filter_args={'type': Recipient.STREAM},
+        normal_parent=user_profile_config,
+        parent_key='type_id__in',
+    )
+
+    Config(
+        table='_stream_subscription',
+        model=Subscription,
+        normal_parent=stream_recipient_config,
+        parent_key='recipient_id__in',
+    )
+
+    #
+
+    Config(
+        custom_tables=[
+            '_huddle_recipient',
+            '_huddle_subscription',
+            'zerver_huddle',
+        ],
+        normal_parent=user_profile_config,
+        custom_fetch=fetch_huddle_objects,
+    )
+
+    # Now build permanent tables from our temp tables.
+    Config(
+        table='zerver_recipient',
+        virtual_parent=user_profile_config,
+        concat_and_destroy=[
+            '_user_recipient',
+            '_stream_recipient',
+            '_huddle_recipient',
+        ],
+    )
+
+    Config(
+        table='zerver_subscription',
+        virtual_parent=user_profile_config,
+        concat_and_destroy=[
+            '_user_subscription',
+            '_stream_subscription',
+            '_huddle_subscription',
+        ]
+    )
+
+    return user_profile_config
+
+def fetch_user_profile_cross_realm(response, config, context):
+    # type: (TableData, Config, Context) -> None
     realm = context['realm']
 
     if realm.domain == "zulip.com":
@@ -263,13 +502,11 @@ def fetch_user_profile_cross_realm(response, context):
         get_user_profile_by_email(settings.WELCOME_BOT),
     ]]
 
-def fetch_huddle_objects(response, context):
-    # type: (TableData, Context) -> Tuple[List[Record], List[Record]]
+def fetch_huddle_objects(response, config, context):
+    # type: (TableData, Config, Context) -> None
 
-    # We introduce a context variable here as a bit of pre-factoring
-    # for upcoming changes.
     realm = context['realm']
-    user_profile_ids = context['user_profile_ids']
+    user_profile_ids = set(r['id'] for r in response[config.parent.table])
 
     # First we get all huddles involving someone in the realm.
     realm_huddle_subs = Subscription.objects.select_related("recipient").filter(recipient__type=Recipient.HUDDLE,
@@ -295,9 +532,10 @@ def fetch_huddle_objects(response, context):
 
     huddle_subscription_dicts = make_raw(huddle_subs)
     huddle_recipients = make_raw(Recipient.objects.filter(id__in=huddle_recipient_ids))
-    response['zerver_huddle'] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
 
-    return (huddle_subscription_dicts, huddle_recipients)
+    response['_huddle_recipient'] = huddle_recipients
+    response['_huddle_subscription'] = huddle_subscription_dicts
+    response['zerver_huddle'] = make_raw(Huddle.objects.filter(id__in=huddle_ids))
 
 def fetch_usermessages(realm, message_ids, user_profile_ids, message_filename):
     # type: (Realm, Set[int], Set[int], Path) -> List[Record]
@@ -617,10 +855,28 @@ def do_export_realm(realm, output_dir, threads):
     # enforce this for us.
     assert threads >= 1
 
+    realm_config = get_realm_config()
+
+    create_soft_link(source=output_dir, in_progress=True)
+
     logging.info("Exporting realm configuration")
-    export_realm_data(realm, response)
+    export_from_config(
+        response=response,
+        config=realm_config,
+        seed_object=realm,
+        context=dict(realm=realm)
+    )
+
+    admin_auth_config = get_admin_auth_config(realm_config)
+
     logging.info("Exporting core realm data")
-    export_with_admin_auth(realm, response)
+    admin_auth_config = get_admin_auth_config(realm_config)
+    export_from_config(
+        response=response,
+        config=admin_auth_config,
+        context=dict(realm=realm)
+    )
+
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
 
@@ -641,6 +897,25 @@ def do_export_realm(realm, output_dir, threads):
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
     logging.info("Finished exporting %s" % (realm.domain))
+    create_soft_link(source=output_dir, in_progress=False)
+
+def create_soft_link(source, in_progress=True):
+    is_done = not in_progress
+    in_progress_link = '/tmp/zulip-export-in-progress'
+    done_link = '/tmp/zulip-export-most-recent'
+
+    subprocess.check_call(['rm', '-f', in_progress_link])
+    subprocess.check_call(['rm', '-f', done_link])
+
+    if in_progress:
+        new_target = in_progress_link
+    else:
+        new_target = done_link
+
+    subprocess.check_call(["ln", "-s", source, new_target])
+    if is_done:
+        logging.info('See %s for output files' % (new_target,))
+
 
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
@@ -669,25 +944,63 @@ def do_export_user(user_profile, output_dir):
 def export_single_user(user_profile, response):
     # type: (UserProfile, TableData) -> None
 
+    config = get_single_user_config()
+    export_from_config(
+        response=response,
+        config=config,
+        seed_object=user_profile,
+    )
+
+def get_single_user_config():
+    # type: () -> Config
+
+    '''
+    Note that when we export a single user, we mostly traverse
+    the tables from the bottom up, whereas when we export a
+    whole realm, we go top down.
+
+    An analogy would be if you're exporting a whole website,
+    you visit all the blogs in the Blog table, then you visit
+    all the Articles for the Blog, then you visit all their
+    Authors.  But if you are exporting only one author,
+    you export the Author, then their Articles, then the Blogs
+    for their articles.
+    '''
+
     # zerver_userprofile
-    response['zerver_userprofile'] = [model_to_dict(x, exclude=["password", "api_key"])
-                                      for x in [user_profile]]
-    floatify_datetime_fields(response, 'zerver_userprofile')
+    user_profile_config = Config(
+        table='zerver_userprofile',
+        is_seeded=True,
+        exclude=['password', 'api_key'],
+    )
 
     # zerver_subscription
-    subscription_query = Subscription.objects.filter(user_profile=user_profile)
-    response["zerver_subscription"] = make_raw(subscription_query)
+    subscription_config = Config(
+        table='zerver_subscription',
+        model=Subscription,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
 
     # zerver_recipient
-    recipient_ids = set(s["recipient"] for s in response["zerver_subscription"])
-    recipient_query = Recipient.objects.filter(id__in=recipient_ids)
-    response["zerver_recipient"] = make_raw(recipient_query)
+    recipient_config = Config(
+        table='zerver_recipient',
+        model=Recipient,
+        virtual_parent=subscription_config,
+        id_source=('zerver_subscription', 'recipient'),
+    )
 
     # zerver_stream
-    stream_ids = set(x["type_id"] for x in response["zerver_recipient"] if x["type"] == Recipient.STREAM)
-    stream_query = Stream.objects.filter(id__in=stream_ids)
-    response['zerver_stream'] = [model_to_dict(x, exclude=["email_token"]) for x in stream_query]
-    floatify_datetime_fields(response, 'zerver_stream')
+    Config(
+        table='zerver_stream',
+        model=Stream,
+        virtual_parent=recipient_config,
+        id_source=('zerver_recipient', 'type_id'),
+        source_filter=lambda r: r['type'] == Recipient.STREAM,
+        exclude=['email_token'],
+    )
+
+    return user_profile_config
 
 def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
     # type: (UserProfile, int, Path) -> None
