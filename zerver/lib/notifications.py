@@ -267,10 +267,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
     if len(senders) > 1:
-        from_email = "%s (via Zulip) <%s>" % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
+        from_email = '"%s (via Zulip)" <%s>' % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
     else:
         sender = missed_messages[0].sender
-        from_email = "%s <%s>" % (sender_str, sender.email)
+        from_email = '"%s" <%s>' % (sender_str, sender.email)
         headers['Sender'] = "Zulip <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)

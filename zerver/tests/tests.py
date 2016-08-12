@@ -1992,7 +1992,7 @@ class TestMissedMessages(AuthedTestCase):
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
 
         self.assertEquals(len(mail.outbox), 1)
-        self.assertEqual(msg.from_email, "%s <%s>" % (othello.full_name, othello.email))
+        self.assertEqual(msg.from_email, '"%s" <%s>' % (othello.full_name, othello.email))
         self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
         self.assertEqual(msg.extra_headers['Sender'], sender)
         self.assertIn(
@@ -2020,7 +2020,7 @@ class TestMissedMessages(AuthedTestCase):
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
 
         self.assertEquals(len(mail.outbox), 1)
-        self.assertEqual(msg.from_email, "%s <%s>" % (othello.full_name, othello.email))
+        self.assertEqual(msg.from_email, '"%s" <%s>' % (othello.full_name, othello.email))
         self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
         self.assertEqual(msg.extra_headers['Sender'], sender)
         self.assertIn('You and Othello, the Moor of Venice Extremely personal message!',
@@ -2047,7 +2047,7 @@ class TestMissedMessages(AuthedTestCase):
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
 
         self.assertEquals(len(mail.outbox), 1)
-        self.assertEqual(msg.from_email, "%s <%s>" % (othello.full_name, othello.email))
+        self.assertEqual(msg.from_email, '"%s" <%s>' % (othello.full_name, othello.email))
         self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
         self.assertEqual(msg.extra_headers['Sender'], sender)
         body = ('You and Iago, Othello, the Moor of Venice Othello,'
