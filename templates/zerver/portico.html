@@ -16,9 +16,9 @@
   <div class="column-left">
         <div>
           {% if custom_logo_url %}
-          <a class="brand logo" href="{{ external_uri_scheme }}{{ external_host }}/"><img src="{{ custom_logo_url }}" class="portico-logo" alt="Zulip" content="Zulip" /></a>
+          <a class="brand logo" href="{{ server_uri }}/"><img src="{{ custom_logo_url }}" class="portico-logo" alt="Zulip" content="Zulip" /></a>
           {% else %}
-          <a class="brand logo" href="{{ external_uri_scheme }}{{ external_host }}/"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="portico-simple-logo" alt="Zulip" content="Zulip" /></a>
+          <a class="brand logo" href="{{ server_uri }}/"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="portico-simple-logo" alt="Zulip" content="Zulip" /></a>
           {% endif %}
         </div>
   </div>
@@ -52,10 +52,10 @@
 <div class="footer">
   <div class="footer-main">
     <ul class="footer-navigation">
-      <li><a href="{{ external_uri_scheme }}{{ external_host }}/hello">{{ _('About') }}</a></li>
+      <li><a href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
       {% if terms_of_service %}
       <li><span class="little-bullet">·</span></li>
-      <li><a href="{{ external_uri_scheme }}{{ external_host }}/terms">{{ _('Legal') }}</a></li>
+      <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
       {% endif %}
       <li><span class="little-bullet">·</span></li>
       <li><a href="{{login_url}}">{{ _('Log in') }}</a></li>
@@ -70,7 +70,7 @@
       </li>
       <li>
           {% if open_realm_creation %}
-          <a href="{{ external_uri_scheme }}{{ external_host }}/create_realm">{{ _('Create new organization') }}</a>
+          <a href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a>
           {% endif %}
       </li>
       {% endif %}
