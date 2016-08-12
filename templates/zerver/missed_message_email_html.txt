@@ -42,4 +42,4 @@ While you were away you received {{ message_count }} new message{{ message_count
 <br>
 The Zulip Team</p>
 
-<p><a href="https://{{ external_host }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>
+<p><a href="{{ external_uri_scheme }}{{ external_host }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>

@@ -4,7 +4,7 @@ Mail sent to a user who hasn't logged in for 24 hours.
 
 Hello {{ name }},
 
-<p>A lot has happened on Zulip while you've been away! <a href="https://{{ external_host }}">Visit Zulip</a> to catch up.</p>
+<p>A lot has happened on Zulip while you've been away! <a href="{{ external_uri_scheme }}{{ external_host }}">Visit Zulip</a> to catch up.</p>
 
 {% if unread_pms %}
 <h2>Missed private messages</h2>
@@ -27,7 +27,7 @@ Hello {{ name }},
     {% endfor %}
 
 {% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
-<p><a href="https://{{ external_host }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
+<p><a href="{{ external_uri_scheme }}{{ external_host }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
 </div>
 {% endif %}
 
@@ -59,7 +59,7 @@ Here are some of the hot conversations that have happened while you've been gone
     {% endfor %}
     </div>
 {% endfor %}
-<p><a href="https://{{ external_host }}">Catch up on the rest of these conversations.</a></p>
+<p><a href="{{ external_uri_scheme }}{{ external_host }}">Catch up on the rest of these conversations.</a></p>
 
 {% endif %}
 
@@ -79,7 +79,7 @@ Here are some of the hot conversations that have happened while you've been gone
 
 <p>{{ new_streams.html|display_list(4)|safe }}.</p>
 
-<p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="https://{{ external_host }}/#subscriptions">Streams page</a> to subscribe.</p>
+<p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ external_uri_scheme }}{{ external_host }}/#subscriptions">Streams page</a> to subscribe.</p>
 {% endif %}
 
 {% if new_users %}
@@ -88,13 +88,13 @@ Here are some of the hot conversations that have happened while you've been gone
 
 <br />
 
-<p><a href="https://{{ external_host }}">Click here to log in to Zulip and catch up.</a></p>
+<p><a href="{{ external_uri_scheme }}{{ external_host }}">Click here to log in to Zulip and catch up.</a></p>
 
 <p>Cheers,
 <br>
 The Zulip Team</p>
 
 <p>
-  <a href="https://{{ external_host }}/#settings">Manage email preferences</a> |
+  <a href="{{ external_uri_scheme }}{{ external_host }}/#settings">Manage email preferences</a> |
   <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
 </p>

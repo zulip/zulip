@@ -33,7 +33,7 @@ The Zulip Team
 
 Manage email preferences:
 
-https://{{ external_host }}/#settings
+{{ external_uri_scheme }}{{ external_host }}/#settings
 
 Unsubscribe from missed message emails:
 
