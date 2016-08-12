@@ -396,6 +396,7 @@ CACHES = {
         'TIMEOUT':  3600,
         'OPTIONS': {
             'verify_keys': True,
+            'tcp_nodelay': True,
         }
     },
     'database': {
