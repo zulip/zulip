@@ -81,14 +81,9 @@ if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*u
 fi
 
 echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
+# First run the check that usually runs in cron and populates the state files
+/home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
 for consumer in notify_tornado user_activity user_activity_interval user_presence invites signups message_sender feedback_messages error_reports digest_emails email_mirror missedmessage_mobile_notifications; do
-    if ! /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file "$consumer"; then
-        # Temporary section while we're debugging why this fails nondeterministically in CI
-        STATE_DIR=/var/lib/nagios_state
-        ls "$STATE_DIR"
-        cat "$STATE_DIR"/*
-        /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file "$consumer"
-    fi
     if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
         set +x
         echo

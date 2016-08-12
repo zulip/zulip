@@ -2,15 +2,4 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=root
 
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file notify_tornado
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file user_activity
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file user_activity_interval
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file user_presence
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file invites
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file signups
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file message_sender
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file feedback_messages
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file error_reports
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file digest_emails
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file email_mirror
-* * * * * root /home/zulip/deployments/current/scripts/nagios/write-rabbitmq-consumers-state-file missedmessage_mobile_notifications
+* * * * * root /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
