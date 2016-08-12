@@ -2,10 +2,10 @@ Hi there!
 
 Welcome to Zulip.
 
-https://{{ external_host }}/hello has a nice overview of what we're up to, but here are a couple tips that'll help you get the most out of it:
+{{ external_uri_scheme }}{{ external_host }}/hello has a nice overview of what we're up to, but here are a couple tips that'll help you get the most out of it:
 
 1. Zulip works best when it's always open, so grab our apps! (Mac, Windows, Linux, Android, iOS)
-   https://{{ external_host }}/apps
+   {{ external_uri_scheme }}{{ external_host }}/apps
 
 2. Want to share files in Zulip? No problem! Start a new message and click the paperclip, or just drag-and-drop the file into the textbox.
 
@@ -23,7 +23,7 @@ Thanks,
 Zulip
 ----
 Manage email preferences:
-https://{{ external_host }}/#settings
+{{ external_uri_scheme }}{{ external_host }}/#settings
 
 Unsubscribe from welcome emails (but there's only one more and aren't you a little curious?):
 {{ unsubscribe_link }}

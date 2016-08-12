@@ -11,13 +11,13 @@ Topics are like email subject lines. The big difference, though, is that they're
 Why bother with topics? Well, two reasons: it makes conversations clearer (imagine if email didn't have them!), and it lets you more efficiently catch up on what's happened while you're away -- read the topics that are relevant to you, and ignore the ones that aren't!
 
 Take it for a spin now:
-https://{{ external_host }}
+{{ external_uri_scheme }}{{ external_host }}
 
 Thanks,
 Zulip
 ----
 Manage email preferences:
-https://{{ external_host }}/#settings
+{{ external_uri_scheme }}{{ external_host }}/#settings
 
 Unsubscribe from welcome emails:
 {{ unsubscribe_link }}
