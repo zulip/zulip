@@ -59,7 +59,7 @@ from six.moves import range
 
 def address_of(device_id):
     try:
-        return netifaces.ifaddresses("eth%i" % device_id)[netifaces.AF_INET][0]['addr']
+        return netifaces.ifaddresses("ens%i" % device_id)[netifaces.AF_INET][0]['addr']
     except KeyError:
         return None
 
@@ -96,11 +96,14 @@ for device in macs.values():
     else:
         to_configure = list(device['local-ipv4s'])
     device_number = int(device['device-number'])
+    if subprocess.check_output(["lsb_release", '-sc']).strip() == "xenial":
+        # HACK: It appears on Xenial device_number in the data set is 0 but in reality it is 3
+        device_number += 3
 
     if address_of(device_number) is None:
         # If the device was not autoconfigured, do so now.
-        log.info("Device eth%i not configured, starting dhcpd" % (device_number,))
-        subprocess.check_call(['/sbin/dhcpcd', 'eth%i' % device_number])
+        log.info("Device ens%i not configured, starting dhcpd" % (device_number,))
+        subprocess.check_call(['/sbin/dhcpcd', 'ens%i' % device_number])
 
         # Horrible hack to route return packets on the correct interface
         # See http://unix.stackexchange.com/a/4421/933
@@ -108,7 +111,7 @@ for device in macs.values():
                 ['/sbin/ip', 'rule', 'add', 'fwmark', str(device_number), 'table', str(device_number)])
         subprocess.check_call(
                 ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', str(device_number), 'dev',
-                    'eth%i' % device_number, 'via', guess_gateway(device_number)])
+                    'ens%i' % device_number, 'via', guess_gateway(device_number)])
         subprocess.check_call(
                 ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
                     address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
@@ -118,7 +121,7 @@ for device in macs.values():
 
     for (count, ip) in enumerate(to_configure):
         # Configure the IP via a virtual interface
-        device = "eth%i:%i" % (device_number, count)
+        device = "ens%i:%i" % (device_number, count)
         log.info("Configuring %s with IP %s" % (device, ip))
         subprocess.check_call(['/sbin/ifconfig', device, ip])
         subprocess.check_call(
