@@ -1,10 +1,10 @@
-# Zulip Terms of Service
+# Kandra Labs Terms of Service
 
-### Welcome to Zulip!
+### Welcome to Kandra Labs!
 
 Thanks for using our products and services ("Services"). The Services are
-provided by Zulip, Inc. ("Zulip"), located at 552 Massachusetts Ave Suite 203,
-Cambridge, MA 02139, United States.
+provided by Kandra Labs, Inc. ("Kandra Labs"), located at
+235 Berry St. Suite 306, San Francisco, CA 94158, United States.
 
 By using our Services, you are agreeing to these terms. Please read them
 carefully.
@@ -31,7 +31,7 @@ permitted by law. These terms do not grant you the right to use any branding or
 logos used in our Services. Don't remove, obscure, or alter any legal notices
 displayed in or along with our Services.
 
-Our Services display some content that is not Zulip's. This content is the
+Our Services display some content that does not belong to Kandra Labs. This content is the
 sole responsibility of the entity that makes it available. We may review
 content to determine whether it is illegal or violates our policies, and we may
 remove or refuse to display content that we reasonably believe violates our
@@ -42,12 +42,12 @@ In connection with your use of the Services, we may send you service
 announcements, administrative messages, and other information. You may opt out
 of some of those communications.
 
-### Your Zulip Account
+### Your Kandra Labs Zulip Account
 
-You may need a Zulip Account in order to use some of our Services. You may
-create your own Zulip Account, or your Zulip Account may be assigned to you
+You may need a Kandra Labs Zulip Account ("Account") in order to use some of our Services. You may
+create your own Account, or your Account may be assigned to you
 by an administrator, such as your employer or educational institution. If you
-are using a Zulip Account assigned to you by an administrator, different or
+are using an Account assigned to you by an administrator, different or
 additional terms may apply and your administrator may be able to access or
 disable your account.
 
@@ -56,9 +56,9 @@ If you learn of any unauthorized use of your password or account, contact
 
 ### Privacy and Copyright Protection
 
-Zulip's [privacy policy](/privacy) explains how we treat your
+The Kandra Labs [privacy policy](/privacy) explains how we treat your
 personal data and protect your privacy when you use our Services. By using our
-Services, you agree that Zulip can use such data in accordance with our
+Services, you agree that Kandra Labs can use such data in accordance with our
 privacy policy.
 
 We respond to notices of alleged copyright infringement and terminate
@@ -68,10 +68,10 @@ Digital Millennium Copyright Act.
 Our designated agent for notice of alleged copyright infringement on the
 Services is:
 
-> Copyright Agent  
-> Zulip, Inc.  
-> 552 Massachusetts Ave Suite 203  
-> Cambridge, MA 02139  
+> Copyright Agent
+> Kandra Labs, Inc.
+> 235 Berry St. Suite 306
+> San Francisco, CA 94158
 > [copyright@zulip.com](mailto:copyright@zulip.com)
 
 ### Your Content in our Services
@@ -80,7 +80,7 @@ Some of our Services allow you to submit content. You retain ownership of
 any intellectual property rights that you hold in that content. In short, what
 belongs to you stays yours.
 
-When you upload or otherwise submit content to our Services, you give Zulip
+When you upload or otherwise submit content to our Services, you give Kandra Labs
 (and those we work with) a worldwide license to use, host, store, reproduce,
 modify, create derivative works (such as those resulting from translations,
 adaptations or other changes we make so that your content works better with our
@@ -88,7 +88,7 @@ Services), communicate, publish, perform, display and distribute such content.
 The rights you grant in this license are for the limited purpose of operating
 and improving our Services, and to develop new ones. This license continues
 even if you stop using our Services (for example, so that we can deliver a
-message that you sent to another Zulip Account before you stopped using our
+message that you sent to another Account before you stopped using our
 Services). Some Services may offer you ways to access and remove content that
 has been provided to that Service. Also, in some of our Services, there may be
 terms or settings that narrow the scope of our use of the content submitted in
@@ -99,7 +99,7 @@ Services to share content with others, anyone you've shared content with
 content.
 
 In order to provide the Services, our servers save a record of the messages
-received by each Zulip Account (the "Received Messsage Information" for the
+received by each Account (the "Received Messsage Information" for the
 account). If you are using our Services on behalf of a business and a
 representative of that business sends [data@zulip.com](mailto:data@zulip.com)
 a request to delete all of your business' accounts with us, then within a
@@ -108,11 +108,11 @@ accounts with us and delete the Received Message Information for each such
 account by removing pointers to the information on our active servers and
 overwriting it over time. Notwithstanding the foregoing, deleting the Received
 Message Information for your business' accounts will not require deleting any
-information about messages that were sent or received by any Zulip Accounts that
+information about messages that were sent or received by any Accounts that
 are not one of your business' accounts with us (such as system-wide announcement
-messages or any messages corresponding with the Zulip support team).
+messages or any messages corresponding with the Kandra Labs support team).
 
-You can find more information about how Zulip uses and stores content in
+You can find more information about how Kandra Labs uses and stores content in
 the privacy policy. If you submit feedback or suggestions about our Services,
 we may use your feedback or suggestions without obligation to you.
 
@@ -123,10 +123,10 @@ When a Service requires or includes downloadable software, this software may
 update automatically on your device once a new version or feature is available.
 Some Services may let you adjust your automatic update settings.
 
-Zulip gives you a personal, worldwide, royalty-free, non-assignable and
-non-exclusive license to use the software provided to you by Zulip as part of
+Kandra Labs gives you a personal, worldwide, royalty-free, non-assignable and
+non-exclusive license to use the software provided to you by Kandra Labs as part of
 the Services. This license is for the sole purpose of enabling you to use and
-enjoy the benefit of the Services as provided by Zulip, in the manner
+enjoy the benefit of the Services as provided by Kandra Labs, in the manner
 permitted by these terms. You may not copy, modify, distribute, sell, or lease
 any part of our Services or included software, nor may you reverse engineer or
 attempt to extract the source code of that software, unless laws prohibit those
@@ -144,7 +144,7 @@ functionalities or features, and we may suspend or stop a Service
 altogether.
 
 You can stop using our Services at any time, although we'll be sorry to see
-you go. Zulip may also stop providing Services to you, or add or create new
+you go. Kandra Labs may also stop providing Services to you, or add or create new
 limits to our Services at any time.
 
 We believe that you own your data and preserving your access to such data is
@@ -158,7 +158,7 @@ out of that Service.
 We hope that you will enjoy using our Services, but there are certain things
 that we don't promise about our Services.
 
-OTHER THAN AS EXPRESSLY SET OUT IN THESE TERMS, NEITHER ZULIP NOR ITS
+OTHER THAN AS EXPRESSLY SET OUT IN THESE TERMS, NEITHER KANDRA LABS NOR ITS
 SUPPLIERS OR DISTRIBUTORS MAKE ANY SPECIFIC PROMISES ABOUT THE SERVICES.  FOR
 EXAMPLE, WE DON'T MAKE ANY COMMITMENTS ABOUT THE CONTENT WITHIN THE SERVICES,
 THE SPECIFIC FUNCTION OF THE SERVICES, OR THEIR RELIABILITY, AVAILABILITY, OR
@@ -171,24 +171,24 @@ THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES.
 
 ### Liability for our Services
 
-WHEN PERMITTED BY LAW, ZULIP, AND ZULIP'S SUPPLIERS AND DISTRIBUTORS, WILL
+WHEN PERMITTED BY LAW, KANDRA LABS, AND KANDRA LABS'S SUPPLIERS AND DISTRIBUTORS, WILL
 NOT BE RESPONSIBLE FOR LOST PROFITS, REVENUES, OR DATA, FINANCIAL LOSSES OR
 INDIRECT, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES.
 
-TO THE EXTENT PERMITTED BY LAW, THE TOTAL LIABILITY OF ZULIP, AND ITS
+TO THE EXTENT PERMITTED BY LAW, THE TOTAL LIABILITY OF KANDRA LABS, AND ITS
 SUPPLIERS AND DISTRIBUTORS, FOR ANY CLAIM UNDER THESE TERMS, INCLUDING FOR ANY
 IMPLIED WARRANTIES, IS LIMITED TO THE GREATER OF FIVE DOLLARS ($5) OR THE
-AMOUNT PAID BY YOU TO ZULIP FOR THE PAST THREE MONTHS OF THE SERVICES IN
+AMOUNT PAID BY YOU TO KANDRA LABS FOR THE PAST THREE MONTHS OF THE SERVICES IN
 QUESTION.
 
-IN ALL CASES, ZULIP, AND ITS SUPPLIERS AND DISTRIBUTORS, WILL NOT BE LIABLE
+IN ALL CASES, KANDRA LABS, AND ITS SUPPLIERS AND DISTRIBUTORS, WILL NOT BE LIABLE
 FOR ANY LOSS OR DAMAGE THAT IS NOT REASONABLY FORESEEABLE.
 
 
 ### Business uses of our Services
 
 If you are using our Services on behalf of a business, that business accepts
-these terms. It will hold harmless and indemnify Zulip and its affiliates,
+these terms. It will hold harmless and indemnify Kandra Labs and its affiliates,
 officers, agents, and employees from any claim, suit or action arising from or
 related to the use of the Services or violation of these terms, including any
 liability or expense arising from claims, losses, damages, suits, judgments,
@@ -220,25 +220,25 @@ If you do not comply with these terms, and we don't take action right away,
 this doesn't mean that we are giving up any rights that we may have (such as
 taking action in the future).
 
-These terms control the relationship between Zulip and you. They do not
+These terms control the relationship between Kandra Labs and you. They do not
 create any third party beneficiary rights.
 
-The laws of Massachusetts, U.S.A., excluding Massachusetts's conflict of
+The laws of California, U.S.A., excluding California's conflict of
 laws rules, will apply to any disputes arising out of or relating to these
 terms or the Services. All claims arising out of or relating to these terms or
 the Services will be litigated exclusively in the applicable federal or state
-courts of Massachusetts, and you and Zulip consent to personal jurisdiction in
+courts of California, and you and Kandra Labs consent to personal jurisdiction in
 those courts.
 
-Zulip reserves the right to amend or modify these terms at any time and in
+Kandra Labs reserves the right to amend or modify these terms at any time and in
 any manner by providing reasonable notice to you. You agree that reasonable
-notice may be provided by posting on Zulip's web site, email, or other written
+notice may be provided by posting on Kandra Labs's web site, email, or other written
 notice.   By continuing to access or use the Services after revisions become
 effective, you agree to be bound by the revised terms. If you do not agree to
 the new terms, please stop using the Services.
 
-These terms constitute the whole legal agreement between you and Zulip, and
-completely replace any prior agreements between you and Zulip in relation to
+These terms constitute the whole legal agreement between you and Kandra Labs, and
+completely replace any prior agreements between you and Kandra Labs in relation to
 the Services.
 
-Last modified: October 4, 2013
+Last modified: August 12, 2016
