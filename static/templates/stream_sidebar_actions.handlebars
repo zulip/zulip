@@ -7,15 +7,25 @@
     </a>
   </li>
   <li>
-    <a class="toggle_home">
-      {{#if stream.in_home_view}}
-      <i class="icon-vector-eye-close"></i>
-      {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
-      {{else}}
-      <i class="icon-vector-eye-open"></i>
-      {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
-      {{/if}}
-    </a>
+    {{#if stream.mandatory}}
+        {{#if stream.in_home_view}}
+        {{else}}
+        <a class="toggle_home">
+        <i class="icon-vector-eye-open"></i>
+        {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+        </a>
+        {{/if}}
+    {{else}}
+      <a class="toggle_home">
+        {{#if stream.in_home_view}}
+        <i class="icon-vector-eye-close"></i>
+        {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
+        {{else}}
+        <i class="icon-vector-eye-open"></i>
+        {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+        {{/if}}
+      </a>
+    {{/if}}
   </li>
   <li>
     <a class="pin_to_top">
