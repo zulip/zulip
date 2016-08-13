@@ -610,7 +610,7 @@ def write_message_export(message_filename, output):
     logging.info("Dumped to %s" % (message_filename,))
 
 def export_partial_message_files(realm, response, chunk_size=1000, output_dir=None):
-    # type: (Realm, TableData, int, Path) -> None
+    # type: (Realm, TableData, int, Path) -> Set[int]
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
@@ -634,12 +634,14 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
     message_query = Message.objects.filter(sender__in=user_profile_ids,
                                            recipient__in=recipient_ids).order_by("id")
 
+    all_message_ids = set() # type: Set[int]
     min_id = -1
     dump_file_id = 1
     while True:
         actual_query = message_query.filter(id__gt=min_id)[0:chunk_size]
         message_chunk = make_raw(actual_query)
         message_ids = set(m['id'] for m in message_chunk)
+        all_message_ids.update(message_ids)
 
         if len(message_chunk) == 0:
             break
@@ -668,6 +670,7 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         dump_file_id += 1
 
     # TODO: Add asserts that every message was sent in the realm and every recipient is available above.
+    return all_message_ids
 
 def export_uploads_and_avatars(realm, output_dir):
     # type: (Realm, Path) -> None
@@ -916,7 +919,8 @@ def do_export_realm(realm, output_dir, threads):
     # This is for performance reasons, of course.  Some installations
     # have millions of messages.
     logging.info("Exporting .partial files messages")
-    export_partial_message_files(realm, response, output_dir=output_dir)
+    message_ids = export_partial_message_files(realm, response, output_dir=output_dir)
+    logging.info('%d messages were exported' % (len(message_ids)))
 
     # zerver_attachment
     export_attachment_table(realm=realm, output_dir=output_dir)
