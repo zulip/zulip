@@ -170,7 +170,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'TERMS_OF_SERVICE': None,
                     'TOS_VERSION': None,
                     'SYSTEM_ONLY_REALMS': {"zulip.com"},
-                    'FIRST_TIME_TOS_TEMPLATE': None
+                    'FIRST_TIME_TOS_TEMPLATE': None,
+                    'ZULIPCOM_MIGRATORS': None
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
