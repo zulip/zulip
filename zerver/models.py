@@ -191,6 +191,10 @@ class Realm(ModelReprMixin, models.Model):
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
     @property
+    def uri(self):
+        return settings.SERVER_URI
+
+    @property
     def is_zephyr_mirror_realm(self):
         # type: () -> bool
         return self.domain == "mit.edu"

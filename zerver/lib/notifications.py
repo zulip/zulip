@@ -43,9 +43,8 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     Zulip e-mails without having to first log in.
     """
     token = unsubscribe_token(user_profile)
-    base_url = "https://" + settings.EXTERNAL_HOST
     resource_path = "accounts/unsubscribe/%s/%s" % (endpoint, token)
-    return "%s/%s" % (base_url.rstrip("/"), resource_path)
+    return "%s/%s" % (settings.SERVER_URI.rstrip("/"), resource_path)
 
 def hashchange_encode(string):
     # type: (text_type) -> text_type
@@ -58,17 +57,17 @@ def hashchange_encode(string):
 def pm_narrow_url(participants):
     # type: (List[text_type]) -> text_type
     participants.sort()
-    base_url = u"https://%s/#narrow/pm-with/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s/#narrow/pm-with/" % (settings.SERVER_URI,)
     return base_url + hashchange_encode(",".join(participants))
 
 def stream_narrow_url(stream):
     # type: (text_type) -> text_type
-    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s/#narrow/stream/" % (settings.SERVER_URI,)
     return base_url + hashchange_encode(stream)
 
 def topic_narrow_url(stream, topic):
     # type: (text_type, text_type) -> text_type
-    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s/#narrow/stream/" % (settings.SERVER_URI,)
     return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                               hashchange_encode(topic))
 
@@ -249,9 +248,12 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'url': 'https://%s' % (settings.EXTERNAL_HOST,),
+        'url': settings.SERVER_URI,
         'reply_warning': False,
         'external_host': settings.EXTERNAL_HOST,
+        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
+        'server_uri': settings.SERVER_URI,
+        'realm_uri': user_profile.realm.uri,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
         'reply_to_zulip': True,
     }
@@ -471,6 +473,9 @@ def enqueue_welcome_emails(email, name):
     template_payload = {'name': name,
                         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
                         'external_host': settings.EXTERNAL_HOST,
+                        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
+                        'server_uri': settings.SERVER_URI,
+                        'realm_uri': user_profile.realm.uri,
                         'unsubscribe_link': unsubscribe_link}
 
     # Send day 1 email
