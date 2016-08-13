@@ -919,6 +919,8 @@ def do_export_realm(realm, output_dir, threads):
     # enforce this for us.
     assert threads >= 1
 
+    assert os.path.exists("./manage.py")
+
     realm_config = get_realm_config()
 
     create_soft_link(source=output_dir, in_progress=True)
