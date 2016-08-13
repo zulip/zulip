@@ -1138,7 +1138,7 @@ def convert_to_id_fields(data, table, field_name):
         item[field_name + "_id"] = item[field_name]
         del item[field_name]
 
-def re_map_foreign_keys(data, table, field_name, related_table, verbose=True):
+def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
     # type: (TableData, TableName, Field, TableName, bool) -> None
     '''
     We occasionally need to assign new ids to rows during the
