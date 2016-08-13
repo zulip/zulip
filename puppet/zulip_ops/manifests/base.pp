@@ -12,7 +12,10 @@ class zulip_ops::base {
                         "iptables-persistent",
                         # For managing our current Debian packages
                         "debian-goodies",
-                        # For our EC2 network setup script
+                        # Needed for zulip-ec2-configure-network-interfaces
+                        "python-six",
+                          # This one is needed for postgres as well
+                        "python-boto",
                         "python-netifaces",
                         # Popular editors
                         "vim",
