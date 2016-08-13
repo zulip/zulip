@@ -377,17 +377,15 @@ def get_realm_config():
         use_all=True
     )
 
-    # To export only some users, you can tweak the below UserProfile config
-    # to give the target users, but then you should create any users not
-    # being exported in a separate
-    # response['zerver_userprofile_mirrordummy'] export so that
-    # conversations with those users can still be exported.
     user_profile_config = Config(
+        custom_tables=[
+            'zerver_userprofile',
+            'zerver_userprofile_mirrordummy',
+        ],
+        # set table for children who treat us as normal parent
         table='zerver_userprofile',
-        model=UserProfile,
-        normal_parent=realm_config,
-        parent_key='realm_id__in',
-        exclude=['password', 'api_key'],
+        virtual_parent=realm_config,
+        custom_fetch=fetch_user_profile,
     )
 
     Config(
@@ -502,6 +500,12 @@ def get_realm_config():
 def sanity_check_stream_data(response, config, context):
     # type: (TableData, Config, Context) -> None
 
+    if context['exportable_user_ids'] is not None:
+        # If we restrict which user ids are exportable,
+        # the way that we find # streams is a little too
+        # complex to have a sanity check.
+        return
+
     actual_streams = set([stream.name for stream in Stream.objects.filter(realm=response["zerver_realm"][0]['id'])])
     streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
 
@@ -514,6 +518,35 @@ def sanity_check_stream_data(response, config, context):
 
             Please investigate!
             ''')
+
+def fetch_user_profile(response, config, context):
+    # type: (TableData, Config, Context) -> None
+    realm = context['realm']
+    exportable_user_ids = context['exportable_user_ids']
+
+    query = UserProfile.objects.filter(realm_id=realm.id)
+    exclude=['password', 'api_key']
+    rows = make_raw(list(query), exclude=exclude)
+
+    normal_rows = [] # type: List[Record]
+    dummy_rows = [] # type: List[Record]
+
+    for row in rows:
+        if exportable_user_ids is not None:
+            if row['id'] in exportable_user_ids:
+                assert not row['is_mirror_dummy']
+            else:
+                # Convert non-exportable users to
+                # is_mirror_dummy.
+                row['is_mirror_dummy'] = True
+
+        if row['is_mirror_dummy']:
+            dummy_rows.append(row)
+        else:
+            normal_rows.append(row)
+
+    response['zerver_userprofile'] = normal_rows
+    response['zerver_userprofile_mirrordummy'] = dummy_rows
 
 def fetch_user_profile_cross_realm(response, config, context):
     # type: (TableData, Config, Context) -> None
@@ -639,7 +672,10 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         # type: (List[Record]) -> Set[int]
         return set(x['id'] for x in records)
 
+    # TODO: We need to properly filter messages that were only
+    #       sent among mirrordummy users here.
     user_profile_ids = get_ids(response['zerver_userprofile'] +
+                               response['zerver_userprofile_mirrordummy'] +
                                response['zerver_userprofile_crossrealm'])
     recipient_ids = get_ids(response['zerver_recipient'])
 
@@ -910,8 +946,8 @@ def do_write_stats_file_for_realm_export(output_dir):
             f.write('%5d records\n' % len(data))
             f.write('\n')
 
-def do_export_realm(realm, output_dir, threads):
-    # type: (Realm, Path, int) -> None
+def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
+    # type: (Realm, Path, int, Set[int]) -> None
     response = {} # type: TableData
 
     # We need at least one thread running to export
@@ -931,7 +967,7 @@ def do_export_realm(realm, output_dir, threads):
         response=response,
         config=realm_config,
         seed_object=realm,
-        context=dict(realm=realm)
+        context=dict(realm=realm, exportable_user_ids=exportable_user_ids)
     )
     logging.info('...DONE with get_realm_config() data')
 
@@ -1331,6 +1367,11 @@ def do_import_realm(import_dir):
         logging.info("Adding to ID map: %s %s" % (item['id'], get_user_profile_by_email(item['email']).id))
         new_user_id = get_user_profile_by_email(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
+
+    # Merge in zerver_userprofile_mirrordummy
+    data['zerver_userprofile'] = data['zerver_userprofile'] + data['zerver_userprofile_mirrordummy']
+    del data['zerver_userprofile_mirrordummy']
+    data['zerver_userprofile'].sort(key=lambda r: r['id'])
 
     fix_datetime_fields(data, 'zerver_userprofile')
     convert_to_id_fields(data, 'zerver_userprofile', 'realm')

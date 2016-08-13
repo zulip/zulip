@@ -26,6 +26,7 @@ from zerver.lib.upload import (
 )
 from zerver.lib.utils import mkdir_p
 from zerver.models import (
+    get_user_profile_by_email,
     Message,
     Realm,
     UserMessage,
@@ -49,12 +50,17 @@ class ExportTest(TestCase):
         mkdir_p(output_dir)
         return output_dir
 
-    def _export_realm(self, domain):
-        # type: (str) -> Dict[str, Any]
+    def _export_realm(self, domain, exportable_user_ids=None):
+        # type: (str, Set[int]) -> Dict[str, Any]
         output_dir = self._make_output_dir()
         realm = Realm.objects.get(domain=domain)
         with patch('logging.info'), patch('zerver.lib.export.create_soft_link'):
-            do_export_realm(realm=realm, output_dir=output_dir, threads=0)
+            do_export_realm(
+                realm=realm,
+                output_dir=output_dir,
+                threads=0,
+                exportable_user_ids=exportable_user_ids,
+            )
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, 'messages-000001.json.partial'),
                 output_path=os.path.join(output_dir, 'message.json')
@@ -95,7 +101,7 @@ class ExportTest(TestCase):
 
         fn = os.path.join(full_data['uploads_dir'], path_id)
         with open(fn) as f:
-            self.assertEqual(f.read(), b'zulip!')
+            self.assertEqual(f.read(), 'zulip!')
 
     def test_zulip_realm(self):
         # type: () -> None
@@ -104,6 +110,7 @@ class ExportTest(TestCase):
 
         data = full_data['realm']
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
+        self.assertEqual(len(data['zerver_userprofile_mirrordummy']), 0)
 
         def get_set(table, field):
             # type: (str, str) -> Set[str]
@@ -137,3 +144,27 @@ class ExportTest(TestCase):
 
         exported_message = find_by_id('zerver_message', um.message_id)
         self.assertEqual(exported_message['content'], um.message.content)
+
+
+        # TODO, extract get_set/find_by_id, so we can split this test up
+
+        # Now, restrict users
+        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        user_ids = set([cordelia.id, hamlet.id])
+
+        full_data = self._export_realm(
+            domain=domain,
+            exportable_user_ids=user_ids
+        )
+        data = full_data['realm']
+        exported_user_emails = get_set('zerver_userprofile', 'email')
+        self.assertIn('cordelia@zulip.com', exported_user_emails)
+        self.assertIn('hamlet@zulip.com', exported_user_emails)
+        self.assertNotIn('default-bot@zulip.com', exported_user_emails)
+        self.assertNotIn('iago@zulip.com', exported_user_emails)
+
+        dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
+        self.assertIn('iago@zulip.com', dummy_user_emails)
+        self.assertNotIn('cordelia@zulip.com', dummy_user_emails)
+
