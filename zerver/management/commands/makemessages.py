@@ -48,7 +48,8 @@ from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings
 
 strip_whitespace_right = re.compile(u"(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
-strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
+strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
+                                   BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 
 regexes = ['{{#tr .*?}}(.*?){{/tr}}',
            '{{t "(.*?)"\W*}}',
