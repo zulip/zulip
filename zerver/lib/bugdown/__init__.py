@@ -347,7 +347,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
         # If it matches, match.group(2) is the video id.
         youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)' + \
-                     r'(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))?([0-9A-Za-z_-]+)(?(1).+)?$'
+                     r'(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))' + \
+                     r'?([0-9A-Za-z_-]+)(?(1).+)?$'
         match = re.match(youtube_re, url)
         if match is None:
             return None
@@ -957,7 +958,9 @@ class Bugdown(markdown.Extension):
             '>backtick')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
-        md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'), '_end')
+        md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
+            u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
+            '_end')
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
