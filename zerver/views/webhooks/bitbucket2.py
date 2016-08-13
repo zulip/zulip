@@ -20,7 +20,8 @@ BITBUCKET_COMMIT_COMMENT_BODY = USER_PART + ' added [comment]({url_to_comment}) 
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
 BITBUCKET_ISSUE_ACTION_BODY = USER_PART + ' {action} [an issue]({issue_url})'
 BITBUCKET_PULL_REQUEST_ACTION_BODY = USER_PART + ' {action} ["{title}" pull request]({pull_request_url})'
-BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY = USER_PART + ' {action} [comment]({comment_url} in ["{title}" pull request]({pull_request_url})'
+BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY = USER_PART + ' {action} [comment]({comment_url} ' + \
+                                             'in ["{title}" pull request]({pull_request_url})'
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [
     'approved',
