@@ -413,13 +413,6 @@ def get_realm_config():
         parent_key='user_profile__in',
     )
 
-    Config(
-        table='zerver_attachment',
-        model=Attachment,
-        normal_parent=realm_config,
-        parent_key='realm_id__in',
-    )
-
     # Some of these tables are intermediate "tables" that we
     # create only for the export.  Think of them as similar to views.
 
@@ -528,6 +521,13 @@ def fetch_user_profile_cross_realm(response, config, context):
         get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
         get_user_profile_by_email(settings.WELCOME_BOT),
     ]]
+
+def fetch_attachment_data(response, realm_id):
+    # type: (TableData, int) -> None
+    filter_args = {'realm_id': realm_id} # TODO: filter by messages
+    query = Attachment.objects.filter(**filter_args)
+    response['zerver_attachment'] = make_raw(list(query))
+    floatify_datetime_fields(response, 'zerver_attachment')
 
 def fetch_huddle_objects(response, config, context):
     # type: (TableData, Config, Context) -> None
@@ -894,6 +894,8 @@ def do_export_realm(realm, output_dir, threads):
         context=dict(realm=realm)
     )
     logging.info('...DONE with get_realm_config() data')
+
+    fetch_attachment_data(response=response, realm_id=realm.id)
 
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
