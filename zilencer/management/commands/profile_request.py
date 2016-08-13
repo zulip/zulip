@@ -24,9 +24,11 @@ class MockRequest(HttpRequest):
         self.path = '/'
         self.method = "POST"
         self.META = {"REMOTE_ADDR": "127.0.0.1"}
-        self.REQUEST = {"anchor": UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id,
-                        "num_before": 1200,
-                        "num_after": 200}
+        self.REQUEST = {
+            "anchor": UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id,
+            "num_before": 1200,
+            "num_after": 200
+        }
         self.GET = {} # type: Dict[Any, Any]
         self.session = MockSession()
 
