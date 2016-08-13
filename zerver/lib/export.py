@@ -917,7 +917,8 @@ def do_export_realm(realm, output_dir, threads):
     # We need at least one thread running to export
     # UserMessage rows.  The management command should
     # enforce this for us.
-    assert threads >= 1
+    if not settings.TEST_SUITE:
+        assert threads >= 1
 
     assert os.path.exists("./manage.py")
 
