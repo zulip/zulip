@@ -920,6 +920,8 @@ def home(request):
         test_suite            = settings.TEST_SUITE,
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
+        server_uri            = settings.SERVER_URI,
+        realm_uri             = user_profile.realm.uri,
         maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
         server_generation     = settings.SERVER_GENERATION,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
