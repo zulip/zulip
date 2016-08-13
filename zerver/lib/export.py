@@ -528,12 +528,33 @@ def fetch_user_profile_cross_realm(response, config, context):
         get_user_profile_by_email(settings.WELCOME_BOT),
     ]]
 
-def fetch_attachment_data(response, realm_id):
-    # type: (TableData, int) -> None
-    filter_args = {'realm_id': realm_id} # TODO: filter by messages
+def fetch_attachment_data(response, realm_id, message_ids):
+    # type: (TableData, int, Set[int]) -> None
+    filter_args = {'realm_id': realm_id}
     query = Attachment.objects.filter(**filter_args)
     response['zerver_attachment'] = make_raw(list(query))
     floatify_datetime_fields(response, 'zerver_attachment')
+
+    '''
+    We usually export most messages for the realm, but not
+    quite ALL messages for the realm.  So, we need to
+    clean up our attachment data to have correct
+    values for response['zerver_attachment'][<n>]['messages'].
+    '''
+    for row in response['zerver_attachment']:
+        filterer_message_ids = set(row['messages']).intersection(message_ids)
+        row['messages'] = sorted(list(filterer_message_ids))
+
+    '''
+    Attachments can be connected to multiple messages, although
+    it's most common to have just one message. Regardless,
+    if none of those message(s) survived the filtering above
+    for a particular attachment, then we won't export the
+    attachment row.
+    '''
+    response['zerver_attachment'] = [
+        row for row in response['zerver_attachment']
+        if row['messages']]
 
 def fetch_huddle_objects(response, config, context):
     # type: (TableData, Config, Context) -> None
@@ -923,7 +944,7 @@ def do_export_realm(realm, output_dir, threads):
     logging.info('%d messages were exported' % (len(message_ids)))
 
     # zerver_attachment
-    export_attachment_table(realm=realm, output_dir=output_dir)
+    export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
 
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
@@ -931,10 +952,10 @@ def do_export_realm(realm, output_dir, threads):
     logging.info("Finished exporting %s" % (realm.domain))
     create_soft_link(source=output_dir, in_progress=False)
 
-def export_attachment_table(realm, output_dir):
-    # type: (Realm, Path) -> None
+def export_attachment_table(realm, output_dir, message_ids):
+    # type: (Realm, Path, Set[int]) -> None
     response = {} # type: TableData
-    fetch_attachment_data(response=response, realm_id=realm.id)
+    fetch_attachment_data(response=response, realm_id=realm.id, message_ids=message_ids)
     output_file = os.path.join(output_dir, "attachment.json")
     logging.info('Writing attachment table data to %s' % (output_file,))
     write_data_to_file(output_file=output_file, data=response)
