@@ -82,8 +82,7 @@ Attachment
 
 This includes Attachment, and it referencs the avatar_source field of
 UserProfile.  Most importantly, of course, it requires us to grab files
-from S3.  Finally, Attachment's m2m relationship ties to Message (although
-that's mostly managed at import time, not export time).
+from S3.  Finally, Attachment's m2m relationship ties to Message.
 
 #### Message Data
 
@@ -157,7 +156,7 @@ We currently have these measures in place for top-down processing:
 ### File Related Data
 
 - models: Attachment
-- assets: S3, image files in avatars/, assorted files in uploads/, avatars/records.json, uploads/records.json, zerver_attachment_messages
+- assets: S3, attachment.json, uploads-temp/, image files in avatars/, assorted files in uploads/, avatars/records.json, uploads/records.json, zerver_attachment_messages
 
 When it comes to exporting attachment data, we have some minor volume issues, but the
 main concern is just that there are **lots of moving parts**:
@@ -195,11 +194,8 @@ Last but not least, if we go with some hybrid of bottom-up and top-down, these t
 are neither close to the bottom nor close to the top, so they may have the most
 fiddly edge cases when it comes to filtering and merging.
 
-Recommendation #1: We probably want to get a backup of all this data that is very simply
+Recommendation: We probably want to get a backup of all this data that is very simply
 bulk-exported from the entire DB, and we should obviously put it in a secure place.
-
-Recommendation #2: Change our Stream export logic in `do_export_realm()` to be
-tied to subscriptions instead of hanging off the realm id.
 
 ### Cross Realm Data
 - models: Client
