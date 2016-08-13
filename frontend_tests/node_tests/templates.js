@@ -466,11 +466,15 @@ function render(template_name, args) {
         users: [
             {
                 email: 'lear@zulip.com',
-                full_name: 'King Lear'
+                full_name: 'King Lear',
+                filtered: true,
+                checked: false
             },
             {
                 email: 'othello@zulip.com',
-                full_name: 'Othello the Moor'
+                full_name: 'Othello the Moor',
+                filtered: true,
+                checked: false
             }
         ]
     };
