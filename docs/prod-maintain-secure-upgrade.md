@@ -300,8 +300,9 @@ This section attempts to document the Zulip security model.  Since
 this is new documentation, it likely does not cover every issue; if
 there are details you're curious about, please feel free to ask
 questions on the Zulip development mailing list (or if you think
-you've found a security bug, please report it to support@zulip.com so
-we can do a responsible security announcement).
+you've found a security bug, please report it to
+security@googlegroups.com so we can do a responsible security
+announcement).
 
 ### Secure your Zulip server like your email server
 
@@ -459,7 +460,7 @@ we can do a responsible security announcement).
 ### Final notes and security response
 
 If you find some aspect of Zulip that seems inconsistent with this
-security model, please report it to support@zulip.com so that we can
+security model, please report it to zulip-security@googlegroups.com so that we can
 investigate and coordinate an appropriate security release if needed.
 
 Zulip security announcements will be sent to
