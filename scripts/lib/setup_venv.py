@@ -4,7 +4,7 @@ import os
 import sys
 from os.path import dirname, abspath
 import subprocess
-from zulip_tools import run
+from scripts.lib.zulip_tools import run
 
 ZULIP_PATH = dirname(dirname(dirname(abspath(__file__))))
 VENV_CACHE_PATH = "/srv/zulip-venv-cache"

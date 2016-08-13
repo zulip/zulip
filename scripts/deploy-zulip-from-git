@@ -24,7 +24,7 @@ except (configparser.NoSectionError, configparser.NoOptionError):
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
     get_deployment_lock, release_deployment_lock, su_to_zulip
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",

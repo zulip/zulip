@@ -609,7 +609,7 @@ that looks something like:
 ==> default:   File "/srv/zulip/tools/provision.py", line 191, in main
 ==> default:
 ==> default: run(["npm", "install"])
-==> default:   File "/srv/zulip/zulip_tools.py", line 78, in run
+==> default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 78, in run
 ==> default:
 ==> default: raise subprocess.CalledProcessError(rc, args)
 ==> default: subprocess
