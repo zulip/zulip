@@ -96,6 +96,11 @@ IMPLICIT_TABLES = [
 ]
 assert set(IMPLICIT_TABLES).issubset(set(ALL_ZERVER_TABLES))
 
+ATTACHMENT_TABLES = [
+    'zerver_attachment',
+]
+assert set(ATTACHMENT_TABLES).issubset(set(ALL_ZERVER_TABLES))
+
 MESSAGE_TABLES = [
     # message tables get special treatment, because they're so big
     'zerver_message',
@@ -119,6 +124,7 @@ def sanity_check_output(data):
     tables -= set(NON_EXPORTED_TABLES)
     tables -= set(IMPLICIT_TABLES)
     tables -= set(MESSAGE_TABLES)
+    tables -= set(ATTACHMENT_TABLES)
 
     for table in tables:
         if table not in data:
@@ -850,8 +856,9 @@ def export_avatars_from_local(realm, output_dir, local_dir):
 def do_write_stats_file_for_realm_export(output_dir):
     stats_file = os.path.join(output_dir, 'stats.txt')
     realm_file = os.path.join(output_dir, 'realm.json')
+    attachment_file = os.path.join(output_dir, 'attachment.json')
     message_files = glob.glob(os.path.join(output_dir, 'messages-*.json'))
-    fns = sorted(message_files + [realm_file])
+    fns = sorted([attachment_file] + message_files + [realm_file])
 
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
@@ -895,8 +902,6 @@ def do_export_realm(realm, output_dir, threads):
     )
     logging.info('...DONE with get_realm_config() data')
 
-    fetch_attachment_data(response=response, realm_id=realm.id)
-
     export_file = os.path.join(output_dir, "realm.json")
     write_data_to_file(output_file=export_file, data=response)
 
@@ -913,11 +918,22 @@ def do_export_realm(realm, output_dir, threads):
     logging.info("Exporting .partial files messages")
     export_partial_message_files(realm, response, output_dir=output_dir)
 
+    # zerver_attachment
+    export_attachment_table(realm=realm, output_dir=output_dir)
+
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
     logging.info("Finished exporting %s" % (realm.domain))
     create_soft_link(source=output_dir, in_progress=False)
+
+def export_attachment_table(realm, output_dir):
+    # type: (Realm, Path) -> None
+    response = {} # type: TableData
+    fetch_attachment_data(response=response, realm_id=realm.id)
+    output_file = os.path.join(output_dir, "attachment.json")
+    logging.info('Writing attachment table data to %s' % (output_file,))
+    write_data_to_file(output_file=output_file, data=response)
 
 def create_soft_link(source, in_progress=True):
     is_done = not in_progress
@@ -1328,6 +1344,15 @@ def do_import_realm(import_dir):
     import_message_data(import_dir)
 
     # Do attachments AFTER message data is loaded.
+    # TODO: de-dup how we read these json files.
+    fn = os.path.join(import_dir, "attachment.json")
+    if not os.path.exists(fn):
+        raise Exception("Missing attachment.json file!")
+
+    logging.info("Importing attachment data from %s" % (fn,))
+    with open(fn) as f:
+        data = ujson.load(f)
+
     import_attachments(data)
 
 def import_message_data(import_dir):
