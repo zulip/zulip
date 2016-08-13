@@ -120,7 +120,7 @@ six==1.10.0
 smmap==0.9.0
 
 # Needed for Tornado websockets support
-sockjs-tornado==1.0.1
+sockjs-tornado==1.0.3
 
 # Needed to parse source maps for error reporting
 sourcemap==0.1.8
