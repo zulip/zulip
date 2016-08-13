@@ -1,6 +1,6 @@
 # Requirements for Zulip in production
 
-* Server running Ubuntu Trusty
+* Server running Ubuntu Trusty (14.04)
 * At least 2 CPUs for production use with 100+ users
 * At least 4GB of RAM for production use with 100+ users.  We **strongly
   recommend against installing with less than 2GB of RAM**, as you will
