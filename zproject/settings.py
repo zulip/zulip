@@ -893,21 +893,15 @@ LOGGING = {
         },
         'file': {
             'level':       'DEBUG',
-            'class':       'logging.handlers.TimedRotatingFileHandler',
+            'class':       'logging.handlers.WatchedFileHandler',
             'formatter':   'default',
             'filename':    FILE_LOG_PATH,
-            'when':        'D',
-            'interval':    7,
-            'backupCount': 100000000,
         },
         'errors_file': {
             'level':       'WARNING',
-            'class':       'logging.handlers.TimedRotatingFileHandler',
+            'class':       'logging.handlers.WatchedFileHandler',
             'formatter':   'default',
             'filename':    ERROR_FILE_LOG_PATH,
-            'when':        'D',
-            'interval':    7,
-            'backupCount': 100000000,
         },
     },
     'loggers': {
