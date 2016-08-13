@@ -44,7 +44,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     """
     token = unsubscribe_token(user_profile)
     resource_path = "accounts/unsubscribe/%s/%s" % (endpoint, token)
-    return "%s/%s" % (settings.SERVER_URI.rstrip("/"), resource_path)
+    return "%s/%s" % (user_profile.realm.uri.rstrip("/"), resource_path)
 
 def hashchange_encode(string):
     # type: (text_type) -> text_type
