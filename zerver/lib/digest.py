@@ -170,6 +170,9 @@ def handle_digest_email(user_profile_id, cutoff):
     template_payload = {
         'name': user_profile.full_name,
         'external_host': settings.EXTERNAL_HOST,
+        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
+        'server_uri': settings.SERVER_URI,
+        'realm_uri': user_profile.realm.uri,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
         } # type: Dict[str, Any]
 
