@@ -72,6 +72,12 @@ Usage: python manage.py deliver_email
     def handle(self, *args, **options):
         # TODO: this only acquires a lock on the system, not on the DB:
         # be careful not to run this on multiple systems.
+
+        # In the meantime, we have an option to prevent this job from
+        # running on >1 machine
+        if settings.EMAIL_DELIVERER_DISABLED:
+            return
+
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
                 # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(),
