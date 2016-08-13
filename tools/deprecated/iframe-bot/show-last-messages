@@ -136,7 +136,8 @@ p,ul,code,pre {
 </style>
 
 <div>
-<p>For more, join the conversation on <a href="https://zulip.com/register/customer3.invalid" target="_blank">Zulip</a>.</p>
+<p>For more, join the conversation on <a href="https://zulip.com/register/customer3.invalid" target="_blank">Zulip</a>.
+</p>
 """)
 
 color = {'event1': '#76ce90', 'hongkong': '#fae589', 'etc': '#a6c7e5'}
