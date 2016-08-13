@@ -695,17 +695,30 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
 
 def export_uploads_and_avatars(realm, output_dir):
     # type: (Realm, Path) -> None
-    os.makedirs(os.path.join(output_dir, "uploads"))
+    uploads_output_dir = os.path.join(output_dir, 'uploads')
+    avatars_output_dir = os.path.join(output_dir, 'avatars')
+
+    for output_dir in (uploads_output_dir, avatars_output_dir):
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
     if settings.LOCAL_UPLOADS_DIR:
         # Small installations and developers will usually just store files locally.
-        export_uploads_from_local(realm, os.path.join(output_dir, "uploads"),
-                                  os.path.join(settings.LOCAL_UPLOADS_DIR, "files"))
-        export_avatars_from_local(realm, os.path.join(output_dir, "avatars"),
-                                  os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"))
+        export_uploads_from_local(realm,
+                                  local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "files"),
+                                  output_dir=uploads_output_dir)
+        export_avatars_from_local(realm,
+                                  local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+                                  output_dir=avatars_output_dir)
     else:
         # Some bigger installations will have their data stored on S3.
-        export_files_from_s3(realm, settings.S3_AVATAR_BUCKET, os.path.join(output_dir, "avatars"), True)
-        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, os.path.join(output_dir, "uploads"))
+        export_files_from_s3(realm,
+                             settings.S3_AVATAR_BUCKET,
+                             output_dir=avatars_output_dir,
+                             processing_avatars=True)
+        export_files_from_s3(realm,
+                             settings.S3_AUTH_UPLOADS_BUCKET,
+                             output_dir=uploads_output_dir)
 
 def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=False):
     # type: (Realm, str, Path, bool) -> None
@@ -726,9 +739,6 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
             user_ids.add(user_profile.id)
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
-
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         email_gateway_bot = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
@@ -791,10 +801,8 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
-def export_uploads_from_local(realm, output_dir, local_dir):
+def export_uploads_from_local(realm, local_dir, output_dir):
     # type: (Realm, Path, Path) -> None
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     count = 0
     records = []
@@ -821,10 +829,8 @@ def export_uploads_from_local(realm, output_dir, local_dir):
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
-def export_avatars_from_local(realm, output_dir, local_dir):
+def export_avatars_from_local(realm, local_dir, output_dir):
     # type: (Realm, Path, Path) -> None
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
     count = 0
     records = []
