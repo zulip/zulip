@@ -333,8 +333,8 @@ def clear_followup_emails_queue(email, mail_client=None):
     mandrill account).
 
     `email` is a string representing the recipient email
-    `from_email` is a string representing the zulip email account used
-    to send the email (for example `support@zulip.com` or `signups@zulip.com`)
+    `from_email` is a string representing the email account used
+    to send the email (E.g. support@example.com).
     """
     # SMTP mail delivery implementation
     if not mail_client:
