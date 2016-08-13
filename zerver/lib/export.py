@@ -502,7 +502,7 @@ def get_realm_config():
 def sanity_check_stream_data(response, config, context):
     # type: (TableData, Config, Context) -> None
 
-    actual_streams = set([stream.name for stream in Stream.objects.all()])
+    actual_streams = set([stream.name for stream in Stream.objects.filter(realm=response["zerver_realm"][0]['id'])])
     streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
 
     if streams_in_response != actual_streams:
