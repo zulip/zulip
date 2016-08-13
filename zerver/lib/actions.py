@@ -277,12 +277,12 @@ def notify_created_bot(user_profile):
     send_event(event, bot_owner_userids(user_profile))
 
 def do_create_user(email, password, realm, full_name, short_name,
-                   active=True, bot_type=None, bot_owner=None,
+                   active=True, bot_type=None, bot_owner=None, tos_version=None,
                    avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
                    newsletter_data=None):
-    # type: (text_type, text_type, Realm, text_type, text_type, bool, Optional[int], Optional[UserProfile], text_type, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+    # type: (text_type, text_type, Realm, text_type, text_type, bool, Optional[int], Optional[UserProfile], Optional[text_type], text_type, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
     event = {'type': 'user_created',
              'timestamp': time.time(),
              'full_name': full_name,
@@ -297,7 +297,7 @@ def do_create_user(email, password, realm, full_name, short_name,
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                active=active, bot_type=bot_type, bot_owner=bot_owner,
-                               avatar_source=avatar_source,
+                               tos_version=tos_version, avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
                                default_events_register_stream=default_events_register_stream,
                                default_all_public_streams=default_all_public_streams)
@@ -1579,8 +1579,9 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()
     user_profile.date_joined = join_date
+    user_profile.tos_version = settings.TOS_VERSION
     user_profile.save(update_fields=["is_active", "date_joined", "password",
-                                     "is_mirror_dummy"])
+                                     "is_mirror_dummy", "tos_version"])
 
     if log:
         domain = user_profile.realm.domain

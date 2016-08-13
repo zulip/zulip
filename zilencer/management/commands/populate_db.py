@@ -42,7 +42,8 @@ def create_users(realms, name_list, bot_type=None):
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
-    bulk_create_users(realms, user_set, bot_type)
+    tos_version = settings.TOS_VERSION if bot_type is None else None
+    bulk_create_users(realms, user_set, bot_type, tos_version)
 
 def create_streams(realms, realm, stream_list):
     # type: (Mapping[text_type, Realm], Realm, Iterable[text_type]) -> None
@@ -428,7 +429,7 @@ def restore_saved_messages():
                            streams[recipient.type_id].name.lower())] = recipient
 
     print(datetime.datetime.now(), "Creating users...")
-    bulk_create_users(realms, user_set)
+    bulk_create_users(realms, user_set, None, settings.TOS_VERSION)
 
     users = {} # type: Dict[text_type, UserProfile]
     users_by_id = {} # type: Dict[int, UserProfile]
