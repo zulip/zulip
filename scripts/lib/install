@@ -95,7 +95,7 @@ if [ "$has_postgres" = 0 ]; then
 fi
 
 if [ "$has_appserver" = 0 ]; then
-    deploy_path=$(/root/zulip/zulip_tools.py make_deploy_path)
+    deploy_path=$(/root/zulip/scripts/lib/zulip_tools.py make_deploy_path)
     mv /root/zulip "$deploy_path"
     ln -nsf /home/zulip/deployments/next /root/zulip
     ln -nsf "$deploy_path" /home/zulip/deployments/next
