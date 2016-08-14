@@ -124,14 +124,14 @@
         <i class="icon-vector-github icon-vector-3x feature-icon"></i>
         <h4>{{ _("Integrations") }}</h4>
         <p>{% trans %}Get alerts and updates from your favorite services with
-        off-the-shelf <a href="/integrations">integrations</a> for
+        off-the-shelf <a href="{{ server_uri }}/integrations">integrations</a> for
         Trac, Nagios, Github, Jenkins, and more.{% endtrans %}</p>
       </div>
       <div class="feature-block">
         <i class="icon-vector-sitemap icon-vector-3x feature-icon"></i>
         <h4>{{ _("API") }}</h4>
         <p>{% trans %}Want to roll your own notifications? We've got a
-        dead-simple RESTful <a href="/api">API and Python bindings</a>
+        dead-simple RESTful <a href="{{ server_uri }}/api">API and Python bindings</a>
         that will make integrations&mdash;both sending and
         receiving&mdash;a snap!{% endtrans %}</p>
       </div>
