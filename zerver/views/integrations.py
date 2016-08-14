@@ -26,6 +26,11 @@ class ApiURLView(TemplateView):
         add_api_uri_context(context, self.request)
         return context
 
+
+class APIView(ApiURLView):
+    template_name = 'zerver/api.html'
+
+
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations.html'
 
@@ -46,13 +51,17 @@ class IntegrationView(ApiURLView):
 
 def api_endpoint_docs(request):
     # type: (HttpRequest) -> HttpResponse
+    context = {} # type: Dict[str, Any]
+    add_api_uri_context(context, request)
+
     raw_calls = open('templates/zerver/api_content.json', 'r').read()
     calls = ujson.loads(raw_calls)
     langs = set()
     for call in calls:
-        call["endpoint"] = "%s/v1/%s" % (settings.EXTERNAL_API_URI, call["endpoint"])
+        call["endpoint"] = "%s/v1/%s" % (context["external_api_uri_subdomain"],
+                                         call["endpoint"])
         call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com",
-                                                                                  settings.EXTERNAL_API_URI)
+                                                                                  context["external_api_uri_subdomain"])
         response = call['example_response']
         if '\n' not in response:
             # For 1-line responses, pretty-print them

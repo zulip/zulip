@@ -269,7 +269,6 @@ def accounts_accept_terms(request):
           'special_message_template' : special_message_template },
         request=request)
 
-
 @authenticated_json_post_view
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails")):
