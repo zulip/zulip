@@ -672,32 +672,84 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         # type: (List[Record]) -> Set[int]
         return set(x['id'] for x in records)
 
-    # TODO: We need to properly filter messages that were only
-    #       sent among mirrordummy users here.
-    user_profile_ids = get_ids(response['zerver_userprofile'] +
-                               response['zerver_userprofile_mirrordummy'] +
-                               response['zerver_userprofile_crossrealm'])
-    recipient_ids = get_ids(response['zerver_recipient'])
-
-    # Basic security rule: You can export everything sent by someone
-    # in your realm export (members of your realm plus Zulip realm
-    # bots) to a recipient object you're exporting (that is thus also
-    # in your realm).
+    # Basic security rule: You can export everything either...
+    #   - sent by someone in your exportable_user_ids
+    #        OR
+    #   - received by someone in your exportable_user_ids (which
+    #     equates to a recipient object we are exporting)
     #
     # TODO: In theory, you should be able to export messages in
     # cross-realm PM threads; currently, this only exports cross-realm
     # messages received by your realm that were sent by Zulip system
     # bots (e.g. emailgateway, notification-bot).
-    message_query = Message.objects.filter(sender__in=user_profile_ids,
-                                           recipient__in=recipient_ids).order_by("id")
+
+    # Here, "we" and "us" refers to the inner circle of users who
+    # were specified as being allowed to be exported.  "Them"
+    # refers to other users.
+    user_ids_for_us = get_ids(
+        response['zerver_userprofile']
+    )
+    recipient_ids_for_us = get_ids(response['zerver_recipient'])
+
+    ids_of_our_possible_senders = get_ids(
+        response['zerver_userprofile'] +
+        response['zerver_userprofile_mirrordummy'] +
+        response['zerver_userprofile_crossrealm'])
+
+    recipients_for_them = Recipient.objects.filter(
+        type=Recipient.PERSONAL,
+        type_id__in=ids_of_our_possible_senders).values("id")
+    recipient_ids_for_them = get_ids(recipients_for_them)
+
+    # We capture most messages here, since the
+    # recipients we subscribe to are also the
+    # recipients of most messages we send.
+    messages_we_received = Message.objects.filter(
+        sender__in=ids_of_our_possible_senders,
+        recipient__in=recipient_ids_for_us,
+    ).order_by('id')
+
+    # This should pick up stragglers; messages we sent
+    # where we the recipient wasn't subscribed to by any of
+    # us (such as PMs to "them").
+    messages_we_sent_to_them = Message.objects.filter(
+        sender__in=user_ids_for_us,
+        recipient__in=recipient_ids_for_them,
+    ).order_by('id')
+
+    message_queries = [
+        messages_we_received,
+        messages_we_sent_to_them
+    ]
 
     all_message_ids = set() # type: Set[int]
-    min_id = -1
     dump_file_id = 1
+
+    for message_query in message_queries:
+        dump_file_id = write_message_partial_for_query(
+            realm=realm,
+            message_query=message_query,
+            dump_file_id=dump_file_id,
+            all_message_ids=all_message_ids,
+            output_dir=output_dir,
+            chunk_size=chunk_size,
+            user_profile_ids=user_ids_for_us,
+        )
+
+    return all_message_ids
+
+def write_message_partial_for_query(realm, message_query, dump_file_id,
+                                    all_message_ids, output_dir,
+                                    chunk_size, user_profile_ids):
+    # type: (Realm, Any, int, Set[int], Path, int, Set[int]) -> int
+    min_id = -1
+
     while True:
         actual_query = message_query.filter(id__gt=min_id)[0:chunk_size]
         message_chunk = make_raw(actual_query)
         message_ids = set(m['id'] for m in message_chunk)
+        assert len(message_ids.intersection(all_message_ids)) == 0
+
         all_message_ids.update(message_ids)
 
         if len(message_chunk) == 0:
@@ -726,8 +778,7 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         min_id = max(message_ids)
         dump_file_id += 1
 
-    # TODO: Add asserts that every message was sent in the realm and every recipient is available above.
-    return all_message_ids
+    return dump_file_id
 
 def export_uploads_and_avatars(realm, output_dir):
     # type: (Realm, Path) -> None

@@ -61,6 +61,8 @@ class ExportTest(TestCase):
                 threads=0,
                 exportable_user_ids=exportable_user_ids,
             )
+            # TODO: Process the second partial file, which can be created
+            #       for certain edge cases.
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, 'messages-000001.json.partial'),
                 output_path=os.path.join(output_dir, 'message.json')
