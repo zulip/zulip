@@ -447,8 +447,23 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-@zulip_login_required
 def home(request):
+    # type: (HttpRequest) -> HttpResponse
+    if not settings.SUBDOMAINS_HOMEPAGE:
+        return home_real(request)
+
+    # If settings.SUBDOMAINS_HOMEPAGE, sends the user the landing
+    # page, not the login form, on the root domain
+
+    subdomain = get_subdomain(request)
+    if subdomain != "":
+        return home_real(request)
+
+    return render_to_response('zerver/hello.html',
+                              request=request)
+
+@zulip_login_required
+def home_real(request):
     # type: (HttpRequest) -> HttpResponse
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
