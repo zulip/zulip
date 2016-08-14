@@ -28,7 +28,7 @@
         results, tweets about your project, and much more.</p>
 
       <p>Many of these integrations require creating a Zulip bot. You
-        can do so on your <a href="/#settings">Zulip settings page</a>. Be
+        can do so on your {{ settings_html|safe }}. Be
         sure to note its username and API key.</p>
 
       <p>If an integration you want isn't available yet, you
@@ -134,10 +134,9 @@
     subscribe all interested parties to this stream. We recommend the
     name <code>airbrake</code>.</p>
 
-    <p>Next, on your <a href="/#settings" target="_blank">Zulip
-    settings page</a>, create an Airbrake bot.  Construct the URL for
+    <p>Next, on your {{ settings_html|safe }}, create an Airbrake bot.  Construct the URL for
     the Airbrake bot using the API key and stream name:
-      <code>{{ external_api_uri }}/v1/external/airbrake?api_key=abcdefgh&amp;stream=airbrake</code>
+      <code>{{ external_api_uri_subdomain }}/v1/external/airbrake?api_key=abcdefgh&amp;stream=airbrake</code>
     </p>
 
     <p>Now, go to your project's settings on the Airbrake site.  Click
@@ -161,8 +160,7 @@
     subscribe all interested parties to this stream. We recommend the
     name <code>asana</code>.</p>
 
-    <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-    page</a>, create an Asana bot. Please note the bot name and API key.</p>
+    <p>Next, on your {{ settings_html|safe }}, create an Asana bot. Please note the bot name and API key.</p>
 
     <p>Then:</p>
     <ol>
@@ -184,7 +182,7 @@
 <span class="n">ASANA_API_KEY</span> <span class="o">=</span> <span class="s">0123456789abcdef0123456789abcdef</span>
 <span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"asana-bot@example.com"</span>
 <span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
-{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
       </div>
 
         <p>If you are using a stream other than <code>asana</code>,
@@ -236,7 +234,7 @@
 
 <span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"basecamp-bot@example.com"</span>
 <span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
-{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
       </div>
 
       <p>Before your first run of the script, you may optionally choose to
@@ -267,7 +265,7 @@
      Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
      as Beanstalk's website will incorrectly refuse to parse a username containing a <code>@</code>.</p>
 
-     <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path }}/v1/external/beanstalk</code>:</p>
+     <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path_subdomain }}/v1/external/beanstalk</code>:</p>
       <img class="screenshot" src="/static/images/integrations/beanstalk/001.png" />
 
       <p><b>Congratulations! You're done!</b><br /> Whenever you do a
@@ -293,7 +291,7 @@
      Choose the <code>POST</code> hook from the list presented and click "Add hook."   Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
      as Bitbucket will not execute the hook if the username contains a <code>@</code>.</p>
 
-      <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path }}/v1/external/bitbucket</code>:</p>
+      <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path_subdomain }}/v1/external/bitbucket</code>:</p>
       <img class="screenshot" src="/static/images/integrations/bitbucket/001.png" />
 
       <p>By default, notifications are sent to the <code>commits</code> stream.
@@ -319,7 +317,7 @@
      default.</p>
 
      <p>The URL you create will be in the following format:</p>
-     <p><code>{{ external_api_uri }}/v1/external/bitbucket2?api_key=abcdefgh&amp;stream=bitbucket</code></p>
+     <p><code>{{ external_api_uri_subdomain }}/v1/external/bitbucket2?api_key=abcdefgh&amp;stream=bitbucket</code></p>
 
      <p>where <code>api_key</code> is the API key of your Zulip bot,
        and <code>stream</code> is the stream name you want the
@@ -352,7 +350,7 @@
     # ~/.zuliprc if you omit --user and --api-key</span>
     <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | zulip-send \
     --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
-{% if api_site_required %}    --site={{ external_api_uri }} \
+{% if api_site_required %}    --site={{ external_api_uri_subdomain }} \
 {% endif %}    --stream commits --subject deployments || true"</span>
   <span class="k">end</span>
 <span class="k">end</span>
@@ -385,7 +383,7 @@
           and subscribe all interested parties to this stream. We
           recommend the name <code>circleci</code>.</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/circleci?api_key=abcdefgh&amp;stream=circleci</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/circleci?api_key=abcdefgh&amp;stream=circleci</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -424,7 +422,7 @@
 
 <span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"codebase-bot@example.com"</span>
 <span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
-{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
       </div>
 
       <p>Before your first run of the script, you may optionally choose to
@@ -453,7 +451,7 @@
           and subscribe all interested parties to this stream. We
           recommend the name <code>codeship</code>.</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/codeship?api_key=abcdefgh&amp;stream=codeship</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/codeship?api_key=abcdefgh&amp;stream=codeship</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -482,7 +480,7 @@
           and subscribe all interested parties to this stream. We
           recommend the name <code>crashlytics</code>.</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/crashlytics?api_key=abcdefgh&amp;stream=crashlytics</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/crashlytics?api_key=abcdefgh&amp;stream=crashlytics</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -517,7 +515,7 @@
       <ul>
           <li><b>Name</b>: Zulip</li>
           <li><b>Authentication Method</b>: Basic Auth</li>
-          <li><b>URL</b>: <code>{{ external_api_uri }}/v1/external/desk</code></li>
+          <li><b>URL</b>: <code>{{ external_api_uri_subdomain }}/v1/external/desk</code></li>
           <li><b>User name</b>: <em>your bot's user name, e.g.</em> <code>desk-bot@yourdomain.com</code></li>
           <li><b>Password</b>: <em>your bot's API key</em></li>
       </ul>
@@ -594,8 +592,7 @@
       <p>To send an email to a Zulip stream:</p>
 
       <ol>
-        <li>visit your <a target="_blank" href="../#subscriptions">subscriptions
-        page</a> and click on the stream row to expand it.</li>
+        <li>Visit your {{ subscriptions_html|safe }} and click on the stream row to expand it.</li>
         <li>Copy the stream email address
         (e.g. <code>{{ email_gateway_example }}</code>). If the stream
         name contains special characters, we've transformed the name so it is a
@@ -622,8 +619,7 @@
       and subscribe all interested parties to this stream. We recommend the
       stream name <code>freshdesk</code>.</p>
 
-      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-      page</a>, create a Freshdesk bot.</p>
+      <p>Next, on your {{ settings_html|safe }}, create a Freshdesk bot.</p>
 
       <p>Now we can set up the Freshdesk events that will trigger
       Zulips. Freshdesk provides separate triggering mechanisms for ticket
@@ -660,7 +656,7 @@
           to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
           the Zulip stream with your desired stream:</p>
 
-          <p><code>{{ external_api_uri }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+          <p><code>{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
 
           <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
           e-mail address and API key.</p>
@@ -752,7 +748,7 @@
           to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
           the Zulip stream with your desired stream:</p>
 
-          <p><code>{{ external_api_uri }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
+          <p><code>{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
 
           <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
           e-mail address and API key.</p>
@@ -816,7 +812,7 @@
 
 <div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"git-bot@example.com"</span>
 <span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
-{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre></div>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre></div>
 
       <p>You can also specify which pushes will result in
       notifications and to what stream the notifications will be sent
@@ -896,10 +892,9 @@
         created by default in the Zulip dev environment. If you are running
         Zulip in production, you should make sure this stream exists.</p>
 
-        <p>Next, on your <a href="/#settings" target="_blank">Zulip
-        settings page</a>, create a Hello World bot.  Construct the URL for
+        <p>Next, on your {{ settings_html|safe }}, create a Hello World bot.  Construct the URL for
         the Hello World bot using the API key and stream name:
-          <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
+          <code>{{ external_api_uri_subdomain }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
         </p>
 
         <p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
@@ -930,7 +925,7 @@
             <pre><code>npm install --save hubot-zulip</code></pre>
         </li>
 
-        <li><p>On your <a href="/#settings">Zulip settings page</a>, create a bot account. Note its username, API key and full name; you will use them on the next step.</p></li>
+        <li><p>On your {{ settings_html|safe }}, create a bot account. Note its username, API key and full name; you will use them on the next step.</p></li>
 
         <li>To run Hubot locally, use:
           <pre><code>HUBOT_ZULIP_BOT=hubot-bot@example.com HUBOT_ZULIP_API_KEY=your_key bin/hubot --adapter zulip --name "myhubot"</code></pre>
@@ -1014,7 +1009,7 @@
       <p>First, create the stream you'd like to use for IFTTT notifications,
           and subscribe all interested parties to this stream.</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/ifttt?api_key=abcdefgh&amp;stream=ifttt</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/ifttt?api_key=abcdefgh&amp;stream=ifttt</code></p>
 
       <p>Next, create an IFTTT recipe, picking the service you'd like
           to receive notifications from as <code>this</code>,
@@ -1069,7 +1064,7 @@
       </p>
       <p>Give your new web hook a name, and for the URL provide the following:</p>
       <p>
-      <code>{{ external_api_uri }}/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
+      <code>{{ external_api_uri_subdomain }}/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
       </p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
@@ -1110,7 +1105,7 @@
       <p><b>SSL Setup</b></p>
         As Zulip is using a StartCOM SSL certificate that is not recognized by default in the Java installation shipped with JIRA,
         you will need to tell JIRA about the certificate. Navigate to <code>Administration > System > Configure SSL</code> and in
-        the <code>Import SSL Certificates</code> field, enter <code>{{ external_api_uri }}</code>. After clicking <code>Save Certificates</code>,
+        the <code>Import SSL Certificates</code> field, enter <code>{{ external_api_uri_subdomain }}</code>. After clicking <code>Save Certificates</code>,
         follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
       <p><b>Zulip Integration</b></p>
         Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
@@ -1142,8 +1137,7 @@
       and subscribe all interested parties to this stream. We recommend the
       name <code>commits</code>.</p>
 
-      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-      page</a>, create a Mercurial bot.</p>
+      <p>Next, on your {{ settings_html|safe }}, create a Mercurial bot.</p>
 
       <p>Then:</p>
       <ol>
@@ -1165,7 +1159,7 @@ changegroup = python:/usr/local/share/zulip/integrations/hg/zulip-changegroup.py
 email = "hg-bot@example.com"
 api_key = "0123456789abcdefg"
 stream = "commits"
-{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
+{% if api_site_required %}site = {{ external_api_uri_subdomain }}{% endif %}</pre>
         </li>
       </ol>
 
@@ -1194,7 +1188,7 @@ email = "hg-bot@example.com"
 api_key = "0123456789abcdefg"
 stream = "commits"</font>
 web_url = "http://hg.example.com:8000/"
-{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre>
+{% if api_site_required %}site = {{ external_api_uri_subdomain }}{% endif %}</pre>
 
 
       <h4>Branch whitelists and blacklists</h4>
@@ -1252,7 +1246,7 @@ ignore_branches = "noisy,even-more-noisy"</pre>
 <div class="codehilite"><pre>[api]
 email = NAGIOS_BOT_EMAIL_ADDRESS
 key = NAGIOS_BOT_API_KEY
-{% if api_site_required %}site = {{ external_api_uri }}{% endif %}</pre></div>
+{% if api_site_required %}site = {{ external_api_uri_subdomain }}{% endif %}</pre></div>
 
       <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
       to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
@@ -1314,7 +1308,7 @@ key = NAGIOS_BOT_API_KEY
       "Integrations", then "Alerting notifications". On the "Webhook"
       tab, enter the following webhook URL:</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -1342,7 +1336,7 @@ key = NAGIOS_BOT_API_KEY
       there, click "Add a webhook". Fill in the form like this:</p>
       <ul>
           <li><b>Name</b>: Zulip</li>
-          <li><b>Endpoint URL</b>: <code>{{ external_api_uri }}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty</code></li>
+          <li><b>Endpoint URL</b>: <code>{{ external_api_uri_subdomain }}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty</code></li>
       </ul>
 
       <img class="screenshot" src="/static/images/integrations/pagerduty/002.png" />
@@ -1421,7 +1415,7 @@ key = NAGIOS_BOT_API_KEY
           and subscribe all interested parties to this stream. We
           recommend the name <code>pingdom</code>.</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/pingdom?api_key=abcdefgh&amp;stream=pingdom</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/pingdom?api_key=abcdefgh&amp;stream=pingdom</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -1457,7 +1451,7 @@ key = NAGIOS_BOT_API_KEY
       tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
       the following url:</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -1530,8 +1524,7 @@ key = NAGIOS_BOT_API_KEY
           <p>The Zulip plugin is now registered with Redmine!</p>
         </li>
         <li>
-          <p>On your <a href="/#settings" target="_blank">Zulip settings
-          page</a>, create a new Redmine bot.</p>
+          <p>On your {{ settings_html|safe }}, create a new Redmine bot.</p>
         </li>
         <li>
           <p>To configure Zulip notification settings that apply to many
@@ -1571,8 +1564,7 @@ key = NAGIOS_BOT_API_KEY
       subscribe all interested parties to this stream. We recommend the
       name <code>rss</code>.</p>
 
-      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-      page</a>, create an RSS bot.</p>
+      <p>Next, on your {{ settings_html|safe }}, create an RSS bot.</p>
 
       <p>Then, download and install our <a href="/api">Python bindings</a> on
       the server where the RSS bot will live. The RSS integration will be
@@ -1600,8 +1592,7 @@ key = NAGIOS_BOT_API_KEY
       subscribe all interested parties to this stream. We recommend the
       name <code>builds</code>.</p>
 
-      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-      page</a>, create a Semaphore bot.</p>
+      <p>Next, on your {{ settings_html|safe }}, create a Semaphore bot.</p>
 
       <p>Then, log into your account on <a href="http://semaphoreci.com">semaphoreci.com</a>, and:</p>
 
@@ -1623,7 +1614,7 @@ key = NAGIOS_BOT_API_KEY
           information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
           address must be escaped to <code>%40</code>:</p>
 
-          <p><code>{{ external_uri_scheme }}<font color="#00A26F">semaphore-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path }}/v1/external/semaphore?stream=<font color="#00A26F">builds</font></code></p>
+          <p><code>{{ external_uri_scheme }}<font color="#00A26F">semaphore-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path_subdomain }}/v1/external/semaphore?stream=<font color="#00A26F">builds</font></code></p>
         </li>
       </ol>
 
@@ -1644,8 +1635,7 @@ key = NAGIOS_BOT_API_KEY
       subscribe all interested parties to this stream. We recommend the
       name <code>commits</code>.</p>
 
-      <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-      page</a>, create a Stash bot.</p>
+      <p>Next, on your {{ settings_html|safe }}, create a Stash bot.</p>
 
       <p>Then:</p>
 
@@ -1678,7 +1668,7 @@ key = NAGIOS_BOT_API_KEY
           information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
           address must be escaped to <code>%40</code>:</p>
 
-          <p><code>{{ external_uri_scheme }}<font color="#00A26F">stash-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path }}/v1/external/stash?stream=<font color="#00A26F">commits</font></code></p>
+          <p><code>{{ external_uri_scheme }}<font color="#00A26F">stash-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path_subdomain }}/v1/external/stash?stream=<font color="#00A26F">commits</font></code></p>
 
           <img class="screenshot" src="/static/images/integrations/stash/004.png" />
         </li>
@@ -1724,7 +1714,7 @@ key = NAGIOS_BOT_API_KEY
 
         <div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"svn-bot@example.com"</span>
 <span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
-{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre></div>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre></div>
         </li>
 
         <li>The default stream used by this post-commit hook
@@ -1742,7 +1732,7 @@ key = NAGIOS_BOT_API_KEY
 
     <div id="taiga" class="integration-instructions">
 
-      <p>Go on your <a href="/#settings">Zulip settings page</a>, create a Taiga bot.
+      <p>Go on your {{ settings_html|safe }}, create a Taiga bot.
         Please note the bot name and API key.</p>
 
       <p>Since Taiga allows you to integrate services on a per
@@ -1766,7 +1756,7 @@ key = NAGIOS_BOT_API_KEY
               <li>
                 <b>URL</b> -
                 <pre>
-{{ external_api_uri }}/v1/external/taiga?stream=STREAM_NAME&amp;topic=TOPIC_NAME&amp;api_key=BOT_API_KEY</pre>
+{{ external_api_uri_subdomain }}/v1/external/taiga?stream=STREAM_NAME&amp;topic=TOPIC_NAME&amp;api_key=BOT_API_KEY</pre>
                 <ul>
                   <li><code>STREAM_NAME</code> - The url-encoded name of
                     stream which you want to receive notifications.
@@ -1842,7 +1832,7 @@ TOPIC = Taiga</pre>
       click the "Webhooks" tab, and add a new project webhook.
       Enter the following URL:</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/teamcity?api_key=abcdefgh&amp;stream=teamcity</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/teamcity?api_key=abcdefgh&amp;stream=teamcity</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -1892,7 +1882,7 @@ TOPIC = Taiga</pre>
 <span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
 <span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
 <span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span>
-{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri }}"</span>{% endif %}</pre></div>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre></div>
 
       <p>Copy <code>integrations/trac/zulip_trac.py</code>
       and <code>integrations/trac/zulip_trac_config.py</code> into
@@ -1930,7 +1920,7 @@ TOPIC = Taiga</pre>
       <p>Next, set up a bot for the integration. You'll need the bot's API key
       to construct a URL for Transifex.</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/transifex?api_key=abcdefgh&amp;stream=transifex</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/transifex?api_key=abcdefgh&amp;stream=transifex</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip bot,
       and <code>stream</code> is the stream name you want the
@@ -2178,7 +2168,7 @@ access_token_secret =</pre>
       settings page</a> and in <code>WEBHOOKS</code> section, enter
       the following as the URL:</p>
 
-      <p><code>{{ external_api_uri }}/v1/external/updown?api_key=abcdefgh&amp;stream=updown</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/updown?api_key=abcdefgh&amp;stream=updown</code></p>
 
 
       <p><b>Congratulations! You're done!</b><br />
@@ -2237,7 +2227,7 @@ access_token_secret =</pre>
       <p>From there, click "URL target". Fill in the form like this:</p>
       <ul>
           <li><b>Title</b>: Zulip</li>
-          <li><b>URL</b>: <code>{{ external_api_uri }}{% raw %}/v1/external/zendesk?ticket_title={{ticket.title}}&amp;ticket_id={{ticket.id}}&amp;stream=zendesk{% endraw %}</code></li>
+          <li><b>URL</b>: <code>{{ external_api_uri_subdomain }}{% raw %}/v1/external/zendesk?ticket_title={{ticket.title}}&amp;ticket_id={{ticket.id}}&amp;stream=zendesk{% endraw %}</code></li>
           <li><b>Method</b>: POST</li>
           <li><b>Attribute Name</b>: message</li>
           <li><b>Username</b>: <em>your bot's user name, e.g.</em> <code>zendesk-bot@yourdomain.com</code></li>
