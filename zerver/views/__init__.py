@@ -230,9 +230,17 @@ def accounts_register(request):
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
         # more fancy than this is required.
-        login(request, authenticate(username=user_profile.email,
-                                    realm_subdomain=realm.subdomain,
-                                    use_dummy_backend=True))
+        return_data = {} # type: Dict[str, bool]
+        auth_result = authenticate(username=user_profile.email,
+                                   realm_subdomain=realm.subdomain,
+                                   return_data=return_data,
+                                   use_dummy_backend=True)
+        if return_data.get('invalid_subdomain'):
+            # By construction, this should never happen.
+            logging.error("Subdomain mismatch in registration %s: %s" % (
+                realm.subdomain, user_profile.email,))
+            return redirect('/')
+        login(request, auth_result)
 
         if first_in_realm:
             do_change_is_admin(user_profile, True)
@@ -423,9 +431,14 @@ def remote_user_jwt(request):
         # We do all the authentication we need here (otherwise we'd have to
         # duplicate work), but we need to call authenticate with some backend so
         # that the request.backend attribute gets set.
+        return_data = {} # type: Dict[str, bool]
         user_profile = authenticate(username=email,
                                     realm_subdomain=get_subdomain(request),
+                                    return_data=return_data,
                                     use_dummy_backend=True)
+        if return_data.get('invalid_subdomain'):
+            logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (get_subdomain(request), email,))
+            raise JsonableError(_("Wrong subdomain"))
     except (jwt.DecodeError, jwt.ExpiredSignature):
         raise JsonableError(_("Bad JSON web token signature"))
     except KeyError:
@@ -527,9 +540,14 @@ def finish_google_oauth2(request):
         logging.error('Google oauth2 account email not found: %s' % (body,))
         return HttpResponse(status=400)
     email_address = email['value']
+    return_data = {} # type: Dict[str, bool]
     user_profile = authenticate(username=email_address,
                                 realm_subdomain=get_subdomain(request),
-                                use_dummy_backend=True)
+                                use_dummy_backend=True,
+                                return_data=return_data)
+    if return_data.get('invalid_subdomain'):
+        logging.warning("User attempted to Google login to wrong subdomain %s: %s" % (get_subdomain(request), email_address,))
+        return redirect('/')
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
 def login_page(request, **kwargs):

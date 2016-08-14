@@ -148,14 +148,17 @@ class ZulipDummyBackend(ZulipAuthMixin):
     """
     Used when we want to log you in but we don't know which backend to use.
     """
-    def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False):
-        # type: (Optional[text_type], Optional[text_type], bool) -> Optional[UserProfile]
+    def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
+                     return_data=None):
+        # type: (Optional[text_type], Optional[text_type], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
         if use_dummy_backend:
             user_profile = common_get_active_user_by_email(username)
             if user_profile is None:
                 return None
-            if check_subdomain(realm_subdomain, user_profile.realm.subdomain):
-                return user_profile
+            if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+                return_data["invalid_subdomain"] = True
+                return None
+            return user_profile
         return None
 
 class EmailAuthBackend(ZulipAuthMixin):
