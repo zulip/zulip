@@ -170,6 +170,24 @@ function update_stream_pin(sub, value) {
     sub.pin_to_top = value;
 }
 
+function update_stream_mandatory_status(sub, value) {
+    sub.mandatory = value;
+    var mandatory_button_selc = $('.toggle-stream-mandatory[data-stream-name="' + sub.name + '"]');
+    var new_button_text;
+
+    // Change button's text when mandatory status is updated
+    if (value) {
+        new_button_text = "Make stream optional";
+    } else {
+        new_button_text = "Make stream mandatory";
+    }
+    mandatory_button_selc.html(new_button_text);
+
+    // TODO: Handle condition when stream is already muted and then
+    // stream's mandatory status is set to true.
+    $("#mutestream-"+sub.stream_id).parent().toggle();
+}
+
 function update_stream_name(sub, new_name) {
     // Rename the stream internally.
     var old_name = sub.name;
@@ -589,6 +607,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'pin_to_top':
         update_stream_pin(sub, value);
+        break;
+    case 'mandatory':
+        update_stream_mandatory_status(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
