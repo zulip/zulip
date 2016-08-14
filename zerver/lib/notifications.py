@@ -244,6 +244,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             recipients
         )
 
+    unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
     template_payload = {
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
@@ -256,6 +257,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'realm_uri': user_profile.realm.uri,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
         'reply_to_zulip': True,
+        'unsubscribe_link': unsubscribe_link,
     }
 
     headers = {}
