@@ -10,6 +10,7 @@ import shutil
 import ujson
 
 from mock import patch, MagicMock
+from six.moves import range
 from typing import Any
 
 from zerver.lib.actions import (
@@ -24,11 +25,21 @@ from zerver.lib.upload import (
     claim_attachment,
     upload_message_image,
 )
-from zerver.lib.utils import mkdir_p
+from zerver.lib.utils import (
+    mkdir_p,
+    query_chunker,
+)
+from zerver.lib.test_helpers import (
+    ZulipTestCase,
+)
+
+from zerver.lib.test_runner import slow
+
 from zerver.models import (
     get_user_profile_by_email,
     Message,
     Realm,
+    Recipient,
     UserMessage,
 )
 
@@ -36,6 +47,135 @@ def rm_tree(path):
     # type: (str) -> None
     if os.path.exists(path):
         shutil.rmtree(path)
+
+class QueryUtilTest(ZulipTestCase):
+    def _create_messages(self):
+        # type: () -> None
+        for email in ['cordelia@zulip.com', 'hamlet@zulip.com', 'iago@zulip.com']:
+            for _ in range(5):
+                self.send_message(email, 'othello@zulip.com', Recipient.PERSONAL)
+
+    @slow('creates lots of data')
+    def test_query_chunker(self):
+        # type: () -> None
+        self._create_messages()
+
+        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+
+        def get_queries():
+            # type: () -> List[Any]
+            queries = [
+                Message.objects.filter(sender_id=cordelia.id),
+                Message.objects.filter(sender_id=hamlet.id),
+                Message.objects.exclude(sender_id__in=[cordelia.id, hamlet.id])
+            ]
+            return queries
+
+        for query in get_queries():
+            # For our test to be meaningful, we want non-empty queries
+            # at first
+            assert len(list(query)) > 0
+
+        queries = get_queries()
+
+        all_msg_ids = set() # type: Set[int]
+        chunker = query_chunker(
+            queries=queries,
+            id_collector=all_msg_ids,
+            chunk_size=20,
+        )
+
+        all_row_ids = []
+        for chunk in chunker:
+            for row in chunk:
+                all_row_ids.append(row.id)
+
+        self.assertEqual(all_row_ids, sorted(all_row_ids))
+        self.assertEqual(len(all_msg_ids), len(Message.objects.all()))
+
+        # Now just search for cordelia/hamlet.  Note that we don't really
+        # need the order_by here, but it should be harmless.
+        queries = [
+            Message.objects.filter(sender_id=cordelia.id).order_by('id'),
+            Message.objects.filter(sender_id=hamlet.id),
+        ]
+        all_msg_ids = set()
+        chunker = query_chunker(
+            queries=queries,
+            id_collector=all_msg_ids,
+            chunk_size=7, # use a different size
+        )
+        list(chunker) # exhaust the iterator
+        self.assertEqual(
+            len(all_msg_ids),
+            len(Message.objects.filter(sender_id__in=[cordelia.id, hamlet.id]))
+        )
+
+        # Try just a single query to validate chunking.
+        queries = [
+            Message.objects.exclude(sender_id=cordelia.id),
+        ]
+        all_msg_ids = set()
+        chunker = query_chunker(
+            queries=queries,
+            id_collector=all_msg_ids,
+            chunk_size=11, # use a different size each time
+        )
+        list(chunker) # exhaust the iterator
+        self.assertEqual(
+            len(all_msg_ids),
+            len(Message.objects.exclude(sender_id=cordelia.id))
+        )
+        self.assertTrue(len(all_msg_ids) > 15)
+
+        # Verify assertions about disjoint-ness.
+        queries = [
+            Message.objects.exclude(sender_id=cordelia.id),
+            Message.objects.filter(sender_id=hamlet.id),
+        ]
+        all_msg_ids = set()
+        chunker = query_chunker(
+            queries=queries,
+            id_collector=all_msg_ids,
+            chunk_size=13, # use a different size each time
+        )
+        with self.assertRaises(AssertionError):
+            list(chunker) # exercise the iterator
+
+        # Try to confuse things with ids part of the query...
+        queries = [
+            Message.objects.filter(id__lte=10),
+            Message.objects.filter(id__gt=10),
+        ]
+        all_msg_ids = set()
+        chunker = query_chunker(
+            queries=queries,
+            id_collector=all_msg_ids,
+            chunk_size=11, # use a different size each time
+        )
+        self.assertEqual(len(all_msg_ids), 0) # until we actually use the iterator
+        list(chunker) # exhaust the iterator
+        self.assertEqual(len(all_msg_ids), len(Message.objects.all()))
+
+        # Verify that we can just get the first chunk with a next() call.
+        queries = [
+            Message.objects.all(),
+        ]
+        all_msg_ids = set()
+        chunker = query_chunker(
+            queries=queries,
+            id_collector=all_msg_ids,
+            chunk_size=10, # use a different size each time
+        )
+        first_chunk = next(chunker) # type: ignore
+        self.assertEqual(len(first_chunk), 10)
+        self.assertEqual(len(all_msg_ids), 10)
+        expected_msg = Message.objects.all()[0:10][5]
+        actual_msg = first_chunk[5]
+        self.assertEqual(actual_msg.content, expected_msg.content)
+        self.assertEqual(actual_msg.sender_id, expected_msg.sender_id)
+
 
 class ExportTest(TestCase):
 
