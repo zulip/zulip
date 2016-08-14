@@ -174,6 +174,21 @@ class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     email = forms.EmailField()
 
+def migration_raise_error(realm):
+    # type: (Realm) -> None
+    error_msg = """ \
+This server is being shut down as a part of the transition to the Kandra Labs Zulip service.
+Your organization has elected not to transition to the new service.
+If you believe you are recieving this message in error, please contact
+your organization's administrator or <a href="mailto:support@zulip.com">support@zulip.com</a>. """
+    if (settings.ZULIPCOM_MIGRATORS is not None) and (realm.domain in settings.ZULIPCOM_MIGRATORS):
+        error_msg = """ \
+This server is being shut down as a part of the transition to the Kandra Labs Zulip service.
+Your account should be active on <a href="http://zulipchat.com">zulipchat.com</a> by Sunday, August 14, San Francisco time.
+If it's past August 14 and that isn't working, please contact
+the zulipchat.com administrators at <a href="mailto:support@zulipchat.com">support@zulipchat.com</a>. """
+    raise ValidationError(mark_safe(error_msg))
+
 class OurAuthenticationForm(AuthenticationForm):
     def clean_username(self):
         # type: () -> str
@@ -184,11 +199,6 @@ class OurAuthenticationForm(AuthenticationForm):
             return email
 
         if user_profile.realm.deactivated:
-            error_msg = u"""Sorry for the trouble, but %s has been deactivated.
-
-Please contact %s to reactivate this group.""" % (
-                user_profile.realm.name,
-                settings.ZULIP_ADMINISTRATOR)
-            raise ValidationError(mark_safe(error_msg))
+            migration_raise_error(user_profile.realm)
 
         return email

@@ -120,6 +120,14 @@ def accounts_register(request):
         realm = get_realm(domain)
 
     if realm and realm.deactivated:
+        # The user could be trying to access a realm that was deactivated in the
+        # transition from zulip.com to zulipchat.com.
+        if settings.ZULIPCOM_MIGRATORS is not None:
+            if realm.domain in settings.ZULIPCOM_MIGRATORS:
+                return render_to_response("zerver/transition.html")
+            else:
+                return render_to_response("zerver/sunset.html")
+
         # The user is trying to register for a deactivated realm. Advise them to
         # contact support.
         return render_to_response("zerver/deactivated.html",
@@ -570,7 +578,12 @@ def finish_google_oauth2(request):
     else:
         raise Exception('Google oauth2 account email not found %r' % (body,))
     email_address = email['value']
-    user_profile = authenticate(username=email_address, use_dummy_backend=True)
+    return_data = {} # type: Dict[str, bool]
+    user_profile = authenticate(username=email_address, use_dummy_backend=True, return_data=return_data)
+    if user_profile is None:
+        response = migration_response(email_address, return_data)
+        if response:
+            return response
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
 def login_page(request, **kwargs):
@@ -595,6 +608,20 @@ def login_page(request, **kwargs):
 
     return template_response
 
+def migration_response(email, return_data):
+    # type: (text_type, Dict[str, bool]) -> Optional[HttpResponse]
+    user_profile = get_user_profile_by_email(email)
+    if not user_profile or not return_data.get('inactive_realm', False):
+        return None
+    if settings.ZULIPCOM_MIGRATORS is not None:
+        if user_profile.realm.domain in settings.ZULIPCOM_MIGRATORS:
+            return render_to_response("zerver/transition.html")
+        else:
+            return render_to_response("zerver/sunset.html")
+    return render_to_response("zerver/deactivated.html",
+                              {"deactivated_domain_name": user_profile.realm.name,
+                               "zulip_administrator": settings.ZULIP_ADMINISTRATOR})
+
 def dev_direct_login(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     # This function allows logging in without a password and should only be called in development environments.
@@ -603,9 +630,13 @@ def dev_direct_login(request, **kwargs):
         # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
-    user_profile = authenticate(username=email)
+    return_data = {} # type: Dict[str, bool]
+    user_profile = authenticate(username=email, return_data=return_data)
     if user_profile is None:
-        raise Exception("User cannot login")
+        response = migration_response(email, return_data)
+        if response:
+            return response
+        raise Exception("User cannot login.")
     login(request, user_profile)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
@@ -1143,7 +1174,11 @@ def api_get_auth_backends(request):
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
     if password_auth_enabled(user_profile.realm):
-        if not authenticate(username=user_profile.email, password=password):
+        return_data = {} # type: Dict[str, bool]
+        if not authenticate(username=user_profile.email, password=password, return_data=return_data):
+            response = migration_response(user_profile.email, return_data)
+            if response:
+                return response
             return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 
