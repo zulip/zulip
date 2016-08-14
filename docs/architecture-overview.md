@@ -73,12 +73,29 @@ the most recent messages in all the streams a user has joined (except
 for the streams they've muted), as well as private messages from other
 users, in strict chronological order. A user can *narrow* to view only
 the messages in a single stream, and can further narrow to focus on a
-*topic* (thread) within that stream. Each narrow has its own URL.
+*topic* (thread) within that stream. Each narrow has its own URL. The
+user can quickly see what conversation they're in -- the stream and
+topic, or the names of the the user(s) they're private messaging with
+-- using *the recipient bar* displayed atop each conversation.
 
 Zulip's philosophy is to provide sensible defaults but give the user
 fine-grained control over their incoming information flow; a user can
 mute topics and streams, and can make fine-grained choices to reduce
 real-time notifications they find irrelevant.
+
+Glossary
+--------
+--------
+
+* **recipient bar**: A visual indication of the context of a message
+    or group of messages, displaying the stream and topic or private
+    message recipient list, at the top of a group of messages. A
+    typical 1-line message to a new recipient shows to the user as
+    three lines of content: first the recipient bar, second the
+    sender's name and avatar alongside the timestamp (and, on hover,
+    the star and the chevron), and third the message content. The
+    recipient bar is or contains hyperlinks to help the user narrow.
+
 
 Components
 ----------
