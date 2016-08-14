@@ -962,20 +962,21 @@
       recommend the name <code>jenkins</code> or <code>hudson</code>.</p>
 
       <p><strong>Install the plugin</strong><br /> Install the "Zulip"
-      plugin by going to <code>Manage Jenkins > Manage Plugins >
-      Available</code>, typing in "Zulip", and clicking "Install
-      without restart". (For historical reasons, the plugin will be
-      named "Humbug Plugin")</p>
+        plugin by going to
+        <code>Manage Jenkins > Manage Plugins > Available</code>,
+        typing in "Zulip", and clicking "Install without
+        restart". (For historical reasons, the plugin will be named
+        "Humbug Plugin")</p>
 
       <img class="screenshot" src="/static/images/integrations/jenkins/001.png" />
 
       <p><strong>Configure the plugin</strong><br /> Once the plugin
-      is installed, configure it by going to <code>Manage Jenkins >
-      Configure System</code>. Scroll to the section labeled "Zulip
-      Notification Settings", and specify your bot's email address,
-      API key, the stream receiving the notifications, and whether you'd
-      like a notification on every build, or only when the build fails
-      (Smart Notification).</p>
+        is installed, configure it by going to
+        <code>Manage Jenkins > Configure System</code>. Scroll to the
+      section labeled "Zulip Notification Settings", and specify your
+      bot's email address, API key, the stream receiving the
+      notifications, and whether you'd like a notification on every
+      build, or only when the build fails (Smart Notification).</p>
 
       <p>(If you don't see this option, you may first need to restart
       Jenkins.)</p>
@@ -1284,8 +1285,8 @@ key = NAGIOS_BOT_API_KEY
       <p><b>Testing</b><br />If you
         have <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external
         commands enabled in Nagios</a>, you can generate a test notice
-        from your Nagios instance by visiting using the <code>Send
-        custom service notification</code> command in
+        from your Nagios instance by visiting using the
+        <code>Send custom service notification</code> command in
         the <code>Service Commands</code> section of any individual
         service's page on your Nagios instance.</p>
 
