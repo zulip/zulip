@@ -219,10 +219,12 @@ def accounts_register(request):
             except UserProfile.DoesNotExist:
                 user_profile = do_create_user(email, password, realm, full_name, short_name,
                                               prereg_user=prereg_user,
+                                              tos_version=settings.TOS_VERSION,
                                               newsletter_data={"IP": request.META['REMOTE_ADDR']})
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
+                                          tos_version=settings.TOS_VERSION,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
