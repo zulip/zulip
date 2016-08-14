@@ -862,11 +862,13 @@
       <p>To find the Zulip hook, you have to click on <b>Configure services</b>.</p>
       <p><img class="screenshot" src="/static/images/integrations/github/003.png" /></p>
 
-      <p>Select <b>"Zulip"</b> from the list of service hooks. Fill in the API
-      key and email address for your bot and check the <b>"active"</b>
-      checkbox. You can optionally supply the Zulip stream (the default
-      is <code>commits</code>) and restrict Zulip notifications to a specified
-      set of branches.</p>
+      <p>Select <b>"Zulip"</b> from the list of service hooks. Fill in
+      the API key and email address for your bot and check
+      the <b>"active"</b> checkbox. Specify
+      <code>{{ external_api_uri_subdomain }}/v1/external/github</code> as the <b>"Alternative
+      endpoint"</b>.  You can optionally supply the Zulip stream (the
+      default is <code>commits</code>) and restrict Zulip
+      notifications to a specified set of branches.</p>
 
       <p>Further configuration is possible. By default, commits traffic (pushes, commit comments),
       Github issues traffic, and pull requests are enabled. You can exclude certain types of traffic
