@@ -249,7 +249,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'url': settings.SERVER_URI,
         'reply_warning': False,
         'external_host': settings.EXTERNAL_HOST,
         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
