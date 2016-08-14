@@ -157,6 +157,15 @@ $(function () {
     if (navigator.appVersion.indexOf("Linux") !== -1) {
         $('#apps-tabs [href=#linux]').tab('show');
     }
+
+    function updateHash () {
+        var hash = document.location.hash;
+        if (hash) {
+            $('#apps-tabs [href='+ hash +']').tab('show');
+        }
+    }
+    window.onhashchange = updateHash;
+    updateHash();
 });
 </script>
 {% endblock %}
