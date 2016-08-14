@@ -377,17 +377,15 @@ def get_realm_config():
         use_all=True
     )
 
-    # To export only some users, you can tweak the below UserProfile config
-    # to give the target users, but then you should create any users not
-    # being exported in a separate
-    # response['zerver_userprofile_mirrordummy'] export so that
-    # conversations with those users can still be exported.
     user_profile_config = Config(
+        custom_tables=[
+            'zerver_userprofile',
+            'zerver_userprofile_mirrordummy',
+        ],
+        # set table for children who treat us as normal parent
         table='zerver_userprofile',
-        model=UserProfile,
-        normal_parent=realm_config,
-        parent_key='realm_id__in',
-        exclude=['password', 'api_key'],
+        virtual_parent=realm_config,
+        custom_fetch=fetch_user_profile,
     )
 
     Config(
@@ -502,6 +500,12 @@ def get_realm_config():
 def sanity_check_stream_data(response, config, context):
     # type: (TableData, Config, Context) -> None
 
+    if context['exportable_user_ids'] is not None:
+        # If we restrict which user ids are exportable,
+        # the way that we find # streams is a little too
+        # complex to have a sanity check.
+        return
+
     actual_streams = set([stream.name for stream in Stream.objects.filter(realm=response["zerver_realm"][0]['id'])])
     streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
 
@@ -514,6 +518,35 @@ def sanity_check_stream_data(response, config, context):
 
             Please investigate!
             ''')
+
+def fetch_user_profile(response, config, context):
+    # type: (TableData, Config, Context) -> None
+    realm = context['realm']
+    exportable_user_ids = context['exportable_user_ids']
+
+    query = UserProfile.objects.filter(realm_id=realm.id)
+    exclude=['password', 'api_key']
+    rows = make_raw(list(query), exclude=exclude)
+
+    normal_rows = [] # type: List[Record]
+    dummy_rows = [] # type: List[Record]
+
+    for row in rows:
+        if exportable_user_ids is not None:
+            if row['id'] in exportable_user_ids:
+                assert not row['is_mirror_dummy']
+            else:
+                # Convert non-exportable users to
+                # is_mirror_dummy.
+                row['is_mirror_dummy'] = True
+
+        if row['is_mirror_dummy']:
+            dummy_rows.append(row)
+        else:
+            normal_rows.append(row)
+
+    response['zerver_userprofile'] = normal_rows
+    response['zerver_userprofile_mirrordummy'] = dummy_rows
 
 def fetch_user_profile_cross_realm(response, config, context):
     # type: (TableData, Config, Context) -> None
@@ -639,29 +672,84 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         # type: (List[Record]) -> Set[int]
         return set(x['id'] for x in records)
 
-    user_profile_ids = get_ids(response['zerver_userprofile'] +
-                               response['zerver_userprofile_crossrealm'])
-    recipient_ids = get_ids(response['zerver_recipient'])
-
-    # Basic security rule: You can export everything sent by someone
-    # in your realm export (members of your realm plus Zulip realm
-    # bots) to a recipient object you're exporting (that is thus also
-    # in your realm).
+    # Basic security rule: You can export everything either...
+    #   - sent by someone in your exportable_user_ids
+    #        OR
+    #   - received by someone in your exportable_user_ids (which
+    #     equates to a recipient object we are exporting)
     #
     # TODO: In theory, you should be able to export messages in
     # cross-realm PM threads; currently, this only exports cross-realm
     # messages received by your realm that were sent by Zulip system
     # bots (e.g. emailgateway, notification-bot).
-    message_query = Message.objects.filter(sender__in=user_profile_ids,
-                                           recipient__in=recipient_ids).order_by("id")
+
+    # Here, "we" and "us" refers to the inner circle of users who
+    # were specified as being allowed to be exported.  "Them"
+    # refers to other users.
+    user_ids_for_us = get_ids(
+        response['zerver_userprofile']
+    )
+    recipient_ids_for_us = get_ids(response['zerver_recipient'])
+
+    ids_of_our_possible_senders = get_ids(
+        response['zerver_userprofile'] +
+        response['zerver_userprofile_mirrordummy'] +
+        response['zerver_userprofile_crossrealm'])
+
+    recipients_for_them = Recipient.objects.filter(
+        type=Recipient.PERSONAL,
+        type_id__in=ids_of_our_possible_senders).values("id")
+    recipient_ids_for_them = get_ids(recipients_for_them)
+
+    # We capture most messages here, since the
+    # recipients we subscribe to are also the
+    # recipients of most messages we send.
+    messages_we_received = Message.objects.filter(
+        sender__in=ids_of_our_possible_senders,
+        recipient__in=recipient_ids_for_us,
+    ).order_by('id')
+
+    # This should pick up stragglers; messages we sent
+    # where we the recipient wasn't subscribed to by any of
+    # us (such as PMs to "them").
+    messages_we_sent_to_them = Message.objects.filter(
+        sender__in=user_ids_for_us,
+        recipient__in=recipient_ids_for_them,
+    ).order_by('id')
+
+    message_queries = [
+        messages_we_received,
+        messages_we_sent_to_them
+    ]
 
     all_message_ids = set() # type: Set[int]
-    min_id = -1
     dump_file_id = 1
+
+    for message_query in message_queries:
+        dump_file_id = write_message_partial_for_query(
+            realm=realm,
+            message_query=message_query,
+            dump_file_id=dump_file_id,
+            all_message_ids=all_message_ids,
+            output_dir=output_dir,
+            chunk_size=chunk_size,
+            user_profile_ids=user_ids_for_us,
+        )
+
+    return all_message_ids
+
+def write_message_partial_for_query(realm, message_query, dump_file_id,
+                                    all_message_ids, output_dir,
+                                    chunk_size, user_profile_ids):
+    # type: (Realm, Any, int, Set[int], Path, int, Set[int]) -> int
+    min_id = -1
+
     while True:
         actual_query = message_query.filter(id__gt=min_id)[0:chunk_size]
         message_chunk = make_raw(actual_query)
         message_ids = set(m['id'] for m in message_chunk)
+        assert len(message_ids.intersection(all_message_ids)) == 0
+
         all_message_ids.update(message_ids)
 
         if len(message_chunk) == 0:
@@ -690,8 +778,7 @@ def export_partial_message_files(realm, response, chunk_size=1000, output_dir=No
         min_id = max(message_ids)
         dump_file_id += 1
 
-    # TODO: Add asserts that every message was sent in the realm and every recipient is available above.
-    return all_message_ids
+    return dump_file_id
 
 def export_uploads_and_avatars(realm, output_dir):
     # type: (Realm, Path) -> None
@@ -910,14 +997,15 @@ def do_write_stats_file_for_realm_export(output_dir):
             f.write('%5d records\n' % len(data))
             f.write('\n')
 
-def do_export_realm(realm, output_dir, threads):
-    # type: (Realm, Path, int) -> None
+def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
+    # type: (Realm, Path, int, Set[int]) -> None
     response = {} # type: TableData
 
     # We need at least one thread running to export
     # UserMessage rows.  The management command should
     # enforce this for us.
-    assert threads >= 1
+    if not settings.TEST_SUITE:
+        assert threads >= 1
 
     assert os.path.exists("./manage.py")
 
@@ -930,7 +1018,7 @@ def do_export_realm(realm, output_dir, threads):
         response=response,
         config=realm_config,
         seed_object=realm,
-        context=dict(realm=realm)
+        context=dict(realm=realm, exportable_user_ids=exportable_user_ids)
     )
     logging.info('...DONE with get_realm_config() data')
 
@@ -1330,6 +1418,11 @@ def do_import_realm(import_dir):
         logging.info("Adding to ID map: %s %s" % (item['id'], get_user_profile_by_email(item['email']).id))
         new_user_id = get_user_profile_by_email(item['email']).id
         update_id_map(table='user_profile', old_id=item['id'], new_id=new_user_id)
+
+    # Merge in zerver_userprofile_mirrordummy
+    data['zerver_userprofile'] = data['zerver_userprofile'] + data['zerver_userprofile_mirrordummy']
+    del data['zerver_userprofile_mirrordummy']
+    data['zerver_userprofile'].sort(key=lambda r: r['id'])
 
     fix_datetime_fields(data, 'zerver_userprofile')
     convert_to_id_fields(data, 'zerver_userprofile', 'realm')
