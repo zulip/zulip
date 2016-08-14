@@ -1148,7 +1148,7 @@ def get_single_user_config():
 
 def export_messages_single_user(user_profile, chunk_size=1000, output_dir=None):
     # type: (UserProfile, int, Path) -> None
-    user_message_query = UserMessage.objects.filter(user_profile=user_profile)
+    user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
     min_id = -1
     dump_file_id = 1
     while True:
