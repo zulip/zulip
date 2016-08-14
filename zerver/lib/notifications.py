@@ -20,7 +20,8 @@ from zerver.models import (
     get_user_profile_by_id,
     receives_offline_notifications,
     get_context_for_message,
-    Message
+    Message,
+    Realm,
 )
 
 import datetime
@@ -54,20 +55,20 @@ def hashchange_encode(string):
     return urllib.parse.quote(
         string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
 
-def pm_narrow_url(participants):
-    # type: (List[text_type]) -> text_type
+def pm_narrow_url(realm, participants):
+    # type: (Realm, List[text_type]) -> text_type
     participants.sort()
-    base_url = u"%s/#narrow/pm-with/" % (settings.SERVER_URI,)
+    base_url = u"%s/#narrow/pm-with/" % (realm.uri,)
     return base_url + hashchange_encode(",".join(participants))
 
-def stream_narrow_url(stream):
-    # type: (text_type) -> text_type
-    base_url = u"%s/#narrow/stream/" % (settings.SERVER_URI,)
+def stream_narrow_url(realm, stream):
+    # type: (Realm, text_type) -> text_type
+    base_url = u"%s/#narrow/stream/" % (realm.uri,)
     return base_url + hashchange_encode(stream)
 
-def topic_narrow_url(stream, topic):
-    # type: (text_type, text_type) -> text_type
-    base_url = u"%s/#narrow/stream/" % (settings.SERVER_URI,)
+def topic_narrow_url(realm, stream, topic):
+    # type: (Realm, text_type, text_type) -> text_type
+    base_url = u"%s/#narrow/stream/" % (realm.uri,)
     return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                               hashchange_encode(topic))
 
@@ -147,21 +148,21 @@ def build_message_list(user_profile, messages):
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
             header = u"You and %s" % (message.sender.full_name)
-            html_link = pm_narrow_url([message.sender.email])
+            html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
             assert not isinstance(disp_recipient, text_type)
             other_recipients = [r['full_name'] for r in disp_recipient
                                     if r['email'] != user_profile.email]
             header = u"You and %s" % (", ".join(other_recipients),)
-            html_link = pm_narrow_url([r["email"] for r in disp_recipient
+            html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
                                        if r["email"] != user_profile.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             assert isinstance(disp_recipient, text_type)
             header = u"%s > %s" % (disp_recipient, message.topic_name())
-            stream_link = stream_narrow_url(disp_recipient)
-            topic_link = topic_narrow_url(disp_recipient, message.subject)
+            stream_link = stream_narrow_url(user_profile.realm, disp_recipient)
+            topic_link = topic_narrow_url(user_profile.realm, disp_recipient, message.subject)
             header_html = u"<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
                 stream_link, disp_recipient, topic_link, message.subject)
         return {"plain": header,
