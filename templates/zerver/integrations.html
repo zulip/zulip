@@ -499,7 +499,7 @@
 
     </div>
 
-    <div id="deskcom" class="integration-instructions">
+    <div id="deskdotcom" class="integration-instructions">
 
 
       <p>First, create the stream you'd like to use for Desk.com notifications,
@@ -1984,7 +1984,7 @@ notifications:
 
       <p>
         Your webhook URL is:<br/>
-        <code>https://api.zulip.com/v1/external/trello?api_key=abcdefgh&stream=trello</code><br/>
+        <code>{{ external_api_uri_subdomain }}/v1/external/trello?api_key=abcdefgh&stream=trello</code><br/>
         where <code>api_key</code> is the API key of your Zulip bot,
           and <code>stream</code> is the stream name you want the notifications sent to.
       </p>
@@ -2186,7 +2186,7 @@ access_token_secret =</pre>
 
     </div>
 
-    <div id="yo-app" class="integration-instructions">
+    <div id="yo" class="integration-instructions">
 
       <p>See your Yo App notifications in Zulip!</p>
 
@@ -2199,7 +2199,7 @@ access_token_secret =</pre>
       <p>Create a URL using your bot's API key and the email address associated with your Zulip account:</p>
 
       <p><pre><code>
-https://zulip.example.com/api/v1/external/yo?email=awesome@zulip.example.com&amp;api_key=abcdefgh
+{{ external_api_uri_subdomain }}/api/v1/external/yo?email=awesome@zulip.example.com&amp;api_key=abcdefgh
       </code></pre></p>
 
       <p>Copy the URL created and go to <a href="https://yoapi.justyo.co">yoapi.justyo.co</a>.</p>
