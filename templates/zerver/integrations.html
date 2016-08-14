@@ -1964,7 +1964,7 @@ TOPIC = Taiga</pre>
 <pre>
 notifications:
   webhooks:
-    - https://zulip.example.com/api/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
+    - {{ external_api_uri_subdomain }}/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
 </pre>
 
       <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
