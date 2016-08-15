@@ -24,6 +24,6 @@ Usage: python manage.py render_old_messages"""
             for message in messages:
                 message.maybe_render_content(None, save=True)
             total_rendered += len(messages)
-            print(datetime.datetime.now(), total_rendered)
+            print(timezone.now(), total_rendered)
             # Put in some sleep so this can run safely on low resource machines
             time.sleep(0.25)

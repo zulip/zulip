@@ -36,7 +36,7 @@ def su_to_zulip():
 
 def make_deploy_path():
     # type: () -> str
-    timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
+    timestamp = datetime.datetime.utcnow().strftime(TIMESTAMP_FORMAT)
     return os.path.join(DEPLOYMENTS_DIR, timestamp)
 
 if __name__ == '__main__':

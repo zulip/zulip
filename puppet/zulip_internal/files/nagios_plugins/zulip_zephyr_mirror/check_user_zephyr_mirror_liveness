@@ -18,6 +18,7 @@ sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
 
 import django
+from django.utils import timezone
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 sys.path.append('/home/zulip/deployments/current')
@@ -46,7 +47,7 @@ def report(state, short_msg, too_old=None):
 
     exit(states[state])
 
-now = datetime.datetime.utcnow()
+now = timezone.now()
 
 all_users = UserActivity.objects.filter(query__in=["get_events_backend", "/api/v1/events"],
                                         client__name="zephyr_mirror")

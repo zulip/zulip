@@ -41,7 +41,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
 
             ret['zephyr_mirror_active'] = \
                 (activity.last_visit.replace(tzinfo=None) >
-                 datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
+                 now() - datetime.timedelta(minutes=5))
         except UserActivity.DoesNotExist:
             ret['zephyr_mirror_active'] = False
 

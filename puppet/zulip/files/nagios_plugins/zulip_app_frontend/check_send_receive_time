@@ -11,7 +11,6 @@ Django ORM.
 from __future__ import print_function
 from __future__ import division
 
-import datetime
 import sys
 import optparse
 import random
@@ -19,6 +18,8 @@ import subprocess
 import time
 import traceback
 import os
+
+from django.utils import timezone
 
 sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
@@ -147,7 +148,7 @@ try:
 except Exception:
     report("CRITICAL", "Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
 msg_to_send = str(random.getrandbits(64))
-time_start = datetime.datetime.now()
+time_start = timezone.now()
 
 send_zulip(zulip_sender, {
     "type": 'private',
@@ -160,7 +161,7 @@ msg_content = [] # type: List[str]
 
 while msg_to_send not in msg_content:
     messages = get_zulips()
-    time_diff = datetime.datetime.now() - time_start
+    time_diff = timezone.now() - time_start
 
     msg_content = [m['content'] for m in messages]
 
