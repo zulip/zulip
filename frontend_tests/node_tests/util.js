@@ -140,3 +140,57 @@ var _ = global._;
     assert.throws(function () { eaf3('foo'); }, /called with \d+ arguments/);
     assert.throws(function () { eaf3('foo','bar', 'baz'); }, /called with \d+ arguments/);
 }());
+
+(function test_all_and_everyone_mentions_regexp() {
+    var messages_with_all_mentions = [
+      '@all',
+      'some text before @all some text after',
+      '@all some text after only',
+      'some text before only @all',
+      '@**all**',
+      'some text before @**all** some text after',
+      '@**all** some text after only',
+      'some text before only @**all**'
+    ];
+
+    var messages_with_everyone_mentions = [
+      '@everyone',
+      'some text before @everyone some text after',
+      '@everyone some text after only',
+      'some text before only @everyone',
+      '@**everyone**',
+      'some text before @**everyone** some text after',
+      '@**everyone** some text after only',
+      'some text before only @**everyone**'
+    ];
+
+    var messages_without_all_mentions = [
+      '`@everyone`',
+      'some_email@everyone.com',
+      '`@**everyone**`',
+      'some_email@**everyone**.com'
+    ];
+
+    var messages_without_everyone_mentions = [
+      '`@everyone`',
+      'some_email@everyone.com',
+      '`@**everyone**`',
+      'some_email@**everyone**.com'
+    ];
+    var i;
+    for(i=0; i<messages_with_all_mentions.length; i++) {
+        assert(util.is_all_or_everyone_mentioned(messages_with_all_mentions[i]));
+    }
+
+    for(i=0; i<messages_with_everyone_mentions.length; i++) {
+        assert(util.is_all_or_everyone_mentioned(messages_with_everyone_mentions[i]));
+    }
+
+    for(i=0; i<messages_without_all_mentions.length; i++) {
+        assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+    }
+
+    for(i=0; i<messages_without_everyone_mentions.length; i++) {
+        assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+    }
+}());

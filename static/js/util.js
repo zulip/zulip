@@ -233,7 +233,7 @@ exports.execute_early = function (func) {
 };
 
 exports.is_all_or_everyone_mentioned = function (message_content) {
-    var all_everyone_re = /(@\*{2}(all|everyone)\*{2})|(@(all|everyone))/;
+    var all_everyone_re = /(^|\s)(@\*{2}(all|everyone)\*{2})|(@(all|everyone))($|\s)/;
     return all_everyone_re.test(message_content);
 };
 
