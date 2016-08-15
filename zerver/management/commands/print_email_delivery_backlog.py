@@ -9,6 +9,7 @@ from __future__ import print_function
 
 from typing import Any
 from django.conf import settings
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 
 from zerver.models import ScheduledJob
@@ -28,4 +29,4 @@ Usage: python manage.py print_email_delivery_backlog
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         print(len(ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                  scheduled_timestamp__lte=datetime.utcnow()-timedelta(minutes=1))))
+                                                  scheduled_timestamp__lte=timezone.now()-timedelta(minutes=1))))

@@ -42,6 +42,7 @@ import logging
 import hashlib
 import tempfile
 import select
+import pytz
 
 DEFAULT_SITE = "https://api.zulip.com"
 
@@ -727,7 +728,7 @@ def maybe_forward_to_zephyr(message):
             # Don't try forward private messages with non-MIT users
             # to MIT Zephyr.
             return
-        timestamp_now = datetime.datetime.now().strftime("%s")
+        timestamp_now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).strftime("%s")
         if float(message["timestamp"]) < float(timestamp_now) - 15:
             logger.warning("Skipping out of order message: %s < %s" %
                            (message["timestamp"], timestamp_now))
