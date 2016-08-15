@@ -3178,6 +3178,10 @@ li.expanded_private_message {
     margin-right: 10px;
 }
 
+.sidebar-items :first-of-type #userlist-header {
+  border-top: none;
+}
+
 #streams_header {
     margin-right: 0px;
     padding-left: 10px;
