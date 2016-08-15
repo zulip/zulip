@@ -1,4 +1,5 @@
           <div class="right-sidebar" id="right-sidebar">
+            <div class="alert-box">
               <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
                 <strong>{{ _('Unable to connect to') }} {{product_name}}.</strong>  {{ _('Updates may be delayed') }}.
                 <br /><br /> {{ _('Retrying soon') }}... <br /><br /> <a class="restart_get_updates_button">{{ _('Try now') }}</a>.
@@ -21,6 +22,8 @@
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
+            </div>
+            <div class="sidebar-items">
               {% if enable_feedback %}
               <div id="feedback_section">
                 <button type="button" class="btn btn-default btn-large" id="feedback_button">
@@ -45,4 +48,5 @@
                 <ul id="group-pms" class="filters scrolling_list">
                 </ul>
               </div>
+            </div>
           </div>
