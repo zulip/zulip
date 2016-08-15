@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from django.conf import settings
+from django.utils import timezone
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
@@ -93,7 +94,7 @@ in a while.
         # To be really conservative while we don't have user timezones or
         # special-casing for companies with non-standard workweeks, only
         # try to send mail on Tuesdays, Wednesdays, and Thursdays.
-        if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
+        if timezone.now().weekday() not in VALID_DIGEST_DAYS:
             return
 
         deployment_domains = domains_for_this_deployment()

@@ -8,6 +8,7 @@ from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.utils import timezone
 from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import (
     Recipient,
@@ -283,7 +284,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
-    user_profile.last_reminder = datetime.datetime.now()
+    user_profile.last_reminder = timezone.now()
     user_profile.save(update_fields=['last_reminder'])
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
@@ -396,7 +397,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                             'sender_name': sender['name']}
             ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
                                         data=ujson.dumps(email_fields),
-                                        scheduled_timestamp=datetime.datetime.utcnow() + delay)
+                                        scheduled_timestamp=timezone.now() + delay)
         return
 
     # Mandrill implementation
@@ -417,7 +418,7 @@ def send_future_email(recipients, email_html, email_text, subject,
     if delay < datetime.timedelta(minutes=1):
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")
     else:
-        send_time = (datetime.datetime.utcnow() + delay).__format__("%Y-%m-%d %H:%M:%S")
+        send_time = (timezone.now() + delay).__format__("%Y-%m-%d %H:%M:%S")
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
 
@@ -486,14 +487,14 @@ def enqueue_welcome_emails(email, name):
                                          tags=["followup-emails"],
                                          sender=sender)
     # Send day 2 email
-    tomorrow = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    tomorrow = timezone.now() + datetime.timedelta(hours=24)
     # 11 AM EDT
     tomorrow_morning = datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 15, 0)
-    assert(datetime.datetime.utcnow() < tomorrow_morning)
+    assert(timezone.now() < tomorrow_morning)
     send_local_email_template_with_delay([{'email': email, 'name': name}],
                                          "zerver/emails/followup/day2",
                                          template_payload,
-                                         tomorrow_morning - datetime.datetime.utcnow(),
+                                         tomorrow_morning - timezone.now(),
                                          tags=["followup-emails"],
                                          sender=sender)
 

@@ -4,6 +4,7 @@ import os
 import logging
 import datetime
 import shutil
+import pytz
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from zulip_tools import DEPLOYMENTS_DIR, TIMESTAMP_FORMAT
@@ -17,7 +18,7 @@ for basename in ['current', 'last', 'next']:
     path = os.path.abspath(os.readlink(os.path.join(DEPLOYMENTS_DIR, basename)))
     deployments_in_use.add(path)
 
-one_week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+one_week_ago = datetime.datetime.utcnow().replace(tzinfo=pytz.utc) - datetime.timedelta(days=7)
 to_purge = []
 for filename in os.listdir(DEPLOYMENTS_DIR):
     try:

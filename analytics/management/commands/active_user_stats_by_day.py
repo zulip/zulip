@@ -7,6 +7,7 @@ import pytz
 from optparse import make_option
 from typing import Any
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from zerver.lib.statistics import activity_averages_during_day
 
 class Command(BaseCommand):
@@ -19,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         if options["date"] is None:
-            date = datetime.datetime.now() - datetime.timedelta(days=1)
+            date = timezone.now() - timezone.timedelta(days=1)
         else:
             date = datetime.datetime.strptime(options["date"], "%Y-%m-%d")
         print("Activity data for", date)

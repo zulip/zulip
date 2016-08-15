@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
+from django.utils import timezone
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
@@ -30,10 +31,10 @@ class _RateLimitFilter(object):
                 duplicate = cache.get(key) == 1
                 cache.set(key, 1, rate)
             else:
-                min_date = datetime.now() - timedelta(seconds=rate)
+                min_date = timezone.now() - timezone.timedelta(seconds=rate)
                 duplicate = (self.last_error >= min_date)
                 if not duplicate:
-                    self.last_error = datetime.now()
+                    self.last_error = timezone.now()
 
         return not duplicate
 
