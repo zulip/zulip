@@ -39,6 +39,7 @@ import os
 
 from datetime import datetime, timedelta
 import six
+import pytz
 
 
 try:
@@ -266,7 +267,7 @@ def run_mirror():
     # we should have the right (write) permissions on the resume file, as seen
     # in check_permissions, but it may still be empty or corrupted
     def default_since():
-        return datetime.utcnow() - timedelta(hours=config.CODEBASE_INITIAL_HISTORY_HOURS)
+        return datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=config.CODEBASE_INITIAL_HISTORY_HOURS)
 
     try:
         with open(config.RESUME_FILE) as f:

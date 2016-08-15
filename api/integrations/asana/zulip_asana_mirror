@@ -39,6 +39,7 @@ import logging
 import os
 import time
 from six.moves import urllib
+import pytz
 
 import sys
 
@@ -180,7 +181,7 @@ def since():
     # If we have a record of the last event processed and it is recent, use it,
     # else process everything from ASANA_INITIAL_HISTORY_HOURS ago.
     def default_since():
-        return datetime.utcnow() - timedelta(
+        return datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(
             hours=config.ASANA_INITIAL_HISTORY_HOURS)
 
     if os.path.exists(config.RESUME_FILE):
@@ -239,7 +240,7 @@ def process_new_events():
                         new_events.append((operation_time, time_field, operation, task))
 
     new_events.sort()
-    now = datetime.utcnow()
+    now = datetime.utcnow().replace(tzinfo=pytz.utc)
 
     for operation_time, time_field, operation, task in new_events:
         # Unfortunately, creating an Asana task is not an atomic operation. If

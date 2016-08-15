@@ -819,7 +819,6 @@ def realm_user_summary_table(all_records, admin_emails):
         # type: (Optional[datetime]) -> bool
         age = datetime.now(val.tzinfo) - val # type: ignore # datetie.now tzinfo bug.
         return age.total_seconds() < 5 * 60
-
     rows = []
     for email, user_summary in user_records.items():
         email_link = user_activity_link(email)

@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, TypeVar
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
-from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
@@ -460,7 +460,7 @@ class ActivityTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
-        last_visit = datetime.datetime.now()
+        last_visit = timezone.now()
         count=150
         for user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(

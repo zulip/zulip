@@ -36,6 +36,7 @@ import os
 from datetime import datetime, timedelta
 from six.moves.html_parser import HTMLParser
 import six
+import pytz
 
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_basecamp_config as config
@@ -120,7 +121,7 @@ def run_mirror():
         since = since.string
     except (AssertionError, IOError) as e:
         logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
-        since = (datetime.utcnow() - timedelta(hours=config.BASECAMP_INITIAL_HISTORY_HOURS)).isoformat() + "-00:00"
+        since = (datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=config.BASECAMP_INITIAL_HISTORY_HOURS)).isoformat() + "-00:00"
     try:
         # we use an exponential backoff approach when we get 429 (Too Many Requests).
         sleepInterval = 1
