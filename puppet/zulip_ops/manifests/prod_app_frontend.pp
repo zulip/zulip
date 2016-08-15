@@ -95,6 +95,16 @@ class zulip_ops::prod_app_frontend {
     source => "puppet:///modules/zulip_ops/sparkle/sso/win/sparkle-changelog.html",
   }
 
+  file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
+    require => Package[nagios-plugins-basic],
+    recurse => true,
+    purge => true,
+    owner => "root",
+    group => "root",
+    mode => 755,
+    source => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
+  }
+
   # Prod has our Apple Push Notifications Service private key at
   # /etc/ssl/django-private/apns-dist.pem
 }
