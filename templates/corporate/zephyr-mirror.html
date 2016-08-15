@@ -33,7 +33,7 @@ mirror script instead of using Webathena.</p>
     <p>If you already have Barnowl running in screen/tmux somewhere,
     you can just run:</p>
 
-    <p><code>/mit/tabbott/humbug/zephyr_mirror.py</code></p>
+    <p><code>/mit/tabbott/zulip/zephyr_mirror.py</code></p>
 
     <p>inside that screen session.</p>
 
@@ -47,8 +47,8 @@ mirror script instead of using Webathena.</p>
       <ol>
     <li><code>kinit -l7d && aklog</code></li>
     <li>(Type your password to create 7-day renewable Kerberos tickets)</li>
-    <li><code>env ZEPHYR_SCREEN_CLIENT=/mit/tabbott/humbug/zephyr_mirror.py
-        SCREEN_SESSION_NAME=humbug athrun kchen owl-screen
+    <li><code>env ZEPHYR_SCREEN_CLIENT=/mit/tabbott/zulip/zephyr_mirror.py
+        SCREEN_SESSION_NAME=zulip athrun kchen owl-screen
     </code></li>
     </ol>
 
@@ -60,7 +60,7 @@ mirror script instead of using Webathena.</p>
     screen session on and use the following procedure:</p>
 
     <ol>
-    <li>Run <code>screen -x humbug</code> to connect to the mirroring
+    <li>Run <code>screen -x zulip</code> to connect to the mirroring
         screen session created above.</li>
     <li>The first time, you'll need to type <code>ctrl-a c</code> to switch to a new terminal in your screen session.</li>
     <li><code>kinit -l7d && aklog</code></li>
