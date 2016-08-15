@@ -207,12 +207,22 @@ li,
     border-right: 1px solid #dadada;
 }
 
+.header-main .column-left #org-info {
+    vertical-align: top;
+    display: inline-block;
+}
+
+#org-info .organization,
 #user-info .username {
     margin-top: 10px;
 
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+}
+
+#org-info .organization {
+    max-width: 155px;
 }
 
 #user-info .username {
