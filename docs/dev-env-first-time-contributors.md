@@ -17,7 +17,14 @@ Contents:
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 
-If you encounter errors installing the Zulip dev environment and they are not addressed in [Troubleshooting & Common Errors](#troubleshooting-common-errors), send a note to the [Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an issue](https://github.com/zulip/zulip/issues).
+If you encounter errors installing the Zulip development environment,
+check [Troubleshooting & Common
+Errors](#troubleshooting-common-errors). If that doesn't help, please
+visit [the `provision` stream in the Zulip developers'
+chat](https://zulip.tabbott.net/#narrow/stream/provision) for realtime
+help, or send a note to the [Zulip-devel Google
+group](https://groups.google.com/forum/#!forum/zulip-devel) or [file
+an issue](https://github.com/zulip/zulip/issues).
 
 ### Requirements
 
@@ -232,9 +239,12 @@ does the following:
   downloads all required dependencies, sets up the python environment for
   the Zulip dev environment, and initializes a default test database.
 
-You will need an active internet connection during the entire processes. (See
-[Specifying a proxy](brief-install-vagrant-dev.html#specifying-a-proxy) if you need a proxy to access the
-internet.)
+You will need an active internet connection during the entire
+processes. (See [Specifying a
+proxy](brief-install-vagrant-dev.html#specifying-a-proxy) if you need
+a proxy to access the internet.) And if you're running into any
+problems, please come chat with us [in the `provision` stream of our
+developers' chat](https://zulip.tabbott.net/#narrow/stream/provision).
 
 Once `vagrant up` has completed, connect to the dev environment with `vagrant
 ssh`:
