@@ -12,12 +12,18 @@ def add_settings(request):
     if hasattr(request.user, "realm"):
         realm = request.user.realm
         realm_uri = realm.uri
+        full_name = request.user.full_name
+        realm_name = realm.name
     else:
         realm = None
+        full_name = None
+        realm_name = None
         # TODO: Figure out how to add an assertion that this is not used
         realm_uri = settings.SERVER_URI
 
     return {
+        'full_name':                 full_name,
+        'realm_name':                realm_name,
         'custom_logo_url':           settings.CUSTOM_LOGO_URL,
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
