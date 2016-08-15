@@ -20,6 +20,10 @@ development environment](#brief-installation-instructions-for-vagrant-developmen
 [Using Docker (experimental)](#using-docker-experimental), or [Installing
 manually on UNIX-based platforms](#installing-manually-on-unix-based-platforms).
 
+If you have a slow network connection, you should probably avoid
+installing Vagrant (which is large) and go through [the manual install
+process](#installing-manually-on-unix-based-platforms) instead.
+
 ## Development environment setup for first-time contributors
 
 See [the setup
