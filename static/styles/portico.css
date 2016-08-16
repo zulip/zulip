@@ -880,6 +880,60 @@ a.bottom-signup-button {
     color: #ddd;
 }
 
+/* -- password reset container -- */
+.password-container {
+    text-align: center;
+    margin-top: calc(50vh - 290px);
+}
+
+.password-reset {
+    display: inline-block;
+    text-align: left;
+}
+
+.password-reset .control-group .control-label {
+    display: block;
+}
+
+.password-reset .pitch {
+    width: auto;
+}
+
+.password-reset .input-group {
+    margin: 15px 0px;
+}
+
+.password-reset p {
+    margin: 0;
+}
+
+.password-reset .progress {
+    margin: 0;
+}
+
+.password-reset #email-section .fakecontrol {
+    display: inline-block;
+    margin: 0;
+}
+
+.password-reset .input-group input[type=text],
+.password-reset .input-group input[type=password] {
+    width: calc(100% - 14px);
+}
+
+.password-reset .input-group #pw_strength {
+    width: 100%;
+}
+
+.password-reset .input-group.m-t-30 {
+    margin-top: 30px;
+}
+
+@media (max-height: 600px) {
+  .password-container {
+    margin-top: 10px;
+  }
+}
 
 @media (max-width: 950px) {
 
