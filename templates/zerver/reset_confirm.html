@@ -6,61 +6,66 @@
 
 {% block portico_content %}
 
-<div class="pitch">
-    <hr/>
-    <h3>{{ _('Reset your password') }}.</h3>
-</div>
+<div class="password-container">
+  <div class="password-reset">
+    <div class="pitch">
+        <hr/>
+        <h3>{{ _('Reset your password') }}.</h3>
+    </div>
 
-{% if validlink %}
-    <form method="post" id="password_reset" class="form-horizontal">
-    {{ csrf_input }}
-        <div class="control-group">
-            <label for="id_new_password1" class="control-label">{{ _('Password') }}</label>
-            <div class="controls">
-                <input id="id_new_password1" class="required" type="password" name="new_password1"
-                       value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
-                       maxlength="100" />
-                {% if form.new_password1.errors %}
-                    {% for error in form.new_password1.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            </div>
-        </div>
-        <div class="control-group">
-            <label class="control-label">{{ _('Password strength') }}</label>
-            <div class="controls">
-                <div class="progress" id="pw_strength">
-                    <div class="bar bar-danger" style="width: 10%;"></div>
+    {% if validlink %}
+        <form method="post" id="password_reset" class="form-horizontal">
+        {{ csrf_input }}
+            <div class="control-group">
+                <label for="id_new_password1" class="control-label">{{ _('Password') }}</label>
+                <div class="controls">
+                    <input id="id_new_password1" class="required" type="password" name="new_password1"
+                           value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
+                           maxlength="100" />
+                    {% if form.new_password1.errors %}
+                        {% for error in form.new_password1.errors %}
+                            <div class="alert alert-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="control-group">
-            <label for="id_new_password2" class="control-label">{{ _('Confirm password') }}</label>
-            <div class="controls">
-                <input id="id_new_password2" class="required" type="password" name="new_password2"
-                       value="{% if form.new_password2.value() %}{{ form.new_password2.value() }}{% endif %}"
-                       maxlength="100" />
-                {% if form.new_password2.errors %}
-                    {% for error in form.new_password2.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
+            <div class="control-group">
+                <label class="control-label">{{ _('Password strength') }}</label>
+                <div class="controls">
+                    <div class="progress" id="pw_strength">
+                        <div class="bar bar-danger" style="width: 10%;"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="control-group">
-            <div class="controls">
-                <input type="submit" class="btn btn-primary" value="Submit" /><br />
+            <div class="control-group">
+                <label for="id_new_password2" class="control-label">{{ _('Confirm password') }}</label>
+                <div class="controls">
+                    <input id="id_new_password2" class="required" type="password" name="new_password2"
+                           value="{% if form.new_password2.value() %}{{ form.new_password2.value() }}{% endif %}"
+                           maxlength="100" />
+                    {% if form.new_password2.errors %}
+                        {% for error in form.new_password2.errors %}
+                            <div class="alert alert-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
             </div>
-        </div>
-    </form>
 
-<script type="text/javascript">
-    autofocus('#id_new_password1');
-</script>
-{% else %}
-    <p>{{ _('Sorry, the link you provided is invalid or has already been used') }}.</p>
-{% endif %}
+            <div class="control-group">
+                <div class="controls">
+                    <input type="submit" class="btn btn-primary" value="Submit" /><br />
+                </div>
+            </div>
+        </form>
+
+    <script type="text/javascript">
+        autofocus('#id_new_password1');
+    </script>
+    {% else %}
+        <p>{{ _('Sorry, the link you provided is invalid or has already been used') }}.</p>
+    {% endif %}
+
+  </div>
+</div>
 
 {% endblock %}
