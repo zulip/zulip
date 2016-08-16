@@ -1,3 +1,6 @@
+// See http://zulip.readthedocs.io/en/latest/pointer.html for notes on
+// how this system is designed.
+
 var unread = (function () {
 
 var exports = {};
