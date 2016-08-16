@@ -716,7 +716,7 @@ JS_SPECS = {
             'third/spectrum/spectrum.js',
             'third/string-prototype-codepointat/codepointat.js',
             'third/winchan/winchan.js',
-            'third/sockjs/sockjs-0.3.4.js',
+            'third/sockjs/sockjs-1.1.0.js',
             'third/handlebars/handlebars.runtime.js',
             'third/marked/lib/marked.js',
             'templates/compiled.js',
@@ -799,8 +799,8 @@ JS_SPECS = {
     },
     # We also want to minify sockjs separately for the sockjs iframe transport
     'sockjs': {
-        'source_filenames': ('third/sockjs/sockjs-0.3.4.js',),
-        'output_filename': 'min/sockjs-0.3.4.min.js'
+        'source_filenames': ('third/sockjs/sockjs-1.1.0.js',),
+        'output_filename': 'min/sockjs-1.1.0.min.js'
     },
 }
 
