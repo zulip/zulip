@@ -62,24 +62,25 @@ create your Zulip user:
 ./manage.py knight username@example.com -f
 ```
 
-Now that you are an administrator, you will have a special
-"Administration" tab linked to from the upper-right gear menu in the
-Zulip app that lets you deactivate other users, manage streams, change
-the Realm settings, etc.
+Now that you are an administrator, you will have a special link in the
+upper-right gear menu that takes you to an "Administration" tab the Zulip app
+that lets you deactivate other users, manage streams, change the Realm
+settings, etc.
 
 ![Image of Zulip admin settings page](images/zulip-admin-settings.png)
 
 ### Creating api super users with manage.py
 
-You can also use `./manage.py knight` with the
-`--permission=api_super_user` argument to create API super users,
-which are needed to mirror messages to streams from other users for
-the IRC and Jabber mirroring integrations (see
-`bots/irc-mirror.py` and `bots/jabber_mirror.py` for some detail on these).
+If you need to manage IRC, Jabber, or Zephyr mirrors, you will need to create
+api super users. To do this, use `./manage.py knight` with the
+`--permission=api_super_user` argument
+
+(See `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
+these).
 
 ## Default realm settings
 
-The `initialize-database` script creates 1 realm that you can join, the
+The `initialize-database` script creates one realm that you can join, the
 `ADMIN_DOMAIN` realm (defined in `/etc/zulip/settings.py`).
 
 The `ADMIN_DOMAIN` realm is by default configured with the following settings:

@@ -29,7 +29,7 @@ is recommended.
   than 2GB of RAM, as you will likely experience out of memory issues.
 
 * Disk space: You'll need at least 10GB of free disk space. If you intend to
-  store uploaded files locally rather than S3 you will likely need more.
+  store uploaded files locally rather than on S3 you will likely need more.
 
 ## Network and Security Specifications
 

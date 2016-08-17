@@ -1,4 +1,4 @@
-# Securing, maintaining, and upgrading
+# Secure, maintainin, and upgrade
 
 This page covers topics that will help you maintain a healthy, up-to-date, and
 secure Zulip installation, including:
@@ -10,7 +10,7 @@ secure Zulip installation, including:
 - [Scalability](#scalability)
 - [Security Model](#security-model)
 
-## Upgrading
+## Upgrade
 
 **We recommend reading this entire section before doing your first
 upgrade.**
@@ -36,7 +36,7 @@ up. Upgrading will result in some brief downtime for the service, which should b
 under 30 seconds unless there is an expensive transition involved. Unless you
 have tested the upgrade in advance, we recommend doing upgrades at off hours.
 
-### Preserving local changes to configuration files
+### Preserve local changes to configuration files
 
 **Warning**: If you have modified configuration files installed by
 Zulip (e.g. the nginx configuration), the Zulip upgrade process will
@@ -53,13 +53,13 @@ If you need to do this, please report the issue so
 that we can make the Zulip puppet configuration flexible enough to
 handle your setup.
 
-### Upgrade log location
+### Troubleshoot with the upgrade log
 
 The Zulip upgrade script automatically logs output to
 `/var/log/zulip/upgrade.log`. Please use those logs to include output that
 shows all errors in any bug reports.
 
-### Rolling back to a prior version
+### Roll back to a prior version
 
 The Zulip upgrade process works by creating a new deployment under
 `/home/zulip/deployments/` containing a complete copy of the Zulip server code,
@@ -78,7 +78,7 @@ If required, you can update your settings by editing `/etc/zulip/settings.py`
 and then run `/home/zulip/deployments/current/scripts/restart-server` to
 restart the server.
 
-### Ubuntu system updates
+### Apply Ubuntu system updates
 
 While the Zulip upgrade script runs `apt-get upgrade`, you are responsible for
 running this on your system on a regular basis between Zulip upgrades to
@@ -97,20 +97,20 @@ Every Zulip integration supports this sort of argument (or e.g. a
 `ZULIP_SITE` variable in a zuliprc file or the environment), but this
 is not yet documented for some of the integrations (the included
 integration documentation on `/integrations` will properly document
-how to do this for most integrations).  Pull requests welcome to
-document this for those integrations that don't discuss this!
+how to do this for most integrations).  We welcome pull requests for
+integrations that don't discuss this!
 
 Similarly, you will need to instruct your users to specify the URL
 for your Zulip server when using the Zulip desktop and mobile apps.
 
-### Preventing memory leaks
+### Prevent memory leaks
 
 As a measure to mitigate the impact of potential memory leaks in one
 of the Zulip daemons, the service automatically restarts itself
 every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
 precise configuration.
 
-## Deploying from a git repository
+## Deploy from a git repository
 
 Starting with version 1.4, the Zulip server supports doing deployments
 from a Git repository.  To configure this, you will need to add
@@ -145,7 +145,7 @@ specified repository, build the static assets, and deploy that
 version.  Currently, the upgrade process is slow, but it doesn't need
 to be; there is ongoing work on optimizing it.
 
-## Backing up and restoring
+## Back up and restore
 
 There are several pieces of data that you might want to back up:
 
@@ -174,7 +174,7 @@ computed using a hash of avatar_salt and user's email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
-### Restoration
+### Restore from backups
 
 To restore from backups, the process is basically the reverse of the above:
 
@@ -221,7 +221,7 @@ this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
 
 
-## Monitoring
+## Monitor
 
 The complete Nagios configuration (sans secret keys) used to
 monitor zulip.com is available under `puppet/zulip_internal` in the
