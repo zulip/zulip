@@ -143,6 +143,20 @@ exports.update = function update(person) {
         }
     }
 
+    if (_.has(person, 'avatar_url')) {
+        var url = person.avatar_url;
+        person_obj.avatar_url = url;
+
+        if (util.is_current_user(person.email)) {
+          page_params.avatar_url = url;
+          $("#user-settings-avatar").attr("src", url);
+        }
+
+        $(".inline_profile_picture").css({
+          "background-image": "url(" + url + ")"
+        });
+    }
+
     activity.set_user_statuses([]);
 
     // TODO: update sender names on messages
