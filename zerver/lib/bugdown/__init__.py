@@ -946,15 +946,15 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
         # Note that !gravatar syntax should be deprecated long term.
-        md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '_begin')
-        md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
+        md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '>backtick')
+        md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '>backtick')
 
         md.inlinePatterns.add('stream_subscribe_button',
-            StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '_begin')
+            StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
-            '_begin')
+            '>backtick')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'), '_end')
