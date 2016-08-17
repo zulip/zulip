@@ -233,6 +233,42 @@
       "input": "gonna take a break for a bit--all yours if you want to play around too. what I did:\n\n* install cmake\n* git clone zulip desktop\n* run `cmake-gui ..` in `c:\\zulip\\zulip-desktop\\msvcbuild`\n* hit configure/generate until it generated the msvc project (had to make a fix to some cmake files)\n* opened vs2013 \n* tried to build\n",
       "expected_output": "<p>gonna take a break for a bit--all yours if you want to play around too. what I did:</p>\n<ul>\n<li>install cmake</li>\n<li>git clone zulip desktop</li>\n<li>run <code>cmake-gui ..</code> in <code>c:\\zulip\\zulip-desktop\\msvcbuild</code></li>\n<li>hit configure/generate until it generated the msvc project (had to make a fix to some cmake files)</li>\n<li>opened vs2013 </li>\n<li>tried to build</li>\n</ul>",
       "bugdown_matches_marked": true
+    },
+    {
+      "name": "modal_link",
+      "input": "!modal_link(#settings, Settings page)",
+      "expected_output": "<p><a data-toggle=\"modal\" href=\"#settings\" title=\"#settings\">Settings page</a></p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "modal_link_escaped",
+      "input": "`!modal_link(#settings, Settings page)`",
+      "expected_output": "<p><code>!modal_link(#settings, Settings page)</code></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "avatar_escaped",
+      "input": "`!avatar(username@example.com)`",
+      "expected_output": "<p><code>!avatar(username@example.com)</code></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "gravatar_escaped",
+      "input": "`!gravatar(username@example.com)`",
+      "expected_output": "<p><code>!gravatar(username@example.com)</code></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "stream_subscribe_button",
+      "input": "!_stream_subscribe_button(streamname)",
+      "expected_output": "<p><span class=\"inline-subscribe\" data-stream-name=\"streamname\"><button class=\"inline-subscribe-button btn\">Subscribe to streamname</button><span class=\"inline-subscribe-error\"></span></span></p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "stream_subscribe_button_escaped",
+      "input": "`!_stream_subscribe_button(streamname)`",
+      "expected_output": "<p><code>!_stream_subscribe_button(streamname)</code></p>",
+      "bugdown_matches_marked": true
     }
   ],
   "linkify_tests": [
