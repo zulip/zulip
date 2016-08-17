@@ -373,6 +373,7 @@ def run_parallel():
             logging.info("start " + name)
             result = func()
             logging.info("finish " + name)
+            sys.stdout.flush()
             os._exit(result)
         pids.append(pid)
     failed = False
