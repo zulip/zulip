@@ -233,8 +233,18 @@ def write_instrumentation_reports():
         fn = os.path.join(var_dir, 'url_coverage.txt')
         with open(fn, 'w') as f:
             for call in calls:
-                line = ujson.dumps(call)
-                f.write(line + '\n')
+                try:
+                    line = ujson.dumps(call)
+                    f.write(line + '\n')
+                except OverflowError:
+                    print('''
+                        A JSON overflow error was encountered while
+                        producing the URL coverage report.  Sometimes
+                        this indicates that a test is passing objects
+                        into methods like client_post(), which is
+                        unnecessary and leads to false positives.
+                        ''')
+                    print(call)
 
         print('URL coverage report is in %s' % (fn,))
         print('Try running: ./tools/analyze-url-coverage')
