@@ -1,0 +1,80 @@
+{
+   "object_kind":"push",
+   "event_name":"push",
+   "before":"5fcdd5551fc3085df79bece2c32b1400802ac407",
+   "after":"eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+   "ref":"refs/heads/tomek",
+   "checkout_sha":"eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+   "message":null,
+   "user_id":670043,
+   "user_name":"Tomasz Kolek",
+   "user_email":"tomaszkolek0@gmail.com",
+   "user_avatar":"https://secure.gravatar.com/avatar/116a6fdbcfd00466297a39174da11fbb?s=80\u0026d=identicon",
+   "project_id":1534233,
+   "project":{
+      "name":"my-awesome-project",
+      "description":"",
+      "web_url":"https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "avatar_url":null,
+      "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "git_http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git",
+      "namespace":"tomaszkolek0",
+      "visibility_level":0,
+      "path_with_namespace":"tomaszkolek0/my-awesome-project",
+      "default_branch":"master",
+      "homepage":"https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git"
+   },
+   "commits":[
+      {
+         "id":"66abd2da28809ffa128ed0447965cf11d7f863a7",
+         "message":"b\n",
+         "timestamp":"2016-08-17T21:17:54+02:00",
+         "url":"https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7",
+         "author":{
+            "name":"Tomasz Kolek",
+            "email":"tomasz-kolek@o2.pl"
+         },
+         "added":[
+
+         ],
+         "modified":[
+            "a.txt"
+         ],
+         "removed":[
+
+         ]
+      },
+      {
+         "id":"eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+         "message":"c\n",
+         "timestamp":"2016-08-17T21:18:06+02:00",
+         "url":"https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9",
+         "author":{
+            "name":"Tomasz Kolek",
+            "email":"tomasz-kolek@o2.pl"
+         },
+         "added":[
+
+         ],
+         "modified":[
+            "a.txt"
+         ],
+         "removed":[
+
+         ]
+      }
+   ],
+   "total_commits_count":2,
+   "repository":{
+      "name":"my-awesome-project",
+      "url":"git@gitlab.com:tomaszkolek/my-awesome-project.git",
+      "description":"",
+      "homepage":"https://gitlab.com/tomaszkolek0/my-awesome-project",
+      "git_http_url":"https://gitlab.com/tomaszkolek0/my-awesome-project.git",
+      "git_ssh_url":"git@gitlab.com:tomaszkolek0/my-awesome-project.git",
+      "visibility_level":0
+   }
+}
