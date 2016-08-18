@@ -79,6 +79,31 @@ class ParserTest(unittest.TestCase):
         with self.assertRaisesRegexp(Exception, 'split across two lines'): # type: ignore
             validate(text=my_html)
 
+    def test_anchor_blocks(self):
+        # type: () -> None
+
+        # This is allowed, although strange.
+        my_html = '''
+            <a hef="/some/url">
+            Click here
+            for more info.
+            </a>'''
+        validate(text=my_html)
+
+        # This is fine.
+        my_html = '<a href="/some/url">click here</a>'
+        validate(text=my_html)
+
+        # Even this is fine.
+        my_html = '''
+            <a class="twitter-timeline" href="https://twitter.com/ZulipStatus"
+                data-widget-id="443457763394334720"
+                data-screen-name="ZulipStatus"
+                >@ZulipStatus on Twitter</a>.
+            '''
+        validate(text=my_html)
+
+
     def test_tokenize(self):
         # type: () -> None
         tag = '<meta whatever>bla'
