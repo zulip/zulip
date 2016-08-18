@@ -2,12 +2,13 @@
 
 ## Overview
 
-Zulip has a full test suite that includes many components.  The three most
+Zulip has a full test suite that includes many components.  The most
 important components are documented in depth in their own sections:
 
 - [Django](testing-with-django.html): backend Python tests
 - [Casper](testing-with-casper.html): end-to-end UI tests
 - [Node](testing-with-node.html): unit tests for JS front end code
+- [Linters](linters.html)
 
 This document covers more general testing issues, such as how to run the
 entire test suite, how to troubleshoot database issues, how to manually
