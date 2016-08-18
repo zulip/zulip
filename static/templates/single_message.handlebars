@@ -9,7 +9,7 @@
           {{#include_sender}}
           <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
             {{! See ../js/notifications.js for another user of avatar_url. }}
-            <div class="inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
+            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
                  style="background-image: url('{{small_avatar_url}}');"/>
           <span class="{{^status_message}}sender_name{{/status_message}}{{#status_message}}sender-status{{/status_message}}">
 

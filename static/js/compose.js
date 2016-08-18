@@ -326,6 +326,7 @@ function create_message_object() {
                    stream: compose.stream_name(),
                    private_message_recipient: compose.recipient(),
                    content: content,
+                   sender_id: page_params.user_id,
                    queue_id: page_params.event_queue_id};
 
     if (message.type === "private") {

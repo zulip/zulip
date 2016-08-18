@@ -110,10 +110,6 @@ exports.reify = function reify(person) {
 };
 
 exports.update = function update(person) {
-    // Currently the only attribute that can change is full_name, so
-    // we just push out changes to that field.  As we add more things
-    // that can change, this will need to either get complicated or be
-    // replaced by MVC
     if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",
                        {email: person.email});
@@ -141,6 +137,20 @@ exports.update = function update(person) {
             page_params.is_admin = person.is_admin;
             admin.show_or_hide_menu_item();
         }
+    }
+
+    if (_.has(person, 'avatar_url')) {
+        var url = person.avatar_url + "&y=" + new Date().getTime();
+        person_obj.avatar_url = url;
+
+        if (util.is_current_user(person.email)) {
+          page_params.avatar_url = url;
+          $("#user-settings-avatar").attr("src", url);
+        }
+
+        $(".inline_profile_picture.u-" + person.id).css({
+          "background-image": "url(" + url + ")"
+        });
     }
 
     activity.set_user_statuses([]);
