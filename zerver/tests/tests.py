@@ -282,10 +282,7 @@ class AdminCreateUserTest(AuthedTestCase):
         admin = get_user_profile_by_email(admin_email)
         do_change_is_admin(admin, True)
 
-        result = self.client_put("/json/users", dict(
-            user_profile=admin,
-            )
-        )
+        result = self.client_put("/json/users", dict())
         self.assert_json_error(result, "Missing 'email' argument")
 
         result = self.client_put("/json/users", dict(
