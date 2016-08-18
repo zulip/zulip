@@ -1910,6 +1910,7 @@ class HomeTest(AuthedTestCase):
             "twenty_four_hour_time",
             "unread_count",
             "unsubbed_info",
+            "user_id",
         ]
 
         email = "hamlet@zulip.com"

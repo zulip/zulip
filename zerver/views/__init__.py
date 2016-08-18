@@ -949,6 +949,7 @@ def home(request):
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         realm_default_language = register_ret['realm_default_language'],
         enter_sends           = user_profile.enter_sends,
+        user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
         default_language      = register_ret['default_language'],
         default_language_name = get_language_name(register_ret['default_language']),

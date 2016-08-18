@@ -1678,6 +1678,17 @@ def do_change_avatar_source(user_profile, avatar_source, log=True):
                         bot=dict(email=user_profile.email,
                                 avatar_url=avatar_url(user_profile),)),
                     bot_owner_userids(user_profile))
+    else:
+        payload = dict(
+            email=user_profile.email,
+            avatar_url=avatar_url(user_profile),
+            id=user_profile.id
+        )
+
+        send_event(dict(type='realm_user',
+                        op='update',
+                        person=payload),
+                   active_user_ids(user_profile.realm))
 
 def _default_stream_permision_check(user_profile, stream):
     # type: (UserProfile, Optional[Stream]) -> None
