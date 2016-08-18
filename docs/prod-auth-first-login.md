@@ -1,73 +1,60 @@
-# Logging in and creating users
+# Log in and create users
 
 (As you read and follow the instructions in this section, if you run
 into trouble, check out the troubleshooting advice in [the next major
 section](prod-health-check-debug.html).)
 
-Once you've finished installing Zulip, configuring your settings.py
-file, and initializing the database, it's time to login to your new
-installation.
+Once you've finished installing Zulip, configuring your `settings.py`
+file, and initializing the database, it's time to create your organization and
+your user.
 
-## Create your user
+## Create your organization and user
 
-There are two ways to create your first user account: by registering through
-the Zulip web app or with the manage.py command.
-
-### Option 1: Register through Zulip web app
-
-Visit your Zulip instance in your web browser. You should see something like:
-
-![Image of Zulip home page](images/zulip-home.png)
-
-Click **Register** and provide your email address. You will be emailed a
-confirmation link. Follow that link and you'll be prompted to complete your
-registration by providing your full name and a password:
-
-![Image of Zulip create user page](images/zulip-confirm-create-user.png)
-
-### Option 2: User manage.py command
-
-The Zulip management console offers a number of useful commands. One of them is
-the ability to create users.
-
-You always need to run `manage.py` as the Zulip user. To start an interactive
-shell as the Zulip user, use `sudo -u zulip -i`.
-
-Use `manage.py` as follows to create your user, replacing ADMIN_DOMAIN with the
-domain (realm) that you specified in `/etc/zulip/settings.py`:
+You create your organization and user from the Zulip web app via a unique,
+one-time link you create with the Zulip management console, `manage.py`:
 
 ```
 cd deployments/current
-/manage.py create_user --domain=ADMIN_DOMAIN --this-user-has-accepted-the-tos
+./manage.py generate_realm_creation_link
 ```
 
-You will be prompted to provide an Email and Full name. Your password will be
-set to a default one, but not revealed to you. If you would like to log in to
-Zulip using your email address and a password, you'll have to go through the
-reset password process. Otherwise, you can login with Google or another
-authentication method.
+Note: You always need to run `manage.py` as the Zulip user. To start an interactive
+shell as the Zulip user, use `sudo -u zulip -i`.
 
-## Grant administrator access
+Open the link generated with your web browser. You'll see the create realm
+(organization) page:
 
-You will likely want to make your own user account an admin user,
-which you can do via the following with the `knight` management command.
+![Image of Zulip create realm page](images/zulip-create-realm.png)
 
-You always need to run `manage.py` as the Zulip user. To start an interactive
-shell as the Zulip user, use `sudo -u zulip -i`).
+Enter your email address. You should use an address that matches the domain
+with which you want this realm (organization) to be associated.
 
-Be sure to replace `username@example.com` with the email address you used to
-create your Zulip user:
+Once you provide your email address, click *Create organization* and you'll be
+emailed a confirmation link.
 
-```
-./manage.py knight username@example.com -f
-```
+![Image of Zulip confirmation link page](images/zulip-confirmation.png)
 
-Now that you are an administrator, you will have a special link in the
-upper-right gear menu that takes you to an "Administration" tab the Zulip app
+Check your email and click this link. You'll be prompted to finish setting up
+your organization and your user:
+
+![Image of Zulip ](images/zulip-create-user-and-org.png)
+
+Complete this form and you'll be ready to log in!
+
+Your user will automatically have administrator access. You will have a special
+"Administration" tab linked to from the upper-right gear menu in the Zulip app
 that lets you deactivate other users, manage streams, change the Realm
 settings, etc.
 
 ![Image of Zulip admin settings page](images/zulip-admin-settings.png)
+
+## Grant administrator access
+
+You can make any user and administrator with the `knight` management command:
+
+```
+./manage.py knight username@example.com -f
+```
 
 ### Creating api super users with manage.py
 
@@ -78,18 +65,6 @@ api super users. To do this, use `./manage.py knight` with the
 (See `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
 these).
 
-## Default realm settings
-
-The `initialize-database` script creates one realm that you can join, the
-`ADMIN_DOMAIN` realm (defined in `/etc/zulip/settings.py`).
-
-The `ADMIN_DOMAIN` realm is by default configured with the following settings:
-
-* `restricted_to_domain=True`: Only people with emails ending with @ADMIN_DOMAIN can join.
-* `invite_required=False`: An invitation is not required to join the realm.
-* `invite_by_admin_only=False`: You don't need to be an admin user to invite other users.
-* `mandatory_topics=False`: Users are not required to specify a topic when sending messages.
-
 ## Making changes to realm settings
 
 If you would like to change the default realm settings, you can do so using the
@@ -99,18 +74,13 @@ Django management python shell (as the zulip user; `sudo -u zulip -i`):
 cd /home/zulip/deployments/current
 ./manage.py shell
 from zerver.models import *
-r = get_realm(settings.ADMIN_DOMAIN)
+r = get_realm("REALM_DOMAIN")
 r.restricted_to_domain=False # Now anyone anywhere can login
 r.save() # save to the database
 ```
 
-If you realize you set `ADMIN_DOMAIN` wrong, in addition to fixing the
-value in settings.py, you will also want to do a similar manage.py
-process to set `r.domain = "newexample.com"`.  If you've already
-changed `ADMIN_DOMAIN` in settings.py, you can use
-`Realm.objects.all()` in the management shell to find the list of
-realms and pass the domain of the realm that is not "zulip.com" to
-`get_realm`.
+You can use `Realm.objects.all()` in the management shell to find the list of
+realms and pass the domain of the realm that is not "zulip.com" to `get_realm`.
 
 ## Other useful manage.py commands
 
