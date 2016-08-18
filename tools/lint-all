@@ -18,6 +18,24 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
+# Exclude some directories and files from lint checking
+EXCLUDED_FILES = """
+api/integrations/perforce/git_p4.py
+api/setup.py
+docs/html_unescape.py
+frontend_tests/casperjs
+node_modules
+puppet/apt/.forge-release
+puppet/apt/README.md
+static/locale
+static/third
+tools/jslint/jslint.js
+zerver/migrations
+zproject/dev_settings.py
+zproject/settings.py
+zproject/test_settings.py
+""".split()
+
 def check_pyflakes(options, by_lang):
     # type: (Any, Dict[str, List[str]]) -> bool
     if not by_lang['py']:
@@ -85,28 +103,9 @@ def run():
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 
-    # Exclude some directories and files from lint checking
-
-    exclude = """
-    static/third
-    frontend_tests/casperjs
-    zerver/migrations
-    node_modules
-    docs/html_unescape.py
-    zproject/test_settings.py
-    zproject/dev_settings.py
-    zproject/settings.py
-    tools/jslint/jslint.js
-    api/setup.py
-    api/integrations/perforce/git_p4.py
-    puppet/apt/.forge-release
-    puppet/apt/README.md
-    static/locale
-    """.split()
-
     by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
         ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
-        use_shebang=True, group_by_ftype=True, exclude=exclude))
+        use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.
