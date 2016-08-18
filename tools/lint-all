@@ -17,6 +17,35 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
+def check_pyflakes(options, by_lang):
+    # type: (Any, Dict[str, List[str]]) -> bool
+    if not by_lang['py']:
+        return False
+    failed = False
+    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
+        universal_newlines = True)
+
+    # pyflakes writes some output (like syntax errors) to stderr. :/
+    for pipe in (pyflakes.stdout, pyflakes.stderr):
+        for ln in pipe:
+            if options.full or not \
+                    ('imported but unused' in ln or
+                     'redefinition of unused' in ln or
+                     ("zerver/models.py" in ln and
+                      " undefined name 'bugdown'" in ln) or
+                     ("scripts/lib/pythonrc.py" in ln and
+                      " import *' used; unable to detect undefined names" in ln) or
+                     ("zerver/lib/tornado_ioloop_logging.py" in ln and
+                      "redefinition of function 'instrument_tornado_ioloop'" in ln) or
+                     ("zephyr_mirror_backend.py:" in ln and
+                      "redefinition of unused 'simplejson' from line" in ln)):
+                sys.stdout.write(ln)
+                failed = True
+    return failed
+
+
 def run():
     # type: () -> None
     parser = optparse.OptionParser()
@@ -67,34 +96,6 @@ def run():
         logger.setLevel(logging.INFO)
     else:
         logger.setLevel(logging.WARNING)
-
-    def check_pyflakes():
-        # type: () -> bool
-        if not by_lang['py']:
-            return False
-        failed = False
-        pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE,
-            universal_newlines = True)
-
-        # pyflakes writes some output (like syntax errors) to stderr. :/
-        for pipe in (pyflakes.stdout, pyflakes.stderr):
-            for ln in pipe:
-                if options.full or not \
-                        ('imported but unused' in ln or
-                         'redefinition of unused' in ln or
-                         ("zerver/models.py" in ln and
-                          " undefined name 'bugdown'" in ln) or
-                         ("scripts/lib/pythonrc.py" in ln and
-                          " import *' used; unable to detect undefined names" in ln) or
-                         ("zerver/lib/tornado_ioloop_logging.py" in ln and
-                          "redefinition of function 'instrument_tornado_ioloop'" in ln) or
-                         ("zephyr_mirror_backend.py:" in ln and
-                          "redefinition of unused 'simplejson' from line" in ln)):
-                    sys.stdout.write(ln)
-                    failed = True
-        return failed
 
     RuleList = List[Dict[str, Any]]
 
@@ -449,7 +450,7 @@ def run():
         @lint
         def pyflakes():
             # type: () -> int
-            failed = check_pyflakes()
+            failed = check_pyflakes(options, by_lang)
             return 1 if failed else 0
 
         failed = run_parallel()
