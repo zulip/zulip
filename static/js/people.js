@@ -110,10 +110,6 @@ exports.reify = function reify(person) {
 };
 
 exports.update = function update(person) {
-    // Currently the only attribute that can change is full_name, so
-    // we just push out changes to that field.  As we add more things
-    // that can change, this will need to either get complicated or be
-    // replaced by MVC
     if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",
                        {email: person.email});
