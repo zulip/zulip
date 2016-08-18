@@ -1,4 +1,4 @@
-# Checking status and debugging
+# Check status and debug
 
 Zulip uses [Supervisor](http://supervisord.org/index.html) to monitor
 and control its many Python services. Read the next section, [Using
