@@ -10,7 +10,7 @@ import sys
 import time
 
 if False:
-    from typing import Sequence
+    from typing import Sequence, Any
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -83,11 +83,11 @@ def release_deployment_lock():
     # type: () -> None
     shutil.rmtree(LOCK_DIR)
 
-def run(args):
-    # type: (Sequence[str]) -> int
+def run(args, **kwargs):
+    # type: (Sequence[str], **Any) -> int
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
-    process = subprocess.Popen(args)
+    process = subprocess.Popen(args, **kwargs)
     rc = process.wait()
     if rc:
         raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
