@@ -1,4 +1,4 @@
-# Secure, maintainin, and upgrade
+# Secure, maintain, and upgrade
 
 This page covers topics that will help you maintain a healthy, up-to-date, and
 secure Zulip installation, including:
