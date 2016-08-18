@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import scripts.lib.setup_path_on_import
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
+from scripts.lib.node_cache import setup_node_modules
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
@@ -28,7 +29,7 @@ subprocess.check_call(["mkdir", "-p", "var/log"])
 fp = open('var/log/update-prod-static.log', 'w')
 
 # Install node packages
-subprocess.check_call(['npm', 'install', '--production'], stdout=fp, stderr=fp);
+setup_node_modules(npm_args=['--production'], stdout=fp, stderr=fp)
 
 # Compile Handlebars templates and minify JavaScript.
 subprocess.check_call(['python', 'tools/minify-js']
