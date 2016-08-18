@@ -589,6 +589,24 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_error(
             result, "stream key is missing from subscription_data[0]")
 
+    def test_set_color_unsubscribed_stream_name(self):
+        # type: () -> None
+        """
+        Updating the color property requires a subscribed stream.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+
+        unsubs_stream = 'Rome'
+        result = self.client_post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "color",
+                                                "stream": unsubs_stream,
+                                                "value": "#ffffff"}])})
+        self.assert_json_error(
+            result, "Not subscribed to stream %s" % (unsubs_stream,) )
+
+
     def test_json_subscription_property_invalid_verb(self):
         # type: () -> None
         """
