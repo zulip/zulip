@@ -153,13 +153,19 @@ def validate(fn=None, text=None, check_indent=True):
             end_line = end_token.line
             end_col = end_token.col
 
+            if start_tag == 'a':
+                max_lines = 3
+            else:
+                max_lines = 1
+
             problem = None
             if (start_tag == 'code') and (end_line == start_line + 1):
                 problem = 'Code tag is split across two lines.'
             if start_tag != end_tag:
                 problem = 'Mismatched tag.'
-            elif check_indent and end_line > start_line + 1 and end_col != start_col:
-                problem = 'Bad indentation.'
+            elif check_indent and (end_line > start_line + max_lines):
+                if end_col != start_col:
+                    problem = 'Bad indentation.'
             if problem:
                 raise Exception('''
                     fn: %s
