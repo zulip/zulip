@@ -237,7 +237,10 @@ exports.get_rendered_messages = function (table) {
         var tbl = $('#'+table);
         return {
             headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
-                return elem.innerText;
+                var $clone = $(elem).clone(true);
+                $clone.find(".recipient_row_date").remove();
+
+                return $clone.text();
             }),
 
             bodies: $.map(tbl.find('.message_content'), function (elem) {

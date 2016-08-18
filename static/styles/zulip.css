@@ -812,6 +812,26 @@ td.pointer {
     line-height: 17px;
 }
 
+.recipient_row_date {
+    display: inline-block;
+
+    color: #888;
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 3px 10px 2px 10px;
+    height: 17px;
+    line-height: 17px;
+    float: right;
+}
+
+.recipient_row_date .hide-date {
+    display: none;
+}
+
+.floating_recipient .recipient_row_date .hide-date {
+    display: block;
+}
+
 .summary_row .message_header {
     padding: 5px 0px 4px 5px;
 }
@@ -940,6 +960,7 @@ just a temporary hack.
     font-size: 14px;
     height: 17px;
     line-height: 17px;
+    border-left-color: #444;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -955,7 +976,7 @@ just a temporary hack.
     background-color: #feffe0;
 }
 
-.message_header_private_message .message-header-contents {
+.floating_recipient .message-header-contents {
     border-right: 1px solid #e2e2e2;
 }
 
