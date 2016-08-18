@@ -154,6 +154,8 @@ def validate(fn=None, text=None, check_indent=True):
             end_col = end_token.col
 
             problem = None
+            if (start_tag == 'code') and (end_line == start_line + 1):
+                problem = 'Code tag is split across two lines.'
             if start_tag != end_tag:
                 problem = 'Mismatched tag.'
             elif check_indent and end_line > start_line + 1 and end_col != start_col:

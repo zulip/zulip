@@ -54,6 +54,31 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+    def test_code_blocks(self):
+        # type: () -> None
+
+        # This is fine.
+        my_html = '''
+            <code>
+                x = 5
+                y = x + 1
+            </code>'''
+        validate(text=my_html)
+
+        # This is also fine.
+        my_html = "<code>process_widgets()</code>"
+        validate(text=my_html)
+
+        # This is illegal.
+        my_html = '''
+            <code>x =
+            5</code>
+            '''
+        # See https://github.com/python/typeshed/issues/372
+        # for why we have to ingore types here.
+        with self.assertRaisesRegexp(Exception, 'split across two lines'): # type: ignore
+            validate(text=my_html)
+
     def test_tokenize(self):
         # type: () -> None
         tag = '<meta whatever>bla'
