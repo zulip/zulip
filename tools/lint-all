@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 from __future__ import absolute_import
+import logging
 import os
 import re
 import sys
@@ -43,6 +44,27 @@ def check_pyflakes(options, by_lang):
                       "redefinition of unused 'simplejson' from line" in ln)):
                 sys.stdout.write(ln)
                 failed = True
+    return failed
+
+def run_parallel(lint_functions):
+    # type: (Dict[str, Callable[[], int]]) -> bool
+    pids = []
+    for name, func in lint_functions.items():
+        pid = os.fork()
+        if pid == 0:
+            logging.info("start " + name)
+            result = func()
+            logging.info("finish " + name)
+            sys.stdout.flush()
+            sys.stderr.flush()
+            os._exit(result)
+        pids.append(pid)
+    failed = False
+
+    for pid in pids:
+        (_, status) = os.waitpid(pid, 0)
+        if status != 0:
+            failed = True
     return failed
 
 
@@ -89,7 +111,6 @@ def run():
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.
 
-    import logging
     logging.basicConfig(format="%(asctime)s %(message)s")
     logger = logging.getLogger()
     if options.verbose:
@@ -368,27 +389,6 @@ def run():
 
     lint_functions = {} # type: Dict[str, Callable[[], int]]
 
-    def run_parallel():
-        # type: () -> bool
-        pids = []
-        for name, func in lint_functions.items():
-            pid = os.fork()
-            if pid == 0:
-                logging.info("start " + name)
-                result = func()
-                logging.info("finish " + name)
-                sys.stdout.flush()
-                sys.stderr.flush()
-                os._exit(result)
-            pids.append(pid)
-        failed = False
-
-        for pid in pids:
-            (_, status) = os.waitpid(pid, 0)
-            if status != 0:
-                failed = True
-        return failed
-
     def lint(func):
         # type: (Callable[[], int]) -> Callable[[], int]
         lint_functions[func.__name__] = func
@@ -453,7 +453,7 @@ def run():
             failed = check_pyflakes(options, by_lang)
             return 1 if failed else 0
 
-        failed = run_parallel()
+        failed = run_parallel(lint_functions)
 
         sys.exit(1 if failed else 0)
 
