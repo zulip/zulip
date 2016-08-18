@@ -622,10 +622,16 @@ function ajaxSubscribe(stream) {
     });
 }
 
-function ajaxUnsubscribe(stream) {
+function ajaxUnsubscribe(stream_name) {
+    var stream = stream_data.get_sub(stream_name);
+    if (stream.mandatory) {
+        ui.report_message(i18n.t("This is a mandatory stream. If you want to unsubscribe, please contact Realm Admin"),
+                            $("#subscriptions-status"), undefined, 'subscriptions-status');
+        return;
+    }
     return channel.post({
         url: "/json/subscriptions/remove",
-        data: {"subscriptions": JSON.stringify([stream]) },
+        data: {"subscriptions": JSON.stringify([stream_name]) },
         success: function (resp, statusText, xhr, form) {
             var name, res = $.parseJSON(xhr.responseText);
             $("#subscriptions-status").hide();
