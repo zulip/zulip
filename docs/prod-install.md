@@ -1,4 +1,4 @@
-# Installing
+# Install
 
 Ensure you have an Ubuntu system that satisfies [the installation
 requirements](prod-requirements.html).

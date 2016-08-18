@@ -1,4 +1,4 @@
-# Customizing Zulip
+# Customize Zulip
 
 Once you've got Zulip setup, you'll likely want to configure it the
 way you like.  There are four big things to focus on:
