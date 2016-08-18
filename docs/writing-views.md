@@ -36,7 +36,9 @@ or JSON (data for Zulip clients on all platforms, custom bots, and
 integrations).
 
 The format of the URL patterns in Django is [documented
-here](https://docs.djangoproject.com/en/1.8/topics/http/urls/).
+here](https://docs.djangoproject.com/en/1.8/topics/http/urls/), and
+the Zulip specific details for these are discussed in detail in the
+[life of a request doc](life-of-a-request.html#options).
 
 We have two Zulip-specific conventions we use for internationalization and for
 our REST API, respectively.
