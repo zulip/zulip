@@ -80,6 +80,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
     WebhookIntegration('github', function='zerver.views.webhooks.github.api_github_landing', display_name='GitHub'),
+    WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
