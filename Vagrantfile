@@ -3,7 +3,7 @@
 VAGRANTFILE_API_VERSION = "2"
 
 def command?(name)
-  `which #{name}`
+  `which #{name} > /dev/null 2>&1`
   $?.success?
 end
 
