@@ -12,7 +12,7 @@ import traceback
 
 try:
     import lister
-    from typing import cast, Any, Callable, Dict, List, Optional, Generator
+    from typing import cast, Any, Callable, Dict, List, Optional, Generator, Tuple
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip linters inside a Zulip dev environment.")
@@ -99,38 +99,8 @@ def run_parallel(lint_functions):
             failed = True
     return failed
 
-
-def run():
-    # type: () -> None
-    parser = optparse.OptionParser()
-    parser.add_option('--full',
-        action='store_true',
-        help='Check some things we typically ignore')
-    parser.add_option('--modified', '-m',
-        action='store_true',
-        help='Only check modified files')
-    parser.add_option('--verbose', '-v',
-        action='store_true',
-        help='Print verbose timing output')
-    (options, args) = parser.parse_args()
-
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-
-
-    by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
-        ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
-        use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
-
-    # Invoke the appropriate lint checker for each language,
-    # and also check files for extra whitespace.
-
-    logging.basicConfig(format="%(asctime)s %(message)s")
-    logger = logging.getLogger()
-    if options.verbose:
-        logger.setLevel(logging.INFO)
-    else:
-        logger.setLevel(logging.WARNING)
-
+def build_custom_checkers(by_lang):
+    # type: (Dict[str, List[str]]) -> Tuple[Callable[[], bool], Callable[[], bool]]
     RuleList = List[Dict[str, Any]]
 
     def custom_check_file(fn, rules, skip_rules=None, max_length=None):
@@ -399,6 +369,41 @@ def run():
                 failed = True
 
         return failed
+
+    return (check_custom_checks_py, check_custom_checks_nonpy)
+
+def run():
+    # type: () -> None
+    parser = optparse.OptionParser()
+    parser.add_option('--full',
+        action='store_true',
+        help='Check some things we typically ignore')
+    parser.add_option('--modified', '-m',
+        action='store_true',
+        help='Only check modified files')
+    parser.add_option('--verbose', '-v',
+        action='store_true',
+        help='Print verbose timing output')
+    (options, args) = parser.parse_args()
+
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+
+
+    by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
+        ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
+        use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
+
+    # Invoke the appropriate lint checker for each language,
+    # and also check files for extra whitespace.
+
+    logging.basicConfig(format="%(asctime)s %(message)s")
+    logger = logging.getLogger()
+    if options.verbose:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARNING)
+
+    check_custom_checks_py, check_custom_checks_nonpy = build_custom_checkers(by_lang)
 
     lint_functions = {} # type: Dict[str, Callable[[], int]]
 
