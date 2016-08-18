@@ -16,9 +16,6 @@ EXTERNAL_HOST = 'zulip.example.com'
 # Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
-# The domain for your organization, e.g. example.com
-ADMIN_DOMAIN = 'example.com'
-
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.

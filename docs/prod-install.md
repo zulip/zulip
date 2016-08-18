@@ -130,8 +130,6 @@ These settings include:
   pointing to this server and for which you configured SSL certificates.
 - `ZULIP_ADMINISTRATOR`: the email address of the person or team maintaining
   this installation and who will get support emails.
-- `ADMIN_DOMAIN`: the domain for your organization. Usually this is the main
-  domain used in your organization's email addresses.
 - `AUTHENTICATION_BACKENDS`: a list of enabled authentication mechanisms.
   You'll need to enable at least one authentication mechanism by uncommenting
   its corresponding line.
