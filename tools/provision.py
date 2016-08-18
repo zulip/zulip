@@ -15,6 +15,8 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
+from scripts.lib.node_cache import setup_node_modules
+
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -117,20 +119,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 )
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
-
-def setup_node_modules():
-    # type: () -> None
-    output = subprocess_text_output(['sha1sum', 'package.json'])
-    sha1sum = output.split()[0]
-    success_stamp = os.path.join('node_modules', '.npm-success-stamp', sha1sum)
-    if not os.path.exists(success_stamp):
-        print("Deleting cached version")
-        run(["rm", "-rf", "node_modules"])
-        print("Installing node modules")
-        run(["npm", "install"])
-        run(["mkdir", "-p", success_stamp])
-    else:
-        print("Using cached version of node_modules")
 
 def install_npm():
     # type: () -> None
