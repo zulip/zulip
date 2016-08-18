@@ -1650,7 +1650,12 @@ def do_change_avatar_source(user_profile, avatar_source, log=True):
                                 avatar_url=avatar_url(user_profile),)),
                     bot_owner_userids(user_profile))
     else:
-        payload = dict(email=user_profile.email,avatar_url=avatar_url(user_profile))
+        payload = dict(
+            email=user_profile.email,
+            avatar_url=avatar_url(user_profile),
+            id=user_profile.id
+        )
+
         send_event(
             dict(type='realm_user',
                  op='update',

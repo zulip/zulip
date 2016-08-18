@@ -971,6 +971,7 @@ def home(request):
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         enter_sends           = user_profile.enter_sends,
+        user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
         default_language      = register_ret['default_language'],
         language_list         = get_language_list(),

@@ -144,7 +144,7 @@ exports.update = function update(person) {
     }
 
     if (_.has(person, 'avatar_url')) {
-        var url = person.avatar_url;
+        var url = person.avatar_url + "&y=" + new Date().getTime();
         person_obj.avatar_url = url;
 
         if (util.is_current_user(person.email)) {
@@ -152,7 +152,7 @@ exports.update = function update(person) {
           $("#user-settings-avatar").attr("src", url);
         }
 
-        $(".inline_profile_picture").css({
+        $(".inline_profile_picture.u-" + person.id).css({
           "background-image": "url(" + url + ")"
         });
     }
