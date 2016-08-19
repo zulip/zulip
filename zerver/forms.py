@@ -32,7 +32,7 @@ if settings.SHOW_OSS_ANNOUNCEMENT:
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        u'If you want to sign up an alias for Zulip, ' + \
-                       u'<a href="mailto:support@zulip.com">contact us</a>.'
+                       u'<a href="mailto:"' + settings.ZULIP_ADMINISTRATOR + '">contact us</a>.'
 
 def get_registration_string(domain):
     # type: (text_type) -> text_type
