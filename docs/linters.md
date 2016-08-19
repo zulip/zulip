@@ -4,7 +4,7 @@
 
 Zulip does extensive linting of much of its source code, including
 Python/JavaScript files, HTML templates (Django/handlebars), CSS files,
-JSON fixtures, Markdown documents, puppet scripts, and shell scripts.
+JSON fixtures, Markdown documents, puppet manifests, and shell scripts.
 
 For some files we simply check for small things like trailing whitespace,
 but for other files, we are quite thorough about checking semantic
@@ -19,7 +19,7 @@ below will direct you to the official documentation for these projects.
 
 - [jslint](https://github.com/douglascrockford/JSLint)
 - [mypy](http://mypy-lang.org/)
-- [puppet](https://puppet.com/) (puppet provides its own mechanism for validating scripts)
+- [puppet](https://puppet.com/) (puppet provides its own mechanism for validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -64,17 +64,12 @@ extreme cases, but often it can be a simple matter of writing your code
 in a slightly different style to appease the linter.  If you have
 problems getting something to lint, you can submit an unfinished PR
 and ask the reviewer to help you work through the lint problem, or you
-can tap into other Zulip community resources like our Google mailing list.
+can find other people in the [Zulip Community](readme-symlink.html#community)
+to help you.
 
 Also, bear in mind that 100% of the lint code is open source, so if you
 find limitations in either the Zulip home-grown stuff or our third party
-tools, feedback will be highly appreciated.  (To give one example, as of
-this writing, we only recently recently started using mypy, which is an
-amazing project to provide static checking for Python code.  While mypy
-has been very good for us, it is still a young project, so you will see
-"type: ignore" comments in various places of our code.  As mypy evolves
-and certain alpha/beta bugs get fixed, we will sweep our code to improve
-annotations.)
+tools, feedback will be highly appreciated.
 
 Finally, one way to clean up your code is to thoroughly exercise it
 with tests.  The [Zulip test documentation](testing.html)
@@ -89,7 +84,7 @@ following checks:
 - Check JavaScript code with jslint.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
-- Check puppet scripts with the puppet validator.
+- Check puppet manifests with the puppet validator.
 - Check HTML templates for matching tags and indentations.
 - Check CSS for parsability.
 - Check JavaScript code for addClass calls.
@@ -97,8 +92,10 @@ following checks:
 The remaining lint checks occur in `./tools/run-mypy`.  It is probably somewhat
 of an understatement to call "mypy" a "linter," as it performs static
 code analysis of Python type annotations throughout our Python codebase.
-We will flesh out our documentation of mypy later.  The rest of this
-document pertains to the checks that occur in `./tools/lint-all`.
+
+Our [documentation on using mypy](mypy.html) covers mypy in more detail.
+
+The rest of this document pertains to the checks that occur in `./tools/lint-all`.
 
 ## lint-all
 
@@ -123,6 +120,9 @@ lint checks against files that are modified in your git repo.  Most of the
 Generally, a good workflow is to run with `--modified` when you are iterating on
 the code, and then run without that option right before commiting new code.
 
+If you need to troubleshoot the linters, there is a `--verbose` option that
+can give you clues about which linters may be running slow, for example.
+
 ### Lint checks
 
 The next part of this document describes the lint checks that we apply to
@@ -142,8 +142,9 @@ is the extent of our checking.
 The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
 call "pyflakes" in a fairly vanilla fashion, and then we post-process its
 output to exclude certain types of errors that Zulip is comfortable
-ignoring.  One notable class of error that Zulip currently tolerates is
-unused imports.
+ignoring.  (One notable class of error that Zulip currently tolerates is
+unused imports--because of the way mypy type annotations work in Python 2,
+it would be inconvenient to enforce this too strictly.)
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint-all`.  Note that we
@@ -166,10 +167,10 @@ more rigorous system for weeding out legacy CSS styles, and the ability
 to quickly introspect our JS code for `addClass` calls is part of our
 vision.
 
-#### Puppet scripts
+#### Puppet manifests
 
 We use Puppet as our tool to manage configuration files, using
-"puppet scripts."  To lint puppet scripts, we use the "parser validate"
+puppet "manifests."  To lint puppet manifests, we use the "parser validate"
 option of puppet.
 
 #### HTML Templates
@@ -182,8 +183,8 @@ Zulip uses two HTML templating systems:
 Zulip has a home grown tool that validates both types of templates for
 correct indentation and matching tags.  You can find the code here:
 
-- [driver](https://github.com/zulip/zulip/blob/master/tools/check-templates)
-- [engine](https://github.com/zulip/zulip/blob/master/tools/lib/template_parser.py)
+- driver: [check-templates](https://github.com/zulip/zulip/blob/master/tools/check-templates)
+- engine: [lib/template_parser.py](https://github.com/zulip/zulip/blob/master/tools/lib/template_parser.py)
 
 We exempt some legacy files from indentation checks, but we are hoping to
 clean those files up eventually.
@@ -201,10 +202,33 @@ the parser chokes, the lint check will fail.)
 
 You can find the code here:
 
-- [driver](https://github.com/zulip/zulip/blob/master/tools/check-css)
-- [engine](https://github.com/zulip/zulip/blob/master/tools/lib/css_parser.py)
+- driver: [check-css](https://github.com/zulip/zulip/blob/master/tools/check-css)
+- engine: [lib/css_parser.py](https://github.com/zulip/zulip/blob/master/tools/lib/css_parser.py)
 
 #### Markdown, shell scripts, JSON fixtures
 
 We mostly validate miscellaneous source files like `.sh`, `.json`, and `.md` files for
 whitespace issues.
+
+## Philosophy
+
+If you want to help improve Zulip's system for linting, here are some
+considerations.
+
+#### Speed
+
+We want our linters to be fast enough that most developers
+will feel comfortable running them in a pre-commit hook, so we run
+our linters in parallel and support incremental checks.
+
+#### Accuracy
+
+We try to catch as many common mistakes as possible, either via a
+linter or an automated test.
+
+#### Completeness
+
+Our goal is to have most common style issues by caught by the linters, so new
+contributors to the codebase can efficiently fix produce code with correct
+style without needing to go back-and-forth with a reviewer.
+
