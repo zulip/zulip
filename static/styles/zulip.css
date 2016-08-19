@@ -1137,9 +1137,16 @@ just a temporary hack.
     position: relative;
 }
 
-.private-message .messagebox,
+.private-message .messagebox {
+    background-color: #edf3f9;
+}
+
 .message_header_private_message .message-header-contents {
-    background-color: #feffe0;
+    background-color: #a4bed2;
+}
+
+.floating_recipient .message_header_private_message .message-header-contents {
+    background-color: #a4bed2;
 }
 
 .message_header_private_message .message-header-contents {
