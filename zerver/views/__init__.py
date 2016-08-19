@@ -43,14 +43,13 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.lib import bugdown
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.decorator import require_post, authenticated_json_post_view, \
-    has_request_variables, authenticated_json_view, to_non_negative_int, \
+    has_request_variables, to_non_negative_int, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.response import json_success, json_error
-from zerver.lib.str_utils import force_str
 from zerver.lib.utils import statsd, generate_random_token
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
@@ -58,7 +57,6 @@ from confirmation.models import Confirmation, RealmCreationKey, check_key_is_val
 
 import requests
 
-import subprocess
 import calendar
 import datetime
 import ujson
@@ -66,7 +64,6 @@ import simplejson
 import re
 from six import text_type
 from six.moves import urllib, zip_longest, zip, range
-import base64
 import time
 import logging
 import jwt
@@ -273,42 +270,6 @@ def accounts_accept_terms(request):
           'special_message_template' : special_message_template },
         request=request)
 
-from zerver.lib.ccache import make_ccache
-
-@authenticated_json_view
-@has_request_variables
-def webathena_kerberos_login(request, user_profile,
-                             cred=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
-    if cred is None:
-        return json_error(_("Could not find Kerberos credential"))
-    if not user_profile.realm.webathena_enabled:
-        return json_error(_("Webathena login not enabled"))
-
-    try:
-        parsed_cred = ujson.loads(cred)
-        user = parsed_cred["cname"]["nameString"][0]
-        if user == "golem":
-            # Hack for an mit.edu user whose Kerberos username doesn't
-            # match what he zephyrs as
-            user = "ctl"
-        assert(user == user_profile.email.split("@")[0])
-        ccache = make_ccache(parsed_cred)
-    except Exception:
-        return json_error(_("Invalid Kerberos cache"))
-
-    # TODO: Send these data via (say) rabbitmq
-    try:
-        subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
-                               "/home/zulip/zulip/bots/process_ccache",
-                               force_str(user),
-                               force_str(user_profile.api_key),
-                               force_str(base64.b64encode(ccache))])
-    except Exception:
-        logging.exception("Error updating the user's ccache")
-        return json_error(_("We were unable to setup mirroring for you"))
-
-    return json_success()
 
 def api_endpoint_docs(request):
     # type: (HttpRequest) -> HttpResponse
