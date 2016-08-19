@@ -193,6 +193,8 @@ def get_subdomain(request):
     if index == -1:
         return ""
     subdomain = domain[0:index]
+    if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
+        return ""
     return subdomain
 
 def check_subdomain(realm_subdomain, user_subdomain):

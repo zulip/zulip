@@ -159,6 +159,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'STATSD_HOST': '',
                     'OPEN_REALM_CREATION': False,
                     'REALMS_HAVE_SUBDOMAINS': False,
+                    'ROOT_SUBDOMAIN_ALIASES': ["www"],
                     'REMOTE_POSTGRES_HOST': '',
                     'REMOTE_POSTGRES_SSLMODE': '',
                     # Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
