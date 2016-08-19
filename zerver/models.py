@@ -195,6 +195,10 @@ class Realm(ModelReprMixin, models.Model):
         return settings.SERVER_URI
 
     @property
+    def host(self):
+        return settings.EXTERNAL_HOST
+
+    @property
     def is_zephyr_mirror_realm(self):
         # type: () -> bool
         return self.domain == "mit.edu"
