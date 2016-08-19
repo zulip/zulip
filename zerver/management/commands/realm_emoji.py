@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from argparse import RawTextHelpFormatter
 from typing import Any
 
 from argparse import ArgumentParser
@@ -13,10 +14,17 @@ import six
 class Command(BaseCommand):
     help = """Manage emoji for the specified realm
 
-Example: python manage.py realm_emoji --realm=zulip.com --op=add robotheart  https://humbug-user-avatars.s3.amazonaws.com/95ffa70fe0e7aea3c052ba91b38a28d8779f5705
+Example: python manage.py realm_emoji --realm=zulip.com --op=add robotheart \\
+    https://humbug-user-avatars.s3.amazonaws.com/95ffa70fe0e7aea3c052ba91b38a28d8779f5705
 Example: python manage.py realm_emoji --realm=zulip.com --op=remove robotheart
 Example: python manage.py realm_emoji --realm=zulip.com --op=show
 """
+
+    # Fix support for multi-line usage
+    def create_parser(self, *args, **kwargs):
+        parser = super(Command, self).create_parser(*args, **kwargs)
+        parser.formatter_class = RawTextHelpFormatter
+        return parser
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
