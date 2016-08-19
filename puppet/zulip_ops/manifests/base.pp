@@ -48,6 +48,12 @@ class zulip_ops::base {
     source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/02periodic',
   }
 
+  file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+    ensure     => file,
+    mode       => 644,
+    source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/50unattended-upgrades',
+  }
+
   file { '/home/zulip/.ssh/authorized_keys':
     ensure     => file,
     require    => File['/home/zulip/.ssh'],
