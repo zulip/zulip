@@ -92,7 +92,7 @@ def different_paragraph(line, next_line):
             len(line) < len(words[0]))
 
 # Linewrapping algorithm based on:
-# http://gcbenison.wordpress.com/2011/07/03/a-program-to-intelligently-remove-carriage-returns-so-you-can-paste-text-without-having-it-look-awful/
+# http://gcbenison.wordpress.com/2011/07/03/a-program-to-intelligently-remove-carriage-returns-so-you-can-paste-text-without-having-it-look-awful/ #ignorelongline
 def unwrap_lines(body):
     lines = body.split("\n")
     result = ""

@@ -139,7 +139,8 @@ def build_custom_checkers(by_lang):
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                     traceback.print_exc()
             if (max_length is not None and len(line) > max_length and
-                '# type' not in line and 'test' not in fn and 'example' not in fn):
+                '# type' not in line and 'test' not in fn and 'example' not in fn and
+                "#ignorelongline" not in line):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             lastLine = line
         if lineFlag and '\n' not in lastLine:
@@ -329,7 +330,7 @@ def build_custom_checkers(by_lang):
         failed = False
 
         for fn in by_lang['py']:
-            if custom_check_file(fn, python_rules, max_length=180):
+            if custom_check_file(fn, python_rules, max_length=140):
                 failed = True
         return failed
 
