@@ -137,6 +137,11 @@ We also have custom regex-based checks that apply to specific file types.
 For relatively minor files like Markdown files and JSON fixtures, this
 is the extent of our checking.
 
+Finally, we're checking line length in Python code (and hope to extend
+this to other parts of the codebase soon).  You can use
+`#ignorelinelength` for special cases where a very long line makes
+sense (e.g. a link in a comment to an extremely long URL).
+
 #### Python code
 
 The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
