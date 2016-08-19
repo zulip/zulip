@@ -298,7 +298,8 @@ def build_custom_checkers(by_lang):
         ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
-         'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches to set -x|set -e'},
+         'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
+                        ' to set -x|set -e'},
         ] + whitespace_rules[0:1] # type: RuleList
     css_rules = [
         {'pattern': '^[^:]*:\S[^:]*;$',
