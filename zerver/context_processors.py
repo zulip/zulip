@@ -40,6 +40,7 @@ def add_settings(request):
         'google_auth_enabled':       google_auth_enabled(),
         'github_auth_enabled':       github_auth_enabled(),
         'development_environment':   settings.DEVELOPMENT,
+        'support_email':             settings.ZULIP_ADMINISTRATOR,
     }
 
 def add_metrics(request):
