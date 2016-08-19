@@ -1,4 +1,5 @@
 **[Zulip overview](#zulip-overview)** |
+**[Community](#community)** |
 **[Installing for dev](#installing-the-zulip-development-environment)** |
 **[Installing for production](#running-zulip-in-production)** |
 **[Ways to contribute](#ways-to-contribute)** |
@@ -19,6 +20,28 @@ Further information on the Zulip project and its features can be found
 at https://www.zulip.org.
 
 [![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master)
+
+## Community
+
+There are several places online where folks discuss Zulip.
+
+One of those places is our [public Zulip instance](https://zulip.tabbott.net/).
+You can go through the simple signup process at that link, and then you
+will soon be talking to core Zulip developers and other users.  To get
+help in real time, you will have the best luck finding core developers
+roughly between 16:00 UTC and 23:59 UTC.  Most questions get answered
+within a day.
+
+We have a [Google mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+that is currently pretty low traffic.  It is where we do things like
+announce public meetings or major releases.  You can also use it to
+ask questions about features or possible bugs.
+
+Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
+track Zulip-related issues (and store our code, of course).
+Anybody with a Github account should be able to create Issues there
+pertaining to bugs or enhancement requests.  We also use Pull
+Requests as our primary mechanism to receive code contributions.
 
 ## Installing the Zulip Development environment
 
