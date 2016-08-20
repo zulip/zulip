@@ -1,10 +1,8 @@
 *.pyc
 *~
 /prod-static
-/errors/*
 *.sw[po]
 *.DS_Store
-stats/
 .kdev4
 .idea
 zulip.kdev4
