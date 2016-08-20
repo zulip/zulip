@@ -255,7 +255,7 @@ class FeedbackBot(QueueProcessingWorker):
             to_email = settings.FEEDBACK_EMAIL
             subject = "Zulip feedback from %s" % (event["sender_email"],)
             content = event["content"]
-            from_email = '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])
+            from_email = '"%s" <%s>' % (event["sender_full_name"], settings.ZULIP_ADMINISTRATOR)
             headers = {'Reply-To' : '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
             msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
             msg.send()
