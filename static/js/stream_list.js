@@ -239,7 +239,8 @@ function build_stream_sidebar_row(name) {
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
                 color: stream_data.get_color(name),
-                pin_to_top: sub.pin_to_top
+                pin_to_top: sub.pin_to_top,
+                mandatory: sub.mandatory
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
