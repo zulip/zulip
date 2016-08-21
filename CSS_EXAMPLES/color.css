@@ -1,0 +1,256 @@
+
+.header-main .logo {
+    color: #ffffff;
+}
+
+a code {
+    color:        #08C;
+}
+
+a:hover code {
+    color:        #005580;
+}
+
+#message_edit_tooltip,
+#streams_inline_cog,
+#streams_filter_icon {
+    color: #000;
+}
+
+#streams_header a {
+    color: inherit;
+}
+
+.user-device-indicator {
+    color: #777777;
+}
+
+#user_presences a,
+#group-pms a {
+    color: #333;
+}
+
+.message_header_stream a.message_label_clickable,
+ul.filters a {
+    color: #333;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count,
+#stream_filters .count {
+    color: #ffffff;
+}
+
+.subject_count {
+    color: #ffffff;
+}
+
+.private_message_count {
+    color: #ffffff;
+}
+
+ul.filters li:hover .arrow {
+    color: #888;
+}
+
+ul.filters li .arrow:hover {
+    color: #000;
+}
+
+ul.filters li.expanded_subject:hover .topic-sidebar-arrow {
+    color: #888;
+}
+
+ul.filters li.expanded_subject .topic-sidebar-arrow:hover {
+    color: #000;
+}
+
+.message_edit_notice {
+    color: #a1a1a1;
+}
+
+.message_time {
+    color: #a1a1a1;
+}
+
+.stream_label:hover {
+    color: inherit !important;
+}
+
+.compose_table #private-message .you_text {
+    color: #ffffff;
+}
+
+.sender_name {
+    color: #333;
+}
+
+.sender_name_hovered .sender_name,
+.sender_name_hovered .sender_name-in-status {
+    color: #0088CC;
+}
+
+.actions_hover:hover {
+    color: #0088CC;
+}
+
+a.message_label_clickable:hover {
+    color: #08C;
+}
+
+.dark_background a,
+.dark_background a:hover,
+a.dark_background:hover,
+.dark_background {
+    color: #ffffff !important;
+}
+
+.dark_background a.message_label_clickable:hover {
+    color: #3BF;
+}
+
+.actions_hovered .message_time,
+.actions_hovered .info {
+    color: #0088CC;
+}
+
+.message_edit_countdown_timer {
+    color: #a1a1a1;
+}
+
+.message_edit_tooltip {
+    color: #a1a1a1;
+}
+
+.message_length_controller {
+    color: #0088CC;
+}
+
+.send-status-close {
+    color:       black;
+}
+
+#out-of-view-notification .close {
+    color:       black;
+}
+
+#tab_list li.private_message a {
+    color: #ffffff;
+}
+
+#tab_list a {
+    color: inherit;
+}
+
+#tab_list li.private_message {
+    color: #ffffff;
+}
+
+#tab_list li.root a {
+    color: #858585;
+}
+
+#tab_list .root a:hover {
+    color: #000000;
+}
+
+#streamlist-toggle-button {
+    color: #858585;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    color: #ffffff;
+}
+
+#userlist-toggle-button {
+    color: #858585;
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
+    color: #858585;
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle:hover {
+    color: #111111;
+}
+
+#navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
+    color: #111111;
+}
+
+#search_query {
+    color: #222;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    color: #ccc;
+}
+
+#searchbox .search_button:hover {
+    color: #000;
+}
+
+.operator_value {
+    color: maroon;
+}
+
+.table-striped thead th {
+    color: white;
+}
+
+.muted-sub {
+    color: #A3A3A3;
+}
+
+.mute-note {
+    font-color: #525252;
+}
+
+button.primary {
+    color: #fff;
+}
+
+.show-all-streams a {
+    color: #333;
+}
+
+.star {
+    color: #2c8211;
+}
+
+.empty-star {
+    color: #bbb;
+}
+
+.empty-star:hover {
+    color: #565656;
+}
+
+.info {
+    color: #bbb;
+}
+
+.star:hover {
+    color: #0d7245;
+}
+
+.date_row span {
+    color: #bbb;
+}
+
+#compose a.message-control-button {
+    color: #777;
+}
+
+#compose a.message-control-button:hover {
+    color: #000;
+}
+
+#share-the-love .icon-vector-heart {
+    color: red;
+}

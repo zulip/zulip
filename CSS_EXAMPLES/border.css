@@ -1,0 +1,430 @@
+
+.header {
+    border-bottom: 1px solid #dadada;
+}
+
+.codehilite {
+    border: none !important;
+}
+
+a code {
+    border-color: #08C;
+}
+
+a:hover code {
+    border-color: #005580;
+}
+
+.user-status-indicator,
+.group-pm-status-indicator {
+    border-radius: 50%;
+    border: 1px solid;
+}
+
+.user_active .user-status-indicator,
+.group-pm-status-indicator {
+    border-color: #44C21D;
+}
+
+.user_idle .user-status-indicator {
+    border-color: #EC7E18;
+}
+
+.user_offline .user-status-indicator {
+    border-color: gray;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count,
+#global_filters .count,
+#stream_filters .count {
+    border-radius: 0px;
+}
+
+.subject_count {
+    border-radius: 1px;
+}
+
+.private_message_count {
+    border-radius: 1px;
+}
+
+.message_list .recipient_row {
+    border-bottom: 1px solid #e2e2e2;
+}
+
+.stream_label {
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-left-color: #e2e2e2;
+    border-width: 0px;
+}
+
+.stream_label:after {
+    border-style: solid;
+    border-width: 11px 0 11px 5px;
+    border-color: inherit;
+}
+
+.stream_label:before {
+    border-style: solid;
+    border-width: 14px 0 14px 6px;
+    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+}
+
+.summary_row .message_header {
+    border-radius: 0;
+}
+
+.bookend_tr + .summary_row .message_header {
+    border-top-right-radius: 3px;
+}
+
+.bookend_tr + .summary_row .summary_colorblock {
+    border-top-left-radius: 3px;
+}
+
+.summary_row.last_message .message_header {
+    border-bottom-right-radius: 3px;
+    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
+}
+
+.summary_row.last_message .summary_colorblock {
+    border-bottom-left-radius: 3px;
+}
+
+.message_header_colorblock {
+    border-radius: 3px 0px 0px 0px;
+    box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
+}
+
+.compose_table .message_header_colorblock,
+.compose_table .message_header {
+    box-shadow: none;
+}
+
+.compose_table .message_header_colorblock,
+.compose_table .message_header_colorblock.message_header_private_message {
+    border-radius: 3px 0px 0px 3px;
+    border-bottom: 0px;
+}
+
+.compose_table .pm_recipient #private_message_recipient {
+    border-left: none;
+    border-radius: 0px 3px 3px 0px;
+}
+
+.messagebox-bottom {
+    border-radius: 0px 0px 3px 0px;
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-left: none;
+}
+
+.messagebox-bottom-colorblock {
+    border-radius: 0px 0px 0px 3px;
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-right: none;
+}
+
+.floating_recipient .message_header_private_message {
+    border-bottom: 0px;
+    border-left: 0px;
+}
+
+.compose_table .message_header {
+    border: none;
+    border-radius: 0px;
+    box-shadow: none !important;
+}
+
+.compose_table .messagebox {
+    box-shadow: none !important;
+}
+
+.message_header_private_message .message-header-contents {
+    border-right: 1px solid #e2e2e2;
+    border-top: 1px solid #e2e2e2;
+}
+
+.unread-marker-fill {
+    box-shadow: inset 0px -1px 0px 0px #ffffff;
+}
+
+.last_message .unread-marker-fill {
+    box-shadow: none;
+}
+
+.selected_message .messagebox-content {
+    box-shadow: inset 0px 0px 0px 2px #4577bc,
+                     -1px -1px 0px 0px #4577bc,
+                      1px 1px 0px 0px #4577bc,
+                     -1px 1px 0px 0px #4577bc,
+                      1px -1px 0px 0px #4577bc;
+}
+
+.sender_name_hovered .inline_profile_picture {
+    border-color: #0088CC;
+}
+
+.edit_content i {
+    border-radius: 1px;
+    border: 1px dotted #ccc;
+}
+
+div.message_table {
+    border-collapse: separate;
+}
+
+.message_row {
+    border-left: 1px solid #e2e2e2;
+    border-right: 1px solid #e2e2e2;
+}
+
+#message_edit_topic {
+    border-radius: 0px;
+    border: 1px solid #afbfca;
+}
+
+#message_edit_topic:focus {
+    box-shadow: none;
+    border-color: #727d84;
+}
+
+div.message_content div {
+    border: 1px solid #cccccc;
+}
+
+div.message_content div {
+    border: 1px solid #cccccc;
+}
+
+.messagebox {
+    border: none;
+}
+
+.messagebox blockquote {
+    border-left-color: #ddd;
+}
+
+#send_message_form .messagebox {
+    box-shadow: none;
+    border: none;
+}
+
+.next_is_same_sender {
+    border-bottom: 0px;
+}
+
+.compose-content {
+    border-top: 1px solid #dadada;
+    border-left: 1px solid #dadada;
+    border-right: 1px solid #dadada;
+}
+
+#out-of-view-notification {
+    border-bottom: 1px solid #ffffff;
+    border-right: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    border-radius: 0px 0px 2px 2px;
+    box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.5);
+}
+
+input.recipient_box {
+    border-radius: 3px;
+}
+
+#stream.recipient_box {
+    border-radius: 0px 3px 3px 0px;
+    border-left: 0px;
+}
+
+#tab_list {
+    border: none;
+}
+
+#tab_list li.inactive {
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-left-color: #e2e2e2;
+    border-width: 0px;
+}
+
+#tab_list li.inactive:after {
+    border-style: solid;
+    border-width: 25px 0 25px 12px;
+    border-color: inherit;
+}
+
+#tab_list li.inactive:before {
+    border-style: solid;
+    border-width: 28px 0 28px 14px;
+    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+}
+
+#tab_list a {
+    border-color: inherit;
+}
+
+#tab_list li.private_message {
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-left-color: #111111;
+    border-width: 0px;
+}
+
+#tab_list .root {
+    border-color: #e2e2e2;
+}
+
+#streamlist-toggle {
+    border-right: 2px solid #afbfca;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    border: 1px solid #eee;
+    box-shadow: 0px 0px 1px rgba(0,0,0,0.2);
+    border-radius: 12px;
+}
+
+#userlist-toggle {
+    border-left: 2px solid #afbfca;
+}
+
+.nav .dropdown-menu {
+    -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.nav .dropdown-menu:after {
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #aaa;
+    border-left: 7px solid transparent;
+}
+
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
+    box-shadow: inherit;
+    -webkit-box-shadow: inherit;
+    -moz-box-shadow: inherit;
+}
+
+.navbar-search {
+    border-right: 1px solid #dadada;
+}
+
+#search_query {
+    box-shadow: inset 2px 0px 0px 0px #afbfca;
+    border: none;
+    border-radius: 0px;
+}
+
+#search_query:focus {
+    box-shadow: inset 0px 0px 0px 2px #afbfca;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    border-radius: 0px;
+    border: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+}
+
+div.floating_recipient {
+    border-collapse: separate;
+}
+
+.twitter-image,
+.message_inline_image {
+    border: none !important;
+}
+
+.message_inline_ref {
+    border: none !important;
+}
+
+#loading_more_messages_indicator_box {
+    border: 1px rgb(100, 100, 100) solid;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+.sp-preview {
+    border: none;
+    box-shadow: 0px 0px 1px rgba(0,0,0,1);
+}
+
+.sp-replacer {
+    border: none;
+    box-shadow: 0px 0px 2px rgba(0,0,0,0.8);
+}
+
+.subscription_row {
+    border-top: 1px solid #ddd;
+}
+
+.streams_popover .sp-container {
+    border: none;
+}
+
+.streams_popover .sp-palette-container {
+    border-right: none;
+}
+
+button.primary {
+    border: none;
+    border-radius: 0px;
+}
+
+#create_stream_row td {
+    border-color: #BBB;
+    border-bottom: 1px solid #BBB;
+}
+
+.subscriber-list {
+    border-radius: 6px;
+}
+
+#subscription-status {
+    border-radius: 2px;
+}
+
+.streamlist_swatch {
+    box-shadow: inset 0px 0px 3px -2px #000;
+}
+
+.twitter-tweet {
+    border: 1px solid #ddd;
+}
+
+.date_row .date-line {
+    border-top: 1px solid #e2e2e2;
+    border-bottom: 1px solid #fff;
+}
+
+.date_row span:before,
+.date_row span:after {
+    border-top: 1px solid #e2e2e2;
+    border-bottom: 1px solid #fff;
+}
+
+#topics_header,
+#userlist-header,
+#sharethelove-header,
+#group-pm-header {
+    border-top: 1px solid #e2e2e2;
+}
+
+.user-mention {
+    border-radius: 3px;
+    box-shadow: 0px 0px 0px 1px #ccc;
+}

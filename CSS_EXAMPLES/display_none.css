@@ -1,0 +1,193 @@
+
+#css-loading {
+    display: none !important;
+}
+
+.notdisplayed {
+    display: none !important;
+}
+
+.notvisible {
+    visibility: hidden !important;
+}
+
+.user_sidebar_entry .count,
+.group-pms-sidebar-entry .count {
+    display: none;
+}
+
+li.hidden-filter {
+    visibility: hidden;
+    display: none;
+}
+
+#stream_filters .count,
+#global_filters .count {
+    display: none;
+}
+
+ul.filters .arrow {
+    display: none;
+}
+
+ul.filters .topic-sidebar-arrow {
+    display: none !important;
+}
+
+.message_comp {
+    display: none;
+}
+
+.floating_recipient .messages-collapse {
+    display: none;
+}
+
+div.message_table {
+    display: none;
+}
+
+.message-edit-timer-control-group {
+    display: none;
+}
+
+.topic_edit {
+    display: none;
+}
+
+.message_length_controller {
+    display: none;
+}
+
+#compose_close {
+    display: none;
+}
+
+#send-status {
+    display: none;
+}
+
+.home-error-bar {
+    display: none;
+}
+
+#streamlist-toggle {
+    display: none;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    display: none;
+}
+
+#userlist-toggle {
+    display: none;
+}
+
+#searchbox .search_button[disabled] {
+    visibility: hidden;
+}
+
+#home-error {
+    display: none;
+}
+
+.popover-title:empty {
+    display: none;
+}
+
+.hide-mute-note {
+    display: none;
+}
+
+#invite_status {
+    display: none;
+}
+
+.empty_feed_notice {
+    display: none;
+}
+
+#stream-message,
+#private-message {
+    display: none;
+}
+
+#sending-indicator {
+    display: none;
+}
+
+.streamlist_swatch.private-stream-swatch {
+    visibility: hidden;
+}
+
+.empty-star {
+    visibility: hidden;
+}
+
+.info {
+    visibility: hidden;
+}
+
+#pw_change_controls {
+    display: none;
+}
+
+#restore-draft {
+    display: none;
+}
+
+#group-pm-list {
+    display: none;
+}
+
+.zoom-out #topics_header {
+    display: none;
+}
+
+.message_edit {
+    display: none;
+}
+
+.zero_count {
+    display: none;
+}
+
+#share-the-love {
+    display: none;
+}
+
+#share-the-love-contents {
+    display: none;
+}
+
+#share-the-love .no-more-invites {
+    display: none;
+}
+
+#tell-a-friend-success {
+    display: none;
+}
+
+.admin-menu-item {
+    display: none;
+}
+
+.zoom-in .show-more-topics {
+    display: none;
+}
+
+.zoom-in .show-more-private-messages {
+    display: none;
+}
+
+.zoom-out .zoom-out-hide {
+    display: none;
+}
+
+.zoom-in .zoom-in-hide {
+    display: none;
+}
+
+.change-stream-privacy-feedback {
+    display: none;
+}

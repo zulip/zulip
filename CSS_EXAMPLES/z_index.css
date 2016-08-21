@@ -1,0 +1,107 @@
+
+.header {
+    z-index: 101;
+}
+
+.app {
+    z-index: 99;
+}
+
+.fixed-app {
+    z-index: 98;
+}
+
+.app-main .column-left .left-sidebar,
+.app-main .column-right .right-sidebar {
+    z-index: 100;
+}
+
+.message_header {
+    z-index: 0;
+}
+
+.stream_label:after {
+    z-index: 2;
+}
+
+.stream_label:before {
+    z-index: 1;
+}
+
+.unread_marker {
+    z-index: 1;
+}
+
+.selected_message .messagebox {
+    z-index: 1;
+}
+
+.message_row.selected_message {
+    z-index: 2;
+}
+
+#compose {
+    z-index: 2;
+}
+
+#tab_bar {
+    z-index: 2;
+}
+
+#tab_list li.inactive:after {
+    z-index: 2;
+}
+
+#tab_list li.inactive:before {
+    z-index: 1;
+}
+
+#tab_bar_underpadding {
+    z-index: 99;
+}
+
+#streamlist-toggle-unreadcount,
+#userlist-toggle-unreadcount {
+    z-index: 15;
+}
+
+.nav .dropdown-menu:after {
+    z-index: 10;
+}
+
+#searchbox .input-append .icon-vector-search {
+    z-index: 5;
+}
+
+#searchbox .search_button,
+#searchbox .search_button[disabled]:hover {
+    z-index: 5;
+}
+
+.sticky .message_header {
+    z-index: 99;
+}
+
+#loading_more_messages_indicator_box {
+    z-index: 1;
+}
+
+#subscriptions-status {
+    z-index: 999;
+}
+
+#notifications-area {
+    z-index: 10;
+}
+
+#home .alert-bar-container {
+    z-index: 99;
+}
+
+#home .alert-bar-contents {
+    z-index: 99;
+}
+
+.screen {
+    z-index: 20000;
+}

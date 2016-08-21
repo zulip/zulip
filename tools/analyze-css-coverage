@@ -1,0 +1,379 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+# from __future__ import print_function
+from lib.css_parser import (
+    parse,
+    CssParserException,
+    CssSectionList,
+    CssSection,
+    CssDeclarationBlock,
+)
+from lib.html_grep import (
+    Grepper,
+)
+import os
+import sys
+import glob
+
+try:
+    import lister
+    from typing import cast, Callable, Dict, Iterable, List
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip linters inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
+
+class Doc:
+    def __init__(self, section_list=None):
+        if section_list:
+            self.section_list = section_list
+        else:
+            self.section_list = CssSectionList(tokens=[], sections =[])
+
+        for section in self.section_list.sections:
+            section.pre_fluff = '\n'
+            section.post_fluff = '\n'
+
+    def text(self):
+        return self.section_list.text()
+
+    def append_declarations(self, section, declarations):
+        for declaration in declarations:
+            declaration.pre_fluff = '\n    '
+            declaration.post_fluff = ''
+        declarations[-1].post_fluff = '\n'
+
+        new_block = CssDeclarationBlock(
+            tokens=[],
+            declarations=declarations
+        )
+            
+        new_section = CssSection(
+            tokens=[],
+            selector_list=section.selector_list,
+            declaration_block=new_block,
+            pre_fluff=section.pre_fluff,
+            post_fluff=section.post_fluff
+        )
+        self.section_list.sections.append(new_section)
+
+def render(doc, fn, commentary=None):
+    fn = 'CSS_EXAMPLES/' + fn + '.css'
+    print '/*'
+    print '/ =========== proposed FILE:', fn
+    if commentary:
+        print ' ' + commentary
+    print
+    print '*/'
+    print doc.text()
+    open(fn, 'w').write(doc.text())
+
+def is_display_none(field, value):
+    if field == 'display' and 'none' in value:
+        return True
+    if field == 'visibility' and 'hidden' in value:
+        return True
+    return False
+
+def is_background(field, value):
+    if 'filter' in field:
+        return True
+    if 'opacity' in field:
+        return True
+    if 'background' in field:
+        return True
+    if 'background' in value:
+        return True
+    return False
+
+def is_cursor(field, value):
+    if 'cursor' in field:
+        return True
+
+def is_text_formatting(field, value):
+    if 'content' in field:
+        return True
+    if 'text' in field:
+        return True
+    if 'word-wrap' in field:
+        return True
+    if 'letter-spacing' in field:
+        return True
+    if 'white-space' in field:
+        return True
+
+def is_border(field, value):
+    if 'border' in field:
+        return True
+    if 'shadow' in field:
+        return True
+
+def is_font_type(field, value):
+    if not 'font' in field:
+        return False
+    if 'family' in field or 'variant' in field:
+        return True
+
+def is_z_index(field, value):
+    if 'z-index' in field:
+        return True
+
+def is_color(field, value):
+    if 'color' in field:
+        return True
+    if '#' in value:
+        return True
+    if 'color' in value:
+        return True
+    if 'rgb' in value:
+        return True
+    return False
+
+def is_transition(field, value):
+    if 'transition' in field or 'transition' in value:
+        return True
+
+def is_font_size(field, value):
+    for kw in ['font-size', 'font-weight', 'line-height']:
+        if kw in field:
+            return True
+
+def is_width(field, value):
+    for kw in ['width', 'right', 'left']:
+        if kw in field:
+            return True
+
+def split(fn):
+    text = open(fn).read()
+    section_list = parse(text)
+
+    in_doc = Doc(section_list)
+
+    quick_splits = [
+        ('display_none', is_display_none, 'consolidate these!'),
+        ('cursor', is_cursor, 'consolidate'),
+        ('font_type', is_font_type, 'consolidate'),
+        ('text_formatting', is_text_formatting, 'this is just minor stuff'),
+        ('border', is_border, 'organize'),
+        ('background', is_background, 'allow users to skin'),
+        ('color', is_color, 'allow users to skin'),
+        ('transition', is_transition, 'fancy stuff to the side'),
+        ('z_index', is_z_index, 'list these hacky settings in numerical order!'),
+        ('font_size', is_font_size, 'seeing other settings is important for consistency'),
+        ('width', is_width, 'width settings are orthogonal to height. :) Plus width is very fiddly in in its own right'),
+    ]
+
+    for fn, test, commentary in quick_splits:
+        doc, in_doc = triage(
+            in_doc=in_doc,
+            test_declaration=test
+        )
+        render(doc, fn, commentary)
+
+    render(in_doc, 'other', 'all the rest')
+
+def triage(in_doc, test_declaration):
+    doc1 = Doc()
+    doc2 = Doc()
+
+    section_list = in_doc.section_list
+    for section in section_list.sections:
+        yes = []
+        no = []
+        block = section.declaration_block
+        for declaration in block.declarations:
+            field = declaration.css_property
+            value = declaration.css_value.value.s
+            if test_declaration(field, value):
+                yes.append(declaration)
+            else:
+                no.append(declaration)
+
+        if yes:
+            doc1.append_declarations(section, yes)
+        if no:
+            doc2.append_declarations(section, no)
+
+    return doc1, doc2
+
+def selector_split(word):
+    # return [word]
+    assert len(word)
+    pieces = []
+    i = 1
+    s = word[0]
+    while i < len(word):
+        c = word[i]
+        if c in '.#:[':
+            pieces.append(s)
+            s = c
+        else:
+            s += c
+        i += 1
+    pieces.append(s)
+    return pieces
+                
+def is_container(s):
+    return s.endswith('_box') or s.endswith('_box_container')
+
+def is_add_class(s):
+    exceptions = [
+        # elem.append for .date
+        ('timerender.js', 'date-direction'),
+        ('timerender.js', 'date-line'),
+    ]
+
+    exceptions += [
+        # code generated
+        ('admin.js', 'reactivate'),
+        ('admin.js', 'deactivated_user'),
+        ('admin.js', 'deactivate'),
+        ('admin.js', 'remove-admin'),
+        ('admin.js', 'make-admin'),
+        ('compose.js', 'lock-padding'),
+        ('compose_fade.js', 'faded'),
+        ('compose_fade.js', 'unfaded'),
+        ('condense.js', 'collapsed'),
+        ('custom_markdown.js', 'btn-default'),
+        ('message_list.js', 'fast_fade'),
+        ('message_list.js', 'slow_fade'),
+        ('message_list_view.js', 'user-mention-me'),
+        ('narrow.js', 'narrowed_view'),
+        ('narrow.js', 'focused_table'),
+        ('signup.js', 'help-inline'),
+        ('stream_list.js', 'zoom-in'),
+        ('stream_list.js', 'zoom-out'),
+        ('stream_list.js', 'out_of_home_view'),
+        ('stream_list.js', 'private-stream-swatch'),
+        ('stream_list.js', 'stream-with-count'),
+        ('stream_list.js', 'user-with-count'),
+        ('stream_list.js', 'group-with-count'),
+        ('stream_list.js', 'new_messages'),
+        ('stream_list.js', 'new_messages_fadeout'),
+        ('subs.js', 'muted-sub'),
+        ('subs.js', 'subscribed-button'),
+        ('subs.js', 'in'),
+        ('subs.js', 'icon-vector-chevron-up'),
+        ('subs.js', 'icon-vector-chevron-down'),
+        ('ui.js', 'message_hovered'),
+        ('ui.js', 'icon-vector-star'),
+        ('ui.js', 'icon-vector-star-empty'),
+        ('ui.js', 'right-userlist'),
+        ('ui.js', 'sender_name_hovered'),
+        ('ui.js', 'window_blurred'),
+        ('ui.js', 'selected_message'),
+    ]
+
+    for fn, selector in exceptions:
+        if s == '.' + selector:
+            return True
+
+def is_bugdown_class(s):
+    # type : (str) -> bool
+    # These come from zerver/lib/bugdown/__init__.py
+    bugdown_classes = [
+        '.emoji',
+        '.inline-preview-twitter',
+        '.inline-subscribe',
+        '.inline-subscribe-button',
+        '.inline-subscribe-error',
+        '.message_body_gravatar',
+        '.message_inline_image_desc',
+        '.message_inline_image_title',
+        '.message_inline_ref',
+        '.twitter-avatar',
+        '.twitter-image',
+        '.twitter-img_div',
+        '.twitter-tweet',
+        '.user-mention',
+    ]
+    return s in bugdown_classes
+
+GENERIC_KEYWORDS = [
+    'active',
+    'alert',
+    'danger',
+    'condensed',
+    'disabled',
+    'error',
+    'expanded',
+    'hide',
+    'notdisplayed',
+    'popover',
+    'success',
+    'text-error',
+    'warning',
+]
+
+def is_generic(s):
+    for kw in GENERIC_KEYWORDS:
+        if kw in s:
+            return True
+
+def possibly_obsolete(s):
+    if s == '#private':
+        return True # dubious, see fd66d9f7 for when it was added
+    if s == '#subscription-status':
+        return True
+
+def exempt_but_probably_fine(s):
+    if 'highlight' in s:
+        return True # part of signup.js
+        
+
+def hunt_down_selectors(fn, prefix):
+    # type: (str) -> None
+    fns = glob.glob('static/templates/*.handlebars')
+    fns += glob.glob('templates/zerver/*.html')
+    grepper = Grepper(fns)
+    text = open(fn).read()
+    section_list = parse(text)
+    words = set()
+    for section in section_list.sections:
+        for selector in section.selector_list.selectors:
+            for level in selector.levels:
+                for s in selector_split(level.s):
+                    if possibly_obsolete(s):
+                        continue
+                    if is_generic(s):
+                        continue
+                    if exempt_but_probably_fine(s):
+                        continue
+                    if is_bugdown_class(s):
+                        continue
+                    if s.startswith(prefix) and not possibly_obsolete(s):
+                        if prefix == '#':
+                            if not is_container(s):
+                                words.add(s) 
+                        else:   
+                            if not is_add_class(s):
+                                words.add(s)
+    word_list = list(words)
+    word_list.sort()
+    dubious = []
+    for w in word_list:
+        cnt = grepper.grep(set([w]))
+        if cnt == 0:
+            dubious.append(w)
+
+    print('\nDUBIOUS CLASSES\n')
+    for w in dubious:
+        print(w)
+
+
+def check_our_files():
+    # type: () -> None
+    #fns = glob.glob('static/styles/*.css')
+    fns = glob.glob('static/styles/zulip.css')
+    for fn in fns:
+        try:
+            # hunt_down_selectors(fn, prefix='.')
+            split(fn)
+        except CssParserException as e:
+            print('CssParserException raised while parsing file %s' % (fn,))
+            print(e)
+            sys.exit(1)
+
+if __name__ == '__main__':
+    check_our_files()

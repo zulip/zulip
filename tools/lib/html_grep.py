@@ -8,7 +8,6 @@ from .template_parser import html_branches, Token, HtmlTreeBranch
 def show_all_branches(fns):
     # type: (List[str]) -> None
     for fn in fns:
-        print(fn)
         text = open(fn).read()
         branches = html_branches(text)
         for branch in branches:
@@ -51,10 +50,12 @@ class Grepper(object):
 
         branches = list(matches)
         branches.sort(key=lambda branch: (branch.fn, branch.line))
-        for branch in branches:
-            print('%s %d' % (branch.fn, branch.line))
-            print(branch.staircase_text())
-            print('')
+        if False:
+            for branch in branches:
+                print('%s %d' % (branch.fn, branch.line))
+                print(branch.staircase_text())
+                print('')
+        return len(branches)
 
 def grep(fns, words):
     # type: (List[str], Set[str]) -> None
