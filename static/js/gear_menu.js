@@ -15,6 +15,8 @@ exports.initialize = function () {
         // Save the position of our old tab away, before we switch
         var old_tab = $(e.relatedTarget).attr('href');
         scroll_positions[old_tab] = viewport.scrollTop();
+
+        ui.change_namespace(old_tab);
     });
     $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
         var target_tab = $(e.target).attr('href');
@@ -31,6 +33,7 @@ exports.initialize = function () {
             browser_url = "";
         }
         hashchange.changehash(browser_url);
+        ui.change_namespace(target_tab);
 
         // After we show the new tab, restore its old scroll position
         // (we apparently have to do this after setting the hash,

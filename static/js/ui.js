@@ -21,7 +21,27 @@ exports.home_tab_obscured = function () {
     return false;
 };
 
+exports.change_namespace = function (tabname) {
+    var tabs = {
+      "#subscriptions": "subscriptions",
+      "#settings": "settings",
+      "#administration": "administration",
+      "#": "home"
+    },
+        body = document.body,
+        classes = body.className.split(/\s+/g);
+
+    tabname = tabs[tabname] || "home";
+
+    if (classes.indexOf(tabname + "-namespace") === -1) {
+      body.className = classes.filter(function (o) {
+        return !/-namespace/g.test(o) && o;
+      }).concat(tabname + "-namespace").join(" ");
+    }
+};
+
 exports.change_tab_to = function (tabname) {
+    exports.change_namespace(tabname);
     $('#gear-menu a[href="' + tabname + '"]').tab('show');
 };
 
@@ -144,6 +164,13 @@ exports.report_message = function (response, status_box, cls, type) {
     if (type === undefined) {
         type = ' ';
     }
+
+    // make alerts-dropdown a single-reference.
+    // check if there are any alerts left, and if not then hide the dropdown.
+
+    // create reports for testing.. --> delete after of course.
+    // possibly add an alerts icon that greys out when you open the dropdown
+    // and then turns red when you close it. Clicking toggles it.
 
     if (type === 'subscriptions-status') {
         status_box.removeClass(status_classes).addClass(cls).children('#response')
@@ -354,6 +381,10 @@ $(function () {
         // the tab to scroll normally.
     });
 
+    $(window).on("hashchange load", function () {
+      ui.change_namespace(window.location.hash);
+    });
+
     $(window).resize($.throttle(50, resize.handler));
 
     // Scrolling in modals, input boxes, and other elements that
@@ -427,6 +458,8 @@ $(function () {
     $(window).on('focus', function () {
         $(document.body).removeClass('window_blurred');
     });
+
+    ui.change_namespace(window.location.hash);
 
     $(document).on('message_selected.zulip', function (event) {
         if (current_msg_list !== event.msg_list) {

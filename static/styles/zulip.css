@@ -47,8 +47,9 @@ a {
 }
 
 .header {
-    position: fixed;
-    z-index: 101;
+    position: static;
+    z-index: 102;
+
     width: 100%;
     background: #ffffff;
     border-bottom: 1px solid #dadada;
@@ -105,13 +106,14 @@ a {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
     z-index: 100;
+    margin-top: 10px;
 }
 
 .app-main .column-left .left-sidebar {
     width: 242px;
     padding-left: 0px;
+    margin-top: 10px;
 }
 
 .app-main .column-right .right-sidebar {
@@ -128,6 +130,35 @@ a {
     margin-right: 250px;
     margin-left: 250px;
     position: relative;
+}
+
+#alerts-dropdown {
+    position: relative;
+    max-height: 200px;
+    width: 100%;
+    z-index: 101;
+
+    background-color: #FAFAFA;
+    border-bottom: 1px solid #dadada;
+
+    overflow: hidden;
+
+    transition: all 0.3s ease;
+}
+
+#alerts-dropdown .alert {
+    width: 100%;
+}
+
+#alerts-dropdown .home-error-bar {
+  margin: 0;
+  border: none;
+  border-radius: 0px;
+}
+
+#alerts-dropdown .alert {
+  padding: 3px;
+  text-align: center;
 }
 
 textarea,
@@ -713,7 +744,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 68px;
+    margin-top: 45px;
     /* This is needed for the floating recipient bar
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
@@ -966,7 +997,7 @@ td.pointer {
 
 .messages-expand,
 .messages-collapse {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 /*
@@ -1977,7 +2008,7 @@ input.recipient_box {
 #tab_bar_underpadding {
     position: absolute;
     width: 100%;
-    top: 40px;
+    top: 0px;
     height: 20px;
     z-index: 99;
 }
@@ -2222,7 +2253,14 @@ div.floating_recipient {
 }
 
 #floating_recipient_bar {
-    top: 50px;
+    display: none;
+    position: absolute;
+    top: 5px;
+    z-index: 100;
+}
+
+.home-namespace #floating_recipient_bar {
+    display: block;
 }
 
 .message-header-contents {
@@ -2468,7 +2506,7 @@ div.floating_recipient {
 
 .administration,
 .subscriptions {
-    margin-top: 55px;
+    margin-top: 0px;
     padding-left: 15px;
 }
 
@@ -3257,10 +3295,6 @@ li.expanded_private_message {
 #subscriptions h1 {
     font-size: 25px;
     font-weight: 300;
-}
-
-#subscriptions h1 {
-    padding-top: 40px;
 }
 
 #administration .administration-icon,

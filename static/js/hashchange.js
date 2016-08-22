@@ -131,6 +131,9 @@ function do_hashchange(from_reload) {
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
     var hash = window.location.hash.split("/");
+
+    ui.change_namespace(hash);
+
     switch (hash[0]) {
     case "#narrow":
         ui.change_tab_to("#home");
