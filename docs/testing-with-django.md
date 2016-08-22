@@ -40,7 +40,8 @@ best way to learn the options is to use the online help:
 
 We also have ways to instrument our tests for finding code coverage,
 URL coverage, and slow tests.  Use the `-h` option to discover these
-features.
+features.  We also have a `--profile` option to facilitate profiling
+tests.
 
 Another thing to note is that our tests generally "fail fast," i.e. they
 stop at the first sign of trouble.  This is generally a good thing for
@@ -50,7 +51,7 @@ iterative development, but you can override this behavior with the
 ## How to write tests.
 
 Before you write your first tests of Zulip, it is worthwhile to read
-the rest of this document, and you can also read our existing tests
+the rest of this document, and you can also read some of the existing tests
 in `zerver/tests` to get a feel for the patterns we use.
 
 A good practice is to get a "failing test" before you start to implement
@@ -70,7 +71,8 @@ which contains test helpers and our `AuthedTestCase` class.
 
 All tests start with the same fixture data.  (The tests themselves
 update the database, but they do so inside a transaction that gets
-rolled back after the tests complete.)
+rolled back after each of the tests complete. For more details on how the
+fixture data gets set up, refer to `tools/setup/generate-fixtures`.)
 
 The fixture data includes a few users that are named after
 Shakesepeare characters, and they are part of the "zulip.com" realm.
@@ -138,11 +140,12 @@ you helper methods like the following:
 
 For certain Zulip library functions, especially the ones that are
 not intrinsically tied to Django, we use a classic unit testing
-appproach of calling the function and inspecting the results.
+approach of calling the function and inspecting the results.
 
 For these types of tests, you will often use methods like
 `self.assertEqual()`, `self.assertTrue()`, etc., which come with
-Django.
+[unittest](https://docs.python.org/3/library/unittest.html#unittest.TestCase)
+via Django.
 
 ### Fixture-driven tests
 
@@ -164,7 +167,7 @@ We use mocks and stubs for all the typical reasons:
 - to make it so that you can run your tests on the airplane without wifi
 
 For mocking we generally use the "mock" library and use `mock.patch` as
-a context manager.  We also take advantage of some context managers
+a context manager or decorator.  We also take advantage of some context managers
 from Django as well as our own custom helpers.  Here is an example:
 
 
@@ -173,6 +176,9 @@ from Django as well as our own custom helpers.  Here is an example:
                 api_result = my_webhook(request)
 
         self.assertTrue(rate_limit_mock.called)
+
+Follow [this link](settings.html#testing-non-default-settings) for more
+information on the "settings" context manager.
 
 ### Template tests
 
@@ -204,8 +210,10 @@ some queued up events to that data to the data structure before notifying
 the client.  The `EventsRegisterTest.do_test()` helper helps tests
 verify that the application of those events via apply_events() produces
 the same data structure as performing an action that generates said event.
-(This is a bit esoteric, but if you read the tests, you will see some of
-the patterns.)
+
+This is a bit esoteric, but if you read the tests, you will see some of
+the patterns.  You can also learn more about our event system in the
+[new feature tutorial](new-feature-tutorial.html#handle-database-interactions).
 
 ### Negative tests
 
