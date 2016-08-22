@@ -379,6 +379,9 @@ exports.mark_sub_unsubscribed = function (sub) {
         return;
     } else if (sub.subscribed) {
         stream_list.remove_narrow_filter(sub.name, 'stream');
+        // Remove user from subscriber's list
+        stream_data.remove_subscriber(sub.name, page_params.email);
+
         sub.subscribed = false;
 
         var button = button_for_sub(sub);
