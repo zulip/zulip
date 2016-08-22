@@ -68,13 +68,20 @@ EOF
 # update-prod-static generates the prod-static directory.
 # See COLLECTSTATIC in settings.py
 set +x
-echo; echo "\033[33mRunning update-prod-static; check ${TMP_CHECKOUT}update-prod-static.log if it fails\033[0m"; echo
+# We do a bit of gymnastics to have update-prod-static.log be easily
+# visible to the user and end up in the same directory as the final
+# release tarball.
+USER_PROD_STATIC_LOGPATH="${TMPDIR}/update-prod-static.log"
+BUILD_PROD_STATIC_LOGPATH="${TMP_CHECKOUT}/var/log/update-prod-static.log"
+ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
+echo; echo "\033[33mRunning update-prod-static; check ${TMPDIR}/update-prod-static.log if it fails\033[0m"; echo
 set -x
 
 ./tools/update-prod-static
 echo "$GITID" > build_id
 echo "$version" > version
-mv var/log/update-prod-static.log ../
+rm -f "$USER_PROD_STATIC_LOGPATH"
+mv "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 
 rm -f zproject/dev-secrets.conf
 
