@@ -785,23 +785,28 @@ function render(template_name, args) {
 (function user_presence_rows() {
     global.use_template('user_presence_row'); // partial
     var args = {
-        users: [
+        starred_users: [
             {
                 "my_fullname": true,
                 "type_desc": "Active",
                 "type": "active",
                 "num_unread": 0,
                 "email": "lear@zulip.com",
-                "name": "King Lear"
-            },
+                "name": "King Lear",
+                starred: true
+            }
+        ],
+        unstarred_users: [
             {
                 "type_desc": "Away",
                 "type": "away",
                 "num_unread": 5,
                 "email": "othello@zulip.com",
-                "name": "Othello"
+                "name": "Othello",
+                "starred": false
             }
-        ]
+        ],
+        split: true
     };
 
     var html = '';
