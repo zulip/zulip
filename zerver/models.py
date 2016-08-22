@@ -797,6 +797,33 @@ def to_dict_cache_key(message, apply_markdown):
     # type: (Message, bool) -> text_type
     return to_dict_cache_key_id(message.id, apply_markdown)
 
+class Topic(ModelReprMixin, models.Model):
+    """
+    This model is currently write-only, but it is here as part
+    of a four-phase migration toward storing message topics in
+    a Topic table.  More details can be found here:
+
+    https://github.com/zulip/zulip/pull/1289#issuecomment-233773078
+
+    The table essentially defines a unique tuple of recipient id
+    (aka stream) and topic name.  The index for this is created
+    using migrations.RunSQL instead of using a Meta tag, because
+    we need the `name` field to be case insensitve.
+
+    We currently write to the Topic tables on message
+    saves and updates, but we don't link the Topic row back
+    to Message, and none of our "reading" code looks at the
+    Topic table.  Subsequent phases of our migration will
+    backfill the table and have read-only features start to
+    pull names from the Topic table instead of Message.subject.
+    """
+    recipient = models.ForeignKey(Recipient, db_index=True) # type: Recipient
+    name = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: text_type
+
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<Topic: recipient %d, %s>" % (self.recipient_id, self.name)
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
@@ -1177,12 +1204,27 @@ class Message(ModelReprMixin, models.Model):
         self.has_image = bool(Message.content_has_image(content))
         self.has_link = bool(Message.content_has_link(content))
 
+    def update_topic(self):
+        # type: () -> None
+        if self.subject:
+            # Note that for our case-insensitive strategy, we
+            # currently keep the original casing of Topic.name;
+            # we don't replace an existing name if there is a new
+            # casing.
+            name = self.subject
+            Topic.objects.get_or_create(
+                name__iexact=name,
+                recipient=self.recipient,
+                defaults=dict(name=name)
+            )
+
 @receiver(pre_save, sender=Message)
 def pre_save_message(sender, **kwargs):
     # type: (Any, **Any) -> None
     if kwargs['update_fields'] is None or "content" in kwargs['update_fields']:
         message = kwargs['instance']
         message.update_calculated_fields()
+        message.update_topic()
 
 def get_context_for_message(message):
     # type: (Message) -> Sequence[Message]
