@@ -142,6 +142,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'INLINE_IMAGE_PREVIEW': True,
                     'CAMO_URI': '',
                     'ENABLE_FEEDBACK': PRODUCTION,
+                    'SERVER_EMAIL': None,
                     'FEEDBACK_EMAIL': None,
                     'WELCOME_EMAIL_SENDER': None,
                     'EMAIL_DELIVERER_DISABLED': False,
@@ -1019,6 +1020,10 @@ if EMAIL_GATEWAY_PASSWORD is None:
     EMAIL_GATEWAY_PASSWORD = get_secret('email_gateway_password')
 if vars().get("AUTH_LDAP_BIND_PASSWORD") is None:
     AUTH_LDAP_BIND_PASSWORD = get_secret('auth_ldap_bind_password')
+
+# Set the sender email address for Django traceback error reporting
+if SERVER_EMAIL is None:
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 ########################################################################
 # MISC SETTINGS
