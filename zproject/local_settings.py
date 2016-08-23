@@ -86,8 +86,6 @@ APNS_FEEDBACK = "feedback_production"
 APNS_CERT_FILE = "/etc/ssl/django-private/apns-dist.pem"
 DBX_APNS_CERT_FILE = "/etc/ssl/django-private/dbx-apns-dist.pem"
 
-GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
-
 GOOGLE_OAUTH2_CLIENT_ID = '835904834568-ag4p18v0sd9a0tero14r3gekn6shoen3.apps.googleusercontent.com'
 
 # Administrator domain for this install
