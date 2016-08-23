@@ -1,20 +1,15 @@
 {{! Contents of the "stream actions" popup }}
 <ul class="nav nav-list streams_popover" data-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
   <li>
-    <a class="narrow_to_stream">
-      <i class="icon-vector-bullhorn"></i>
-      {{#tr this}}Narrow to stream <b>__stream.name__</b>{{/tr}}
+    <a class="open_stream_settings">
+      <i class="icon-vector-cog"></i>
+      {{t "Stream settings" }}
     </a>
   </li>
   <li>
-    <a class="toggle_home">
-      {{#if stream.in_home_view}}
-      <i class="icon-vector-eye-close"></i>
-      {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
-      {{else}}
-      <i class="icon-vector-eye-open"></i>
-      {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
-      {{/if}}
+    <a class="narrow_to_stream">
+      <i class="icon-vector-bullhorn"></i>
+      {{#tr this}}Narrow to stream <b>__stream.name__</b>{{/tr}}
     </a>
   </li>
   <li>
@@ -40,9 +35,19 @@
     </a>
   </li>
   <li>
-    <a class="open_stream_settings">
-      <i class="icon-vector-cog"></i>
-      {{t "Stream settings" }}
+    <a class="toggle_home">
+      {{#if stream.in_home_view}}
+      <i class="icon-vector-eye-close"></i>
+      {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
+      {{else}}
+      <i class="icon-vector-eye-open"></i>
+      {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+      {{/if}}
+    </a>
+  </li>
+  <li>
+    <a class="sub_unsub_button" data-name="{{stream.name}}">
+      <i class='icon-vector-envelope'></i>
     </a>
   </li>
   <li>

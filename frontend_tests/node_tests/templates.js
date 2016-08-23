@@ -621,7 +621,7 @@ function render(template_name, args) {
     global.write_handlebars_output("stream_sidebar_actions", html);
 
     var li = $(html).find("li:first");
-    assert.equal(li.text().trim(), 'Narrow to stream devel');
+    assert.equal(li.text().trim(), 'Stream settings');
 }());
 
 (function stream_sidebar_row() {
