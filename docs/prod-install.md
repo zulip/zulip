@@ -33,9 +33,8 @@ First, install the Let's Encrypt client [Certbot](https://certbot.eff.org/) and
 then generate the certificate:
 
 ```
-apt-get install -y git bc openssl
-git clone https://github.com/certbot/certbot /opt/letsencrypt
-cd /opt/letsencrypt
+wget https://dl.eff.org/certbot-auto
+chmod a+x certbot-auto
 ./certbot-auto certonly --standalone
 ```
 
