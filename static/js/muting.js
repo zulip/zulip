@@ -66,6 +66,7 @@ exports.find_mute_message = function (stream, topic) {
 exports.mute_message_topic = function () {
     var message;
     message = current_msg_list.selected_message();
+
     if (message === undefined) {
         return;
     }
@@ -73,14 +74,25 @@ exports.mute_message_topic = function () {
     if (message.type === "stream") {
         var stream = message.stream;
         var subject = message.subject;
-        muting.mute_topic(stream, subject);
-        muting_ui.persist_and_rerender();
 
-        if (muting.find_mute_message(stream, subject) !== null) {
-            // Nothing to do anymore, since we are already showing this message:
-            return;
+        if(muting.is_topic_muted(stream, subject)) {
+
+            // Remove message if already present
+            var message = $("#topic_muted").children('.topic_muted').last();
+            message.remove();
+            muting.hide_topic_muted_alert();
+            var new_row = templates.render("topic_muted", {topic: subject, stream: stream, message: 'is already muted'});
+        } else {
+            muting.mute_topic(stream, subject);
+            muting_ui.persist_and_rerender();
+
+            if (muting.find_mute_message(stream, subject) !== null) {
+                // Nothing to do anymore, since we are already showing this message:
+                return;
+            }
+            var new_row = templates.render("topic_muted", {topic: subject, stream: stream, message: 'is now muted'});
+            
         }
-        var new_row = templates.render("topic_muted", {topic: subject, stream: stream});
         var message_area = $("#topic_muted");
         message_area.append(new_row);
         muting.setup_mute_message_ui(message_area);
