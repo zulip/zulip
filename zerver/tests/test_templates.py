@@ -10,7 +10,7 @@ from django.template import Template, Context
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_helpers import get_all_templates, AuthedTestCase
+from zerver.lib.test_helpers import get_all_templates, ZulipTestCase
 
 class get_form_value(object):
     def __init__(self, value):
@@ -26,7 +26,7 @@ class DummyForm(dict):
     pass
 
 
-class TemplateTestCase(AuthedTestCase):
+class TemplateTestCase(ZulipTestCase):
     """
     Tests that backend template rendering doesn't crash.
 

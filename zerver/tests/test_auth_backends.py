@@ -11,7 +11,7 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    AuthedTestCase
+    ZulipTestCase
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, email_to_username, UserProfile
@@ -167,7 +167,7 @@ class AuthBackendTest(TestCase):
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
 
-class GitHubAuthBackendTest(AuthedTestCase):
+class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.email = 'hamlet@zulip.com'
@@ -273,7 +273,7 @@ class GitHubAuthBackendTest(AuthedTestCase):
             self.assert_in_response('Your e-mail does not match any '
                                     'existing open organization.', result)
 
-class FetchAPIKeyTest(AuthedTestCase):
+class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.email = "hamlet@zulip.com"
@@ -317,7 +317,7 @@ class FetchAPIKeyTest(AuthedTestCase):
                                        password=initial_password(self.email)))
         self.assert_json_error_contains(result, "Your realm has been deactivated", 403)
 
-class DevFetchAPIKeyTest(AuthedTestCase):
+class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.email = "hamlet@zulip.com"
@@ -353,7 +353,7 @@ class DevFetchAPIKeyTest(AuthedTestCase):
                                       dict(username=self.email))
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
-class DevGetEmailsTest(AuthedTestCase):
+class DevGetEmailsTest(ZulipTestCase):
     def test_success(self):
         # type: () -> None
         result = self.client_get("/api/v1/dev_get_emails")
@@ -367,7 +367,7 @@ class DevGetEmailsTest(AuthedTestCase):
             result = self.client_get("/api/v1/dev_get_emails")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
-class FetchAuthBackends(AuthedTestCase):
+class FetchAuthBackends(ZulipTestCase):
     def test_fetch_auth_backend_format(self):
         # type: () -> None
         result = self.client_get("/api/v1/get_auth_backends")

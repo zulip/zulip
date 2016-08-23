@@ -11,7 +11,7 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    AuthedTestCase
+    ZulipTestCase
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
@@ -403,7 +403,7 @@ class ValidatorTestCase(TestCase):
         person = 'misconfigured data'
         self.assertEqual(check_person(person), 'This is not a valid person')
 
-class DeactivatedRealmTest(AuthedTestCase):
+class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self):
         """
         rest_dispatch rejects requests in a deactivated realm, both /json and api
@@ -478,7 +478,7 @@ class DeactivatedRealmTest(AuthedTestCase):
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
-class LoginRequiredTest(AuthedTestCase):
+class LoginRequiredTest(ZulipTestCase):
     def test_login_required(self):
         """
         Verifies the zulip_login_required decorator blocks deactivated users.
@@ -513,7 +513,7 @@ class LoginRequiredTest(AuthedTestCase):
         result = self.client_get('/accounts/accept_terms/')
         self.assertEqual(result.status_code, 302)
 
-class FetchAPIKeyTest(AuthedTestCase):
+class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_success(self):
         email = "cordelia@zulip.com"
 
@@ -528,7 +528,7 @@ class FetchAPIKeyTest(AuthedTestCase):
         result = self.client_post("/json/fetch_api_key", {"password": "wrong_password"})
         self.assert_json_error_contains(result, "password is incorrect")
 
-class InactiveUserTest(AuthedTestCase):
+class InactiveUserTest(ZulipTestCase):
     def test_send_deactivated_user(self):
         """
         rest_dispatch rejects requests from deactivated users, both /json and api
@@ -609,7 +609,7 @@ class InactiveUserTest(AuthedTestCase):
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
 
-class TestValidateApiKey(AuthedTestCase):
+class TestValidateApiKey(ZulipTestCase):
     def setUp(self):
         self.webhook_bot = get_user_profile_by_email('webhook-bot@zulip.com')
         self.default_bot = get_user_profile_by_email('default-bot@zulip.com')
@@ -696,7 +696,7 @@ class TestInternalNotifyView(TestCase):
         self.assertTrue(is_local_addr('::1'))
         self.assertFalse(is_local_addr('42.43.44.45'))
 
-class TestAuthenticatedJsonPostViewDecorator(AuthedTestCase):
+class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self):
         user_email = 'hamlet@zulip.com'
         self._login(user_email)

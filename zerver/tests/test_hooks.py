@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import ZulipTestCase
 from zerver.lib.test_runner import slow
 from zerver.models import Message, Recipient
 
@@ -8,7 +8,7 @@ from six import text_type
 from six.moves import urllib
 from typing import Any, Dict, List, Optional, Union
 
-class WebhookTestCase(AuthedTestCase):
+class WebhookTestCase(ZulipTestCase):
     """
     Common for all webhooks tests
 

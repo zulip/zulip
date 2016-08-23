@@ -21,7 +21,7 @@ from zerver.lib.actions import (
 from zerver.lib.actions import do_set_realm_default_language
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
-from zerver.lib.test_helpers import AuthedTestCase, find_key_by_email, queries_captured
+from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
 
@@ -33,7 +33,7 @@ from six.moves import range
 import six
 from six import text_type
 
-class PublicURLTest(AuthedTestCase):
+class PublicURLTest(ZulipTestCase):
     """
     Account creation URLs are accessible even when not logged in. Authenticated
     URLs redirect to a page.
@@ -112,7 +112,7 @@ class PublicURLTest(AuthedTestCase):
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 
-class LoginTest(AuthedTestCase):
+class LoginTest(ZulipTestCase):
     """
     Logging in, registration, and logging out.
     """
@@ -273,7 +273,7 @@ class LoginTest(AuthedTestCase):
 
         # After this we start manipulating browser information, so stop here.
 
-class InviteUserTest(AuthedTestCase):
+class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams):
         # type: (str, List[text_type]) -> HttpResponse
@@ -542,7 +542,7 @@ class InviteeEmailsParserTests(TestCase):
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
 
-class EmailUnsubscribeTests(AuthedTestCase):
+class EmailUnsubscribeTests(ZulipTestCase):
     def test_missedmessage_unsubscribe(self):
         # type: () -> None
         """
@@ -616,7 +616,7 @@ class EmailUnsubscribeTests(AuthedTestCase):
         self.assertEqual(0, len(ScheduledJob.objects.filter(
                 type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
-class RealmCreationTest(AuthedTestCase):
+class RealmCreationTest(ZulipTestCase):
 
     def test_create_realm(self):
         # type: () -> None
@@ -666,7 +666,7 @@ class RealmCreationTest(AuthedTestCase):
             result = self.client_get(result["Location"])
             self.assert_in_response("You're the first one here!", result)
 
-class UserSignUpTest(AuthedTestCase):
+class UserSignUpTest(ZulipTestCase):
 
     def test_user_default_language(self):
         """

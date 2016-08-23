@@ -9,11 +9,11 @@ from django.conf import settings
 from django.http import HttpResponse
 from six.moves.http_cookies import SimpleCookie
 
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import ZulipTestCase
 from zerver.management.commands import makemessages
 
 
-class TranslationTestCase(AuthedTestCase):
+class TranslationTestCase(ZulipTestCase):
     """
     Tranlations strings should change with locale. URLs should be locale
     aware.
@@ -68,7 +68,7 @@ class TranslationTestCase(AuthedTestCase):
             self.assert_in_response(word, response)
 
 
-class JsonTranslationTestCase(AuthedTestCase):
+class JsonTranslationTestCase(ZulipTestCase):
     @mock.patch('zerver.lib.request._')
     def test_json_error(self, mock_gettext):
         # type: (Any) -> None

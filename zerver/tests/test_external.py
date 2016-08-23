@@ -14,7 +14,7 @@ from zerver.lib.rate_limiter import (
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import ZulipTestCase
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_runner import slow
 
@@ -53,7 +53,7 @@ class MITNameTest(TestCase):
         with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
             self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
-class RateLimitTests(AuthedTestCase):
+class RateLimitTests(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
@@ -127,7 +127,7 @@ class RateLimitTests(AuthedTestCase):
 
         self.assert_json_success(result)
 
-class APNSTokenTests(AuthedTestCase):
+class APNSTokenTests(ZulipTestCase):
     def test_add_token(self):
         # type: () -> None
         email = "cordelia@zulip.com"
@@ -148,7 +148,7 @@ class APNSTokenTests(AuthedTestCase):
         result = self.client_delete('/json/users/me/apns_device_token', {'token': token})
         self.assert_json_success(result)
 
-class GCMTokenTests(AuthedTestCase):
+class GCMTokenTests(ZulipTestCase):
     def test_add_token(self):
         # type: () -> None
         email = "cordelia@zulip.com"
