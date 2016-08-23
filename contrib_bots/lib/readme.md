@@ -1,10 +1,28 @@
 # Overview
 
+This is the documentation for an experimental new system for writing
+bots that react the messages.
+
 This directory contains library code for running Zulip
 bots that react to messages sent by users.
 
 This document explains how to run the code, and it also
 talks about the architecture for creating bots.
+
+## Design goals
+
+The goal is to have a common framework for hosting a bot that reacts
+to messages in any of the following settings:
+
+* Run as a long-running process using `call_on_each_event`
+  (implemented today).
+
+* Run via a simple web service that can be deployed to PAAS providers
+  and handles outgoing webhook requests from Zulip.
+
+* Embedded into the Zulip server (so that no hosting is required),
+  which would be done for high quality, reusable bots; we would have a
+  nice "bot store" sort of UI for browsing and activating them.
 
 ## Running bots
 
