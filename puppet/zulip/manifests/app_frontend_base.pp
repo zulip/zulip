@@ -45,6 +45,19 @@ class zulip::app_frontend_base {
     group => "root",
     mode => 755,
   }
+
+  $loadbalancers = split(zulipconf("loadbalancer", "ips", ""), ",")
+  if $loadbalancers != [] {
+    file { "/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf":
+      require => File["/etc/nginx/zulip-include/app.d"],
+      owner  => "root",
+      group  => "root",
+      mode => 644,
+      content => template("zulip/accept-loadbalancer.conf.template.erb"),
+      notify => Service["nginx"],
+    }
+  }
+
   file { "/etc/supervisor/conf.d/zulip.conf":
     require => Package[supervisor],
     ensure => file,
