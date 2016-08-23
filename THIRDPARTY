@@ -179,7 +179,7 @@ Files: static/third/string-prototype-codepointat/*
 Copyright: 2014 Mathias Bynens
 License: Expat
 
-Files: static/third/sockjs/sockjs-0.3.4.js
+Files: static/third/sockjs/sockjs-1.1.0.js
 Copyright: 2011-2012 VMware, Inc.
  2012 Douglas Crockford
 License: Expat and public-domain

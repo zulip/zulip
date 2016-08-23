@@ -9,10 +9,11 @@ from tornado import ioloop
 from django.conf import settings
 
 try:
-    # Tornado 2.4
-    orig_poll_impl = ioloop._poll # type: ignore # cross-version type variation is hard for mypy
+    # Tornado 4
+    orig_poll_impl = ioloop.kqueue  # type: ignore # cross-version type variation is hard for mypy
+
     def instrument_tornado_ioloop():
-        ioloop._poll = InstrumentedPoll # type: ignore # cross-version type variation is hard for mypy
+        ioloop.kqueue = InstrumentedPoll  # type: ignore # cross-version type variation is hard for mypy
 except:
     # Tornado 3
     from tornado.ioloop import IOLoop, PollIOLoop
