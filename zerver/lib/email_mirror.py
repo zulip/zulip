@@ -39,8 +39,11 @@ def redact_stream(error_message):
 
 def report_to_zulip(error_message):
     # type: (text_type) -> None
-    error_stream = Stream.objects.get(name="errors", realm__domain=settings.ADMIN_DOMAIN)
-    send_zulip(error_stream, u"email mirror error",
+    if settings.ERROR_BOT is None:
+        return
+    error_bot = get_user_profile_by_email(settings.ERROR_BOT)
+    error_stream = Stream.objects.get(name="errors", realm=error_bot.realm)
+    send_zulip(settings.ERROR_BOT, error_stream, u"email mirror error",
                u"""~~~\n%s\n~~~""" % (error_message,))
 
 def log_and_report(email_message, error_message, debug_info):
@@ -172,10 +175,10 @@ def send_to_missed_message_address(address, message):
 class ZulipEmailForwardError(Exception):
     pass
 
-def send_zulip(stream, topic, content):
-    # type: (Stream, text_type, text_type) -> None
+def send_zulip(sender, stream, topic, content):
+    # type: (text_type, Stream, text_type, text_type) -> None
     internal_send_message(
-            settings.EMAIL_GATEWAY_BOT,
+            sender,
             "stream",
             stream.name,
             topic[:60],
@@ -296,7 +299,7 @@ def process_stream_message(to, subject, message, debug_info):
     body = filter_footer(extract_body(message))
     body += extract_and_upload_attachments(message, stream.realm)
     debug_info["stream"] = stream
-    send_zulip(stream, subject, body)
+    send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
 
 def process_missed_message(to, message, pre_checked):
     # type: (text_type, message.Message, bool) -> None
