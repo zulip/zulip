@@ -337,6 +337,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
+            button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
@@ -379,7 +380,11 @@ exports.mark_sub_unsubscribed = function (sub) {
     } else if (sub.subscribed) {
         stream_list.remove_narrow_filter(sub.name, 'stream');
         sub.subscribed = false;
-        button_for_sub(sub).removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text(i18n.t("Subscribe"));
+
+        var button = button_for_sub(sub);
+        button.removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text(i18n.t("Subscribe"));
+        button.parent().children(".preview-stream").text(i18n.t("Preview"));
+
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {
             settings.collapse('hide');
