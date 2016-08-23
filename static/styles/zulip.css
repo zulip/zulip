@@ -842,6 +842,7 @@ td.pointer {
 .message_list .recipient_row {
     background: #f1f1f1;
     border-bottom: 1px solid #e2e2e2;
+    border-top: 1px solid #e2e2e2;
     margin-bottom: 10px;
 }
 
@@ -1143,7 +1144,6 @@ just a temporary hack.
 
 .message_header_private_message .message-header-contents {
     border-right: 1px solid #e2e2e2;
-    border-top: 1px solid #e2e2e2;
 }
 
 .mention .messagebox-content {
