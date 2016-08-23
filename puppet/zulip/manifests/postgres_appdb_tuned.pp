@@ -3,7 +3,7 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-if $release_name == "trusty" {
+if $zulip::base::release_name == "trusty" {
   # tools for database setup
   $postgres_appdb_tuned_packages = ["pgtune"]
   package { $postgres_appdb_tuned_packages: ensure => "installed" }
