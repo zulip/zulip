@@ -2746,6 +2746,23 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+.subscription_row:hover .preview-stream {
+    display: inherit;
+}
+
+.preview-stream {
+    display: none;
+    float: right;
+    padding: 3px 10px;
+    border: 1px solid #ccc;
+    margin: 9px 10px 0px 0px;
+    color: #333;
+}
+
+.preview-stream:hover {
+    text-decoration: none;
+}
+
 .sub_unsub_button {
     min-width: 140px;
     float: right;
