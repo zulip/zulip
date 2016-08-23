@@ -39,4 +39,11 @@ class zulip::supervisor {
     source => "puppet:///modules/zulip/supervisor/supervisord.conf",
     notify => Service["supervisor"],
   }
+
+  if $zulip::base::release_name == "xenial" {
+    exec {"enable supervisor":
+      unless => "systemctl is-enabled supervisor",
+      command => "systemctl enable supervisor",
+    }
+  }
 }
