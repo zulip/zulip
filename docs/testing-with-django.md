@@ -65,7 +65,7 @@ the regression.
 
 Another important file to skim is
 [zerver/lib/test_helpers.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_helpers.py),
-which contains test helpers and our `AuthedTestCase` class.
+which contains test helpers and our `ZulipTestCase` class.
 
 ### Setting up data for tests
 
@@ -78,7 +78,7 @@ The fixture data includes a few users that are named after
 Shakesepeare characters, and they are part of the "zulip.com" realm.
 
 Generally, you will also do some explicit data setup of your own. Here
-are a couple useful methods in AuthedTestCase:
+are a couple useful methods in ZulipTestCase:
 
 - common_subscribe_to_streams
 - send_message
@@ -123,7 +123,7 @@ endpoint test generally follows this pattern:
 - Check the data that comes back from the endpoint.
 
 Generally, if you are doing endpoint tests, you will want to create a
-test class that is a subclass of `AuthedTestCase`, which will provide
+test class that is a subclass of `ZulipTestCase`, which will provide
 you helper methods like the following:
 
 - api_auth

@@ -6,7 +6,7 @@ from unittest import skip
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import ZulipTestCase
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -39,7 +39,7 @@ def destroy_uploads():
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
 
-class FileUploadTest(AuthedTestCase):
+class FileUploadTest(ZulipTestCase):
 
     def test_rest_endpoint(self):
         # type: () -> None
@@ -256,7 +256,7 @@ class FileUploadTest(AuthedTestCase):
         # type: () -> None
         destroy_uploads()
 
-class AvatarTest(AuthedTestCase):
+class AvatarTest(ZulipTestCase):
 
     def test_multiple_upload_failure(self):
         # type: () -> None
@@ -381,7 +381,7 @@ class AvatarTest(AuthedTestCase):
         # type: () -> None
         destroy_uploads()
 
-class LocalStorageTest(AuthedTestCase):
+class LocalStorageTest(ZulipTestCase):
 
     def test_file_upload_local(self):
         # type: () -> None
@@ -422,7 +422,7 @@ def use_s3_backend(method):
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
 
-class S3Test(AuthedTestCase):
+class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3(self):

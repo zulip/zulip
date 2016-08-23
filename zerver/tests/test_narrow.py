@@ -15,7 +15,7 @@ from zerver.lib.narrow import (
 )
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
-    AuthedTestCase, POSTRequestMock,
+    ZulipTestCase, POSTRequestMock,
     TestCase,
     get_user_messages, message_ids, queries_captured,
 )
@@ -50,7 +50,7 @@ def mute_stream(realm, user_profile, stream_name):
     subscription.in_home_view = False
     subscription.save()
 
-class NarrowBuilderTest(AuthedTestCase):
+class NarrowBuilderTest(ZulipTestCase):
     def setUp(self):
         self.realm = get_realm('zulip.com')
         self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
@@ -254,7 +254,7 @@ class BuildNarrowFilterTest(TestCase):
             for e in reject_events:
                 self.assertFalse(narrow_filter(e))
 
-class IncludeHistoryTest(AuthedTestCase):
+class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
         realm = get_realm('zulip.com')
         create_stream_if_needed(realm, 'public_stream')
@@ -298,7 +298,7 @@ class IncludeHistoryTest(AuthedTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, realm))
 
-class GetOldMessagesTest(AuthedTestCase):
+class GetOldMessagesTest(ZulipTestCase):
 
     def get_and_check_messages(self, modified_params):
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
