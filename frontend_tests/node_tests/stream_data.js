@@ -103,7 +103,7 @@ var stream_data = require('js/stream_data.js');
     stream_data.add_subscriber('Rome', email);
     assert(stream_data.user_is_subscribed('Rome', email));
 
-    // verify that adding an already-removed subscriber is a noop
+    // verify that adding an already-added subscriber is a noop
     stream_data.add_subscriber('Rome', email);
     assert(stream_data.user_is_subscribed('Rome', email));
 
