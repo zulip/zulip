@@ -8,12 +8,16 @@ All notable changes to the Zulip server are documented in this file.
   instead of the old apt repository.  This is a major change to how Zulip
   is installed that we expect will simplify upgrades in the future.
 - Fixed unnecessary loading of zxcvbn password strength checker.  This
-  saves a huge fraction of the uncached network transfer for loading Zulip.
-- Added UI for selecting a default language to display settings.
+  saves a huge fraction of the uncached network transfer for loading
+  Zulip.
+- Added support for using Ubuntu Xenial in production.
+- Added a powerful and complete realm import/export tool.
+- Added nice UI for selecting a default language to display settings.
 - Added UI for searching streams in left sidebar with hotkeys.
-- Added Semaphore and Bitbucket integrations.
+- Added Semaphore, Bitbucket, and HelloWorld (example) integrations.
 - Added new webhook-based integration for Trello.
 - Added management command for creating realms through web UI.
+- Added management command to send password reset emails.
 - Added endpoint for mobile apps to query available auth backends.
 - Added LetsEncrypt documentation for getting SSL certificates.
 - Added preliminary support for running on Ubuntu Xenial in production.
@@ -22,13 +26,31 @@ All notable changes to the Zulip server are documented in this file.
 - Added search box for filtering user list when creating a new stream.
 - Added realm setting to disable message editing.
 - Added realm setting to time-limit message editing.  Default is 10m.
+- Added realm setting for default language.
 - Added year to timestamps in message interstitials for old messages.
+- Added GitHub authentication (and integrated python-social-auth, so it's
+  easy to add additional social authentication methods).
+- Added TERMS_OF_SERVICE setting using markdown formatting to configure
+  the terms of service for a Zulip server.
+- Added numerous hooks to puppet modules to enable more configurations.
+- Moved several useful puppet components into the main puppet
+  manifests (setting a redis password, etc.).
+- Added automatic configuration of postgres/memcached settings based
+  on the server's available RAM.
+- Added scripts/deploy-zulip-from-git for upgrading Zulip from a Git repo.
+- Added preliminary support for Python 3.  All of Zulip's test suites now
+  pass using Python 3.4.
+- Added support for `Name <email@example.com>` format when inviting users.
+- Added numerous special-purpose settings options.
+- Added a hex input field in color picker.
+- Documented new Electron beta app and mobile apps in /apps/ page.
+- Enabled Android Google authentication support.
 - Enhanced logic for tracking origin of user uploads.
+- Improved error messages for various empty narrows.
 - Improved missed message emails to better support directly replying.
 - Increased backend test coverage of Python code to 85.5%.
-- Increased mypy static type coverage of Python code to 91%.  Also
+- Increased mypy static type coverage of Python code to 95%.  Also
   fixed many string annotations to properly handle unicode.
-- Substantial progress on Python 3 support; tests now pass with Python 3.
 - Fixed major i18n-related frontend performance regression on
   /#subscriptions page.  Saves several seconds of load time with 1k
   streams.
@@ -44,22 +66,45 @@ All notable changes to the Zulip server are documented in this file.
 - Fixed zulip-puppet-apply exit code when puppet throws errors.
 - Fixed EPMD restart being attempted on every puppet apply.
 - Fixed message cache filling; should improve perf after server restart.
+- Fixed caching race condition when changing user objects.
 - Fixed buggy puppet configuration for supervisord restarts.
 - Fixed some error handling race conditions when editing messages.
 - Fixed fastcgi_params to protect against the httpoxy attack.
+- Fixed bug preventing users with mit.edu emails from registering accounts.
+- Fixed incorrect settings docs for the email mirror.
+- Fixed APNS push notification support (had been broken by Apple changing
+  the APNS API).
+- Fixed some logic bugs in how attachments are tracked.
+- Fixed unnecessarily resource-intensive rabbitmq cron checks.
+- Fixed old deployment directories leaking indefinitely.
+- Fixed need to manually add localhost in ALLOWED_HOSTS.
+- Fixed display positioning for the color picker on subscriptions page.
+- Fixed escaping of Zulip extensions to markdown.
+- Fixed requiring a reload to see newly uploaded avatars.
+- Fixed @all warning firing even for `@all`.
+- Restyled password reset form to look nice.
 - Improved formatting in reset password links.
 - Improved alert words UI to match style of other settings.
+- Improved error experience when sending to nonexistent users.
+- Portions of integrations documentation are not automatically generated.
 - Restructured the URLs files to be more readable.
-- Upgraded jquery to version 1.8.3.
-- Upgraded varios Python modules to current versions.
+- Upgraded almost all Python dependencies to current versions.
 - Substantially expanded and reorganized developer documentation.
 - Reorganized production documentation and moved to ReadTheDocs.
+- Reorganized .gitignore type files to be written under var/
+- Refactored substantial portions of templates to support subdomains.
 - Renamed local_settings.py symlink to prod_settings.py for clarity.
-- Eliminated most of Zulip's remaining settings hardcoded for zulip.com.
+- Renamed email-mirror management command to email_mirror.
+- Changed HTTP verb for create_user_backend to PUT.
+- Eliminated all remaining settings hardcoded for zulip.com.
+- Eliminated essentially all remaining hardcoding of mit.edu.
 - Optimized the performance of all the test suites.
+- Optimized Django memcached configuration.
 - Removed old prototype data export tool.
 - Disabled insecure RC4 cipher in nginx configuration.
 - Enabled shared SSL session cache in nginx configuration.
+- Updated header for Zulip static assets to reflect Zulip being
+  open source.
 
 ### 1.3.13 - 2016-06-21
 - Added nearly complete internationalization of the Zulip UI.
