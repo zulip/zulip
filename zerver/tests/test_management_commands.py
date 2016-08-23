@@ -7,7 +7,7 @@ from django.core.management import call_command
 from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from datetime import timedelta
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import ZulipTestCase
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
@@ -61,7 +61,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         self.assertTrue(open_mock.called)
         client.post.assert_called_once_with(self.url, {}, content_type="application/json")
 
-class TestGenerateRealmCreationLink(AuthedTestCase):
+class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
     def test_generate_link_and_create_realm(self):

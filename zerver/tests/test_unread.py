@@ -7,10 +7,10 @@ from zerver.models import (
     get_user_profile_by_email, Recipient, UserMessage
 )
 
-from zerver.lib.test_helpers import AuthedTestCase, tornado_redirected_to_list
+from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list
 import ujson
 
-class PointerTest(AuthedTestCase):
+class PointerTest(ZulipTestCase):
 
     def test_update_pointer(self):
         # type: () -> None
@@ -74,7 +74,7 @@ class PointerTest(AuthedTestCase):
         self.assert_json_error(result, "Bad value for 'pointer': -2")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
-class UnreadCountTests(AuthedTestCase):
+class UnreadCountTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.unread_msg_ids = [self.send_message(

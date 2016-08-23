@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
-    AuthedTestCase, queries_captured, tornado_redirected_to_list
+    ZulipTestCase, queries_captured, tornado_redirected_to_list
 )
 
 from zerver.decorator import (
@@ -39,7 +39,7 @@ from six import text_type
 from six.moves import range, urllib
 
 
-class StreamAdminTest(AuthedTestCase):
+class StreamAdminTest(ZulipTestCase):
     def test_make_stream_public(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -473,7 +473,7 @@ class StreamAdminTest(AuthedTestCase):
             "User not authorized to execute queries on behalf of 'baduser@zulip.com'",
             status_code=403)
 
-class DefaultStreamTest(AuthedTestCase):
+class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm):
         # type: (Realm) -> Set[text_type]
         streams = get_default_streams_for_realm(realm)
@@ -534,7 +534,7 @@ class DefaultStreamTest(AuthedTestCase):
         self.assert_json_success(result)
         self.assertFalse(stream_name in self.get_default_stream_names(user_profile.realm))
 
-class SubscriptionPropertiesTest(AuthedTestCase):
+class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self):
         # type: () -> None
         """
@@ -729,7 +729,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_error(result,
                                "Unknown subscription property: bad")
 
-class SubscriptionRestApiTest(AuthedTestCase):
+class SubscriptionRestApiTest(ZulipTestCase):
     def test_basic_add_delete(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -863,7 +863,7 @@ class SubscriptionRestApiTest(AuthedTestCase):
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
 
-class SubscriptionAPITest(AuthedTestCase):
+class SubscriptionAPITest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
@@ -1549,7 +1549,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertFalse(subscription.audible_notifications)
 
 
-class GetPublicStreamsTest(AuthedTestCase):
+class GetPublicStreamsTest(ZulipTestCase):
 
     def test_public_streams(self):
         # type: () -> None
@@ -1609,7 +1609,7 @@ class GetPublicStreamsTest(AuthedTestCase):
                                  **self.api_auth(email))
         self.assertEqual(result.status_code, 400)
 
-class InviteOnlyStreamTest(AuthedTestCase):
+class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self):
         # type: () -> None
         """
@@ -1700,7 +1700,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertTrue('othello@zulip.com' in json['subscribers'])
         self.assertTrue('hamlet@zulip.com' in json['subscribers'])
 
-class GetSubscribersTest(AuthedTestCase):
+class GetSubscribersTest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None

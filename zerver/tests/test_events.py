@@ -51,7 +51,7 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.event_queue import allocate_client_descriptor
-from zerver.lib.test_helpers import AuthedTestCase, POSTRequestMock
+from zerver.lib.test_helpers import ZulipTestCase, POSTRequestMock
 from zerver.lib.validator import (
     check_bool, check_dict, check_int, check_list, check_string,
     equals, check_none_or, Validator
@@ -67,7 +67,7 @@ import ujson
 from six.moves import range
 
 
-class GetEventsTest(AuthedTestCase):
+class GetEventsTest(ZulipTestCase):
     def tornado_call(self, view_func, user_profile, post_data):
         # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any]) -> HttpResponse
         request = POSTRequestMock(post_data, user_profile)
@@ -204,7 +204,7 @@ class GetEventsTest(AuthedTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
-class EventsRegisterTest(AuthedTestCase):
+class EventsRegisterTest(ZulipTestCase):
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
     bot = get_user_profile_by_email("welcome-bot@zulip.com")
     maxDiff = None # type: Optional[int]
@@ -839,7 +839,7 @@ class EventsRegisterTest(AuthedTestCase):
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-class FetchInitialStateDataTest(AuthedTestCase):
+class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self):
         # type: () -> None

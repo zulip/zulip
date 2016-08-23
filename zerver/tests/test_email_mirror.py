@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from django.test import TestCase
 
 from zerver.lib.test_helpers import (
-    AuthedTestCase,
+    ZulipTestCase,
     most_recent_message,
     most_recent_usermessage,
 )
@@ -44,7 +44,7 @@ from django.conf import settings
 from typing import Any, Callable, Mapping, Union
 
 
-class TestStreamEmailMessagesSuccess(AuthedTestCase):
+class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self):
 
         # build dummy messages for stream
@@ -72,7 +72,7 @@ class TestStreamEmailMessagesSuccess(AuthedTestCase):
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message['Subject'])
 
-class TestStreamEmailMessagesEmptyBody(AuthedTestCase):
+class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self):
 
         # build dummy messages for stream
@@ -109,7 +109,7 @@ class TestStreamEmailMessagesEmptyBody(AuthedTestCase):
             exception_message = str(e)
         self.assertEqual(exception_message, "Unable to find plaintext or HTML message body")
 
-class TestMissedPersonalMessageEmailMessages(AuthedTestCase):
+class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self):
 
         # build dummy messages for missed messages email reply
@@ -148,7 +148,7 @@ class TestMissedPersonalMessageEmailMessages(AuthedTestCase):
         self.assertEqual(message.recipient.id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
-class TestMissedHuddleMessageEmailMessages(AuthedTestCase):
+class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_huddle_message_email_messages(self):
 
         # build dummy messages for missed messages email reply
@@ -194,7 +194,7 @@ class TestMissedHuddleMessageEmailMessages(AuthedTestCase):
         self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
-class TestMissedMessageAddressWithEmptyGateway(AuthedTestCase):
+class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
     def test_address_with_empty_gateway(self):
         self.login("othello@zulip.com")
         result = self.client_post("/json/messages", {"type": "private",
@@ -211,7 +211,7 @@ class TestMissedMessageAddressWithEmptyGateway(AuthedTestCase):
             self.assertEqual(mm_address, settings.NOREPLY_EMAIL_ADDRESS)
 
 
-class TestDigestEmailMessages(AuthedTestCase):
+class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
     def test_receive_digest_email_messages(self, mock_send_future_email, mock_enough_traffic):
@@ -233,7 +233,7 @@ class TestDigestEmailMessages(AuthedTestCase):
         self.assertEqual(mock_send_future_email.call_args[0][0][0]['email'],
                          u'othello@zulip.com')
 
-class TestReplyExtraction(AuthedTestCase):
+class TestReplyExtraction(ZulipTestCase):
     def test_reply_is_extracted_from_plain(self):
 
         # build dummy messages for stream

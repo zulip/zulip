@@ -10,7 +10,7 @@ from zerver.lib.test_runner import slow
 from zilencer.models import Deployment
 
 from zerver.lib.test_helpers import (
-    AuthedTestCase,
+    ZulipTestCase,
     get_user_messages,
     message_ids, message_stream_count,
     most_recent_message,
@@ -43,7 +43,7 @@ from six import text_type
 from six.moves import range
 from typing import Any, Optional
 
-class TestCrossRealmPMs(AuthedTestCase):
+class TestCrossRealmPMs(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
@@ -177,7 +177,7 @@ class TestCrossRealmPMs(AuthedTestCase):
             self.send_message(user1_email, [user2_email, user3_email],
                               Recipient.PERSONAL)
 
-class PersonalMessagesTest(AuthedTestCase):
+class PersonalMessagesTest(ZulipTestCase):
 
     def test_auto_subbed_to_personals(self):
         # type: () -> None
@@ -276,7 +276,7 @@ class PersonalMessagesTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         self.assert_personal("hamlet@zulip.com", "othello@zulip.com", u"hümbüǵ")
 
-class StreamMessagesTest(AuthedTestCase):
+class StreamMessagesTest(ZulipTestCase):
 
     def assert_stream_message(self, stream_name, subject="test subject",
                               content="test content"):
@@ -406,7 +406,7 @@ class StreamMessagesTest(AuthedTestCase):
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
 
-class MessageDictTest(AuthedTestCase):
+class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self):
         # type: () -> None
@@ -477,7 +477,7 @@ class MessageDictTest(AuthedTestCase):
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, bugdown.version)
 
-class MessagePOSTTest(AuthedTestCase):
+class MessagePOSTTest(ZulipTestCase):
 
     def test_message_to_self(self):
         # type: () -> None
@@ -766,7 +766,7 @@ class MessagePOSTTest(AuthedTestCase):
         user.realm.domain = domain
         user.realm.save()
 
-class EditMessageTest(AuthedTestCase):
+class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[text_type], Optional[text_type]) -> Message
         msg = Message.objects.get(id=msg_id)
@@ -1136,7 +1136,7 @@ class MirroredMessageUsersTest(TestCase):
         bob = get_user_profile_by_email('bob@zulip.com')
         self.assertTrue(bob.is_mirror_dummy)
 
-class StarTests(AuthedTestCase):
+class StarTests(ZulipTestCase):
 
     def change_star(self, messages, add=True):
         # type: (List[int], bool) -> HttpResponse
@@ -1190,7 +1190,7 @@ class StarTests(AuthedTestCase):
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
 
-class AttachmentTest(AuthedTestCase):
+class AttachmentTest(ZulipTestCase):
     def test_basics(self):
         # type: () -> None
         self.assertFalse(Message.content_has_attachment('whatever'))
@@ -1244,7 +1244,7 @@ class AttachmentTest(AuthedTestCase):
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
 
-class LogDictTest(AuthedTestCase):
+class LogDictTest(ZulipTestCase):
     def test_to_log_dict(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -1273,7 +1273,7 @@ class LogDictTest(AuthedTestCase):
         self.assertEqual(dct['subject'], 'Copenhagen')
         self.assertEqual(dct['type'], 'stream')
 
-class CheckMessageTest(AuthedTestCase):
+class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self):
         # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')

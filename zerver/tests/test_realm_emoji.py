@@ -2,10 +2,10 @@
 from __future__ import absolute_import
 
 from zerver.lib.actions import get_realm, check_add_realm_emoji
-from zerver.lib.test_helpers import AuthedTestCase
+from zerver.lib.test_helpers import ZulipTestCase
 import ujson
 
-class RealmEmojiTest(AuthedTestCase):
+class RealmEmojiTest(ZulipTestCase):
 
     def test_list(self):
         # type: () -> None

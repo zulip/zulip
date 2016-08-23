@@ -270,7 +270,7 @@ def write_instrumentation_reports():
         print('Untested-url report is in %s' % (fn,))
 
 
-class AuthedTestCase(TestCase):
+class ZulipTestCase(TestCase):
     '''
     WRAPPER_COMMENT:
 

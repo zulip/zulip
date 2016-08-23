@@ -10,7 +10,7 @@ from django.test import TestCase
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
-    simulated_queue_client, tornado_redirected_to_list, AuthedTestCase,
+    simulated_queue_client, tornado_redirected_to_list, ZulipTestCase,
     most_recent_usermessage, most_recent_message,
 )
 from zerver.lib.test_runner import slow
@@ -92,7 +92,7 @@ class SlowQueryTest(TestCase):
         self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
         self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
-class RealmTest(AuthedTestCase):
+class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, email, new_realm_name):
         # type: (text_type, text_type) -> None
         user_profile = get_user_profile_by_email(email)
@@ -201,7 +201,7 @@ class RealmTest(AuthedTestCase):
         self.assertNotEqual(realm.default_language, invalid_lang)
 
 
-class PermissionTest(AuthedTestCase):
+class PermissionTest(ZulipTestCase):
     def test_get_admin_users(self):
         # type: () -> None
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
@@ -268,7 +268,7 @@ class PermissionTest(AuthedTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
 
-class AdminCreateUserTest(AuthedTestCase):
+class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self):
         # type: () -> None
 
@@ -454,7 +454,7 @@ class WorkerTest(TestCase):
             worker = TestWorker()
             worker.consume({})
 
-class ActivityTest(AuthedTestCase):
+class ActivityTest(ZulipTestCase):
     def test_activity(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
@@ -475,7 +475,7 @@ class ActivityTest(AuthedTestCase):
 
         self.assert_length(queries, 13)
 
-class DocPageTest(AuthedTestCase):
+class DocPageTest(ZulipTestCase):
         def _test(self, url, expected_content):
             # type: (str, str) -> None
             result = self.client_get(url)
@@ -517,7 +517,7 @@ class UserProfileTest(TestCase):
         self.assertEqual(dct[hamlet.id], 'hamlet@zulip.com')
         self.assertEqual(dct[othello.id], 'othello@zulip.com')
 
-class UserChangesTest(AuthedTestCase):
+class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self):
         # type: () -> None
         email = "hamlet@zulip.com"
@@ -531,7 +531,7 @@ class UserChangesTest(AuthedTestCase):
         user = get_user_profile_by_email(email)
         self.assertEqual(new_api_key, user.api_key)
 
-class ActivateTest(AuthedTestCase):
+class ActivateTest(ZulipTestCase):
     def test_basics(self):
         # type: () -> None
         user = get_user_profile_by_email('hamlet@zulip.com')
@@ -591,7 +591,7 @@ class ActivateTest(AuthedTestCase):
         result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_error(result, 'Insufficient permission')
 
-class BotTest(AuthedTestCase):
+class BotTest(ZulipTestCase):
     def assert_num_bots_equal(self, count):
         # type: (int) -> None
         result = self.client_get("/json/bots")
@@ -1306,7 +1306,7 @@ class BotTest(AuthedTestCase):
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
-class ChangeSettingsTest(AuthedTestCase):
+class ChangeSettingsTest(ZulipTestCase):
 
     def check_well_formed_change_settings_response(self, result):
         # type: (Dict[str, Any]) -> None
@@ -1451,7 +1451,7 @@ class ChangeSettingsTest(AuthedTestCase):
         user_profile = get_user_profile_by_email(email)
         self.assertNotEqual(user_profile.default_language, invalid_lang)
 
-class GetProfileTest(AuthedTestCase):
+class GetProfileTest(ZulipTestCase):
 
     def common_update_pointer(self, email, pointer):
         # type: (text_type, int) -> None
@@ -1532,7 +1532,7 @@ class GetProfileTest(AuthedTestCase):
                     get_avatar_url(user_profile.avatar_source, user_profile.email),
                 )
 
-class UserPresenceTests(AuthedTestCase):
+class UserPresenceTests(ZulipTestCase):
     def test_get_empty(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
@@ -1630,7 +1630,7 @@ class UserPresenceTests(AuthedTestCase):
         for email in json['presences'].keys():
             self.assertEqual(split_email_to_domain(email), 'zulip.com')
 
-class AlertWordTests(AuthedTestCase):
+class AlertWordTests(ZulipTestCase):
     interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
 
     def test_internal_endpoint(self):
@@ -1809,7 +1809,7 @@ class AlertWordTests(AuthedTestCase):
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one/ urls"))
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
 
-class HomeTest(AuthedTestCase):
+class HomeTest(ZulipTestCase):
     @slow('big method')
     def test_home(self):
         # type: () -> None
@@ -1942,7 +1942,7 @@ class HomeTest(AuthedTestCase):
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
 
-class MutedTopicsTests(AuthedTestCase):
+class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -1989,7 +1989,7 @@ class ExtractedRecipientsTest(TestCase):
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
 
-class TestMissedMessages(AuthedTestCase):
+class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
         # type: (text_type) -> text_type
         s = s.strip()
@@ -2088,7 +2088,7 @@ class TestMissedMessages(AuthedTestCase):
 
         self.assertIn(body, self.normalize_string(msg.body))
 
-class TestOpenRealms(AuthedTestCase):
+class TestOpenRealms(ZulipTestCase):
     def test_open_realm_logic(self):
         # type: () -> None
         mit_realm = get_realm("mit.edu")
