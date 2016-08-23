@@ -2680,8 +2680,17 @@ div.floating_recipient {
     margin: 0 30px 5px 20px;
 }
 
+#user-checkboxes {
+    margin-top: 10px;
+}
+
 #user-checkboxes .checkbox {
     display: block;
+}
+
+#user-checkboxes .checkbox input[type=checkbox] {
+    margin: 5px 0px;
+    float: none;
 }
 
 .muted-sub {
