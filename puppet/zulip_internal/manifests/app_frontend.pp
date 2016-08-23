@@ -9,15 +9,6 @@ class zulip_internal::app_frontend {
                    ]
   package { $app_packages: ensure => "installed" }
 
-  file { "/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf":
-    require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip_internal/nginx/zulip-include-app.d/accept-loadbalancer.conf",
-    notify => Service["nginx"],
-  }
-
   file { '/etc/log2zulip.conf':
     ensure     => file,
     owner      => "zulip",
