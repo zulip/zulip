@@ -167,7 +167,7 @@ Redis is used for a few very short-term data stores, such as in the
 basis of `zerver/lib/rate_limiter.py`, a per-user rate limiting scheme
 [example](http://blog.domaintools.com/2013/04/rate-limiting-with-redis/)),
 and the [email-to-Zulip
-integration](https://zulip.com/integrations/#email).
+integration](https://zulipchat.com/integrations/#email).
 
 Redis is configured in `zulip/puppet/zulip/files/redis` and it's a
 pretty standard configuration except for the last line, which turns off

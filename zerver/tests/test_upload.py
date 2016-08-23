@@ -494,7 +494,7 @@ class UploadTitleTests(TestCase):
         self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt"), "dummy.txt")
         self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/94/SzGYe0RFT-tEcOhQ6n-ZblFZ/zulip.txt"), "zulip.txt")
         self.assertEqual(url_filename("https://zulip.com/user_uploads/4142/LUeQZUG5jxkagzVzp1Ox_amr/pasted_image.png"), "pasted_image.png")
-        self.assertEqual(url_filename("https://zulip.com/integrations"), "https://zulip.com/integrations")
+        self.assertEqual(url_filename("https://zulipchat.com/integrations"), "https://zulipchat.com/integrations")
         self.assertEqual(url_filename("https://example.com"), "https://example.com")
 
 class SanitizeNameTests(TestCase):
