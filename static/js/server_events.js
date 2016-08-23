@@ -12,6 +12,182 @@ var get_events_timeout;
 var get_events_failures = 0;
 var get_events_params = {};
 
+function dispatch_normal_event(event) {
+    switch (event.type) {
+    case 'alert_words':
+        alert_words.words = event.alert_words;
+        break;
+
+    case 'default_streams':
+        page_params.realm_default_streams = event.default_streams;
+        admin.update_default_streams_table();
+        break;
+
+    case 'muted_topics':
+        muting_ui.handle_updates(event.muted_topics);
+        break;
+
+    case 'presence':
+        var users = {};
+        users[event.email] = event.presence;
+        activity.set_user_statuses(users, event.server_timestamp);
+        break;
+
+    case 'restart':
+        var reload_options = {save_pointer: true,
+                              save_narrow: true,
+                              save_compose: true,
+                              message: "The application has been updated; reloading!"
+                             };
+        if (event.immediate) {
+            reload_options.immediate = true;
+        }
+        reload.initiate(reload_options);
+        break;
+
+    case 'realm':
+        if (event.op === 'update' && event.property === 'name') {
+            page_params.realm_name = event.value;
+            notifications.redraw_title();
+        } else if (event.op === 'update' && event.property === 'invite_required') {
+            page_params.realm_invite_required = event.value;
+        } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
+            page_params.realm_invite_by_admins_only = event.value;
+        } else if (event.op === 'update' && event.property === 'create_stream_by_admins_only') {
+            page_params.realm_create_stream_by_admins_only = event.value;
+            if (!page_params.is_admin) {
+                page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
+            }
+        } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
+            page_params.realm_restricted_to_domain = event.value;
+        } else if (event.op === 'update_dict' && event.property === 'default') {
+            $.each(event.data, function (key, value) {
+                page_params['realm_' + key] = value;
+            });
+        } else if (event.op === 'update' && event.property === 'default_language') {
+            page_params.realm_default_language = event.value;
+            admin.reset_realm_default_language();
+        }
+        break;
+
+    case 'realm_bot':
+        if (event.op === 'add') {
+            bot_data.add(event.bot);
+        } else if (event.op === 'remove') {
+            bot_data.remove(event.bot.email);
+        } else if (event.op === 'update') {
+            bot_data.update(event.bot.email, event.bot);
+        }
+        break;
+
+    case 'realm_emoji':
+        emoji.update_emojis(event.realm_emoji);
+        admin.populate_emoji(event.realm_emoji);
+        break;
+
+    case 'realm_filters':
+        page_params.realm_filters = event.realm_filters;
+        echo.set_realm_filters(page_params.realm_filters);
+        break;
+
+    case 'realm_user':
+        if (event.op === 'add') {
+            people.add_in_realm(event.person);
+        } else if (event.op === 'remove') {
+            people.remove(event.person);
+        } else if (event.op === 'update') {
+            people.update(event.person);
+        }
+        break;
+
+    case 'referral':
+        referral.update_state(event.referrals.granted, event.referrals.used);
+        break;
+
+    case 'stream':
+        if (event.op === 'update') {
+            // Legacy: Stream properties are still managed by subs.js on the client side.
+            subs.update_subscription_properties(event.name, event.property, event.value);
+            admin.update_default_streams_table();
+        }
+        break;
+
+    case 'subscription':
+        if (event.op === 'add') {
+            _.each(event.subscriptions, function (sub) {
+                subs.mark_subscribed(sub.name, sub);
+            });
+        } else if (event.op === 'remove') {
+            _.each(event.subscriptions, function (rec) {
+                var sub = stream_data.get_sub_by_id(rec.stream_id);
+                subs.mark_sub_unsubscribed(sub);
+            });
+        } else if (event.op === 'update') {
+            subs.update_subscription_properties(event.name, event.property, event.value);
+            if (event.property === 'pin_to_top') {
+                subs.pin_or_unpin_stream(event.name);
+            }
+        } else if (event.op === 'peer_add' || event.op === 'peer_remove') {
+            _.each(event.subscriptions, function (sub) {
+                var js_event_type;
+                if (event.op === 'peer_add') {
+                    js_event_type = 'peer_subscribe.zulip';
+
+                    stream_data.add_subscriber(sub, event.user_email);
+                } else if (event.op === 'peer_remove') {
+                    js_event_type = 'peer_unsubscribe.zulip';
+
+                    stream_data.remove_subscriber(sub, event.user_email);
+                }
+
+                $(document).trigger(js_event_type, {stream_name: sub,
+                                                    user_email: event.user_email});
+            });
+
+        }
+        break;
+
+    case 'update_display_settings':
+        if (event.setting_name === 'twenty_four_hour_time') {
+            page_params.twenty_four_hour_time = event.twenty_four_hour_time;
+            // TODO: Make this rerender the existing elements to not require a reload.
+        }
+        if (event.setting_name === 'left_side_userlist') {
+            // TODO: Make this change the view immediately rather
+            // than requiring a reload or page resize.
+            page_params.left_side_userlist = event.left_side_userlist;
+        }
+        if (event.setting_name === 'default_language') {
+            // TODO: Make this change the view immediately rather
+            // than requiring a reload or page resize.
+            page_params.default_language = event.default_language;
+        }
+        break;
+
+    case 'update_global_notifications':
+        notifications.handle_global_notification_updates(event.notification_name,
+                                                         event.setting);
+        break;
+
+    case 'update_message_flags':
+        var new_value = event.operation === "add";
+        switch(event.flag) {
+        case 'starred':
+            _.each(event.messages, function (message_id) {
+                ui.update_starred(message_id, new_value);
+            });
+            break;
+        case 'read':
+            var msgs_to_update = _.map(event.messages, function (message_id) {
+                return message_store.get(message_id);
+            });
+            unread.mark_messages_as_read(msgs_to_update, {from: "server"});
+            break;
+        }
+        break;
+    }
+}
+
 function get_events_success(events) {
     var messages = [];
     var messages_to_update = [];
@@ -63,168 +239,17 @@ function get_events_success(events) {
             }
             messages.push(msg);
             break;
+
         case 'pointer':
             new_pointer = event.pointer;
             break;
-        case 'restart':
-            var reload_options = {save_pointer: true,
-                                  save_narrow: true,
-                                  save_compose: true,
-                                  message: "The application has been updated; reloading!"
-                                 };
-            if (event.immediate) {
-                reload_options.immediate = true;
-            }
-            reload.initiate(reload_options);
-            break;
+
         case 'update_message':
             messages_to_update.push(event);
             break;
-        case 'realm':
-            if (event.op === 'update' && event.property === 'name') {
-                page_params.realm_name = event.value;
-                notifications.redraw_title();
-            } else if (event.op === 'update' && event.property === 'invite_required') {
-                page_params.realm_invite_required = event.value;
-            } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
-                page_params.realm_invite_by_admins_only = event.value;
-            } else if (event.op === 'update' && event.property === 'create_stream_by_admins_only') {
-                page_params.realm_create_stream_by_admins_only = event.value;
-                if (!page_params.is_admin) {
-                    page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
-                }
-            } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
-                page_params.realm_restricted_to_domain = event.value;
-            } else if (event.op === 'update_dict' && event.property === 'default') {
-                $.each(event.data, function (key, value) {
-                    page_params['realm_' + key] = value;
-                });
-            } else if (event.op === 'update' && event.property === 'default_language') {
-                page_params.realm_default_language = event.value;
-                admin.reset_realm_default_language();
-            }
-            break;
-        case 'realm_user':
-            if (event.op === 'add') {
-                people.add_in_realm(event.person);
-            } else if (event.op === 'remove') {
-                people.remove(event.person);
-            } else if (event.op === 'update') {
-                people.update(event.person);
-            }
-            break;
-        case 'realm_bot':
-            if (event.op === 'add') {
-                bot_data.add(event.bot);
-            } else if (event.op === 'remove') {
-                bot_data.remove(event.bot.email);
-            } else if (event.op === 'update') {
-                bot_data.update(event.bot.email, event.bot);
-            }
-            break;
-        case 'stream':
-            if (event.op === 'update') {
-                // Legacy: Stream properties are still managed by subs.js on the client side.
-                subs.update_subscription_properties(event.name, event.property, event.value);
-                admin.update_default_streams_table();
-            }
-            break;
-        case 'default_streams':
-            page_params.realm_default_streams = event.default_streams;
-            admin.update_default_streams_table();
-            break;
-        case 'subscription':
-            if (event.op === 'add') {
-                _.each(event.subscriptions, function (sub) {
-                    subs.mark_subscribed(sub.name, sub);
-                });
-            } else if (event.op === 'remove') {
-                _.each(event.subscriptions, function (rec) {
-                    var sub = stream_data.get_sub_by_id(rec.stream_id);
-                    subs.mark_sub_unsubscribed(sub);
-                });
-            } else if (event.op === 'update') {
-                subs.update_subscription_properties(event.name, event.property, event.value);
-                if (event.property === 'pin_to_top') {
-                    subs.pin_or_unpin_stream(event.name);
-                }
-            } else if (event.op === 'peer_add' || event.op === 'peer_remove') {
-                _.each(event.subscriptions, function (sub) {
-                    var js_event_type;
-                    if (event.op === 'peer_add') {
-                        js_event_type = 'peer_subscribe.zulip';
 
-                        stream_data.add_subscriber(sub, event.user_email);
-                    } else if (event.op === 'peer_remove') {
-                        js_event_type = 'peer_unsubscribe.zulip';
-
-                        stream_data.remove_subscriber(sub, event.user_email);
-                    }
-
-                    $(document).trigger(js_event_type, {stream_name: sub,
-                                                        user_email: event.user_email});
-                });
-
-            }
-            break;
-        case 'presence':
-            var users = {};
-            users[event.email] = event.presence;
-            activity.set_user_statuses(users, event.server_timestamp);
-            break;
-        case 'update_message_flags':
-            var new_value = event.operation === "add";
-            switch(event.flag) {
-            case 'starred':
-                _.each(event.messages, function (message_id) {
-                    ui.update_starred(message_id, new_value);
-                });
-                break;
-            case 'read':
-                var msgs_to_update = _.map(event.messages, function (message_id) {
-                    return message_store.get(message_id);
-                });
-                unread.mark_messages_as_read(msgs_to_update, {from: "server"});
-                break;
-            }
-            break;
-        case 'referral':
-            referral.update_state(event.referrals.granted, event.referrals.used);
-            break;
-        case 'realm_emoji':
-            emoji.update_emojis(event.realm_emoji);
-            admin.populate_emoji(event.realm_emoji);
-            break;
-        case 'alert_words':
-            alert_words.words = event.alert_words;
-            break;
-        case 'muted_topics':
-            muting_ui.handle_updates(event.muted_topics);
-            break;
-        case 'realm_filters':
-            page_params.realm_filters = event.realm_filters;
-            echo.set_realm_filters(page_params.realm_filters);
-            break;
-        case 'update_global_notifications':
-            notifications.handle_global_notification_updates(event.notification_name,
-                                                             event.setting);
-            break;
-        case 'update_display_settings':
-            if (event.setting_name === 'twenty_four_hour_time') {
-                page_params.twenty_four_hour_time = event.twenty_four_hour_time;
-                // TODO: Make this rerender the existing elements to not require a reload.
-            }
-            if (event.setting_name === 'left_side_userlist') {
-                // TODO: Make this change the view immediately rather
-                // than requiring a reload or page resize.
-                page_params.left_side_userlist = event.left_side_userlist;
-            }
-            if (event.setting_name === 'default_language') {
-                // TODO: Make this change the view immediately rather
-                // than requiring a reload or page resize.
-                page_params.default_language = event.default_language;
-            }
-            break;
+        default:
+            return dispatch_normal_event(event);
         }
     };
 

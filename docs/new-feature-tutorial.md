@@ -263,20 +263,18 @@ the server. :
 
     # static/js/server_events.js
 
-    function get_events_success(events) {
-      # ...
-      var dispatch_event = function dispatch_event(event) {
-          switch (event.type) {
-          # ...
-          case 'realm':
+    function dispatch_normal_event(event) {
+        switch (event.type) {
+        # ...
+        case 'realm':
             if (event.op === 'update' && event.property === 'invite_by_admins_only') {
-              page_params.realm_invite_by_admins_only = event.value;
-          }
-      }
+                page_params.realm_invite_by_admins_only = event.value;
+            }
+        }
     }
 
-Any code needed to update the UI should be placed in `dispatch_event`
-callback (rather than the `channel.patch`) function. This ensures the
-appropriate code will run even if the changes are made in another
-browser window. In this example most of the changes are on the backend,
-so no UI updates are required.
+Any code needed to update the UI should be placed in
+`dispatch_normal_event` callback (rather than the `channel.patch`)
+function. This ensures the appropriate code will run even if the
+changes are made in another browser window. In this example most of
+the changes are on the backend, so no UI updates are required.
