@@ -50,7 +50,8 @@ settings, etc.
 
 ## Grant administrator access
 
-You can make any user and administrator with the `knight` management command:
+You can make any user and administrator on the command line with the `knight`
+management command:
 
 ```
 ./manage.py knight username@example.com -f

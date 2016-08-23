@@ -1,4 +1,4 @@
-# Install
+# Install in Production
 
 Ensure you have an Ubuntu system that satisfies [the installation
 requirements](prod-requirements.html).
@@ -133,6 +133,9 @@ These settings include:
 - `AUTHENTICATION_BACKENDS`: a list of enabled authentication mechanisms.
   You'll need to enable at least one authentication mechanism by uncommenting
   its corresponding line.
+- `EMAIL_*` and `DEFAULT_FROM_EMAIL`: Regardless of which authentication
+  backends you enable, you must provide settings for an outgoing SMTP server so
+  Zulip can send emails when needed.
 
 See the [section on Authentication](prod-auth-first-login.html)
 for more detail on configuring authentication mechanisms.
@@ -168,10 +171,13 @@ would like to use, you will need to do some additional setup documented in the
 * For GitHub authentication, follow the instructions around
   `SOCIAL_AUTH_GITHUB_KEY`.
 
-* For Email authentication, follow the configuration instructions for outgoing
-  SMTP from Django.  You can use `./manage.py send_test_email
-  username@example.com` to test whether you've successfully configured outgoing
-  SMTP.
+Regardless of which authentication backends you enable, **you must provide
+settings for an outgoing SMTP server** so Zulip can send emails when needed.
+Zulip uses Django's standard EmailBackend, so if you're having issues
+configuring email, try their
+[documentation](https://docs.djangoproject.com/en/1.8/topics/email/). You can
+use `./manage.py send_test_email username@example.com` to test whether you've
+successfully configured outgoing SMTP.
 
 For a complete list of authentication backends supported, read [Authentication
 Methods](prod-authentication-methods.html) and take a look at
