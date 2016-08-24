@@ -135,7 +135,7 @@ function update_in_home_view(sub, value) {
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
     var not_in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_not_in_home_view .sub_setting_control");
-    not_in_home_view_checkbox.attr('checked', !value);
+    not_in_home_view_checkbox.prop('checked', !value);
 }
 
 exports.toggle_home = function (stream_name) {
@@ -151,19 +151,19 @@ exports.toggle_pin_to_top_stream = function (stream_name) {
 
 function update_stream_desktop_notifications(sub, value) {
     var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
-    desktop_notifications_checkbox.attr('checked', value);
+    desktop_notifications_checkbox.prop('checked', value);
     sub.desktop_notifications = value;
 }
 
 function update_stream_audible_notifications(sub, value) {
     var audible_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_audible_notifications_setting .sub_setting_control");
-    audible_notifications_checkbox.attr('checked', value);
+    audible_notifications_checkbox.prop('checked', value);
     sub.audible_notifications = value;
 }
 
 function update_stream_pin(sub, value) {
     var pin_checkbox = $('#pinstream-' + sub.stream_id);
-    pin_checkbox.attr('checked', value);
+    pin_checkbox.prop('checked', value);
     sub.pin_to_top = value;
 }
 
@@ -764,12 +764,12 @@ $(function () {
 
     // 'Check all' and 'Uncheck all' links
     $(document).on('click', '.subs_set_all_users', function (e) {
-        $('#people_to_add :checkbox').attr('checked', true);
+        $('#people_to_add :checkbox').prop('checked', true);
         e.preventDefault();
         update_announce_stream_state();
     });
     $(document).on('click', '.subs_unset_all_users', function (e) {
-        $('#people_to_add :checkbox').attr('checked', false);
+        $('#people_to_add :checkbox').prop('checked', false);
         e.preventDefault();
         update_announce_stream_state();
     });

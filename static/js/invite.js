@@ -105,12 +105,12 @@ exports.initialize = function () {
     });
 
     $(document).on('click', '.invite_check_all_button', function (e) {
-        $('#streams_to_add :checkbox').attr('checked', true);
+        $('#streams_to_add :checkbox').prop('checked', true);
         e.preventDefault();
     });
 
     $(document).on('click', '.invite_uncheck_all_button', function (e) {
-        $('#streams_to_add :checkbox').attr('checked', false);
+        $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
 };
