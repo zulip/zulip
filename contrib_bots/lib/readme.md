@@ -30,7 +30,7 @@ Here is an example of running the "follow-up" bot from
 inside a Zulip repo:
 
     cd ~/zulip/contrib_bots
-    python run.py lib/followup.py
+    python run.py lib/followup.py --config-file ~/.zuliprc-prod
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as
@@ -39,6 +39,19 @@ to suppress these messages.
 
 The bot code will run continuously until you kill them with
 control-C (or otherwise).
+
+### Configuration
+
+For this document we assume you have some prior experience
+with using the Zulip API, but here is a quick review of
+what a `.zuliprc` files looks like.  You can connect to the
+API as your own human user, or you can go into the Zulip settings
+page to create a user-owned bot.
+
+    [api]
+    email=someuser@example.com
+    key=<your api key>
+    site=https://zulip.somewhere.com
 
 ## Architecture
 
