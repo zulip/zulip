@@ -48,7 +48,7 @@ bugdown = None # type: Any
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
-MAX_LANGUAGE_ID_LENGTH = 50 # type: int
+MAX_LANGUAGE_ID_LENGTH = 10 # type: int
 
 STREAM_NAMES = TypeVar('STREAM_NAMES', Sequence[text_type], AbstractSet[text_type])
 
