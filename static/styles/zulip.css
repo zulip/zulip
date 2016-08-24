@@ -1460,7 +1460,6 @@ div.focused_table {
 
 .message_edit_topic_propagate {
     display: inline-block;
-    width: 400px;
 }
 
 .message_content.condensed {
@@ -3493,4 +3492,3 @@ li.show-more-private-messages a {
 .inline-subscribe-error {
     margin-left: 5px;
 }
-
