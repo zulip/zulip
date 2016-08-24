@@ -9,10 +9,10 @@ $(function () {
     autofocus('#email');
 });
 </script>
-
 <div class="app register-page">
   <div class="app-main register-page-container">
-
+    <div class="center-container">
+      <div class="center-block">
         <div class="register-form">
             <p class="lead">
               <div class="register-page-header">{{ _("Let's get started") }}…</div>
@@ -22,7 +22,7 @@ $(function () {
                 {{ csrf_input }}
                 <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
                        id="email" name="email"/>
-                <input type="submit" class="btn btn-primary btn-large register-button" value="{{ _("Sign up") }}"/>
+                <input type="submit" class="button btn btn-primary btn-large register-button" value="{{ _("Sign up") }}"/>
             </form>
             <div id="errors"></div>
             {% if form.email.errors %}
@@ -40,7 +40,8 @@ $(function () {
                 </div>
             {% endif %}
         </div>
-
+      </div>
+    </div>
 </div>
 <div class="footer-padder"></div>
 </div>

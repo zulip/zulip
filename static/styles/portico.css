@@ -431,6 +431,10 @@ a.bottom-signup-button {
     padding-top: 40px !important;
 }
 
+.portico-page-container {
+    padding-top: 0px !important;
+}
+
 .hello-footer {
     height: 54px !important;
 }
@@ -812,7 +816,7 @@ a.bottom-signup-button {
 }
 
 .footer-padder {
-    height: 94px;
+    height: 54px;
 }
 
 .footer-main {
@@ -929,6 +933,58 @@ a.bottom-signup-button {
     margin-top: 30px;
 }
 
+.center-container {
+    height: calc(100vh - 94px);
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    -wekbit-box-align: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.center-block .submit-button-box .controls {
+  margin: 0px;
+}
+
+.center-block {
+    text-align: left;
+    display: inline-block;
+}
+
+.center-block .pitch {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.center-block .control-group {
+    margin-bottom: 10px;
+}
+
+.center-block .control-group label {
+    width: 100%;
+    display: block;
+    margin: 0;
+    text-align: left;
+}
+
+.center-block .control-group .controls {
+    margin: 0;
+    text-align: left;
+}
+
+.center-block #send_confirm input[type=text] {
+  margin-top: 20px;
+}
+
+.center-block .button {
+    margin-top: 20px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    font-size: 16px;
+    font-weight: 300;
+}
+
 @media (max-height: 600px) {
     .password-container {
         margin-top: 10px;
@@ -1040,6 +1096,33 @@ a.bottom-signup-button {
 }
 
 @media (max-width: 500px) {
+  .app-main,
+  .header-main,
+  .footer-main {
+      min-width: auto;
+  }
+
+  .header {
+      padding: 0;
+  }
+
+  .header-main {
+      max-width: 100vw;
+  }
+
+  .footer-navigation {
+      font-size: 12px;
+  }
+
+  .app-main {
+      padding: 0px;
+  }
+
+  .footer {
+      position: fixed;
+      bottom: 0px;
+  }
+
   .main-headline-text .tagline {
       font-size: 32px;
       line-height: 34px;
