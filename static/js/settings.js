@@ -255,7 +255,7 @@ function _setup_page() {
 
     function update_notification_settings_success(resp, statusText, xhr, form) {
         var message = "Updated notification settings!";
-        var result = $.parseJSON(xhr.responseText);
+        var result = JSON.parse(xhr.responseText);
         var notify_settings_status = $('#notify-settings-status').expectOne();
 
         // Stream notification settings.
@@ -457,7 +457,7 @@ function _setup_page() {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             var message = "Updated settings!";
-            var result = $.parseJSON(xhr.responseText);
+            var result = JSON.parse(xhr.responseText);
             var settings_status = $('#settings-status').expectOne();
 
             $("#get_api_key_password").val("");
@@ -707,7 +707,7 @@ function _setup_page() {
             data: labs_updates,
             success: function (resp, statusText, xhr, form) {
                 var message = i18n.t("Updated __product_name__ Labs settings!", page_params);
-                var result = $.parseJSON(xhr.responseText);
+                var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
                 if (result.autoscroll_forever !== undefined) {

@@ -34,7 +34,7 @@ function call(args, idempotent) {
 
         if (xhr.status === 403) {
             try {
-                if ($.parseJSON(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
+                if (JSON.parse(xhr.responseText).msg.indexOf("CSRF Error:") !== -1) {
                     reload.initiate({immediate: true,
                                      save_pointer: true,
                                      save_narrow: true,
@@ -117,7 +117,7 @@ exports.xhr_error_message = function (message, xhr) {
     if (xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        message += ": " + $.parseJSON(xhr.responseText).msg;
+        message += ": " + JSON.parse(xhr.responseText).msg;
     }
     return message;
 };

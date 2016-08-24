@@ -160,7 +160,7 @@ exports.report_error = function (response, xhr, status_box, type) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        response += ": " + $.parseJSON(xhr.responseText).msg;
+        response += ": " + JSON.parse(xhr.responseText).msg;
     }
 
     ui.report_message(response, status_box, 'alert-error', type);
