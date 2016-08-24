@@ -23,7 +23,7 @@ $(function () {
     });
 
     // For some reason, jQuery wants this to be attached to an element.
-    $('body').ajaxError(function (event, xhr) {
+    $(document).ajaxError(function (event, xhr) {
         if (xhr.status === 401) {
             // We got logged out somehow, perhaps from another window or a session timeout.
             // We could display an error message, but jumping right to the login page seems
