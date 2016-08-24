@@ -15,7 +15,9 @@ i18n.init({
     lng: 'en'
 });
 
-global.$ = require('jQuery');
+var jsdom = require("jsdom");
+var window = jsdom.jsdom().defaultView;
+global.$ = require('jquery')(window);
 var _ = global._;
 
 // When writing these tests, the following command might be helpful:
@@ -455,6 +457,7 @@ function render(template_name, args) {
     var html = render('message_info_popover_title', args);
     global.write_handlebars_output("message_info_popover_title", html);
 
+    html = '<div>' + html + '</div>';
     assert($(html).text().trim(), "Message to stream devel");
 }());
 
