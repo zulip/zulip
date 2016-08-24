@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # 张建春 <zhang.jianchun1@gmail.com>, 2016
 # 张建春 <zhang.jianchun1@gmail.com>, 2016
@@ -9,93 +9,95 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-13 12:07-0400\n"
+"POT-Creation-Date: 2016-08-24 17:31-0400\n"
 "PO-Revision-Date: 2016-06-18 05:07+0000\n"
 "Last-Translator: 张建春 <zhang.jianchun1@gmail.com>\n"
-"Language-Team: Chinese Simplified (http://www.transifex.com/zulip/zulip/language/zh-Hans/)\n"
+"Language-Team: Chinese Simplified (http://www.transifex.com/zulip/zulip/"
+"language/zh-Hans/)\n"
+"Language: zh-Hans\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh-Hans\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: confirmation/models.py:103
+#: confirmation/models.py:126
 msgid "sent"
 msgstr "已发送"
 
-#: confirmation/models.py:104
+#: confirmation/models.py:127 confirmation/models.py:139
 msgid "activation key"
 msgstr "激活码"
 
-#: confirmation/models.py:109
+#: confirmation/models.py:132
 msgid "confirmation email"
 msgstr "确认邮件"
 
-#: confirmation/models.py:110
+#: confirmation/models.py:133
 msgid "confirmation emails"
 msgstr "确认邮件"
 
-#: confirmation/models.py:113
+#: confirmation/models.py:136
 #, python-format
 msgid "confirmation email for %s"
 msgstr "%s的确认邮件"
 
-#: docs/_build/html/_sources/translating.txt:37
+#: confirmation/models.py:140
+#, fuzzy
+#| msgid "Create"
+msgid "created"
+msgstr "创建"
+
+#: docs/_build/html/_sources/translating.txt:91
 msgid "English text"
 msgstr ""
 
-#: docs/_build/html/_sources/translating.txt:49
+#: docs/_build/html/_sources/translating.txt:103
 msgid "This string will have"
 msgstr ""
 
-#: docs/_build/html/_sources/translating.txt:49
+#: docs/_build/html/_sources/translating.txt:103
 msgid "inside"
 msgstr ""
 
-#: docs/_build/html/_sources/translating.txt:56
-#: docs/_build/html/_sources/translating.txt:58
+#: docs/_build/html/_sources/translating.txt:110
+#: docs/_build/html/_sources/translating.txt:112
 #, python-format
 msgid "This string will have %(value)s inside."
 msgstr ""
 
-#: templates/zerver/accounts_accept_terms.html:9
-msgid "Welcome! We think you'll like it here"
-msgstr "欢迎！我们相信你会喜欢上这里"
-
-#: templates/zerver/accounts_accept_terms.html:14
-#: templates/zerver/register.html:19
-msgid "You're almost there. We just need you to do one last thing"
-msgstr "快了，你只需要完成最后一件事"
-
 #: templates/zerver/accounts_accept_terms.html:15
-msgid "Accept the Zulip terms of service"
+#, fuzzy
+#| msgid "Accept the Zulip terms of service"
+msgid "There is a new terms of service."
 msgstr "接受Zulip服务条款"
 
-#: templates/zerver/accounts_accept_terms.html:21
+#: templates/zerver/accounts_accept_terms.html:16
+#, fuzzy
+#| msgid "Accept the Zulip terms of service"
+msgid "Accept the terms of service"
+msgstr "接受Zulip服务条款"
+
+#: templates/zerver/accounts_accept_terms.html:23
 #: templates/zerver/login.html:92 templates/zerver/register.html:26
-#: templates/zerver/reset.html:11
+#: templates/zerver/reset.html:11 templates/zerver/reset_confirm.html:20
 msgid "Email"
 msgstr "邮箱"
 
-#: templates/zerver/accounts_accept_terms.html:27
-msgid "Your name"
-msgstr "你的名字"
-
-#: templates/zerver/accounts_accept_terms.html:53
-#: templates/zerver/register.html:91
+#: templates/zerver/accounts_accept_terms.html:42
+#: templates/zerver/register.html:109
 msgid "I agree to the"
 msgstr "我同意"
 
-#: templates/zerver/accounts_accept_terms.html:53
-#: templates/zerver/register.html:91
+#: templates/zerver/accounts_accept_terms.html:42
+#: templates/zerver/register.html:109
 msgid "Terms of Service"
 msgstr "服务条款"
 
-#: templates/zerver/accounts_home.html:18
+#: templates/zerver/accounts_home.html:18 templates/zerver/create_realm.html:18
 msgid "Let's get started"
 msgstr "让我们开始吧"
 
-#: templates/zerver/accounts_home.html:23
+#: templates/zerver/accounts_home.html:23 templates/zerver/create_realm.html:23
 msgid "Enter your work email address"
 msgstr "输入你的工作邮箱地址"
 
@@ -106,7 +108,8 @@ msgstr "注册"
 #: templates/zerver/accounts_home.html:34
 msgid ""
 "Please use your\n"
-"            company email address to sign up. Otherwise, we won’t be able to\n"
+"            company email address to sign up. Otherwise, we won’t be able "
+"to\n"
 "            connect you with your coworkers"
 msgstr "请用你的工作邮箱注册，否则我们无法关联你和你的同事"
 
@@ -123,10 +126,20 @@ msgid "Check your email so we can get started"
 msgstr "在开始前请查收下你的邮件"
 
 #: templates/zerver/accounts_send_confirm.html:10
-msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>"
-msgstr "还没收到邮件？我们可以<a href=\\\"#\\\" id=\\\"resend_email_link\\\">重新发送</a>"
+#: templates/zerver/initial_invite_page.html:24
+msgid ""
+"In the Zulip development environment, outgoing emails are printed to the run-"
+"dev.py console"
+msgstr ""
 
-#: templates/zerver/accounts_send_confirm.html:11
+#: templates/zerver/accounts_send_confirm.html:13
+msgid ""
+"Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>"
+msgstr ""
+"还没收到邮件？我们可以<a href=\\\"#\\\" id=\\\"resend_email_link\\\">重新发送"
+"</a>"
+
+#: templates/zerver/accounts_send_confirm.html:14
 msgid "Just in case, take a look at your Spam folder"
 msgstr "有可能的话，看看你的垃圾邮件夹"
 
@@ -142,94 +155,147 @@ msgstr "不好意思，无意冒犯，请不要离开哦"
 msgid "Installation instructions"
 msgstr "安装说明"
 
-#: templates/zerver/apps.html:25
+#: templates/zerver/apps.html:23
 #, python-format
 msgid ""
 "Zulip has a free, <strong>100%% native app</strong> for Android,\n"
 "          and you can easily grab it from\n"
-"          the <a href=\"https://play.google.com/store/apps/details?id=com.zulip.android\">Google\n"
+"          the <a href=\"https://play.google.com/store/apps/details?id=com."
+"zulip.android\">Google\n"
 "          Play Store</a>"
-msgstr "Zulip在安卓平台上有免费的，<strong>100%%原生的App</strong>，\n你可以很容易地从\n<a href=\\\"https://play.google.com/store/apps/details?id=com.zulip.android\\\">谷歌商店</a>下载到。"
+msgstr ""
+"Zulip在安卓平台上有免费的，<strong>100%%原生的App</strong>，\n"
+"你可以很容易地从\n"
+"<a href=\\\"https://play.google.com/store/apps/details?id=com.zulip.android\\"
+"\">谷歌商店</a>下载到。"
 
-#: templates/zerver/apps.html:39
+#: templates/zerver/apps.html:37
 #, python-format
 msgid ""
 "Zulip has a free, <strong>100%% native app</strong> for iPhone and\n"
 "        iPad. Please grab it from\n"
 "        the <a href=\"http://itunes.com/apps/zulip\">App Store</a>"
-msgstr "Zulip在iPhone和iPad上有免费的， <strong>100%%原生的App</strong>，\n请从<a href=\\\"http://itunes.com/apps/zulip\\\">苹果商店</a>下载"
+msgstr ""
+"Zulip在iPhone和iPad上有免费的， <strong>100%%原生的App</strong>，\n"
+"请从<a href=\\\"http://itunes.com/apps/zulip\\\">苹果商店</a>下载"
 
-#: templates/zerver/apps.html:50
+#: templates/zerver/apps.html:47
+msgid ""
+"The beta version\n"
+"          of <a href=\"https://github.com/zulip/zulip-electron\">our new\n"
+"          cross-platform desktop client</a> is ready for you to try\n"
+"          now, and should work on Mac, Windows, and Linux. (It's\n"
+"          implemented\n"
+"          in <a href=\"http://electron.atom.io/\">Electron</a>, a\n"
+"          desktop app framework (maintained by GitHub) that uses\n"
+"          Chromium and Node.js, so in the future we'll be able to\n"
+"          concentrate on writing JavaScript instead of futzing with\n"
+"          Qt/WebKit and C++.)"
+msgstr ""
+
+#: templates/zerver/apps.html:57
+msgid ""
+"You'll have to install it using the command\n"
+"          line, and there might be some rough edges; if you run into\n"
+"          anything that doesn't feel\n"
+"          right, <a href=\"https://github.com/zulip/zulip-electron/issues/new"
+"\">please\n"
+"          let us know</a>."
+msgstr ""
+
+#: templates/zerver/apps.html:67
+#, fuzzy
+#| msgid "Download Zulip for Windows"
+msgid "Download the beta of Zulip for desktop"
+msgstr "下载Windows版Zulip"
+
+#: templates/zerver/apps.html:76
 msgid ""
 "You love your Mac. And you love Zulip. So what could be\n"
 "        better than a Zulip app for Mac? Enjoy notifications for\n"
 "        messages and PMs in your dock whether you're in Sublime,\n"
 "        emacs, or Photoshop."
-msgstr "你喜欢Zulip，但又深爱你的Mac电脑。那还有什么比一款Mac平台的Zulip更好呢? 体会一下在用Sublime、emacs还有Photoshop时，在Dock栏显示消息和私信通知的那种感觉吧。"
+msgstr ""
+"你喜欢Zulip，但又深爱你的Mac电脑。那还有什么比一款Mac平台的Zulip更好呢? 体会"
+"一下在用Sublime、emacs还有Photoshop时，在Dock栏显示消息和私信通知的那种感觉"
+"吧。"
 
-#: templates/zerver/apps.html:57 templates/zerver/apps.html.py:59
+#: templates/zerver/apps.html:83 templates/zerver/apps.html.py:85
 msgid "Download Zulip for Mac"
 msgstr "下载Mac版Zulip"
 
-#: templates/zerver/apps.html:67
+#: templates/zerver/apps.html:93
 msgid ""
 "Zulip provides a native Linux app that runs standalone\n"
 "        outside of your browser. How you install it depends on what\n"
 "        you're running:"
-msgstr "Zulip提供了原生的Linux客户端程序，可以独立于浏览器运行。具体安装方法与你当前运行的系统有关："
+msgstr ""
+"Zulip提供了原生的Linux客户端程序，可以独立于浏览器运行。具体安装方法与你当前"
+"运行的系统有关："
 
-#: templates/zerver/apps.html:71
+#: templates/zerver/apps.html:97
 msgid "Debian and Ubuntu"
 msgstr "Debian和Ubuntu"
 
-#: templates/zerver/apps.html:72
+#: templates/zerver/apps.html:98
 msgid ""
 "We have an APT repository for Zulip, so adding and installing the app is "
 "easy:"
 msgstr "我们有Zulip的APT库，下载和安装都很简单："
 
-#: templates/zerver/apps.html:85
+#: templates/zerver/apps.html:111
 msgid "Other"
 msgstr "其它"
 
-#: templates/zerver/apps.html:87
+#: templates/zerver/apps.html:113
 msgid ""
 "We provide a <a href=\"https://zulip.com/dist/apps/sso/linux/zulip-"
 "desktop_latest.bin.tar.gz\">binary tarball</a> of the Zulip application, "
 "built for 64-bit systems."
-msgstr "我们提供了Zulip的 <a href=\\\"https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz\\\">程序压缩包</a>，为64位系统构建。"
+msgstr ""
+"我们提供了Zulip的 <a href=\\\"https://zulip.com/dist/apps/sso/linux/zulip-"
+"desktop_latest.bin.tar.gz\\\">程序压缩包</a>，为64位系统构建。"
 
-#: templates/zerver/apps.html:90
+#: templates/zerver/apps.html:116
 msgid ""
 "We provide a <a href=\"https://zulip.com/dist/apps/linux/zulip-"
 "desktop_latest.bin.tar.gz\">binary tarball</a> of the Zulip application, "
 "built for 64-bit systems."
-msgstr "我们提供了Zulip的<a href=\\\"https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz\\\">程序压缩包</a>，为64位系统构建。"
+msgstr ""
+"我们提供了Zulip的<a href=\\\"https://zulip.com/dist/apps/linux/zulip-"
+"desktop_latest.bin.tar.gz\\\">程序压缩包</a>，为64位系统构建。"
 
-#: templates/zerver/apps.html:96
+#: templates/zerver/apps.html:122
 msgid ""
 "Windows. It's the best OS for your needs: gaming,\n"
 "        coding, expense reports. But you always felt that something\n"
 "        was missing... until now."
-msgstr "Windows，一直以来是你玩游戏、写代码、做费用报表的最佳OS。但你应该总觉得它还少点什么功能吧……起码到现在。"
+msgstr ""
+"Windows，一直以来是你玩游戏、写代码、做费用报表的最佳OS。但你应该总觉得它还少"
+"点什么功能吧……起码到现在。"
 
-#: templates/zerver/apps.html:100
+#: templates/zerver/apps.html:126
 msgid ""
-"We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after\n"
+"We proudly present <b>Zulip for Windows</b>: the second-best app for Windows "
+"on the market today (after\n"
 "        Solitaire, obviously.)"
-msgstr "现在我们隆重推出在Windows应用市场上排名第二的软件：<b>Windows版Zulip</b>（第一名显然是Solitaire嘛）。"
+msgstr ""
+"现在我们隆重推出在Windows应用市场上排名第二的软件：<b>Windows版Zulip</b>（第"
+"一名显然是Solitaire嘛）。"
 
-#: templates/zerver/apps.html:105 templates/zerver/apps.html.py:107
+#: templates/zerver/apps.html:131 templates/zerver/apps.html.py:133
 msgid "Download Zulip for Windows"
 msgstr "下载Windows版Zulip"
 
-#: templates/zerver/apps.html:115
+#: templates/zerver/apps.html:141
 msgid ""
 "First, connect to our hosted 9P filesystem\n"
 "        at <code>plan9.zulip.com</code> and then... no, we're\n"
 "        totally kidding. There definitely isn't a version of Zulip\n"
 "        for Plan 9."
-msgstr "首先，连到我们的9P文件系统，在<code>plan9.zulip.com</code>，然后……等下，刚才是开个玩笑哦，真的没有Plan 9版的Zulip。"
+msgstr ""
+"首先，连到我们的9P文件系统，在<code>plan9.zulip.com</code>，然后……等下，刚才"
+"是开个玩笑哦，真的没有Plan 9版的Zulip。"
 
 #: templates/zerver/bankruptcy.html:6
 msgid "Welcome back"
@@ -254,18 +320,18 @@ msgstr "嘿！谢谢你对Zulip的关注"
 #: templates/zerver/closed_realm.html:8
 #, python-format
 msgid ""
-"The organization you are trying to join, %(closed_domain_name)s, only allows"
-" users with e-mail addresses within the organization. Please ask for a new "
+"The organization you are trying to join, %(closed_domain_name)s, only allows "
+"users with e-mail addresses within the organization. Please ask for a new "
 "invite to an appropriate e-mail address"
-msgstr "你要加入的社区，%(closed_domain_name)s，仅允许有内部邮箱地址的用户加入。请用一个合适的邮箱地址来获得邀请。"
+msgstr ""
+"你要加入的社区，%(closed_domain_name)s，仅允许有内部邮箱地址的用户加入。请用"
+"一个合适的邮箱地址来获得邀请。"
 
-#: templates/zerver/compose.html:10
-#: templates/zerver/keyboard_shortcuts.html:61
+#: templates/zerver/compose.html:10 templates/zerver/keyboard_shortcuts.html:65
 msgid "New stream message"
 msgstr "写消息"
 
-#: templates/zerver/compose.html:17
-#: templates/zerver/keyboard_shortcuts.html:65
+#: templates/zerver/compose.html:17 templates/zerver/keyboard_shortcuts.html:69
 msgid "New private message"
 msgstr "写私信"
 
@@ -313,18 +379,36 @@ msgstr "发送中"
 msgid "Press Enter to send"
 msgstr "按回车键发送"
 
+#: templates/zerver/create_realm.html:25
+#, fuzzy
+#| msgid "Deactivated organization"
+msgid "Create organization"
+msgstr "关闭的社区"
+
 #: templates/zerver/deactivated.html:4
 msgid "Deactivated organization"
 msgstr "关闭的社区"
 
-#: templates/zerver/deactivated.html:8
-#, python-format
+#: templates/zerver/deactivated.html:9
+#, fuzzy, python-format
+#| msgid ""
+#| " The organization you are trying to join, %(deactivated_domain_name)s, "
+#| "has\n"
+#| "been deactivated. Please\n"
+#| "contact <a href=\"mailto:%(zulip_administrator)s\">"
+#| "%(zulip_administrator)s</a> to reactivate\n"
+#| "this group"
 msgid ""
-" The organization you are trying to join, %(deactivated_domain_name)s, has\n"
-"been deactivated. Please\n"
-"contact <a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a> to reactivate\n"
-"this group"
-msgstr "你要加入的社区，%(deactivated_domain_name)s，已被关闭。请联系管理员 <a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a>开放社区。"
+"\n"
+"  The organization you are trying to join, %(deactivated_domain_name)s, has "
+"been deactivated.\n"
+"  Please contact <a href=\"mailto:%(zulip_administrator)s\">"
+"%(zulip_administrator)s</a> to reactivate\n"
+"  this group.\n"
+"  "
+msgstr ""
+"你要加入的社区，%(deactivated_domain_name)s，已被关闭。请联系管理员 <a href="
+"\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a>开放社区。"
 
 #: templates/zerver/features.html:4
 msgid "Zulip Features"
@@ -366,7 +450,9 @@ msgstr "历史记录"
 msgid ""
 "Join a stream and see its history, so even new team\n"
 "        members are never out of the loop."
-msgstr "订阅一个频道后，可以查看该频道内所有的历史消息；团队的新成员也能很容易融入圈子。"
+msgstr ""
+"订阅一个频道后，可以查看该频道内所有的历史消息；团队的新成员也能很容易融入圈"
+"子。"
 
 #: templates/zerver/features.html:30
 msgid "Full-history search"
@@ -377,7 +463,9 @@ msgid ""
 "Search is both snappy and smart, helping you look for text,\n"
 "        people, and threads of conversation, with advanced search\n"
 "        operators for fine-grained control."
-msgstr "Zulip的搜索功能既快捷又智能，可以帮助你搜索文本、用户以及会话主题；你还可以使用高级的搜索运算符进行精准的查找。"
+msgstr ""
+"Zulip的搜索功能既快捷又智能，可以帮助你搜索文本、用户以及会话主题；你还可以使"
+"用高级的搜索运算符进行精准的查找。"
 
 #: templates/zerver/features.html:37
 msgid "Team presence and buddy list"
@@ -406,7 +494,9 @@ msgid ""
 "Drag a file into the compose box and we'll upload and\n"
 "        preview it for you. Sharing and discussing work with team\n"
 "        mates has never been easier."
-msgstr "拖放一个文件到消息框时，Zulip会自动为你上传，并生成预览；和同事间的交流与分享从未如此简单。"
+msgstr ""
+"拖放一个文件到消息框时，Zulip会自动为你上传，并生成预览；和同事间的交流与分享"
+"从未如此简单。"
 
 #: templates/zerver/features.html:55
 msgid "@-notifications"
@@ -426,7 +516,8 @@ msgstr "频道内公告"
 msgid ""
 "Use <code>@all</code> or <code>@everyone</code> to get the\n"
 "        attention of everyone in a stream."
-msgstr "使用<code>@all</code>或者<code>@everyone</code>可以提醒频道内所有用户注意 。"
+msgstr ""
+"使用<code>@all</code>或者<code>@everyone</code>可以提醒频道内所有用户注意 。"
 
 #: templates/zerver/features.html:67
 msgid "Emails for important missed messages"
@@ -437,7 +528,9 @@ msgid ""
 "If you're missing important conversations when you're away from\n"
 "        Zulip, we'll send you an email summary so you're always in the\n"
 "        loop."
-msgstr "当你没在Zulip上，并且错过了一些重要的对话信息，我们会给你发送一封邮件摘要以便你及时了解情况。"
+msgstr ""
+"当你没在Zulip上，并且错过了一些重要的对话信息，我们会给你发送一封邮件摘要以便"
+"你及时了解情况。"
 
 #: templates/zerver/features.html:74
 msgid "Desktop notifications"
@@ -473,7 +566,9 @@ msgstr "表情"
 msgid ""
 "Sometimes it's the simple things in life, like being able\n"
 "        to give a <tt>:thumbsup:</tt> while chatting."
-msgstr "Zulip的表情功能就像日常生活中的一个简单举动，比如在聊天时给对方给对方竖一个大拇指 <tt>:thumbsup:</tt> "
+msgstr ""
+"Zulip的表情功能就像日常生活中的一个简单举动，比如在聊天时给对方给对方竖一个大"
+"拇指 <tt>:thumbsup:</tt> "
 
 #: templates/zerver/features.html:96
 msgid "Code"
@@ -521,50 +616,80 @@ msgstr "星标消息"
 msgid ""
 "Keep a todo list or keep track of interesting\n"
 "        conversations."
-msgstr "使用星标消息，你可以维护一个待办事项列表，也可以对感兴趣的对话进行持续关注。"
+msgstr ""
+"使用星标消息，你可以维护一个待办事项列表，也可以对感兴趣的对话进行持续关注。"
 
 #: templates/zerver/features.html:125 templates/zerver/navbar.html:80
 msgid "Integrations"
 msgstr "应用整合"
 
 #: templates/zerver/features.html:126
+#, fuzzy, python-format
+#| msgid ""
+#| "Get alerts and updates from your favorite services with\n"
+#| "        off-the-shelf <a href=\"/integrations\">integrations</a> for\n"
+#| "        Trac, Nagios, Github, Jenkins, and more."
 msgid ""
 "Get alerts and updates from your favorite services with\n"
-"        off-the-shelf <a href=\"/integrations\">integrations</a> for\n"
+"        off-the-shelf <a href=\"%(server_uri)s/integrations\">integrations</"
+"a> for\n"
 "        Trac, Nagios, Github, Jenkins, and more."
-msgstr "从已<a href=\"/integrations\">整合</a>好的应用接收通知和更新，包括常用的Trac、Nagios、Github、 Jenkins等服务。"
+msgstr ""
+"从已<a href=\"/integrations\">整合</a>好的应用接收通知和更新，包括常用的"
+"Trac、Nagios、Github、 Jenkins等服务。"
 
 #: templates/zerver/features.html:132
 msgid "API"
 msgstr " 程序接口（API）"
 
 #: templates/zerver/features.html:133
+#, fuzzy, python-format
+#| msgid ""
+#| "Want to roll your own notifications? We've got a\n"
+#| "        dead-simple RESTful <a href=\"/api\">API and Python bindings</a>\n"
+#| "        that will make integrations&mdash;both sending and\n"
+#| "        receiving&mdash;a snap!"
 msgid ""
 "Want to roll your own notifications? We've got a\n"
-"        dead-simple RESTful <a href=\"/api\">API and Python bindings</a>\n"
+"        dead-simple RESTful <a href=\"%(server_uri)s/api\">API and Python "
+"bindings</a>\n"
 "        that will make integrations&mdash;both sending and\n"
 "        receiving&mdash;a snap!"
-msgstr "想动手打造自己的通知功能吗？Zulip提供了一套非常简单的遵循RESTful原则的<a href=\"/api\">API和Python整合实例</a>，可用来整合应用，其中包括了发送和接收消息！"
+msgstr ""
+"想动手打造自己的通知功能吗？Zulip提供了一套非常简单的遵循RESTful原则的<a "
+"href=\"/api\">API和Python整合实例</a>，可用来整合应用，其中包括了发送和接收消"
+"息！"
 
 #: templates/zerver/features.html:140
 msgid "Mobile apps"
 msgstr "移动应用"
 
 #: templates/zerver/features.html:141
+#, fuzzy, python-format
+#| msgid ""
+#| "Check Zulip on the go with native <a href=\"/apps\">iOS and\n"
+#| "        Android apps</a>"
 msgid ""
-"Check Zulip on the go with native <a href=\"/apps\">iOS and\n"
+"Check Zulip on the go with native <a href=\"%(server_uri)s/apps\">iOS and\n"
 "        Android apps</a>"
-msgstr "试试在不断改进的<a href=\\\"/apps\\\">iOS和Android平台</a>上的原生Zulip应用。"
+msgstr ""
+"试试在不断改进的<a href=\\\"/apps\\\">iOS和Android平台</a>上的原生Zulip应用。"
 
 #: templates/zerver/features.html:146
 msgid "Desktop apps"
 msgstr "桌面应用"
 
 #: templates/zerver/features.html:147
+#, fuzzy, python-format
+#| msgid ""
+#| "Prefer Zulip in its own window and rich, OS-level notifications?\n"
+#| "          Enjoy <a href=\"/apps\">Zulip on your desktop</a>"
 msgid ""
 "Prefer Zulip in its own window and rich, OS-level notifications?\n"
-"          Enjoy <a href=\"/apps\">Zulip on your desktop</a>"
-msgstr "如果你更喜欢独立的Zulip窗口和更丰富的、OS级别的通知功能，可以试试<a href=\\\"/apps\\\">桌面版Zulip</a>"
+"          Enjoy <a href=\"%(server_uri)s/apps\">Zulip on your desktop</a>"
+msgstr ""
+"如果你更喜欢独立的Zulip窗口和更丰富的、OS级别的通知功能，可以试试<a href=\\"
+"\"/apps\\\">桌面版Zulip</a>"
 
 #: templates/zerver/hello.html:10 templates/zerver/login.html:16
 msgid "Zulip has been released as open source software!"
@@ -573,10 +698,14 @@ msgstr "Zulip已经发布为开源软件了！"
 #: templates/zerver/hello.html:13
 msgid ""
 "Read the <a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-"
-"zulip-a-dropbox-hack-week-project\" target=\"_blank\">announcement</a> or go"
-" to <a href=\"https://www.zulip.org\" target=\"_blank\">the Zulip open "
-"source project website</a>."
-msgstr "阅读Zulip的<a href=\\\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project\\\" target=\\\"_blank\\\">开源声明</a> 或者点击<a href=\\\"https://www.zulip.org\\\" target=\\\"_blank\\\">Zulip开源项目站点</a>。"
+"zulip-a-dropbox-hack-week-project\" target=\"_blank\">announcement</a> or go "
+"to <a href=\"https://www.zulip.org\" target=\"_blank\">the Zulip open source "
+"project website</a>."
+msgstr ""
+"阅读Zulip的<a href=\\\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-"
+"zulip-a-dropbox-hack-week-project\\\" target=\\\"_blank\\\">开源声明</a> 或者"
+"点击<a href=\\\"https://www.zulip.org\\\" target=\\\"_blank\\\">Zulip开源项目"
+"站点</a>。"
 
 #: templates/zerver/hello.html:26
 msgid "Finally, workplace chat that actually improves your productivity.*"
@@ -595,8 +724,8 @@ msgid "Register now!"
 msgstr "立即注册！"
 
 #: templates/zerver/hello.html:44
-msgid "Conversations, not messages"
-msgstr "关注会话，而不仅是消息"
+msgid "Make sense of your messages."
+msgstr ""
 
 #: templates/zerver/hello.html:47
 msgid ""
@@ -604,91 +733,135 @@ msgid ""
 "      easy to keep conversations straight. Are other users discussing\n"
 "      a software bug and the content of your website at the same time?\n"
 "      No problem."
-msgstr "Zulip的每个会话都有一个<em>话题</em>, 这便于让交流围绕话题展开。大家是不是要同时讨论软件缺陷和网站内容呢？用Zulip，就不会有任何问题。"
+msgstr ""
+"Zulip的每个会话都有一个<em>话题</em>, 这便于让交流围绕话题展开。大家是不是要"
+"同时讨论软件缺陷和网站内容呢？用Zulip，就不会有任何问题。"
 
-#: templates/zerver/hello.html:52
-msgid ""
-"You wouldn’t tolerate email without subject lines or threading, so why do "
-"you for chat?"
-msgstr "我们都不愿意在写邮件和发帖时不写主题，那为什么愿意在聊天时没有话题呢？"
+#: templates/zerver/hello.html:64
+msgid "Never miss the conversations you care about."
+msgstr ""
 
-#: templates/zerver/hello.html:65
-msgid "Easily read just the important things"
-msgstr "轻松查看最重要的事情"
-
-#: templates/zerver/hello.html:68
+#: templates/zerver/hello.html:67
 msgid ""
 "Sometimes, important things get discussed when you&rsquo;re not\n"
 "      around. Unfortunately, so do a lot of unimportant things."
-msgstr "有时候你不在，但大家讨论了许多重要的事情；当然也会有很多不太重要的事情。"
+msgstr ""
+"有时候你不在，但大家讨论了许多重要的事情；当然也会有很多不太重要的事情。"
 
-#: templates/zerver/hello.html:71
+#: templates/zerver/hello.html:70
+#, fuzzy
+#| msgid ""
+#| "<em>Narrowing</em> by stream or topic lets you focus on that important\n"
+#| "      customer project without having to read about how Jim&rsquo;s "
+#| "guitar lessons\n"
+#| "      are going."
 msgid ""
-"<em>Narrowing</em> by stream or topic lets you focus on that important\n"
-"      customer project without having to read about how Jim&rsquo;s guitar lessons\n"
-"      are going."
-msgstr "使用主题或者话题<em>筛选</em>，你可以把注意力放在那些重要的事情上，比如客户项目；而不用去看那些无关紧要的事，比如Jim的吉他课程进展。"
+"Zulip makes it easy to review the conversations\n"
+"        you missed, so you can focus on that important project\n"
+"        without having to catch up on how Jim&rsquo;s guitar\n"
+"        lessons are going."
+msgstr ""
+"使用主题或者话题<em>筛选</em>，你可以把注意力放在那些重要的事情上，比如客户项"
+"目；而不用去看那些无关紧要的事，比如Jim的吉他课程进展。"
 
 #: templates/zerver/hello.html:86
-msgid "Search that's better than Gmail's"
-msgstr "比Gmail还好用的搜索功能"
+msgid "Fast and powerful search"
+msgstr ""
 
 #: templates/zerver/hello.html:89
+#, fuzzy
+#| msgid ""
+#| "An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;"
+#| "s\n"
+#| "      powerful and fast search will delight you with how quickly you can "
+#| "find\n"
+#| "      exactly what you&rsquo;re looking for."
 msgid ""
 "An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s\n"
-"      powerful and fast search will delight you with how quickly you can find\n"
+"      Gmail-style search will delight you with how quickly you can find\n"
 "      exactly what you&rsquo;re looking for."
-msgstr "聊天系统里面保存了大量有用的信息；Zulip强大快速的搜索功能在查找速度和精度方面肯定会让你满意。"
+msgstr ""
+"聊天系统里面保存了大量有用的信息；Zulip强大快速的搜索功能在查找速度和精度方面"
+"肯定会让你满意。"
 
 #: templates/zerver/hello.html:104
-msgid "Integrations that don't intrude"
+#, fuzzy
+#| msgid "Integrations that don't intrude"
+msgid "Integrations that don't intrude."
 msgstr "不会烦扰你的应用整合"
 
 #: templates/zerver/hello.html:107
+#, fuzzy
+#| msgid ""
+#| "Zulip has <a href=\"/integrations\">many integrations</a> and\n"
+#| "      a powerful <a href=\"/api\">API</a> to match. But here&rsquo;s\n"
+#| "      where it gets interesting: thanks to how Zulip categorizes "
+#| "messages,\n"
+#| "      automated messages never overwhelm you. As with any topic in "
+#| "Zulip,\n"
+#| "      they&rsquo;re easy to focus on, skim, defer to later, or "
+#| "ignore&mdash;as appropriate."
 msgid ""
-"Zulip has <a href=\"/integrations\">many integrations</a> and\n"
-"      a powerful <a href=\"/api\">API</a> to match. But here&rsquo;s\n"
-"      where it gets interesting: thanks to how Zulip categorizes messages,\n"
-"      automated messages never overwhelm you. As with any topic in Zulip,\n"
-"      they&rsquo;re easy to focus on, skim, defer to later, or ignore&mdash;as appropriate."
-msgstr "Zulip有众多的<a href=\"/integrations\">应用整合案例</a>和强大的<a href=\"/api\">API</a>可供参考。在Zulip中整合应用会更有意思：借助Zulip归类消息的能力，应用自动产生的消息绝对不会惊扰到你。只要在Zulip中使用合适的话题，你就可以很容易地关注、跳过、推迟、或是忽略这些消息。"
+"Zulip has <a href=\"/integrations\">many\n"
+"      integrations</a> and a powerful <a href=\"/api\">API</a> to\n"
+"      match. But here&rsquo;s where it gets interesting: thanks to how\n"
+"      Zulip categorizes messages, automated messages never overwhelm\n"
+"      you. As with any topic in Zulip, they&rsquo;re easy to focus on,\n"
+"      skim, defer to later, or ignore&mdash;as appropriate."
+msgstr ""
+"Zulip有众多的<a href=\"/integrations\">应用整合案例</a>和强大的<a href=\"/api"
+"\">API</a>可供参考。在Zulip中整合应用会更有意思：借助Zulip归类消息的能力，应"
+"用自动产生的消息绝对不会惊扰到你。只要在Zulip中使用合适的话题，你就可以很容易"
+"地关注、跳过、推迟、或是忽略这些消息。"
 
-#: templates/zerver/hello.html:124
-msgid "As technical as you want to be"
+#: templates/zerver/hello.html:125
+#, fuzzy
+#| msgid "As technical as you want to be"
+msgid "As technical as you want to be."
 msgstr "成为你心目中的技术范"
 
-#: templates/zerver/hello.html:127
+#: templates/zerver/hello.html:128
 msgid "Keyboard shortcuts? Check."
 msgstr "支不支持快捷键？支持。"
 
-#: templates/zerver/hello.html:128
+#: templates/zerver/hello.html:129
 msgid "Syntax highlighting? Check."
 msgstr "支不支持语法高亮？支持。"
 
-#: templates/zerver/hello.html:129
+#: templates/zerver/hello.html:130
 msgid "Discuss code and technical topics with ease."
 msgstr "轻松讨论程序代码和各种技术话题，"
 
-#: templates/zerver/hello.html:142
-msgid "and all the obvious stuff, too."
-msgstr "以及各种必需的功能"
+#: templates/zerver/hello.html:143
+msgid "Everything else you need to be productive."
+msgstr ""
 
-#: templates/zerver/hello.html:145
+#: templates/zerver/hello.html:146
+#, fuzzy
+#| msgid ""
+#| "Drag-and-drop file uploads, image pasting, group private messages,\n"
+#| "         audible notifications, missed-message emails, desktop apps, and\n"
+#| "        <a href=\"/features\">everything else you might want</a>. "
+#| "Including emoji, naturally."
 msgid ""
-"Drag-and-drop file uploads, image pasting, group private messages,\n"
-"         audible notifications, missed-message emails, desktop apps, and\n"
-"        <a href=\"/features\">everything else you might want</a>. Including emoji, naturally."
-msgstr "文件拖放上传、图片粘贴、群组私信功能、来信声音提示、离线消息邮件、桌面应用，还有等等各种<a href=\"/features\">功能特性</a>；当然，也包括表情功能哦"
+"Drag-and-drop file uploads, image pasting, group\n"
+"        private messages, audible notifications, missed-message\n"
+"        emails, desktop apps, and <a href=\"/features\">everything else\n"
+"        you might want</a>. Including emoji, naturally. And it's all\n"
+"        open source under the Apache license!"
+msgstr ""
+"文件拖放上传、图片粘贴、群组私信功能、来信声音提示、离线消息邮件、桌面应用，"
+"还有等等各种<a href=\"/features\">功能特性</a>；当然，也包括表情功能哦"
 
-#: templates/zerver/hello.html:160
+#: templates/zerver/hello.html:163
 msgid "On the platform of your choice."
 msgstr "支持你选择的各种平台"
 
-#: templates/zerver/hello.html:196
+#: templates/zerver/hello.html:199
 msgid "Log in now"
 msgstr "现在登录"
 
-#: templates/zerver/hello.html:198
+#: templates/zerver/hello.html:201
 msgid "Register now"
 msgstr "立即注册"
 
@@ -746,19 +919,31 @@ msgid "You have no private messages with these people yet!"
 msgstr "你还没有和他们的私信哦！"
 
 #: templates/zerver/home.html:40
+#, fuzzy
+#| msgid "You have no private messages with this person yet!"
+msgid "You haven't received any messages sent by this user yet!"
+msgstr "你还没有和TA的私信哦！"
+
+#: templates/zerver/home.html:43
+#, fuzzy
+#| msgid "Token does not exist"
+msgid "This user does not exist!"
+msgstr "Token不存在"
+
+#: templates/zerver/home.html:46
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
 msgstr "你没有订阅这个频道，也还没有人讨论过这个！"
 
-#: templates/zerver/home.html:48
+#: templates/zerver/home.html:54
 msgid "You haven't starred anything yet!"
 msgstr "你还没有星标消息哦！"
 
-#: templates/zerver/home.html:51
+#: templates/zerver/home.html:57
 msgid "You haven't been mentioned yet"
 msgstr "你还没有被@提醒"
 
-#: templates/zerver/home.html:54
+#: templates/zerver/home.html:60
 msgid "Nobody has talked about that yet!"
 msgstr "还没人讨论过这个哦！"
 
@@ -786,11 +971,11 @@ msgstr "你是这里的第一个人哦！"
 msgid "Let's invite some folks for you to chat with"
 msgstr "邀请几个伙伴来聊聊吧"
 
-#: templates/zerver/initial_invite_page.html:27
+#: templates/zerver/initial_invite_page.html:30
 msgid "We'll email invitations to them"
 msgstr "我们会给大家发送邀请邮件"
 
-#: templates/zerver/initial_invite_page.html:30
+#: templates/zerver/initial_invite_page.html:33
 msgid "Next"
 msgstr "下一步"
 
@@ -806,16 +991,16 @@ msgstr "邮箱地址（每行一个或者用逗号分隔）"
 msgid "One or more email addresses..."
 msgstr "一个或多个邮箱地址..."
 
-#: templates/zerver/invite_user.html:21
+#: templates/zerver/invite_user.html:24
 msgid "Streams they should join"
 msgstr "指定要订阅的频道"
 
-#: templates/zerver/invite_user.html:26
+#: templates/zerver/invite_user.html:29
 #: templates/zerver/stream_creation_prompt.html:37
 msgid "Cancel"
 msgstr "取消"
 
-#: templates/zerver/invite_user.html:27
+#: templates/zerver/invite_user.html:30
 msgid "Invite"
 msgstr "邀请"
 
@@ -832,91 +1017,98 @@ msgid "Initiate a search"
 msgstr "发起搜索"
 
 #: templates/zerver/keyboard_shortcuts.html:21
-#: templates/zerver/right-sidebar.html:35
+#: templates/zerver/right-sidebar.html:38
 msgid "Search people"
 msgstr "搜索用户"
 
 #: templates/zerver/keyboard_shortcuts.html:25
+#: templates/zerver/left-sidebar.html:26
+#, fuzzy
+#| msgid "Search for"
+msgid "Search streams"
+msgstr "搜索包含关键字"
+
+#: templates/zerver/keyboard_shortcuts.html:29
 msgid "Previous message"
 msgstr "上一条消息"
 
-#: templates/zerver/keyboard_shortcuts.html:29
+#: templates/zerver/keyboard_shortcuts.html:33
 msgid "Next message"
 msgstr "下一条消息"
 
-#: templates/zerver/keyboard_shortcuts.html:33
+#: templates/zerver/keyboard_shortcuts.html:37
 msgid "Scroll up"
 msgstr "向上滚动"
 
-#: templates/zerver/keyboard_shortcuts.html:37
+#: templates/zerver/keyboard_shortcuts.html:41
 msgid "Scroll down"
 msgstr "向下滚动"
 
-#: templates/zerver/keyboard_shortcuts.html:41
+#: templates/zerver/keyboard_shortcuts.html:45
 msgid "Last message"
 msgstr "最新消息"
 
-#: templates/zerver/keyboard_shortcuts.html:48
+#: templates/zerver/keyboard_shortcuts.html:52
 msgid "Composing messages"
 msgstr "写消息"
 
-#: templates/zerver/keyboard_shortcuts.html:53
+#: templates/zerver/keyboard_shortcuts.html:57
 msgid "Reply to message"
 msgstr "回复消息"
 
-#: templates/zerver/keyboard_shortcuts.html:57
+#: templates/zerver/keyboard_shortcuts.html:61
 msgid "Reply to author"
 msgstr "回复私信"
 
-#: templates/zerver/keyboard_shortcuts.html:69
+#: templates/zerver/keyboard_shortcuts.html:73
 msgid "Send message"
 msgstr "发送消息"
 
-#: templates/zerver/keyboard_shortcuts.html:73
+#: templates/zerver/keyboard_shortcuts.html:77
 msgid "Cancel compose"
 msgstr "取消编辑"
 
-#: templates/zerver/keyboard_shortcuts.html:82
+#: templates/zerver/keyboard_shortcuts.html:86
 msgid "Narrowing"
 msgstr "筛选"
 
-#: templates/zerver/keyboard_shortcuts.html:87
+#: templates/zerver/keyboard_shortcuts.html:91
 msgid "Narrow by stream"
 msgstr "按频道筛选"
 
-#: templates/zerver/keyboard_shortcuts.html:91
+#: templates/zerver/keyboard_shortcuts.html:95
 msgid "Narrow by topic"
 msgstr "按话题筛选"
 
-#: templates/zerver/keyboard_shortcuts.html:95
+#: templates/zerver/keyboard_shortcuts.html:99
 msgid "Narrow to all private messages"
 msgstr "筛选所有的私信"
 
-#: templates/zerver/keyboard_shortcuts.html:99
+#: templates/zerver/keyboard_shortcuts.html:103
 msgid "Cycle between stream narrows"
 msgstr "在频道之间切换"
 
-#: templates/zerver/keyboard_shortcuts.html:103
+#: templates/zerver/keyboard_shortcuts.html:107
 msgid "Return to home view"
 msgstr "返回主页"
 
-#: templates/zerver/keyboard_shortcuts.html:110
+#: templates/zerver/keyboard_shortcuts.html:114
 msgid "Menus"
 msgstr "菜单"
 
-#: templates/zerver/keyboard_shortcuts.html:115
+#: templates/zerver/keyboard_shortcuts.html:119
 msgid "Open message actions menu"
 msgstr "弹出消息操作菜单"
 
-#: templates/zerver/keyboard_shortcuts.html:119
+#: templates/zerver/keyboard_shortcuts.html:123
 msgid "Edit a message you sent"
 msgstr "编辑你发送的消息"
 
-#: templates/zerver/keyboard_shortcuts.html:123
+#: templates/zerver/keyboard_shortcuts.html:127
 msgid "Show these keyboard shortcuts"
 msgstr "显示快捷键帮助"
 
-#: templates/zerver/keyboard_shortcuts.html:129
+#: templates/zerver/keyboard_shortcuts.html:133
 #: templates/zerver/markdown_help.html:98
 #: templates/zerver/search_operators.html:79
 msgid "Close"
@@ -938,41 +1130,45 @@ msgstr "@我的"
 msgid "STREAMS"
 msgstr "频道"
 
-#: templates/zerver/left-sidebar.html:19
+#: templates/zerver/left-sidebar.html:20
 msgid "All streams"
 msgstr "所有频道"
 
-#: templates/zerver/left-sidebar.html:30
+#: templates/zerver/left-sidebar.html:32
 msgid "SHARE THE LOVE"
 msgstr "分享Zulip"
 
-#: templates/zerver/left-sidebar.html:34
+#: templates/zerver/left-sidebar.html:36
 msgid "Thanks!"
 msgstr "多谢！"
 
-#: templates/zerver/left-sidebar.html:34
+#: templates/zerver/left-sidebar.html:36
 msgid "A hand-crafted, artisanal invite is on the way"
 msgstr "现在正在开发一种手工制作的艺术邀请函"
 
-#: templates/zerver/left-sidebar.html:38
+#: templates/zerver/left-sidebar.html:40
 msgid ""
 "Know someone who would love Zulip for their company or group? Invite 'em!"
 msgstr "还知道哪些团队或者公司想要使用Zulip吗？邀请一下他们吧！"
 
-#: templates/zerver/left-sidebar.html:43
+#: templates/zerver/left-sidebar.html:45
 msgid ""
 "We'll have more invites for you soon, but\n"
 "                              for now, enjoy this <a target=\"_blank\"\n"
-"                                                     href=\"http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">song\n"
+"                                                     href=\"http://www."
+"youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">song\n"
 "                                that expresses how we feel when you're\n"
 "                                logged out</a>."
-msgstr "很快我们还会给你发送邀请哦，不过现在可以听听<a target=\"_blank\" href=\"http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">这首歌</a>，它表达了\n此时我们的心情。"
+msgstr ""
+"很快我们还会给你发送邀请哦，不过现在可以听听<a target=\"_blank\" href="
+"\"http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">这首歌</a>，它表达了\n"
+"此时我们的心情。"
 
-#: templates/zerver/left-sidebar.html:59
+#: templates/zerver/left-sidebar.html:61
 msgid "invite"
 msgstr "邀请"
 
-#: templates/zerver/left-sidebar.html:59
+#: templates/zerver/left-sidebar.html:61
 msgid "remaining"
 msgstr "其它的"
 
@@ -1016,30 +1212,36 @@ msgstr "当前你的域名在Zulip中不可用"
 msgid "You've already registered with this email address. Please log in below"
 msgstr "你已经用这个邮箱注册了，请在下面登录"
 
-#: templates/zerver/login.html:100 templates/zerver/register.html:51
-#: templates/zerver/reset_confirm.html:18
+#: templates/zerver/login.html:107 templates/zerver/register.html:69
+#: templates/zerver/reset_confirm.html:27
 msgid "Password"
 msgstr "密码"
 
-#: templates/zerver/login.html:111
+#: templates/zerver/login.html:118
 msgid "Forgot password?"
 msgstr "忘记密码？"
 
-#: templates/zerver/login.html:124
+#: templates/zerver/login.html:131
 msgid "or Choose a user"
 msgstr "或者换一个用户"
 
-#: templates/zerver/login.html:127
+#: templates/zerver/login.html:134
 msgid "Administrators"
 msgstr "管理员"
 
-#: templates/zerver/login.html:131
+#: templates/zerver/login.html:138
 msgid "Normal users"
 msgstr "普通用户"
 
-#: templates/zerver/login.html:142
+#: templates/zerver/login.html:149
 msgid "Sign in with Google"
 msgstr "用Google帐户登录"
+
+#: templates/zerver/login.html:156
+#, fuzzy
+#| msgid "Sign in with SSO"
+msgid "Sign in with GitHub"
+msgstr "一键式登录"
 
 #: templates/zerver/markdown_help.html:5 templates/zerver/navbar.html:64
 msgid "Message formatting"
@@ -1060,11 +1262,17 @@ msgstr "也可以每行缩进四个空格来形成一个代码块"
 #: templates/zerver/markdown_help.html:87
 msgid ""
 "You can also make <a target=\"_blank\"\n"
-"          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tables</a>\n"
+"          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-"
+"Cheatsheet#wiki-tables\">tables</a>\n"
 "          with this <a target=\"_blank\"\n"
-"          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
+"          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-"
+"Cheatsheet#wiki-tables\">Markdown-ish\n"
 "          table syntax</a>"
-msgstr "还可以使用<a target=\\\"_blank\\\" href=\\\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\\\">标记语法</a>来形成<a target=\\\"_blank\\\" href=\\\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\\\">表格</a>"
+msgstr ""
+"还可以使用<a target=\\\"_blank\\\" href=\\\"https://github.com/adam-p/"
+"markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\\\">标记语法</a>来形成<a "
+"target=\\\"_blank\\\" href=\\\"https://github.com/adam-p/markdown-here/wiki/"
+"Markdown-Cheatsheet#wiki-tables\\\">表格</a>"
 
 #: templates/zerver/navbar.html:19
 msgid "Search"
@@ -1134,6 +1342,31 @@ msgstr "关于Zulip"
 msgid "Legal"
 msgstr "法律信息"
 
+#: templates/zerver/portico.html:73
+#, fuzzy
+#| msgid "Deactivated organization"
+msgid "Create new organization"
+msgstr "关闭的社区"
+
+#: templates/zerver/realm_creation_failed.html:3
+msgid "got a bit lost there."
+msgstr ""
+
+#: templates/zerver/realm_creation_failed.html:10
+msgid ""
+"This server does not allow members of the public to create new organizations."
+msgstr ""
+
+#: templates/zerver/realm_creation_failed.html:11
+msgid ""
+"Zulip is open source, so you can install your own Zulip server by following "
+"the instructions on <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
+msgstr ""
+
+#: templates/zerver/register.html:19
+msgid "You're almost there. We just need you to do one last thing"
+msgstr "快了，你只需要完成最后一件事"
+
 #: templates/zerver/register.html:20
 msgid "Tell us a bit about yourself"
 msgstr "填一下你的信息吧"
@@ -1142,24 +1375,36 @@ msgstr "填一下你的信息吧"
 msgid "Full name"
 msgstr "名字"
 
-#: templates/zerver/register.html:57
+#: templates/zerver/register.html:52
+msgid "Organization name"
+msgstr ""
+
+#: templates/zerver/register.html:55
+msgid "E.g. Acme"
+msgstr ""
+
+#: templates/zerver/register.html:62
+msgid "You can change this later on the admin page."
+msgstr ""
+
+#: templates/zerver/register.html:75
 msgid ""
 "This is used for mobile applications and other tools that require a password"
 msgstr "这是给那些要求输入密码的移动应用和其它工具用的"
 
-#: templates/zerver/register.html:67 templates/zerver/reset_confirm.html:31
+#: templates/zerver/register.html:85 templates/zerver/reset_confirm.html:40
 msgid "Password strength"
 msgstr "密码强度"
 
-#: templates/zerver/reset.html:5 templates/zerver/reset_confirm.html:11
+#: templates/zerver/reset.html:5 templates/zerver/reset_confirm.html:13
 msgid "Reset your password"
 msgstr "重置密码"
 
-#: templates/zerver/reset_confirm.html:39
+#: templates/zerver/reset_confirm.html:48
 msgid "Confirm password"
 msgstr "确认密码"
 
-#: templates/zerver/reset_confirm.html:63
+#: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used"
 msgstr "对不起，你提供的链接不正确，或者已经被使用"
 
@@ -1187,61 +1432,72 @@ msgstr "请查收一下你的邮件以完成这一过程"
 msgid "Or don't, but then why did you fill out this form?"
 msgstr "要不，那为什么你要填这个表呢？"
 
-#: templates/zerver/right-sidebar.html:3 templates/zerver/right-sidebar.html:7
+#: templates/zerver/right-sidebar.html:4 templates/zerver/right-sidebar.html:8
 msgid "Unable to connect to"
 msgstr "无法连接到"
 
-#: templates/zerver/right-sidebar.html:3
+#: templates/zerver/right-sidebar.html:4
 msgid "Updates may be delayed"
 msgstr "更新将推迟"
 
-#: templates/zerver/right-sidebar.html:4 templates/zerver/right-sidebar.html:8
+#: templates/zerver/right-sidebar.html:5 templates/zerver/right-sidebar.html:9
 msgid "Retrying soon"
 msgstr "稍后尝试连接"
 
-#: templates/zerver/right-sidebar.html:4
+#: templates/zerver/right-sidebar.html:5
 msgid "Try now"
 msgstr "立即连接"
 
-#: templates/zerver/right-sidebar.html:7
+#: templates/zerver/right-sidebar.html:8
 msgid "Could not fetch messages"
 msgstr "不能获取消息"
 
-#: templates/zerver/right-sidebar.html:11
+#: templates/zerver/right-sidebar.html:12
 msgid "Your Zephyr mirror is not working"
 msgstr "你的Zephyr镜像工作异常"
 
-#: templates/zerver/right-sidebar.html:12
+#: templates/zerver/right-sidebar.html:13
 #, python-format
 msgid ""
 "We\n"
 "                  recommend that you <a class=\"webathena_login\">give\n"
-"                  %(product_name)s the ability to mirror the messages for you via\n"
+"                  %(product_name)s the ability to mirror the messages for "
+"you via\n"
 "                  WebAthena</a>.  If you'd prefer, you can instead\n"
-"                  <a href=\"/zephyr-mirror\" target=\"_blank\">run the Zephyr mirror script yourself</a>\n"
+"                  <a href=\"/zephyr-mirror\" target=\"_blank\">run the "
+"Zephyr mirror script yourself</a>\n"
 "                  in a screen session"
-msgstr "我们\n推荐你最好<a class=\"webathena_login\">能让\n%(product_name)s用WebAthena为你镜像\n消息</a>。如果愿意的话，你还可以\n在一个screen会话中\n<a href=\"/zephyr-mirror\" target=\"_blank\">自己运行Zephyr镜像脚本</a>"
+msgstr ""
+"我们\n"
+"推荐你最好<a class=\"webathena_login\">能让\n"
+"%(product_name)s用WebAthena为你镜像\n"
+"消息</a>。如果愿意的话，你还可以\n"
+"在一个screen会话中\n"
+"<a href=\"/zephyr-mirror\" target=\"_blank\">自己运行Zephyr镜像脚本</a>"
 
-#: templates/zerver/right-sidebar.html:18
+#: templates/zerver/right-sidebar.html:19
 msgid ""
 "To fix\n"
 "                  this, you'll need\n"
-"                  to use <a href=\"https://zephyr.zulip.com\">the web interface</a>"
-msgstr "要解决这个问题，\n你会要用到<a href=\"https://zephyr.zulip.com\">这个Web接口</a>"
+"                  to use <a href=\"https://zephyr.zulip.com\">the web "
+"interface</a>"
+msgstr ""
+"要解决这个问题，\n"
+"你会要用到<a href=\"https://zephyr.zulip.com\">这个Web接口</a>"
 
-#: templates/zerver/right-sidebar.html:27
+#: templates/zerver/right-sidebar.html:30
 msgid "Send feedback"
 msgstr "发送反馈"
 
-#: templates/zerver/right-sidebar.html:33
+#: templates/zerver/right-sidebar.html:36
 msgid "USERS"
 msgstr "用户"
 
-#: templates/zerver/right-sidebar.html:38
+#: templates/zerver/right-sidebar.html:41
 msgid "Invite more users"
 msgstr "邀请更多用户"
 
-#: templates/zerver/right-sidebar.html:43
+#: templates/zerver/right-sidebar.html:46
 msgid "GROUP PMs"
 msgstr "私信群组"
 
@@ -1314,8 +1570,7 @@ msgid "Exclude messages with topic"
 msgstr "排除指定话题的消息"
 
 #: templates/zerver/search_operators.html:68
-msgid ""
-"You can use any combination of these search operators in a single query"
+msgid "You can use any combination of these search operators in a single query"
 msgstr "搜索时你可以任意组合这些操作符"
 
 #: templates/zerver/search_operators.html:68
@@ -1376,7 +1631,9 @@ msgstr "欢迎来到%(product_name)s"
 msgid ""
 "Streams, topics, and narrowing make %(product_name)s conversations\n"
 "    efficient and productive."
-msgstr "频道、话题以及消息筛选特性使%(product_name)s的沟通效率\n更高且更富有成效。"
+msgstr ""
+"频道、话题以及消息筛选特性使%(product_name)s的沟通效率\n"
+"更高且更富有成效。"
 
 #: templates/zerver/tutorial_finale.html:10
 msgid "That's all there is to it, so let's get started!"
@@ -1392,19 +1649,28 @@ msgstr "未知的邮件退订请求"
 
 #: templates/zerver/unsubscribe_link_error.html:7
 msgid ""
-"Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
+"Hi there! It looks like you tried to unsubscribe from something, but we "
+"don't\n"
 "recognize the URL."
 msgstr "你好！看起来你要退订某些东西，但是我们不认识这个URL地址。"
 
 #: templates/zerver/unsubscribe_link_error.html:10
 #, python-format
 msgid ""
-"Please double-check that you have the full URL and try again, or <a "
-"href=\"mailto:%(zulip_admin)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
-"%%20e-"
-"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
-" us</a> and we'll get this squared away!"
-msgstr "请双击你的URL地址重试一次，或者<a href=\"mailto:%(zulip_admin)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">邮件我们</a>，我们会帮你搞定！"
+"Please double-check that you have the full URL and try again, or <a href="
+"\"mailto:%(zulip_admin)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi"
+"%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a"
+"%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error"
+"%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A"
+"%%0AThanks%%2C%%0A_____________%%0A\">email us</a> and we'll get this "
+"squared away!"
+msgstr ""
+"请双击你的URL地址重试一次，或者<a href=\"mailto:%(zulip_admin)s?"
+"Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI"
+"%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C"
+"%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A"
+"%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C"
+"%%0A_____________%%0A\">邮件我们</a>，我们会帮你搞定！"
 
 #: templates/zerver/unsubscribe_success.html:5
 msgid "Email settings updated"
@@ -1415,238 +1681,252 @@ msgstr "邮件设置已更新"
 msgid ""
 "We've updated your email subscription settings, and you won't get "
 "%(subscription_type)s emails anymore."
-msgstr "我们已经更新了你的邮件订阅设置，你将不会再收到%(subscription_type)s订阅邮件。"
+msgstr ""
+"我们已经更新了你的邮件订阅设置，你将不会再收到%(subscription_type)s订阅邮件。"
 
 #: templates/zerver/unsubscribe_success.html:9
-#, python-format
+#, fuzzy, python-format
+#| msgid ""
+#| "To undo this change or review your other subscription settings, please "
+#| "visit your <a href=\"https://%(external_host)s/#settings\">Zulip Settings "
+#| "page</a>"
 msgid ""
-"To undo this change or review your other subscription settings, please visit"
-" your <a href=\"https://%(external_host)s/#settings\">Zulip Settings "
-"page</a>"
-msgstr "如要撤销操作或者查看你的其它订阅设置，请访问<a href=\"https://%(external_host)s/#settings\">Zulip设置页面</a>"
+"To undo this change or review your other subscription settings, please visit "
+"your <a href=\"%(realm_uri)s/#settings\">Zulip Settings page</a>"
+msgstr ""
+"如要撤销操作或者查看你的其它订阅设置，请访问<a href=\"https://"
+"%(external_host)s/#settings\">Zulip设置页面</a>"
 
-#: zerver/decorator.py:96
+#: templates/zerver/zulipchat_migration_tos.html:1
+msgid "Welcome! We think you'll like it here"
+msgstr "欢迎！我们相信你会喜欢上这里"
+
+#: templates/zerver/zulipchat_migration_tos.html:5
+msgid ""
+"Your organization has been migrated from zulip.com to zulipchat.com! New "
+"service, same great conversation. We just need you to do one last thing."
+msgstr ""
+
+#: templates/zerver/zulipchat_migration_tos.html:6
+msgid "Accept the Zulip terms of service"
+msgstr "接受Zulip服务条款"
+
+#: zerver/decorator.py:116
 msgid "Must be a realm administrator"
 msgstr "用户身份必须是管理员"
 
-#: zerver/decorator.py:148
+#: zerver/decorator.py:171
 #, python-format
 msgid "Invalid user: %s"
 msgstr "用户不正确: %s"
 
-#: zerver/decorator.py:150
+#: zerver/decorator.py:173
 #, python-format
 msgid "Invalid deployment: %s"
 msgstr "安装不正确: %s"
 
-#: zerver/decorator.py:154
+#: zerver/decorator.py:177
 #, python-format
 msgid ""
 "Incorrect API key length (keys should be 32 characters long) for role '%s'"
 msgstr "用户'%s'的API码长度不正确(长度应当是32个字符)"
 
-#: zerver/decorator.py:157
+#: zerver/decorator.py:180
 #, python-format
 msgid "Invalid API key for role '%s'"
 msgstr "用户'%s'的API码不正确"
 
-#: zerver/decorator.py:160 zerver/decorator.py:183 zerver/decorator.py:369
+#: zerver/decorator.py:183 zerver/decorator.py:212 zerver/decorator.py:420
 msgid "Account not active"
 msgstr "帐户未激活"
 
-#: zerver/decorator.py:163 zerver/decorator.py:185 zerver/decorator.py:371
+#: zerver/decorator.py:185
+msgid "Account is not valid to post webhook messages"
+msgstr ""
+
+#: zerver/decorator.py:188 zerver/decorator.py:214 zerver/decorator.py:422
 msgid "Realm for account has been deactivated"
 msgstr "用户所在的社区已关闭"
 
-#: zerver/decorator.py:181
+#: zerver/decorator.py:210
 msgid "Invalid API key"
 msgstr "API码不正确"
 
-#: zerver/decorator.py:314
+#: zerver/decorator.py:360
 msgid "Only Basic authentication is supported."
 msgstr "仅支持基本认证"
 
-#: zerver/decorator.py:317
+#: zerver/decorator.py:363
 msgid "Invalid authorization header for basic auth"
 msgstr "基本认证的授权头不正确"
 
-#: zerver/decorator.py:319
-msgid "Missing authorization header for basic auth"
-msgstr "缺少基本认证的授权头信息"
-
-#: zerver/decorator.py:366
+#: zerver/decorator.py:417
 msgid "Not logged in"
 msgstr "未登录"
 
-#: zerver/decorator.py:373
+#: zerver/decorator.py:424
 msgid "Webhook bots can only access webhooks"
 msgstr "WebHook机器人只能访问Webhook内容"
 
-#: zerver/decorator.py:410
+#: zerver/decorator.py:481
 msgid "Access denied"
 msgstr "访问被拒绝"
 
-#: zerver/lib/actions.py:779
+#: zerver/forms.py:40
+#, python-format
+msgid ""
+"The organization with the domain already exists. Please register your "
+"account <a href=%(url)s>here</a>."
+msgstr ""
+
+#: zerver/lib/actions.py:813
 #, python-format
 msgid "Invalid email '%s'"
 msgstr "邮箱不正确 '%s'"
 
-#: zerver/lib/actions.py:782
+#: zerver/lib/actions.py:816
 #, python-format
 msgid "'%s' is no longer using Zulip."
 msgstr "'%s'不再使用Zulip了。"
 
-#: zerver/lib/actions.py:788 zerver/lib/actions.py:3192
-#: zerver/views/messages.py:737 zerver/views/messages.py:744
-#: zerver/views/messages.py:769
+#: zerver/lib/actions.py:822 zerver/lib/actions.py:3310
+#: zerver/views/messages.py:739 zerver/views/messages.py:746
+#: zerver/views/messages.py:771
 msgid "User not authorized for this query"
 msgstr "这次查询用户没有获得授权"
 
-#: zerver/lib/actions.py:797 zerver/lib/actions.py:799
+#: zerver/lib/actions.py:831 zerver/lib/actions.py:833
 msgid "You can't send private messages outside of your organization."
 msgstr "你不能将私信发送到社区范围以外"
 
-#: zerver/lib/actions.py:875
+#: zerver/lib/actions.py:909
 msgid "Stream can't be empty"
 msgstr "频道不能为空"
 
-#: zerver/lib/actions.py:877
+#: zerver/lib/actions.py:911
 msgid "Stream name too long"
 msgstr "频道名称太长"
 
-#: zerver/lib/actions.py:879 zerver/views/messages.py:360
+#: zerver/lib/actions.py:913
 msgid "Invalid stream name"
 msgstr "频道名称不正确"
 
-#: zerver/lib/actions.py:935
+#: zerver/lib/actions.py:969
 msgid "Message must have recipients"
 msgstr "消息必须指定接收人"
 
-#: zerver/lib/actions.py:937
+#: zerver/lib/actions.py:971
 msgid "Message must not be empty"
 msgstr "消息不能为空"
 
-#: zerver/lib/actions.py:945
+#: zerver/lib/actions.py:979
 msgid "Cannot send to multiple streams"
 msgstr "不能发送到多个频道"
 
-#: zerver/lib/actions.py:951
+#: zerver/lib/actions.py:985
 msgid "Missing topic"
 msgstr "话题不存在"
 
-#: zerver/lib/actions.py:954 zerver/lib/actions.py:2410
+#: zerver/lib/actions.py:988 zerver/views/messages.py:840
 msgid "Topic can't be empty"
 msgstr "话题不能为空"
 
-#: zerver/lib/actions.py:965 zerver/lib/actions.py:2047
+#: zerver/lib/actions.py:999 zerver/lib/actions.py:2118
 msgid "Stream does not exist"
 msgstr "频道不存在"
 
-#: zerver/lib/actions.py:983
+#: zerver/lib/actions.py:1017
 #, python-format
 msgid "Not authorized to send to stream '%s'"
 msgstr "没有权限向频道'%s'发送消息"
 
-#: zerver/lib/actions.py:995
+#: zerver/lib/actions.py:1029
 msgid "Invalid message type"
 msgstr "消息类型不正确"
 
-#: zerver/lib/actions.py:1011
+#: zerver/lib/actions.py:1045
 msgid "Unable to render message"
 msgstr "不能渲染消息"
 
-#: zerver/lib/actions.py:1118
+#: zerver/lib/actions.py:1155
 msgid "You cannot get subscribers for public streams in this realm"
 msgstr "你不能获取这个社区公开频道的用户"
 
-#: zerver/lib/actions.py:1122
+#: zerver/lib/actions.py:1158
 msgid "Unable to retrieve subscribers for invite-only stream"
 msgstr "不能获取私有频道的用户"
 
-#: zerver/lib/actions.py:1650 zerver/views/users.py:53
-#: zerver/views/users.py:66 zerver/views/users.py:81 zerver/views/users.py:133
-#: zerver/views/users.py:174 zerver/views/users.py:215
-#: zerver/views/users.py:223
+#: zerver/lib/actions.py:1702 zerver/views/users.py:49 zerver/views/users.py:62
+#: zerver/views/users.py:77 zerver/views/users.py:131 zerver/views/users.py:172
+#: zerver/views/users.py:213 zerver/views/users.py:221
 msgid "Insufficient permission"
 msgstr "权限不足"
 
-#: zerver/lib/actions.py:1737 zerver/lib/actions.py:1751
-#: zerver/lib/actions.py:1764
+#: zerver/lib/actions.py:1789 zerver/lib/actions.py:1803
+#: zerver/lib/actions.py:1816
 #, python-format
 msgid "Unknown stream \"%s\""
 msgstr "未知的频道：\"%s\""
 
-#: zerver/lib/actions.py:1740
+#: zerver/lib/actions.py:1792
 msgid "You are not invited to this stream."
 msgstr "你没有受邀请到该频道"
 
-#: zerver/lib/actions.py:1770
+#: zerver/lib/actions.py:1822
 #, python-format
 msgid "Stream name \"%s\" is already taken"
 msgstr "频道名称\"%s\" 已经被使用了"
 
-#: zerver/lib/actions.py:2234 zerver/lib/actions.py:2236
-#: zerver/lib/actions.py:2241 zerver/lib/actions.py:2244
-#: zerver/lib/actions.py:2247
+#: zerver/lib/actions.py:2305 zerver/lib/actions.py:2307
+#: zerver/lib/actions.py:2312 zerver/lib/actions.py:2315
+#: zerver/lib/actions.py:2318
 msgid "Invalid message(s)"
 msgstr "消息不正确"
 
-#: zerver/lib/actions.py:2346
-msgid "Unknown message id"
-msgstr "未知的消息ID"
-
-#: zerver/lib/actions.py:2364
-msgid "You don't have permission to edit this message"
-msgstr "你没有权限编辑该消息"
-
-#: zerver/lib/actions.py:2387
-msgid "We were unable to render your updated message"
-msgstr "无法渲染你更新后的消息"
-
-#: zerver/lib/actions.py:2879
+#: zerver/lib/actions.py:2996
 msgid "Could not allocate event queue"
 msgstr "无法分配事件队列"
 
-#: zerver/lib/actions.py:3016
+#: zerver/lib/actions.py:3133
 msgid "Invalid address."
 msgstr "地址不正确"
 
-#: zerver/lib/actions.py:3020
+#: zerver/lib/actions.py:3137
 msgid "Outside your domain."
 msgstr "不属于该社区"
 
-#: zerver/lib/actions.py:3035
+#: zerver/lib/actions.py:3152
 msgid "Already has an account."
 msgstr "帐户已经存在"
 
-#: zerver/lib/actions.py:3050
+#: zerver/lib/actions.py:3167
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "部分邮箱没有验证通过，因此不能发送邀请"
 
-#: zerver/lib/actions.py:3055
+#: zerver/lib/actions.py:3172
 msgid "We weren't able to invite anyone."
 msgstr "没有邀请任何人"
 
-#: zerver/lib/actions.py:3067
+#: zerver/lib/actions.py:3184
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "有部分地址已经在使用Zulip，因此没有向他们发送邀请；其余地址已经发送！"
 
-#: zerver/lib/event_queue.py:474
+#: zerver/lib/event_queue.py:515
 msgid "Missing 'queue_id' argument"
 msgstr "缺少参数'queue_id'"
 
-#: zerver/lib/event_queue.py:477
+#: zerver/lib/event_queue.py:518
 msgid "Missing 'last_event_id' argument"
 msgstr "缺少参数'last_event_id'"
 
-#: zerver/lib/event_queue.py:480 zerver/tornadoviews.py:42
+#: zerver/lib/event_queue.py:521 zerver/tornadoviews.py:35
 #, python-format
 msgid "Bad event queue id: %s"
 msgstr "错误的事件队列 : %s"
 
-#: zerver/lib/event_queue.py:482
+#: zerver/lib/event_queue.py:523
 msgid "You are not authorized to get events from this queue"
 msgstr "没有权限从该队列获取事件"
 
@@ -1682,11 +1962,11 @@ msgstr "参数类型不正确"
 msgid "argument \"%s\" is not valid json."
 msgstr "参数\"%s\"不是合法的json"
 
-#: zerver/lib/rest.py:87
+#: zerver/lib/rest.py:110 zerver/lib/rest.py:113
 msgid "Not logged in: API authentication or user session required"
 msgstr "未登录：提供用户会话或者API认证"
 
-#: zerver/lib/upload.py:314
+#: zerver/lib/upload.py:333
 msgid ""
 "The upload was not successful. Please reupload the file again in a new "
 "message."
@@ -1737,336 +2017,380 @@ msgstr "%s不是可接受的数据类型"
 msgid "%(variable)s != %(expected_value)s (%(value)s is wrong)"
 msgstr "%(variable)s != %(expected_value)s (%(value)s is wrong)"
 
-#: zerver/middleware.py:285
+#: zerver/middleware.py:293
 msgid "Internal server error"
 msgstr "服务器内部错误"
 
-#: zerver/middleware.py:302
+#: zerver/middleware.py:310
 #, python-format
 msgid "CSRF Error: %s"
 msgstr "CSRF错误: %s"
 
-#: zerver/middleware.py:325
+#: zerver/middleware.py:333
 #, python-format
 msgid "API usage exceeded rate limit, try again in %s secs"
 msgstr "API使用超过限速，%s秒后重试"
 
-#: zerver/models.py:255
+#: zerver/models.py:285
 msgid "Invalid characters in Emoji name"
 msgstr "表情名称中的字符不正确"
 
-#: zerver/tests/test_decorators.py:29
+#: zerver/tests/test_decorators.py:82
 msgid "13 is an unlucky number!"
 msgstr "13是不吉利数字！"
 
-#: zerver/tornadoviews.py:44
+#: zerver/tornadoviews.py:37
 msgid "You are not authorized to access this queue"
 msgstr "没有权限访问该队列"
 
-#: zerver/views/__init__.py:274
-msgid "Could not find Kerberos credential"
-msgstr "没有找到 Kerberos凭证"
-
-#: zerver/views/__init__.py:276
-msgid "Webathena login only for mit.edu realm"
-msgstr "Webathena登录仅限于mit.edu社区"
-
-#: zerver/views/__init__.py:288
-msgid "Invalid Kerberos cache"
-msgstr "Kerberos缓存不正确"
-
-#: zerver/views/__init__.py:299
-msgid "We were unable to setup mirroring for you"
-msgstr "无法为你设立镜像"
-
-#: zerver/views/__init__.py:333
+#: zerver/views/__init__.py:305
 msgid "You must specify at least one email address."
 msgstr "必须指定至少一个邮箱地址"
 
-#: zerver/views/__init__.py:339
+#: zerver/views/__init__.py:311
 msgid "You must specify at least one stream for invitees to join."
 msgstr "必须为被邀请者指定至少一个要订阅的频道"
 
-#: zerver/views/__init__.py:351
+#: zerver/views/__init__.py:323
 #, python-format
 msgid "Stream does not exist: %s. No invites were sent."
 msgstr "频道不存在：%s。没有发送邀请"
 
-#: zerver/views/__init__.py:416
+#: zerver/views/__init__.py:401
 msgid "No REMOTE_USER set."
 msgstr "未设置REMOTE_USER"
 
-#: zerver/views/__init__.py:428
+#: zerver/views/__init__.py:413
 msgid "No JSON web token passed in request"
 msgstr "请求中未传递JSON Web Token（No JSON web token passed in request）"
 
-#: zerver/views/__init__.py:430
+#: zerver/views/__init__.py:415
 msgid "Bad JSON web token"
 msgstr "JSON Web Token错误（Bad JSON web token）"
 
-#: zerver/views/__init__.py:434
+#: zerver/views/__init__.py:419
 msgid "No user specified in JSON web token claims"
-msgstr "JSON Web Token声明中未指定用户（No user specified in JSON web token claims）"
+msgstr ""
+"JSON Web Token声明中未指定用户（No user specified in JSON web token claims）"
 
-#: zerver/views/__init__.py:437
+#: zerver/views/__init__.py:422
 msgid "No domain specified in JSON web token claims"
-msgstr "JSON Web Token声明中未指定域名（No domain specified in JSON web token claims）"
+msgstr ""
+"JSON Web Token声明中未指定域名（No domain specified in JSON web token "
+"claims）"
 
-#: zerver/views/__init__.py:449
+#: zerver/views/__init__.py:434
 msgid "Bad JSON web token signature"
 msgstr "JSON Web Token签名错误（Bad JSON web token signature）"
 
-#: zerver/views/__init__.py:451
+#: zerver/views/__init__.py:436
 msgid "Realm not authorized for JWT login"
 msgstr "社区没有为JWT登录授权（Realm not authorized for JWT login）"
 
-#: zerver/views/__init__.py:955
-msgid "Invalid message ID"
-msgstr "消息ID不正确"
+#: zerver/views/__init__.py:586 zerver/views/__init__.py:602
+msgid "Dev environment not enabled."
+msgstr ""
 
-#: zerver/views/__init__.py:974
-msgid "Realm has too much data for non-batched export."
-msgstr "社区数据过大，不适用于非批量导出"
-
-#: zerver/views/__init__.py:1087
-msgid "Your account has been disabled."
-msgstr "帐户已经停用"
-
-#: zerver/views/__init__.py:1089
+#: zerver/views/__init__.py:590 zerver/views/__init__.py:1081
 msgid "Your realm has been deactivated."
 msgstr "社区已关闭"
 
-#: zerver/views/__init__.py:1091
+#: zerver/views/__init__.py:593 zerver/views/__init__.py:1078
+msgid "Your account has been disabled."
+msgstr "帐户已经停用"
+
+#: zerver/views/__init__.py:709
+msgid "New organization creation disabled."
+msgstr ""
+
+#: zerver/views/__init__.py:712
+msgid "The organization creation link has been expired or is not valid."
+msgstr ""
+
+#: zerver/views/__init__.py:1043
+msgid "Invalid message ID"
+msgstr "消息ID不正确"
+
+#: zerver/views/__init__.py:1084
 msgid "Password auth is disabled in your team."
 msgstr "社区已停用密码认证"
 
-#: zerver/views/__init__.py:1095
+#: zerver/views/__init__.py:1089
 msgid "This user is not registered; do so from a browser."
 msgstr "当前用户未注册，请从浏览器执行该动作"
 
-#: zerver/views/__init__.py:1096 zerver/views/__init__.py:1104
+#: zerver/views/__init__.py:1091 zerver/views/__init__.py:1111
 msgid "Your username or password is incorrect."
 msgstr "用户名和密码不正确"
 
-#: zerver/views/__init__.py:1111
+#: zerver/views/__init__.py:1118
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr "未配置GOOGLE_CLIENT_ID"
 
-#: zerver/views/__init__.py:1125
-#, python-format
-msgid "Invalid presence status: %s"
-msgstr "在线状态不正确：%s"
-
-#: zerver/views/__init__.py:1195
+#: zerver/views/__init__.py:1166
 msgid "No email address specified"
 msgstr "未指定邮件地址"
 
-#: zerver/views/__init__.py:1197
+#: zerver/views/__init__.py:1168
 msgid "Insufficient invites"
 msgstr "邀请权限不够"
 
-#: zerver/views/__init__.py:1214 zerver/views/__init__.py:1244
-msgid "Empty or invalid length token"
-msgstr "Token为空或者长度不正确"
-
-#: zerver/views/__init__.py:1250
-msgid "Token does not exist"
-msgstr "Token不存在"
-
-#: zerver/views/messages.py:89
+#: zerver/views/messages.py:55
 msgid "Invalid narrow operator: {}"
 msgstr "筛选操作符不正确：{}"
 
-#: zerver/views/messages.py:623 zerver/views/users.py:117
+#: zerver/views/messages.py:612 zerver/views/users.py:115
 #, python-format
 msgid "No such stream '%s'"
 msgstr "频道不存在'%s'"
 
-#: zerver/views/messages.py:630
+#: zerver/views/messages.py:619
 #, python-format
 msgid "No such topic '%s'"
 msgstr "话题不存在'%s'"
 
-#: zerver/views/messages.py:747
+#: zerver/views/messages.py:749
 #, python-format
 msgid "Unknown domain %s"
 msgstr "未知的域名%s"
 
-#: zerver/views/messages.py:767
+#: zerver/views/messages.py:769
 msgid "Missing sender"
 msgstr "缺少发送人"
 
-#: zerver/views/messages.py:773
+#: zerver/views/messages.py:775
 msgid "Invalid mirrored message"
 msgstr "镜像消息不正确（Invalid mirrored message）"
 
-#: zerver/views/messages.py:775
+#: zerver/views/messages.py:777
 msgid "Invalid mirrored realm"
 msgstr "镜像域名不正确（Invalid mirrored realm）"
 
-#: zerver/views/messages.py:778
+#: zerver/views/messages.py:780
 msgid "IRC stream names must start with #"
 msgstr "IRC频道名称必须以#开头"
 
-#: zerver/views/messages.py:803
+#: zerver/views/messages.py:805
+msgid "Your organization has turned off message editing."
+msgstr ""
+
+#: zerver/views/messages.py:810
+msgid "Unknown message id"
+msgstr "未知的消息ID"
+
+#: zerver/views/messages.py:822
+msgid "You don't have permission to edit this message"
+msgstr "你没有权限编辑该消息"
+
+#: zerver/views/messages.py:833
+msgid "The time limit for editing this message has past"
+msgstr ""
+
+#: zerver/views/messages.py:836
 msgid "Nothing to change"
 msgstr "无需修改（Nothing to change）"
 
-#: zerver/views/messages.py:815
+#: zerver/views/messages.py:845 zerver/views/webhooks/ifttt.py:23
+#, fuzzy
+#| msgid "Stream can't be empty"
+msgid "Content can't be empty"
+msgstr "频道不能为空"
+
+#: zerver/views/messages.py:849
+msgid "We were unable to render your updated message"
+msgstr "无法渲染你更新后的消息"
+
+#: zerver/views/messages.py:862
 msgid "No such message"
 msgstr "不存在该消息"
 
-#: zerver/views/messages.py:818
+#: zerver/views/messages.py:865
 msgid "Message was not sent by you"
 msgstr "消息不是你发送的"
 
-#: zerver/views/streams.py:62 zerver/views/streams.py:293
+#: zerver/views/presence.py:29
+#, python-format
+msgid "Invalid presence status: %s"
+msgstr "在线状态不正确：%s"
+
+#: zerver/views/push_notifications.py:18 zerver/views/push_notifications.py:48
+msgid "Empty or invalid length token"
+msgstr "Token为空或者长度不正确"
+
+#: zerver/views/push_notifications.py:54
+msgid "Token does not exist"
+msgstr "Token不存在"
+
+#: zerver/views/realm.py:37 zerver/views/user_settings.py:124
+#, fuzzy, python-format
+#| msgid "Invalid email '%s'"
+msgid "Invalid language '%s'"
+msgstr "邮箱不正确 '%s'"
+
+#: zerver/views/streams.py:58 zerver/views/streams.py:297
 #, python-format
 msgid "Stream name (%s) too long."
 msgstr "频道名称（%s）太长"
 
-#: zerver/views/streams.py:64 zerver/views/streams.py:295
+#: zerver/views/streams.py:60 zerver/views/streams.py:299
 #, python-format
 msgid "Invalid stream name (%s)."
 msgstr "频道名称 （%s）不正确"
 
-#: zerver/views/streams.py:76
+#: zerver/views/streams.py:72
 msgid "User cannot create streams."
 msgstr "用户不能创建频道"
 
-#: zerver/views/streams.py:78
+#: zerver/views/streams.py:74
 #, python-format
 msgid "Stream(s) (%s) do not exist"
 msgstr "频道（%s）不存在"
 
-#: zerver/views/streams.py:123
+#: zerver/views/streams.py:124
 msgid "No such stream name"
 msgstr "不存在该频道名称"
 
-#: zerver/views/streams.py:126 zerver/views/streams.py:226
+#: zerver/views/streams.py:127 zerver/views/streams.py:230
 msgid "Cannot administer invite-only streams this way"
-msgstr "不能这样管理私有频道（管理员如果没有参与某私有频道，则不能退订该私有频道的用户）"
+msgstr ""
+"不能这样管理私有频道（管理员如果没有参与某私有频道，则不能退订该私有频道的用"
+"户）"
 
-#: zerver/views/streams.py:190
+#: zerver/views/streams.py:193
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr "没有动作，至少指定\"add\"或者\"delete\""
 
-#: zerver/views/streams.py:217
+#: zerver/views/streams.py:221
 msgid "This action requires administrative rights"
 msgstr "该操作要求管理员权限"
 
-#: zerver/views/streams.py:304
+#: zerver/views/streams.py:308
 #, python-format
 msgid "Unable to access stream (%s)."
 msgstr "不能访问频道（%s）"
 
-#: zerver/views/streams.py:310
-msgid "You can only invite other mit.edu users to invite-only streams."
+#: zerver/views/streams.py:314
+#, fuzzy
+#| msgid "You can only invite other mit.edu users to invite-only streams."
+msgid ""
+"You can only invite other Zephyr mirroring users to invite-only streams."
 msgstr "仅能邀请其它mit.edu的用户加入私有频道"
 
-#: zerver/views/streams.py:403
+#: zerver/views/streams.py:407
 #, python-format
 msgid "Stream does not exist: %s"
 msgstr "频道不存在：%s"
 
-#: zerver/views/streams.py:441
+#: zerver/views/streams.py:445
 msgid "Invalid characters in stream name"
 msgstr "频道名称中的字符不正确"
 
-#: zerver/views/streams.py:458
+#: zerver/views/streams.py:462
 #, python-format
 msgid "Invalid stream %s"
 msgstr "频道%s不正确"
 
-#: zerver/views/streams.py:464
+#: zerver/views/streams.py:468
 #, python-format
 msgid "Not subscribed to stream %s"
 msgstr "没有订阅频道%s"
 
-#: zerver/views/streams.py:488
+#: zerver/views/streams.py:492
 msgid "Invalid verb"
 msgstr "POST方法不正确"
 
-#: zerver/views/streams.py:501
+#: zerver/views/streams.py:506
 #, python-format
 msgid "Unknown subscription property: %s"
 msgstr "未知订阅属性：%s"
 
-#: zerver/views/tutorial.py:34
+#: zerver/views/tutorial.py:30
 msgid "Bad data passed in to tutorial_send_message"
 msgstr "向tutorial_send_message传递了错误数据"
 
-#: zerver/views/upload.py:20
+#: zerver/views/upload.py:70
 msgid "You must specify a file to upload"
 msgstr "必须指定要上传的文件"
 
-#: zerver/views/upload.py:22 zerver/views/users.py:154
-#: zerver/views/users.py:204
+#: zerver/views/upload.py:72 zerver/views/users.py:152
+#: zerver/views/users.py:202
 msgid "You may only upload one file at a time"
 msgstr "一次只可以上传一个文件"
 
-#: zerver/views/upload.py:26
+#: zerver/views/upload.py:76
 msgid "File Upload is larger than allowed limit"
 msgstr "上传的文件超过了允许的大小"
 
-#: zerver/views/user_settings.py:66
+#: zerver/views/user_settings.py:64
+msgid "No new data supplied"
+msgstr ""
+
+#: zerver/views/user_settings.py:68
 msgid "New password must match confirmation password!"
 msgstr "新密码和确认密码必须一致！"
 
-#: zerver/views/user_settings.py:68
+#: zerver/views/user_settings.py:70
 msgid "Wrong password!"
 msgstr "密码错误！"
 
-#: zerver/views/user_settings.py:80
+#: zerver/views/user_settings.py:82
 msgid "Name too long!"
 msgstr "名字太长！"
 
-#: zerver/views/user_settings.py:178
+#: zerver/views/user_settings.py:196
 msgid "You must upload exactly one avatar."
 msgstr "必须上传恰好一个头像文件"
 
-#: zerver/views/users.py:35 zerver/views/users.py:37 zerver/views/users.py:63
-#: zerver/views/users.py:78 zerver/views/users.py:130
-#: zerver/views/users.py:171
+#: zerver/views/users.py:31 zerver/views/users.py:33 zerver/views/users.py:59
+#: zerver/views/users.py:74 zerver/views/users.py:128 zerver/views/users.py:169
 msgid "No such user"
 msgstr "不存在该用户"
 
-#: zerver/views/users.py:45 zerver/views/users.py:47
+#: zerver/views/users.py:41 zerver/views/users.py:43
 msgid "No such bot"
 msgstr "不存在该机器人用户"
 
-#: zerver/views/users.py:193 zerver/views/users.py:296
+#: zerver/views/users.py:191 zerver/views/users.py:294
 msgid "Bad name or username"
 msgstr "姓名或者用户名错误"
 
-#: zerver/views/users.py:197
+#: zerver/views/users.py:195
 msgid "Username already in use"
 msgstr "用户名已经被使用"
 
-#: zerver/views/users.py:303
+#: zerver/views/users.py:301
 #, python-format
 msgid "Email '%(email)s' does not belong to domain '%(domain)s'"
 msgstr "邮箱'%(email)s'不属于域'%(domain)s'"
 
-#: zerver/views/users.py:308
+#: zerver/views/users.py:306
 #, python-format
 msgid "Email '%s' already in use"
 msgstr "邮箱'%s'已经使用"
 
-#: zerver/views/webhooks/codeship.py:37
-#: zerver/views/webhooks/crashlytics.py:37
+#: zerver/views/webhooks/airbrake.py:26 zerver/views/webhooks/bitbucket2.py:52
+#: zerver/views/webhooks/codeship.py:37 zerver/views/webhooks/crashlytics.py:37
+#: zerver/views/webhooks/helloworld.py:30 zerver/views/webhooks/updown.py:28
 msgid "Missing key {} in JSON"
 msgstr "JSON中缺少键值{}（Missing key {} in JSON）"
 
-#: zerver/views/webhooks/freshdesk.py:133 zerver/views/webhooks/stash.py:34
+#: zerver/views/webhooks/freshdesk.py:132 zerver/views/webhooks/semaphore.py:37
+#: zerver/views/webhooks/semaphore.py:44 zerver/views/webhooks/semaphore.py:55
+#: zerver/views/webhooks/stash.py:34
 #, python-format
 msgid "Missing key %s in JSON"
 msgstr "JSON中缺少键值 %s"
 
-#: zerver/views/webhooks/freshdesk.py:142
+#: zerver/views/webhooks/freshdesk.py:141
 #, python-format
 msgid "Malformed event %s"
 msgstr "错误的事件%s"
+
+#: zerver/views/webhooks/ifttt.py:21
+#, fuzzy
+#| msgid "Stream can't be empty"
+msgid "Subject can't be empty"
+msgstr "频道不能为空"
 
 #: zerver/views/webhooks/jira.py:180
 msgid "Unknown JIRA event type"
@@ -2076,24 +2400,24 @@ msgstr "未知的JIRA事件类型"
 msgid "Unknown webhook request"
 msgstr "未知的Webhook请求"
 
-#: zerver/views/webhooks/pingdom.py:46
+#: zerver/views/webhooks/pingdom.py:47
 #, python-brace-format
 msgid "Unsupported check_type: {check_type}"
 msgstr "不支持的check_type: {check_type}"
 
-#: zerver/views/webhooks/pivotal.py:168
+#: zerver/views/webhooks/pivotal.py:171
 msgid "Failed to extract data from Pivotal XML response"
 msgstr "从Pivotal XML响应中提取数据失败"
 
-#: zerver/views/webhooks/pivotal.py:174
+#: zerver/views/webhooks/pivotal.py:177
 msgid "Failed to extract data from Pivotal V5 JSON response"
 msgstr "从Pivotal V5 JSON响应中提取数据失败"
 
-#: zerver/views/webhooks/pivotal.py:177
+#: zerver/views/webhooks/pivotal.py:180
 msgid "Unable to handle Pivotal payload"
 msgstr "无法处理Pivotal的payload"
 
-#: zerver/views/webhooks/taiga.py:256
+#: zerver/views/webhooks/taiga.py:268
 msgid "Unknown message"
 msgstr "未知的消息"
 
@@ -2101,10 +2425,61 @@ msgstr "未知的消息"
 msgid "Transifex wrong request"
 msgstr "错误的Transifex请求"
 
-#: zilencer/views.py:96
+#: zerver/views/webhooks/trello/__init__.py:26
+#, fuzzy, python-brace-format
+#| msgid "Unsupported check_type: {check_type}"
+msgid "Unsupported action_type: {action_type}"
+msgstr "不支持的check_type: {check_type}"
+
+#: zerver/views/zephyr.py:27
+msgid "Could not find Kerberos credential"
+msgstr "没有找到 Kerberos凭证"
+
+#: zerver/views/zephyr.py:29
+#, fuzzy
+#| msgid "Webathena login only for mit.edu realm"
+msgid "Webathena login not enabled"
+msgstr "Webathena登录仅限于mit.edu社区"
+
+#: zerver/views/zephyr.py:41
+msgid "Invalid Kerberos cache"
+msgstr "Kerberos缓存不正确"
+
+#: zerver/views/zephyr.py:52
+msgid "We were unable to setup mirroring for you"
+msgstr "无法为你设立镜像"
+
+#: zilencer/views.py:98
 msgid "Invalid type parameter"
 msgstr "参数类型不正确"
 
-#: zilencer/views.py:117
+#: zilencer/views.py:119
 msgid "Cannot determine endpoint for user."
 msgstr "无法确定用户的Endpoint"
+
+#~ msgid "Your name"
+#~ msgstr "你的名字"
+
+#~ msgid "Conversations, not messages"
+#~ msgstr "关注会话，而不仅是消息"
+
+#~ msgid ""
+#~ "You wouldn’t tolerate email without subject lines or threading, so why do "
+#~ "you for chat?"
+#~ msgstr ""
+#~ "我们都不愿意在写邮件和发帖时不写主题，那为什么愿意在聊天时没有话题呢？"
+
+#~ msgid "Easily read just the important things"
+#~ msgstr "轻松查看最重要的事情"
+
+#~ msgid "Search that's better than Gmail's"
+#~ msgstr "比Gmail还好用的搜索功能"
+
+#~ msgid "and all the obvious stuff, too."
+#~ msgstr "以及各种必需的功能"
+
+#~ msgid "Missing authorization header for basic auth"
+#~ msgstr "缺少基本认证的授权头信息"
+
+#~ msgid "Realm has too much data for non-batched export."
+#~ msgstr "社区数据过大，不适用于非批量导出"
