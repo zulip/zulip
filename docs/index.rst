@@ -49,7 +49,7 @@ Contents:
    :caption: Zulip in production
 
    prod-requirements
-   prod-install
+   Install <prod-install>
    prod-auth-first-login
    prod-health-check-debug
    prod-customize

@@ -19,7 +19,6 @@ Installing Zulip in production
 
 See [Installing Zulip in production](https://zulip.readthedocs.io/en/latest/prod-install.html).
 
-
 Authentication and logging into Zulip the first time
 ====================================================
 
