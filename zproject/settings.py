@@ -671,6 +671,7 @@ JS_SPECS = {
     'common': {
         'source_filenames': (
             'third/jquery/jquery-1.12.1.js',
+            'third/jquery/jquery-migrate.js',
             'third/underscore/underscore.js',
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
