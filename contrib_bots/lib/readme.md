@@ -1,7 +1,7 @@
 # Overview
 
 This is the documentation for an experimental new system for writing
-bots that react the messages.
+bots that react to messages.
 
 This directory contains library code for running Zulip
 bots that react to messages sent by users.
