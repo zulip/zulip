@@ -11,6 +11,13 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/nginx/sites-available/zulip-enterprise",
     notify => Service["nginx"],
   }
+  file { "/etc/logrotate.d/zulip":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/logrotate/zulip",
+  }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
     require => Package["nginx-full"],
     ensure => 'link',

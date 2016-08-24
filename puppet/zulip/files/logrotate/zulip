@@ -1,0 +1,8 @@
+/var/log/zulip/server.log /var/log/zulip/workers.log /var/log/zulip/manage.log {
+	missingok
+	rotate 10
+	size 1GB
+	compress
+	delaycompress
+	notifempty
+}
