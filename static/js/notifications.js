@@ -44,7 +44,7 @@ if (window.webkitNotifications) {
 function browser_desktop_notifications_on () {
     return (notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
-            $.browser.webkit &&
+            /webkit/i.test(navigator.userAgent) &&
             // 0 is PERMISSION_ALLOWED
             notifications_api.checkPermission() === 0) ||
         // window.bridge is the desktop client
@@ -157,7 +157,7 @@ exports.redraw_title = function () {
     document.title = new_title;
 
     // IE doesn't support PNG favicons, *shrug*
-    if (! $.browser.msie) {
+    if (!/msie/i.test(navigator.userAgent)) {
         // Indicate the message count in the favicon
         if (new_message_count) {
             // Make sure we're working with a number, as a defensive programming
@@ -326,7 +326,7 @@ function process_notification(notification) {
             delete notice_memory[key];
         };
         notification_object.show();
-    } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && $.browser.mozilla === true) {
+    } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && /mozilla/i.test(navigator.userAgent) === true) {
         Notification.requestPermission(function (perm) {
             if (perm === 'granted') {
                 notification_object = new Notification(title, {

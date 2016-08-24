@@ -12,7 +12,7 @@ exports.reset = function () {
 };
 
 exports.set = function (url) {
-    if ($.browser.webkit) {
+    if (/webkit/i.test(navigator.userAgent)) {
         // Works in Chrome 22 at least.
         // Doesn't work in Firefox 10.
         $(favicon_selector).attr('href', url);
