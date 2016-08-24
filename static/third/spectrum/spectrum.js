@@ -857,8 +857,8 @@
     $.fn.spectrum.defaults = defaultOpts;
 
     $.fn.spectrum.processNativeColorInputs = function () {
-        var colorInput = $("<input type='color' value='!' />")[0];
-        var supportsColor = colorInput.type === "color" && colorInput.value != "!";
+        var colorInput = $("<input type='color' value='#ffffff' />")[0];
+        var supportsColor = colorInput.type === "color" && colorInput.value != "#ffffff";
 
         if (!supportsColor) {
             $("input[type=color]").spectrum({
