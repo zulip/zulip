@@ -53,24 +53,5 @@ need to update the domains A record to point to your production server.
   missed message notifications, password reminders if you're not using
   SSO, etc.).
 
-#### Authentication
-
-Zulip supports several different authentications methods. You'll want to be
-able to enable at least one authentication method. Each has a different set of
-prerequisites, as indicated below.
-
-* For **Email/password authentication**, you'll need an SMTP provider (Google
-  IMAP, Amazon SES, Sendgrid, etc.) and ability to access outgoing SMTP ports
-  (usually 25, 465, or 587).
-* For LDAP username/password authentication, you'll need access to an LDAP
-  server/service and ability to access LDAP ports if the server is not on the
-  same machine as Zulip.
-* For Google authentication, you'll need to have a Google developer account
-  with the Google OAuth2 api configured and enabled.
-* For authentication using an existing Single-Sign-On (SSO) system, you'll need
-  that system in place.
-* For passwordless login as any user, there are no extra requirements, but
-  this should never be used in production, **only for development.**
-
 Once you have met these requirements, see [full instructions for installing
 Zulip in production](prod-install.html).
