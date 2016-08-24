@@ -602,7 +602,7 @@ function ajaxSubscribe(stream) {
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
 
-            var res = $.parseJSON(xhr.responseText);
+            var res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[page_params.email][0];
@@ -623,7 +623,7 @@ function ajaxUnsubscribe(stream) {
         url: "/json/subscriptions/remove",
         data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            var name, res = $.parseJSON(xhr.responseText);
+            var name, res = JSON.parse(xhr.responseText);
             $("#subscriptions-status").hide();
             // The rest of the work is done via the unsubscribe event we will get
         },

@@ -79,7 +79,7 @@ exports.initialize = function () {
         },
         error: function (xhr, error_type, xhn) {
             $('#submit-invitation').button('reset');
-            var arr = $.parseJSON(xhr.responseText);
+            var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
                 invite_status.text(arr.msg)

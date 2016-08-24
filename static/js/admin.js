@@ -119,7 +119,7 @@ function make_stream_default(stream_name) {
         error: function (xhr, error_type) {
             if (xhr.status.toString().charAt(0) === "4") {
                 $(".active_stream_row button").closest("td").html(
-                    $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg));
+                    $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
             } else {
                 $(".active_stream_row button").text("Failed!");
             }
@@ -248,7 +248,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_default_stream_row button").closest("td").html(
-                    $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg));
+                    $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
                 } else {
                     $(".active_default_stream_row button").text("Failed!");
                 }
@@ -294,7 +294,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
                     row.find("button").text("Failed!");
@@ -328,7 +328,7 @@ function _setup_page() {
                 var button = row.find("button");
                 if (xhr.status.toString().charAt(0) === "4") {
                     button.closest("td").html(
-                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
                      button.text(i18n.t("Failed!"));
@@ -566,7 +566,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
                      row.find("button").text("Failed!");
@@ -599,7 +599,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_stream_row button").closest("td").html(
-                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
                      $(".active_stream_row button").text("Failed!");
@@ -622,7 +622,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
-                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
                      btn.text("Failed!");
@@ -654,7 +654,7 @@ function _setup_page() {
             },
             error: function (xhr, error) {
                 $('#admin-emoji-status, #admin-emoji-name-status, #admin-emoji-url-status').hide();
-                var errors = $.parseJSON(xhr.responseText).msg;
+                var errors = JSON.parse(xhr.responseText).msg;
                 if (errors.name !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.name});
                     ui.report_error(i18n.t("Failed!"), xhr, emoji_name_status);
