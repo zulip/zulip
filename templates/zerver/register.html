@@ -13,10 +13,15 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
-
+<div class="center-container">
+  <div class="center-block">
     <div class="pitch">
-      <p style="margin-top:30px;">{{ _("You're almost there. We just need you to do one last thing") }}.</p>
-      <h3>{{ _('Tell us a bit about yourself') }}.</h3>
+        <h1>You're almost there.</h1>
+        <p>
+          We just need you to do one last thing.
+          <br />
+          Tell us a bit about yourself.
+        </p>
     </div>
 
     <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_register') }}">
@@ -25,7 +30,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <label for="id_email" class="control-label">{{ _('Email') }}</label>
             <div class="controls fakecontrol">
                 <input type='hidden' name='key' value='{{ key }}' />
-                <p>{{ email }}</p>
+                <input type='text' disabled="true" placeholder="{{ email }}" />
             </div>
         </div>
         <div class="control-group">
@@ -115,13 +120,15 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
             </div>
         {% endif %}
-        <div class="control-group">
+        <div class="submit-button-box">
             <div class="controls">
-                <input type="submit" class="btn btn-large btn-primary" value="Register" /><br />
+                <input type="submit" class="button btn btn-large btn-primary" value="Register" /><br />
                 <input type="hidden" name="next" value="{{ next }}" />
             </div>
         </div>
     </form>
+  </div>
+</div>
 
 <script type="text/javascript">
 if ($('#id_email:visible').length) {

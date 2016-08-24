@@ -431,7 +431,8 @@ a.bottom-signup-button {
     padding-top: 40px !important;
 }
 
-.portico-page-container {
+.portico-page-container,
+.register-page-container {
     padding-top: 0px !important;
 }
 

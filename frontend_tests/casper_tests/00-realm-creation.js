@@ -33,12 +33,12 @@ casper.then(function () {
 // Make sure the realm creation page is loaded correctly
 casper.then(function () {
     this.waitForSelector('.pitch', function () {
-        this.test.assertSelectorHasText('.pitch', "You're almost there. We just need you to do one last thing.");
+        this.test.assertSelectorContains('.pitch', "You're almost there.");
     });
 
-    this.waitForSelector('.controls.fakecontrol', function () {
-        this.test.assertSelectorHasText('.controls.fakecontrol', email);
-    });
+    this.test.assertEvalEquals(function () {
+        return $('.controls.fakecontrol input[type=text]').attr('placeholder');
+    }, email);
 
     this.waitForSelector('label[for=id_team_name]', function () {
         this.test.assertSelectorHasText('label[for=id_team_name]', 'Organization name');
