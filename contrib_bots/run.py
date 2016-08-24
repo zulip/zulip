@@ -35,9 +35,9 @@ def get_lib_module(lib_fn):
     module = importlib.import_module(module_name)
     return module
 
-def run_message_handler_for_bot(lib_module, quiet):
+def run_message_handler_for_bot(lib_module, quiet, config_file):
     # Make sure you set up your ~/.zuliprc
-    client = Client()
+    client = Client(config_file=config_file)
     restricted_client = RestrictedClient(client)
 
     message_handler = lib_module.handler_class()
@@ -76,6 +76,9 @@ def run():
     parser.add_option('--quiet', '-q',
         action='store_true',
         help='Turn off logging output.')
+    parser.add_option('--config-file',
+        action='store',
+        help='(alternate config file to ~/.zuliprc)')
     (options, args) = parser.parse_args()
 
     if len(args) == 0:
@@ -87,7 +90,11 @@ def run():
     if not options.quiet:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    run_message_handler_for_bot(lib_module, quiet=options.quiet)
+    run_message_handler_for_bot(
+        lib_module=lib_module,
+        config_file=options.config_file,
+        quiet=options.quiet
+    )
 
 if __name__ == '__main__':
     run()
