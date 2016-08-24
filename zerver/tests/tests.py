@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, TypeVar
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
@@ -1989,12 +1989,16 @@ class ExtractedRecipientsTest(TestCase):
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
 
+# TODO: This class currently only tests the default-off
+# SEND_MISSED_MESSAGE_EMAILS_AS_USER=True case.  We should refactor it
+# to test both cases (the False case being the most important).
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
         # type: (text_type) -> text_type
         s = s.strip()
         return re.sub(r'\s+', ' ', s)
 
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_extra_context_in_missed_stream_messages(self, mock_random_token):
         # type: (MagicMock) -> None
@@ -2033,6 +2037,7 @@ class TestMissedMessages(ZulipTestCase):
             self.normalize_string(mail.outbox[0].body),
         )
 
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_extra_context_in_personal_missed_stream_messages(self, mock_random_token):
         # type: (MagicMock) -> None
@@ -2059,6 +2064,7 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn('You and Othello, the Moor of Venice Extremely personal message!',
                       self.normalize_string(msg.body))
 
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_extra_context_in_huddle_missed_stream_messages(self, mock_random_token):
         # type: (MagicMock) -> None

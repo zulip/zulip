@@ -270,12 +270,16 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     plural_messages = 's' if len(missed_messages) > 1 else ''
 
     subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
-    if len(senders) > 1:
-        from_email = '"%s (via Zulip)" <%s>' % (sender_str, settings.NOREPLY_EMAIL_ADDRESS)
-    else:
+    from_email = 'Zulip <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
+    if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
+        # If this setting is enabled, you can reply to the Zulip
+        # missed message emails directly back to the original sender.
+        # However, one must ensure the Zulip server is in the SPF
+        # record for the domain, or there will be spam/deliverability
+        # problems.
+        headers['Sender'] = from_email
         sender = missed_messages[0].sender
         from_email = '"%s" <%s>' % (sender_str, sender.email)
-        headers['Sender'] = "Zulip <%s>" % (settings.NOREPLY_EMAIL_ADDRESS,)
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
     html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
