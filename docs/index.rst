@@ -50,7 +50,7 @@ Contents:
 
    prod-requirements
    prod-install
-   prod-health-check-debug
+   prod-troubleshooting
    prod-customize
    prod-maintain-secure-upgrade
    prod-authentication-methods

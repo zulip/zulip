@@ -156,7 +156,7 @@ Next, you'll likely want to do one of the following:
 
 If you get an error after `scripts/setup/install` completes, check
 `/var/log/zulip/errors.log` for a traceback, and consult the
-[troubleshooting section](prod-health-check-debug.html) for advice on
+[troubleshooting section](prod-troubleshooting.html) for advice on
 how to debug.  If that doesn't help, please visit [the "installation
 help" stream in the Zulip developers'
 chat](https://zulip.tabbott.net/#narrow/stream/installation.20help)
