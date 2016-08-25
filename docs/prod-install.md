@@ -38,7 +38,8 @@ Run all of these commands as root. If you're not already logged in as root, use
 
 ```
 wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
-mkdir -p /root/zulip && tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
+mkdir -p /root/zulip
+tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
 ```
 
 ## Step 3: Run install script
