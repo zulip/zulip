@@ -38,6 +38,12 @@ up. Upgrading will result in some brief downtime for the service, which should b
 under 30 seconds unless there is an expensive transition involved. Unless you
 have tested the upgrade in advance, we recommend doing upgrades at off hours.
 
+Note that upgrading an existing Zulip production server from Ubuntu
+14.04 Trusty to Ubuntu 16.04 Xenial will require significant manual
+intervention on your part to migrate the data in the database from
+Postgres 9.3 to Postgres 9.5.  Contributions on testing and
+documenting this process are welcome!
+
 ### Preserve local changes to configuration files
 
 **Warning**: If you have modified configuration files installed by
