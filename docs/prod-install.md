@@ -27,32 +27,26 @@ documentation](ssl-certificates.html).  If you already have an SSL
 certificate, just install (or symlink) them into place at the above
 paths, and move on to the next step.
 
-## Step 2: Download and unpack latest release
+## Step 2: Download and install latest release
 
-Download [the latest built server
-tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz) and
-unpack it to `/root/zulip`.
-
-Run all of these commands as root. If you're not already logged in as root, use
-`sudo -i` to start an interactive root shell.
+If you haven't already, download and unpack [the latest built server
+tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz)
+with the following commands:
 
 ```
+sudo -i  # If not already root
 wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
 mkdir -p /root/zulip
 tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
 ```
 
-## Step 3: Run install script
-
-Run all of these commands as root. If you're not already logged in as root, use
-`sudo -i` to start an interactive root shell.
-
+Then, run the Zulip install script:
 ```
 /root/zulip/scripts/setup/install
 ```
 
 This may take a while to run, since it will install a large number of
-packages via apt.
+dependencies.
 
 The Zulip install script is designed to be idempotent, so if it fails,
 you can just rerun it after correcting the issue that caused it to
@@ -60,7 +54,7 @@ fail.  Also note that it automatically logs a transcript to
 `/var/log/zulip/install.log`; please include a copy of that file in
 any bug reports.
 
-## Step 4: Configure Zulip
+## Step 3: Configure Zulip
 
 Configure the Zulip server instance by editing `/etc/zulip/settings.py` and
 providing values for the mandatory settings, which are all found under the
@@ -93,7 +87,7 @@ These settings include:
 - `ALLOWED_HOSTS`: Replace `*` with the fully qualified DNS name for
   your Zulip server here.
 
-## Step 5: Run database initialization
+## Step 4: Initialize Zulip database
 
 At this point, you are done doing things as root.  To initialize the
 Zulip database for your production install, run:
@@ -110,7 +104,7 @@ This completes the process of installing Zulip on your server.
 However, in order to use Zulip, you'll need to create an organization
 in your Zulip installation.
 
-## Step 6: Create a Zulip organization and login
+## Step 5: Create a Zulip organization and login
 
 * If you haven't already, verify that your server can send email using
 `./manage.py send_test_email username@example.com`.  You'll need
