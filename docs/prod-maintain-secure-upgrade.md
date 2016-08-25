@@ -4,7 +4,7 @@ This page covers topics that will help you maintain a healthy, up-to-date, and
 secure Zulip installation, including:
 
 - [Upgrading](#upgrading)
-- [Deploying from a git repository](#deploying-from-a-git-repository)
+- [Upgrade from a git repository](#upgrade-from-a-git-repository)
 - [Backing up and restoring](#backing-up-and-restoring)
 - [Monitoring](#monitoring)
 - [Scalability](#scalability)
@@ -21,10 +21,10 @@ To upgrade to a new version of the zulip server, download the appropriate
 release tarball from
 [https://www.zulip.com/dist/releases/](https://www.zulip.com/dist/releases/)
 
-You also have the option of creating your own release tarballs from a copy of
-zulip.git repository using `tools/build-release-tarball`. And, starting with
-Zulip version 1.4, you can deploy updates [directly from a Git
-repository](#deploying-zulip-from-a-git-repository).
+You also have the option of creating your own release tarballs from a
+copy of zulip.git repository using `tools/build-release-tarball`. And,
+starting with Zulip version 1.4, you can upgrade Zulip [to a version
+in a Git repository directly](#upgrade-from-a-git-repository).
 
 Next, run as root:
 
@@ -118,7 +118,7 @@ of the Zulip daemons, the service automatically restarts itself
 every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
 precise configuration.
 
-## Deploy from a git repository
+## Upgrade from a git repository
 
 Starting with version 1.4, the Zulip server supports doing deployments
 from a Git repository.  To configure this, you will need to add
@@ -145,7 +145,7 @@ Zulip is new enough that this script exists), you can do deployments
 by running as root:
 
 ```
-# /home/zulip/deployments/current/scripts/deploy-zulip-from-git <branch>
+/home/zulip/deployments/current/scripts/deploy-zulip-from-git <branch>
 ```
 
 and Zulip will automatically fetch the relevant branch from the
