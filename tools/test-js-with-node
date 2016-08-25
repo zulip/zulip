@@ -8,6 +8,8 @@ export PATH=$PATH:node_modules/.bin
 
 INDEX_JS=frontend_tests/zjsunit/index.js
 NODEJS=$(which nodejs || which node)
+echo "ATTENTION STEVE, $NODEJS"
+"$NODEJS" --version
 ret=0
 
 if [ "$1" = "cover" ]; then
