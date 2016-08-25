@@ -39,6 +39,7 @@ files.forEach(function (file) {
     global.patch_builtin('setInterval', noop);
 
     console.info('running tests for ' + file.name);
+    render.init();
     require(file.full_name);
     namespace.restore();
 });
