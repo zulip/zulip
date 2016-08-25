@@ -5,7 +5,7 @@ secure Zulip installation, including:
 
 - [Upgrading](#upgrading)
 - [Upgrade from a git repository](#upgrade-from-a-git-repository)
-- [Backing up and restoring](#backing-up-and-restoring)
+- [Backing up and restoring](#back-up-and-restore)
 - [Monitoring](#monitoring)
 - [Scalability](#scalability)
 - [Security Model](#security-model)
@@ -229,7 +229,7 @@ this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
 
 
-## Monitor
+## Monitoring
 
 The complete Nagios configuration (sans secret keys) used to
 monitor zulip.com is available under `puppet/zulip_internal` in the
