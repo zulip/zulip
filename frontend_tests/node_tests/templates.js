@@ -641,6 +641,8 @@ function render(template_name, args) {
 }());
 
 (function stream_sidebar_row() {
+    global.use_template('stream_privacy'); // partial
+
     var args = {
         name: "devel",
         color: "red",

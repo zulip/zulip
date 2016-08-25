@@ -10,6 +10,10 @@ function template_dir() {
     return __dirname + '/../../static/templates/';
 }
 
+exports.init = function () {
+    Handlebars.templates = {};
+};
+
 exports.make_sure_all_templates_have_been_compiled = function () {
     var dir = template_dir();
     var fns = fs.readdirSync(dir).filter(function (fn) {
