@@ -11,6 +11,7 @@
     "i18next-xhr-backend": "0.5.4",
     "i18next-browser-languagedetector": "0.3.0",
     "i18next-localstorage-cache": "0.3.0",
+    "jquery-validation": "1.15.1",
     "webpack": "1.12.2"
   },
   "devDependencies": {

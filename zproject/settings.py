@@ -680,13 +680,13 @@ JS_SPECS = {
     'signup': {
         'source_filenames': (
             'js/signup.js',
-            'third/jquery-validate/jquery.validate.js',
+            'node_modules/jquery-validation/dist/jquery.validate.js',
             ),
         'output_filename':  'min/signup.js'
     },
     'initial_invite': {
         'source_filenames': (
-            'third/jquery-validate/jquery.validate.js',
+            'node_modules/jquery-validation/dist/jquery.validate.js',
             'js/initial_invite.js',
             ),
         'output_filename':  'min/initial_invite.js'
@@ -703,7 +703,7 @@ JS_SPECS = {
         'source_filenames': [
             'third/bootstrap-notify/js/bootstrap-notify.js',
             'third/html5-formdata/formdata.js',
-            'third/jquery-validate/jquery.validate.js',
+            'node_modules/jquery-validation/dist/jquery.validate.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.5.2.js',
