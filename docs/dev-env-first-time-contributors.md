@@ -1,4 +1,4 @@
-## Development environment setup for first-time contributors
+## Vagrant environment setup tutorial
 
 This section guides first-time contributors through installing the Zulip dev
 environment on Windows 10, OS X El Capitan, Ubuntu 14.04, and Ubuntu 16.04.

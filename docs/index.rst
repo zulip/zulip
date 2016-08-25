@@ -64,9 +64,9 @@ Contents:
 
    dev-env-first-time-contributors
    brief-install-vagrant-dev
-   install-docker-dev
    install-ubuntu-without-vagrant-dev
    install-generic-unix-dev
+   install-docker-dev
    using-dev-environment
 
 .. _tutorial-docs:

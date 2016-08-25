@@ -1,5 +1,4 @@
-Installing manually on UNIX-based platforms
--------
+# Installing manually on UNIX
 
 * [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
