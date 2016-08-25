@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from six import text_type
 from typing import Any, AnyStr, Iterable, Optional, Tuple
-from zerver.lib.str_utils import force_bytes
+from zerver.lib.str_utils import force_text
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
@@ -261,14 +261,16 @@ class NarrowBuilder(object):
         cond = column("search_tsvector").op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
+# Apparently, the offsets we get from tsearch_extras are counted in
+# unicode characters, not in bytes, so we do our processing with text,
+# not bytes.
 def highlight_string(text, locs):
     # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
-    string = force_bytes(text)
-    # Do all operations on bytes because tsearch_extras counts bytes instead of characters.
-    highlight_start = b'<span class="highlight">'
-    highlight_stop = b'</span>'
+    string = force_text(text)
+    highlight_start = u'<span class="highlight">'
+    highlight_stop = u'</span>'
     pos = 0
-    result = b''
+    result = u''
     for loc in locs:
         (offset, length) = loc
         result += string[pos:offset]
@@ -277,7 +279,7 @@ def highlight_string(text, locs):
         result += highlight_stop
         pos = offset + length
     result += string[pos:]
-    return result.decode('utf-8')
+    return result
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
     # type: (text_type, text_type, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, text_type]
