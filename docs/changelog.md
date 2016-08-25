@@ -4,8 +4,10 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.4 - 2016-08-25
+
 - Migrated Zulip's python dependencies to be installed via a virtualenv,
-  instead of the old apt repository.  This is a major change to how Zulip
+  instead of the via apt.  This is a major change to how Zulip
   is installed that we expect will simplify upgrades in the future.
 - Fixed unnecessary loading of zxcvbn password strength checker.  This
   saves a huge fraction of the uncached network transfer for loading
@@ -20,8 +22,7 @@ All notable changes to the Zulip server are documented in this file.
 - Added management command to send password reset emails.
 - Added endpoint for mobile apps to query available auth backends.
 - Added LetsEncrypt documentation for getting SSL certificates.
-- Added preliminary support for running on Ubuntu Xenial in production.
-- Added rendering of unicode emoji code points to the corresponding emoji.
+- Added nice rendering of unicode emoji.
 - Added support for pinning streams to the top of the left sidebar.
 - Added search box for filtering user list when creating a new stream.
 - Added realm setting to disable message editing.
@@ -43,7 +44,7 @@ All notable changes to the Zulip server are documented in this file.
 - Added support for `Name <email@example.com>` format when inviting users.
 - Added numerous special-purpose settings options.
 - Added a hex input field in color picker.
-- Documented new Electron beta app and mobile apps in /apps/ page.
+- Documented new Electron beta app and mobile apps in the /apps/ page.
 - Enabled Android Google authentication support.
 - Enhanced logic for tracking origin of user uploads.
 - Improved error messages for various empty narrows.
@@ -86,7 +87,7 @@ All notable changes to the Zulip server are documented in this file.
 - Improved formatting in reset password links.
 - Improved alert words UI to match style of other settings.
 - Improved error experience when sending to nonexistent users.
-- Portions of integrations documentation are not automatically generated.
+- Portions of integrations documentation are now automatically generated.
 - Restructured the URLs files to be more readable.
 - Upgraded almost all Python dependencies to current versions.
 - Substantially expanded and reorganized developer documentation.
