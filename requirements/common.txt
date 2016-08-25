@@ -95,6 +95,10 @@ psycopg2==2.6.2
 
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
+
+# Python wrapper around OpenSSL
+# Needed by ndg-httpsclient
+pyOpenSSL==16.0.0
 pycrypto==2.6.1
 
 # Needed for memcached usage
