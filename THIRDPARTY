@@ -17,11 +17,11 @@ Comment:
  information or errors found in these notices.
 
 Files: *
-Copyright: 2011-2015 Dropbox, Inc.
+Copyright: 2011-2016 Dropbox, Inc. and contributors
 License: Apache-2
 
 Files: api/*
-Copyright: 2012-2014 Dropbox, Inc
+Copyright: 2012-2016 Dropbox, Inc. and contributors
 License: Expat
 
 Files: api/integrations/perforce/git_p4.py
@@ -79,7 +79,7 @@ Copyright: 2011, PagerDuty, Inc.
 License: BSD-3-Clause
 
 Files: puppet/zulip_internal/files/zulip-ec2-configure-interfaces
-Copyright: 2013, Dropbox, Inc.
+Copyright: 2013-2016, Dropbox, Inc. and contributors
 License: Expat
 
 Files: static/audio/zulip.*
