@@ -106,8 +106,8 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 # Messages sent to this address should not be delivered anywhere.
 NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
-# A list of strings representing the host/domain names that this
-# Django site can serve. You should reset it to be a list of
+# A comma-separated list of strings representing the host/domain names
+# that this Django site can serve. You should reset it to be a list of
 # domains/IP addresses for your site. This is a security measure to
 # prevent an attacker from poisoning caches and triggering password
 # reset emails with links to malicious hosts by submitting requests
