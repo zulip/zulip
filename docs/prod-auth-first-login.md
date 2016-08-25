@@ -48,60 +48,21 @@ settings, etc.
 
 ![Image of Zulip admin settings page](images/zulip-admin-settings.png)
 
-## Grant administrator access
+Congratulations!  You now have a fully operational Zulip organization.
 
-You can make any user an administrator on the command line with the `knight`
-management command:
+Next, you'll want to do one of the following:
 
-```
-./manage.py knight username@example.com -f
-```
+* [Configure your Zulip organization](prod-customize.html).
+* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
 
-### Creating api super users with manage.py
+## Troubleshooting
 
-If you need to manage IRC, Jabber, or Zephyr mirrors, you will need to create
-api super users. To do this, use `./manage.py knight` with the
-`--permission=api_super_user` argument
+If you get an error while trying to sign in, check
+`/var/log/zulip/errors.log` for a traceback, and consult the
+[troubleshooting section](prod-health-check-debug.html) for advice on
+how to debug.  If that doesn't help, please visit [the `installation
+help` stream in the Zulip developers'
+chat](https://zulip.tabbott.net/#narrow/stream/installation.20help)
+for realtime help or email zulip-help@googlegroups.com with the
+traceback and we'll try to help you out!
 
-(See `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
-these).
-
-## Making changes to realm settings
-
-If you would like to change the default realm settings, you can do so using the
-Django management python shell (as the zulip user; `sudo -u zulip -i`):
-
-```
-cd /home/zulip/deployments/current
-./manage.py shell
-from zerver.models import *
-r = get_realm("REALM_DOMAIN")
-r.restricted_to_domain=False # Now anyone anywhere can login
-r.save() # save to the database
-```
-
-You can use `Realm.objects.all()` in the management shell to find the list of
-realms and pass the domain of the realm that is not "zulip.com" to `get_realm`.
-
-## Other useful manage.py commands
-
-There are a large number of useful management commands under
-`zerver/manangement/commands/`; you can also see them listed using
-`./manage.py` with no arguments.
-
-One such command worth highlighting because it's a valuable feature
-with no UI in the Administration page is `./manage.py realm_filters`,
-which allows you to configure certain patterns in messages to be
-automatically linkified, e.g., whenever someone mentions "T1234", it
-could be auto-linkified to ticket 1234 in your team's Trac instance.
-
-## If you can't login
-
-If you get an error, check `/var/log/zulip/errors.log` for a traceback, and
-consult the next section for advice on how to debug.  If you aren't able to
-figure it out, email zulip-help@googlegroups.com with the traceback and we'll
-try to help you out!
-
-
-Next step: [Checking that Zulip is healthy and debugging the services
-it depends on](prod-health-check-debug.html).

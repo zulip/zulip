@@ -9,6 +9,8 @@ secure Zulip installation, including:
 - [Monitoring](#monitoring)
 - [Scalability](#scalability)
 - [Security Model](#security-model)
+- [Management commands](#management-commands)
+
 
 ## Upgrade
 
@@ -499,5 +501,66 @@ investigate and coordinate an appropriate security release if needed.
 Zulip security announcements will be sent to
 zulip-announce@googlegroups.com, so you should subscribe if you are
 running Zulip in production.
+
+## Management commands
+
+Zulip has a large library of [Django management
+commands](https://docs.djangoproject.com/en/1.8/ref/django-admin/#django-admin-and-manage-py).
+To use them, you will want to be logged in as the `zulip` user and for
+the purposes of this documentation, we assume the current working
+directory is `/home/zulip/deployments/current`.
+
+Below, we should several useful examples, but there are more than 100
+in total.  We recommend skimming the usage docs (or if there are none,
+the code) of a management command before using it, since they are
+generally less polished and more designed for expert use than the rest
+of the Zulip system.
+
+### manage.py shell
+
+You can get an iPython shell with full access to code within the Zulip
+project using `manage.py shell`, e.g. you can do the following to
+change an email address:
+
+```
+$ /home/zulip/deployments/current/manage.py shell
+In [1]: user_profile = get_user_profile_by_email("email@example.com")
+In [2]: do_change_user_email(user_profile, "new_email@example.com")
+```
+
+#### manage.py dbshell
+
+This will start a postgres shell connected to the Zulip database.
+
+### Grant administrator access
+
+You can make any user a realm administrator on the command line with
+the `knight` management command:
+
+```
+./manage.py knight username@example.com -f
+```
+
+#### Creating api super users with manage.py
+
+If you need to manage the IRC, Jabber, or Zephyr mirrors, you will
+need to create api super users.  To do this, use `./manage.py knight`
+with the `--permission=api_super_user` argument.  See
+`bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
+these.
+
+
+### Other useful manage.py commands
+
+There are a large number of useful management commands under
+`zerver/manangement/commands/`; you can also see them listed using
+`./manage.py` with no arguments.
+
+One such command worth highlighting because it's a valuable feature
+with no UI in the Administration page is `./manage.py realm_filters`,
+which allows you to configure certain patterns in messages to be
+automatically linkified, e.g., whenever someone mentions "T1234", it
+could be auto-linkified to ticket 1234 in your team's Trac instance.
+
 
 Next: [Remote User SSO Authentication.](prod-remote-user-sso-auth.html)
