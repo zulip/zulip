@@ -4,15 +4,15 @@ This page covers topics that will help you maintain a healthy, up-to-date, and
 secure Zulip installation, including:
 
 - [Upgrading](#upgrading)
-- [Upgrade from a git repository](#upgrade-from-a-git-repository)
-- [Backing up and restoring](#back-up-and-restore)
+- [Upgrading from a git repository](#upgrading-from-a-git-repository)
+- [Backups](#backups)
 - [Monitoring](#monitoring)
 - [Scalability](#scalability)
 - [Security Model](#security-model)
 - [Management commands](#management-commands)
 
 
-## Upgrade
+## Upgrading
 
 **We recommend reading this entire section before doing your first
 upgrade.**
@@ -44,7 +44,7 @@ intervention on your part to migrate the data in the database from
 Postgres 9.3 to Postgres 9.5.  Contributions on testing and
 documenting this process are welcome!
 
-### Preserve local changes to configuration files
+### Preserving local changes to configuration files
 
 **Warning**: If you have modified configuration files installed by
 Zulip (e.g. the nginx configuration), the Zulip upgrade process will
@@ -61,13 +61,17 @@ If you need to do this, please report the issue so
 that we can make the Zulip puppet configuration flexible enough to
 handle your setup.
 
-### Troubleshoot with the upgrade log
+### Troubleshooting with the upgrade log
 
 The Zulip upgrade script automatically logs output to
-`/var/log/zulip/upgrade.log`. Please use those logs to include output that
-shows all errors in any bug reports.
+`/var/log/zulip/upgrade.log`. Please use those logs to include output
+that shows all errors in any bug reports.
 
-### Roll back to a prior version
+After the upgrade, we recommend checking `/var/log/zulip/errors.log`
+to confirm that your users are not experiencing errors after the
+upgrade.
+
+### Rolling back to a prior version
 
 The Zulip upgrade process works by creating a new deployment under
 `/home/zulip/deployments/` containing a complete copy of the Zulip server code,
@@ -80,13 +84,13 @@ you can quickly downgrade to the old version by using
 a previous version that you've deployed (the version is specified
 via the path to the copy of `restart-server` you call).
 
-### Update settings
+### Updating settings
 
 If required, you can update your settings by editing `/etc/zulip/settings.py`
 and then run `/home/zulip/deployments/current/scripts/restart-server` to
 restart the server.
 
-### Apply Ubuntu system updates
+### Applying Ubuntu system updates
 
 While the Zulip upgrade script runs `apt-get upgrade`, you are responsible for
 running this on your system on a regular basis between Zulip upgrades to
@@ -111,14 +115,14 @@ integrations that don't discuss this!
 Similarly, you will need to instruct your users to specify the URL
 for your Zulip server when using the Zulip desktop and mobile apps.
 
-### Prevent memory leaks
+### Memory leak mitigation
 
 As a measure to mitigate the impact of potential memory leaks in one
 of the Zulip daemons, the service automatically restarts itself
 every Sunday early morning.  See `/etc/cron.d/restart-zulip` for the
 precise configuration.
 
-## Upgrade from a git repository
+## Upgrading from a git repository
 
 Starting with version 1.4, the Zulip server supports doing deployments
 from a Git repository.  To configure this, you will need to add
@@ -153,7 +157,7 @@ specified repository, build the static assets, and deploy that
 version.  Currently, the upgrade process is slow, but it doesn't need
 to be; there is ongoing work on optimizing it.
 
-## Back up and restore
+## Backups
 
 There are several pieces of data that you might want to back up:
 
