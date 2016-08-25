@@ -1,12 +1,11 @@
 # Installation
 
 Ensure you have an Ubuntu system that satisfies [the installation
-requirements](prod-requirements.html).
-
-Prior to installing Zulip, you should have an Ubuntu 14.04 Trusty
-64-bit server instance, with at least 4GB RAM, 2 CPUs, and 10 GB disk
-space. You should also have a domain name available and have updated
-its DNS record to point to the server.
+requirements](prod-requirements.html).  In short, you should have an
+Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit server instance,
+with at least 4GB RAM, 2 CPUs, and 10 GB disk space.  You should also
+have a domain name available and have updated its DNS record to point
+to the server.
 
 ## Step 0: Subscribe
 

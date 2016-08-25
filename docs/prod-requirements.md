@@ -28,8 +28,8 @@ instance).
 
 #### Operating System
 
-Only Ubuntu 14.04 Trusty is supported for running Zulip in production. 64-bit
-is recommended.
+Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are supported for running
+Zulip in production. 64-bit is recommended.
 
 #### Domain name
 
