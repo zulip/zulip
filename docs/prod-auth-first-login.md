@@ -21,23 +21,15 @@ cd deployments/current
 Note: You always need to run `manage.py` as the Zulip user. To start an interactive
 shell as the Zulip user, use `sudo -u zulip -i`.
 
-Open the link generated with your web browser. You'll see the create realm
-(organization) page:
+* Open the link generated with your web browser. You'll see the create
+organization page ([screenshot here](_images/zulip-create-realm.png)).
+Enter your email address and click *Create organization*.
 
-![Image of Zulip create realm page](images/zulip-create-realm.png)
+* Check your email to find the confirmation email and click the
+link. You'll be prompted to finish setting up your organization and
+user ([screenshot here](_images/zulip-create-user-and-org.png)).
 
-Enter your email address. You should use an address that matches the domain
-with which you want this realm (organization) to be associated.
 
-Once you provide your email address, click *Create organization* and you'll be
-emailed a confirmation link.
-
-![Image of Zulip confirmation link page](images/zulip-confirmation.png)
-
-Check your email and click this link. You'll be prompted to finish setting up
-your organization and your user:
-
-![Image of Zulip ](images/zulip-create-user-and-org.png)
 
 Complete this form and you'll be ready to log in!
 
