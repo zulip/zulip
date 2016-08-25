@@ -78,6 +78,10 @@ mandrill==1.0.57
 # Needed for mock objects in decorators
 mock==2.0.0
 
+# Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
+# Needed by requests to send https request to some sites.
+ndg-httpsclient==0.4.1
+
 oauth2client==3.0.0
 oauthlib==1.1.2
 
