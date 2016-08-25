@@ -1,4 +1,4 @@
-# Install in Production
+# Installation
 
 Ensure you have an Ubuntu system that satisfies [the installation
 requirements](prod-requirements.html).
@@ -164,22 +164,77 @@ These settings include:
 
 ## Step 5: Run database initialization
 
-To initialize the Zulip database for your production install, run:
+At this point, you are done doing things as root.  To initialize the
+Zulip database for your production install, run:
 
 ```
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 ```
 
-Note the use of `su zulip`. The `initialize-database` command and others like
-it need to be run by the `zulip` user.  You can do this by running each command
-with `su zulip -c` or by starting an interactive shell as the zulip user with
-`sudo -u zulip -i`.
-
 The `initialize-database` script will report an error if you did not
 fill in all the mandatory settings from `/etc/zulip/settings.py`.  It
 is safe to rerun it after correcting the problem if that happens.
 
-Once this script completes successfully, the main installation process will be
-complete, and zulip services will be running.
+This completes the process of installing Zulip on your server.
+However, in order to use Zulip, you'll need to create an organization
+in your Zulip installation.
 
-Congratulations! Next: [Logging in and creating users](prod-auth-first-login.html).
+## Step 6: Create a Zulip organization and login
+
+* If you haven't already, verify that your server can send email using
+`./manage.py send_test_email username@example.com`.  You'll need
+working outgoing email to complete the setup process.
+
+* Run the organization (realm) creation [management
+command](prod-maintain-secure-upgrade.html#management-commands) :
+
+  ```
+  su zulip # If you weren't already the zulip user
+  cd /home/zulip/deployments/current
+  ./manage.py generate_realm_creation_link
+  ```
+
+  This will print out a secure 1-time use link that allows creation of a
+  new Zulip organization on your server.  For most servers, you will
+  only ever do this once, but you can run `manage.py
+  generate_realm_creation_link` again if you want to host another
+  organization on your Zulip server.
+
+* Open the link generated with your web browser. You'll see the create
+organization page ([screenshot here](_images/zulip-create-realm.png)).
+Enter your email address and click *Create organization*.
+
+* Check your email to find the confirmation email and click the
+link. You'll be prompted to finish setting up your organization and
+initial administrator user ([screenshot
+here](_images/zulip-create-user-and-org.png)).  Complete this form and
+log in!
+
+**Congratulations!** You are logged in as an organization
+administrator for your new Zulip organization.  After getting
+oriented, we recommend visiting the special "Administration" tab
+linked to from the upper-right gear menu in the Zulip app to configure
+important policy settings like how users can join your new
+organization.  By default, your organization will be configured as
+follows ([screenshot here](_images/zulip-admin-settings.png)):
+
+* `restricted_to_domain=True`: Only people with emails with the same ending as yours can join.
+* `invite_required=False`: An invitation is not required to join the realm.
+* `invite_by_admin_only=False`: You don't need to be an admin user to invite other users.
+
+Next, you'll likely want to do one of the following:
+
+* [Customize your Zulip organization](prod-customize.html).
+* [Learn about managing a production Zulip server](prod-maintain-secure-upgrade.html).
+
+## Troubleshooting
+
+If you get an error after `scripts/setup/install` completes, check
+`/var/log/zulip/errors.log` for a traceback, and consult the
+[troubleshooting section](prod-health-check-debug.html) for advice on
+how to debug.  If that doesn't help, please visit [the "installation
+help" stream in the Zulip developers'
+chat](https://zulip.tabbott.net/#narrow/stream/installation.20help)
+for realtime help or email zulip-help@googlegroups.com with the
+traceback and we'll try to help you out!
+
