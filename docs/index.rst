@@ -62,6 +62,7 @@ Contents:
    :maxdepth: 2
    :caption: Installation for developers
 
+   dev-overview
    dev-env-first-time-contributors
    brief-install-vagrant-dev
    install-ubuntu-without-vagrant-dev

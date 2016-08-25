@@ -1,5 +1,4 @@
-
-Installing the Zulip Development environment
+# Development environment overview
 
 * [Development environment setup for first-time
   contributors](#development-environment-setup-for-first-time-contributors)
@@ -49,8 +48,7 @@ See [the Docker instructions](https://zulip.readthedocs.io/en/latest/install-doc
 
 [using-dev]: https://zulip.readthedocs.io/en/latest/using-dev-environment.html
 
-Using the Development Environment
-=================================
+## Using the Development Environment
 
 See [this guide](https://zulip.readthedocs.io/en/latest/using-dev-environment.html).
 

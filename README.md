@@ -104,7 +104,7 @@ PostgreSQL extension][tsearch], as separate repos.
 contributing!
 
 [cla]: https://opensource.dropbox.com/cla/
-[dev-install]: https://github.com/zulip/zulip/blob/master/README.dev.md
+[dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
 [doc]: https://zulip.readthedocs.io/
 [doc-commit-style]: http://zulip.readthedocs.io/en/latest/code-style.html#commit-messages
 [doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
