@@ -37,7 +37,7 @@ All notable changes to the Zulip server are documented in this file.
   manifests (setting a redis password, etc.).
 - Added automatic configuration of postgres/memcached settings based
   on the server's available RAM.
-- Added scripts/deploy-zulip-from-git for upgrading Zulip from a Git repo.
+- Added scripts/upgrade-zulip-from-git for upgrading Zulip from a Git repo.
 - Added preliminary support for Python 3.  All of Zulip's test suites now
   pass using Python 3.4.
 - Added support for `Name <email@example.com>` format when inviting users.

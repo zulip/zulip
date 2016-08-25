@@ -149,7 +149,7 @@ Zulip is new enough that this script exists), you can do deployments
 by running as root:
 
 ```
-/home/zulip/deployments/current/scripts/deploy-zulip-from-git <branch>
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git <branch>
 ```
 
 and Zulip will automatically fetch the relevant branch from the
