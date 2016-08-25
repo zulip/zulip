@@ -545,6 +545,22 @@ function render(template_name, args) {
 
 }());
 
+(function sidebar_private_message_list() {
+    var args = {
+        want_show_more_messages_links: true,
+        messages: [
+            {
+                recipients: "alice,bob"
+            }
+        ]
+    };
+
+    var html = '';
+    html += render('sidebar_private_message_list', args);
+
+    global.write_handlebars_output("sidebar_private_message_list", html);
+}());
+
 (function sidebar_subject_list() {
     var args = {
         want_show_more_topics_links: true,
