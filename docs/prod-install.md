@@ -8,6 +8,12 @@ Prior to installing Zulip, you should have an Ubuntu 14.04 Trusty
 space. You should also have a domain name available and have updated
 its DNS record to point to the server.
 
+## Step 0: Subscribe
+
+Please subscribe to low-traffic [the Zulip announcements Google
+Group](https://groups.google.com/forum/#!forum/zulip-announce) to get
+announcements about new releases, security issues, etc.
+
 ## Step 1: Install SSL Certificates
 
 Zulip runs over https only and requires ssl certificates in order to
@@ -178,11 +184,5 @@ is safe to rerun it after correcting the problem if that happens.
 
 Once this script completes successfully, the main installation process will be
 complete, and zulip services will be running.
-
-## Step 6: Subscribe
-
-Subscribe to low-traffic [the Zulip announcements Google
-Group](https://groups.google.com/forum/#!forum/zulip-announce) to get
-announcements about new releases, security issues, etc.
 
 Congratulations! Next: [Logging in and creating users](prod-auth-first-login.html).
