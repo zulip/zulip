@@ -2,7 +2,7 @@ var _ = require('third/underscore/underscore.js');
 var MessageListView = require('js/message_list_view.js');
 
 add_dependencies({
-    $: 'jQuery',
+    $: 'jquery',
     XDate: 'third/xdate/xdate.dev.js',
     util: 'js/util.js'
 });

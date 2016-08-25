@@ -25,7 +25,7 @@ i18n.init({
 
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
-global.$ = require('jQuery')(window);
+global.$ = require('jquery')(window);
 var _ = global._;
 
 // When writing these tests, the following command might be helpful:

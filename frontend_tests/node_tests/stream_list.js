@@ -22,7 +22,7 @@ var stream_list = require('js/stream_list.js');
 
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
-global.$ = require('jQuery')(window);
+global.$ = require('jquery')(window);
 $.fn.expectOne = function () {
     assert(this.length === 1);
     return this;
