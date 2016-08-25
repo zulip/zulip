@@ -7,7 +7,7 @@ from typing import Optional
 
 def get_mandrill_client():
     # type: () -> Optional[mandrill.Mandrill]
-    if settings.MANDRILL_API_KEY == '' or settings.DEVELOPMENT:
+    if settings.MANDRILL_API_KEY is None or settings.DEVELOPMENT:
         return None
 
     global MAIL_CLIENT
