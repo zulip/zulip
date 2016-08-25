@@ -1,5 +1,11 @@
 {{#if invite_only}}
-   <span class="subscription_lock"><i class="icon-vector-lock" style="color: {{color}}"></i></span>
+    <span class="subscription_lock"><i class="icon-vector-lock" style="color: {{color}}"></i></span>
 {{else}}
- <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
+    {{#if mandatory}}
+        <span class="color_swatch subscription_mandatory">
+            <i class="icon-vector-asterisk" style="color: {{color}}" title="This is a mandatory stream."></i>
+        </span>
+    {{else}}
+        <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
+    {{/if}}
 {{/if}}

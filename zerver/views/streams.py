@@ -16,7 +16,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream
+    do_remove_default_stream, do_change_mandatory_status
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -165,6 +165,16 @@ def json_make_stream_public(request, user_profile, stream_name=REQ()):
 def json_make_stream_private(request, user_profile, stream_name=REQ()):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     do_make_stream_private(user_profile.realm, stream_name)
+    return json_success()
+
+@authenticated_json_post_view
+@require_realm_admin
+@has_request_variables
+def json_change_stream_mandatory_status(request, user_profile,
+                                        stream_name=REQ(),
+                                        mandatory_status=REQ(validator=check_bool)):
+    # type: (HttpRequest, UserProfile, text_type, bool) -> HttpResponse
+    do_change_mandatory_status(user_profile.realm, stream_name, mandatory_status)
     return json_success()
 
 @require_realm_admin
@@ -494,7 +504,8 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
     property_converters = {"color": check_string, "in_home_view": check_bool,
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
-                           "pin_to_top": check_bool}
+                           "pin_to_top": check_bool,
+                           "mandatory": check_bool}
     response_data = []
 
     for change in subscription_data:

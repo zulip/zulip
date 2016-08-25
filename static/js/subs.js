@@ -140,6 +140,9 @@ function update_in_home_view(sub, value) {
 
 exports.toggle_home = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
+    if (sub.mandatory === true && sub.in_home_view) {
+        return;
+    }
     update_in_home_view(sub, ! sub.in_home_view);
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
 };
@@ -165,6 +168,24 @@ function update_stream_pin(sub, value) {
     var pin_checkbox = $('#pinstream-' + sub.stream_id);
     pin_checkbox.attr('checked', value);
     sub.pin_to_top = value;
+}
+
+function update_stream_mandatory_status(sub, value) {
+    sub.mandatory = value;
+    var mandatory_button_selc = $('.toggle-stream-mandatory[data-stream-name="' + sub.name + '"]');
+    var new_button_text;
+
+    // Change button's text when mandatory status is updated
+    if (value) {
+        new_button_text = "Make stream optional";
+    } else {
+        new_button_text = "Make stream mandatory";
+    }
+    mandatory_button_selc.html(new_button_text);
+
+    // TODO: Handle condition when stream is already muted and then
+    // stream's mandatory status is set to true.
+    $("#mutestream-"+sub.stream_id).parent().toggle();
 }
 
 function update_stream_name(sub, new_name) {
@@ -452,6 +473,7 @@ function populate_subscriptions(subs, subscribed) {
                                            desktop_notifications: elem.desktop_notifications,
                                            audible_notifications: elem.audible_notifications,
                                            pin_to_top: elem.pin_to_top,
+                                           mandatory: elem.mandatory,
                                            subscribed: subscribed,
                                            email_address: elem.email_address,
                                            stream_id: elem.stream_id,
@@ -586,6 +608,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
     case 'pin_to_top':
         update_stream_pin(sub, value);
         break;
+    case 'mandatory':
+        update_stream_mandatory_status(sub, value);
+        break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
                                                                 value: value});
@@ -618,10 +643,16 @@ function ajaxSubscribe(stream) {
     });
 }
 
-function ajaxUnsubscribe(stream) {
+function ajaxUnsubscribe(stream_name) {
+    var stream = stream_data.get_sub(stream_name);
+    if (stream.mandatory) {
+        ui.report_message(i18n.t("This is a mandatory stream. If you want to unsubscribe, please contact Realm Admin"),
+                            $("#subscriptions-status"), undefined, 'subscriptions-status');
+        return;
+    }
     return channel.post({
         url: "/json/subscriptions/remove",
-        data: {"subscriptions": JSON.stringify([stream]) },
+        data: {"subscriptions": JSON.stringify([stream_name]) },
         success: function (resp, statusText, xhr, form) {
             var name, res = $.parseJSON(xhr.responseText);
             $("#subscriptions-status").hide();
@@ -1152,6 +1183,36 @@ $(function () {
             "Error making stream private",
             true
         );
+    });
+
+    $("#subscriptions_table").on("click", ".toggle-stream-mandatory", function (e) {
+
+        var stream_name = $(e.target).attr("data-stream-name");
+        var sub_row = $(e.target).closest('.subscription_row');
+
+        $("#subscriptions-status").hide();
+        var mandatory_status = !stream_data.get_sub(stream_name).mandatory;
+        var data = {
+            "stream_name": stream_name,
+            "mandatory_status": mandatory_status
+        };
+
+        channel.post({
+            url: "/json/change_mandatory_status",
+            data: data,
+            success: function (data) {
+                var sub = stream_data.get_sub(stream_name);
+                sub.mandatory = mandatory_status;
+                var feedback_div = sub_row.find(".change-stream-mandatory-feedback").expectOne();
+                ui.report_success(i18n.t("Updated mandatory stream status to ") + mandatory_status.toString(),
+                                    feedback_div);
+            },
+            error: function (xhr) {
+                var feedback_div = sub_row.find(".change-stream-mandatory-feedback").expectOne();
+                ui.report_error(i18n.t("Could not update mandatory status"),
+                                xhr, feedback_div);
+            }
+        });
     });
 
     $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {
