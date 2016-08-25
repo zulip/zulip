@@ -20,7 +20,7 @@ static/js/bundle.js
 static/third/gemoji/
 static/third/zxcvbn/
 static/locale/language_options.json
-node_modules
+/node_modules
 npm-debug.log
 *.mo
 var/*
