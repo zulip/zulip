@@ -16,6 +16,76 @@ exports.rerender = function () {
     }
 };
 
+exports.notify_with_undo_option = (function () {
+    var event_added = false;
+    var meta = {
+        stream: null,
+        topic: null,
+        hide_me_time: null,
+        alert_hover_state: false,
+        $mute: null
+    };
+    var animate = {
+        fadeOut: function ($mute) {
+            if (meta.$mute) {
+                meta.$mute.fadeOut(500).removeClass("show");
+            }
+        },
+        fadeIn: function ($mute) {
+            if (meta.$mute) {
+                meta.$mute.fadeIn(500).addClass("show");
+            }
+        }
+    };
+    var interval = setInterval(function () {
+        if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
+            animate.fadeOut();
+        }
+    }, 100);
+
+    return function (stream, topic) {
+        var $exit = $("#unmute_muted_topic_notification .exit-me");
+
+        if (!meta.$mute) {
+          meta.$mute = $("#unmute_muted_topic_notification");
+
+          $exit.click(function () {
+              animate.fadeOut();
+          });
+
+          meta.$mute.find("#unmute").click(function () {
+              // it should reference the meta variable and not get stuck with
+              // a pass-by-value of stream, topic.
+              popovers.topic_ops.unmute(meta.stream, meta.topic);
+              animate.fadeOut();
+          });
+        }
+
+        meta.stream = stream;
+        meta.topic = topic;
+        // add a four second delay before closing up.
+        meta.hide_me_time = new Date().getTime() + 4000;
+
+        meta.$mute.find(".topic").html(topic);
+        meta.$mute.find(".stream").html(stream);
+
+        animate.fadeIn();
+
+        // if the user mouses over the notification, don't hide it.
+        meta.$mute.mouseenter(function () {
+            meta.alert_hover_state = true;
+        });
+
+        // once the user's mouse leaves the notification, restart the countdown.
+        meta.$mute.mouseleave(function () {
+            meta.alert_hover_state = false;
+            // add at least 2000ms but if more than that exists just keep the
+            // current amount.
+            meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
+        });
+    };
+}());
+
 exports.persist_and_rerender = function () {
     // Optimistically rerender our new muting preferences.  The back
     // end should eventually save it, and if it doesn't, it's a recoverable
