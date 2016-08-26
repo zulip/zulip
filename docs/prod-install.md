@@ -34,6 +34,7 @@ with the following commands:
 
 ```
 sudo -i  # If not already root
+cd /root
 wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
 rm -rf /root/zulip && mkdir /root/zulip
 tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
