@@ -1145,6 +1145,10 @@ just a temporary hack.
     background-color: #a4bed2;
 }
 
+.message_header_private_message .message-header-contents .recipient_row_date {
+    color: #fff;
+}
+
 .floating_recipient .message_header_private_message .message-header-contents {
     background-color: #a4bed2;
 }
