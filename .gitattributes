@@ -1,7 +1,7 @@
 .gitignore export-ignore
 .gitattributes export-ignore
 /analytics export-ignore
-/assets export-ignore
+/static/assets export-ignore
 /bots export-ignore
 /corporate export-ignore
 /static export-ignore

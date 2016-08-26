@@ -58,8 +58,8 @@ templating systems.
 
 * `node_modules/` Third-party JavaScript installed via `npm`.
 
-* `assets/` For assets not to be served to the web (e.g. the system to
-            generate our favicons).
+* `static/assets/` For assets not to be served to the web (e.g. the system to
+                   generate our favicons).
 
 -----------------------------------------------------------------------
 
