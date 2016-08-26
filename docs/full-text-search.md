@@ -61,21 +61,12 @@ After:
 
     USING_PGROONGA = True
 
-You add `SUPERUSER` permission to the `zulip` user in PostgreSQL
-temporary:
-
-    su postgres -c 'psql zulip --command "ALTER ROLE zulip SUPERUSER"'
-
 You enable PGroonga:
 
     cd /srv/zulip
     ./manage.py migrate pgroonga
 
 Note that you can't send new messages until the migration is finished.
-
-You remove `SUPERUSER` permission from the `zulip` user in PostgreSQL:
-
-    su postgres -c 'psql zulip --command "ALTER ROLE zulip NOSUPERUSER"'
 
 You restart Zulip:
 
@@ -112,19 +103,10 @@ After:
 
     USING_PGROONGA = True
 
-You add `SUPERUSER` permission to the `zulip` user in PostgreSQL
-temporary:
-
-    su postgres -c 'psql zulip --command "ALTER ROLE zulip SUPERUSER"'
-
 You disable PGroonga:
 
     cd /srv/zulip
     ./manage.py migrate pgroonga zero
-
-You remove `SUPERUSER` permission from the `zulip` user in PostgreSQL:
-
-    su postgres -c 'psql zulip --command "ALTER ROLE zulip NOSUPERUSER"'
 
 You set `False` to `USING_PGROONGA` in `local_settings.py` again:
 
