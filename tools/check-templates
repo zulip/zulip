@@ -81,7 +81,6 @@ def check_html_templates(templates, modified_only):
             'templates/zerver/left-sidebar.html',
             'templates/zerver/login.html',
             'templates/zerver/markdown_help.html',
-            'templates/zerver/register.html',
             'templates/zerver/right-sidebar.html',
             'templates/zerver/search_operators.html',
         ]
