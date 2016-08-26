@@ -223,4 +223,4 @@ limitations under the License.
 The software includes some works released by third parties under other
 free and open source licenses. Those works are redistributed under the
 license terms under which the works were received. For more details,
-see the ``THIRDPARTY`` file included with this distribution.
+see the ``docs/THIRDPARTY`` file included with this distribution.
