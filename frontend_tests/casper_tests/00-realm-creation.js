@@ -37,7 +37,7 @@ casper.then(function () {
     });
 
     this.test.assertEvalEquals(function () {
-        return __utils__.findOne('.controls.fakecontrol input[type=text]').getAttribute('placeholder');
+        return $('.controls.fakecontrol input[type=text]').attr('placeholder');
     }, email);
 
     this.waitForSelector('label[for=id_team_name]', function () {
