@@ -15,9 +15,7 @@ class Migration(migrations.Migration):
     database_setting = settings.DATABASES["default"]
     if "postgres" in database_setting["ENGINE"]:
         operations = [
-            operations.CreateExtension("pgroonga"),
             migrations.RunSQL("""
-GRANT USAGE ON SCHEMA pgroonga TO %(USER)s;
 ALTER ROLE %(USER)s SET search_path TO %(SCHEMA)s,public,pgroonga,pg_catalog;
 
 SET search_path = %(SCHEMA)s,public,pgroonga,pg_catalog;
