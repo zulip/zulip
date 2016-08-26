@@ -49,7 +49,25 @@ The following processes should be executed as the root user. Run:
 This section describes how to enable full-text search feature based on
 PGroonga.
 
-You [install PGroonga](http://pgroonga.github.io/install/).
+You set `enabled` to `pgroonga` in `[machine]` section in
+`/etc/zulip/zulip.conf` to install PGroonga:
+
+Before:
+
+    [machine]
+    ...
+    pgroonga = disabled
+
+After:
+
+    [machine]
+    ...
+    pgroonga = enabled
+
+You can install PGroonga by the following command lines:
+
+    cd /srv/zulip
+    scripts/zulip-puppet-apply
 
 You set `True` to `USING_PGROONGA` in `/etc/zulip/settings.py`:
 
