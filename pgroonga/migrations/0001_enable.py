@@ -24,6 +24,9 @@ ALTER TABLE zerver_message ADD COLUMN search_pgroonga text;
 
 UPDATE zerver_message SET search_pgroonga = subject || ' ' || rendered_content;
 
+-- TODO: We want to use CREATE INDEX CONCURRENTLY but it can't be used in
+-- transaction. Django uses transaction implicitly.
+-- Django 1.10 may solve the problem.
 CREATE INDEX zerver_message_search_pgroonga ON zerver_message
   USING pgroonga(search_pgroonga pgroonga.text_full_text_search_ops);
 """ % database_setting,
