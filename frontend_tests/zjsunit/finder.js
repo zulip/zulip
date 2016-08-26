@@ -9,9 +9,10 @@ var path = require('path');
 exports.find_files_to_run = function () {
     var oneFileFilter = [];
     var testsDifference = [];
-    if (process.argv[2] ) {
+    if (process.argv[2]) {
         oneFileFilter = process.argv
           .slice(2)
+          .filter(function (filename) {return (/[.]js$/).test(filename);})
           .map(function (filename) {return filename.replace(/\.js$/i, '');});
     }
 
