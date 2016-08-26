@@ -71,9 +71,27 @@ class zulip::postgres_appdb_base {
     apt::ppa {'ppa:groonga/ppa':
       before => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
     }
+
     # Needed for optional our full text search system
     package{"postgresql-${zulip::base::postgres_version}-pgroonga":
+      require => Package["postgresql-${zulip::base::postgres_version}"],
       ensure => "installed",
+    }
+
+    $pgroonga_setup_sql_path = "/usr/share/postgresql/${zulip::base::postgres_version}/pgroonga_setup.sql"
+    file { $pgroonga_setup_sql_path:
+      require => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
+      ensure => file,
+      owner  => "postgres",
+      group  => "postgres",
+      mode => 640,
+      source => "puppet:///modules/zulip/postgresql/pgroonga_setup.sql",
+    }
+
+    exec{"create_pgroonga_extension":
+      require => File["$pgroonga_setup_sql_path"],
+      command  => "bash -c 'cat $pgroonga_setup_sql_path | psql -v ON_ERROR_STOP=1 zulip && touch $pgroonga_setup_sql_path.applied'",
+      creates  => "$pgroonga_setup_sql_path.applied",
     }
   }
 }
