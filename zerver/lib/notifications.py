@@ -492,14 +492,10 @@ def enqueue_welcome_emails(email, name):
                                          tags=["followup-emails"],
                                          sender=sender)
     # Send day 2 email
-    tomorrow = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
-    # 11 AM EDT
-    tomorrow_morning = datetime.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 15, 0)
-    assert(datetime.datetime.utcnow() < tomorrow_morning)
     send_local_email_template_with_delay([{'email': email, 'name': name}],
                                          "zerver/emails/followup/day2",
                                          template_payload,
-                                         tomorrow_morning - datetime.datetime.utcnow(),
+                                         datetime.timedelta(days=1),
                                          tags=["followup-emails"],
                                          sender=sender)
 
