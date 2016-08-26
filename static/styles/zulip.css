@@ -261,7 +261,25 @@ pre {
     margin-bottom: 5px;
 }
 
+pre::-webkit-scrollbar {
+    height: 8px;
+
+    background-color: rgba(0,0,0,0.05);
+}
+
+pre::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 20px;
+
+    transition: all 0.2s ease;
+}
+
+pre::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(0,0,0,0.6);
+}
+
 pre code {
+    overflow-x: scroll;
     white-space: pre;
 }
 
