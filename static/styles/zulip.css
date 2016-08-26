@@ -2484,7 +2484,6 @@ div.floating_recipient {
 #subscriptions_table .subscription_block {
     padding-left: 0.5em;
     vertical-align: middle;
-    display: inline-block;
 }
 
 #stream_filters .subscription_block {
@@ -2499,25 +2498,31 @@ div.floating_recipient {
     margin-right: 38px;
 }
 
-.subscription_name,
-.subscription_description {
-    line-height: 1em;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.subscription-info-container {
+    display: inline-block;
+    /* subtract out the width of the subscribe button and arrow. */
+    width: calc(100% - 230px);
+    /* to center the container vertically. */
+    margin-top: 13px;
 }
 
-#stream_filters .subscription_name {
+.subscription-setting-icon {
+    vertical-align: top;
     display: inline-block;
 }
 
-.subscription-name-row,
-.subscription-description-row {
-    line-height: 47px;
+.subscription-info {
+    display: inline-block;
+    /* to provide space for the setting-icon. */
+    max-width: calc(100% - 31px);
+    margin-top: 1px;
+    overflow: hidden;
+    word-wrap: normal;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.subscription-description-row {
+.subscription-info .light {
     font-weight: 300;
 }
 
@@ -2565,8 +2570,13 @@ div.floating_recipient {
     min-height: 47px;
 }
 
-.subscription_header .subscription_name {
-    width: auto;
+.subscription-name-row {
+  display: inline-block;
+}
+
+.subscription-name-row,
+.subscription-description-row {
+  vertical-align: top;
 }
 
 .subscription_header .subscription_lock {
@@ -2641,6 +2651,7 @@ div.floating_recipient {
 }
 
 .subscription_row {
+    position: relative;
     border-top: 1px solid #ddd;
 }
 
