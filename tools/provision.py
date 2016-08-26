@@ -95,10 +95,12 @@ APT_DEPENDENCIES = {
     "trusty": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.3",
         "postgresql-9.3-tsearch-extras",
+        "postgresql-9.3-pgroonga",
     ],
     "xenial": UBUNTU_COMMON_APT_DEPENDENCIES + [
         "postgresql-9.5",
         "postgresql-9.5-tsearch-extras",
+        "postgresql-9.5-pgroonga",
     ],
 }
 
@@ -160,6 +162,8 @@ def main():
     os.chdir(ZULIP_PATH)
 
     run(["sudo", "./scripts/lib/setup-apt-repo"])
+    # Add groonga repository to get the pgroonga packages
+    run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 

@@ -2,7 +2,7 @@
 set -x
 set -x
 
-apt-get install -y lsb-release
+apt-get install -y lsb-release software-properties-common
 
 # First, install any updates from the apt repo that may be needed
 wget -qO - https://zulip.com/dist/keys/zulip-ppa.asc | apt-key add -

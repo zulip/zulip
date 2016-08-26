@@ -66,4 +66,14 @@ class zulip::postgres_appdb_base {
     source => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_appdb",
   }
 
+  $pgroonga = zulipconf("machine", "pgroonga", "")
+  if $pgroonga != "" {
+    apt::ppa {'ppa:groonga/ppa':
+      before => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
+    }
+    # Needed for optional our full text search system
+    package{"postgresql-${zulip::base::postgres_version}-pgroonga":
+      ensure => "installed",
+    }
+  }
 }
