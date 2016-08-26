@@ -8,6 +8,7 @@ from six.moves import urllib
 import itertools
 import traceback
 import os
+import pytz
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
 import zulip
@@ -90,7 +91,7 @@ def send_reminders():
 
     messages = []
     keys = set()
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
 
     for uid, start, title in events:
         dt = start - now

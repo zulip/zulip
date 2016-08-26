@@ -7,6 +7,7 @@ from __future__ import absolute_import
 from __future__ import division
 import os, sys
 from six.moves import range
+from django.utils import timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
@@ -52,7 +53,7 @@ def get_data(url, username, pw):
 
     return extract_json_response(res)
 
-def noon_of(day=datetime.now()):
+def noon_of(day=timezone.now()):
     return datetime(year=day.year, month=day.month, day=day.day, hour=12)
 
 def points_during_day(data, noon):
@@ -152,7 +153,7 @@ if __name__ == '__main__':
     if not options.user or not options.password:
         parser.error("You must enter a username and password to log into graphite with")
 
-    startfrom = noon_of(day=datetime.now())
+    startfrom = noon_of(day=timezone.now())
     if options.start_from != 'today':
         startfrom = noon_of(day=datetime.fromtimestamp(int(options.start_from)))
         print("Using baseline of today as %s" % (startfrom,))
