@@ -54,8 +54,8 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     return first;
 };
 
-exports.same_stream_and_subject = function util_same_stream_and_subject(a, b) {
-    // Streams and subjects are case-insensitive.
+exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
+    // Streams and topics are case-insensitive.
     return ((a.stream.toLowerCase() === b.stream.toLowerCase()) &&
             (a.subject.toLowerCase() === b.subject.toLowerCase()));
 };
@@ -106,7 +106,7 @@ exports.same_recipient = function util_same_recipient(a, b) {
     case 'private':
         return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
     case 'stream':
-        return exports.same_stream_and_subject(a, b);
+        return exports.same_stream_and_topic(a, b);
     }
 
     // should never get here
