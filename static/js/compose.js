@@ -10,7 +10,7 @@ var is_composing_message = false;
 var user_acknowledged_all_everyone;
 
 var message_snapshot;
-var empty_subject_placeholder = "(no topic)";
+var empty_topic_placeholder = "(no topic)";
 
 var uploads_domain = document.location.protocol + '//' + document.location.host;
 var uploads_path = '/user_uploads';
@@ -305,15 +305,15 @@ exports.cancel = function () {
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 
-exports.empty_subject_placeholder = function () {
-    return empty_subject_placeholder;
+exports.empty_topic_placeholder = function () {
+    return empty_topic_placeholder;
 };
 
 function create_message_object() {
     // Subjects are optional, and we provide a placeholder if one isn't given.
     var subject = compose.subject();
     if (subject === "") {
-        subject = compose.empty_subject_placeholder();
+        subject = compose.empty_topic_placeholder();
     }
 
     var content = make_uploads_relative(compose.message_content());

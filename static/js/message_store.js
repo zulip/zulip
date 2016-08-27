@@ -110,7 +110,7 @@ function set_topic_edit_properties(message) {
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
-    if (message.subject === compose.empty_subject_placeholder()) {
+    if (message.subject === compose.empty_topic_placeholder()) {
         message.always_visible_topic_edit = true;
     } else if (page_params.is_admin) {
         message.on_hover_topic_edit = true;

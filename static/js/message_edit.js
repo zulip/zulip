@@ -177,7 +177,7 @@ function edit_message (row, raw_content) {
     }
 
     currently_editing_messages[message.id] = edit_obj;
-    if ((message.type === 'stream' && message.subject === compose.empty_subject_placeholder()) ||
+    if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
         !can_edit_content) {
         edit_row.find(".message_edit_topic").focus();
     } else {
@@ -240,7 +240,7 @@ exports.start_topic_edit = function (recipient_row) {
     var msg_id = rows.id_for_recipient_row(recipient_row);
     var message = current_msg_list.get(msg_id);
     var topic = message.subject;
-    if (topic === compose.empty_subject_placeholder()) {
+    if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
     form.find(".message_edit_topic").val(topic).select().focus();
