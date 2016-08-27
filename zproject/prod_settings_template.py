@@ -367,3 +367,12 @@ CAMO_URI = '/external_content/'
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
+
+# Full-text search configuration
+#
+# By default, Zulip supports full-text search only for English.  If
+# you want to use other languages, use PGroonga based full-text search
+# feature. See
+# https://zulip.readthedocs.org/en/latest/full-text-search.html how to
+# enable PGroonga based full-text search feature.
+USING_PGROONGA = False

@@ -34,6 +34,11 @@ def update_fts_columns(cursor):
     cursor.execute("SELECT id, message_id FROM fts_update_log;")
     ids = []
     for (id, message_id) in cursor.fetchall():
+        if settings.USING_PGROONGA:
+            cursor.execute("UPDATE zerver_message SET "
+                           "search_pgroonga = "
+                           "subject || ' ' || rendered_content "
+                           "WHERE id = %s", (message_id,))
         cursor.execute("UPDATE zerver_message SET "
                        "search_tsvector = to_tsvector('zulip.english_us_search', "
                        "subject || rendered_content) "

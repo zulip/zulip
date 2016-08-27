@@ -29,7 +29,7 @@ fi
 # puppet apply
 mkdir -p /etc/zulip
 (
-    echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE";
+    echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE\npgroonga = disabled";
     if [ -n "$TRAVIS" ]; then
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
     fi

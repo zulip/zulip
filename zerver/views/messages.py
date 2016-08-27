@@ -236,6 +236,23 @@ class NarrowBuilder(object):
             return query.where(maybe_negate(cond))
 
     def by_search(self, query, operand, maybe_negate):
+        if settings.USING_PGROONGA:
+            return self._by_search_pgroonga(query, operand, maybe_negate)
+        else:
+            return self._by_search_tsearch(query, operand, maybe_negate)
+
+    def _by_search_pgroonga(self, query, operand, maybe_negate):
+        match_positions_byte = func.pgroonga.match_positions_byte
+        query_extract_keywords = func.pgroonga.query_extract_keywords
+        keywords = query_extract_keywords(operand)
+        query = query.column(match_positions_byte(column("rendered_content"),
+                                                  keywords).label("content_matches"))
+        query = query.column(match_positions_byte(column("subject"),
+                                                  keywords).label("subject_matches"))
+        condition = column("search_pgroonga").op("@@")(operand)
+        return query.where(maybe_negate(condition))
+
+    def _by_search_tsearch(self, query, operand, maybe_negate):
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),

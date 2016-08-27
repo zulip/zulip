@@ -34,6 +34,106 @@ application server instead.
 
 ## An optional full-text search implementation
 
-See [the option PGroonga pull
-request](https://github.com/zulip/zulip/pull/700) for details on the
-status of the PGroonga integration.
+Zulip also supports [PGroonga](http://pgroonga.github.io/). PGroonga
+is a PostgreSQL extension that provides full-text search
+feature. PostgreSQL's built-in full-text search feature supports only
+one language at a time. PGroonga supports all languages including
+Japanese, Chinese and so on at a time.
+
+The following processes should be executed as the root user. Run:
+
+    sudo -i
+
+### How to enable full-text search against all languages
+
+This section describes how to enable full-text search feature based on
+PGroonga.
+
+You set `enabled` to `pgroonga` in `[machine]` section in
+`/etc/zulip/zulip.conf` to install PGroonga:
+
+Before:
+
+    [machine]
+    ...
+    pgroonga = disabled
+
+After:
+
+    [machine]
+    ...
+    pgroonga = enabled
+
+You can install PGroonga by the following command lines:
+
+    cd /srv/zulip
+    scripts/zulip-puppet-apply
+
+You set `True` to `USING_PGROONGA` in `/etc/zulip/settings.py`:
+
+Before:
+
+    USING_PGROONGA = False
+
+After:
+
+    USING_PGROONGA = True
+
+You enable PGroonga:
+
+    cd /srv/zulip
+    ./manage.py migrate pgroonga
+
+Note that you can't send new messages until the migration is finished.
+
+You restart Zulip:
+
+    su zulip -c /home/zulip/deployments/current/scripts/restart-server
+
+Now, you can use full-text search against all languages.
+
+### How to disable full-text search against all languages
+
+This section describes how to disable full-text search feature based
+on PGroonga.
+
+You set `False` to `USING_PGROONGA` in `local_settings.py`:
+
+Before:
+
+    USING_PGROONGA = True
+
+After:
+
+    USING_PGROONGA = False
+
+You restart Zulip:
+
+    su zulip -c /home/zulip/deployments/current/scripts/restart-server
+
+You set `True` to `USING_PGROONGA` in `local_settings.py` temporary:
+
+Before:
+
+    USING_PGROONGA = False
+
+After:
+
+    USING_PGROONGA = True
+
+You disable PGroonga:
+
+    cd /srv/zulip
+    ./manage.py migrate pgroonga zero
+
+You set `False` to `USING_PGROONGA` in `local_settings.py` again:
+
+Before:
+
+    USING_PGROONGA = True
+
+After:
+
+    USING_PGROONGA = False
+
+Now, full-text search feature based on PGroonga is disabled.

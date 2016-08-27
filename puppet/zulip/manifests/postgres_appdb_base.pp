@@ -67,7 +67,7 @@ class zulip::postgres_appdb_base {
   }
 
   $pgroonga = zulipconf("machine", "pgroonga", "")
-  if $pgroonga != "" {
+  if $pgroonga == "enabled" {
     apt::ppa {'ppa:groonga/ppa':
       before => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
     }
