@@ -168,7 +168,8 @@ def send_to_missed_message_address(address, message):
 
     internal_send_message(user_profile.email, recipient_type_name,
                           recipient_str, subject, body)
-
+    logging.info("Successfully processed email from %s to %s" % (
+        user_profile.email, recipient_str))
 
 ## Sending the Zulip ##
 
@@ -300,6 +301,8 @@ def process_stream_message(to, subject, message, debug_info):
     body += extract_and_upload_attachments(message, stream.realm)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
+    logging.info("Successfully processed email to %s (%s)" % (
+        stream.name, stream.realm.domain))
 
 def process_missed_message(to, message, pre_checked):
     # type: (text_type, message.Message, bool) -> None
