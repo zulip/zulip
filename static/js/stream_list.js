@@ -189,7 +189,7 @@ function zoom_out() {
     $("#stream_filters li.narrow-filter").show();
 }
 
-function remove_expanded_subjects() {
+function remove_expanded_topics() {
     popovers.hide_topic_sidebar_popover();
     $("ul.expanded_subjects").remove();
 }
@@ -207,7 +207,7 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
 
     private_messages_open = false;
     $("ul.filters li").removeClass('active-filter active-sub-filter');
-    remove_expanded_subjects();
+    remove_expanded_topics();
     remove_expanded_private_messages();
 }
 
@@ -443,7 +443,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 function rebuild_recent_topics(stream, active_topic) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
-    remove_expanded_subjects();
+    remove_expanded_topics();
     var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
 
