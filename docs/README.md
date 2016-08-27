@@ -20,6 +20,11 @@ and then opening `file:///path/to/zulip/docs/_build/html/index.html` in
 your browser (you can also use e.g. `firefox
 docs/_build/html/index.html` from the root of your Zulip checkout).
 
+If you are introducing a new section into the table of contents,
+you will want to modify `docs/index.rst` and run `make clean` before
+`make html`, so that other docs besides your new one also get the
+new entry in the table of contents.
+
 You can also usually test your changes by pushing a branch to GitHub
 and looking at the content on the GitHub web UI, since GitHub renders
 Markdown.
