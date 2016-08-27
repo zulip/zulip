@@ -100,6 +100,7 @@ Contents:
 
    settings
    queuing
+   custom-apps
    pointer
    markdown
    front-end-build-process
