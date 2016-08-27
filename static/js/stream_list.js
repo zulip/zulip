@@ -440,8 +440,8 @@ exports._build_private_messages_list = function (active_conversation, max_privat
     return recipients_dom;
 };
 
-function rebuild_recent_subjects(stream, active_topic) {
-    // TODO: Call rebuild_recent_subjects less, not on every new
+function rebuild_recent_topics(stream, active_topic) {
+    // TODO: Call rebuild_recent_topics less, not on every new
     // message.
     remove_expanded_subjects();
     var max_subjects = 5;
@@ -487,7 +487,7 @@ exports.update_streams_sidebar = function () {
             subject = op_subject[0];
         }
         if (stream_data.is_subscribed(op_stream[0])) {
-            rebuild_recent_subjects(op_stream[0], subject);
+            rebuild_recent_topics(op_stream[0], subject);
         }
     }
 };
@@ -633,7 +633,7 @@ $(function () {
             } else {
                 stream_li.addClass('active-filter');
             }
-            rebuild_recent_subjects(op_stream[0], subject);
+            rebuild_recent_topics(op_stream[0], subject);
             unread.process_visible();
         }
     });
