@@ -41,7 +41,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     return recipient;
 };
 
-exports.process_message_for_recent_subjects = function process_message_for_recent_subjects(message, remove_message) {
+exports.process_message_for_recent_topics = function process_message_for_recent_topics(message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
     var stream = message.stream;
@@ -150,7 +150,7 @@ function add_message_metadata(message) {
         composebox_typeahead.add_topic(message.stream, message.subject);
         message.reply_to = message.sender_email;
 
-        exports.process_message_for_recent_subjects(message);
+        exports.process_message_for_recent_topics(message);
 
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
@@ -337,9 +337,9 @@ exports.update_messages = function update_messages(events) {
                     return;
                 }
 
-                // Remove the recent subjects entry for the old subject;
+                // Remove the recent topics entry for the old topics;
                 // must be called before we update msg.subject
-                exports.process_message_for_recent_subjects(msg, true);
+                exports.process_message_for_recent_topics(msg, true);
                 // Update the unread counts; again, this must be called
                 // before we update msg.subject
                 unread.update_unread_topics(msg, event);
@@ -347,9 +347,9 @@ exports.update_messages = function update_messages(events) {
                 msg.subject = event.subject;
                 msg.subject_links = event.subject_links;
                 set_topic_edit_properties(msg);
-                // Add the recent subjects entry for the new subject; must
+                // Add the recent topics entry for the new topics; must
                 // be called after we update msg.subject
-                exports.process_message_for_recent_subjects(msg);
+                exports.process_message_for_recent_topics(msg);
             });
         }
 
