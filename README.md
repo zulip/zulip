@@ -63,7 +63,7 @@ Zulip welcomes all forms of contributions!  The page documents the
 Zulip development process.
 
 * **Pull requests**. Before a pull request can be merged, you need to
-to sign the [Dropbox Contributor License Agreement][cla].  Also,
+sign the [Dropbox Contributor License Agreement][cla].  Also,
 please skim our [commit message style guidelines][doc-commit-style].
 
 * **Testing**. The Zulip automated tests all run automatically when
