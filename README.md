@@ -51,7 +51,7 @@ installation guide][dev-install].
 
 ## Running Zulip in production
 
-Zulip in production only supports Ubuntu 14.04 right now, but work is
+Zulip in production only supports Ubuntu 14.04 and Ubuntu 16.04 right now, but work is
 ongoing on adding support for additional platforms. The installation
 process is documented at https://zulip.org/server.html and in more
 detail in [the
