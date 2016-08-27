@@ -860,11 +860,7 @@ $(function () {
         selectText(this);
     });
 
-    $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var sub_row = $(e.target).closest('.subscription_row');
-        var stream_name = sub_row.find('.subscription_name').text();
+    function sub_or_unsub (stream_name) {
         var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {
@@ -872,6 +868,19 @@ $(function () {
         } else {
             ajaxSubscribe(stream_name);
         }
+    }
+
+    $("#subscriptions_table").on("click", ".sub_unsub_button", sub_or_unsub);
+    $("body").on("click", ".sub_unsub_button", function (e) {
+        $(this).toggleClass("unsub");
+        $(this).closest(".popover").fadeOut(500).delay(500).remove();
+
+        var $target = $(e.target);
+        var stream_name = $target.data("name") || $target.closest('.subscription_row').find('.subscription_name').text();
+
+        sub_or_unsub(stream_name);
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {

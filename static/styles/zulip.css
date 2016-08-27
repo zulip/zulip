@@ -2753,6 +2753,15 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+.streams_popover .sub_unsub_button {
+    margin-top: 0px;
+    float: none;
+}
+
+.streams_popover .sub_unsub_button::after {
+    content: " Unsubscribe";
+}
+
 .stream_sub_unsub_button {
     min-width: 140px;
     margin-top: 9px;
