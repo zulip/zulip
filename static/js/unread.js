@@ -6,7 +6,7 @@ var unread = (function () {
 var exports = {};
 
 var unread_mentioned = new Dict();
-var unread_subjects = new Dict({fold_case: true});
+var unread_topics = new Dict({fold_case: true});
 var unread_privates = new Dict();
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
@@ -19,22 +19,22 @@ exports.message_unread = function (message) {
            message.flags.indexOf('read') === -1;
 };
 
-exports.update_unread_subjects = function (msg, event) {
+exports.update_unread_topics = function (msg, event) {
     var canon_stream = stream_data.canonicalized_name(msg.stream);
     var canon_subject = stream_data.canonicalized_name(msg.subject);
 
     if (event.subject !== undefined &&
-        unread_subjects.has(canon_stream) &&
-        unread_subjects.get(canon_stream).has(canon_subject) &&
-        unread_subjects.get(canon_stream).get(canon_subject).get(msg.id)) {
+        unread_topics.has(canon_stream) &&
+        unread_topics.get(canon_stream).has(canon_subject) &&
+        unread_topics.get(canon_stream).get(canon_subject).get(msg.id)) {
         var new_canon_subject = stream_data.canonicalized_name(event.subject);
         // Move the unread subject count to the new subject
-        unread_subjects.get(canon_stream).get(canon_subject).del(msg.id);
-        if (unread_subjects.get(canon_stream).get(canon_subject).num_items() === 0) {
-            unread_subjects.get(canon_stream).del(canon_subject);
+        unread_topics.get(canon_stream).get(canon_subject).del(msg.id);
+        if (unread_topics.get(canon_stream).get(canon_subject).num_items() === 0) {
+            unread_topics.get(canon_stream).del(canon_subject);
         }
-        unread_subjects.get(canon_stream).setdefault(new_canon_subject, new Dict());
-        unread_subjects.get(canon_stream).get(new_canon_subject).set(msg.id, true);
+        unread_topics.get(canon_stream).setdefault(new_canon_subject, new Dict());
+        unread_topics.get(canon_stream).get(new_canon_subject).set(msg.id, true);
     }
 };
 
@@ -54,9 +54,9 @@ exports.process_loaded_messages = function (messages) {
             var canon_stream = stream_data.canonicalized_name(message.stream);
             var canon_subject = stream_data.canonicalized_name(message.subject);
 
-            unread_subjects.setdefault(canon_stream, new Dict());
-            unread_subjects.get(canon_stream).setdefault(canon_subject, new Dict());
-            unread_subjects.get(canon_stream).get(canon_subject).set(message.id, true);
+            unread_topics.setdefault(canon_stream, new Dict());
+            unread_topics.get(canon_stream).setdefault(canon_subject, new Dict());
+            unread_topics.get(canon_stream).get(canon_subject).set(message.id, true);
         }
 
         if (message.mentioned) {
@@ -77,7 +77,7 @@ exports.process_read_message = function (message) {
     if (message.type === 'stream') {
         var canon_stream = stream_data.canonicalized_name(message.stream);
         var canon_subject = stream_data.canonicalized_name(message.subject);
-        var stream_dict = unread_subjects.get(canon_stream);
+        var stream_dict = unread_topics.get(canon_stream);
         if (stream_dict) {
             var subject_dict = stream_dict.get(canon_subject);
             if (subject_dict) {
@@ -90,7 +90,7 @@ exports.process_read_message = function (message) {
 
 exports.declare_bankruptcy = function () {
     unread_privates = new Dict();
-    unread_subjects = new Dict({fold_case: true});
+    unread_topics = new Dict({fold_case: true});
 };
 
 exports.num_unread_current_messages = function () {
@@ -118,15 +118,15 @@ exports.get_counts = function () {
     res.subject_count = new Dict(); // hash of hashes (stream, then subject -> count)
     res.pm_count = new Dict(); // Hash by email -> count
 
-    unread_subjects.each(function (_, stream) {
+    unread_topics.each(function (_, stream) {
         if (! stream_data.is_subscribed(stream)) {
             return true;
         }
 
-        if (unread_subjects.has(stream)) {
+        if (unread_topics.has(stream)) {
             res.subject_count.set(stream, new Dict());
             var stream_count = 0;
-            unread_subjects.get(stream).each(function (msgs, subject) {
+            unread_topics.get(stream).each(function (msgs, subject) {
                 var subject_count = msgs.num_items();
                 res.subject_count.get(stream).set(subject, subject_count);
                 if (!muting.is_topic_muted(stream, subject)) {
@@ -161,9 +161,9 @@ exports.get_counts = function () {
 
 exports.num_unread_for_subject = function (stream, subject) {
     var num_unread = 0;
-    if (unread_subjects.has(stream) &&
-        unread_subjects.get(stream).has(subject)) {
-        num_unread = unread_subjects.get(stream).get(subject).num_items();
+    if (unread_topics.has(stream) &&
+        unread_topics.get(stream).has(subject)) {
+        num_unread = unread_topics.get(stream).get(subject).num_items();
     }
     return num_unread;
 };

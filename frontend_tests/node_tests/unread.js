@@ -68,7 +68,7 @@ var zero_counts = {
 
 (function test_changing_subjects() {
     // Summary: change the subject of a message from 'lunch'
-    // to 'dinner' using update_unread_subjects().
+    // to 'dinner' using update_unread_topics().
     var count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, 0);
 
@@ -95,7 +95,7 @@ var zero_counts = {
         subject: 'dinner'
     };
 
-    unread.update_unread_subjects(message, event);
+    unread.update_unread_topics(message, event);
 
     count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, 1);
@@ -107,7 +107,7 @@ var zero_counts = {
         subject: 'snack'
     };
 
-    unread.update_unread_subjects(other_message, event);
+    unread.update_unread_topics(other_message, event);
 
     count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, 0);
@@ -126,7 +126,7 @@ var zero_counts = {
     event = {
         subject: 'brunch'
     };
-    unread.update_unread_subjects(other_message, event);
+    unread.update_unread_topics(other_message, event);
 
     // cleanup
     message.subject = 'dinner';
