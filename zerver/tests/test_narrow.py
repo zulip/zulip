@@ -1044,25 +1044,3 @@ class GetOldMessagesTest(ZulipTestCase):
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["search", "\\"jumping\\" quickly"]]'},
                                                  sql)
-
-    @override_settings(USING_PGROONGA=True)
-    def test_get_old_messages_with_search_queries_pgroonga(self):
-        query_ids = self.get_query_ids()
-
-        sql_template = u"SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, pgroonga.match_positions_byte(rendered_content, pgroonga.query_extract_keywords('jumping')) AS content_matches, pgroonga.match_positions_byte(subject, pgroonga.query_extract_keywords('jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 2 AND (search_pgroonga @@ 'jumping') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["search", "jumping"]]'},
-                                                 sql)
-
-        sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, pgroonga.match_positions_byte(rendered_content, pgroonga.query_extract_keywords('jumping')) AS content_matches, pgroonga.match_positions_byte(subject, pgroonga.query_extract_keywords('jumping')) AS subject_matches \nFROM zerver_message \nWHERE recipient_id = 9 AND (search_pgroonga @@ 'jumping') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
-                                                 sql)
-
-        sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, pgroonga.match_positions_byte(rendered_content, pgroonga.query_extract_keywords(\'"jumping" quickly\')) AS content_matches, pgroonga.match_positions_byte(subject, pgroonga.query_extract_keywords(\'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = 2 AND (search_pgroonga @@ \'"jumping" quickly\') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
-        sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["search", "\\"jumping\\" quickly"]]'},
-                                                 sql)
