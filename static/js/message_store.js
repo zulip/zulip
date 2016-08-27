@@ -342,7 +342,7 @@ exports.update_messages = function update_messages(events) {
                 exports.process_message_for_recent_subjects(msg, true);
                 // Update the unread counts; again, this must be called
                 // before we update msg.subject
-                unread.update_unread_subjects(msg, event);
+                unread.update_unread_topics(msg, event);
 
                 msg.subject = event.subject;
                 msg.subject_links = event.subject_links;
