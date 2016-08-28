@@ -7,17 +7,17 @@ from __future__ import print_function
 
 import os
 import subprocess
-import optparse
+import argparse
 import sys
 import six
 
 from typing import Optional, Set
 
-parser = optparse.OptionParser()
-parser.add_option('--prev-deploy', nargs=1, metavar='DIR',
-                  help='A previous deploy from which to reuse files if possible')
-(options, args) = parser.parse_args()
-prev_deploy = options.prev_deploy
+parser = argparse.ArgumentParser()
+parser.add_argument('--prev-deploy', metavar='DIR',
+                  help='a previous deploy from which to reuse files if possible')
+args = parser.parse_args()
+prev_deploy = args.prev_deploy
 
 # We have to pull out JS_SPECS, defined in our settings file, so we know what
 # JavaScript source files to minify (and what output files to create).
