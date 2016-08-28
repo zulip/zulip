@@ -80,9 +80,10 @@ These settings include:
 - `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
   Regardless of which authentication backends you enable, you must
   provide settings for an outgoing SMTP server so Zulip can send
-  emails when needed.  We highly recommend testing your configuration
-  using `manage.py send_test_email` to confirm your outgoing email
-  configuration is working correctly.
+  emails when needed (and don't forget to set `email_password` in
+  the `zulip-secrets.conf` file).  We highly recommend testing
+  your configuration using `manage.py send_test_email` to confirm
+  your outgoing email configuration is working correctly.
 
 - `ALLOWED_HOSTS`: Replace `*` with the fully qualified DNS name for
   your Zulip server here.
