@@ -3,17 +3,17 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import optparse
+import argparse
 import os
 import sys
 import unittest
 
 if __name__ == '__main__':
-    parser = optparse.OptionParser()
-    parser.add_option('--coverage', dest='coverage',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--coverage', dest='coverage',
                       action="store_true",
-                      default=False, help='Compute test coverage.')
-    (options, _) = parser.parse_args()
+                      default=False, help='compute test coverage')
+    args = parser.parse_args()
 
     def dir_join(dir1, dir2):
         # type: (str, str) -> str
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     loader = unittest.TestLoader() # type: ignore # https://github.com/python/typeshed/issues/372
 
-    if options.coverage:
+    if args.coverage:
         import coverage
         cov = coverage.Coverage(branch=True, omit=[ "*/zulip-venv-cache/*", dir_join(tools_test_dir, "*") ])
         cov.start()
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     if result.errors or result.failures:
         raise Exception('Test failed!')
 
-    if options.coverage:
+    if args.coverage:
         cov.stop()
         cov.save()
         cov.html_report(directory='var/tools_coverage')
