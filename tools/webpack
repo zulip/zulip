@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
 
-import optparse
+import argparse
 import os
 import subprocess
 import sys
@@ -23,17 +23,17 @@ def run_watch(port):
     subprocess.Popen(['tools/node', 'node_modules/.bin/webpack-dev-server'] +
         ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
 
-parser = optparse.OptionParser()
-parser.add_option('--watch',
+parser = argparse.ArgumentParser()
+parser.add_argument('--watch',
                   action='store_true', dest='watch', default=False,
                   help='watch for changes to source files (for development)')
-parser.add_option('--port',
+parser.add_argument('--port',
                   action='store', dest='port',
-                  default='9994', help='Set the port for the webpack server to run on')
-(options, args) = parser.parse_args()
+                  default='9994', help='set the port for the webpack server to run on')
+args = parser.parse_args()
 
-if options.watch:
-    run_watch(options.port)
+if args.watch:
+    run_watch(args.port)
 else:
     run()
 
