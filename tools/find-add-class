@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from lib.find_add_class import display, find
 import glob
-import optparse
+import argparse
 import sys
 
 from six.moves import filter
@@ -20,7 +20,7 @@ except ImportError as e:
 def process_files():
     # type: () -> None
 
-    usage = '''
+    description = '''
         Use this tool to find HTML classes that we use in our JS code.
         This looks for calls to addClass, and if you use the -v option,
         you will get a display of (fn, html_class) tuples that
@@ -31,14 +31,14 @@ def process_files():
         call.
         '''
 
-    parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--verbose', '-v',
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-v', '--verbose',
         action='store_true', default=False,
-        help='Show where calls are.')
-    (options, _) = parser.parse_args()
+        help='show where calls are')
+    args = parser.parse_args()
 
     fns = glob.glob('static/js/*.js')
-    if options.verbose:
+    if args.verbose:
         display(fns)
     else:
         find(fns)
