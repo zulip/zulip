@@ -65,4 +65,4 @@ class Command(BaseCommand):
                         if stat.smallest_interval <= interval and stat.frequency == frequency and \
                            stat.analytics_table in (UserCount, StreamCount):
                             process_summary_count(stat, time_interval, stat.analytics_table, RealmCount)
-                        process_summary_count(stat, time_interval, RealmCount, InstallationCount)
+                        process_summary_count(stat, time_interval, RealmCount, DeploymentCount)

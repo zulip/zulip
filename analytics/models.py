@@ -32,7 +32,7 @@ class BaseCount(ModelReprMixin, models.Model):
 
     # future: could also have an aggregates_to function
 
-class InstallationCount(BaseCount):
+class DeploymentCount(BaseCount):
     def extended_id():
         return ()
 
@@ -41,7 +41,7 @@ class InstallationCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> text_type
-        return u"<InstallationCount: %s %s %s>" % (self.property, self.value, self.id)
+        return u"<DeploymentCount: %s %s %s>" % (self.property, self.value, self.id)
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm) # type: Realm

@@ -40,13 +40,13 @@ def process_count(table, count_type, stat, time_interval, **kwargs):
             raise ValueError('Unknown count_type')
         action(stat, time_interval, **kwargs)
 
-# only two summary tables at the moment: RealmCount and InstallationCount.
+# only two summary tables at the moment: RealmCount and DeploymentCount.
 # will have to generalize this a bit if more are added
 def do_aggregate_to_summary_table(stat, time_interval, table, to_table):
     if to_table == RealmTable:
         id_cols = 'realm_id,'
         group_by = 'GROUP BY realm_id'
-    elif to_table = InstallationTable:
+    elif to_table = DeploymentTable:
         id_cols = ''
         group_by = ''
     else:
