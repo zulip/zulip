@@ -1773,12 +1773,13 @@ blockquote p {
 
 textarea.new_message_textarea {
     display: table-cell;
-    width: 99%;
+    width: calc(100% - 10px);
+    padding: 5px;
     height: 1.5em;
     max-height: 22em;
     margin-bottom: 0px;
     resize: none;
-    margin-top: 6px;
+    margin-top: 5px;
 }
 
 input.recipient_box {
@@ -3563,3 +3564,31 @@ li.show-more-private-messages a {
     margin-left: 5px;
 }
 
+#preview_message_area {
+    /* minus 5px padding. */
+    width: calc(100% - 10px);
+    padding: 5px;
+    /* the maximum height the textarea gets to. */
+    max-height: 308px;
+    /* the minimum height the textarea collapses to. */
+    min-height: 42px;
+    overflow: auto;
+
+    margin-top: 5px;
+
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+a#markdown_preview,
+a#undo_markdown_preview {
+    text-decoration: none;
+    position: relative;
+    top: 3px;
+    font-size: 16px;
+    color: #777;
+}
