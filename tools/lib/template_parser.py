@@ -211,16 +211,8 @@ def validate(fn=None, text=None, check_indent=True):
         elif kind == 'django_end':
             state.matcher(token)
 
-    null_token = Token(
-        kind=None,
-        s='(NO TAG)',
-        tag='NO TAG',
-        line=0,
-        col=0,
-    )
-
     if state.depth != 0:
-        state.matcher(null_token)
+        raise TemplateParserException('Missing end tag')
 
 def is_special_html_tag(s, tag):
     # type: (str, str) -> bool

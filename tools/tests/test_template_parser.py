@@ -85,6 +85,13 @@ class ParserTest(unittest.TestCase):
         '''
         self._assert_validate_error('Bad indentation.', text=my_html, check_indent=True)
 
+    def test_validate_state_depth(self):
+        # type: () -> None
+        my_html = '''
+            <b>
+        '''
+        self._assert_validate_error('Missing end tag', text=my_html)
+
     def test_validate_incomplete_handlebars_tag_1(self):
         # type: () -> None
         my_html = '''
