@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     if options.coverage:
         import coverage
-        cov = coverage.Coverage(omit="*/zulip-venv-cache/*")
+        cov = coverage.Coverage(omit=[ "*/zulip-venv-cache/*", dir_join(tools_test_dir, "*") ])
         cov.start()
 
     suite = loader.discover(start_dir=tools_test_dir, top_level_dir=root_dir)
