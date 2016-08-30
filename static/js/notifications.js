@@ -359,7 +359,7 @@ exports.speaking_at_me = function (message) {
         return false;
     }
 
-    return message.mentioned;
+    return message.mentioned_me_directly;
 };
 
 function message_is_notifiable(message) {
@@ -377,7 +377,8 @@ function message_is_notifiable(message) {
         return false;
     }
 
-    // @-mentions take precent over muted-ness. See Trac #1929
+    // @-<username> mentions take precedence over muted-ness. @all mentions
+    // are suppressed.
     if (exports.speaking_at_me(message)) {
         return true;
     }

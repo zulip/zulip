@@ -139,6 +139,7 @@ function add_message_metadata(message) {
     message.starred = message.flags.indexOf("starred") !== -1;
     message.mentioned = message.flags.indexOf("mentioned") !== -1 ||
                         message.flags.indexOf("wildcard_mentioned") !== -1;
+    message.mentioned_me_directly = message.flags.indexOf("mentioned") !== -1;
     message.collapsed = message.flags.indexOf("collapsed") !== -1;
     message.alerted = message.flags.indexOf("has_alert_word") !== -1;
     message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
