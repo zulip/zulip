@@ -4,6 +4,10 @@ from typing import Callable, Optional
 from six.moves import range
 import re
 
+class TemplateParserException(Exception):
+    # TODO: Have callers pass in line numbers.
+    pass
+
 class TokenizerState(object):
     def __init__(self):
         # type: () -> None
@@ -128,7 +132,7 @@ def validate(fn=None, text=None, check_indent=True):
 
     def no_start_tag(token):
         # type: (Token) -> None
-        raise Exception('''
+        raise TemplateParserException('''
             No start tag
             fn: %s
             end tag:
@@ -167,7 +171,7 @@ def validate(fn=None, text=None, check_indent=True):
                 if end_col != start_col:
                     problem = 'Bad indentation.'
             if problem:
-                raise Exception('''
+                raise TemplateParserException('''
                     fn: %s
                     %s
                     start:
@@ -238,7 +242,7 @@ def get_handlebars_tag(text, i):
     while end < len(text) -1 and text[end] != '}':
         end += 1
     if text[end] != '}' or text[end+1] != '}':
-        raise Exception('Tag missing }}')
+        raise TemplateParserException('Tag missing }}')
     s = text[i:end+2]
     return s
 
@@ -248,7 +252,7 @@ def get_django_tag(text, i):
     while end < len(text) -1 and text[end] != '%':
         end += 1
     if text[end] != '%' or text[end+1] != '}':
-        raise Exception('Tag missing %}')
+        raise TemplateParserException('Tag missing %}')
     s = text[i:end+2]
     return s
 
@@ -261,7 +265,7 @@ def get_html_tag(text, i):
             quote_count += 1
         end += 1
     if end == len(text) or text[end] != '>':
-        raise Exception('Tag missing >')
+        raise TemplateParserException('Tag missing >')
     s = text[i:end+1]
     return s
 

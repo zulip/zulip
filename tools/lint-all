@@ -248,6 +248,9 @@ def build_custom_checkers(by_lang):
         # rare; if we find any, they can be added to the exclude list for
         # this rule.
         {'pattern': '% [a-zA-Z0-9_.]*\)?$',
+         'exclude_line': set([
+             ('tools/tests/test_template_parser.py', '{% foo'),
+         ]),
          'description': 'Used % comprehension without a tuple'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',

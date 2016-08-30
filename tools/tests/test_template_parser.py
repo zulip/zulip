@@ -6,6 +6,8 @@ import unittest
 
 try:
     from tools.lib.template_parser import (
+        TemplateParserException,
+        get_tag_info,
         html_tag_tree,
         is_django_block_tag,
         tokenize,
@@ -16,6 +18,12 @@ except ImportError:
     sys.exit(1)
 
 class ParserTest(unittest.TestCase):
+    def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
+        # See https://github.com/python/typeshed/issues/372
+        # for why we have to ingore types here.
+        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore
+            validate(fn=fn, text=text, check_indent=check_indent)
+
     def test_is_django_block_tag(self):
         # type: () -> None
         self.assertTrue(is_django_block_tag('block'))
@@ -54,6 +62,71 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+    def test_validate_no_start_tag(self):
+        # type: () -> None
+        my_html = '''
+            foo</p>
+        '''
+        self._assert_validate_error('No start tag', text=my_html)
+
+    def test_validate_mismatched_tag(self):
+        # type: () -> None
+        my_html = '''
+            <b>foo</i>
+        '''
+        self._assert_validate_error('Mismatched tag.', text=my_html)
+
+    def test_validate_bad_indentation(self):
+        # type: () -> None
+        my_html = '''
+            <p>
+                foo
+                </p>
+        '''
+        self._assert_validate_error('Bad indentation.', text=my_html, check_indent=True)
+
+    def test_validate_incomplete_handlebars_tag_1(self):
+        # type: () -> None
+        my_html = '''
+            {{# foo
+        '''
+        self._assert_validate_error('Tag missing }}', text=my_html)
+
+    def test_validate_incomplete_handlebars_tag_2(self):
+        # type: () -> None
+        my_html = '''
+            {{# foo }
+        '''
+        self._assert_validate_error('Tag missing }}', text=my_html)
+
+    def test_validate_incomplete_django_tag_1(self):
+        # type: () -> None
+        my_html = '''
+            {% foo
+        '''
+        self._assert_validate_error('Tag missing %}', text=my_html)
+
+    def test_validate_incomplete_django_tag_2(self):
+        # type: () -> None
+        my_html = '''
+            {% foo %
+        '''
+        self._assert_validate_error('Tag missing %}', text=my_html)
+
+    def test_validate_incomplete_html_tag_1(self):
+        # type: () -> None
+        my_html = '''
+            <b
+        '''
+        self._assert_validate_error('Tag missing >', text=my_html)
+
+    def test_validate_incomplete_html_tag_2(self):
+        # type: () -> None
+        my_html = '''
+            <a href="
+        '''
+        self._assert_validate_error('Tag missing >', text=my_html)
+
     def test_code_blocks(self):
         # type: () -> None
 
@@ -74,10 +147,7 @@ class ParserTest(unittest.TestCase):
             <code>x =
             5</code>
             '''
-        # See https://github.com/python/typeshed/issues/372
-        # for why we have to ingore types here.
-        with self.assertRaisesRegexp(Exception, 'split across two lines'): # type: ignore
-            validate(text=my_html)
+        self._assert_validate_error('Code tag is split across two lines.', text=my_html)
 
     def test_anchor_blocks(self):
         # type: () -> None
@@ -144,6 +214,19 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'django_end')
         self.assertEqual(token.tag, 'if')
+
+    def test_get_tag_info(self):
+        html = '''
+            <p id="test" class="test1 test2">foo</p>
+        '''
+
+        start_tag, end_tag = tokenize(html)
+
+        start_tag_info = get_tag_info(start_tag)
+        end_tag_info = get_tag_info(end_tag)
+
+        self.assertEqual(start_tag_info.text(), 'p.test1.test2#test')
+        self.assertEqual(end_tag_info.text(), 'p')
 
     def test_html_tag_tree(self):
         # type: () -> None
