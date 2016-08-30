@@ -69,7 +69,13 @@ def tokenize(text):
     while state.i < len(text):
         if looking_at_html_start():
             s = get_html_tag(text, state.i)
-            tag = s[1:-1].split()[0]
+            tag_parts = s[1:-1].split()
+
+            if not tag_parts:
+                raise TemplateParserException("Tag name missing")
+
+            tag = tag_parts[0]
+
             if is_special_html_tag(s, tag):
                 kind = 'html_special'
             elif s.endswith('/>'):

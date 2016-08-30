@@ -127,6 +127,13 @@ class ParserTest(unittest.TestCase):
         '''
         self._assert_validate_error('Tag missing >', text=my_html)
 
+    def test_validate_empty_html_tag(self):
+        # type: () -> None
+        my_html = '''
+            < >
+        '''
+        self._assert_validate_error('Tag name missing', text=my_html)
+
     def test_code_blocks(self):
         # type: () -> None
 
