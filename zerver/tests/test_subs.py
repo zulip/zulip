@@ -1526,7 +1526,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
         self.assert_length(events, 0)
-        self.assert_max_length(queries, 7)
+        self.assert_max_length(queries, 8)
 
     def test_bulk_subscribe_many(self):
         # type: () -> None
@@ -1544,7 +1544,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_max_length(queries, 9)
+        self.assert_max_length(queries, 10)
 
     @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):

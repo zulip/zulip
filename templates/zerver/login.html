@@ -92,7 +92,11 @@ autofocus('#id_username');
             {# desktop_sso_dispatch is only set when this template is invoked by zilencer.views #}
               action="{{ url('zilencer.views.account_deployment_dispatch') }}"
             {% else %}
-              action="{% url 'two_factor:login' %}?next={{ next }}"
+              {% if next %}
+              action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}"
+              {% else %}
+              action="{{ url('django.contrib.auth.views.login') }}"
+              {% endif %}
             {% endif %}
         >
             {{ wizard.management_form }}

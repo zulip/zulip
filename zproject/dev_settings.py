@@ -33,5 +33,5 @@ EVENT_LOGS_ENABLED = True
 SYSTEM_ONLY_REALMS = set() # type: Set[str]
 USING_PGROONGA = True
 
-#TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.fake.Fake'
-#TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
+#TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'
+#TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'

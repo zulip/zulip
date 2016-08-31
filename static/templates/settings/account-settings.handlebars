@@ -13,6 +13,10 @@
 
       <!-- password start -->
       {{#if page_params.password_auth_enabled}}
+      <div class="input-group">
+        <label for="enable_2fa">{{t "Security settings" }}</label>
+        <a href="/account/two_factor" class="btn btn-big btn-primary" name="enable_2fa">Manage 2-factor authentication</a>
+      </div>
       <div class="input-group" id="pw_change_link">
         <label for="change_password_button">{{t "Password" }}</label>
         <button class="change_password_button button" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
@@ -42,12 +46,6 @@
           <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" value="" />
         </div>
 
-      </div>
-      <div class="control-group">
-        <label for="enable_2fa" class="control-label">Security settings</label>
-        <div class="controls">
-          <a href="/account/two_factor" class="btn btn-big btn-primary">Manage 2-factor authentication</a>
-        </div>
       </div>
       {{/if}}
 

@@ -15,7 +15,7 @@ from six import text_type
 from six.moves import urllib
 from typing import Any, Dict, Optional
 
-from two_factor.views import LoginView
+from two_factor.views import LoginView as TwoFactorLoginView
 from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
 from two_factor.views.utils import ExtraSessionStorage
 
@@ -253,20 +253,26 @@ def finish_google_oauth2(request):
 
 class PatchedExtraSessionStorage(ExtraSessionStorage):
     def reset(self):
+        # type: () -> None
         if self.prefix in self.request.session:
             super(ExtraSessionStorage, self).reset()
         else:
             self.init_data()
 
-class LoginView(LoginView):
-    storage_name = 'zerver.views.PatchedExtraSessionStorage'
+class LoginView(TwoFactorLoginView):
+    storage_name = 'zerver.views.auth.PatchedExtraSessionStorage'
     form_list = (
         ('auth', OurAuthenticationForm),
         ('token', AuthenticationTokenForm),
         ('backup', BackupTokenForm),
     )
 
+    def get_form_kwargs(self, step):
+        # type: (str) -> Dict[str, Any]
+        return {'request': self.request}
+
     def get_context_data(self, **kwargs):
+        # type: (**Any) -> Dict[str, Any]
         context = super(LoginView, self).get_context_data(**kwargs)
         if dev_auth_enabled():
             # Development environments usually have only a few users, but
@@ -284,7 +290,7 @@ class LoginView(LoginView):
             pass
 
         try:
-            context['subdomain'] = request.GET['subdomain']
+            context['subdomain'] = self.request.GET['subdomain']
             context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
         except KeyError:
             pass

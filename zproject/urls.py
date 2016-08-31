@@ -90,12 +90,8 @@ i18n_urls = [
 
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
-<<<<<<< b1ac48109ff62c87a5581d814395b17528834ebe
-    url(r'^login/$',  'zerver.views.auth.login_page', {'template_name': 'zerver/login.html'}),
-=======
     url(r'^login/$', LoginView.as_view(template_name='zerver/login.html')),
     url(r'', include('two_factor.urls', 'two_factor')),
->>>>>>> Integrate two-factor authentication.
 
     # A registration page that passes through the domain, for totally open realms.
     url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),

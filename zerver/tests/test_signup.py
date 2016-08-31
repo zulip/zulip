@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from typing import Union, Tuple, Any, Dict
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase
+from mock import patch, MagicMock
 
 from zilencer.models import Deployment
 
@@ -26,12 +28,14 @@ from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscri
 from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
+from two_factor.models import PhoneDevice
+from two_factor.gateways import send_sms
 
 import re
 import ujson
 
 from six.moves import urllib
-from six.moves import range
+from six.moves import range, urllib_parse
 import six
 from six import text_type
 
@@ -42,9 +46,13 @@ class PublicURLTest(ZulipTestCase):
     """
 
     def fetch(self, method, urls, expected_status):
-        # type: (str, List[str], int) -> None
+        # type: (str, List[Union[str, Tuple[str, Dict[str, Any]]]], int) -> None
         for url in urls:
-            response = getattr(self.client, method)(url) # e.g. self.client_post(url) if method is "post"
+            args = {}  # type: Dict[str, Any]
+            if isinstance(url, tuple):
+                url, args = url  # type: ignore # Gives error: 'builtins.None' object is not iterable
+
+            response = getattr(self.client, method)(url, args) # e.g. self.client_post(url) if method is "post"
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
                     expected_status, response.status_code, method, url))
@@ -67,8 +75,8 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/json/streams",
                           ],
-                }
-        post_urls = {200: ["/accounts/login/"],
+                }  # type: Dict[int, List[Union[str, Tuple[str, Dict[str, Any]]]]]
+        post_urls = {200: [("/accounts/login/", {'login_view-current_step': 'auth'})],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
                            "/json/invite_users",
@@ -84,9 +92,9 @@ class PublicURLTest(ZulipTestCase):
                      400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
-                }
+                }  # type: Dict[int, List[Union[str, Tuple[str, Dict[str, Any]]]]]
         put_urls = {401: ["/json/users/me/pointer"],
-                }
+                }  # type: Dict[int, List[Union[str, Tuple[str, Dict[str, Any]]]]]
         for status_code, url_set in six.iteritems(get_urls):
             self.fetch("get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
@@ -782,3 +790,66 @@ class DeactivateUserTest(ZulipTestCase):
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
         do_change_is_admin(user, True)
+
+class TwoFactorAuthTest(ZulipTestCase):
+    @patch('two_factor.models.totp')
+    def test_two_factor_login(self, mock_totp):
+        # type: (MagicMock) -> None
+        token = 123456
+        email = 'hamlet@zulip.com'
+        password = 'testing'
+        number = "+12223334444"
+
+        user_profile = get_user_profile_by_email(email)
+        user_profile.set_password(password)
+        user_profile.save()
+        phone_device = PhoneDevice(user=user_profile, name='default',
+                                   confirmed=True, number=number,
+                                   key='abcd', method='sms')
+        phone_device.save()
+
+        def totp(*args, **kwargs):
+            # type: (*Any, **Any) -> int
+            return token
+
+        mock_totp.side_effect = totp
+
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                           TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
+                           TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake'):
+
+            first_step_data = {"auth-username": email,
+                               "auth-password": password,
+                               "login_view-current_step": "auth"}
+            result = self.client_post("/account/login/", first_step_data)
+            self.assertEqual(result.status_code, 200)
+
+            second_step_data = {"token-otp_token": str(token),
+                                "login_view-current_step": "token"}
+            result = self.client_post("/account/login/", second_step_data)
+            self.assertEqual(result.status_code, 302)
+            location = result['Location']
+            result = urllib_parse.urlparse(location)
+            self.assertEqual(result.path, '/')
+
+    def test_two_factor_disabled_login(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        password = 'testing'
+
+        user_profile = get_user_profile_by_email(email)
+        user_profile.set_password(password)
+        user_profile.save()
+
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                           TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
+                           TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake'):
+
+            data = {"auth-username": email,
+                    "auth-password": password,
+                    "login_view-current_step": "auth"}
+            result = self.client_post("/account/login/", data)
+            self.assertEqual(result.status_code, 302)
+            location = result['Location']
+            result = urllib_parse.urlparse(location)
+            self.assertEqual(result.path, '/')
