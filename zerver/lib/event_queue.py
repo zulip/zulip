@@ -36,6 +36,11 @@ import six
 from six import text_type
 
 requests_client = requests.Session()
+for host in ['127.0.0.1', 'localhost']:
+    if settings.TORNADO_SERVER and host in settings.TORNADO_SERVER:
+        # This seems like the only working solution to ignore proxy in
+        # requests library.
+        requests_client.trust_env = False
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
