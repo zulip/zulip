@@ -35,6 +35,8 @@ import copy
 import six
 from six import text_type
 
+requests_client = requests.Session()
+
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
 # due to the accumulation of message data in those queues.
@@ -574,10 +576,10 @@ def request_event_queue(user_profile, user_client, apply_markdown,
                'lifespan_secs' : queue_lifespan_secs}
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
-        resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
-                            auth=requests.auth.HTTPBasicAuth(user_profile.email,
-                                                             user_profile.api_key),
-                            params=req)
+        resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
+                                   auth=requests.auth.HTTPBasicAuth(
+                                       user_profile.email, user_profile.api_key),
+                                   params=req)
 
         resp.raise_for_status()
 
@@ -588,13 +590,13 @@ def request_event_queue(user_profile, user_client, apply_markdown,
 def get_user_events(user_profile, queue_id, last_event_id):
     # type: (UserProfile, str, int) -> List[Dict]
     if settings.TORNADO_SERVER:
-        resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
-                            auth=requests.auth.HTTPBasicAuth(user_profile.email,
-                                                             user_profile.api_key),
-                            params={'queue_id'     : queue_id,
-                                    'last_event_id': last_event_id,
-                                    'dont_block'   : 'true',
-                                    'client'       : 'internal'})
+        resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
+                                   auth=requests.auth.HTTPBasicAuth(
+                                       user_profile.email, user_profile.api_key),
+                                   params={'queue_id'     : queue_id,
+                                           'last_event_id': last_event_id,
+                                           'dont_block'   : 'true',
+                                           'client'       : 'internal'})
 
         resp.raise_for_status()
 
@@ -804,7 +806,7 @@ def process_notification(notice):
 def send_notification_http(data):
     # type: (Mapping[str, Any]) -> None
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
-        requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
+        requests_client.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
                 data   = ujson.dumps(data),
                 secret = settings.SHARED_SECRET))
     else:
