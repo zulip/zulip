@@ -22,7 +22,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_users
+    get_old_unclaimed_attachments, get_cross_realm_users, parse_sub_permissions, \
+    get_permission_val
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -196,7 +197,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
     # add the default streams
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
-    bulk_add_subscriptions(streams, [user_profile])
+    bulk_add_subscriptions(streams, [user_profile], current_user=user_profile)
 
     # Give you the last 100 messages on your public streams, so you have
     # something to look at in your home view once you finish the
@@ -792,11 +793,16 @@ def do_create_stream(realm, stream_name):
     subscribers = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
     bulk_add_subscriptions([stream], subscribers)
 
-def create_stream_if_needed(realm, stream_name, invite_only=False):
-    # type: (Realm, text_type, bool) -> Tuple[Stream, bool]
+def create_stream_if_needed(realm, stream_name, default_permissions=None, invite_only=False):
+    # type: (Realm, text_type, Optional[List[text_type]], bool) -> Tuple[Stream, bool]
+    if default_permissions:
+        permission_val = get_permission_val(default_permissions)
+    else:
+        permission_val = get_permission_val(['can_read', 'can_write'])
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
-        defaults={'name': stream_name, 'invite_only': invite_only})
+        defaults={'name': stream_name, 'invite_only': invite_only,
+                  'default_permissions': permission_val})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if not invite_only:
@@ -1214,6 +1220,28 @@ def get_subscriber_emails(stream, requesting_user=None):
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
+def get_subscribers_details(stream, requesting_user=None):
+    # type: (Stream, Optional[UserProfile]) -> List[UserProfile]
+    subscriptions = get_subscribers_query(stream, requesting_user).select_related()
+    return [{'user_email' : subscription.user_profile.email, \
+             'permissions' : subscription.permissions_list()} for subscription in subscriptions]
+
+def get_subscriber_ids(stream):
+    # type: (Stream) -> List[int]
+    try:
+        subscriptions = get_subscribers_query(stream, None)
+    except JsonableError:
+        return []
+
+    rows = subscriptions.values('user_profile_id')
+    ids = [row['user_profile_id'] for row in rows]
+    return ids
+
+def get_other_subscriber_ids(stream, user_profile_id):
+    # type: (Stream, int) -> List[int]
+    ids = get_subscriber_ids(stream)
+    return [id for id in ids if id != user_profile_id]
+
 def maybe_get_subscriber_emails(stream, user_profile):
     # type: (Stream, UserProfile) -> List[text_type]
     """ Alternate version of get_subscriber_emails that takes a Stream object only
@@ -1281,8 +1309,8 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-def bulk_add_subscriptions(streams, users):
-    # type: (Iterable[Stream], Iterable[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+def bulk_add_subscriptions(streams, users, current_user=None):
+    # type: (Iterable[Stream], Iterable[UserProfile], Optional[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams]) # type: Mapping[int, Recipient]
     recipients = [recipient.id for recipient in recipients_map.values()] # type: List[int]
 
@@ -1307,6 +1335,8 @@ def bulk_add_subscriptions(streams, users):
                 if sub.active:
                     already_subscribed.append((user_profile, stream_map[sub.recipient_id]))
                 else:
+                    sub.permissions = stream_map[sub.recipient_id].default_permissions
+                    sub.save()
                     subs_to_activate.append((sub, stream_map[sub.recipient_id]))
                     # Mark the sub as active, without saving, so that
                     # pick_color will consider this to be an active
@@ -1318,10 +1348,19 @@ def bulk_add_subscriptions(streams, users):
     subs_to_add = [] # type: List[Tuple[Subscription, Stream]]
     for (user_profile, recipient_id, stream) in new_subs:
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
+        # Give all stream permission if stream is created by user.
+        if current_user == user_profile:
+            permissions = 0
+            for permission in Stream.PERMISSION_FLAGS:
+                permissionattr = getattr(Stream.default_permissions, permission)
+                permissions += permissionattr.mask
+        else:
+            permissions = stream.default_permissions
         sub_to_add = Subscription(user_profile=user_profile, active=True,
                                   color=color, recipient_id=recipient_id,
                                   desktop_notifications=user_profile.enable_stream_desktop_notifications,
-                                  audible_notifications=user_profile.enable_stream_sounds)
+                                  audible_notifications=user_profile.enable_stream_sounds,
+                                  permissions=permissions)
         subs_by_user[user_profile.id].append(sub_to_add)
         subs_to_add.append((sub_to_add, stream))
 
@@ -2593,8 +2632,10 @@ def gather_subscriptions_helper(user_profile):
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
         "recipient__type_id", "in_home_view", "color", "desktop_notifications",
-        "audible_notifications", "active", "pin_to_top")
+        "audible_notifications", "active", "pin_to_top", "permissions")
 
+    for sub in sub_dicts:
+        sub['permissions'] = parse_sub_permissions(sub['permissions'])
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id", \
@@ -2645,6 +2686,7 @@ def gather_subscriptions_helper(user_profile):
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
+                       'permissions': sub["permissions"],
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers

@@ -102,12 +102,14 @@
       {{#render_subscribers}}
       <div class="subscriber_list_settings">
         <span class="sub_settings_title">{{t "Stream membership" }}</span>
+        {{#can_add_remove_users}}
         <div class="subscriber_list_add">
           <form class="form-inline">
             <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
             <input type="submit" name="add_subscriber" value="{{t 'Add' }}" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
           </form>
         </div>
+        {{/can_add_remove_users}}
       </div>
       <div class="subscriber-list-box">
         <div class="subscriber_list_container">

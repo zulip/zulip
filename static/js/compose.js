@@ -53,8 +53,32 @@ function autosize_textarea() {
     $("#new_message_content").trigger("autosize.resize");
 }
 
+function compose_error(error_text, bad_input) {
+    $('#send-status').removeClass(status_classes)
+               .addClass('alert-error')
+               .stop(true).fadeTo(0, 1);
+    $('#error-msg').html(error_text);
+    $("#compose-send-button").removeAttr('disabled');
+    $("#sending-indicator").hide();
+    if (bad_input !== undefined) {
+        bad_input.focus().select();
+    }
+}
+
 // Show the compose box.
 function show_box(tabname, focus_area, opts) {
+    var stream = stream_data.get_sub(opts.stream);
+    var can_write = _.some(stream.permissions, function (permission) {
+        return permission === "can_write";
+    });
+    if (can_write && tabname === "stream") {
+        // Don't show message box if user don't have
+        // sufficient permissions
+        $(".messagebox").hide();
+        compose_error(i18n.t("You don't have permission to post"), $('#new_message_content'));
+        return;
+    }
+
     if (tabname === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
@@ -66,6 +90,7 @@ function show_box(tabname, focus_area, opts) {
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
+    $(".messagebox").show();
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $(".new_message_textarea").css("min-height", "3em");
@@ -380,18 +405,6 @@ exports.restore_message = function () {
         show_all_everyone_warnings();
     }
 };
-
-function compose_error(error_text, bad_input) {
-    $('#send-status').removeClass(status_classes)
-               .addClass('alert-error')
-               .stop(true).fadeTo(0, 1);
-    $('#error-msg').html(error_text);
-    $("#compose-send-button").removeAttr('disabled');
-    $("#sending-indicator").hide();
-    if (bad_input !== undefined) {
-        bad_input.focus().select();
-    }
-}
 
 var send_options;
 

@@ -590,6 +590,11 @@ class Stream(ModelReprMixin, models.Model):
         max_length=32, default=generate_email_token_for_stream) # type: text_type
     description = models.CharField(max_length=1024, default=u'') # type: text_type
 
+    # Specify default permissions assigned when user subscribes to a stream.
+    PERMISSION_FLAGS = ['can_read', 'can_write', 'can_moderate',
+                        'can_add_remove_users']
+    default_permissions = BitField(flags=PERMISSION_FLAGS, default=[b'can_read']) # type: BitHandler
+
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     deactivated = models.BooleanField(default=False) # type: bool
 
@@ -631,6 +636,12 @@ class Stream(ModelReprMixin, models.Model):
                     stream_id=self.id,
                     description=self.description,
                     invite_only=self.invite_only)
+
+    def default_permissions_list(self):
+        # type: () -> list[str]
+        return [permission for permission in self.default_permissions.keys() \
+                            if getattr(self.default_permissions, permission).is_set]
+
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
@@ -1298,6 +1309,8 @@ class Subscription(ModelReprMixin, models.Model):
     active = models.BooleanField(default=True) # type: bool
     in_home_view = models.NullBooleanField(default=True) # type: Optional[bool]
 
+    permissions = BitField(flags=Stream.PERMISSION_FLAGS) # type: BitHandler
+
     DEFAULT_STREAM_COLOR = u"#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR) # type: text_type
     pin_to_top = models.BooleanField(default=False) # type: bool
@@ -1315,6 +1328,29 @@ class Subscription(ModelReprMixin, models.Model):
     def __unicode__(self):
         # type: () -> text_type
         return u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)
+
+    def permissions_list(self):
+        # type: () -> List[str]
+        return [permission for permission in self.permissions.keys() \
+                            if getattr(self.permissions, permission).is_set]
+
+def parse_sub_permissions(permission_val):
+    # type: (int) -> List[str]
+    permissions = []
+    mask = 1
+    for permission in Stream.PERMISSION_FLAGS:
+        if permission_val & mask:
+            permissions.append(permission)
+        mask <<= 1
+    return permissions
+
+def get_permission_val(permissions):
+    # type: (List[text_type]) -> int
+    permission_val = 0
+    for permission in permissions:
+        permissionattr = getattr(Stream.default_permissions, permission)
+        permission_val += permissionattr.mask
+    return permission_val
 
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):

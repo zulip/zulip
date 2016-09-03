@@ -16,7 +16,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream
+    do_remove_default_stream, get_subscribers_details, get_subscription
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -31,8 +31,8 @@ from six.moves import urllib
 import six
 from six import text_type
 
-def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
+def list_to_streams(streams_raw, user_profile, default_permissions=None, autocreate=False, invite_only=False):
+    # type: (Iterable[text_type], Optional[List[text_type]], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -76,6 +76,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         for stream_name in rejects:
             stream, created = create_stream_if_needed(user_profile.realm,
                                                       stream_name,
+                                                      default_permissions = default_permissions,
                                                       invite_only=invite_only)
             if created:
                 created_streams.append(stream)
@@ -144,12 +145,14 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     return json_success()
 
 @authenticated_json_post_view
-@require_realm_admin
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ(), new_name=REQ()):
     # type: (HttpRequest, UserProfile, text_type, text_type) -> HttpResponse
-    do_rename_stream(user_profile.realm, old_name, new_name)
-    return json_success()
+    stream = get_subscription(old_name, user_profile)
+    if 'can_moderate' in stream.permissions_list() or user_profile.is_realm_admin:
+        do_rename_stream(user_profile.realm, old_name, new_name)
+        return json_success()
+    return json_error(_("Must be a realm administrator or stream moderator"))
 
 @authenticated_json_post_view
 @require_realm_admin
@@ -210,12 +213,17 @@ def json_remove_subscriptions(request, user_profile):
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", validator=check_list(check_string)),
-                                 principals = REQ(validator=check_list(check_string), default=None)):
-    # type: (HttpRequest, UserProfile, Iterable[text_type], Optional[Iterable[text_type]]) -> HttpResponse
+                                 principals = REQ(validator=check_list(check_string), default=None),
+                                 permissions = REQ(validator=check_list(check_string), default=None)):
+    # type: (HttpRequest, UserProfile, Iterable[text_type], Optional[Iterable[text_type]], Optional[Iterable[text_type]]) -> HttpResponse
 
+    if permissions:
+        can_add_remove_users = user_profile.is_realm_admin or 'can_add_remove_users' in permissions
+    else:
+        can_add_remove_users = user_profile.is_realm_admin
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
-    if removing_someone_else and not user_profile.is_realm_admin:
+    if removing_someone_else and not can_add_remove_users:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
         return json_error(_("This action requires administrative rights"))
@@ -286,10 +294,11 @@ def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
                               validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
+                              default_permissions = REQ(validator=check_list(check_string), default=None),
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, bool, Optional[List[text_type]], bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, Optional[List[text_type]], bool, Optional[List[text_type]], bool) -> HttpResponse
     stream_names = []
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"].strip()
@@ -301,7 +310,8 @@ def add_subscriptions_backend(request, user_profile,
 
     # Enforcement of can_create_streams policy is inside list_to_streams.
     existing_streams, created_streams = \
-        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+        list_to_streams(stream_names, user_profile, default_permissions= default_permissions, \
+                        autocreate=True, invite_only=invite_only)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
@@ -316,7 +326,7 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = set([user_profile])
 
-    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
+    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers, current_user=user_profile)
 
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list)) # type: Dict[str, Any]
     for (subscriber, stream) in subscribed:
@@ -406,7 +416,7 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
     if stream is None:
         raise JsonableError(_("Stream does not exist: %s") % (stream_name,))
 
-    subscribers = get_subscriber_emails(stream, user_profile)
+    subscribers = get_subscribers_details(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
 
@@ -448,7 +458,7 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     if stream is not None:
         recipient = get_recipient(Recipient.STREAM, stream.id)
         if autosubscribe:
-            bulk_add_subscriptions([stream], [user_profile])
+            bulk_add_subscriptions([stream], [user_profile], current_user=user_profile)
         result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
                                                            recipient=recipient,
                                                            active=True).exists()
