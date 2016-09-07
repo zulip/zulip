@@ -69,6 +69,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.memory = 2048
   end
 
+  config.vm.provider "vmware_fusion" do |vb, override|
+    override.vm.box = "puphpet/ubuntu1404-x64"
+    # It's possible we can get away with just 1.5GB; more testing needed
+    vb.vmx["memsize"] = "2048"
+    vb.vmx["numvcpus"] = "4"
+  end
+
 $provision_script = <<SCRIPT
 set -x
 set -e
