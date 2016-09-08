@@ -1651,6 +1651,37 @@ key = NAGIOS_BOT_API_KEY
       <img class="screenshot" src="/static/images/integrations/semaphore/003.png" />
     </div>
 
+    <div id="sentry" class="integration-instructions">
+      <p>Zulip supports integration with Sentry and can notify you of
+          issues that occurred in your project.</p>
+
+      <p>First, create the stream you'd like to use for Sentry notifications,
+          and subscribe all interested parties to this stream. We
+          recommend the name <code>sentry</code>.</p>
+
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/sentry?api_key=abcdefgh&amp;stream=sentry</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to.</p>
+
+      <p>Next, from Sentry dashboard choose your project.</p>
+      <img class="screenshot" src="/static/images/integrations/sentry/001.png" /><br/><br/>
+      <p>From the menu on your right, choose <code>Settings</code></p>
+      <img class="screenshot" src="/static/images/integrations/sentry/002.png" /><br/>
+      <p>On the settings page, from menu on your left, choose <code>Notifications</code><br/>
+      From <code>Inactive Integrations</code> section choose <code>WEBHOOKS</code></p>
+      <img class="screenshot" src="/static/images/integrations/sentry/003.png" /><br/>
+      <p>In new box called <code>WebHooks</code>, into <code>Callback URLs*</code> field, insert the above URL</p>
+      <img class="screenshot" src="/static/images/integrations/sentry/004.png" /><br/>
+      <p>And click <code>Save Changes</code></p>
+
+      <p><b>Congratulations! You're done!</b><br /> Example Zulip notification
+      looks like this:</p>
+
+      <img class="screenshot" src="/static/images/integrations/sentry/005.png" />
+    </div>
+
 
     <div id="stash" class="integration-instructions">
       <h4>Stash</h4>

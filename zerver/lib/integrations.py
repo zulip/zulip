@@ -89,6 +89,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pingdom'),
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
+    WebhookIntegration('sentry'),
     WebhookIntegration('stash'),
     WebhookIntegration('taiga'),
     WebhookIntegration('teamcity'),
