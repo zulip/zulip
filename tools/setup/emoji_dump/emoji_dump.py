@@ -27,8 +27,8 @@ class MissingGlyphError(Exception):
 def color_font(code_point, code_point_to_fname_map):
     name = code_point_to_fname_map[int(code_point, 16)]
 
-    in_name = EMOJI_DUMP_PATH('bitmaps/strike0/{}.png'.format(name))
-    out_name = EMOJI_DUMP_PATH('out/unicode/{}.png'.format(code_point))
+    in_name = 'bitmaps/strike0/{}.png'.format(name)
+    out_name = 'out/unicode/{}.png'.format(code_point)
 
     try:
         shutil.copyfile(in_name, out_name)
@@ -83,6 +83,14 @@ def main():
 
     subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
 
+    emoji_map = json.load(open('emoji_map.json'))
+    # Fix data problem with red/blue cars being inaccurate.
+    emoji_map['blue_car'] = emoji_map['red_car']
+    emoji_map['red_car'] = emoji_map['oncoming_automobile']
+    code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
+
+    os.chdir(EMOJI_DUMP_DIR_PATH)
+
     try:
         shutil.rmtree('out')
     except OSError:
@@ -91,14 +99,7 @@ def main():
     os.mkdir('out')
     os.mkdir('out/unicode')
 
-    emoji_map = json.load(open('emoji_map.json'))
-
-    # Fix data problem with red/blue cars being inaccurate.
-    emoji_map['blue_car'] = emoji_map['red_car']
-    emoji_map['red_car'] = emoji_map['oncoming_automobile']
-
     failed = False
-    code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
     for name, code_point in emoji_map.items():
         try:
             color_font(code_point, code_point_to_fname_map)
