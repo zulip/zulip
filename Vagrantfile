@@ -70,6 +70,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     vb.cpus = 2
   end
 
+  config.vm.provider "vmware_fusion" do |vb, override|
+    override.vm.box = "puphpet/ubuntu1404-x64"
+    vb.vmx["memsize"] = "2048"
+    vb.vmx["numvcpus"] = "2"
+  end
+
 $provision_script = <<SCRIPT
 set -x
 set -e

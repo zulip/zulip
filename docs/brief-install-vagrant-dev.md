@@ -31,13 +31,11 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
   LXC installation instructions][vagrant-lxc] to get Vagrant with LXC
   for your platform.
 
-* If your host is OS X or older Linux, [download VirtualBox][vbox-dl],
-  [download Vagrant][vagrant-dl], and install them both.
-
-* If you're on OS X and have VMWare, it should be possible to patch
-  Vagrantfile to use the VMWare vagrant provider which should perform
-  much better than Virtualbox.  Patches to do this by default if
-  VMWare is available are welcome!
+* If your host is OS X or older Linux, [download Vagrant][vagrant-dl]
+  and [VirtualBox][vbox-dl].  Or, instead of Virtualbox you can use
+  [VMWare Fusion][vmware-fusion-dl] with the [VMWare vagrant
+  provider][vagrant-vmware-fusion-dl] for a nonfree option with better
+  performance.
 
 * On Windows: You can use Vagrant and Virtualbox/VMWare on Windows
   with Cygwin, similar to the Mac setup.  Be sure to create your git
@@ -48,6 +46,8 @@ such as Mac via Virtualbox (but everything will be 2-3x slower).
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
+[vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
+[vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 
 Once that's done, simply change to your zulip directory and run
