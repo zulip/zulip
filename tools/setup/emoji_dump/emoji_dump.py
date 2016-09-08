@@ -16,6 +16,10 @@ ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../
 EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
 EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 
+AA_SCALE = 8
+SIZE = (68, 68)
+BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
+
 class MissingGlyphError(Exception):
     pass
 
@@ -34,10 +38,6 @@ def color_font(code_point, code_point_to_fname_map):
 
 def bw_font(name, code_point):
     char = unichr(int(code_point, 16))
-
-    AA_SCALE = 8
-    SIZE = (68, 68)
-    BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
 
     # AndroidEmoji.ttf is from
     # https://android.googlesource.com/platform/frameworks/base.git/+/master/data/fonts/AndroidEmoji.ttf
