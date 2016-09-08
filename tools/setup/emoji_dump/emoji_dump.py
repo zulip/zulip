@@ -17,7 +17,7 @@ EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
 EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 
 AA_SCALE = 8
-SIZE = (68, 68)
+SIZE = (136, 136)
 SPRITE_SIZE = (50, 50)
 BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
 
