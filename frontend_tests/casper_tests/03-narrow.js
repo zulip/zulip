@@ -141,46 +141,58 @@ function un_narrow() {
 
 // Narrow by clicking links.
 
-common.wait_for_receive(function () {
-    casper.test.info('Narrowing by clicking stream');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
+casper.then(function () {
+    common.wait_for_receive(function () {
+        casper.test.info('Narrowing by clicking stream');
+        casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
+    });
 });
 
-casper.waitUntilVisible('#zfilt', function () {
-    expect_stream();
+casper.then(function () {
+    casper.waitUntilVisible('#zfilt', function () {
+        expect_stream();
+    });
 });
+
 casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
 un_narrow();
 
-casper.waitUntilVisible('#zhome', function () {
-    expect_home();
-    casper.test.info('Narrowing by clicking subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
-});
-casper.then(check_narrow_title('frontend test - Zulip Dev - Zulip'));
-
-casper.waitUntilVisible('#zfilt', function () {
-    expect_stream_subject();
-
-    // This time, un-narrow by hitting the search 'x'
-    casper.test.info('Un-narrowing');
-    casper.click('#search_exit');
+casper.then(function () {
+    casper.waitUntilVisible('#zhome', function () {
+        expect_home();
+        casper.test.info('Narrowing by clicking subject');
+        casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
+    });
 });
 
-casper.waitUntilVisible('#zhome', function () {
-    expect_home();
-    casper.test.info('Narrowing by clicking personal');
-    casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
+casper.then(function () {
+    check_narrow_title('frontend test - Zulip Dev - Zulip');
+    casper.waitUntilVisible('#zfilt', function () {
+        expect_stream_subject();
+
+        // This time, un-narrow by hitting the search 'x'
+        casper.test.info('Un-narrowing');
+        casper.click('#search_exit');
+    });
 });
 
-casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
+casper.then(function () {
+    casper.waitUntilVisible('#zhome', function () {
+        expect_home();
+        casper.test.info('Narrowing by clicking personal');
+        casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
+    });
+});
 
-casper.waitUntilVisible('#zfilt', function () {
-    expect_huddle();
+casper.then(function () {
+    check_narrow_title('private - Zulip Dev - Zulip');
+    casper.waitUntilVisible('#zfilt', function () {
+        expect_huddle();
 
-    // Un-narrow by clicking "Zulip"
-    casper.test.info('Un-narrowing');
-    casper.click('.brand');
+        // Un-narrow by clicking "Zulip"
+        casper.test.info('Un-narrowing');
+        casper.click('.brand');
+    });
 });
 
 
@@ -195,27 +207,33 @@ function search_and_check(str, item, check, narrow_title) {
 
 function search_silent_user(str, item) {
     common.select_item_via_typeahead('#search_query', str, item);
-    casper.waitUntilVisible('#silent_user', function () {
-        casper.test.info("Empty feed for silent user visible.");
-        var expected_message = "\n        You haven't received any messages sent by this user yet!"+
-                                "\n      ";
-        this.test.assertEquals(casper.fetchText('#silent_user'), expected_message);
+    casper.then(function () {
+        casper.waitUntilVisible('#silent_user', function () {
+            casper.test.info("Empty feed for silent user visible.");
+            var expected_message = "\n        You haven't received any messages sent by this user yet!"+
+                                    "\n      ";
+            this.test.assertEquals(casper.fetchText('#silent_user'), expected_message);
+        });
     });
     un_narrow();
 }
 
 function search_non_existing_user(str, item) {
     common.select_item_via_typeahead('#search_query', str, item);
-    casper.waitUntilVisible('#non_existing_user', function () {
-        casper.test.info("Empty feed for non existing user visible.");
-        var expected_message = "\n        This user does not exist!"+
-                                "\n      ";
-        this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
+    casper.then(function () {
+        casper.waitUntilVisible('#non_existing_user', function () {
+            casper.test.info("Empty feed for non existing user visible.");
+            var expected_message = "\n        This user does not exist!"+
+                                    "\n      ";
+            this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
+        });
     });
     un_narrow();
 }
 
-casper.waitUntilVisible('#zhome', expect_home);
+casper.then(function () {
+    casper.waitUntilVisible('#zhome', expect_home);
+});
 
 // Test stream / recipient autocomplete in the search bar
 search_and_check('Verona', 'Narrow to stream', expect_stream,
