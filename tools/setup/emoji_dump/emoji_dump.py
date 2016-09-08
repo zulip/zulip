@@ -14,16 +14,18 @@ from PIL import Image, ImageDraw, ImageFont
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 
 EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
+EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 
 class MissingGlyphError(Exception):
     pass
 
 
 def color_font(code_point, code_point_to_fname_map):
-    in_name = os.path.join(EMOJI_DUMP_DIR_PATH, 'bitmaps/strike0/{}.png'.format(
-        code_point_to_fname_map[int(code_point, 16)]
-    ))
-    out_name = 'out/unicode/{}.png'.format(code_point)
+    name = code_point_to_fname_map[int(code_point, 16)]
+
+    in_name = EMOJI_DUMP_PATH('bitmaps/strike0/{}.png'.format(name))
+    out_name = EMOJI_DUMP_PATH('out/unicode/{}.png'.format(code_point))
+
     try:
         shutil.copyfile(in_name, out_name)
     except IOError:
@@ -73,7 +75,7 @@ def main():
 
     # this is so we don't accidently leave ttx files from previous
     # runs of this script lying around
-    for fname in glob.glob(os.path.join(EMOJI_DUMP_DIR_PATH, "*ttx*")):
+    for fname in glob.glob(EMOJI_DUMP_PATH("*ttx*")):
         os.remove(fname)
 
     # check if directory `var/emoji_dump` exists
@@ -96,7 +98,7 @@ def main():
     emoji_map['red_car'] = emoji_map['oncoming_automobile']
 
     failed = False
-    code_point_to_fname_map = code_point_to_file_name_map(os.path.join(EMOJI_DUMP_DIR_PATH, "NotoColorEmoji.ttx"))
+    code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
     for name, code_point in emoji_map.items():
         try:
             color_font(code_point, code_point_to_fname_map)
