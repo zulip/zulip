@@ -104,6 +104,7 @@ def main():
         try:
             color_font(code_point, code_point_to_fname_map)
         except MissingGlyphError:
+            print("Warning: Missing color glyph for %s; using black/white." % (name,))
             try:
                 bw_font(name, code_point)
             except Exception as e:
