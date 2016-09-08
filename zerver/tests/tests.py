@@ -1957,6 +1957,7 @@ class HomeTest(ZulipTestCase):
             "unread_count",
             "unsubbed_info",
             "user_id",
+            "zulip_version",
         ]
 
         email = "hamlet@zulip.com"
