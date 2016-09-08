@@ -51,6 +51,7 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd, generate_random_token
+from version import ZULIPVERSION
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
@@ -877,6 +878,7 @@ def home(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
+        zulip_version         = ZULIPVERSION,
         share_the_love        = settings.SHARE_THE_LOVE,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
