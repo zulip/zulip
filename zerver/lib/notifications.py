@@ -476,8 +476,7 @@ def enqueue_welcome_emails(email, name):
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
 
-    template_payload = {'name': name,
-                        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+    template_payload = {'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
                         'external_host': settings.EXTERNAL_HOST,
                         'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
                         'server_uri': settings.SERVER_URI,
