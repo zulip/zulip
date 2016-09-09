@@ -537,6 +537,9 @@ class BugdownTest(TestCase):
         )
 
     def test_mit_rendering(self):
+        """Test the markdown configs for the MIT Zephyr mirroring system;
+        verifies almost all inline patterns are disabled, but
+        inline_interesting_links is still enabled"""
         msg = "**test**"
         converted = bugdown.convert(msg, "zephyr_mirror")
         self.assertEqual(
