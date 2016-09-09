@@ -16,7 +16,7 @@ NOTIFICATION_BOT = "notification-bot@zulip.com"
 ERROR_BOT = "error-bot@zulip.com"
 NEW_USER_BOT = "new-user-bot@zulip.com"
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
-EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
+EXTRA_INSTALLED_APPS = ["zilencer", "analytics", "corporate"]
 # Disable Camo in development
 CAMO_URI = ''
 OPEN_REALM_CREATION = True
