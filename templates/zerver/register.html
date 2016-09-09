@@ -14,74 +14,74 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
 <div class="center-container">
-  <div class="center-block">
-    <div class="pitch">
-        <h1>You're almost there.</h1>
-        <p>
-          We just need you to do one last thing.
-          <br />
-          Tell us a bit about yourself.
-        </p>
-    </div>
-
-    <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_register') }}">
-    {{ csrf_input }}
-        <div class="control-group">
-            <label for="id_email" class="control-label">{{ _('Email') }}</label>
-            <div class="controls fakecontrol">
-                <input type='hidden' name='key' value='{{ key }}' />
-                <input type='text' disabled="true" placeholder="{{ email }}" />
-            </div>
+    <div class="center-block">
+        <div class="pitch">
+            <h1>You're almost there.</h1>
+            <p>
+                We just need you to do one last thing.
+                <br />
+                Tell us a bit about yourself.
+            </p>
         </div>
-        <div class="control-group">
-            <label for="id_full_name" class="control-label">{{ _('Full name') }}</label>
-            <div class="controls">
-                {% if lock_name %}
+
+        <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_register') }}">
+            {{ csrf_input }}
+            <div class="control-group">
+                <label for="id_email" class="control-label">{{ _('Email') }}</label>
+                <div class="controls fakecontrol">
+                    <input type='hidden' name='key' value='{{ key }}' />
+                    <input type='text' disabled="true" placeholder="{{ email }}" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="id_full_name" class="control-label">{{ _('Full name') }}</label>
+                <div class="controls">
+                    {% if lock_name %}
                     <p class="fakecontrol">{{ full_name }}</p>
-                {% else %}
+                    {% else %}
                     <input id="id_full_name" class="required" type="text" name="full_name"
-                    value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
+                           value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
                            maxlength="100" />
                     {% if form.full_name.errors %}
-                        {% for error in form.full_name.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
+                    {% for error in form.full_name.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
                     {% endif %}
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
-        </div>
 
-      {% if creating_new_team %}
+            {% if creating_new_team %}
             <div class="control-group">
                 <label for="id_team_name" class="control-label">{{ _('Organization name') }}</label>
                 <div class="controls">
                     <input id="id_team_name" class="required" type="text"
-                        placeholder="{{ _("E.g. Acme") }}"
-                        name="realm_name" maxlength="100" />
-                        {% if form.realm_name.errors %}
-                            {% for error in form.realm_name.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
+                           placeholder="{{ _("E.g. Acme") }}"
+                           name="realm_name" maxlength="100" />
+                    {% if form.realm_name.errors %}
+                    {% for error in form.realm_name.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                    {% endif %}
                     <br /><span class="small">{{ _('You can change this later on the admin page.') }}</span>
                 </div>
-                </div>
-        {% endif %}
+            </div>
+            {% endif %}
 
-        {% if password_auth_enabled %}
+            {% if password_auth_enabled %}
             <div class="control-group">
                 <label for="id_password" class="control-label">{{ _('Password') }}</label>
                 <div class="controls">
                     <input id="id_password" class="required" type="password" name="password"
-                           value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                           maxlength="100" />
+                                 value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
+                                 maxlength="100" />
                     {% if full_name %}
                     <span class="help-inline">{{ _('This is used for mobile applications and other tools that require a password') }}.</span>
                     {% endif %}
                     {% if form.password.errors %}
-                        {% for error in form.password.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
+                    {% for error in form.password.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
                     {% endif %}
                 </div>
             </div>
@@ -93,10 +93,9 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     </div>
                 </div>
             </div>
+            {% endif %}
 
-        {% endif %}
-
-        {% if terms_of_service %}
+            {% if terms_of_service %}
             <div class="control-group">
                 <div class="controls">
                     <label class="checkbox">
@@ -113,21 +112,21 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {{ _('I agree to the') }} <a href="{{ server_uri }}/terms" target="_blank">{{ _('Terms of Service') }}</a>.
                     </label>
                     {% if form.terms.errors %}
-                        {% for error in form.terms.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
+                    {% for error in form.terms.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
                     {% endif %}
                 </div>
             </div>
-        {% endif %}
-        <div class="submit-button-box">
-            <div class="controls">
-                <input type="submit" class="button btn btn-large btn-primary" value="Register" /><br />
-                <input type="hidden" name="next" value="{{ next }}" />
+            {% endif %}
+            <div class="submit-button-box">
+                <div class="controls">
+                    <input type="submit" class="button btn btn-large btn-primary" value="Register" /><br />
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </div>
             </div>
-        </div>
-    </form>
-  </div>
+        </form>
+    </div>
 </div>
 
 <script type="text/javascript">
