@@ -1026,16 +1026,16 @@ class Bugdown(markdown.Extension):
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
             # not removed
-            for k in md.inlinePatterns.keys():
+            for k in list(md.inlinePatterns.keys()):
                 if k not in ["autolink"]:
                     del md.inlinePatterns[k]
-            for k in md.treeprocessors.keys():
+            for k in list(md.treeprocessors.keys()):
                 if k not in ["inline_interesting_links", "inline", "rewrite_to_https"]:
                     del md.treeprocessors[k]
-            for k in md.preprocessors.keys():
+            for k in list(md.preprocessors.keys()):
                 if k not in ["custom_text_notifications"]:
                     del md.preprocessors[k]
-            for k in md.parser.blockprocessors.keys():
+            for k in list(md.parser.blockprocessors.keys()):
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]
 
