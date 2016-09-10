@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
-from typing import Tuple
+from typing import Any, Tuple
 
 import logging
 import time
@@ -12,6 +12,7 @@ try:
     # Tornado 2.4
     orig_poll_impl = ioloop._poll # type: ignore # cross-version type variation is hard for mypy
     def instrument_tornado_ioloop():
+        # type: () -> None
         ioloop._poll = InstrumentedPoll # type: ignore # cross-version type variation is hard for mypy
 except:
     # Tornado 3
@@ -25,6 +26,7 @@ except:
             super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
 
     def instrument_tornado_ioloop():
+        # type: () -> None
         IOLoop.configure(InstrumentedPollIOLoop)
 
 # A hack to keep track of how much time we spend working, versus sleeping in
@@ -37,6 +39,7 @@ except:
 
 class InstrumentedPoll(object):
     def __init__(self):
+        # type: () -> None
         self._underlying = orig_poll_impl()
         self._times = [] # type: List[Tuple[float, float]]
         self._last_print = 0.0
@@ -45,10 +48,13 @@ class InstrumentedPoll(object):
     # we proxy every method.  __getattr__ handles anything we
     # don't define elsewhere.
     def __getattr__(self, name):
+        # type: (str) -> Any
         return getattr(self._underlying, name)
 
     # Call the underlying poll method, and report timing data.
     def poll(self, timeout):
+        # type: (float) -> Any
+
         # Avoid accumulating a bunch of insignificant data points
         # from short timeouts.
         if timeout < 1e-3:
