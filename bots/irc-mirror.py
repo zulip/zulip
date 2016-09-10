@@ -9,27 +9,34 @@
 from __future__ import print_function
 import irc.bot
 import irc.strings
-from irc.client import ip_numstr_to_quad, ip_quad_to_numstr
+from irc.client import ip_numstr_to_quad, ip_quad_to_numstr, Event, ServerConnection
 import zulip
 import optparse
+
+if False: from typing import Any
 
 IRC_DOMAIN = "irc.example.com"
 
 def zulip_sender(sender_string):
+    # type: (str) -> str
     nick = sender_string.split("!")[0]
     return nick + "@" + IRC_DOMAIN
 
 class IRCBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
+        # type: (irc.bot.Channel, str, str, int) -> None
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
-        self.channel = channel
+        self.channel = channel # type: irc.bot.Channel
 
     def on_nicknameinuse(self, c, e):
+        # type: (ServerConnection, Event) -> None
         c.nick(c.get_nickname().replace("_zulip", "__zulip"))
 
     def on_welcome(self, c, e):
+        # type: (ServerConnection, Event) -> None
         c.join(self.channel)
         def forward_to_irc(msg):
+            # type: (Dict[str, Any]) -> None
             if msg["type"] == "stream":
                 send = lambda x: c.privmsg(msg["display_recipient"], x)
             else:
@@ -48,6 +55,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
         # zulip_client.call_on_each_message(forward_to_irc)
 
     def on_privmsg(self, c, e):
+        # type: (ServerConnection, Event) -> None
         content = e.arguments[0]
         sender = zulip_sender(e.source)
         if sender.endswith("_zulip@" + IRC_DOMAIN):
@@ -62,6 +70,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 }))
 
     def on_pubmsg(self, c, e):
+        # type: (ServerConnection, Event) -> None
         content = e.arguments[0]
         stream = e.target
         sender = zulip_sender(e.source)
@@ -79,9 +88,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 }))
 
     def on_dccmsg(self, c, e):
+        # type: (ServerConnection, Event) -> None
         c.privmsg("You said: " + e.arguments[0])
 
     def on_dccchat(self, c, e):
+        # type: (ServerConnection, Event) -> None
         if len(e.arguments) != 2:
             return
         args = e.arguments[1].split()
