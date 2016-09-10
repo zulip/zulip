@@ -59,7 +59,6 @@ bots/check-mirroring
 bots/gcal-bot
 bots/githook-post-receive
 tools/deprecated/inject-messages/inject-messages
-tools/deprecated/review
 """.split()
 
 exclude_scripts_py2 = [] # type: List[str]
