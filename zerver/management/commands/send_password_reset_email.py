@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any
+from typing import Any, List, Optional, Text
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
@@ -16,7 +16,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
 
-from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.tokens import default_token_generator, PasswordResetTokenGenerator
 
 class Command(BaseCommand):
     help = """Send email to specified email address."""
@@ -45,11 +45,12 @@ class Command(BaseCommand):
             raise RuntimeError("Missing arguments")
         self.send(users)
 
-    def send(self, users, domain_override=None,
+    def send(self, users,
              subject_template_name='registration/password_reset_subject.txt',
              email_template_name='registration/password_reset_email.txt',
              use_https=True, token_generator=default_token_generator,
-             from_email=None, request=None, html_email_template_name=None):
+             from_email=None, html_email_template_name=None):
+        # type: (List[UserProfile], str, str, bool, PasswordResetTokenGenerator, Optional[Text], Optional[str]) -> None
         """Sends one-use only links for resetting password to target users
 
         """
@@ -71,6 +72,7 @@ class Command(BaseCommand):
 
     def send_mail(self, subject_template_name, email_template_name,
                   context, from_email, to_email, html_email_template_name=None):
+        # type: (str, str, Dict[str, Any], Text, Text, Optional[str]) -> None
         """
         Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
         """
