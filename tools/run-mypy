@@ -55,7 +55,6 @@ api/integrations/rss/rss-bot
 api/integrations/svn/post-commit
 api/integrations/twitter/twitter-bot
 api/integrations/twitter/twitter-search-bot
-bots/check-mirroring
 bots/gcal-bot
 bots/githook-post-receive
 tools/deprecated/inject-messages/inject-messages
