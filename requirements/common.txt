@@ -2,7 +2,7 @@
 # Django itself; we use a slightly patched version
 git+https://github.com/zulip/truncated-django.git#egg=Django==1.8
 
-GitPython==0.3.2.1
+GitPython==2.0.8
 
 # Needed for rendering backend templates
 Jinja2==2.8
