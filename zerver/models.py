@@ -192,10 +192,12 @@ class Realm(ModelReprMixin, models.Model):
 
     @property
     def uri(self):
+        # type: () -> str
         return settings.SERVER_URI
 
     @property
     def host(self):
+        # type: () -> str
         return settings.EXTERNAL_HOST
 
     @property
