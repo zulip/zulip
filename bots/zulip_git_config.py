@@ -4,6 +4,8 @@
 # Leaving all the instructions out of this file to avoid having to
 # sync them as we update the comments.
 
+if False: from typing import Dict, Optional, Text
+
 ZULIP_USER = "commit-bot@zulip.com"
 ZULIP_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
@@ -23,6 +25,7 @@ ZULIP_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # * topic "master"
 # And similarly for branch "test-post-receive" (for use when testing).
 def commit_notice_destination(repo, branch, commit):
+    # type: (Text, Text, Text) -> Optional[Dict[str, Text]]
     if branch in ["master", "prod", "test-post-receive"]:
         return dict(stream  = 'test' if 'test-' in branch else 'commits',
                     subject = u"%s" % (branch,))
@@ -36,6 +39,7 @@ def commit_notice_destination(repo, branch, commit):
 #
 # return '!avatar(%s) [%s](https://example.com/commits/%s)\n' % (author, subject, commit_id)
 def format_commit_message(author, subject, commit_id):
+    # type: (str, str, str) -> str
     return '!avatar(%s) [%s](https://git.zulip.net/eng/zulip/commit/%s)\n' % (author, subject, commit_id)
 
 ZULIP_API_PATH = "/home/zulip/zulip/api"
