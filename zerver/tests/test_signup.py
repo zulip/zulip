@@ -517,26 +517,31 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
+        # type: () -> None
         self.email1 = "email1@zulip.com"
         self.email2 = "email2@zulip.com"
         self.email3 = "email3@zulip.com"
 
     def test_if_emails_separated_by_commas_are_parsed_and_striped_correctly(self):
+        # type: () -> None
         emails_raw = "{} ,{}, {}".format(self.email1, self.email2, self.email3)
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_separated_by_newlines_are_parsed_and_striped_correctly(self):
+        # type: () -> None
         emails_raw = "{}\n {}\n {} ".format(self.email1, self.email2, self.email3)
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_from_email_client_separated_by_newlines_are_parsed_correctly(self):
+        # type: () -> None
         emails_raw = "Email One <{}>\nEmailTwo<{}>\nEmail Three<{}>".format(self.email1, self.email2, self.email3)
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
 
     def test_if_emails_in_mixed_style_are_parsed_correctly(self):
+        # type: () -> None
         emails_raw = "Email One <{}>,EmailTwo<{}>\n{}".format(self.email1, self.email2, self.email3)
         expected_set = {self.email1, self.email2, self.email3}
         self.assertEqual(get_invitee_emails_set(emails_raw), expected_set)
@@ -669,6 +674,7 @@ class RealmCreationTest(ZulipTestCase):
 class UserSignUpTest(ZulipTestCase):
 
     def test_user_default_language(self):
+        # type: () -> None
         """
         Check if the default language of new user is the default language
         of the realm.
