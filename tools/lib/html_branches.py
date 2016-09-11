@@ -2,13 +2,12 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from typing import Optional
-from .template_parser import Token
 
 import re
 
 from .template_parser import (
-    is_special_html_tag,
     tokenize,
+    Token,
 )
 
 
