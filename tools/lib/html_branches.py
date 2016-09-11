@@ -150,13 +150,16 @@ def html_tag_tree(text):
     stack = [top_level]
 
     for token in tokens:
+        # Add tokens to the Node tree first (conditionally).
         if token.kind in ('html_start', 'html_singleton'):
-            if not is_special_html_tag(token.s, token.tag):
-                parent = stack[-1]
-                node= Node(token=token, parent=parent)
-                parent.children.append(node)
-            if token.kind == 'html_start':
-                stack.append(node)
+            parent = stack[-1]
+            node= Node(token=token, parent=parent)
+            parent.children.append(node)
+
+        # Then update the stack to have the next node that
+        # we will be appending to at the top.
+        if token.kind == 'html_start':
+            stack.append(node)
         elif token.kind == 'html_end':
             stack.pop()
 
