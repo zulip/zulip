@@ -329,11 +329,13 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_post(self, url, info={}, **kwargs):
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.post(url, info, **kwargs)
 
     @instrument_url
     def client_get(self, url, info={}, **kwargs):
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.get(url, info, **kwargs)
 
