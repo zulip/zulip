@@ -230,6 +230,7 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(token.tag, 'if')
 
     def test_get_tag_info(self):
+        # type: () -> None
         html = '''
             <p id="test" class="test1 test2">foo</p>
         '''
@@ -245,7 +246,42 @@ class ParserTest(unittest.TestCase):
     def test_html_tag_tree(self):
         # type: () -> None
         html = '''
-        <body><p>Hello world</p></body>
+            <!-- test -->
+            <!DOCTYPE html>
+            <html>
+            <!-- test -->
+            <head>
+                <title>Test</title>
+                <meta charset="utf-8" />
+                <link rel="stylesheet" href="style.css" />
+            </head>
+            <body>
+                <p>Hello<br />world!</p>
+                <p>Goodbye<!-- test -->world!</p>
+            </body>
+            </html>
+            <!-- test -->
         '''
+
         tree = html_tag_tree(html)
-        self.assertEqual(tree.children[0].children[0].token.s, '<p>')
+
+        self.assertEqual(tree.children[0].token.kind, 'html_start')
+        self.assertEqual(tree.children[0].token.tag, 'html')
+
+        self.assertEqual(tree.children[0].children[0].token.kind, 'html_start')
+        self.assertEqual(tree.children[0].children[0].token.tag, 'head')
+
+        self.assertEqual(tree.children[0].children[0].children[0].token.kind, 'html_start')
+        self.assertEqual(tree.children[0].children[0].children[0].token.tag, 'title')
+
+        self.assertEqual(tree.children[0].children[1].token.kind, 'html_start')
+        self.assertEqual(tree.children[0].children[1].token.tag, 'body')
+
+        self.assertEqual(tree.children[0].children[1].children[0].token.kind, 'html_start')
+        self.assertEqual(tree.children[0].children[1].children[0].token.tag, 'p')
+
+        self.assertEqual(tree.children[0].children[1].children[0].children[0].token.kind, 'html_singleton')
+        self.assertEqual(tree.children[0].children[1].children[0].children[0].token.tag, 'br')
+
+        self.assertEqual(tree.children[0].children[1].children[1].token.kind, 'html_start')
+        self.assertEqual(tree.children[0].children[1].children[1].token.tag, 'p')
