@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 
@@ -23,6 +26,7 @@ class Command(BaseCommand):
     with (for example) any bots owned by the user."""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('email', metavar='<email>', type=str,
                             help="email of user to export")
         parser.add_argument('--output',
@@ -32,6 +36,7 @@ class Command(BaseCommand):
                             help='Directory to write exported data to.')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         try:
             user_profile = get_user_profile_by_email(options["email"])
         except UserProfile.DoesNotExist:
