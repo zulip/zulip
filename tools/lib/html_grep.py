@@ -3,14 +3,14 @@ from __future__ import print_function
 from collections import defaultdict
 from six.moves import range
 
-from .template_parser import html_branches, Token, HtmlTreeBranch
+from .html_branches import html_branches, HtmlTreeBranch
 
 def show_all_branches(fns):
     # type: (List[str]) -> None
     for fn in fns:
         print(fn)
         text = open(fn).read()
-        branches = html_branches(text)
+        branches = html_branches(text, fn=fn)
         for branch in branches:
             print(branch.text())
         print('---')
@@ -27,7 +27,8 @@ class Grepper(object):
         all_branches = [] # type: List[HtmlTreeBranch]
 
         for fn in fns:
-            branches = html_branches(fn)
+            text = open(fn).read()
+            branches = html_branches(text, fn=fn)
             all_branches += branches
 
         self.word_dict = defaultdict(set) # type: Dict[str, Set[HtmlTreeBranch]]
