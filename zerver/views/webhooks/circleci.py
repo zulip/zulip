@@ -13,8 +13,8 @@ from zerver.models import UserProfile, Client
 import ujson
 
 
-CIRCLECI_SUBJECT_TEMPLATE = '{repository_name}'
-CIRCLECI_MESSAGE_TEMPLATE = '[Build]({build_url}) triggered by {username} on {branch} branch {status}.'
+CIRCLECI_SUBJECT_TEMPLATE = u'{repository_name}'
+CIRCLECI_MESSAGE_TEMPLATE = u'[Build]({build_url}) triggered by {username} on {branch} branch {status}.'
 
 FAILED_STATUS = 'failed'
 
@@ -31,9 +31,11 @@ def api_circleci_webhook(request, user_profile, client, payload=REQ(argument_typ
     return json_success()
 
 def get_subject(payload):
+    # type: (Dict[str, Any]) -> text_type
     return CIRCLECI_SUBJECT_TEMPLATE.format(repository_name=payload['reponame'])
 
 def get_body(payload):
+    # type: (Dict[str, Any]) -> text_type
     data = {
         'build_url': payload['build_url'],
         'username': payload['username'],
@@ -43,9 +45,10 @@ def get_body(payload):
     return CIRCLECI_MESSAGE_TEMPLATE.format(**data)
 
 def get_status(payload):
+    # type: (Dict[str, Any]) -> text_type
     status = payload['status']
     if payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
-        return 'is still failing'
+        return u'is still failing'
     if status == 'success':
-        return 'succeeded'
+        return u'succeeded'
     return status

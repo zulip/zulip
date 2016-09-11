@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from mock import patch
+from mock import patch, MagicMock
 from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
@@ -19,6 +19,7 @@ class TestSendWebhookFixtureMessage(TestCase):
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
     def test_check_if_command_exits_when_fixture_param_is_empty(self, print_help_mock):
+        # type: (MagicMock) -> None
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, url=self.url)
 
@@ -26,6 +27,7 @@ class TestSendWebhookFixtureMessage(TestCase):
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
     def test_check_if_command_exits_when_url_param_is_empty(self, print_help_mock):
+        # type: (MagicMock) -> None
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path)
 
@@ -33,6 +35,7 @@ class TestSendWebhookFixtureMessage(TestCase):
 
     @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
     def test_check_if_command_exits_when_fixture_path_does_not_exist(self, os_path_exists_mock):
+        # type: (MagicMock) -> None
         os_path_exists_mock.return_value = False
 
         with self.assertRaises(SystemExit):
@@ -49,6 +52,7 @@ class TestSendWebhookFixtureMessage(TestCase):
                                                                ujson_mock,
                                                                client_mock,
                                                                os_path_exists_mock):
+        # type: (MagicMock, MagicMock, MagicMock, MagicMock) -> None
         ujson_mock.loads.return_value = '{}'
         ujson_mock.dumps.return_value = {}
         os_path_exists_mock.return_value = True
@@ -65,6 +69,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
     COMMAND_NAME = "generate_realm_creation_link"
 
     def test_generate_link_and_create_realm(self):
+        # type: () -> None
         username = "user1"
         domain = "test.com"
         email = "user1@test.com"
@@ -91,6 +96,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             self.assert_in_response("The organization creation link has been expired or is not valid.", result)
 
     def test_realm_creation_with_random_link(self):
+        # type: () -> None
         with self.settings(OPEN_REALM_CREATION=False):
             # Realm creation attempt with an invalid link should fail
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
@@ -99,6 +105,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             self.assert_in_response("The organization creation link has been expired or is not valid.", result)
 
     def test_realm_creation_with_expired_link(self):
+        # type: () -> None
         with self.settings(OPEN_REALM_CREATION=False):
             generated_link = generate_realm_creation_url()
             key = generated_link[-40:]
