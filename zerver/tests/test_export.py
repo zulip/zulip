@@ -209,6 +209,7 @@ class ExportTest(TestCase):
             )
 
         def read_file(fn):
+            # type: (str) -> Any
             full_fn = os.path.join(output_dir, fn)
             with open(full_fn) as f:
                 return ujson.load(f)
