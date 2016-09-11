@@ -18,6 +18,9 @@ import subprocess
 import sys
 import ujson
 
+from typing import Any
+Model = Any # TODO: make this mypy type more specific
+
 class Command(BaseCommand):
     help = """Import Zulip database dump files into a fresh Zulip instance.
 
@@ -40,6 +43,7 @@ Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-no
     )
 
     def new_instance_check(self, model):
+        # type: (Model) -> None
         count = model.objects.count()
         if count:
             print("Zulip instance is not empty, found %d rows in %s table. " \
@@ -48,10 +52,12 @@ Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-no
             exit(1)
 
     def do_destroy_and_rebuild_database(self, db_name):
+        # type: (str) -> None
         call_command('flush', verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
             Client, Message, UserMessage, Huddle, DefaultStream, RealmAlias,
             RealmFilter]
