@@ -1,3 +1,4 @@
+from typing import Optional, Any, Dict
 from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
@@ -8,6 +9,7 @@ class IntegrationView(TemplateView):
     template_name = 'zerver/integrations.html'
 
     def get_context_data(self, **kwargs):
+        # type: (Optional[Dict[str, Any]]) -> Dict[str, str]
         context = super(IntegrationView, self).get_context_data(**kwargs)
         alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
         context['integrations_dict'] = alphabetical_sorted_integration

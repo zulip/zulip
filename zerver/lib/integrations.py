@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypeVar
 from django.conf import settings
 from django.conf.urls import url
+from django.core.urlresolvers import LocaleRegexProvider
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -42,6 +43,7 @@ class Integration(object):
 
 class EmailIntegration(Integration):
     def is_enabled(self):
+        # type: () -> bool
         return settings.EMAIL_GATEWAY_BOT != ""
 
 class WebhookIntegration(Integration):
@@ -66,6 +68,7 @@ class WebhookIntegration(Integration):
 
     @property
     def url_object(self):
+        # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
 
 

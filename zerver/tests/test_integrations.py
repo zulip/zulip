@@ -9,5 +9,6 @@ from zerver.lib.integrations import INTEGRATIONS
 
 class IntegrationTestCase(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
+        # type: () -> None
         for integration in INTEGRATIONS.values():
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
