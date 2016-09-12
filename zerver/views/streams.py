@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable
+from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -181,9 +181,8 @@ def list_subscriptions_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
-FuncItPair = Tuple[Callable[..., HttpResponse], Iterable[Any]]
+FuncKwargPair = Tuple[Callable[..., HttpResponse], Dict[str, Iterable[Any]]]
 
-@transaction.atomic
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
                                  delete=REQ(validator=check_list(check_string), default=[]),
@@ -192,14 +191,31 @@ def update_subscriptions_backend(request, user_profile,
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
 
+    method_kwarg_pairs = [
+        (add_subscriptions_backend, dict(streams_raw=add)),
+        (remove_subscriptions_backend, dict(streams_raw=delete))
+    ] # type: List[FuncKwargPair]
+    return compose_views(request, user_profile, method_kwarg_pairs)
+
+def compose_views(request, user_profile, method_kwarg_pairs):
+    # type: (HttpRequest, UserProfile, List[FuncKwargPair]) -> HttpResponse
+    '''
+    This takes a series of view methods from method_kwarg_pairs and calls
+    them in sequence, and it smushes all the json results into a single
+    response when everything goes right.  (This helps clients avoid extra
+    latency hops.)  It rolls back the transaction when things go wrong in
+    any one of the composed methods.
+
+    TODO: Move this a utils-like module if we end up using it more widely.
+    '''
+
     json_dict = {} # type: Dict[str, Any]
-    method_items_pairs = ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)) # type: Tuple[FuncItPair, FuncItPair]
-    for method, items in method_items_pairs:
-        response = method(request, user_profile, streams_raw=items)
-        if response.status_code != 200:
-            transaction.rollback()
-            return response
-        json_dict.update(ujson.loads(response.content))
+    with transaction.atomic():
+        for method, kwargs in method_kwarg_pairs:
+            response = method(request, user_profile, **kwargs)
+            if response.status_code != 200:
+                raise JsonableError(response.content)
+            json_dict.update(ujson.loads(response.content))
     return json_success(json_dict)
 
 @authenticated_json_post_view
