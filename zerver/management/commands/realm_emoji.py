@@ -5,7 +5,7 @@ from argparse import RawTextHelpFormatter
 from typing import Any
 
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import Realm, get_realm
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 import sys
@@ -22,6 +22,7 @@ Example: python manage.py realm_emoji --realm=zulip.com --op=show
 
     # Fix support for multi-line usage
     def create_parser(self, *args, **kwargs):
+        # type: (*Any, **Any) -> CommandParser
         parser = super(Command, self).create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
