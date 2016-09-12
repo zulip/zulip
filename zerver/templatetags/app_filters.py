@@ -5,6 +5,7 @@ from django.utils.functional import memoize
 register = Library()
 
 def and_n_others(values, limit):
+    # type: (List[str], int) -> str
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and %d other%s" % (len(values) - limit,
@@ -12,6 +13,7 @@ def and_n_others(values, limit):
 
 @register.filter(name='display_list', is_safe=True)
 def display_list(values, display_limit):
+    # type: (List[str], int) -> str
     """
     Given a list of values, return a string nicely formatting those values,
     summarizing when you have more than `display_limit`. Eg, for a
@@ -49,6 +51,7 @@ def render_markdown_path(markdown_file_path):
     """
     import markdown
     def path_to_html(path):
+        # type: (str) -> str
         markdown_string = open(path).read()
         return markdown.markdown(markdown_string, safe_mode='escape')
 
