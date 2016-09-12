@@ -2,9 +2,10 @@
 from __future__ import absolute_import
 
 from django.db.models import Q
-from typing import Optional
+from django.http import HttpRequest, HttpResponse
+from typing import Any, Optional
 
-from zerver.models import UserProfile, Realm
+from zerver.models import Client, UserProfile, Realm
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -40,7 +41,7 @@ def get_teamcity_property_value(property_list, name):
 @has_request_variables
 def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                          stream=REQ(default='teamcity')):
-    # (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
     message = payload['build']
 
     build_name = message['buildFullName']
