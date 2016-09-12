@@ -201,6 +201,8 @@ INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
 
+UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
+
 def instrument_url(f):
     # type: (UrlFuncT) -> UrlFuncT
     if not INSTRUMENTING:
