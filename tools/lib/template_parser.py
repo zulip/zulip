@@ -25,6 +25,7 @@ class Token(object):
         self.col = col
 
 def tokenize(text):
+    # type: (str) -> List[Token]
     def advance(n):
         # type: (int) -> None
         for _ in range(n):
@@ -119,7 +120,7 @@ def tokenize(text):
     return tokens
 
 def validate(fn=None, text=None, check_indent=True):
-    # type: (str, str, bool) -> None
+    # type: (Optional[str], Optional[str], bool) -> None
     assert fn or text
 
     if fn is None:

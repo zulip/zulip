@@ -119,9 +119,8 @@ class ParserTestSadPath(unittest.TestCase):
     '''
 
     def _assert_error(self, my_css, error):
-        # See https://github.com/python/typeshed/issues/372
-        # for why we have to ingore types here.
-        with self.assertRaisesRegexp(CssParserException, error): # type: ignore
+        # type: (str, str) -> None
+        with self.assertRaisesRegexp(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
             parse(my_css)
 
     def test_unexpected_end_brace(self):

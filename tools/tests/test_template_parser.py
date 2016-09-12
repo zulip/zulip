@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Optional
+
 import sys
 import unittest
 
@@ -17,9 +19,8 @@ except ImportError:
 
 class ParserTest(unittest.TestCase):
     def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
-        # See https://github.com/python/typeshed/issues/372
-        # for why we have to ingore types here.
-        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore
+        # type: (str, Optional[str], Optional[str], bool) -> None
+        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
             validate(fn=fn, text=text, check_indent=check_indent)
 
     def test_is_django_block_tag(self):
