@@ -199,7 +199,10 @@ class POSTRequestMock(object):
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
 INSTRUMENTED_CALLS = []
 
+UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
+
 def instrument_url(f):
+    # type: (UrlFuncT) -> UrlFuncT
     if not INSTRUMENTING:
         return f
     else:
