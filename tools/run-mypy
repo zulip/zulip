@@ -82,8 +82,8 @@ parser.add_argument('-a', '--all', dest='all', action='store_true', default=Fals
                     This is useful if you have to find out which files fail mypy check.""")
 parser.add_argument('--linecoverage-report', dest='linecoverage_report', action='store_true', default=False,
                     help="""run the linecoverage report to see annotation coverage""")
-parser.add_argument('--disallow-untyped-defs', dest='disallow_untyped_defs', action='store_true', default=False,
-                    help="""throw errors when functions are not annotated""")
+parser.add_argument('--no-disallow-untyped-defs', dest='disallow_untyped_defs', action='store_false', default=True,
+                    help="""Don't throw errors when functions are not annotated""")
 parser.add_argument('--scripts-only', dest='scripts_only', action='store_true', default=False,
                     help="""Only type check extensionless python scripts""")
 
