@@ -197,7 +197,7 @@ class POSTRequestMock(object):
         self.META = {'PATH_INFO': 'test'}
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
-INSTRUMENTED_CALLS = []
+INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
 
@@ -207,6 +207,7 @@ def instrument_url(f):
         return f
     else:
         def wrapper(self, url, info={}, **kwargs):
+            # type: (Any, text_type, Dict[str, Any], **Any) -> HttpResponse
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
