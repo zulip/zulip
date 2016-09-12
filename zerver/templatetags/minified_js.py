@@ -1,16 +1,23 @@
 from __future__ import absolute_import
+from typing import Any
 
 from django.template import Node, Library, TemplateSyntaxError
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+if False:
+    # no need to add dependency
+    from django.template.base import Parser, Token
+
 register = Library()
 
 class MinifiedJSNode(Node):
     def __init__(self, sourcefile):
+        # type: (str) -> None
         self.sourcefile = sourcefile
 
     def render(self, context):
+        # type: (Dict[str, Any]) -> str
         if settings.DEBUG:
             scripts = settings.JS_SPECS[self.sourcefile]['source_filenames']
         else:
@@ -23,6 +30,7 @@ class MinifiedJSNode(Node):
 
 @register.tag
 def minified_js(parser, token):
+    # type: (Parser, Token) -> MinifiedJSNode
     try:
         tag_name, sourcefile = token.split_contents()
     except ValueError:
