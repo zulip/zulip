@@ -3,7 +3,7 @@
     {
       "name": "codeblock_hilite",
       "input": "Hamlet said:\n~~~~.python \ndef speak(self):\n    x = 1\n~~~~",
-      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>",
+      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span><span class=\"k\">def</span> <span class=\"nf\">speak</span><span class=\"p\">(</span><span class=\"bp\">self</span><span class=\"p\">):</span>\n    <span class=\"n\">x</span> <span class=\"o\">=</span> <span class=\"mi\">1</span>\n</pre></div>",
       "bugdown_matches_marked": false
     },
     {
@@ -15,19 +15,19 @@
     {
       "name": "codeblock_multiline",
       "input": "Hamlet once said\n~~~~\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n~~~~\nAnd all was good.",
-      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
+      "expected_output": "<p>Hamlet once said</p>\n<div class=\"codehilite\"><pre><span></span>def func():\n    x = 1\n\n    y = 2\n\n    z = 3\n</pre></div>\n\n\n<p>And all was good.</p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "codeblock_backticks",
       "input": "\n```\nfenced code\n```\n\n```inline code```\n",
-      "expected_output": "<div class=\"codehilite\"><pre>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span>fenced code\n</pre></div>\n\n\n<p><code>inline code</code></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "hanging_multi_codeblock",
       "input": "Hamlet said:\n~~~~\ndef speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n~~~~\n\nThen he mentioned ````y = 4 + x**2```` and\n~~~~\ndef foobar(self):\n    return self.baz()",
-      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</pre></div>\n\n\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre>def foobar(self):\n    return self.baz()\n</pre></div>",
+      "expected_output": "<p>Hamlet said:</p>\n<div class=\"codehilite\"><pre><span></span>def speak(self):\n    x = 1\n# Comment to make this code block longer to test Trac #1162\n</pre></div>\n\n\n<p>Then he mentioned <code>y = 4 + x**2</code> and</p>\n<div class=\"codehilite\"><pre><span></span>def foobar(self):\n    return self.baz()\n</pre></div>",
       "bugdown_matches_marked": true
     },
     {
@@ -45,7 +45,7 @@
     {
       "name": "complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
-      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre>def hello(): print &#39;hello\n</pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</pre></div>",
+      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span>def hello(): print &#39;hello\n</pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</pre></div>",
       "bugdown_matches_marked": false
     },
     {
@@ -57,7 +57,7 @@
     {
       "name": "dangerous_block",
       "input": "``` one ```\n\n``` two ```\n\n~~~~\nx = 1",
-      "expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre>x = 1\n</pre></div>",
+      "expected_output": "<p><code>one</code></p>\n<p><code>two</code></p>\n<div class=\"codehilite\"><pre><span></span>x = 1\n</pre></div>",
       "bugdown_matches_marked": true
     },
     {
@@ -87,7 +87,7 @@
     {
       "name": "ulist_codeblock",
       "input": "~~~\nint x = 3\n* 4;\n~~~",
-      "expected_output": "<div class=\"codehilite\"><pre>int x = 3\n* 4;\n</pre></div>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span>int x = 3\n* 4;\n</pre></div>",
       "bugdown_matches_marked": true
     },
     {
@@ -225,7 +225,7 @@
     {
       "name": "safe_html_in_code",
       "input": "~~~\n<h1>stay normal</h1>",
-      "expected_output": "<div class=\"codehilite\"><pre>&lt;h1&gt;stay normal&lt;/h1&gt;\n</pre></div>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span>&lt;h1&gt;stay normal&lt;/h1&gt;\n</pre></div>",
       "bugdown_matches_marked": true
     },
     {
