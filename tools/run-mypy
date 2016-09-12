@@ -27,6 +27,7 @@ api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
 api/integrations/trac/zulip_trac.py
+api/zulip/__init__.py
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
 tools/deprecated/generate-activity-metrics.py
