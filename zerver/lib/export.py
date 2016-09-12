@@ -23,7 +23,6 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     get_display_recipient, Attachment
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p
-from six import text_type
 from six.moves import range
 from typing import Any, Dict, List, Tuple
 
@@ -32,7 +31,7 @@ Record = Dict[str, Any]
 TableName = str
 TableData = Dict[TableName, List[Record]]
 Field = str
-Path = text_type
+Path = str
 Context = Dict[str, Any]
 
 # The keys of our MessageOutput variables are normally
