@@ -7,7 +7,8 @@ import subprocess
 import json
 import sys
 import xml.etree.ElementTree as ET
-from six import unichr
+from six import unichr, text_type
+from typing import Union
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -26,6 +27,7 @@ class MissingGlyphError(Exception):
 
 
 def color_font(code_point, code_point_to_fname_map):
+    # type: (str, Dict[int, Union[text_type, bytes]]) -> None
     name = code_point_to_fname_map[int(code_point, 16)]
 
     in_name = 'bitmaps/strike0/{}.png'.format(name)
@@ -42,6 +44,7 @@ def color_font(code_point, code_point_to_fname_map):
 
 
 def bw_font(name, code_point):
+    # type: (str, str) -> None
     char = unichr(int(code_point, 16))
 
     # AndroidEmoji.ttf is from
@@ -59,10 +62,11 @@ def bw_font(name, code_point):
     )
 
 def code_point_to_file_name_map(ttx):
+    # type: (str) -> Dict[int, Union[text_type, bytes]]
     """Given the NotoColorEmoji.ttx file, parse it to generate a map from
     codepoint to filename (a la glyph0****.png)
     """
-    result = {}
+    result = {}  # type: Dict[int, Union[text_type, bytes]]
     xml = ET.parse(ttx)
     for elem in xml.find("*cmap_format_12"): # type: ignore # https://github.com/python/typeshed/pull/254
         code_point = int(elem.attrib["code"], 16)
@@ -72,6 +76,7 @@ def code_point_to_file_name_map(ttx):
 
 
 def main():
+    # type: () -> None
     # ttx is in the fonttools pacakge, the -z option is only on master
     # https://github.com/behdad/fonttools/
 

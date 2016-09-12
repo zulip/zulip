@@ -11,6 +11,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
 from confirmation.models import Confirmation
+from zerver.models import PreregistrationUser
 from zproject.jinja2 import render_to_response
 
 
@@ -39,7 +40,7 @@ def confirm(request, confirmation_key):
     templates = [
         'confirmation/confirm.html',
     ]
-    if obj:
+    if obj and isinstance(obj, (PreregistrationUser, Confirmation)):
         # if we have an object, we can use specific template
         templates.insert(0, 'confirmation/confirm_%s.html' % (obj._meta.model_name,))
     return render_to_response(templates, ctx, request=request)

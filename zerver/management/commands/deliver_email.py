@@ -22,6 +22,7 @@ import time
 import logging
 from datetime import datetime
 from ujson import loads
+from typing import Any
 
 ## Setup ##
 log_format = "%(asctime)s: %(message)s"
@@ -37,11 +38,13 @@ logger.addHandler(file_handler)
 
 
 def get_recipient_as_string(dictionary):
+    # type: (Dict[str, str]) -> str
     if not dictionary["recipient_name"]:
         return dictionary["recipient_email"]
     return format_html(u"\"{0}\" <{1}>", dictionary["recipient_name"], dictionary["recipient_email"])
 
 def get_sender_as_string(dictionary):
+    # type: (Dict[str, str]) -> str
     if dictionary["sender_email"]:
         return dictionary["sender_email"] if not dictionary["sender_name"] else format_html(u"\"{0}\" <{1}>",
                                                                                             dictionary["sender_name"],
@@ -49,6 +52,7 @@ def get_sender_as_string(dictionary):
     return settings.DEFAULT_FROM_EMAIL
 
 def send_email_job(job):
+    # type: (ScheduledJob) -> bool
     data = loads(job.data)
     fields = {'subject': data["email_subject"],
               'body': data["email_text"],
@@ -70,6 +74,7 @@ Usage: python manage.py deliver_email
 """
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         # TODO: this only acquires a lock on the system, not on the DB:
         # be careful not to run this on multiple systems.
 

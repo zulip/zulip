@@ -2,6 +2,7 @@ import mock
 from mock import call
 import time
 from typing import Any, Union, SupportsInt
+from six import text_type
 
 import gcmclient
 
@@ -246,8 +247,9 @@ class GCMCanonicalTest(GCMTest):
         res.needs_retry.return_value = False
         mock_send.return_value = res
 
-        def get_count(token):
-            token = apn.hex_to_b64(token)
+        def get_count(hex_token):
+            # type: (text_type) -> int
+            token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
@@ -275,8 +277,9 @@ class GCMCanonicalTest(GCMTest):
         res.needs_retry.return_value = False
         mock_send.return_value = res
 
-        def get_count(token):
-            token = apn.hex_to_b64(token)
+        def get_count(hex_token):
+            # type: (text_type) -> int
+            token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
@@ -302,8 +305,9 @@ class GCMNotRegisteredTest(GCMTest):
         res.needs_retry.return_value = False
         mock_send.return_value = res
 
-        def get_count(token):
-            token = apn.hex_to_b64(token)
+        def get_count(hex_token):
+            # type: (text_type) -> int
+            token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
 
