@@ -11,7 +11,7 @@ from django.test import TestCase, override_settings
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
     simulated_queue_client, tornado_redirected_to_list, ZulipTestCase,
-    most_recent_usermessage, most_recent_message,
+    most_recent_usermessage, most_recent_message, make_client
 )
 from zerver.lib.test_runner import slow
 
@@ -1666,6 +1666,42 @@ class UserPresenceTests(ZulipTestCase):
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'], {})
+
+    def test_mirror_presence(self):
+        # type: () -> None
+        """Zephyr mirror realms find out the status of their mirror bot"""
+        email = 'espuser@mit.edu'
+        user_profile = get_user_profile_by_email(email)
+        self.login(email)
+
+        def post_presence():
+            # type: () -> Dict[str, Any]
+            result = self.client_post("/json/users/me/presence", {'status': 'idle'})
+            self.assert_json_success(result)
+            json = ujson.loads(result.content)
+            return json
+
+        json = post_presence()
+        self.assertEqual(json['zephyr_mirror_active'], False)
+
+        self._simulate_mirror_activity_for_user(user_profile)
+        json = post_presence()
+        self.assertEqual(json['zephyr_mirror_active'], True)
+
+
+    def _simulate_mirror_activity_for_user(self, user_profile):
+        # type: (UserProfile) -> None
+        last_visit = datetime.datetime.now()
+        client = make_client('zephyr_mirror')
+
+        UserActivity.objects.get_or_create(
+            user_profile=user_profile,
+            client=client,
+            query='get_events_backend',
+            count=2,
+            last_visit=last_visit
+        )
+
 
     def test_same_realm(self):
         # type: () -> None
