@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from zilencer.models import Deployment
 
-from zerver.views import get_invitee_emails_set
+from zerver.views import get_invitee_emails_set, do_change_password
 from zerver.models import (
     get_realm, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     set_default_streams,
 )
 
+from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import do_set_realm_default_language
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
@@ -111,6 +112,60 @@ class PublicURLTest(ZulipTestCase):
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
+
+class PasswordResetTest(ZulipTestCase):
+    """
+    Log in, reset password, log out, log in with new password.
+    """
+
+    def test_password_reset(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        old_password = initial_password(email)
+
+        self.login(email)
+
+        # start the password reset process by supplying an email address
+        result = self.client_post('/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+                "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        # visit password reset link
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                password_reset_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)")
+                password_reset_url = password_reset_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise ValueError("Couldn't find a password reset email.")
+
+        result = self.client_get(password_reset_url)
+        self.assertEquals(result.status_code, 200)
+
+        # Reset your password
+        result = self.client_post(password_reset_url,
+                                  {'new_password1': 'new_password',
+                                   'new_password2': 'new_password'})
+
+        # password reset succeeded
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith("/password/done/"))
+
+        # log back in with new password
+        self.login(email, password='new_password')
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+        # make sure old password no longer works
+        self.login(email, password=old_password, fails=True)
 
 class LoginTest(ZulipTestCase):
     """
