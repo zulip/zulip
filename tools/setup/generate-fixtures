@@ -2,10 +2,10 @@
 set -e
 
 function migration_status {
-    ./manage.py migrate --list --settings=zproject.test_settings | sed 's/*/ /' > "$1"
+    ./manage.py get_migration_status --settings=zproject.test_settings > $1
 }
 
-template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='zulip_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
+template_grep_error_code=$(python manage.py check_if_database_exist zulip_test_template --settings=zproject.test_settings)
 
 if [ "$template_grep_error_code" == "0" ]; then
     migration_status var/available-migrations
