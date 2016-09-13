@@ -442,7 +442,7 @@ def remote_user_jwt(request):
 
 def google_oauth2_csrf(request, value):
     # type: (HttpRequest, str) -> HttpResponse
-    return hmac.new(get_token(request).encode('utf-8'), value, hashlib.sha256).hexdigest()
+    return hmac.new(get_token(request).encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
