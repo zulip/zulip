@@ -1994,6 +1994,19 @@ class HomeTest(ZulipTestCase):
             result = self.client_get('/', dict(**kwargs))
         return result
 
+    def test_terms_of_service(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        with \
+                self.settings(TERMS_OF_SERVICE='whatever'), \
+                self.settings(TOS_VERSION='99.99'):
+
+            result = self.client_get('/', dict(stream='Denmark'))
+
+        html = result.content.decode('utf-8')
+        self.assertIn('There is a new terms of service', html)
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
