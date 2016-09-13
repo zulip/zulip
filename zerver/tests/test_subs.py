@@ -3,6 +3,9 @@ from __future__ import absolute_import
 
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
@@ -11,6 +14,11 @@ from zerver.lib.test_helpers import (
 
 from zerver.decorator import (
     JsonableError
+)
+
+from zerver.lib.response import (
+    json_error,
+    json_success,
 )
 
 from zerver.lib.test_runner import (
@@ -28,6 +36,10 @@ from zerver.lib.actions import (
     gather_subscriptions_helper,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription
+)
+
+from zerver.views.streams import (
+    compose_views
 )
 
 from django.http import HttpResponse
@@ -880,6 +892,36 @@ class SubscriptionRestApiTest(ZulipTestCase):
         )
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
+
+    def test_compose_views_rollback(self):
+        # type: () -> None
+        '''
+        The compose_views function() is used under the hood by
+        update_subscriptions_backend.  It's a pretty simple method in terms of
+        control flow, but it uses a Django rollback, which may make it brittle
+        code when we upgrade Django.  We test the functions's rollback logic
+        here with a simple scenario to avoid false positives related to
+        subscription complications.
+        '''
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile.full_name = 'Hamlet'
+        user_profile.save()
+
+        def method1 (req, user_profile):
+            # type: (HttpRequest, UserProfile) -> HttpResponse
+            user_profile.full_name = 'Should not be committed'
+            user_profile.save()
+            return json_success({})
+
+        def method2(req, user_profile):
+            # type: (HttpRequest, UserProfile) -> HttpResponse
+            return json_error(_('random failure'))
+
+        with self.assertRaises(JsonableError):
+            compose_views(None, user_profile, [(method1, {}), (method2, {})])
+
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user_profile.full_name, 'Hamlet')
 
 class SubscriptionAPITest(ZulipTestCase):
 
