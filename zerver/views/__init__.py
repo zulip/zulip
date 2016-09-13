@@ -481,10 +481,15 @@ def finish_google_oauth2(request):
     if error == 'access_denied':
         return redirect('/')
     elif error is not None:
-        logging.warning('Error from google oauth2 login %r', request.GET)
+        logging.warning('Error from google oauth2 login: %r' % (request.GET.get("error"),))
         return HttpResponse(status=400)
 
-    value, hmac_value = request.GET.get('state').split(':')
+    csrf_state = request.GET.get('state')
+    if csrf_state is None or len(csrf_state.split(':')) != 2:
+        logging.warning('Missing Google oauth2 CSRF state')
+        return HttpResponse(status=400)
+
+    value, hmac_value = csrf_state.split(':')
     if hmac_value != google_oauth2_csrf(request, value):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
@@ -507,7 +512,8 @@ def finish_google_oauth2(request):
         logging.warning('User error converting Google oauth2 login to token: %r' % (resp.text,))
         return HttpResponse(status=400)
     elif resp.status_code != 200:
-        raise Exception('Could not convert google oauth2 code to access_token\r%r' % (resp.text,))
+        logging.error('Could not convert google oauth2 code to access_token: %r' % (resp.text,))
+        return HttpResponse(status=400)
     access_token = extract_json_response(resp)['access_token']
 
     resp = requests.get(
@@ -518,7 +524,8 @@ def finish_google_oauth2(request):
         logging.warning('Google login failed making info API call: %r' % (resp.text,))
         return HttpResponse(status=400)
     elif resp.status_code != 200:
-        raise Exception('Google login failed making API call\r%r' % (resp.text,))
+        logging.error('Google login failed making API call: %r' % (resp.text,))
+        return HttpResponse(status=400)
     body = extract_json_response(resp)
 
     try:
@@ -532,7 +539,8 @@ def finish_google_oauth2(request):
         if email['type'] == 'account':
             break
     else:
-        raise Exception('Google oauth2 account email not found %r' % (body,))
+        logging.error('Google oauth2 account email not found: %r' % (body,))
+        return HttpResponse(status=400)
     email_address = email['value']
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
