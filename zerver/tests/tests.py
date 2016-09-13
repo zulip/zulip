@@ -2065,6 +2065,20 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['notifications_stream'], 'Denmark')
 
+    def test_new_stream(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        stream_name = 'New stream'
+        self.subscribe_to_stream(email, stream_name)
+        self.login(email)
+        result = self._get_home_page(stream=stream_name)
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['narrow_stream'], stream_name)
+        self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
+        self.assertEqual(page_params['initial_pointer'], -1)
+        self.assertEqual(page_params['max_message_id'], -1)
+        self.assertEqual(page_params['have_initial_messages'], False)
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
