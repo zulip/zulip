@@ -2017,6 +2017,15 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('There is a new terms of service', html)
 
+    def test_bad_narrow(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        with patch('logging.exception') as mock:
+            result = self._get_home_page(stream='Invalid Stream')
+        mock.assert_called_once_with('Narrow parsing')
+        self._sanity_check(result)
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
