@@ -140,6 +140,11 @@ def queries_captured():
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
 
+def make_client(name):
+    # type: (str) -> Client
+    client, _ = Client.objects.get_or_create(name=name)
+    return client
+
 def find_key_by_email(address):
     # type: (text_type) -> text_type
     from django.core.mail import outbox

@@ -33,7 +33,9 @@ def update_active_status_backend(request, user_profile, status=REQ(),
 
     ret = get_status_list(user_profile)
     if user_profile.realm.is_zephyr_mirror_realm:
-        # Presence is disabled in zephyr mirroring realms
+        # In zephyr mirroring realms, users can't see the presence of other
+        # users, but each user **is** interested in whether their mirror bot
+        # (running as their user) has been active.
         try:
             activity = UserActivity.objects.get(user_profile = user_profile,
                                                 query="get_events_backend",
