@@ -40,7 +40,6 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSF
 from zerver.lib.actions import is_inactive
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib import bugdown
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.decorator import require_post, authenticated_json_post_view, \
     has_request_variables, \
@@ -60,7 +59,6 @@ import requests
 
 import calendar
 import datetime
-import ujson
 import simplejson
 import re
 from six import text_type
@@ -271,32 +269,6 @@ def accounts_accept_terms(request):
           'special_message_template' : special_message_template },
         request=request)
 
-
-def api_endpoint_docs(request):
-    # type: (HttpRequest) -> HttpResponse
-    raw_calls = open('templates/zerver/api_content.json', 'r').read()
-    calls = ujson.loads(raw_calls)
-    langs = set()
-    for call in calls:
-        call["endpoint"] = "%s/v1/%s" % (settings.EXTERNAL_API_URI, call["endpoint"])
-        call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com",
-                                                                                  settings.EXTERNAL_API_URI)
-        response = call['example_response']
-        if '\n' not in response:
-            # For 1-line responses, pretty-print them
-            extended_response = response.replace(", ", ",\n ")
-        else:
-            extended_response = response
-        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n", "default")
-        for example_type in ('request', 'response'):
-            for lang in call.get('example_' + example_type, []):
-                langs.add(lang)
-    return render_to_response(
-            'zerver/api_endpoints.html', {
-                'content': calls,
-                'langs': langs,
-                },
-        request=request)
 
 @authenticated_json_post_view
 @has_request_variables
