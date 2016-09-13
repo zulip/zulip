@@ -336,10 +336,6 @@ input[type=checkbox].inline-block {
     max-width: 100%;
 }
 
-#admin-emoji-name-status, #admin-emoji-url-status {
-    margin: 20px 0 0 0;
-}
-
 .admin-table-wrapper {
     width: 90%;
     margin: 0 auto;
