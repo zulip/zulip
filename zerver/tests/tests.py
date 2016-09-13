@@ -1968,10 +1968,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         self.login(email)
-        with \
-                patch('zerver.lib.actions.request_event_queue', return_value=42), \
-                patch('zerver.lib.actions.get_user_events', return_value=[]):
-            result = self.client_get('/', dict(stream='Denmark'))
+        result = self._get_home_page(stream='Denmark')
         html = result.content.decode('utf-8')
 
         for html_bit in html_bits:
@@ -1988,6 +1985,14 @@ class HomeTest(ZulipTestCase):
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
+
+    def _get_home_page(self, **kwargs):
+        # type: (**Any) -> HttpResponse
+        with \
+                patch('zerver.lib.actions.request_event_queue', return_value=42), \
+                patch('zerver.lib.actions.get_user_events', return_value=[]):
+            result = self.client_get('/', dict(**kwargs))
+        return result
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
