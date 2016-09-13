@@ -40,6 +40,7 @@ def get_index_filename(venv_path):
     return os.path.join(venv_path, 'package_index')
 
 def get_package_names(requirements_file):
+    # type: (str) -> List[str]
     packages = expand_reqs(requirements_file)
     cleaned = []
     operators = ['~=', '==', '!=', '<', '>']
@@ -79,8 +80,8 @@ def get_venv_packages(venv_path):
     with open(get_index_filename(venv_path)) as reader:
         return set(p.strip() for p in reader.read().split('\n') if p.strip())
 
-def try_to_copy_venv(venv_path, requirements_file):
-    # type: (str, str) -> bool
+def try_to_copy_venv(venv_path, new_packages):
+    # type: (str, Set[str]) -> bool
     """
     Tries to copy packages from an old virtual environment in the cache
     to the new virtual environment. The algorithm works as follows:
@@ -93,9 +94,9 @@ def try_to_copy_venv(venv_path, requirements_file):
         3. Delete all .pyc files in the new virtual environment.
     """
     venv_name = os.path.basename(venv_path)
-    new_packages = set(get_package_names(requirements_file))
 
-    overlaps = []
+    overlaps = []  # type: List[Tuple[int, str, Set[str]]]
+    old_packages = set()  # type: Set[str]
     for sha1sum in os.listdir(VENV_CACHE_PATH):
         curr_venv_path = os.path.join(VENV_CACHE_PATH, sha1sum, venv_name)
         if (curr_venv_path == venv_path or
@@ -104,12 +105,14 @@ def try_to_copy_venv(venv_path, requirements_file):
 
         old_packages = get_venv_packages(curr_venv_path)
         if not (old_packages - new_packages):
-            overlap = len(new_packages & old_packages)
-            overlaps.append((overlap, curr_venv_path))
+            overlap = new_packages & old_packages
+            overlaps.append((len(overlap), curr_venv_path, overlap))
 
+    target_log = get_logfile_name(venv_path)
+    source_venv_path = None
     if overlaps:
         overlaps = sorted(overlaps)
-        source_venv_path = overlaps[-1][1]
+        _, source_venv_path, copied_packages = overlaps[-1]
         print('Copying packages from {}'.format(source_venv_path))
         clone_ve = "{}/bin/virtualenv-clone".format(source_venv_path)
         cmd = "sudo {exe} {source} {target}".format(exe=clone_ve,
@@ -126,10 +129,38 @@ def try_to_copy_venv(venv_path, requirements_file):
 
         run(["sudo", "chown", "-R",
              "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        source_log = get_logfile_name(source_venv_path)
+        copy_parent_log(source_log, target_log)
+        create_log_entry(target_log, source_venv_path, copied_packages,
+                         new_packages - copied_packages)
         return True
-    else:
-        print("Didn't copy any packages.")
-        return False
+
+    return False
+
+def get_logfile_name(venv_path):
+    # type: (str) -> str
+    return "{}/setup-venv.log".format(venv_path)
+
+def create_log_entry(target_log, parent, copied_packages, new_packages):
+    # type: (str, str, Set[str], Set[str]) -> None
+
+    venv_path = dirname(target_log)
+    with open(target_log, 'a') as writer:
+        writer.write("{}\n".format(venv_path))
+        if copied_packages:
+            writer.write(
+                "Copied from {}:\n".format(parent))
+            writer.write("\n".join('- {}'.format(p) for p in sorted(copied_packages)))
+            writer.write("\n")
+
+        writer.write("New packages:\n")
+        writer.write("\n".join('- {}'.format(p) for p in sorted(new_packages)))
+        writer.write("\n\n")
+
+def copy_parent_log(source_log, target_log):
+    # type: (str, str) -> None
+    if os.path.exists(source_log):
+        run('cp {} {}'.format(source_log, target_log).split())
 
 def do_patch_activate_script(venv_path):
     # type: (str) -> None
@@ -180,16 +211,16 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # type: (str, str, List[str]) -> None
 
     # Setup Python virtualenv
+    new_packages = set(get_package_names(requirements_file))
+
     run(["sudo", "rm", "-rf", venv_path])
-    if try_to_copy_venv(venv_path, requirements_file):
-        run(["sudo", "chown", "-R", "{}:{}".format(os.getuid(), os.getgid()),
-                                                   venv_path])
-    else:
+    if not try_to_copy_venv(venv_path, new_packages):
         # Create new virtualenv.
         run(["sudo", "mkdir", "-p", venv_path])
-        run(["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()),
-                                             venv_path])
-        run(["virtualenv"] + virtualenv_args + [venv_path])
+        run(["sudo", "virtualenv"] + virtualenv_args + [venv_path])
+        run(["sudo", "chown", "-R",
+             "{}:{}".format(os.getuid(), os.getgid()), venv_path])
+        create_log_entry(get_logfile_name(venv_path), "", set(), new_packages)
 
     create_requirements_index_file(venv_path, requirements_file)
     # Switch current Python context to the virtualenv.
