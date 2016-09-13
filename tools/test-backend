@@ -23,6 +23,7 @@ if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+    from zerver.lib.test_fixtures import is_template_database_current
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
     os.environ['PYTHONUNBUFFERED'] = 'y'
@@ -136,7 +137,11 @@ if __name__ == "__main__":
     django.setup()
 
     if options.generate_fixtures:
-        subprocess.call(os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures'))
+        generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
+        if not is_template_database_current():
+            generate_fixtures_command.append('--force')
+
+        subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
