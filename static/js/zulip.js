@@ -7,9 +7,6 @@ var home_msg_list = new message_list.MessageList('zhome',
 );
 var current_msg_list = home_msg_list;
 
-var queued_mark_as_read = [];
-var queued_flag_timer;
-
 function consider_bankruptcy() {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
