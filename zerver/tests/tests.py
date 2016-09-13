@@ -2079,6 +2079,27 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params['max_message_id'], -1)
         self.assertEqual(page_params['have_initial_messages'], False)
 
+    def test_invites_by_admins_only(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+
+        realm = user_profile.realm
+        realm.invite_by_admins_only = True
+        realm.save()
+
+        self.login(email)
+        self.assertFalse(user_profile.is_realm_admin)
+        result = self._get_home_page()
+        html = result.content.decode('utf-8')
+        self.assertNotIn('Invite more users', html)
+
+        user_profile.is_realm_admin = True
+        user_profile.save()
+        result = self._get_home_page()
+        html = result.content.decode('utf-8')
+        self.assertIn('Invite more users', html)
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
