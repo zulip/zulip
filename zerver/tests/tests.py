@@ -2054,6 +2054,17 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('lunch', html)
 
+    def test_notifications_stream(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        realm = get_realm('zulip.com')
+        realm.notifications_stream = get_stream('Denmark', realm)
+        realm.save()
+        self.login(email)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['notifications_stream'], 'Denmark')
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
