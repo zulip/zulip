@@ -1873,6 +1873,16 @@ class HomeTest(ZulipTestCase):
             result = self.client_get('/', dict(**kwargs))
         return result
 
+    def _sanity_check(self, result):
+        # type: (HttpResponse) -> None
+        '''
+        Use this for tests that are geared toward specific edge cases, but
+        which still want the home page to load properly.
+        '''
+        html = result.content.decode('utf-8')
+        if 'Compose your message' not in html:
+            self.fail('Home page probably did not load.')
+
     def test_terms_of_service(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
