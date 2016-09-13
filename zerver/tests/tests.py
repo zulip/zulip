@@ -1854,10 +1854,7 @@ class HomeTest(ZulipTestCase):
             if html_bit not in html:
                 self.fail('%s not in result' % (html_bit,))
 
-        lines = html.split('\n')
-        page_params_line = [l for l in lines if l.startswith('var page_params')][0]
-        page_params_json = page_params_line.split(' = ')[1].rstrip(';')
-        page_params = ujson.loads(page_params_json)
+        page_params = self._get_page_params(result)
 
         actual_keys = sorted([str(k) for k in page_params.keys()])
         self.assertEqual(actual_keys, expected_keys)
@@ -1872,6 +1869,15 @@ class HomeTest(ZulipTestCase):
                 patch('zerver.lib.actions.get_user_events', return_value=[]):
             result = self.client_get('/', dict(**kwargs))
         return result
+
+    def _get_page_params(self, result):
+        # type: (HttpResponse) -> Dict[str, Any]
+        html = result.content.decode('utf-8')
+        lines = html.split('\n')
+        page_params_line = [l for l in lines if l.startswith('var page_params')][0]
+        page_params_json = page_params_line.split(' = ')[1].rstrip(';')
+        page_params = ujson.loads(page_params_json)
+        return page_params
 
     def _sanity_check(self, result):
         # type: (HttpResponse) -> None
