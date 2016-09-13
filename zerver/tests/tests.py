@@ -1905,6 +1905,28 @@ class HomeTest(ZulipTestCase):
         mock.assert_called_once_with('Narrow parsing')
         self._sanity_check(result)
 
+    def test_bad_pointer(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        user_profile.pointer = 999999
+        user_profile.save()
+
+        self.login(email)
+        with patch('logging.warning') as mock:
+            result = self._get_home_page()
+        mock.assert_called_once_with('hamlet@zulip.com has invalid pointer 999999')
+        self._sanity_check(result)
+
+    def test_topic_narrow(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self._get_home_page(stream='Denmark', topic='lunch')
+        self._sanity_check(result)
+        html = result.content.decode('utf-8')
+        self.assertIn('lunch', html)
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
