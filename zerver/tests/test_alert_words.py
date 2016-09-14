@@ -11,6 +11,7 @@ from zerver.lib.alert_words import (
 
 from zerver.lib.test_helpers import (
     get_user_profile_by_email,
+    most_recent_message,
     most_recent_usermessage,
     ZulipTestCase,
 )
@@ -202,4 +203,41 @@ class AlertWordTests(ZulipTestCase):
         # We don't cause alerts for matches in URLs.
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one/ urls"))
         self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
+
+    def test_update_alert_words(self):
+        # type: () -> None
+        me_email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(me_email)
+
+        self.login(me_email)
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})
+
+        content = 'this is an ALERT for you'
+        self.send_message(me_email, "Denmark", Recipient.STREAM, content)
+        self.assert_json_success(result)
+
+        original_message = most_recent_message(user_profile)
+
+        user_message = most_recent_usermessage(user_profile)
+        self.assertIn('has_alert_word', user_message.flags_list())
+
+        result = self.client_post("/json/update_message", {
+            'message_id': original_message.id,
+            'content': 'new ALERT for you',
+        })
+        self.assert_json_success(result)
+
+        user_message = most_recent_usermessage(user_profile)
+        self.assertEqual(user_message.message.content, 'new ALERT for you')
+        self.assertIn('has_alert_word', user_message.flags_list())
+
+        result = self.client_post("/json/update_message", {
+            'message_id': original_message.id,
+            'content': 'sorry false alarm',
+        })
+        self.assert_json_success(result)
+
+        user_message = most_recent_usermessage(user_profile)
+        self.assertEqual(user_message.message.content, 'sorry false alarm')
+        self.assertNotIn('has_alert_word', user_message.flags_list())
 
