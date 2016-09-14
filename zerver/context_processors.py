@@ -67,12 +67,22 @@ def zulip_default_context(request):
         realm_icon = None
         realm_description = None
 
+    register_link_disabled = settings.REGISTER_LINK_DISABLED
+    login_link_disabled = settings.LOGIN_LINK_DISABLED
+    about_link_disabled = settings.ABOUT_LINK_DISABLED
+    find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
+    if settings.SUBDOMAINS_HOMEPAGE and get_subdomain(request) == "":
+        register_link_disabled = True
+        login_link_disabled = True
+        about_link_disabled = True
+        find_team_link_disabled = False
+
     return {
         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
         'custom_logo_url': settings.CUSTOM_LOGO_URL,
-        'register_link_disabled': settings.REGISTER_LINK_DISABLED,
-        'login_link_disabled': settings.LOGIN_LINK_DISABLED,
-        'about_link_disabled': settings.ABOUT_LINK_DISABLED,
+        'register_link_disabled': register_link_disabled,
+        'login_link_disabled': login_link_disabled,
+        'about_link_disabled': about_link_disabled,
         'show_oss_announcement': settings.SHOW_OSS_ANNOUNCEMENT,
         'zulip_admin': settings.ZULIP_ADMINISTRATOR,
         'terms_of_service': settings.TERMS_OF_SERVICE,
@@ -99,7 +109,7 @@ def zulip_default_context(request):
         'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
         'development_environment': settings.DEVELOPMENT,
         'support_email': settings.ZULIP_ADMINISTRATOR,
-        'find_team_link_disabled': settings.FIND_TEAM_LINK_DISABLED,
+        'find_team_link_disabled': find_team_link_disabled,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_quality': settings.PASSWORD_MIN_ZXCVBN_QUALITY,
         'zulip_version': ZULIP_VERSION,
