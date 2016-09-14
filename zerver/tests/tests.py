@@ -1502,6 +1502,15 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(json["max_message_id"], max_id)
         return json
 
+    def test_get_pointer(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        result = self.client_get("/json/users/me/pointer")
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("pointer", json)
+
     def test_cache_behavior(self):
         # type: () -> None
         with queries_captured() as queries:
