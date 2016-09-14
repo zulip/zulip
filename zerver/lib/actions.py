@@ -25,6 +25,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_users
 
+from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
 from django.db import transaction, IntegrityError
@@ -629,8 +630,12 @@ def do_send_message(message, rendered_content = None, no_log = False, stream = N
 
 def render_incoming_message(message, content):
     # type: (Message, text_type) -> text_type
+    realm_alert_words = alert_words_in_realm(message.get_realm())
     try:
-        rendered_content = message.render_markdown(content)
+        rendered_content = message.render_markdown(
+            content=content,
+            realm_alert_words=realm_alert_words,
+        )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
     return rendered_content
