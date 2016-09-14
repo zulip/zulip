@@ -776,7 +776,6 @@ def build_custom_checkers(by_lang):
              # Old-style email templates need to use inline style
              # attributes; it should be possible to clean these up
              # when we convert these templates to use premailer.
-             'templates/zerver/emails/digest.html',
              'templates/zerver/emails/missed_message.html',
              'templates/zerver/emails/email_base_messages.html',
 
