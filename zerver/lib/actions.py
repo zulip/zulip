@@ -628,13 +628,14 @@ def do_send_message(message, rendered_content = None, no_log = False, stream = N
                               'stream': stream,
                               'local_id': local_id}])[0]
 
-def render_incoming_message(message, content):
-    # type: (Message, text_type) -> text_type
+def render_incoming_message(message, content, message_users):
+    # type: (Message, text_type, Set[UserProfile]) -> text_type
     realm_alert_words = alert_words_in_realm(message.get_realm())
     try:
         rendered_content = message.render_markdown(
             content=content,
             realm_alert_words=realm_alert_words,
+            message_users=message_users,
         )
     except BugdownRenderingException:
         raise JsonableError(_('Unable to render message'))
@@ -704,7 +705,8 @@ def do_send_messages(messages):
         assert message['message'].rendered_content is None
         rendered_content = render_incoming_message(
             message['message'],
-            message['message'].content)
+            message['message'].content,
+            message_users=message['active_recipients'])
         message['message'].set_rendered_content(rendered_content)
 
     for message in messages:
