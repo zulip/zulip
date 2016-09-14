@@ -407,8 +407,7 @@ class GoogleLoginTest(ZulipTestCase):
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, account_response)
         self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          "Google oauth2 account email not found: {'emails': [], 'name': {'formatted': 'Full Name'}}")
+        self.assertIn("Google oauth2 account email not found:", m.call_args_list[0][0][0])
 
     def test_google_oauth2_error_access_denied(self):
         # type: () -> None
