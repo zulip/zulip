@@ -5,6 +5,7 @@ from __future__ import print_function
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, TypeVar
 from mock import patch, MagicMock
 
+from django.http import HttpResponse
 from django.test import TestCase, override_settings
 
 from zerver.lib.test_helpers import (
