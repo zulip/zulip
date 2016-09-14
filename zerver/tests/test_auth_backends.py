@@ -355,7 +355,7 @@ class GoogleLoginTest(ZulipTestCase):
             result = self.google_oauth2_test(token_response, None)
         self.assertEquals(result.status_code, 400)
         self.assertEquals(m.call_args_list[0][0][0],
-                          "User error converting Google oauth2 login to token: 'Response text'")
+                          "User error converting Google oauth2 login to token: Response text")
 
     def test_google_oauth2_500_token_response(self):
         # type: () -> None
@@ -364,7 +364,7 @@ class GoogleLoginTest(ZulipTestCase):
             result = self.google_oauth2_test(token_response, None)
         self.assertEquals(result.status_code, 400)
         self.assertEquals(m.call_args_list[0][0][0],
-                          "Could not convert google oauth2 code to access_token: 'Response text'")
+                          "Could not convert google oauth2 code to access_token: Response text")
 
     def test_google_oauth2_400_account_response(self):
         # type: () -> None
@@ -374,7 +374,7 @@ class GoogleLoginTest(ZulipTestCase):
             result = self.google_oauth2_test(token_response, account_response)
         self.assertEquals(result.status_code, 400)
         self.assertEquals(m.call_args_list[0][0][0],
-                          "Google login failed making info API call: 'Response text'")
+                          "Google login failed making info API call: Response text")
 
     def test_google_oauth2_500_account_response(self):
         # type: () -> None
@@ -384,7 +384,7 @@ class GoogleLoginTest(ZulipTestCase):
             result = self.google_oauth2_test(token_response, account_response)
         self.assertEquals(result.status_code, 400)
         self.assertEquals(m.call_args_list[0][0][0],
-                          "Google login failed making API call: 'Response text'")
+                          "Google login failed making API call: Response text")
 
     def test_google_oauth2_no_fullname(self):
         # type: () -> None
@@ -421,7 +421,7 @@ class GoogleLoginTest(ZulipTestCase):
             result = self.client_get("/accounts/login/google/done/?error=some_other_error")
         self.assertEquals(result.status_code, 400)
         self.assertEquals(m.call_args_list[0][0][0],
-                          "Error from google oauth2 login: u'some_other_error'")
+                          "Error from google oauth2 login: some_other_error")
 
     def test_google_oauth2_missing_csrf(self):
         # type: () -> None

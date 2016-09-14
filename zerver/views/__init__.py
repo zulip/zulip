@@ -471,7 +471,7 @@ def finish_google_oauth2(request):
     if error == 'access_denied':
         return redirect('/')
     elif error is not None:
-        logging.warning('Error from google oauth2 login: %r' % (request.GET.get("error"),))
+        logging.warning('Error from google oauth2 login: %s' % (request.GET.get("error"),))
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
@@ -499,10 +499,10 @@ def finish_google_oauth2(request):
         },
     )
     if resp.status_code == 400:
-        logging.warning('User error converting Google oauth2 login to token: %r' % (resp.text,))
+        logging.warning('User error converting Google oauth2 login to token: %s' % (resp.text,))
         return HttpResponse(status=400)
     elif resp.status_code != 200:
-        logging.error('Could not convert google oauth2 code to access_token: %r' % (resp.text,))
+        logging.error('Could not convert google oauth2 code to access_token: %s' % (resp.text,))
         return HttpResponse(status=400)
     access_token = resp.json()['access_token']
 
@@ -511,10 +511,10 @@ def finish_google_oauth2(request):
         params={'access_token': access_token}
     )
     if resp.status_code == 400:
-        logging.warning('Google login failed making info API call: %r' % (resp.text,))
+        logging.warning('Google login failed making info API call: %s' % (resp.text,))
         return HttpResponse(status=400)
     elif resp.status_code != 200:
-        logging.error('Google login failed making API call: %r' % (resp.text,))
+        logging.error('Google login failed making API call: %s' % (resp.text,))
         return HttpResponse(status=400)
     body = resp.json()
 
@@ -529,7 +529,7 @@ def finish_google_oauth2(request):
         if email['type'] == 'account':
             break
     else:
-        logging.error('Google oauth2 account email not found: %r' % (body,))
+        logging.error('Google oauth2 account email not found: %s' % (body,))
         return HttpResponse(status=400)
     email_address = email['value']
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
