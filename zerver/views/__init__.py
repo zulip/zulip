@@ -43,14 +43,14 @@ from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.lib import bugdown
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.decorator import require_post, authenticated_json_post_view, \
-    has_request_variables, to_non_negative_int, \
+    has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.utils import statsd
 from version import ZULIP_VERSION
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
@@ -1022,47 +1022,6 @@ def is_buggy_ua(agent):
     """
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
         "Mac" not in agent
-
-def get_pointer_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return json_success({'pointer': user_profile.pointer})
-
-@has_request_variables
-def update_pointer_backend(request, user_profile,
-                           pointer=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    if pointer <= user_profile.pointer:
-        return json_success()
-
-    try:
-        UserMessage.objects.get(
-            user_profile=user_profile,
-            message__id=pointer
-        )
-    except UserMessage.DoesNotExist:
-        raise JsonableError(_("Invalid message ID"))
-
-    request._log_data["extra"] = "[%s]" % (pointer,)
-    update_flags = (request.client.name.lower() in ['android', "zulipandroid"])
-    do_update_pointer(user_profile, pointer, update_flags=update_flags)
-
-    return json_success()
-
-def generate_client_id():
-    # type: () -> text_type
-    return generate_random_token(32)
-
-def get_profile_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    result = dict(pointer        = user_profile.pointer,
-                  client_id      = generate_client_id(),
-                  max_message_id = -1)
-
-    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
-    if messages:
-        result['max_message_id'] = messages[0].id
-
-    return json_success(result)
 
 @csrf_exempt
 @require_post
