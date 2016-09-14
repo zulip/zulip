@@ -399,7 +399,7 @@ announcement).
   existence is not known to the users who are not a part of that stream. 
   Users who are not members of a private stream cannot read messages
   on the stream, send messages to the stream, or join the stream, even
-  if they are a Zulip administrator.  A user can join such streams only 
+  if they are a Zulip administrator.  Users can join such streams only 
   when they are invited.  However, any member of a private
   stream can invite other users to the stream.  When a new user joins
   a private stream, they can see future messages sent to the stream,
