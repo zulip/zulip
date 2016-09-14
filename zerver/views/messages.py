@@ -20,7 +20,7 @@ from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body
+    extract_recipients, truncate_body, render_incoming_message
 from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -910,9 +910,9 @@ def update_message_backend(request, user_profile,
         if content == "":
             raise JsonableError(_("Content can't be empty"))
         content = truncate_body(content)
-        rendered_content = message.render_markdown(content)
-        if not rendered_content:
-            raise JsonableError(_("We were unable to render your updated message"))
+
+        # If rendering fails, the called code will raise a JsonableError.
+        rendered_content = render_incoming_message(message, content)
 
     do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
     return json_success()
