@@ -3099,11 +3099,6 @@ li.expanded_private_message {
     color: #0d7245;
 }
 
-.settings_separator {
-    margin-top:    2em;
-    margin-bottom: 2em;
-}
-
 /* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 220px;

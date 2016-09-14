@@ -1,8 +1,8 @@
-<li class="bot-information-box">
-    <div class="image">
+<li class="bot-information-box grey-bg">
+    <div class="image inline-block overflow-hidden">
         <img src="{{avatar_url}}" class="avatar" />
     </div>
-    <div class="bot_info">
+    <div class="bot_info inline-block">
         <div class="name">{{name}}</div>
         <div class="email">
             <span class="field">{{t "Username" }}</span>
@@ -13,7 +13,7 @@
             <span class="api-key-value-and-button">
                <span class="value">{{api_key}}
                </span>
-               <button type="submit" class="btn btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-email="{{email}}">
+               <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-email="{{email}}">
                    <i class="icon-vector-refresh"></i>
                </button>
             </span>
@@ -29,7 +29,7 @@
         </div>
         <div id="bot_delete_error{{id_suffix}}" class="alert alert-error hide"></div>
     </div>
-    <div class='edit_bot'>
+    <div class='edit_bot display-none'>
         <form class="edit_bot_form form-horizontal" data-email="{{email}}">
             <div class="bot_edit_errors alert alert-error hide"></div>
             <div class="edit_bot_email">{{email}}</div>
@@ -55,7 +55,7 @@
                 <div class="controls">
                   <div class="edit_bot_avatar_file"></div>
                   <button type="button" class="btn btn-default edit_bot_avatar_upload_button">{{t "Choose avatar" }}</button>
-                  <button type="button" class="btn btn-default edit_bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+                  <button type="button" class="btn btn-default edit_bot_avatar_clear_button display-none">{{t "Clear avatar" }}</button>
                 </div>
                <div><label for="edit_bot_avatar_file{{id_suffix}}" generated="true" class="edit_bot_avatar_error text-error"></label></div>
               </div>
