@@ -171,6 +171,77 @@ a.button:hover {
     z-index: 100;
 }
 
+#private-messages {
+    width: 600px;
+    font-size: 12px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow-y: scroll;
+}
+
+.recipient_block {
+    background-color: hsl(192, 20%, 95%);
+    border: 1px solid black;
+    margin-bottom: 4px;
+}
+
+.recipient_header {
+    color: hsl(0, 0%, 100%);
+    background-color: hsl(0, 0%, 27%);
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.message_content {
+    background-color: hsl(192, 20%, 95%);
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.message_sender {
+    font-weight: bold;
+    padding-top: 1px;
+}
+
+.message_content_block {
+    padding-left: 6px;
+    font-weight: normal;
+}
+
+#messages {
+    width: 600px;
+    font-size: 12px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overflow-y: scroll;
+}
+
+.hot_convo_recipient_block {
+    border: 1px solid black;
+    margin-bottom: 4px;
+}
+
+.hot_convo_recipient_header {
+    background-color: hsl(213, 100%, 81%);
+    border-bottom: 1px solid black;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.hot_convo_message_content {
+    margin-left: 1px;
+    margin-right: 2px;
+}
+
+.hot_convo_message_sender {
+    font-weight: bold;
+    padding-top: 1px;
+}
+
+.hot_convo_message_content_block {
+    padding-left: 6px;
+    font-weight: normal;
+}
+
 @media only screen and (max-width: 620px) {
     table[class=body] h1 {
         font-size: 28px !important;
