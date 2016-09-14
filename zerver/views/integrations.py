@@ -11,17 +11,19 @@ from zerver.lib import bugdown
 from zerver.lib.integrations import INTEGRATIONS
 from zproject.jinja2 import render_to_response
 
+def add_api_uri_context(context, request):
+    # type: (Dict[str, Any], HttpRequest) -> None
+    external_api_path_subdomain = settings.EXTERNAL_API_PATH
+    external_api_uri_subdomain = settings.EXTERNAL_API_URI
+
+    context['external_api_path_subdomain'] = external_api_path_subdomain
+    context['external_api_uri_subdomain'] = external_api_uri_subdomain
+
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs):
         # type: (Optional[Dict[str, Any]]) -> Dict[str, str]
         context = super(ApiURLView, self).get_context_data(**kwargs)
-
-        external_api_path_subdomain = settings.EXTERNAL_API_PATH
-        external_api_uri_subdomain = settings.EXTERNAL_API_URI
-
-        context['external_api_path_subdomain'] = external_api_path_subdomain
-        context['external_api_uri_subdomain'] = external_api_uri_subdomain
-
+        add_api_uri_context(context, self.request)
         return context
 
 class IntegrationView(ApiURLView):
