@@ -421,7 +421,9 @@ class BugdownTest(TestCase):
         realm_alert_words = alert_words_in_realm(user_profile.realm)
 
         def render(msg, content):
-            return msg.render_markdown(content, realm_alert_words=realm_alert_words)
+            return msg.render_markdown(content,
+                                       realm_alert_words=realm_alert_words,
+                                       message_users={user_profile})
 
         content = "We have an ALERTWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")

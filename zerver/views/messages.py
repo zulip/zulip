@@ -33,7 +33,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
     stringify_message_dict, \
     resolve_email_to_domain, get_realm, get_active_streams, \
-    bulk_get_streams
+    bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -911,8 +911,18 @@ def update_message_backend(request, user_profile,
             raise JsonableError(_("Content can't be empty"))
         content = truncate_body(content)
 
+        # We exclude UserMessage.flags.historical rows since those
+        # users did not receive the message originally, and thus
+        # probably are not relevant for reprocessed alert_words,
+        # mentions and similar rendering features.  This may be a
+        # decision we change in the future.
+        ums = UserMessage.objects.filter(message=message.id,
+                                         flags=~UserMessage.flags.historical)
+        message_users = {get_user_profile_by_id(um.user_profile_id) for um in ums}
         # If rendering fails, the called code will raise a JsonableError.
-        rendered_content = render_incoming_message(message, content)
+        rendered_content = render_incoming_message(message,
+                                                   content=content,
+                                                   message_users=message_users)
 
     do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
     return json_success()
