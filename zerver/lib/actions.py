@@ -627,6 +627,14 @@ def do_send_message(message, rendered_content = None, no_log = False, stream = N
                               'stream': stream,
                               'local_id': local_id}])[0]
 
+def render_incoming_message(message, content):
+    # type: (Message, text_type) -> text_type
+    try:
+        rendered_content = message.render_markdown(content)
+    except BugdownRenderingException:
+        raise JsonableError(_('Unable to render message'))
+    return rendered_content
+
 def do_send_messages(messages):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
@@ -685,7 +693,16 @@ def do_send_messages(messages):
         # Only deliver the message to active user recipients
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
-        message['message'].maybe_render_content(None)
+
+    # Render our messages.
+    for message in messages:
+        assert message['message'].rendered_content is None
+        rendered_content = render_incoming_message(
+            message['message'],
+            message['message'].content)
+        message['message'].set_rendered_content(rendered_content)
+
+    for message in messages:
         message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
@@ -1065,10 +1082,8 @@ def check_message(sender, client, message_type_name, message_to,
         message.pub_date = timezone.now()
     message.sending_client = client
 
-    try:
-        message.maybe_render_content(realm.domain)
-    except BugdownRenderingException:
-        raise JsonableError(_("Unable to render message"))
+    # We render messages later in the process.
+    assert message.rendered_content is None
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
