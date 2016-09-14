@@ -298,7 +298,8 @@ class GoogleLoginTest(ZulipTestCase):
         result = self.client_get("/accounts/login/google/")
         self.assertEquals(result.status_code, 302)
         # Now extract the CSRF token from the redirect URL
-        csrf_state = urllib.parse.parse_qs(result.url)['state']
+        parsed_url = urllib.parse.urlparse(result.url)
+        csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
 
         with mock.patch("requests.post", return_value=token_response), \
              mock.patch("requests.get", return_value=account_response):
