@@ -580,6 +580,91 @@ class GetOldMessagesTest(ZulipTestCase):
         self._flaky_test()
 
 
+    @override_settings(USING_PGROONGA=True)
+    def test_flake(self):
+        self.login("cordelia@zulip.com")
+
+        def add_messages(i):
+            messages_to_search = [
+                (u'日本語', u'こんにちは。今日はいい天気ですね。'),
+                (u'日本 語', u'今朝はごはんを食べました。'),
+                (u'日本', u'昨日、日本のお菓子を送りました。'),
+                (u'日本', u'english'),
+                ('english', u'I want to go to 日本!'),
+                ('english', u'You want to go to 日本!'),
+                ('english', u'They want to go to 日本!'),
+                ('english', 'Can you speak Japanese?'),
+                ('english', 'Hello world'),
+                ('english', 'Hello mars'),
+                ('english', 'Hello jupiter'),
+                ('english', 'Hello saturn'),
+                ('english', 'Hello neptune'),
+                ('english', 'Hello uranus'),
+                ('english', 'Hello pluto'),
+                ('english', 'Oh wait pluto is not a planet'),
+            ]
+
+            for topic, content in messages_to_search:
+                self.send_message(
+                    sender_name="cordelia@zulip.com",
+                    raw_recipients="Verona",
+                    message_type=Recipient.STREAM,
+                    content=content + ' ' + str(i),
+                    subject=topic + ' ' + str(i),
+                )
+
+        def search(num_after=999):
+            narrow = [
+                dict(operator='search', operand=u'日本'),
+            ]
+            result = self.get_and_check_messages(dict(
+                narrow=ujson.dumps(narrow),
+                anchor=0,
+                num_after=num_after,
+            ))
+            return result
+
+        result = search()
+        self.assertEqual(len(result['messages']), 0)
+
+        def update_search_index():
+            # We use brute force here and update our text search index
+            # for the entire zerver_message table (which is small in test
+            # mode).  In production there is an async process which keeps
+            # the search index up to date.
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE zerver_message SET
+                    search_pgroonga = subject || ' ' || rendered_content
+                    """)
+
+        for i in range(1, 501):
+            add_messages(i)
+            update_search_index()
+            with queries_captured() as queries:
+                result = search()
+            num_expected = 7 * i
+            print('\n\n\n--------------------------------\n')
+            print('TABLE:')
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    select id, search_pgroonga from zerver_message
+                    order by id asc''')
+                for row in cursor.fetchall():
+                    print(row[0], row[1])
+            print()
+            print('QUERIES')
+            for query in queries:
+                print(query)
+            print()
+            print('RESULTS:')
+            for row in result['messages']:
+                print(row['id'], row['subject'], row['match_content'])
+            print('compare:', len(result['messages']), num_expected)
+            print()
+
+            self.assertEqual(len(result['messages']), num_expected)
+
     def _flaky_test(self):
         self.login("cordelia@zulip.com")
 
