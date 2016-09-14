@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+from django.http import HttpResponse
 from django.test import TestCase
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
 from typing import Any, Callable, Dict
 
 import mock
+import re
 
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
+from zerver.lib.session_user import get_session_dict_user
 from zerver.lib.test_helpers import (
     ZulipTestCase
 )
@@ -26,6 +29,7 @@ from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
 
 from six import text_type
+from six.moves import urllib
 import ujson
 
 class AuthBackendTest(TestCase):
@@ -272,6 +276,172 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('action="/register/"', result)
             self.assert_in_response('Your e-mail does not match any '
                                     'existing open organization.', result)
+
+class ResponseMock(object):
+    def __init__(self, status_code, data):
+        # type: (int, Any) -> None
+        self.status_code = status_code
+        self.data = data
+
+    def json(self):
+        # type: () -> str
+        return self.data
+
+    @property
+    def text(self):
+        # type: () -> str
+        return "Response text"
+
+class GoogleLoginTest(ZulipTestCase):
+    def google_oauth2_test(self, token_response, account_response):
+        # type: (ResponseMock, ResponseMock) -> None
+        result = self.client_get("/accounts/login/google/")
+        self.assertEquals(result.status_code, 302)
+        # Now extract the CSRF token from the redirect URL
+        csrf_state = urllib.parse.parse_qs(result.url)['state']
+
+        with mock.patch("requests.post", return_value=token_response), \
+             mock.patch("requests.get", return_value=account_response):
+            result = self.client_get("/accounts/login/google/done/",
+                                     dict(state=csrf_state))
+        return result
+
+    def test_google_oauth2_success(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(formatted="Full Name"),
+                            emails=[dict(type="account",
+                                         value="hamlet@zulip.com")])
+        account_response = ResponseMock(200, account_data)
+        self.google_oauth2_test(token_response, account_response)
+
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_google_oauth2_registration(self):
+        # type: () -> None
+        """If the user doesn't exist yet, Google auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(formatted="Full Name"),
+                            emails=[dict(type="account",
+                                         value=email)])
+        account_response = ResponseMock(200, account_data)
+        result = self.google_oauth2_test(token_response, account_response)
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get(result.url)
+        key_match = re.search('value="(?P<key>[0-9a-f]+)" name="key"', result.content.decode("utf-8"))
+        name_match = re.search('value="(?P<name>[^"]+)" name="full_name"', result.content.decode("utf-8"))
+
+        # This goes through a brief stop on a page that auto-submits via JS
+        result = self.client_post('/accounts/register/',
+                                  {'full_name': name_match.group("name"),
+                                   'key': key_match.group("key"),
+                                   'from_confirmation': "1"})
+        self.assertEquals(result.status_code, 200)
+        result = self.client_post('/accounts/register/',
+                                  {'full_name': "New User",
+                                   'password': 'test_password',
+                                   'key': key_match.group("key"),
+                                   'terms': True})
+        self.assertEquals(result.status_code, 302)
+        self.assertEquals(result.url, "http://testserver/")
+
+    def test_google_oauth2_400_token_response(self):
+        # type: () -> None
+        token_response = ResponseMock(400, {})
+        with mock.patch("logging.warning") as m:
+            result = self.google_oauth2_test(token_response, None)
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          "User error converting Google oauth2 login to token: 'Response text'")
+
+    def test_google_oauth2_500_token_response(self):
+        # type: () -> None
+        token_response = ResponseMock(500, {})
+        with mock.patch("logging.error") as m:
+            result = self.google_oauth2_test(token_response, None)
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          "Could not convert google oauth2 code to access_token: 'Response text'")
+
+    def test_google_oauth2_400_account_response(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_response = ResponseMock(400, {})
+        with mock.patch("logging.warning") as m:
+            result = self.google_oauth2_test(token_response, account_response)
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          "Google login failed making info API call: 'Response text'")
+
+    def test_google_oauth2_500_account_response(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_response = ResponseMock(500, {})
+        with mock.patch("logging.error") as m:
+            result = self.google_oauth2_test(token_response, account_response)
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          "Google login failed making API call: 'Response text'")
+
+    def test_google_oauth2_no_fullname(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(givenName="Test", familyName="User"),
+                            emails=[dict(type="account",
+                                         value="hamlet@zulip.com")])
+        account_response = ResponseMock(200, account_data)
+        self.google_oauth2_test(token_response, account_response)
+
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_google_oauth2_account_response_no_email(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(formatted="Full Name"),
+                            emails=[])
+        account_response = ResponseMock(200, account_data)
+        with mock.patch("logging.error") as m:
+            result = self.google_oauth2_test(token_response, account_response)
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          "Google oauth2 account email not found: {'emails': [], 'name': {'formatted': 'Full Name'}}")
+
+    def test_google_oauth2_error_access_denied(self):
+        result = self.client_get("/accounts/login/google/done/?error=access_denied")
+        self.assertEquals(result.status_code, 302)
+        self.assertEquals(result.url, "http://testserver/")
+
+    def test_google_oauth2_error_other(self):
+        with mock.patch("logging.warning") as m:
+            result = self.client_get("/accounts/login/google/done/?error=some_other_error")
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          "Error from google oauth2 login: u'some_other_error'")
+
+    def test_google_oauth2_missing_csrf(self):
+        with mock.patch("logging.warning") as m:
+            result = self.client_get("/accounts/login/google/done/")
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          'Missing Google oauth2 CSRF state')
+
+    def test_google_oauth2_csrf_malformed(self):
+        with mock.patch("logging.warning") as m:
+            result = self.client_get("/accounts/login/google/done/?state=badstate")
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          'Missing Google oauth2 CSRF state')
+
+    def test_google_oauth2_csrf_badstate(self):
+        with mock.patch("logging.warning") as m:
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate")
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(m.call_args_list[0][0][0],
+                          'Google oauth2 CSRF error')
 
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
