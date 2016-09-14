@@ -96,6 +96,7 @@ i18n_urls = [
     url(r'^api/$', TemplateView.as_view(template_name='zerver/api.html')),
     url(r'^api/endpoints/$', 'zerver.views.api_endpoint_docs'),
     url(r'^integrations/$', IntegrationView.as_view()),
+    url(r'^about/$', TemplateView.as_view(template_name='zerver/about.html')),
     url(r'^apps/$', TemplateView.as_view(template_name='zerver/apps.html')),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
