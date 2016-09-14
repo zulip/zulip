@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, List, Set, Tuple, TypeVar, \
+from typing import Any, Dict, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
@@ -45,6 +45,8 @@ import datetime
 
 # TODO: see #1379 to eliminate bugdown dependencies
 bugdown = None # type: Any
+
+RealmAlertWords = Dict[int, List[text_type]]
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -831,8 +833,8 @@ class Message(ModelReprMixin, models.Model):
         # type: () -> Realm
         return self.sender.realm
 
-    def render_markdown(self, content, domain=None):
-        # type: (text_type, Optional[text_type]) -> text_type
+    def render_markdown(self, content, domain=None, realm_alert_words=None):
+        # type: (text_type, Optional[text_type], Optional[RealmAlertWords]) -> text_type
         """Return HTML for given markdown. Bugdown may add properties to the
         message object such as `mentions_user_ids` and `mentions_wildcard`.
         These are only on this Django object and are not saved in the
@@ -847,7 +849,7 @@ class Message(ModelReprMixin, models.Model):
         self.mentions_wildcard = False
         self.is_me_message = False
         self.mentions_user_ids = set() # type: Set[int]
-        self.user_ids_with_alert_words = set() # type: Set[int]
+        self.alert_words = set() # type: Set[text_type]
 
         if not domain:
             domain = self.sender.realm.domain
@@ -855,7 +857,21 @@ class Message(ModelReprMixin, models.Model):
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
             domain = u"zephyr_mirror"
-        rendered_content = bugdown.convert(content, domain, self)
+
+        possible_words = set() # type: Set[text_type]
+        if realm_alert_words is not None:
+            for words in realm_alert_words.values():
+                possible_words.update(set(words))
+
+        # DO MAIN WORK HERE -- call bugdown to convert
+        rendered_content = bugdown.convert(content, domain, self, possible_words)
+
+        self.user_ids_with_alert_words = set() # type: Set[int]
+
+        if realm_alert_words is not None:
+            for user_id, words in realm_alert_words.items():
+                if set(words).intersection(self.alert_words):
+                    self.user_ids_with_alert_words.add(user_id)
 
         self.is_me_message = Message.is_status_message(content, rendered_content)
 
