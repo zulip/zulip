@@ -47,7 +47,7 @@ exports.set_up_alert_words = function () {
     var new_word = templates.render('alert_word_settings_item', {'word': '', editing: true});
     word_list.append(new_word);
 
-    $('#alert_words_list').on('click', '.add-alert-word', function (event) {
+    $('#alert_words_list').on('click', '#create_alert_word_button', function (event) {
         var word = $('#create_alert_word_name').val();
         add_alert_word(word, event);
     });
