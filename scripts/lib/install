@@ -15,15 +15,21 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
+if ! [ -e /usr/bin/realpath ]; then
+    # realpath is in coreutils on Xenial, but not in Trusty
+    apt-get install -y realpath
+fi
+ZULIP_PATH="$(realpath $(dirname $0)/../..)"
+
 # setup-apt-repo does an `apt-get update`
-/root/zulip/scripts/lib/setup-apt-repo
+"$ZULIP_PATH"/scripts/lib/setup-apt-repo
 
 apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python python-six crudini $ADDITIONAL_PACKAGES
 
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
-    /root/zulip/scripts/lib/create-production-venv /root/zulip/zulip-venv
+    "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"/zulip-venv
 fi
 
 # puppet apply
@@ -34,7 +40,7 @@ mkdir -p /etc/zulip
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
     fi
 ) > /etc/zulip/zulip.conf
-/root/zulip/scripts/zulip-puppet-apply -f
+"$ZULIP_PATH"/scripts/zulip-puppet-apply -f
 
 # Detect which features were selected for the below
 set +e
@@ -65,9 +71,9 @@ if [ "$has_nginx" = 0 ]; then
 fi
 
 if [ "$has_appserver" = 0 ]; then
-    /root/zulip/scripts/setup/generate_secrets.py --production
-    cp -a /root/zulip/zproject/prod_settings_template.py /etc/zulip/settings.py
-    ln -nsf /etc/zulip/settings.py /root/zulip/zproject/prod_settings.py
+    "$ZULIP_PATH"/scripts/setup/generate_secrets.py --production
+    cp -a "$ZULIP_PATH"/zproject/prod_settings_template.py /etc/zulip/settings.py
+    ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
 fi
 
 # Restart camo since generate_secrets.py likely replaced its secret key
@@ -87,17 +93,17 @@ if [ "$has_rabbit" = 0 ]; then
         set -x
         exit 1
     fi
-    /root/zulip/scripts/setup/configure-rabbitmq
+    "$ZULIP_PATH"/scripts/setup/configure-rabbitmq
 fi
 
 if [ "$has_postgres" = 0 ]; then
-    /root/zulip/scripts/setup/postgres-init-db
+    "$ZULIP_PATH"/scripts/setup/postgres-init-db
 fi
 
 if [ "$has_appserver" = 0 ]; then
-    deploy_path=$(/root/zulip/scripts/lib/zulip_tools.py make_deploy_path)
-    mv /root/zulip "$deploy_path"
-    ln -nsf /home/zulip/deployments/next /root/zulip
+    deploy_path=$("$ZULIP_PATH"/scripts/lib/zulip_tools.py make_deploy_path)
+    mv "$ZULIP_PATH" "$deploy_path"
+    ln -nsf /home/zulip/deployments/next "$ZULIP_PATH"
     ln -nsf "$deploy_path" /home/zulip/deployments/next
     ln -nsf "$deploy_path" /home/zulip/deployments/current
     ln -nsf /etc/zulip/settings.py "$deploy_path"/zproject/prod_settings.py
