@@ -44,6 +44,7 @@ from zerver.lib.request import JsonableError
 
 
 import base64
+import mock
 import os
 import re
 import time
@@ -59,6 +60,7 @@ import six
 API_KEYS = {} # type: Dict[text_type, text_type]
 
 skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
+
 
 @contextmanager
 def simulated_queue_client(client):
@@ -543,6 +545,20 @@ class ZulipTestCase(TestCase):
     def get_second_to_last_message(self):
         # type: () -> Message
         return Message.objects.all().order_by('-id')[1]
+
+    @contextmanager
+    def simulated_markdown_failure(self):
+        # type: () -> Generator[None, None, None]
+        '''
+        This raises a failure inside of the try/except block of
+        bugdown.__init__.do_convert.
+        '''
+        with \
+                self.settings(ERROR_BOT=None), \
+                mock.patch('zerver.lib.bugdown.timeout', side_effect=KeyError('foo')), \
+                mock.patch('zerver.lib.bugdown.log_bugdown_error'):
+            yield
+
 
 def get_all_templates():
     # type: () -> List[str]
