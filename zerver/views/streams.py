@@ -12,7 +12,7 @@ from zerver.decorator import authenticated_json_post_view, \
     get_user_profile_by_email, require_realm_admin
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
-    create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
+    create_streams_if_needed, gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
@@ -48,42 +48,47 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     @param autocreate Whether we should create streams if they don't already exist
     @param invite_only Whether newly created streams should have the invite_only bit set
     """
-    existing_streams = []
-    created_streams = []
     # Validate all streams, getting extant ones, then get-or-creating the rest.
     stream_set = set(stream_name.strip() for stream_name in streams_raw)
-    rejects = []
+
     for stream_name in stream_set:
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
             raise JsonableError(_("Stream name (%s) too long.") % (stream_name,))
         if not valid_stream_name(stream_name):
             raise JsonableError(_("Invalid stream name (%s).") % (stream_name,))
 
+    existing_streams = [] # type: List[Stream]
+    missing_stream_names = [] # type: List[text_type]
+
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     for stream_name in stream_set:
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
-            rejects.append(stream_name)
+            missing_stream_names.append(stream_name)
         else:
             existing_streams.append(stream)
-    if rejects:
+
+    if not missing_stream_names:
+        # This is the happy path for callers who expected all of these
+        # streams to exist already.
+        created_streams = [] # type: List[Stream]
+    else:
+        # autocreate=True path starts here
         if not user_profile.can_create_streams():
             raise JsonableError(_('User cannot create streams.'))
         elif not autocreate:
-            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(rejects))
+            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(missing_stream_names))
 
-        for stream_name in rejects:
-            stream, created = create_stream_if_needed(user_profile.realm,
-                                                      stream_name,
-                                                      invite_only=invite_only)
-            if created:
-                created_streams.append(stream)
-            else:
-                # We already checked for existing streams above; this
-                # next line is present to handle races where a stream
-                # was created while this function was executing.
-                existing_streams.append(stream)
+        # We already filtered out existing streams, so dup_streams
+        # will normally be an empty list below, but we protect against somebody
+        # else racing to create the same stream.  (This is not an entirely
+        # paranoid approach, since often on Zulip two people will discuss
+        # creating a new stream, and both people eagerly do it.)
+        created_streams, dup_streams = create_streams_if_needed(realm=user_profile.realm,
+                                                                stream_names=missing_stream_names,
+                                                                invite_only=invite_only)
+        existing_streams += dup_streams
 
     return existing_streams, created_streams
 
