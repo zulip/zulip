@@ -35,7 +35,8 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user_profile_by_email, set_default_streams, get_subscription
+    get_user_profile_by_email, set_default_streams, get_subscription,
+    create_streams_if_needed
 )
 
 from zerver.views.streams import (
@@ -50,6 +51,31 @@ import six
 from six import text_type
 from six.moves import range, urllib
 
+class TestCreateStreams(ZulipTestCase):
+    def test_creating_streams(self):
+        # type: () -> None
+        stream_names = [u'new1', u'new2', u'new3']
+        realm = get_realm('zulip.com')
+
+        new_streams, existing_streams = create_streams_if_needed(
+            realm,
+            stream_names,
+            invite_only=True)
+        self.assertEqual(len(new_streams), 3)
+        self.assertEqual(len(existing_streams), 0)
+
+        actual_stream_names = {stream.name for stream in new_streams}
+        self.assertEqual(actual_stream_names, set(stream_names))
+
+        new_streams, existing_streams = create_streams_if_needed(
+            realm,
+            stream_names,
+            invite_only=True)
+        self.assertEqual(len(new_streams), 0)
+        self.assertEqual(len(existing_streams), 3)
+
+        actual_stream_names = {stream.name for stream in existing_streams}
+        self.assertEqual(actual_stream_names, set(stream_names))
 
 class StreamAdminTest(ZulipTestCase):
     def test_make_stream_public(self):

@@ -805,6 +805,21 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
             send_event(event, active_user_ids(realm))
     return stream, created
 
+def create_streams_if_needed(realm, stream_names, invite_only):
+    # type: (Realm, List[text_type], bool) -> Tuple[List[Stream], List[Stream]]
+    added_streams = [] # type: List[Stream]
+    existing_streams = [] # type: List[Stream]
+    for stream_name in stream_names:
+        stream, created = create_stream_if_needed(realm,
+                                                  stream_name,
+                                                  invite_only=invite_only)
+        if created:
+            added_streams.append(stream)
+        else:
+            existing_streams.append(stream)
+
+    return added_streams, existing_streams
+
 def recipient_for_emails(emails, not_forged_mirror_message,
                          user_profile, sender):
     # type: (Iterable[text_type], bool, UserProfile, UserProfile) -> Recipient
