@@ -2525,7 +2525,7 @@ div.floating_recipient {
 .subscription-info-container {
     display: inline-block;
     /* subtract out the width of the subscribe button and arrow. */
-    width: calc(100% - 230px);
+    width: calc(100% - 260px);
     /* to center the container vertically. */
     margin-top: 13px;
 }
@@ -2747,7 +2747,7 @@ div.floating_recipient {
 }
 
 .subscription_row:hover .preview-stream {
-    display: inherit;
+    display: inline-block;
 }
 
 .preview-stream {
@@ -2760,10 +2760,14 @@ div.floating_recipient {
 }
 
 .preview-stream:hover {
+    color: #333;
     text-decoration: none;
+    background-color: #ebebeb;
+    border: 1px solid #adadad;
 }
 
 .sub_unsub_button {
+    display: inline-block;
     min-width: 140px;
     float: right;
     margin-top: 9px;
