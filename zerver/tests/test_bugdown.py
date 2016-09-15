@@ -570,8 +570,8 @@ class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
         # type: () -> None
         with self.simulated_markdown_failure():
-            rendered_message = bugdown.convert('', 'zulip.com')
-            self.assertEqual(rendered_message, None)
+            with self.assertRaises(bugdown.BugdownRenderingException):
+                bugdown.convert('', 'zulip.com')
 
     def test_send_message_errors(self):
         # type: () -> None
