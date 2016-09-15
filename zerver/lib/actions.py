@@ -736,6 +736,14 @@ def do_send_messages(messages):
             if user_profile.email in user_presences:
                 presences[user_profile.id] = user_presences[user_profile.email]
 
+        for outhook_bot, command in message['message'].outgoing_webhook_triggers:
+            bot_email = outhook_bot['email']
+            trigger_event = {"bot_email": bot_email,
+                             "command": command,
+                             "retry": 0,
+                             "message": message['message'].to_dict(apply_markdown=False)}
+            queue_json_publish("outhook_worker", trigger_event, lambda x: None)
+
         event = dict(
             type         = 'message',
             message      = message['message'].id,

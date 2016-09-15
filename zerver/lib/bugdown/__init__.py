@@ -856,6 +856,14 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
         return (False, user)
 
+    def check_outgoing_webhook_trigger(self, user):
+        TRIGGER_RE = re.compile(u'(@\*\*.*\*\* )(.*)')
+        if user["is_bot"]:
+            # Send the whole message as the command
+            command = TRIGGER_RE.search(current_message.content).group(2)
+            current_message.outgoing_webhook_triggers.append((user, command))
+
+
     def handleMatch(self, m):
         # type: (Match[text_type]) -> Optional[Element]
         name = m.group(2) or m.group(3)
@@ -870,6 +878,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 current_message.mentions_user_ids.add(user['id'])
                 name = user['full_name']
                 email = user['email']
+                self.check_outgoing_webhook_trigger(user)
             else:
                 # Don't highlight @mentions that don't refer to a valid user
                 return None

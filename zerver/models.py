@@ -376,6 +376,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     since they can't be used to read messages.
     """
     INCOMING_WEBHOOK_BOT = 2
+    OUTGOING_WEBHOOK_BOT = 3
 
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
@@ -509,6 +510,10 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         # type: () -> bool
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
+    @property
+    def is_outgoing_webhook_bot(self):
+        return self.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+
     @staticmethod
     def emails_from_ids(user_ids):
         # type: (Sequence[int]) -> Dict[int, text_type]
@@ -551,6 +556,16 @@ class PreregistrationUser(models.Model):
     status = models.IntegerField(default=0) # type: int
 
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+
+class OutgoingWebhookBot(UserProfile):
+    base_url = models.TextField() # type: text_type
+    service_api_key = models.TextField() # type: text_type
+
+def get_realm_outgoing_webhook_bots(realm):
+    return list(OutgoingWebhookBot.objects.filter(realm=realm, is_bot=True, bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values())
+
+def get_outgoing_webhook_bot_profile(bot_email, realm):
+    return OutgoingWebhookBot.objects.get(email=bot_email, realm=realm)
 
 class PushDeviceToken(models.Model):
     APNS = 1
@@ -848,6 +863,7 @@ class Message(ModelReprMixin, models.Model):
         self.is_me_message = False
         self.mentions_user_ids = set() # type: Set[int]
         self.user_ids_with_alert_words = set() # type: Set[int]
+        self.outgoing_webhook_triggers = [] # type: List[Tuple[Dict[text_type, Any], text_type]]
 
         if not domain:
             domain = self.sender.realm.domain
