@@ -1121,6 +1121,10 @@ current_message = None # type: Optional[Message]
 # threads themselves, as well.
 db_data = None # type: Dict[text_type, Any]
 
+def log_bugdown_error(msg):
+    # type: (str) -> None
+    logging.getLogger('').error(msg)
+
 def do_convert(md, realm_domain=None, message=None):
     # type: (markdown.Markdown, Optional[text_type], Optional[Message]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
@@ -1160,7 +1164,7 @@ def do_convert(md, realm_domain=None, message=None):
         cleaned = _sanitize_for_log(md)
 
         # Output error to log as well as sending a zulip and email
-        logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
+        log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
             % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
