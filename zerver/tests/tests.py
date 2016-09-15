@@ -1379,6 +1379,31 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_illegal_name_changes(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email(email)
+        full_name = user.full_name
+
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            json_result = self.client_post("/json/settings/change",
+                dict(full_name='Foo Bar'))
+
+        # We actually fail silently here, since this only happens if
+        # somebody is trying to game our API, and there's no reason to
+        # give them the courtesy of an error reason.
+        self.assert_json_success(json_result)
+
+        user = get_user_profile_by_email(email)
+        self.assertEqual(user.full_name, full_name)
+
+        # Now try a too-long name
+        json_result = self.client_post("/json/settings/change",
+            dict(full_name='x' * 1000))
+        self.assert_json_error(json_result, 'Name too long!')
+
+
     # This is basically a don't-explode test.
     def test_notify_settings(self):
         # type: () -> None
