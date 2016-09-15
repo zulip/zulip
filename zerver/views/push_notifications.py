@@ -19,13 +19,14 @@ def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=Non
 
     # If another user was previously logged in on the same device and didn't
     # properly log out, the token will still be registered to the wrong account
-    PushDeviceToken.objects.filter(token=token_str).delete()
+    PushDeviceToken.objects.filter(token=token_str).exclude(user=user_profile).delete()
 
     # Overwrite with the latest value
     token, created = PushDeviceToken.objects.get_or_create(user=user_profile,
                                                            token=token_str,
-                                                           kind=kind,
-                                                           ios_app_id=ios_app_id)
+                                                           defaults=dict(
+                                                               kind=kind,
+                                                               ios_app_id=ios_app_id))
     if not created:
         token.last_updated = now()
         token.save(update_fields=['last_updated'])

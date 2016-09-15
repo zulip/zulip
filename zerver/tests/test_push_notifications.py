@@ -12,6 +12,7 @@ from django.conf import settings
 from zerver.models import PushDeviceToken, UserProfile, Message
 from zerver.models import get_user_profile_by_email
 from zerver.lib import push_notifications as apn
+from zerver.lib.test_helpers import ZulipTestCase
 
 class MockRedis(object):
     data = {}  # type: Dict[str, Any]
@@ -113,6 +114,57 @@ class ResponseListenerTest(PushNotificationTest):
         self.assertEqual(mock_warn.call_count, 2)
         self.assertEqual(PushDeviceToken.objects.filter(
             user=self.user_profile, token=b64_token).count(), 0)
+
+class TestPushApi(ZulipTestCase):
+    def test_push_api(self):
+        # type: () -> None
+        email = "cordelia@zulip.com"
+        user = get_user_profile_by_email(email)
+        self.login(email)
+
+        endpoints = [
+            ('/json/users/me/apns_device_token', 'apple-token'),
+            ('/json/users/me/android_gcm_reg_id', 'android-token'),
+        ]
+
+        # Test error handling
+        for endpoint, _ in endpoints:
+            # Try adding/removing tokens that are too big...
+            broken_token = "x" * 5000 # too big
+            result = self.client_post(endpoint, {'token': broken_token})
+            self.assert_json_error(result, 'Empty or invalid length token')
+
+            result = self.client_delete(endpoint, {'token': broken_token})
+            self.assert_json_error(result, 'Empty or invalid length token')
+
+            # Try to remove a non-existent token...
+            result = self.client_delete(endpoint, {'token': 'non-existent token'})
+            self.assert_json_error(result, 'Token does not exist')
+
+
+        # Add tokens
+        for endpoint, token in endpoints:
+            # Test that we can push twice
+            result = self.client_post(endpoint, {'token': token})
+            self.assert_json_success(result)
+
+            result = self.client_post(endpoint, {'token': token})
+            self.assert_json_success(result)
+
+            tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
+            self.assertEqual(len(tokens), 1)
+            self.assertEqual(tokens[0].token, token)
+
+        # User should have tokens for both devices now.
+        tokens = list(PushDeviceToken.objects.filter(user=user))
+        self.assertEqual(len(tokens), 2)
+
+        # Remove tokens
+        for endpoint, token in endpoints:
+            result = self.client_delete(endpoint, {'token': token})
+            self.assert_json_success(result)
+            tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
+            self.assertEqual(len(tokens), 0)
 
 class SendNotificationTest(PushNotificationTest):
     @mock.patch('logging.warn')
