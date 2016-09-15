@@ -57,6 +57,9 @@ if False:
     # mypy requires the Optional to be inside Union
     ElementStringNone = Union[Element, Optional[text_type]]
 
+class BugdownRenderingException(Exception):
+    pass
+
 def unescape(s):
     # type: (text_type) -> (text_type)
     if six.PY2:
@@ -1177,7 +1180,7 @@ def do_convert(md, realm_domain=None, message=None):
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
-        return None
+        raise BugdownRenderingException()
     finally:
         current_message = None
         db_data = None

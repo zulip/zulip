@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
+from zerver.lib.bugdown import BugdownRenderingException
 from zerver.lib.cache import flush_user_profile
 from zerver.lib.context_managers import lockfile
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
@@ -1064,7 +1065,9 @@ def check_message(sender, client, message_type_name, message_to,
         message.pub_date = timezone.now()
     message.sending_client = client
 
-    if not message.maybe_render_content(realm.domain):
+    try:
+        message.maybe_render_content(realm.domain)
+    except BugdownRenderingException:
         raise JsonableError(_("Unable to render message"))
 
     if client.name == "zephyr_mirror":
