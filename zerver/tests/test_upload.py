@@ -118,6 +118,30 @@ class FileUploadTest(ZulipTestCase):
         self.assertEquals(response.status_code, 404)
         self.assertIn('File not found', str(response.content))
 
+    def test_serve_s3_error_handling(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        use_s3 = lambda: self.settings(LOCAL_UPLOADS_DIR=None)
+        getting_realm_id = lambda realm_id: mock.patch(
+            'zerver.views.upload.get_realm_for_filename',
+            return_value=realm_id
+        )
+
+        # nonexistent_file
+        with use_s3(), getting_realm_id(None):
+            response = self.client_get('/user_uploads/unk/nonexistent_file')
+        self.assertEquals(response.status_code, 404)
+        self.assertIn('File not found', str(response.content))
+
+        # invalid realm of 999999 (for non-zulip.com)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.realm.domain = 'example.com'
+        user.realm.save()
+
+        with use_s3(), getting_realm_id(999999):
+            response = self.client_get('/user_uploads/unk/whatever')
+        self.assertEquals(response.status_code, 403)
+
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
     def test_file_upload_authed(self):
