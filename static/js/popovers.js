@@ -248,7 +248,7 @@ exports.hide_user_sidebar_popover = function () {
 
 function render_emoji_popover() {
     var content = templates.render('emoji_popover_content', {
-        emoji_list: emoji.emojis_by_name
+        emoji_list: emoji.emojis_name_to_css_class
     });
 
     $('.emoji_popover').append(content);

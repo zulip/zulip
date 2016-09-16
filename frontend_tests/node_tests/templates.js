@@ -303,7 +303,7 @@ function render(template_name, args) {
 
 (function emoji_popover_content() {
     var args = {
-        emoji_list: global.emoji.emojis_by_name
+        emoji_list: global.emoji.emojis_name_to_css_class
     };
 
     var html = '<div style="height: 250px">';
