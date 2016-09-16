@@ -21,6 +21,7 @@ from six.moves import urllib
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from six.moves import StringIO
+import mock
 import os
 import shutil
 import re
@@ -109,6 +110,13 @@ class FileUploadTest(ZulipTestCase):
 
         result = self.client_post("/json/upload_file")
         self.assert_json_error(result, "You must specify a file to upload")
+
+    def test_download_non_existent_file(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        response = self.client_get('/user_uploads/unk/nonexistent_file')
+        self.assertEquals(response.status_code, 404)
+        self.assertIn('File not found', str(response.content))
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
