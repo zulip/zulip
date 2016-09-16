@@ -6,7 +6,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from zerver.lib.actions import do_create_realm, set_default_streams
+from zerver.lib.actions import Realm, do_create_realm, set_default_streams, get_realm_creation_defaults
 from zerver.models import RealmAlias
 
 if settings.ZILENCER_ENABLED:
@@ -21,11 +21,6 @@ class Command(BaseCommand):
 Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
     option_list = BaseCommand.option_list + (
-        make_option('-o', '--open-realm',
-                    dest='open_realm',
-                    action="store_true",
-                    default=False,
-                    help='Make this an open realm.'),
         make_option('-d', '--domain',
                     dest='domain',
                     type='str',
@@ -34,6 +29,17 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                     dest='name',
                     type='str',
                     help='The user-visible name for the realm.'),
+        make_option('--corporate',
+                    dest='org_type',
+                    action="store_const",
+                    const=Realm.CORPORATE,
+                    help='Is a corporate org_type'),
+        make_option('--community',
+                    dest='org_type',
+                    action="store_const",
+                    const=Realm.COMMUNITY,
+                    default=None,
+                    help='Is a community org_type. Is the default.'),
         make_option('--deployment',
                     dest='deployment_id',
                     type='int',
@@ -60,26 +66,21 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        if options["domain"] is None or options["name"] is None:
+        domain = options["domain"]
+        name = options["name"]
+
+        if domain is None or name is None:
             print("\033[1;31mPlease provide both a domain and name.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
-        if options["open_realm"] and options["deployment_id"] is not None:
-            print("\033[1;31mExternal deployments cannot be open realms.\033[0m\n", file=sys.stderr)
-            self.print_help("python manage.py", "create_realm")
-            exit(1)
         if options["deployment_id"] is not None and not settings.ZILENCER_ENABLED:
             print("\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n", file=sys.stderr)
             exit(1)
 
-        domain = options["domain"]
-        name = options["name"]
-
         self.validate_domain(domain)
 
-        realm, created = do_create_realm(
-            domain, name, restricted_to_domain=not options["open_realm"])
+        realm, created = do_create_realm(domain, name, org_type=options["org_type"])
         if created:
             print(domain, "created.")
             if options["deployment_id"] is not None:

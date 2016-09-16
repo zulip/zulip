@@ -145,6 +145,11 @@ class Realm(ModelReprMixin, models.Model):
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS) # type: int
 
+    # Valid org_types are {CORPORATE, COMMUNITY}
+    CORPORATE = 1
+    COMMUNITY = 2
+    org_type = models.PositiveSmallIntegerField(default=CORPORATE) # type: int
+
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool
