@@ -578,5 +578,7 @@ class BugdownErrorTests(ZulipTestCase):
 
         message = 'whatever'
         with self.simulated_markdown_failure():
-            with self.assertRaisesRegexp(JsonableError, 'Unable to render message'):
+            # We don't use assertRaisesRegexp because it seems to not
+            # handle i18n properly here on some systems.
+            with self.assertRaises(JsonableError):
                 self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
