@@ -38,6 +38,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 # The test suite uses EmailAuthBackend
 AUTHENTICATION_BACKENDS += ('zproject.backends.EmailAuthBackend',)
 
+# Configure Google Oauth2
+GOOGLE_OAUTH2_CLIENT_ID = "test_client_id"
+
 # Makes testing LDAP backend require less mocking
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
 

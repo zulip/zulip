@@ -12,11 +12,18 @@ from zerver.lib.actions import (
     get_realm,
 )
 from zerver.lib.camo import get_camo_url
+from zerver.lib.request import (
+    JsonableError,
+)
+from zerver.lib.test_helpers import (
+    ZulipTestCase,
+)
 from zerver.models import (
     get_client,
     get_user_profile_by_email,
     Message,
     RealmFilter,
+    Recipient,
 )
 
 import mock
@@ -537,6 +544,9 @@ class BugdownTest(TestCase):
         )
 
     def test_mit_rendering(self):
+        """Test the markdown configs for the MIT Zephyr mirroring system;
+        verifies almost all inline patterns are disabled, but
+        inline_interesting_links is still enabled"""
         msg = "**test**"
         converted = bugdown.convert(msg, "zephyr_mirror")
         self.assertEqual(
@@ -556,3 +566,17 @@ class BugdownTest(TestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
 
+class BugdownErrorTests(ZulipTestCase):
+    def test_bugdown_error_handling(self):
+        # type: () -> None
+        with self.simulated_markdown_failure():
+            with self.assertRaises(bugdown.BugdownRenderingException):
+                bugdown.convert('', 'zulip.com')
+
+    def test_send_message_errors(self):
+        # type: () -> None
+
+        message = 'whatever'
+        with self.simulated_markdown_failure():
+            with self.assertRaisesRegexp(JsonableError, 'Unable to render message'):
+                self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)

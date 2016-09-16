@@ -40,17 +40,16 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSF
 from zerver.lib.actions import is_inactive
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib import bugdown
 from zerver.lib.validator import check_string, check_list, check_bool
 from zerver.decorator import require_post, authenticated_json_post_view, \
-    has_request_variables, to_non_negative_int, \
+    has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.utils import statsd
 from version import ZULIP_VERSION
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
@@ -60,7 +59,6 @@ import requests
 
 import calendar
 import datetime
-import ujson
 import simplejson
 import re
 from six import text_type
@@ -271,33 +269,6 @@ def accounts_accept_terms(request):
           'special_message_template' : special_message_template },
         request=request)
 
-
-def api_endpoint_docs(request):
-    # type: (HttpRequest) -> HttpResponse
-    raw_calls = open('templates/zerver/api_content.json', 'r').read()
-    calls = ujson.loads(raw_calls)
-    langs = set()
-    for call in calls:
-        call["endpoint"] = "%s/v1/%s" % (settings.EXTERNAL_API_URI, call["endpoint"])
-        call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com",
-                                                                                  settings.EXTERNAL_API_URI)
-        response = call['example_response']
-        if '\n' not in response:
-            # For 1-line responses, pretty-print them
-            extended_response = response.replace(", ", ",\n ")
-        else:
-            extended_response = response
-        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n", "default")
-        for example_type in ('request', 'response'):
-            for lang in call.get('example_' + example_type, []):
-                langs.add(lang)
-    return render_to_response(
-            'zerver/api_endpoints.html', {
-                'content': calls,
-                'langs': langs,
-                },
-        request=request)
-
 @authenticated_json_post_view
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails")):
@@ -442,7 +413,7 @@ def remote_user_jwt(request):
 
 def google_oauth2_csrf(request, value):
     # type: (HttpRequest, str) -> HttpResponse
-    return hmac.new(get_token(request).encode('utf-8'), value, hashlib.sha256).hexdigest()
+    return hmac.new(get_token(request).encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
@@ -465,26 +436,21 @@ def start_google_oauth2(request):
     }
     return redirect(uri + urllib.parse.urlencode(prams))
 
-# Workaround to support the Python-requests 1.0 transition of .json
-# from a property to a function
-requests_json_is_function = callable(requests.Response.json)
-def extract_json_response(resp):
-    # type: (HttpResponse) -> Dict[str, Any]
-    if requests_json_is_function:
-        return resp.json()
-    else:
-        return resp.json
-
 def finish_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
     error = request.GET.get('error')
     if error == 'access_denied':
         return redirect('/')
     elif error is not None:
-        logging.warning('Error from google oauth2 login %r', request.GET)
+        logging.warning('Error from google oauth2 login: %s' % (request.GET.get("error"),))
         return HttpResponse(status=400)
 
-    value, hmac_value = request.GET.get('state').split(':')
+    csrf_state = request.GET.get('state')
+    if csrf_state is None or len(csrf_state.split(':')) != 2:
+        logging.warning('Missing Google oauth2 CSRF state')
+        return HttpResponse(status=400)
+
+    value, hmac_value = csrf_state.split(':')
     if hmac_value != google_oauth2_csrf(request, value):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
@@ -504,22 +470,24 @@ def finish_google_oauth2(request):
         },
     )
     if resp.status_code == 400:
-        logging.warning('User error converting Google oauth2 login to token: %r' % (resp.text,))
+        logging.warning('User error converting Google oauth2 login to token: %s' % (resp.text,))
         return HttpResponse(status=400)
     elif resp.status_code != 200:
-        raise Exception('Could not convert google oauth2 code to access_token\r%r' % (resp.text,))
-    access_token = extract_json_response(resp)['access_token']
+        logging.error('Could not convert google oauth2 code to access_token: %s' % (resp.text,))
+        return HttpResponse(status=400)
+    access_token = resp.json()['access_token']
 
     resp = requests.get(
         'https://www.googleapis.com/plus/v1/people/me',
         params={'access_token': access_token}
     )
     if resp.status_code == 400:
-        logging.warning('Google login failed making info API call: %r' % (resp.text,))
+        logging.warning('Google login failed making info API call: %s' % (resp.text,))
         return HttpResponse(status=400)
     elif resp.status_code != 200:
-        raise Exception('Google login failed making API call\r%r' % (resp.text,))
-    body = extract_json_response(resp)
+        logging.error('Google login failed making API call: %s' % (resp.text,))
+        return HttpResponse(status=400)
+    body = resp.json()
 
     try:
         full_name = body['name']['formatted']
@@ -532,7 +500,8 @@ def finish_google_oauth2(request):
         if email['type'] == 'account':
             break
     else:
-        raise Exception('Google oauth2 account email not found %r' % (body,))
+        logging.error('Google oauth2 account email not found: %s' % (body,))
+        return HttpResponse(status=400)
     email_address = email['value']
     user_profile = authenticate(username=email_address, use_dummy_backend=True)
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
@@ -1024,47 +993,6 @@ def is_buggy_ua(agent):
     """
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
         "Mac" not in agent
-
-def get_pointer_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return json_success({'pointer': user_profile.pointer})
-
-@has_request_variables
-def update_pointer_backend(request, user_profile,
-                           pointer=REQ(converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    if pointer <= user_profile.pointer:
-        return json_success()
-
-    try:
-        UserMessage.objects.get(
-            user_profile=user_profile,
-            message__id=pointer
-        )
-    except UserMessage.DoesNotExist:
-        raise JsonableError(_("Invalid message ID"))
-
-    request._log_data["extra"] = "[%s]" % (pointer,)
-    update_flags = (request.client.name.lower() in ['android', "zulipandroid"])
-    do_update_pointer(user_profile, pointer, update_flags=update_flags)
-
-    return json_success()
-
-def generate_client_id():
-    # type: () -> text_type
-    return generate_random_token(32)
-
-def get_profile_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    result = dict(pointer        = user_profile.pointer,
-                  client_id      = generate_client_id(),
-                  max_message_id = -1)
-
-    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
-    if messages:
-        result['max_message_id'] = messages[0].id
-
-    return json_success(result)
 
 @csrf_exempt
 @require_post

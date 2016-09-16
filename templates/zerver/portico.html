@@ -24,11 +24,13 @@
   </div>
 
   <div class="column-right top-links">
-          {% if not only_sso %}
+          {% if login_link_disabled %}
+          {% elif not only_sso %}
           <a href="{{login_url}}">{{ _('Log in') }}</a>
           {% endif %}
 
-          {% if only_sso %}
+          {% if register_link_disabled %}
+          {% elif only_sso %}
           <a href="{{ url('login-sso') }}">{{ _('Log In') }}</a>
           {% else %}
           <a href="{{ url('register') }}">{{ _('Register') }}</a>
@@ -52,27 +54,35 @@
 <div class="footer">
   <div class="footer-main">
     <ul class="footer-navigation">
+      {% if about_link_disabled %}
+      {% else %}
       <li><a href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
-      {% if terms_of_service %}
-      <li><span class="little-bullet">·</span></li>
-      <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
       {% endif %}
+      {% if terms_of_service %}
+
+      {% if about_link_disabled %}
+      {% else %}
+      <li><span class="little-bullet">·</span></li>
+      {% endif %}
+
+      <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
+      <li><span class="little-bullet">·</span></li>
+      <li><a href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
+      {% endif %}
+      {% if login_link_disabled %}
+      {% else %}
       <li><span class="little-bullet">·</span></li>
       <li><a href="{{login_url}}">{{ _('Log in') }}</a></li>
-      {% if not only_sso %}
+      {% endif %}
+      {% if register_link_disabled %}
+      {% elif only_sso %}
+      {% else %}
       <li><span class="little-bullet">·</span></li>
-      <li>
-          {% if register_link_disabled %}
-          {% else %}
-          <a href="{{ url('register') }}">{{ _('Register') }}</a>
-          <li><span class="little-bullet">·</span></li>
-          {% endif %}
-      </li>
-      <li>
-          {% if open_realm_creation %}
-          <a href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a>
-          {% endif %}
-      </li>
+      <li><a href="{{ url('register') }}">{{ _('Register') }}</a></li>
+      {% endif %}
+      {% if open_realm_creation %}
+      <li><span class="little-bullet">·</span></li>
+      <li><a href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a></li>
       {% endif %}
     </ul>
   </div>

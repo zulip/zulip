@@ -20,6 +20,8 @@ def add_settings(request):
     return {
         'custom_logo_url':           settings.CUSTOM_LOGO_URL,
         'register_link_disabled':    settings.REGISTER_LINK_DISABLED,
+        'login_link_disabled':       settings.LOGIN_LINK_DISABLED,
+        'about_link_disabled':       settings.ABOUT_LINK_DISABLED,
         'show_oss_announcement':     settings.SHOW_OSS_ANNOUNCEMENT,
         'zulip_admin':               settings.ZULIP_ADMINISTRATOR,
         'terms_of_service':          settings.TERMS_OF_SERVICE,

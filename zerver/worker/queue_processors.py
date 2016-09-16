@@ -327,7 +327,7 @@ class MessageSenderWorker(QueueProcessingWorker):
         environ = {'REQUEST_METHOD': 'SOCKET',
                    'SCRIPT_NAME': '',
                    'PATH_INFO': '/json/messages',
-                   'SERVER_NAME': 'localhost',
+                   'SERVER_NAME': '127.0.0.1',
                    'SERVER_PORT': 9993,
                    'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
                    'wsgi.version': (1, 0),
