@@ -706,6 +706,7 @@ exports.hide_all = function () {
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     popovers.hide_streamlist_sidebar();
+    popovers.hide_emoji_map_popover();
 };
 
 exports.set_userlist_placement = function (placement) {
