@@ -47,7 +47,6 @@ def serve_local(request, path_id):
     filename = os.path.basename(local_path)
     response = FileResponse(open(local_path, 'rb'), content_type = mimetypes.guess_type(filename))
     return response
-    response['Content-Disposition'] = 'attachment; filename=%s' % (filename)
 
 @has_request_variables
 def serve_file_backend(request, user_profile, realm_id_str, filename,
