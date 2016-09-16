@@ -71,6 +71,21 @@ class FileUploadTest(ZulipTestCase):
         data = b"".join(response.streaming_content)
         self.assertEquals(b"zulip!", data)
 
+    def test_file_too_big_failure(self):
+        # type: () -> None
+        """
+        Attempting to upload big files should fail.
+        """
+        self.login("hamlet@zulip.com")
+        fp = StringIO("bah!")
+        fp.name = "a.txt"
+
+        # Use MAX_FILE_UPLOAD_SIZE of 0, because the next increment
+        # would be 1MB.
+        with self.settings(MAX_FILE_UPLOAD_SIZE=0):
+            result = self.client_post("/json/upload_file", {'f1': fp})
+        self.assert_json_error(result, 'File Upload is larger than allowed limit')
+
     def test_multiple_upload_failure(self):
         # type: () -> None
         """
