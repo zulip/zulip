@@ -124,7 +124,7 @@ class RealmTest(ZulipTestCase):
             value = new_name,
         ))
 
-    def test_realm_name_api(self):
+    def test_update_realm_api(self):
         # type: () -> None
         new_name = 'Zulip: Worldwide Exporter of APIs'
 
@@ -133,11 +133,64 @@ class RealmTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         do_change_is_admin(user_profile, True)
 
-        req = dict(name=ujson.dumps(new_name))
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_success(result)
-        realm = get_realm('zulip.com')
+        def set_up_db(attr, value):
+            # type: (str, Any) -> None
+            realm = get_realm('zulip.com')
+            setattr(realm, attr, value)
+            realm.save()
+
+        def update_with_api(**kwarg):
+            # type: (**Any) -> Realm
+            params = {k: ujson.dumps(v) for k, v in kwarg.items()}
+            result = self.client_patch('/json/realm', params)
+            self.assert_json_success(result)
+            return get_realm('zulip.com') # refresh data
+
+        # name
+        realm = update_with_api(name=new_name)
         self.assertEqual(realm.name, new_name)
+
+        # restricted
+        set_up_db('restricted_to_domain', False)
+        realm = update_with_api(restricted_to_domain=True)
+        self.assertEqual(realm.restricted_to_domain, True)
+        realm = update_with_api(restricted_to_domain=False)
+        self.assertEqual(realm.restricted_to_domain, False)
+
+        # invite_required
+        set_up_db('invite_required', False)
+        realm = update_with_api(invite_required=True)
+        self.assertEqual(realm.invite_required, True)
+        realm = update_with_api(invite_required=False)
+        self.assertEqual(realm.invite_required, False)
+
+        # invite_by_admins_only
+        set_up_db('invite_by_admins_only', False)
+        realm = update_with_api(invite_by_admins_only=True)
+        self.assertEqual(realm.invite_by_admins_only, True)
+        realm = update_with_api(invite_by_admins_only=False)
+        self.assertEqual(realm.invite_by_admins_only, False)
+
+        # create_stream_by_admins_only
+        set_up_db('create_stream_by_admins_only', False)
+        realm = update_with_api(create_stream_by_admins_only=True)
+        self.assertEqual(realm.create_stream_by_admins_only, True)
+        realm = update_with_api(create_stream_by_admins_only=False)
+        self.assertEqual(realm.create_stream_by_admins_only, False)
+
+        # allow_message_editing
+        set_up_db('allow_message_editing', False)
+        set_up_db('message_content_edit_limit_seconds', 0)
+        realm = update_with_api(allow_message_editing=True,
+                                message_content_edit_limit_seconds=100)
+        self.assertEqual(realm.allow_message_editing, True)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        realm = update_with_api(allow_message_editing=False)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        realm = update_with_api(message_content_edit_limit_seconds=200)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
 
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
