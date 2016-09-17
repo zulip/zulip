@@ -7,6 +7,7 @@ from django.test import override_settings
 from sqlalchemy.sql import (
     and_, select, column, compiler
 )
+from unittest import skip
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
@@ -563,6 +564,7 @@ class GetOldMessagesTest(ZulipTestCase):
             meeting_message['match_content'],
             '<p>I am hungry!</p>')
 
+    @skip("Fails nondeterministically")
     @override_settings(USING_PGROONGA=True)
     def test_get_old_messages_with_search_pgroonga(self):
         self.login("cordelia@zulip.com")
