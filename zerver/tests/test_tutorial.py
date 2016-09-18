@@ -80,4 +80,3 @@ class TutorialTests(ZulipTestCase):
             self.assert_json_success(result)
             user = get_user_profile_by_email(email)
             self.assertEqual(user.tutorial_status, expected_db_status)
-

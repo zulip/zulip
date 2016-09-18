@@ -22,4 +22,3 @@ except:
 p = pstats.Stats(fn)
 p.strip_dirs().sort_stats('cumulative').print_stats(25)
 p.strip_dirs().sort_stats('time').print_stats(25)
-

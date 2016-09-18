@@ -362,5 +362,3 @@ def api_pagerduty_webhook(request, user_profile, client,
 ```
 The `client` will be the result of `get_client("ZulipPagerDutyWebhook")`
 in this example.
-
-

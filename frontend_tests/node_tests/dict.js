@@ -171,5 +171,3 @@ set_global('blueslip', {});
     d.del('foo');
     assert.equal(d.num_items(), 1);
 }());
-
-

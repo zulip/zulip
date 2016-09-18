@@ -36,4 +36,3 @@ describe "the floor function" do
     result.should(eq(3))
   end
 end
-

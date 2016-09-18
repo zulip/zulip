@@ -61,4 +61,3 @@ def grep(fns, words):
     # type: (List[str], Set[str]) -> None
     grepper = Grepper(fns)
     grepper.grep(words)
-

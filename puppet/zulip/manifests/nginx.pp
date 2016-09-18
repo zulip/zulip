@@ -50,4 +50,3 @@ class zulip::nginx {
     ensure     => running,
   }
 }
-

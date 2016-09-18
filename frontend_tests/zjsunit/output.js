@@ -120,4 +120,3 @@ exports.append_test_output = function (output) {
 return exports;
 }());
 module.exports = output;
-

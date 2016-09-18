@@ -51,4 +51,3 @@ $(function () {
 
 return exports;
 }());
-

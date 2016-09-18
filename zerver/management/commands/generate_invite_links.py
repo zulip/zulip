@@ -63,4 +63,3 @@ class Command(BaseCommand):
                 prereg_user = PreregistrationUser(email=email)
             prereg_user.save()
             print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user))
-

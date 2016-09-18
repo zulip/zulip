@@ -121,4 +121,3 @@ for writing Casper tests in addition to the debugging notes below:
     between two `casper.then` blocks actually runs before either of
     them. See this for more details about how Casper works:
     <http://docs.casperjs.org/en/latest/faq.html#how-does-then-and-the-step-stack-work>
-
