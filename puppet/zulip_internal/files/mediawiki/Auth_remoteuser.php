@@ -429,4 +429,3 @@ class Auth_remoteuser extends AuthPlugin {
 		return ucfirst( $username );
 	}
 }
-

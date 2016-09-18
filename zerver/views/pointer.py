@@ -52,4 +52,3 @@ def get_profile_backend(request, user_profile):
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
-

@@ -110,4 +110,3 @@ if __name__ == "__main__":
             os.remove(lock_path)
         except OSError as IOError:
             pass
-

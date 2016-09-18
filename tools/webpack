@@ -36,4 +36,3 @@ if args.watch:
     run_watch(args.port)
 else:
     run()
-

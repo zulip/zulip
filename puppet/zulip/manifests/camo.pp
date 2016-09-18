@@ -16,5 +16,3 @@ class zulip::camo {
     content => template("zulip/camo_defaults.template.erb"),
   }
 }
-
-

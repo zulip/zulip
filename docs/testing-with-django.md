@@ -242,4 +242,3 @@ modules.  You can use the `--coverage` option to generate coverage
 reports, and new code should have 100% coverage, which generally requires
 testing not only the "happy path" but also error handling code and
 edge cases.
-

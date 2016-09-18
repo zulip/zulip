@@ -188,4 +188,3 @@ class ParserTestSadPath(unittest.TestCase):
             }'''
         error = 'Comments in selector section are not allowed'
         self._assert_error(my_css, error)
-

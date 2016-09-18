@@ -250,4 +250,3 @@ class UnreadCountTests(ZulipTestCase):
                                                            "topic_name": invalid_topic_name,
                                                            "stream_name": "Denmark"})
         self.assert_json_error(result, 'No such topic \'abc\'')
-
