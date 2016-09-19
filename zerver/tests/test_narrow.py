@@ -502,6 +502,19 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], "othello@zulip.com")
 
+    def _update_tsvector_index(self):
+        # type: () -> None
+        # We use brute force here and update our text search index
+        # for the entire zerver_message table (which is small in test
+        # mode).  In production there is an async process which keeps
+        # the search index up to date.
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            UPDATE zerver_message SET
+            search_tsvector = to_tsvector('zulip.english_us_search',
+            subject || rendered_content)
+            """)
+
     @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search(self):
         self.login("cordelia@zulip.com")
@@ -523,16 +536,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 subject=topic,
             )
 
-        # We use brute force here and update our text search index
-        # for the entire zerver_message table (which is small in test
-        # mode).  In production there is an async process which keeps
-        # the search index up to date.
-        with connection.cursor() as cursor:
-            cursor.execute("""
-            UPDATE zerver_message SET
-            search_tsvector = to_tsvector('zulip.english_us_search',
-            subject || rendered_content)
-            """)
+        self._update_tsvector_index()
 
         narrow = [
             dict(operator='sender', operand='cordelia@zulip.com'),
