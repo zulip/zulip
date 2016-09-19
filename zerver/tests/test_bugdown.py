@@ -566,6 +566,20 @@ class BugdownTest(TestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
 
+class BugdownApiTests(ZulipTestCase):
+    def test_render_message_api(self):
+        # type: () -> None
+        content = 'That is a **bold** statement'
+        result = self.client_get(
+            '/api/v1/messages/render',
+            dict(content=content),
+            **self.api_auth('othello@zulip.com')
+        )
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['rendered'],
+            u'<p>That is a <strong>bold</strong> statement</p>')
+
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
         # type: () -> None
