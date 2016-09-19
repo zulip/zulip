@@ -148,24 +148,37 @@ sudo apt-get install zulip-desktop
     </div>
 <script>
 $(function () {
-    if (navigator.appVersion.indexOf("Win") !== -1) {
-        $('#apps-tabs [href=#windows]').tab('show');
-    }
-    if (navigator.appVersion.indexOf("Mac") !== -1) {
-        $('#apps-tabs [href=#mac]').tab('show');
-    }
-    if (navigator.appVersion.indexOf("Linux") !== -1) {
-        $('#apps-tabs [href=#linux]').tab('show');
-    }
+    var nav_version = {
+        "Win": "#windows",
+        "Mac": "#mac",
+        "Linux": "#linux"
+    };
 
-    function updateHash () {
-        var hash = document.location.hash;
-        if (hash) {
-            $('#apps-tabs [href='+ hash +']').tab('show');
+    for (var x in nav_version) {
+        if (navigator.appVersion.indexOf(x) !== -1) {
+            $("#apps-tabs [href='" + nav_version[x] + "']").tab("show");
+            break;
         }
     }
-    window.onhashchange = updateHash;
-    updateHash();
+
+    $('#apps-tabs [data-toggle]').click(function () {
+        TabHash.set($(this).attr("href"));
+    });
+
+    var TabHash = {
+        set: function (name) {
+            window.location.hash = name;
+            this.get(name);
+        },
+        get: function (name) {
+            var hash = window.location.hash;
+            if (hash && hash !== name) {
+                $('#apps-tabs [href="' + hash + '"]').tab('show');
+            }
+        }
+    }
+
+    TabHash.get();
 });
 </script>
 {% endblock %}
