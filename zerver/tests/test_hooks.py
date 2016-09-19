@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_helpers import WebhookTestCase
 from zerver.lib.test_runner import slow
 from zerver.models import Message, Recipient
 
@@ -7,70 +7,6 @@ import ujson
 from six import text_type
 from six.moves import urllib
 from typing import Any, Dict, List, Optional, Union
-
-class WebhookTestCase(ZulipTestCase):
-    """
-    Common for all webhooks tests
-
-    Override below class attributes and run send_and_test_message
-    If you create your url in uncommon way you can override build_webhook_url method
-    In case that you need modify body or create it without using fixture you can also override get_body method
-    """
-    STREAM_NAME = None # type: Optional[text_type]
-    TEST_USER_EMAIL = 'webhook-bot@zulip.com'
-    URL_TEMPLATE = None # type: Optional[text_type]
-    FIXTURE_DIR_NAME = None # type: Optional[text_type]
-
-    def setUp(self):
-        # type: () -> None
-        self.url = self.build_webhook_url()
-
-    def send_and_test_stream_message(self, fixture_name, expected_subject=None,
-                                     expected_message=None, content_type="application/json", **kwargs):
-        # type: (text_type, Optional[text_type], Optional[text_type], Optional[text_type], **Any) -> Message
-        payload = self.get_body(fixture_name)
-        if content_type is not None:
-            kwargs['content_type'] = content_type
-        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
-                                     self.STREAM_NAME, **kwargs)
-        self.do_test_subject(msg, expected_subject)
-        self.do_test_message(msg, expected_message)
-
-        return msg
-
-    def send_and_test_private_message(self, fixture_name, expected_subject=None,
-                                      expected_message=None, content_type="application/json", **kwargs):
-        # type: (text_type, text_type, text_type, str, **Any) -> Message
-        payload = self.get_body(fixture_name)
-        if content_type is not None:
-            kwargs['content_type'] = content_type
-
-        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
-                                     stream_name=None, **kwargs)
-        self.do_test_message(msg, expected_message)
-
-        return msg
-
-    def build_webhook_url(self):
-        # type: () -> text_type
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
-        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
-
-    def get_body(self, fixture_name):
-        # type: (text_type) -> Union[text_type, Dict[str, text_type]]
-        """Can be implemented either as returning a dictionary containing the
-        post parameters or as string containing the body of the request."""
-        return ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
-
-    def do_test_subject(self, msg, expected_subject):
-        # type: (Message, Optional[text_type]) -> None
-        if expected_subject is not None:
-            self.assertEqual(msg.topic_name(), expected_subject)
-
-    def do_test_message(self, msg, expected_message):
-        # type: (Message, Optional[text_type]) -> None
-        if expected_message is not None:
-            self.assertEqual(msg.content, expected_message)
 
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'

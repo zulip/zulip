@@ -5,13 +5,11 @@ from django.test import TestCase
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse
 
-from zerver.tests.test_hooks import WebhookTestCase
-
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    ZulipTestCase
+    ZulipTestCase, WebhookTestCase
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
