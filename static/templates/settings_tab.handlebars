@@ -266,6 +266,18 @@
           </label>
         </div>
 
+        <div class="control-group">
+          <div class="controls">
+            <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
+                   {{#if page_params.enable_online_push_notifications}}
+                   checked="checked"
+                   {{/if}} />
+          </div>
+          <label for="enable_online_push_notifications" class="control-label">
+            {{t "Mobile push notifications when online" }}
+          </label>
+        </div>
+
         <div id="other_notifications">
         <h4>{{t "Other notifications" }}</h4>
 

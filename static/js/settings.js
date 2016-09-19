@@ -284,6 +284,10 @@ function _setup_page() {
             page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
         }
 
+        if (result.enable_online_push_notifications !== undefined) {
+            page_params.enable_online_push_notifications = result.enable_online_push_notifications;
+        }
+
         // Other notification settings.
 
         if (result.enable_digest_emails !== undefined) {
@@ -312,7 +316,8 @@ function _setup_page() {
         _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
                 "enable_desktop_notifications", "enable_sounds",
                 "enable_offline_email_notifications",
-                "enable_offline_push_notifications", "enable_digest_emails"],
+                "enable_offline_push_notifications", "enable_online_push_notifications",
+                "enable_digest_emails"],
                function (setting) {
                    updated_settings[setting] = $("#" + setting).is(":checked");
                });

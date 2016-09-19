@@ -23,7 +23,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_users
+    get_old_unclaimed_attachments, get_cross_realm_users, receives_online_notifications
 
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
@@ -2019,6 +2019,18 @@ def do_change_enable_offline_push_notifications(user_profile, offline_push_notif
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_change_enable_online_push_notifications(user_profile, online_push_notifications, log=True):
+    # type: (UserProfile, bool, bool) -> None
+    user_profile.enable_online_push_notifications = online_push_notifications
+    user_profile.save(update_fields=["enable_online_push_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'online_push_notifications',
+             'setting': online_push_notifications}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 def do_change_enable_digest_emails(user_profile, enable_digest_emails, log=True):
     # type: (UserProfile, bool, bool) -> None
     user_profile.enable_digest_emails = enable_digest_emails
@@ -3057,7 +3069,7 @@ def handle_push_notification(user_profile_id, missed_message):
     # type: (int, Dict[str, Any]) -> None
     try:
         user_profile = get_user_profile_by_id(user_profile_id)
-        if not receives_offline_notifications(user_profile):
+        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
             return
 
         umessage = UserMessage.objects.get(user_profile=user_profile,
