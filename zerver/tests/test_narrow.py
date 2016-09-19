@@ -9,7 +9,7 @@ from sqlalchemy.sql import (
 )
 
 from zerver.models import (
-    Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
+    Message, Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
@@ -564,7 +564,108 @@ class GetOldMessagesTest(ZulipTestCase):
             '<p>I am hungry!</p>')
 
     @override_settings(USING_PGROONGA=True)
-    def test_get_old_messages_with_search_pgroonga(self):
+    def test_get_old_messages_with_search_pgroonga1(self):
+        self._flaky_test()
+    @override_settings(USING_PGROONGA=True)
+    def test_get_old_messages_with_search_pgroonga2(self):
+        self._flaky_test()
+    @override_settings(USING_PGROONGA=True)
+    def test_get_old_messages_with_search_pgroonga3(self):
+        self._flaky_test()
+    @override_settings(USING_PGROONGA=True)
+    def test_get_old_messages_with_search_pgroonga4(self):
+        self._flaky_test()
+    @override_settings(USING_PGROONGA=True)
+    def test_get_old_messages_with_search_pgroonga5(self):
+        self._flaky_test()
+
+
+    @override_settings(USING_PGROONGA=True)
+    def test_flake(self):
+        self.login("cordelia@zulip.com")
+
+        def add_messages(i):
+            messages_to_search = [
+                (u'日本語', u'こんにちは。今日はいい天気ですね。'),
+                (u'日本 語', u'今朝はごはんを食べました。'),
+                (u'日本', u'昨日、日本のお菓子を送りました。'),
+                (u'日本', u'english'),
+                ('english', u'I want to go to 日本!'),
+                ('english', u'You want to go to 日本!'),
+                ('english', u'They want to go to 日本!'),
+                ('english', 'Can you speak Japanese?'),
+                ('english', 'Hello world'),
+                ('english', 'Hello mars'),
+                ('english', 'Hello jupiter'),
+                ('english', 'Hello saturn'),
+                ('english', 'Hello neptune'),
+                ('english', 'Hello uranus'),
+                ('english', 'Hello pluto'),
+                ('english', 'Oh wait pluto is not a planet'),
+            ]
+
+            for topic, content in messages_to_search:
+                self.send_message(
+                    sender_name="cordelia@zulip.com",
+                    raw_recipients="Verona",
+                    message_type=Recipient.STREAM,
+                    content=content + ' ' + str(i),
+                    subject=topic + ' ' + str(i),
+                )
+
+        def search(num_after=999):
+            narrow = [
+                dict(operator='search', operand=u'日本'),
+            ]
+            result = self.get_and_check_messages(dict(
+                narrow=ujson.dumps(narrow),
+                anchor=0,
+                num_after=num_after,
+            ))
+            return result
+
+        result = search()
+        self.assertEqual(len(result['messages']), 0)
+
+        def update_search_index():
+            # We use brute force here and update our text search index
+            # for the entire zerver_message table (which is small in test
+            # mode).  In production there is an async process which keeps
+            # the search index up to date.
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE zerver_message SET
+                    search_pgroonga = subject || ' ' || rendered_content
+                    """)
+
+        for i in range(1, 501):
+            add_messages(i)
+            update_search_index()
+            with queries_captured() as queries:
+                result = search()
+            num_expected = 7 * i
+            print('\n\n\n--------------------------------\n')
+            print('TABLE:')
+            with connection.cursor() as cursor:
+                cursor.execute('''
+                    select id, search_pgroonga from zerver_message
+                    order by id asc''')
+                for row in cursor.fetchall():
+                    print(row[0], row[1])
+            print()
+            print('QUERIES')
+            for query in queries:
+                print(query)
+            print()
+            print('RESULTS:')
+            for row in result['messages']:
+                print(row['id'], row['subject'], row['match_content'])
+            print('compare:', len(result['messages']), num_expected)
+            print()
+
+            self.assertEqual(len(result['messages']), num_expected)
+
+    def _flaky_test(self):
         self.login("cordelia@zulip.com")
 
         messages_to_search = [
@@ -584,25 +685,53 @@ class GetOldMessagesTest(ZulipTestCase):
                 subject=topic,
             )
 
-        # We use brute force here and update our text search index
-        # for the entire zerver_message table (which is small in test
-        # mode).  In production there is an async process which keeps
-        # the search index up to date.
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                UPDATE zerver_message SET
-                search_pgroonga = subject || ' ' || rendered_content
-                """)
+        def search(num_after=10):
+            narrow = [
+                dict(operator='search', operand=u'日本'),
+            ]
+            result = self.get_and_check_messages(dict(
+                narrow=ujson.dumps(narrow),
+                anchor=0,
+                num_after=num_after,
+            ))
+            return result
 
-        narrow = [
-            dict(operator='search', operand=u'日本'),
-        ]
-        result = self.get_and_check_messages(dict(
-            narrow=ujson.dumps(narrow),
-            anchor=0,
-            num_after=10,
-        ))
-        self.assertEqual(len(result['messages']), 4)
+        result = search()
+        self.assertEqual(len(result['messages']), 0)
+
+        self.assertEqual(len(Message.objects.filter(subject=u'日本語')), 3)
+
+        def update_search_index():
+            # We use brute force here and update our text search index
+            # for the entire zerver_message table (which is small in test
+            # mode).  In production there is an async process which keeps
+            # the search index up to date.
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE zerver_message SET
+                    search_pgroonga = subject || ' ' || rendered_content
+                    """)
+
+        update_search_index()
+        result = search()
+        if len(result['messages']) != 4:
+            # Try search again 3 more times...
+            for i in range(3):
+                import time; time.sleep(0.1)
+                print('\nretry..')
+                num_after = 10 + i * 20
+                update_search_index()
+                result = search(num_after=num_after)
+                print(len(result['messages']), num_after)
+                with connection.cursor() as cursor:
+                    cursor.execute('''
+                        select id, search_pgroonga from zerver_message
+                        order by id asc''')
+                    for i, row in enumerate(cursor.fetchall()):
+                        print(row[0], row[1])
+                print()
+            self.fail('Initial query did not return 4 results!!!!!')
+
         messages = result['messages']
 
         japanese_message = [m for m in messages if m['subject'] == u'日本語'][-1]
