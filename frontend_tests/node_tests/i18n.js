@@ -75,6 +75,7 @@ function render(template_name, args) {
             "sounds_enabled": false,
             "enable_offline_email_notifications": false,
             "enable_offline_push_notifications": false,
+            "enable_online_push_notifications": false,
             "enable_digest_emails": false,
             "domain": "zulip.com",
             "autoscroll_forever": false,

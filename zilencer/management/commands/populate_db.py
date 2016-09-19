@@ -618,6 +618,12 @@ def restore_saved_messages():
                 old_message["enable_offline_push_notifications"] != "false")
             user_profile.save(update_fields=["enable_offline_push_notifications"])
             continue
+        elif message_type == "enable_online_push_notifications_changed":
+            user_profile = users[old_message["user"]]
+            user_profile.enable_online_push_notifications_changed = (
+                old_message["enable_online_push_notifications_changed"] != "false")
+            user_profile.save(update_fields=["enable_online_push_notifications_changed"])
+            continue
         elif message_type == "default_streams":
             set_default_streams(get_realm(old_message["domain"]),
                                 old_message["streams"])

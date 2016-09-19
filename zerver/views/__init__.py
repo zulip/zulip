@@ -569,6 +569,8 @@ def home(request):
             user_profile.enable_offline_email_notifications,
         enable_offline_push_notifications =
             user_profile.enable_offline_push_notifications,
+        enable_online_push_notifications =
+            user_profile.enable_online_push_notifications,
         twenty_four_hour_time = register_ret['twenty_four_hour_time'],
 
         enable_digest_emails  = user_profile.enable_digest_emails,

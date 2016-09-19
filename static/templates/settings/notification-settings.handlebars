@@ -85,6 +85,17 @@
           {{t "Mobile push notifications when offline" }}
         </label>
       </div>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_online_push_notifications" id="enable_online_push_notifications"
+               {{#if page_params.enable_online_push_notifications}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_online_push_notifications" class="inline-block">
+          {{t "Mobile push notifications always (even when online)" }}
+        </label>
+      </div>
+
     </div>
 
     <div id="other_notifications">

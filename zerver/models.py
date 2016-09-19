@@ -446,6 +446,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     enable_sounds = models.BooleanField(default=True) # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True) # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True) # type: bool
+    enable_online_push_notifications = models.BooleanField(default=False) # type: bool
 
     enable_digest_emails = models.BooleanField(default=True) # type: bool
 
@@ -554,6 +555,11 @@ def receives_offline_notifications(user_profile):
     # type: (UserProfile) -> bool
     return ((user_profile.enable_offline_email_notifications or
              user_profile.enable_offline_push_notifications) and
+            not user_profile.is_bot)
+
+def receives_online_notifications(user_profile):
+    # type: (UserProfile) -> bool
+    return (user_profile.enable_online_push_notifications and
             not user_profile.is_bot)
 
 # Make sure we flush the UserProfile object from our remote cache
