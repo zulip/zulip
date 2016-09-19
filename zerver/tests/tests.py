@@ -16,7 +16,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
-    Realm, UserActivity, \
+    Realm, RealmAlias, UserActivity, \
     get_user_profile_by_email, get_realm, \
     get_client, get_stream, Message, get_unique_open_realm, \
     completely_open
@@ -441,9 +441,11 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assert_json_error(result,
             "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
 
+        RealmAlias.objects.create(realm=get_realm('zulip.com'), domain='zulip.net')
+
         # HAPPY PATH STARTS HERE
         valid_params = dict(
-            email='romeo@zulip.com',
+            email='romeo@zulip.net',
             password='xxxx',
             full_name='Romeo Montague',
             short_name='Romeo',
@@ -451,7 +453,7 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_put("/json/users", valid_params)
         self.assert_json_success(result)
 
-        new_user = get_user_profile_by_email('romeo@zulip.com')
+        new_user = get_user_profile_by_email('romeo@zulip.net')
         self.assertEqual(new_user.full_name, 'Romeo Montague')
         self.assertEqual(new_user.short_name, 'Romeo')
 
@@ -459,7 +461,7 @@ class AdminCreateUserTest(ZulipTestCase):
         # the same user twice.
         result = self.client_put("/json/users", valid_params)
         self.assert_json_error(result,
-            "Email 'romeo@zulip.com' already in use")
+            "Email 'romeo@zulip.net' already in use")
 
 class WorkerTest(TestCase):
     class FakeClient(object):
