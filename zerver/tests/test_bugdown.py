@@ -383,8 +383,17 @@ class BugdownTest(TestCase):
 
     def test_realm_patterns(self):
         realm = get_realm('zulip.com')
-        RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
-                    url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            str(realm_filter),
+            '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+
+
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")
 
