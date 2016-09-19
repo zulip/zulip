@@ -801,6 +801,24 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.check_message(msg_id, subject="edited")
 
+    def test_fetch_raw_message(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="**before** edit")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEquals(data['raw_content'], '**before** edit')
+
+        # Test error cases
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=999999))
+        self.assert_json_error(result, 'No such message')
+
+        self.login("cordelia@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Message was not sent by you')
+
     def test_edit_message_no_changes(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
