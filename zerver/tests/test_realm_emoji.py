@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from zerver.lib.actions import get_realm, check_add_realm_emoji
 from zerver.lib.test_helpers import ZulipTestCase
+from zerver.models import RealmEmoji
 import ujson
 
 class RealmEmojiTest(ZulipTestCase):
@@ -30,6 +31,12 @@ class RealmEmojiTest(ZulipTestCase):
         content = ujson.loads(result.content)
         self.assert_json_success(result)
         self.assertEqual(len(content["emoji"]), 1)
+
+        realm_emoji = RealmEmoji.objects.get(realm=get_realm('zulip.com'))
+        self.assertEqual(
+            str(realm_emoji),
+            '<RealmEmoji(zulip.com): my_emoji https://example.com/my_emoji>'
+        )
 
     def test_upload_exception(self):
         # type: () -> None
