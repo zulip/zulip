@@ -75,8 +75,6 @@ TERMS_OF_SERVICE = 'corporate/terms.md'
 # TOS_VERSION = '1.0'
 # FIRST_TIME_TOS_TEMPLATE = 'zulipchat_migration_tos.html'
 
-# Legacy zulip.com bucket used for old-style S3 uploads.
-S3_BUCKET="humbug-user-uploads"
 # Buckets used for Amazon S3 integration for storing files and user avatars.
 S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
 S3_AVATAR_BUCKET="humbug-user-avatars"
