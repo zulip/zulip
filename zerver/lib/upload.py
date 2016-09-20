@@ -80,9 +80,8 @@ def random_name(bytes=60):
 class BadImageError(JsonableError):
     pass
 
-def resize_avatar(image_data):
-    # type: (binary_type) -> binary_type
-    AVATAR_SIZE = 100
+def resize_avatar(image_data, AVATAR_SIZE=100):
+    # type: (binary_type, int) -> binary_type
     try:
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
@@ -227,6 +226,16 @@ class S3UploadBackend(ZulipUploadBackend):
             image_data,
         )
 
+        # custom 500px wide version
+        resized_medium = resize_avatar(image_data, 500)
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name + "-medium.png",
+            "image/png",
+            user_profile,
+            resized_medium
+        )
+
         resized_data = resize_avatar(image_data)
         upload_image_to_s3(
             bucket_name,
@@ -297,6 +306,9 @@ class LocalUploadBackend(ZulipUploadBackend):
 
         resized_data = resize_avatar(image_data)
         write_local_file('avatars', email_hash+'.png', resized_data)
+
+        resized_medium = resize_avatar(image_data, 500)
+        write_local_file('avatars', email_hash+'-medium.png', resized_medium)
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:
