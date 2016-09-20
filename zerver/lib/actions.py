@@ -898,7 +898,7 @@ def extract_recipients(s):
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
-        data = ujson.loads(s)
+        data = ujson.loads(s) # type: ignore # This function has a super weird union argument.
     except ValueError:
         data = s
 
