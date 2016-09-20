@@ -588,6 +588,7 @@ def home(request):
         autoscroll_forever = user_profile.autoscroll_forever,
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
+        avatar_url_medium     = avatar_url(user_profile, medium=True),
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
         presence_disabled     = user_profile.realm.presence_disabled,

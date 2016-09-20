@@ -421,6 +421,20 @@ class AvatarTest(ZulipTestCase):
                 data = b"".join(response.streaming_content)
                 self.assertEquals(rfp.read(), data)
 
+            # Verify that the medium-size avatar was created
+            user_profile = get_user_profile_by_email('hamlet@zulip.com')
+            medium_avatar_url = avatar_url(user_profile, medium=True)
+            medium_avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                                   medium_avatar_url.split("/")[-1].split("?")[0])
+            self.assertTrue(os.path.exists(medium_avatar_disk_path))
+
+            # Confirm that ensure_medium_avatar_url works to recreate
+            # medium size avatars from the original if needed
+            os.remove(medium_avatar_disk_path)
+            self.assertFalse(os.path.exists(medium_avatar_disk_path))
+            zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile.email)
+            self.assertTrue(os.path.exists(medium_avatar_disk_path))
+
     def test_invalid_avatars(self):
         # type: () -> None
         """
