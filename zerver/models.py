@@ -713,10 +713,6 @@ def get_stream(stream_name, realm):
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[text_type, Any]
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
 
     def fetch_streams_by_name(stream_names):
         # type: (List[text_type]) -> Sequence[Stream]
@@ -732,7 +728,7 @@ def bulk_get_streams(realm, stream_names):
             return []
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
-        return get_active_streams(realm_id).select_related("realm").extra(
+        return get_active_streams(realm.id).select_related("realm").extra(
             where=[where_clause],
             params=stream_names)
 
