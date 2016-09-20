@@ -727,6 +727,12 @@ JS_SPECS = {
             ),
         'output_filename':  'min/common.js'
     },
+    'portico': {
+        'source_filenames' : (
+            'js/portico_nav.js',
+        ),
+        'output_filename': 'min/portico.js'
+    },
     'signup': {
         'source_filenames': (
             'js/signup.js',
