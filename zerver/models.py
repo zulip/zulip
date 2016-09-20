@@ -708,9 +708,8 @@ def get_active_streams(realm):
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
 
-# get_stream takes either a realm id or a realm
 def get_stream(stream_name, realm):
-    # type: (text_type, Union[int, Realm]) -> Optional[Stream]
+    # type: (text_type, Realm) -> Optional[Stream]
     try:
         return get_stream_backend(stream_name, realm)
     except Stream.DoesNotExist:
