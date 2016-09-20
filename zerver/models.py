@@ -759,11 +759,6 @@ def bulk_get_recipients(type, type_ids):
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
 
-# NB: This function is currently unused, but may come in handy.
-def linebreak(string):
-    # type: (text_type) -> text_type
-    return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
-
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
     return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
