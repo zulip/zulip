@@ -55,8 +55,8 @@
           <input type="submit" class="button green" name="change_settings" value="Save Changes" />
         </div>
 
-        <div class="input-group">
-          <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
+        <div class="user-avatar-section">
+          <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
           <div id="user_avatar_file_input_error" class="text-error"></div>
           <div id="user_avatar_file"></div>
           <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
