@@ -694,12 +694,8 @@ def get_client_remote_cache(name):
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_stream_backend(stream_name, realm):
     # type: (text_type, Realm) -> Stream
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
     return Stream.objects.select_related("realm").get(
-        name__iexact=stream_name.strip(), realm_id=realm_id)
+        name__iexact=stream_name.strip(), realm_id=realm.id)
 
 def get_active_streams(realm):
     # type: (Realm) -> QuerySet
