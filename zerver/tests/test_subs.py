@@ -77,6 +77,18 @@ class TestCreateStreams(ZulipTestCase):
         actual_stream_names = {stream.name for stream in existing_streams}
         self.assertEqual(actual_stream_names, set(stream_names))
 
+class RecipientTest(ZulipTestCase):
+    def test_recipient(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        stream = get_stream('Verona', realm)
+        recipient = Recipient.objects.get(
+            type_id=stream.id,
+            type=Recipient.STREAM,
+        )
+        self.assertEqual(str(recipient), '<Recipient: Verona (%d, %d)>' % (
+            stream.id, Recipient.STREAM))
+
 class StreamAdminTest(ZulipTestCase):
     def test_make_stream_public(self):
         # type: () -> None
