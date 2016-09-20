@@ -250,8 +250,7 @@ exports.trim = function (str) {
 // Call get_rendered_messages and then check that the last few headings and
 // bodies match the specified arrays.
 exports.expected_messages = function (table, headings, bodies) {
-    casper.test.assertVisible('#'+table,
-        table + ' is visible');
+    casper.test.assertVisible('#'+table, table + ' is visible');
 
     var msg = exports.get_rendered_messages(table);
 
