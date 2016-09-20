@@ -11,7 +11,7 @@ from django.test import TestCase, override_settings
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
     simulated_queue_client, tornado_redirected_to_list, ZulipTestCase,
-    most_recent_message
+    most_recent_message, make_client
 )
 from zerver.lib.test_runner import slow
 
@@ -88,6 +88,16 @@ class SlowQueryTest(TestCase):
         self.assertFalse(is_slow_query(2, '/user_activity/whatever'))
         self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
         self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
+
+class ModelTest(TestCase):
+    def test_miscellaneous_things(self):
+        # type: () -> None
+        '''
+        This is a kitchen sink test that is designed simply to get
+        test coverage up to 100% for models.py.
+        '''
+        client = make_client('some_client')
+        self.assertEqual(str(client), u'<Client: some_client>')
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, email, new_realm_name):
