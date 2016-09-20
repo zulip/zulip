@@ -611,6 +611,8 @@ def initial_invite_page(request):
 
     if (user.realm.restricted_to_domain):
         params['invite_suffix'] = user.realm.domain
+    else:
+        params['invite_suffix'] = ''
 
     return render_to_response('zerver/initial_invite_page.html', params,
                               request=request)
