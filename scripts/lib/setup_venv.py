@@ -93,6 +93,9 @@ def try_to_copy_venv(venv_path, new_packages):
         virtualenv-clone.
         3. Delete all .pyc files in the new virtual environment.
     """
+    if not os.path.exists(VENV_CACHE_PATH):
+        return False
+
     venv_name = os.path.basename(venv_path)
 
     overlaps = []  # type: List[Tuple[int, str, Set[str]]]
