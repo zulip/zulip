@@ -129,7 +129,7 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs"]
+extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs", "--scripts-are-modules"]
 if py_version == 2:
     extra_args.append("--py2")
 if args.linecoverage_report:
@@ -142,10 +142,7 @@ if args.disallow_untyped_defs:
 # run mypy
 if python_files:
     if args.scripts_only:
-        rc = 0
-        for fpath in python_files:
-            print("Checking", fpath)
-            rc = subprocess.call([mypy_command] + extra_args + [fpath]) or rc
+        rc = subprocess.call([mypy_command] + extra_args + python_files)
     else:
         rc = subprocess.call([mypy_command] + extra_args + python_files)
         if args.linecoverage_report:
