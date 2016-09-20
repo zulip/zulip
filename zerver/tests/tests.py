@@ -1762,6 +1762,7 @@ class HomeTest(ZulipTestCase):
             "alert_words",
             "autoscroll_forever",
             "avatar_url",
+            "avatar_url_medium",
             "bot_list",
             "can_create_streams",
             "cross_realm_user_emails",

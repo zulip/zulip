@@ -1,7 +1,12 @@
 from __future__ import absolute_import
 from django.conf import settings
 
+import os
 import hashlib
+import os
+
+from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
+
 from zerver.lib.utils import make_safe_digest
 if False:
     from zerver.models import UserProfile
@@ -27,25 +32,39 @@ def user_avatar_hash(email):
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 
-def avatar_url(user_profile):
-    # type: (UserProfile) -> text_type
+def avatar_url(user_profile, medium=False):
+    # type: (UserProfile, bool) -> text_type
     return get_avatar_url(
             user_profile.avatar_source,
-            user_profile.email
+            user_profile.email,
+            medium
     )
 
-def get_avatar_url(avatar_source, email):
-    # type: (text_type, text_type) -> text_type
+def get_avatar_url(avatar_source, email, medium=False):
+    # type: (text_type, text_type, bool) -> text_type
+
+    gravitar_query_suffix = "&s=500" if medium else ""
+    medium_suffix = "-medium" if medium else ""
+
     if avatar_source == u'U':
         hash_key = user_avatar_hash(email)
+
         if settings.LOCAL_UPLOADS_DIR is not None:
             # ?x=x allows templates to append additional parameters with &s
-            return u"/user_avatars/%s.png?x=x" % (hash_key)
+            url = u"/user_avatars/%s%s.png" % (hash_key, "-medium")
+            if not os.path.isfile(url):
+                if settings.LOCAL_UPLOADS_DIR is not None:
+                    upload_backend = LocalUploadBackend()
+                else:
+                    upload_backend = S3UploadBackend()
+
+                upload_backend.upload_medium_avatar_image(email)
+            return u"/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
         else:
             bucket = settings.S3_AVATAR_BUCKET
-            return u"https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
+            return u"https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, hash_key, medium_suffix)
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(email)
-        return u"https://secure.gravatar.com/avatar/%s?d=identicon" % (hash_key,)
+        return u"https://secure.gravatar.com/avatar/%s?d=identicon%s" % (hash_key, gravitar_query_suffix)
     else:
         return settings.DEFAULT_AVATAR_URI+'?x=x'

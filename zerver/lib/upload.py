@@ -149,6 +149,8 @@ def get_file_info(request, user_file):
     # type: (HttpRequest, File) -> Tuple[text_type, Optional[text_type]]
 
     uploaded_file_name = user_file.name
+    assert isinstance(uploaded_file_name, str)
+
     content_type = request.GET.get('mimetype')
     if content_type is None:
         guessed_type = guess_type(uploaded_file_name)[0]
