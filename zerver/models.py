@@ -607,16 +607,6 @@ class Stream(ModelReprMixin, models.Model):
     class Meta(object):
         unique_together = ("name", "realm")
 
-    @classmethod
-    def create(cls, name, realm):
-        # type: (Any, text_type, Realm) -> Tuple[Stream, Recipient]
-        stream = cls(name=name, realm=realm)
-        stream.save()
-
-        recipient = Recipient.objects.create(type_id=stream.id,
-                                             type=Recipient.STREAM)
-        return (stream, recipient)
-
     def num_subscribers(self):
         # type: () -> int
         return Subscription.objects.filter(
