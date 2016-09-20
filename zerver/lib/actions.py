@@ -68,7 +68,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
-from zerver.lib.str_utils import NonBinaryStr
+from zerver.lib.str_utils import NonBinaryStr, force_str
 
 import DNS
 import ujson
@@ -113,7 +113,7 @@ def log_event(event):
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
-            log.write(ujson.dumps(event) + u'\n')
+            log.write(force_str(ujson.dumps(event) + u'\n'))
 
 def active_user_ids(realm):
     # type: (Realm) -> List[int]
