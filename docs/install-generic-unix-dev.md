@@ -293,12 +293,9 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ./manage.py compilemessages
+sudo ./tools/setup/install-node
 npm install
 ```
-
-If `npm install` fails, the issue may be that you need a newer version
-of `npm`.  You can use `npm install -g npm` to update your version of
-`npm` and try again.
 
 To start the development server:
 
