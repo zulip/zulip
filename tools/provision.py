@@ -15,6 +15,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
+from scripts.lib.node_cache import setup_node_modules
 
 
 SUPPORTED_PLATFORMS = {
@@ -177,7 +178,7 @@ def main():
     else:
         run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
-    run(["tools/install-nvm"])
+    run(["tools/setup/install-nvm"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
     if TRAVIS and not PRODUCTION_TRAVIS:
@@ -198,6 +199,11 @@ def main():
         run(["tools/setup/postgres-init-test-db"])
         run(["tools/do-destroy-rebuild-test-database"])
         run(["python", "./manage.py", "compilemessages"])
+    try:
+        setup_node_modules()
+    except subprocess.CalledProcessError:
+        print(WARNING + "`npm install` failed; retrying..." + ENDC)
+        setup_node_modules()
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
