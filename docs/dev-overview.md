@@ -14,7 +14,6 @@ development environment:
 #### 
 * [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html).  Recommended for first-time contributors.
 * [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html)
- 
 * [Using Docker (experimental)](install-docker-dev.html)
  
 
