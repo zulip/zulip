@@ -15,7 +15,6 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
-from scripts.lib.node_cache import setup_node_modules
 
 
 SUPPORTED_PLATFORMS = {
@@ -25,10 +24,8 @@ SUPPORTED_PLATFORMS = {
     ],
 }
 
-NPM_VERSION = '3.9.3'
 PY2_VENV_PATH = "/srv/zulip-venv"
 PY3_VENV_PATH = "/srv/zulip-py3-venv"
-TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
 UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
@@ -85,7 +82,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "nodejs-legacy",
     "supervisor",
     "git",
-    "npm",
     "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
@@ -120,30 +116,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-def install_npm():
-    # type: () -> None
-    if not TRAVIS:
-        if subprocess_text_output(['npm', '--version']) != NPM_VERSION:
-            run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
-
-        return
-
-    run(['mkdir', '-p', TRAVIS_NODE_PATH])
-
-    npm_exe = os.path.join(TRAVIS_NODE_PATH, 'bin', 'npm')
-    travis_npm = subprocess_text_output(['which', 'npm'])
-    if os.path.exists(npm_exe):
-        run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
-
-    version = subprocess_text_output(['npm', '--version'])
-    if os.path.exists(npm_exe) and version == NPM_VERSION:
-        print("Using cached npm")
-        return
-
-    run(["npm", "install", "-g", "--prefix", TRAVIS_NODE_PATH, "npm@{}".format(NPM_VERSION)])
-    run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
-
-
 def main():
     # type: () -> int
 
@@ -154,6 +126,7 @@ def main():
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     # Add groonga repository to get the pgroonga packages
     run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+    run(["sudo", "apt-get", "install", "-y", "build-essential", "libssl-dev"])
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
@@ -204,6 +177,7 @@ def main():
     else:
         run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
+    run(["tools/install-nvm"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
     if TRAVIS and not PRODUCTION_TRAVIS:
@@ -224,15 +198,6 @@ def main():
         run(["tools/setup/postgres-init-test-db"])
         run(["tools/do-destroy-rebuild-test-database"])
         run(["python", "./manage.py", "compilemessages"])
-    # Install the pinned version of npm.
-    install_npm()
-    # Run npm install last because it can be flaky, and that way one
-    # only needs to rerun `npm install` to fix the installation.
-    try:
-        setup_node_modules()
-    except subprocess.CalledProcessError:
-        print(WARNING + "`npm install` failed; retrying..." + ENDC)
-        setup_node_modules()
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
