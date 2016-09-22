@@ -65,6 +65,14 @@ class TestEmailMirrorLibrary(ZulipTestCase):
         with self.assertRaises(ZulipEmailForwardError):
             get_token(address)
 
+        # Now test the case where we our address does not match the
+        # EMAIL_GATEWAY_PATTERN.
+        # This used to crash in an ugly way; we want to throw a proper
+        # exception.
+        address = 'alice@not-the-domain-we-were-expecting.com'
+        with self.assertRaises(ZulipEmailForwardError):
+            get_token(address)
+
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self):
 
