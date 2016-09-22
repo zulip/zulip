@@ -143,11 +143,11 @@ def get_repository_homepage(payload):
 
 def get_branch_name(payload):
     # type: (Dict[str, Any]) -> text_type
-    return payload['ref'].lstrip('refs/heads/')
+    return payload['ref'].replace('refs/heads/', '')
 
 def get_tag_name(payload):
     # type: (Dict[str, Any]) -> text_type
-    return payload['ref'].lstrip('refs/tags/')
+    return payload['ref'].replace('refs/tags/', '')
 
 def get_object_iid(payload):
     # type: (Dict[str, Any]) -> text_type
