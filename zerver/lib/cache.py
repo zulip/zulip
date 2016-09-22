@@ -213,12 +213,15 @@ def cache_delete_many(items, cache_name=None):
 ObjKT = TypeVar('ObjKT', int, text_type)
 ItemT = Any # https://github.com/python/mypy/issues/1721
 CompressedItemT = Any # https://github.com/python/mypy/issues/1721
-def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
-                              extractor=lambda obj: obj,
-                              setter=lambda obj: obj,
-                              id_fetcher=lambda obj: obj.id,
-                              cache_transformer=lambda obj: obj):
-    # type: (Callable[[ObjKT], text_type], Callable[[List[ObjKT]], Iterable[Any]], Iterable[ObjKT], Callable[[CompressedItemT], ItemT], Callable[[ItemT], CompressedItemT], Callable[[Any], ObjKT], Callable[[Any], ItemT]) -> Dict[ObjKT, Any]
+def generic_bulk_cached_fetch(cache_key_function, # type: Callable[[ObjKT], text_type]
+                              query_function, # type: Callable[[List[ObjKT]], Iterable[Any]]
+                              object_ids, # type: Iterable[ObjKT]
+                              extractor=lambda obj: obj, # type: Callable[[CompressedItemT], ItemT]
+                              setter=lambda obj: obj, # type: Callable[[ItemT], CompressedItemT]
+                              id_fetcher=lambda obj: obj.id, # type: Callable[[Any], ObjKT]
+                              cache_transformer=lambda obj: obj # type: Callable[[Any], ItemT]
+                              ):
+    # type: (...) -> Dict[ObjKT, Any]
     cache_keys = {} # type: Dict[ObjKT, text_type]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
