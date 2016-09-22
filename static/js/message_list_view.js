@@ -510,7 +510,7 @@ MessageListView.prototype = {
             // If user narrows to a stream, doesn't update
             // trailing bookend if user is subscribed.
             var sub = stream_data.get_sub(stream_name);
-            if (!sub.subscribed) {
+            if (sub === undefined || !sub.subscribed) {
                 list.update_trailing_bookend();
             }
         }

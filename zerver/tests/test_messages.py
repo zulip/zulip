@@ -801,6 +801,24 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.check_message(msg_id, subject="edited")
 
+    def test_fetch_raw_message(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="**before** edit")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEquals(data['raw_content'], '**before** edit')
+
+        # Test error cases
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=999999))
+        self.assert_json_error(result, 'No such message')
+
+        self.login("cordelia@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Message was not sent by you')
+
     def test_edit_message_no_changes(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
@@ -1198,8 +1216,6 @@ class AttachmentTest(ZulipTestCase):
         self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
         self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
         self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo'))
-        self.assertTrue(Message.content_has_attachment('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
-        self.assertTrue(Message.content_has_attachment('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
         self.assertFalse(Message.content_has_image('whatever'))
         self.assertFalse(Message.content_has_image('yo http://foo.com'))
@@ -1207,15 +1223,11 @@ class AttachmentTest(ZulipTestCase):
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
             content = 'yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (ext,)
             self.assertTrue(Message.content_has_image(content))
-        self.assertTrue(Message.content_has_image('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
-        self.assertTrue(Message.content_has_image('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
         self.assertFalse(Message.content_has_link('whatever'))
         self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
         self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
         self.assertTrue(Message.content_has_link('yo /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
-        self.assertTrue(Message.content_has_link('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
-        self.assertTrue(Message.content_has_link('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
     def test_claim_attachment(self):
         # type: () -> None

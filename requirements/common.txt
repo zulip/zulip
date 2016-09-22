@@ -10,7 +10,7 @@ Markdown==2.1.1
 MarkupSafe==0.23
 
 # Needed for Image Processing
-Pillow==3.3.0
+Pillow==3.3.1
 
 # Needed for markdown processing
 Pygments==2.1.3
@@ -24,7 +24,7 @@ backports-abc==0.4
 # Needed for S3 file uploads
 boto==2.42.0
 
-certifi==2016.8.8
+certifi==2016.8.31
 chardet==2.3.0
 
 # Needed for integrations
@@ -58,7 +58,7 @@ gcm-client==0.1.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.4.0
+google-api-python-client==1.5.3
 
 # Needed for the email mirror
 html2text==2016.5.29
@@ -102,7 +102,7 @@ pytz==2016.6.1
 redis==2.10.5
 
 # Dependencies of our API
-requests==2.11.0
+requests==2.11.1
 
 requests_oauthlib==0.6.2
 rsa==3.4.2
@@ -138,7 +138,7 @@ ujson==1.35
 uritemplate==0.6
 
 # Django extension for static asset pipeline
-django-pipeline==1.6.8
+django-pipeline==1.6.9
 
 # Needed for iOS push notifications
 git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
@@ -156,3 +156,6 @@ polib==1.0.7
 # We're using this version from git to ensure compatibility with
 # Jinja2==2.8 (see https://github.com/jorgebastida/glue/pull/211).
 git+https://github.com/lorenzogil/glue@01c00cd33b9b78ea868300c266c16acd59a81bfc#egg=glue==0.11.1
+
+# Needed for cloning virtual environments
+git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6

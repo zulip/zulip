@@ -21,6 +21,7 @@ from six.moves import urllib
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from six.moves import StringIO
+import mock
 import os
 import shutil
 import re
@@ -71,6 +72,21 @@ class FileUploadTest(ZulipTestCase):
         data = b"".join(response.streaming_content)
         self.assertEquals(b"zulip!", data)
 
+    def test_file_too_big_failure(self):
+        # type: () -> None
+        """
+        Attempting to upload big files should fail.
+        """
+        self.login("hamlet@zulip.com")
+        fp = StringIO("bah!")
+        fp.name = "a.txt"
+
+        # Use MAX_FILE_UPLOAD_SIZE of 0, because the next increment
+        # would be 1MB.
+        with self.settings(MAX_FILE_UPLOAD_SIZE=0):
+            result = self.client_post("/json/upload_file", {'f1': fp})
+        self.assert_json_error(result, 'File Upload is larger than allowed limit')
+
     def test_multiple_upload_failure(self):
         # type: () -> None
         """
@@ -94,6 +110,37 @@ class FileUploadTest(ZulipTestCase):
 
         result = self.client_post("/json/upload_file")
         self.assert_json_error(result, "You must specify a file to upload")
+
+    def test_download_non_existent_file(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        response = self.client_get('/user_uploads/unk/nonexistent_file')
+        self.assertEquals(response.status_code, 404)
+        self.assertIn('File not found', str(response.content))
+
+    def test_serve_s3_error_handling(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        use_s3 = lambda: self.settings(LOCAL_UPLOADS_DIR=None)
+        getting_realm_id = lambda realm_id: mock.patch(
+            'zerver.views.upload.get_realm_for_filename',
+            return_value=realm_id
+        )
+
+        # nonexistent_file
+        with use_s3(), getting_realm_id(None):
+            response = self.client_get('/user_uploads/unk/nonexistent_file')
+        self.assertEquals(response.status_code, 404)
+        self.assertIn('File not found', str(response.content))
+
+        # invalid realm of 999999 (for non-zulip.com)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.realm.domain = 'example.com'
+        user.realm.save()
+
+        with use_s3(), getting_realm_id(999999):
+            response = self.client_get('/user_uploads/unk/whatever')
+        self.assertEquals(response.status_code, 403)
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.

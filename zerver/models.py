@@ -607,16 +607,6 @@ class Stream(ModelReprMixin, models.Model):
     class Meta(object):
         unique_together = ("name", "realm")
 
-    @classmethod
-    def create(cls, name, realm):
-        # type: (Any, text_type, Realm) -> Tuple[Stream, Recipient]
-        stream = cls(name=name, realm=realm)
-        stream.save()
-
-        recipient = Recipient.objects.create(type_id=stream.id,
-                                             type=Recipient.STREAM)
-        return (stream, recipient)
-
     def num_subscribers(self):
         # type: () -> int
         return Subscription.objects.filter(
@@ -704,12 +694,8 @@ def get_client_remote_cache(name):
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_stream_backend(stream_name, realm):
     # type: (text_type, Realm) -> Stream
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
     return Stream.objects.select_related("realm").get(
-        name__iexact=stream_name.strip(), realm_id=realm_id)
+        name__iexact=stream_name.strip(), realm_id=realm.id)
 
 def get_active_streams(realm):
     # type: (Realm) -> QuerySet
@@ -718,9 +704,8 @@ def get_active_streams(realm):
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
 
-# get_stream takes either a realm id or a realm
 def get_stream(stream_name, realm):
-    # type: (text_type, Union[int, Realm]) -> Optional[Stream]
+    # type: (text_type, Realm) -> Optional[Stream]
     try:
         return get_stream_backend(stream_name, realm)
     except Stream.DoesNotExist:
@@ -728,10 +713,6 @@ def get_stream(stream_name, realm):
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[text_type, Any]
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
 
     def fetch_streams_by_name(stream_names):
         # type: (List[text_type]) -> Sequence[Stream]
@@ -747,7 +728,7 @@ def bulk_get_streams(realm, stream_names):
             return []
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
-        return get_active_streams(realm_id).select_related("realm").extra(
+        return get_active_streams(realm.id).select_related("realm").extra(
             where=[where_clause],
             params=stream_names)
 
@@ -777,11 +758,6 @@ def bulk_get_recipients(type, type_ids):
 
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
-
-# NB: This function is currently unused, but may come in handy.
-def linebreak(string):
-    # type: (text_type) -> text_type
-    return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]

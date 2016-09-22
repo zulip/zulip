@@ -383,8 +383,17 @@ class BugdownTest(TestCase):
 
     def test_realm_patterns(self):
         realm = get_realm('zulip.com')
-        RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
-                    url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            str(realm_filter),
+            '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+
+
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")
 
@@ -566,6 +575,20 @@ class BugdownTest(TestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
 
+class BugdownApiTests(ZulipTestCase):
+    def test_render_message_api(self):
+        # type: () -> None
+        content = 'That is a **bold** statement'
+        result = self.client_get(
+            '/api/v1/messages/render',
+            dict(content=content),
+            **self.api_auth('othello@zulip.com')
+        )
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['rendered'],
+            u'<p>That is a <strong>bold</strong> statement</p>')
+
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
         # type: () -> None
@@ -578,5 +601,7 @@ class BugdownErrorTests(ZulipTestCase):
 
         message = 'whatever'
         with self.simulated_markdown_failure():
-            with self.assertRaisesRegexp(JsonableError, 'Unable to render message'):
+            # We don't use assertRaisesRegexp because it seems to not
+            # handle i18n properly here on some systems.
+            with self.assertRaises(JsonableError):
                 self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)

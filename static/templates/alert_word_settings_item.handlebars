@@ -2,12 +2,12 @@
 <li class="alert-word-item" data-word='{{word}}'>
     {{#if editing}}
         <div class="alert-word-settings-form">
-            <form id="create_alert_word_form" class="form-horizontal">
-                <div class="add-new-alert-word-box">
-                    <div class="settings-section-title new-alert-word-section-title">{{t "Add a New Alert Word"}}</div>
+            <div class="add-new-alert-word-box grey-bg green-bg">
+                <form id="create_alert_word_form" class="form-horizontal no-padding">
+                    <h4 class="new-alert-word-section-title light no-margin">{{t "Add a New Alert Word"}}</h4>
                     <div class="new-alert-word-form">
-                        <div class="control-group">
-                            <label for="create_alert_word_name" class="control-label">{{t "New Alert Word" }}</label>
+                        <div class="input-group">
+                            <label for="create_alert_word_name">{{t "New Alert Word" }}</label>
                             <input type="text" name="alert_word_name" id="create_alert_word_name" class="required"
                                 maxlength=100 placeholder="{{t 'Alert Word' }}" value="" />
                         </div>
@@ -17,20 +17,20 @@
                             </button>
                             <span>{{t "Alert words can't be empty!"}}</span>
                         </div>
-                        <button class="btn btn-primary add-alert-word" id="create_alert_word_button" type="button">
+                        <button class="button add-alert-word" id="create_alert_word_button" type="button">
                             {{t 'Add Alert Word'}}
                         </button>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     {{else}}
-        <div class="alert-word-information-box">
+        <div class="alert-word-information-box list-container">
             <div class="alert_word_listing">
                 <span class="value">{{word}}</span>
             </div>
             <div class="edit-alert-word-buttons">
-                <button type="submit" class="btn btn-small btn-danger remove-alert-word" title="{{t 'Delete Alert Word' }}" data-word="{{word}}">
+                <button type="submit" class="button small btn-small btn-danger remove-alert-word" title="{{t 'Delete Alert Word' }}" data-word="{{word}}">
                     <i class="icon-vector-trash"></i>
                 </button>
             </div>
