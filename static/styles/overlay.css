@@ -1,0 +1,116 @@
+#overlay {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+
+    width: 100vw;
+    height: 100vh;
+
+    pointer-events: none;
+    opacity: 0;
+
+    background-color: rgba(255,255,255,0.4);
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    z-index: 101;
+
+    transition: all 0.2s ease;
+}
+
+#overlay.show {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+#overlay .image-preview {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 80px);
+
+    background-color: #19203a;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+#overlay .image-preview .exit {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
+    color: rgba(255,255,255,0.8);
+    font-size: 2rem;
+    font-weight: 200;
+
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#overlay .image-preview:hover .exit {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+#overlay .image-description,
+#overlay .image-actions {
+    float: left;
+    margin: 10px 20px;
+}
+
+#overlay .image-actions {
+    float: right;
+}
+
+#overlay .image-actions .icon {
+    font-size: 1.1rem;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+#overlay .image-actions .icon .text {
+    font-size: 0.9rem;
+    margin-right: 5px;
+}
+
+#overlay .image-actions span:nth-of-type(2) {
+    position: relative;
+    top: 1px;
+}
+
+#overlay .image-actions .open span:nth-of-type(2) {
+    top: 2px;
+}
+
+#overlay .image-description {
+  /* approx width of screen minus action buttons on the side. */
+  width: calc(100% - 290px);
+}
+
+#overlay .image-description .title {
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: normal;
+    max-width: calc(100%);
+
+    /* Required for text-overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#overlay .image-description .user {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888;
+}
+
+.image-actions a.button {
+  text-decoration: none;
+}
+
+.button .download {
+    top: 1px;
+}

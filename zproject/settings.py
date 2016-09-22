@@ -650,6 +650,7 @@ PIPELINE = {
                 'styles/zulip.css',
                 'styles/media.css',
                 'styles/settings.css',
+                'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
@@ -665,6 +666,7 @@ PIPELINE = {
                 'styles/zulip.css',
                 'styles/media.css',
                 'styles/settings.css',
+                'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 'styles/fonts.css',
