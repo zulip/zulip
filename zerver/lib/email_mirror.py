@@ -90,6 +90,9 @@ def get_missed_message_token_from_address(address):
     # type: (text_type) -> text_type
     msg_string = get_email_gateway_message_string_from_address(address)
 
+    if msg_string is None:
+        raise ZulipEmailForwardError('Address not recognized by gateway.')
+
     if not is_mm_32_format(msg_string):
         raise ZulipEmailForwardError('Could not parse missed message address')
 
