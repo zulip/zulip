@@ -95,9 +95,9 @@ app][electron].
 
 * **Glue code**. We maintain a [Hubot adapter][hubot-adapter] and several
 integrations ([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][],
-and [Trello][]), plus [node.js API bindings][node], an [isomorphic 
-JavaScript library][zulip-js], and a [full-text search PostgreSQL 
-extension][tsearch], as separate repos.
+and [Trello][]), plus [node.js API bindings][node], an [isomorphic
+ JavaScript library][zulip-js], and a [full-text search PostgreSQL
+ extension][tsearch], as separate repos.
 
 * **Translations**.  Zulip is in the process of being translated into
 10+ languages, and we love contributions to our translations.  See our
