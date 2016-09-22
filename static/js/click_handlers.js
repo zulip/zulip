@@ -368,6 +368,23 @@ $(function () {
                .text("Bringing you to your latest messages…"));
     });
 
+    (function () {
+        $("#main_div").on("click", ".message_inline_image a", function (e) {
+            var img = e.target;
+
+            // prevent the link from opening in a new page.
+            e.preventDefault();
+            // prevent the message compose dialog from happening.
+            e.stopPropagation();
+
+            ui.lightbox_photo(img);
+        });
+
+        $("#overlay .exit").click(function (e) {
+            ui.exit_lightbox_photo();
+        });
+    }());
+
     // MAIN CLICK HANDLER
 
     $(document).on('click', function (e) {
