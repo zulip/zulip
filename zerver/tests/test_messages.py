@@ -827,7 +827,7 @@ class EditMessageTest(ZulipTestCase):
     def test_fetch_raw_message(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+        msg_id = self.send_message("hamlet@zulip.com", "cordelia@zulip.com", Recipient.PERSONAL,
                                    subject="editing", content="**before** edit")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
         self.assert_json_success(result)
@@ -840,7 +840,40 @@ class EditMessageTest(ZulipTestCase):
 
         self.login("cordelia@zulip.com")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
-        self.assert_json_error(result, 'Message was not sent by you')
+        self.assert_json_success(result)
+
+        self.login("othello@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Message is a private message you did not receive')
+
+    def test_fetch_raw_message_stream_wrong_realm(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        stream, _ = create_stream_if_needed(get_realm("zulip.com"), 'public_stream')
+        self.subscribe_to_stream(email, stream.name)
+        msg_id = self.send_message(email, stream.name, Recipient.STREAM,
+                                   subject="test", content="test")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+
+        self.login("sipbtest@mit.edu")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Message was sent to a stream you cannot read')
+
+    def test_fetch_raw_message_private_stream(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        stream, _ = create_stream_if_needed(get_realm("zulip.com"), 'private_stream', invite_only=True)
+        self.subscribe_to_stream(email, stream.name)
+        msg_id = self.send_message(email, stream.name, Recipient.STREAM,
+                                   subject="test", content="test")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+        self.login("othello@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Message was sent to a stream you cannot read')
 
     def test_edit_message_no_changes(self):
         # type: () -> None
