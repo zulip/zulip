@@ -8,6 +8,8 @@ development environment:
 #### 
 * [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html).  Recommended for first-time contributors.
 * [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html)
+* [Using the Development Environment](using-dev-environment.html)
+* [Testing](testing.html)
  
 
 ### For OS X
@@ -15,6 +17,8 @@ development environment:
 * [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html).  Recommended for first-time contributors.
 * [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html)
 * [Using Docker (experimental)](install-docker-dev.html)
+* [Using the Development Environment](using-dev-environment.html)
+* [Testing](testing.html)
  
 
 ###For LINUX/ Other UNIX Platforms
