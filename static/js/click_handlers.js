@@ -370,14 +370,16 @@ $(function () {
 
     (function () {
         $("#main_div").on("click", ".message_inline_image a", function (e) {
-            var img = e.target;
+            var img = e.target,
+                row = rows.id($(img).closest(".message_row")),
+                user = current_msg_list.get(row).sender_full_name;
 
             // prevent the link from opening in a new page.
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
 
-            ui.lightbox_photo(img);
+            ui.lightbox_photo(img, user);
         });
 
         $("#overlay .exit").click(function (e) {
