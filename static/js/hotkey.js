@@ -216,6 +216,10 @@ function process_hotkey(e) {
         }
     }
 
+    if (event_name === "escape" && $("#overlay").hasClass("show")) {
+        ui.exit_lightbox_photo();
+    }
+
     // If we're on a button or a link and have pressed enter, let the
     // browser handle the keypress
     //
@@ -331,7 +335,8 @@ function process_hotkey(e) {
 
 $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
-    if (48 > e.which || 90 < e.which) {
+    // check if 27 (esc) because it doesn't register under .keypress()
+    if (48 > e.which || 90 < e.which || e.which === 27) {
         if (process_hotkey(e)) {
             e.preventDefault();
         }
