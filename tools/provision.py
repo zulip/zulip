@@ -117,6 +117,11 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
+
+def install_nvm():
+    # type: () -> None
+    run(["sudo", "tools/setup/install-nvm"])
+
 def main():
     # type: () -> int
 
@@ -178,7 +183,6 @@ def main():
     else:
         run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
-    run(["tools/setup/install-nvm"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
     if TRAVIS and not PRODUCTION_TRAVIS:
@@ -204,6 +208,7 @@ def main():
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
         setup_node_modules()
+    install_nvm()
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
