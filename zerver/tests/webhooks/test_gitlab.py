@@ -8,7 +8,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_push_event_message(self):
         # type: () -> None
-        expected_subject = u"Repository: my-awesome-project"
+        expected_subject = u"Repository: my-awesome-project - branch: tomek"
         expected_message = u"Tomasz Kolek pushed [2 commits](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) to tomek branch."
 
         self.send_and_test_stream_message('push', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
