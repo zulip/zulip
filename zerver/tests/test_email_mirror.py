@@ -20,6 +20,7 @@ from zerver.lib.actions import (
 from zerver.lib.email_mirror import (
     process_message, process_stream_message, ZulipEmailForwardError,
     create_missed_message_address,
+    get_missed_message_token_from_address,
 )
 
 from zerver.lib.digest import handle_digest_email
@@ -38,11 +39,31 @@ import mock
 import os
 import sys
 from os.path import dirname, abspath
+from six import text_type
 from six.moves import cStringIO as StringIO
 from django.conf import settings
 
 from typing import Any, Callable, Mapping, Union
 
+class TestEmailMirrorLibrary(ZulipTestCase):
+    def test_get_missed_message_token(self):
+        # type: () -> None
+
+        def get_token(address):
+            # type: (text_type) -> text_type
+            with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
+                return get_missed_message_token_from_address(address)
+
+        address = 'mm' + ('x' * 32) + '@example.com'
+        token = get_token(address)
+        self.assertEqual(token, 'x' * 32)
+
+        # This next section was a bug at one point--we'd treat ordinary
+        # user addresses that happened to begin with "mm" as being
+        # the special mm+32chars tokens.
+        address = 'mmathers@example.com'
+        with self.assertRaises(ZulipEmailForwardError):
+            get_token(address)
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self):
