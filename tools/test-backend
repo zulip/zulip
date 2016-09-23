@@ -68,24 +68,42 @@ if __name__ == "__main__":
                       help="Show which tests are slowest.")
 
     (options, args) = parser.parse_args()
-
-    for suite in args:
-		for ch in ['/']:
-			if ch in suite:
-				new_suite=suite.replace(ch,".")
-				args[args.index(suite)]=new_suite
     
+    thedir = 'zerver/tests/'
+  
     for suite in args:
         for ch in [".py"]:
             if ch in suite:
                 new_suite=suite.replace(ch,"")
                 args[args.index(suite)]=new_suite
 
+    for suite in args:
+    	flag=0
+    	if suite[0].isupper():
+            for file in os.listdir(thedir):
+                filepath = thedir + file
+                if not os.path.isdir(filepath):
+                    for line in open(filepath):
+                        if suite in line:
+                            filepath=filepath.replace(".py",".")
+                            new_suite=filepath+suite
+                            args[args.index(suite)]=new_suite
+                            flag=1
+                            break
+                if flag==1:
+                    break
+
     for suite in args:      
             if suite.startswith('test'):
                 new_suite="zerver.tests."+suite
                 args[args.index(suite)]=new_suite
 
+    
+    for suite in args:
+		for ch in ['/']:
+			if ch in suite:
+				new_suite=suite.replace(ch,".")
+				args[args.index(suite)]=new_suite
 
     if len(args) == 0:
         suites = ["zerver.tests"]
