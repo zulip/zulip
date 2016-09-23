@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
 
+from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
@@ -384,6 +385,16 @@ class ZulipTestCase(TestCase):
                                 {'full_name': username, 'password': password,
                                  'key': find_key_by_email(username + '@' + domain),
                                  'terms': True})
+
+    def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
+        # type: (text_type, text_type) -> text_type
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email_address in message.to:
+                return re.search(settings.EXTERNAL_HOST + path_pattern,
+                                 message.body).groups()[0]
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
 
     def get_api_key(self, email):
         # type: (text_type) -> text_type

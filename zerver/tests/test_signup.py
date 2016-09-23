@@ -136,17 +136,8 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_in_response("Check your email to finish the process.", result)
 
-        # visit password reset link
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                password_reset_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)")
-                password_reset_url = password_reset_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise ValueError("Couldn't find a password reset email.")
-
+        # Visit the password reset link.
+        password_reset_url = self.get_confirmation_url_from_outbox(email, "(\S+)")
         result = self.client_get(password_reset_url)
         self.assertEquals(result.status_code, 200)
 
@@ -284,16 +275,7 @@ class LoginTest(ZulipTestCase):
         self.assert_in_response("Check your email so we can get started.", result)
 
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise ValueError("Couldn't find a confirmation email.")
-
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
         self.assertEquals(result.status_code, 200)
 
@@ -307,6 +289,7 @@ class LoginTest(ZulipTestCase):
         self.assert_in_response("You're the first one here!", result)
 
         # Reset the outbox for our invites.
+        from django.core.mail import outbox
         outbox.pop()
 
         invitees = ['alice@' + domain, 'bob@' + domain]
@@ -698,16 +681,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_in_response("Check your email so we can get started.", result)
 
             # Visit the confirmation link.
-            from django.core.mail import outbox
-            for message in reversed(outbox):
-                if email in message.to:
-                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                    confirmation_url = confirmation_link_pattern.search(
-                        message.body).groups()[0]
-                    break
-            else:
-                raise ValueError("Couldn't find a confirmation email.")
-
+            confirmation_url = self.get_confirmation_url_from_outbox(email)
             result = self.client_get(confirmation_url)
             self.assertEquals(result.status_code, 200)
 
@@ -749,22 +723,15 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response("Check your email so we can get started.", result)
 
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise ValueError("Couldn't find a confirmation email.")
-
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
         self.assertEquals(result.status_code, 200)
+
         # Pick a password and agree to the ToS.
         result = self.submit_reg_form_for_user(username, password, domain)
         self.assertEquals(result.status_code, 302)
 
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.default_language, realm.default_language)
+        from django.core.mail import outbox
         outbox.pop()
