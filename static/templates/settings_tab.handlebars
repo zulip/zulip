@@ -12,56 +12,65 @@
     <div class="account-settings-form">
       <form action="/json/settings/change" method="post"
             class="form-horizontal your-account-settings">
-        <div class="input-group" id="name_change_container">
-          <label for="full_name">{{t "Full name" }}</label>
-          <input type="text" name="full_name" id="full_name" value="{{ page_params.fullname }}" />
-        </div>
 
-        <!-- password start -->
-        {{#if page_params.password_auth_enabled}}
-        <div class="input-group" id="pw_change_link">
-          <label for="change_password_button">{{t "Password" }}</label>
-          <button class="change_password_button button" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
-        </div>
+        <div class="m-10 inline-block grid user-name-parent">
+          <div class="user-name-section inline-block">
+            <div class="input-group" id="name_change_container">
+              <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
+              <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.fullname }}" />
+              <div class="warning"></div>
+            </div>
 
-        <div id="pw_change_controls">
-          <div class="input-group">
-            <label for="old_password">{{t "Old password" }}</label>
-            <input type="password" autocomplete="off" name="old_password" id="old_password" value="" />
-            (<a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a>)
-          </div>
+            <!-- password start -->
+            {{#if page_params.password_auth_enabled}}
+            <div class="input-group" id="pw_change_link">
+              <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
+              <button class="change_password_button grey w-200 button inline-block" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
+            </div>
 
-          <div class="input-group">
-            <label for="new_password">{{t "New password" }}</label>
-            <input type="password" autocomplete="off" name="new_password" id="new_password" value="" />
-          </div>
+            <div id="pw_change_controls">
+              <div class="input-group">
+                <label for="old_password" class="inline-block title">{{t "Old password" }}</label>
+                <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
+                <div class="warning">
+                  <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+                </div>
+              </div>
 
-          <div class="input-group">
-            <label>{{t "Password strength" }}</label>
-            <div class="progress" id="pw_strength">
-              <div class="bar bar-danger fade" style="width: 10%;"></div>
+              <div class="input-group">
+                <label for="new_password" class="inline-block title">{{t "New password" }}</label>
+                <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value="" />
+                <div class="warning">
+                  <div class="progress inline-block" id="pw_strength">
+                    <div class="bar bar-danger fade" style="width: 10%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label class="inline-block title" for="confirm_password title">{{t "Confirm password" }}</label>
+                <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" class="w-200 inline-block" value="" />
+              </div>
+            </div>
+            {{/if}}
+
+            <div class="input-group no-border">
+              <label for="" class="inline-block"></label>
+              <input type="submit" class="button w-200 sea-green" name="change_settings" value="Save Changes" />
             </div>
           </div>
-
-          <div class="input-group">
-            <label for="confirm_password">{{t "Confirm password" }}</label>
-            <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" value="" />
-          </div>
-
-        </div>
-        {{/if}}
-
-        <div class="input-group">
-          <input type="submit" class="button green" name="change_settings" value="Save Changes" />
         </div>
 
-        <div class="user-avatar-section">
+        <div class="user-avatar-section m-20 box-shadow border-radius float-right white-bg p-20">
           <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
           <div id="user_avatar_file_input_error" class="text-error"></div>
-          <div id="user_avatar_file"></div>
           <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
           <div id="upload_avatar_spinner"></div>
-          <button class="button standalone" id="user_avatar_upload_button">{{t 'Customize avatar' }}</button>
+          <button class="button sea-green w-200 m-t-20 block" id="user_avatar_upload_button">{{t 'Upload New Avatar' }}</button>
+          <button class="button grey w-200 standalone block" id="user_avatar_upload_button">{{t 'Remove Current Avatar' }}</button>
+          <div class="func-description w-200 center m-t-20">
+            Upload a small (1024x1024) avatar of yourself here.
+          </div>
         </div>
 
       </form>
@@ -76,12 +85,13 @@
         {{t 'Display Settings' }}
       </div>
       <div class="alert" id="display-settings-status"></div>
-      <form class="display-settings-form">
+      <form class="display-settings-form m-20">
 
-        <div class="input-group">
-          <label for="default_language" class="inline-block"> {{t "Default Language" }}: <span id='default_language_name'>{{page_params.default_language_name}}</span></label>
+        <p for="default_language" class="inline-block title">
+          {{t "Default Language" }}: <span id='default_language_name'>{{page_params.default_language_name}}</span>
           <a id="default_language" href="#default_language" title='Change default language'>[Change]</a>
-        </div>
+        </p>
+
         <div id="default_language_modal" class="modal hide" tabindex="-1" role="dialog"
               aria-labelledby="default_language_modal_label" aria-hidden="true">
           <div class="modal-header">
@@ -131,19 +141,25 @@
           </div>
         </div>
 
-        <div class="input-group thinner">
-          <input type="checkbox" class="inline-block" name="left_side_userlist" id="left_side_userlist"
+        <div class="input-group">
+          <label class="checkbox">
+            <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
             {{#if page_params.left_side_userlist}}
               checked="checked"
             {{/if}} />
+            <span></span>
+          </label>
             <label for="left_side_userlist" class="inline-block">{{t "Display user list on left side in narrow windows." }}</label>
         </div>
 
-        <div class="input-group thinner">
-          <input type="checkbox" class="inline-block" name="twenty_four_hour_time" id="twenty_four_hour_time"
+        <div class="input-group">
+          <label class="checkbox">
+            <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
             {{#if page_params.twenty_four_hour_time}}
               checked="checked"
             {{/if}} />
+            <span></span>
+          </label>
           <label for="twenty_four_hour_time" class="inline-block">
             {{t "Display time in 24-hour format (17:00 instead of 5:00 PM)" }}
           </label>
@@ -168,24 +184,30 @@
         <div class="padded-container">
           <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
-          <div class="input-group thinner">
-            <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
-                   id="enable_stream_desktop_notifications"
-                   {{#if page_params.stream_desktop_notifications_enabled}}
-                   checked="checked"
-                   {{/if}} />
+          <div class="input-group">
+            <label class="checkbox">
+              <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
+                     id="enable_stream_desktop_notifications"
+                     {{#if page_params.stream_desktop_notifications_enabled}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
             <label for="enable_stream_desktop_notifications" class="inline-block">
               {{t "Desktop notifications" }}
             </label>
             <div class="propagate_stream_notifications_change"></div>
           </div>
 
-          <div class="input-group thinner">
-            <input type="checkbox" class="inline-block" name="enable_stream_sounds" id="enable_stream_sounds"
-                   {{#if page_params.stream_sounds_enabled}}
-                   checked="checked"
-                   {{/if}} />
-            <label for="enable_stream_sounds" class="inline-block">
+          <div class="input-group">
+            <label class="checkbox">
+              <input type="checkbox" class="inline-block" name="enable_stream_sounds" id="enable_stream_sounds"
+                     {{#if page_params.stream_sounds_enabled}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
+            <label for="enable_stream_sounds" class="inline-block no-border">
               {{t "Audible notifications" }}
             </label>
             <div class="propagate_stream_notifications_change"></div>
@@ -201,41 +223,53 @@
         <div class="padded-container">
           <p>{{t "I want:" }}</p>
 
-          <div class="input-group thinner">
-            <input type="checkbox" class="inline-block" name="enable_desktop_notifications" id="enable_desktop_notifications"
-                   {{#if page_params.desktop_notifications_enabled}}
-                   checked="checked"
-                   {{/if}} />
+          <div class="input-group">
+            <label class="checkbox">
+              <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
+                     {{#if page_params.desktop_notifications_enabled}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
             <label for="enable_desktop_notifications" class="inline-block">
               {{t "Desktop notifications" }}
             </label>
           </div>
 
-          <div class="input-group thinner">
-            <input type="checkbox" class="inline-block" name="enable_sounds" id="enable_sounds"
-                   {{#if page_params.sounds_enabled}}
-                   checked="checked"
-                   {{/if}} />
+          <div class="input-group">
+            <label class="checkbox">
+              <input type="checkbox" name="enable_sounds" id="enable_sounds"
+                     {{#if page_params.sounds_enabled}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
             <label for="enable_sounds" class="inline-block">
               {{t "Audible notifications" }}
             </label>
           </div>
 
-          <div class="input-group thinner">
-            <input type="checkbox" class="inline-block" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
-                   {{#if page_params.enable_offline_email_notifications}}
-                   checked="checked"
-                   {{/if}} />
+          <div class="input-group">
+            <label class="checkbox">
+              <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
+                     {{#if page_params.enable_offline_email_notifications}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
             <label for="enable_offline_email_notifications" class="inline-block">
               {{t "Email notifications when offline" }}
             </label>
           </div>
 
-          <div class="input-group thinner">
-            <input type="checkbox" class="inline-block" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
-                   {{#if page_params.enable_offline_push_notifications}}
-                   checked="checked"
-                   {{/if}} />
+          <div class="input-group">
+            <label class="checkbox">
+              <input type="checkbox" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
+                     {{#if page_params.enable_offline_push_notifications}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
             <label for="enable_offline_push_notifications" class="inline-block">
               {{t "Mobile push notifications when offline" }}
             </label>
@@ -248,10 +282,13 @@
 
         <div class="padded-container">
           <div class="input-group no-margin" id="digest_container">
-            <input type="checkbox" class="inline-block" name="enable_digest_emails" id="enable_digest_emails"
-                   {{#if page_params.enable_digest_emails}}
-                   checked="checked"
-                   {{/if}} />
+            <label class="checkbox">
+              <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
+                     {{#if page_params.enable_digest_emails}}
+                     checked="checked"
+                     {{/if}} />
+              <span></span>
+            </label>
             <label for="enable_digest_emails" class="inline-block">
               {{t "Digest emails when I'm away" }}
             </label>
@@ -263,11 +300,11 @@
         --}}
         </div>
 
-        <div class="input-group">
+        <div class="input-group no-border">
           <div class="controls notification-submission">
             <input type="submit" id="change_notification_settings"
                    name="change_notification_settings" value="{{t 'Save Changes' }}"
-                   class="button green" />
+                   class="button sea-green" />
           </div>
         </div>
       </form>
@@ -402,10 +439,10 @@
     <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>{{#tr this}}__page_params.product_name__ Labs{{/tr}}</div>
     <div class="alert" id="ui-settings-status"></div>
     <form class="ui-settings-form">
-      <p class="input-group">
+      <p>
         {{t "Warning: the below features are experimental features and may not work as well as you would like." }}
       </p>
-      <div class="input-group thinner">
+      <div class="input-group">
         <input type="checkbox" class="inline-block" name="autoscroll_forever" id="autoscroll_forever"
                {{#if page_params.autoscroll_forever}}
                checked="checked"
@@ -414,7 +451,7 @@
           {{t "Always auto-scroll to new messages" }}
         </label>
       </div>
-      <div class="input-group thinner">
+      <div class="input-group">
         <input type="checkbox" class="inline-block" name="default_desktop_notifications" id="default_desktop_notifications"
                {{#if page_params.default_desktop_notifications}}
                checked="checked"
@@ -424,9 +461,9 @@
         </label>
 
       </div>
-      <div class="input-group">
+      <div class="input-group no-border">
         <div class="ui-submission">
-          <input type="submit" name="change_settings" value="{{t 'Save Changes' }}" class="button green" />
+          <input type="submit" name="change_settings" value="{{t 'Save Changes' }}" class="button sea-green" />
         </div>
       </div>
     </form>
