@@ -198,13 +198,6 @@ li,
     width: auto;
 }
 
-#user-settings-avatar {
-    width: 200px;
-    height: 200px;
-    margin-top: 10px;
-    border-radius: 5px;
-}
-
 /* Classes for hiding and showing controls */
 
 .notdisplayed {
