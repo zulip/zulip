@@ -1126,12 +1126,6 @@ class Message(ModelReprMixin, models.Model):
         ]
         return Message.objects.filter(id__in=needed_ids).values(*fields)
 
-    @classmethod
-    def remove_unreachable(cls):
-        # type: (Any) -> None
-        """Remove all Messages that are not referred to by any UserMessage."""
-        cls.objects.exclude(id__in = UserMessage.objects.values('message_id')).delete()
-
     def sent_by_human(self):
         # type: () -> bool
         sending_client = self.sending_client.name.lower()
