@@ -79,8 +79,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "rabbitmq-server",
     "redis-server",
     "hunspell-en-us",
-    "nodejs",
-    "nodejs-legacy",
     "supervisor",
     "git",
     "yui-compressor",
@@ -117,10 +115,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-
-def install_nvm():
-    # type: () -> None
-    run(["sudo", "tools/setup/install-nvm"])
 
 def main():
     # type: () -> int
@@ -203,12 +197,7 @@ def main():
         run(["tools/setup/postgres-init-test-db"])
         run(["tools/do-destroy-rebuild-test-database"])
         run(["python", "./manage.py", "compilemessages"])
-    try:
-        setup_node_modules()
-    except subprocess.CalledProcessError:
-        print(WARNING + "`npm install` failed; retrying..." + ENDC)
-        setup_node_modules()
-    install_nvm()
+    run(["sudo", "tools/setup/install-nvm"])
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
