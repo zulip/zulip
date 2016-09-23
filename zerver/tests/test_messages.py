@@ -195,7 +195,13 @@ class PersonalMessagesTest(ZulipTestCase):
 
         recipient = Recipient.objects.get(type_id=user_profile.id,
                                           type=Recipient.PERSONAL)
-        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient, recipient)
+
+        with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
+            self.assertEqual(str(message),
+                u'<Message: recip /  / '
+                '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
