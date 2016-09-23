@@ -983,7 +983,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
             # We warn the user once every 5 minutes to avoid a flood of
             # PMs on a misconfigured integration, re-using the
             # UserProfile.last_reminder field, which is not used for bots.
-            last_reminder = sender.last_reminder_tzaware()
+            last_reminder = sender.last_reminder
             waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
             if not last_reminder or timezone.now() - last_reminder > waitperiod:
                 if stream is None:

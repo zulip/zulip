@@ -498,15 +498,6 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         else:
             return False
 
-    def last_reminder_tzaware(self):
-        # type: () -> Optional[datetime.datetime]
-        if self.last_reminder is not None and timezone.is_naive(self.last_reminder):
-            logging.warning(u"Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
-                              % (self.email, text_type(self.last_reminder)))
-            return self.last_reminder.replace(tzinfo=timezone.utc)
-
-        return self.last_reminder
-
     def __unicode__(self):
         # type: () -> text_type
         return u"<UserProfile: %s %s>" % (self.email, self.realm)
