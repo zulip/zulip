@@ -334,10 +334,15 @@ def get_realm_filters_cache_key(domain):
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+
+def domain_in_local_realm_filters_cache(domain):
+    # type: (text_type) -> bool
+    return domain in per_request_realm_filters_cache
+
 def realm_filters_for_domain(domain):
     # type: (text_type) -> List[Tuple[text_type, text_type]]
     domain = domain.lower()
-    if domain not in per_request_realm_filters_cache:
+    if not domain_in_local_realm_filters_cache(domain):
         per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
     return per_request_realm_filters_cache[domain]
 
