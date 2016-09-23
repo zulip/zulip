@@ -89,12 +89,10 @@ def run_test(test):
     # type: (TestCase) -> bool
     failed = False
     test_method = get_test_method(test)
-
     if fast_tests_only() and is_known_slow_test(test_method):
         return failed
 
     test_name = full_test_name(test)
-
     bounce_key_prefix_for_testing(test_name)
 
     print('Running', test_name)
@@ -186,6 +184,8 @@ class Runner(DiscoverRunner):
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         # type: (List[str], Optional[List[TestCase]], **Any) -> bool
+        
+        
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)

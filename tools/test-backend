@@ -5,6 +5,7 @@ import optparse
 import os
 import sys
 import subprocess
+import inspect
 
 try:
     import django
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test"""
 
     parser = optparse.OptionParser(usage)
+
     parser.add_option('--nonfatal-errors', action="store_false", default=True,
                       dest="fatal_errors", help="Continue past test failures to run all tests")
     parser.add_option('--coverage', dest='coverage',
@@ -66,6 +68,25 @@ if __name__ == "__main__":
                       help="Show which tests are slowest.")
 
     (options, args) = parser.parse_args()
+
+    for suite in args:
+		for ch in ['/']:
+			if ch in suite:
+				new_suite=suite.replace(ch,".")
+				args[args.index(suite)]=new_suite
+    
+    for suite in args:
+        for ch in [".py"]:
+            if ch in suite:
+                new_suite=suite.replace(ch,"")
+                args[args.index(suite)]=new_suite
+
+    for suite in args:      
+            if suite.startswith('test'):
+                new_suite="zerver.tests."+suite
+                args[args.index(suite)]=new_suite
+
+
     if len(args) == 0:
         suites = ["zerver.tests"]
     else:
