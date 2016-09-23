@@ -171,6 +171,10 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def deployment(self):
         # type: () -> Any # returns a Deployment from zilencer.models
+
+        # see https://github.com/zulip/zulip/issues/1845 before you
+        # attempt to add test coverage for this method, as we may
+        # be revisiting the deployments model soon
         try:
             return self._deployments.all()[0]
         except IndexError:
