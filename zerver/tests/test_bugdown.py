@@ -20,6 +20,7 @@ from zerver.lib.test_helpers import (
     ZulipTestCase,
 )
 from zerver.models import (
+    flush_per_request_caches,
     get_client,
     get_user_profile_by_email,
     Message,
@@ -397,6 +398,8 @@ class BugdownTest(TestCase):
 
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")
+
+        flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
         converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
