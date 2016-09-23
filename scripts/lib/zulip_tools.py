@@ -87,6 +87,11 @@ def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> int
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
+
+    if kwargs.get('shell'):
+        # With shell=True we can only pass string to Popen
+        args = " ".join(args)
+
     process = subprocess.Popen(args, **kwargs)
     rc = process.wait()
     if rc:
