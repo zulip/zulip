@@ -11,6 +11,7 @@ from zerver.lib.actions import (
     do_set_alert_words,
     get_realm,
 )
+from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.request import (
     JsonableError,
@@ -417,14 +418,20 @@ class BugdownTest(TestCase):
         user_profile = get_user_profile_by_email("othello@zulip.com")
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
+        realm_alert_words = alert_words_in_realm(user_profile.realm)
+
+        def render(msg, content):
+            return msg.render_markdown(content,
+                                       realm_alert_words=realm_alert_words,
+                                       message_users={user_profile})
 
         content = "We have an ALERTWORD day today!"
-        self.assertEqual(msg.render_markdown(content), "<p>We have an ALERTWORD day today!</p>")
+        self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set([user_profile.id]))
 
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         content = "We have a NOTHINGWORD day today!"
-        self.assertEqual(msg.render_markdown(content), "<p>We have a NOTHINGWORD day today!</p>")
+        self.assertEqual(render(msg, content), "<p>We have a NOTHINGWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set())
 
     def test_mention_wildcard(self):
