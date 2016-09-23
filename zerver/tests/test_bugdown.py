@@ -20,10 +20,14 @@ from zerver.lib.test_helpers import (
     ZulipTestCase,
 )
 from zerver.models import (
+    domain_in_local_realm_filters_cache,
     flush_per_request_caches,
+    flush_realm_filter,
     get_client,
     get_user_profile_by_email,
+    realm_filters_for_domain,
     Message,
+    Realm,
     RealmFilter,
     Recipient,
 )
@@ -424,6 +428,47 @@ class BugdownTest(TestCase):
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
             (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s'))
+
+    def test_flush_realm_filter(self):
+        # type: () -> None
+        domain = 'zulip.com'
+        realm = get_realm(domain)
+
+        def flush():
+            # type: () -> None
+            '''
+            flush_realm_filter is a post-save hook, so calling it
+            directly for testing is kind of awkward
+            '''
+            class Instance(object):
+                pass
+            instance = Instance()
+            instance.realm = realm
+            flush_realm_filter(sender=None, instance=instance)
+
+        def save_new_realm_filter():
+            # type: () -> None
+            realm_filter = RealmFilter(realm=realm,
+                                       pattern=r"whatever",
+                                       url_format_string='whatever')
+            realm_filter.save()
+
+        # start fresh for our domain
+        flush()
+        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+
+        # call this just for side effects of populating the cache
+        realm_filters_for_domain(domain=domain)
+        self.assertTrue(domain_in_local_realm_filters_cache(domain))
+
+        # Saving a new RealmFilter should have the side effect of
+        # flushing the cache.
+        save_new_realm_filter()
+        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+
+        # and flush it one more time, to make sure we don't get a KeyError
+        flush()
+        self.assertFalse(domain_in_local_realm_filters_cache(domain))
 
     def test_realm_patterns_negative(self):
         realm = get_realm('zulip.com')
