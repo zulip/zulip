@@ -198,6 +198,11 @@ def main():
         run(["tools/do-destroy-rebuild-test-database"])
         run(["python", "./manage.py", "compilemessages"])
     run(["sudo", "tools/setup/install-nvm"])
+    try:
+        setup_node_modules()
+    except subprocess.CalledProcessError:
+        print(WARNING + "`npm install` failed; retrying..." + ENDC)
+        setup_node_modules()
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
