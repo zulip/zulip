@@ -6,25 +6,34 @@ import shutil
 import subprocess
 import json
 import sys
+import hashlib
 import xml.etree.ElementTree as ET
 from six import unichr, text_type
 from typing import Union
-
+from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
+sys.path.append(ZULIP_PATH)
 
-EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
-EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
+from scripts.lib.zulip_tools import run
 
 AA_SCALE = 8
 SIZE = (136, 136)
 SPRITE_SIZE = (50, 50)
 BIG_SIZE = tuple([x * AA_SCALE for x in SIZE])
 
+EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
+EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
+TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'third', 'gemoji')
+EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
+
+if 'TRAVIS' in os.environ:
+    # In Travis CI, we don't have root access
+    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
+
 class MissingGlyphError(Exception):
     pass
-
 
 def color_font(name, code_point, code_point_to_fname_map):
     # type: (str, str, Dict[int, Union[text_type, bytes]]) -> None
@@ -92,7 +101,33 @@ def main():
 
     # check if directory `var/emoji_dump` exists
     subprocess.check_call(['mkdir', '-p', EMOJI_DUMP_DIR_PATH])
+    success_stamp = get_success_stamp()
+    source_emoji_dump = dirname(success_stamp)
 
+    if not os.path.exists(success_stamp):
+        print("Dumping emojis ...")
+        dump_emojis(source_emoji_dump)
+        run(['touch', success_stamp])
+
+    print("Using cached emojis from {}".format(source_emoji_dump))
+    run(['rm', '-rf', TARGET_EMOJI_DUMP])
+    run(['ln', '-nsf', source_emoji_dump, TARGET_EMOJI_DUMP])
+
+def get_success_stamp():
+    # type: () -> str
+    sha = hashlib.sha1()
+
+    filenames = ['NotoColorEmoji.ttf', 'emoji_map.json', 'AndroidEmoji.ttf',
+                 'build_emoji', 'emoji_dump.py']
+
+    for filename in filenames:
+        with open(filename, 'rb') as reader:
+            sha.update(reader.read())
+
+    return os.path.join(EMOJI_CACHE_PATH, sha.hexdigest(), 'gemoji', '.success-stamp')
+
+def dump_emojis(cache_path):
+    # type: (str) -> None
     subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
 
     emoji_map = json.load(open('emoji_map.json'))
@@ -134,12 +169,21 @@ def main():
             'out/{}.png'.format(name)
         )
 
-    subprocess.call('glue --quiet out/sprite . --namespace=emoji --sprite-namespace= --retina',
-                    shell=True)
-
     if failed:
         print("Errors dumping emoji!")
         sys.exit(1)
+
+    subprocess.call('glue --quiet out/sprite . --namespace=emoji --sprite-namespace= --retina',
+                    shell=True)
+
+    cache_emoji = os.path.join(cache_path, 'images', 'emoji')
+    run(['sudo', 'rm', '-rf', cache_path])
+    run(['sudo', 'mkdir', '-p', cache_emoji])
+    run(["sudo", "chown", "-R", "{}:{}".format(os.getuid(), os.getgid()), cache_path])
+    run(['mv', 'out/*', cache_emoji], shell=True)
+    run(['mv', 'sprite*', cache_path], shell=True)
+    assets = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
+    run(['cp', '-RPp', assets, cache_emoji], shell=True)
 
 if __name__ == "__main__":
     main()
