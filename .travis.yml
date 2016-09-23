@@ -32,7 +32,6 @@ matrix:
       env: TEST_SUITE=static-analysis
     - python: "2.7"
       env: TEST_SUITE=production
-      sudo: required
 # command to run tests
 script:
   - unset GEM_PATH
