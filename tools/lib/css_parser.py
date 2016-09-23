@@ -208,7 +208,11 @@ def parse_declaration_block(tokens):
 def parse_declaration(tokens):
     # type: (List[Token]) -> CssDeclaration
     i, pre_fluff = get_whitespace_and_comments(tokens, 0)
-    css_property = tokens[i].s
+    try:
+        css_property = tokens[i].s
+    except IndexError:
+        raise CssParserException('Empty declaration')
+
     if tokens[i+1].s != ':':
         # print(css_property)
         raise CssParserException('We expect a colon here')
