@@ -408,6 +408,23 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
 
+    def test_maybe_update_realm_filters(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+
+        bugdown.realm_filter_data = {}
+        bugdown.maybe_update_realm_filters(domain=None)
+        all_filters = bugdown.realm_filter_data
+        zulip_filters = all_filters['zulip.com']
+        self.assertEqual(len(zulip_filters), 1)
+        self.assertEqual(zulip_filters[0],
+            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s'))
+
     def test_realm_patterns_negative(self):
         realm = get_realm('zulip.com')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
