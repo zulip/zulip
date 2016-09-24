@@ -5,7 +5,6 @@ import optparse
 import os
 import sys
 import subprocess
-import inspect
 
 try:
     import django
