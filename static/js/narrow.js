@@ -149,7 +149,7 @@ exports.activate = function (raw_operators, opts) {
         return exports.deactivate();
     }
     known_operators = ["stream", "topic", "is", "pm-with"];
-    if (known_operators.indexOf(raw_operators[0].operator) == -1){
+    if (known_operators.indexOf(raw_operators[0].operator) === -1){
       raw_operators[0].operand = raw_operators[0].operator + ":" + raw_operators[0].operand;
       raw_operators[0].operator = "search";
     }
