@@ -1004,7 +1004,6 @@ $(function () {
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();
         var message = $("#new_message_content").val();
-        var preview = echo.apply_markdown(message);
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
         $("#undo_markdown_preview").show();
@@ -1013,7 +1012,22 @@ $(function () {
         if (message.length === 0) {
             $("#preview_message_area").html(i18n.t("Nothing to preview"));
         } else {
-            $("#preview_message_area").html(preview);
+            if (echo.contains_bugdown(message))  {
+                $("#preview_message_area").html(i18n.t("Loading preview......"));
+                channel.get({
+                    url: '/json/messages/render',
+                    idempotent: true,
+                    data: {content: message},
+                    success: function (response_data) {
+                        $("#preview_message_area").html(response_data.rendered);
+                    },
+                    error: function () {
+                        $("#preview_message_area").html(i18n.t("Failed to generate preview"));
+                    }
+                });
+            } else {
+                $("#preview_message_area").html(echo.apply_markdown(message));
+            }
         }
     });
 
