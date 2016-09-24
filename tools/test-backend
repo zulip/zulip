@@ -30,8 +30,12 @@ if __name__ == "__main__":
     usage = """%prog [options]
     test-backend # Runs all backend tests
     test-backend zerver.tests.test_bugdown # run all tests in a test module
+    test-backend zerver/tests/test_bugdown.py # run all tests in a test module
+    test-backend test_bugdown # run all tests in a test module
     test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
-    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test"""
+    test-backend BugdownTest # run all tests in a test class
+    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
+    test-backend BugdownTest.test_inline_youtube # run a single test"""
 
     parser = optparse.OptionParser(usage)
 
@@ -71,24 +75,24 @@ if __name__ == "__main__":
     thedir = 'zerver/tests/'
 
     for suite in args:
-        args[args.index(suite)]=suite.replace("/", ".")
+        args[args.index(suite)] = suite.replace("/", ".")
 
     for suite in args:
-        flag=0
+        found_file = False
         if suite[0].isupper() and "test_" in suite:
-            classname=suite.rsplit('.', 1)[0]
+            classname = suite.rsplit('.', 1)[0]
             for file in os.listdir(thedir):
                 if not file.endswith(".pyc"):
                     filepath = thedir + file
                     if not os.path.isdir(filepath):
                         for line in open(filepath):
                             if classname in line:
-                                filepath=filepath.replace(".py",".")
-                                new_suite=filepath+suite
-                                args[args.index(suite)]=new_suite
-                                flag=1
+                                filepath = filepath.replace(".py",".")
+                                new_suite = filepath + suite
+                                args[args.index(suite)] = new_suite
+                                found_file = True
                                 break
-                if flag==1:
+                if found_file == True:
                     break
 
         elif suite[0].isupper():
@@ -98,24 +102,24 @@ if __name__ == "__main__":
                     if not os.path.isdir(filepath):
                         for line in open(filepath):
                             if suite in line:
-                                filepath=filepath.replace(".py",".")
-                                new_suite=filepath+suite
-                                args[args.index(suite)]=new_suite
-                                flag=1
+                                filepath = filepath.replace(".py",".")
+                                new_suite = filepath + suite
+                                args[args.index(suite)] = new_suite
+                                found_file = True
                                 break
-                if flag==1:
+                if found_file == True:
                     break
 
     for suite in args:
         if suite.startswith('test'):
-            new_suite="zerver.tests."+suite
-            args[args.index(suite)]=new_suite
+            new_suite = "zerver.tests." + suite
+            args[args.index(suite)] = new_suite
 
     for suite in args:
-        args[args.index(suite)]=suite.replace(".py", "")
+        args[args.index(suite)] = suite.replace(".py", "")
 
     for suite in args:
-        args[args.index(suite)]=suite.replace("/", ".")
+        args[args.index(suite)] = suite.replace("/", ".")
 
     if len(args) == 0:
         suites = ["zerver.tests"]
