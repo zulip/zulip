@@ -527,7 +527,7 @@ function _setup_page() {
         },
         submitHandler: function () {
             var full_name = $('#create_bot_name').val();
-            var short_name = $('#create_bot_short_name').val();
+            var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
             var default_sending_stream = $('#create_bot_default_sending_stream').val();
             var default_events_register_stream = $('#create_bot_default_events_register_stream').val();
             var formData = new FormData();

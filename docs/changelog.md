@@ -4,7 +4,26 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
-### 1.4 - 2016-08-25
+- Added support for (optionally) using PGRoonga to support full-text
+  search in all languages (not just English).
+- Added GitLab and Sentry integrations.
+- Added support for VMWare Fusion Vagrant provider for faster OSX
+  development.
+- Fixed Zulip Tornado service not working with http_proxy set in environment.
+- Fixed text overflow in stream subscriptions.
+- Fixed CSS issues with message topic editing.
+- Upgrade jQuery to the latest 1.12 release.
+- Restyled all the registration pages to look nicer and be responsive.
+- Suppressed @-all mentions being treated as mentions on muted
+  streams.
+- Documented preliminary design for interactive bot system.
+
+### 1.4.1 - 2016-09-03
+- Fixed settings bug upgrading from pre-1.4.0 releases to 1.4.0.
+- Fixed local file uploads integration being broken for new 1.4.0
+  installations.
+
+### 1.4.0 - 2016-08-25
 
 - Migrated Zulip's python dependencies to be installed via a virtualenv,
   instead of the via apt.  This is a major change to how Zulip

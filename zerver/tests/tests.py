@@ -11,13 +11,13 @@ from django.test import TestCase, override_settings
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
     simulated_queue_client, tornado_redirected_to_list, ZulipTestCase,
-    most_recent_usermessage, most_recent_message,
+    most_recent_message, make_client
 )
 from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
-    Realm, Client, UserActivity, \
-    get_user_profile_by_email, split_email_to_domain, get_realm, \
+    Realm, RealmAlias, UserActivity, \
+    get_user_profile_by_email, get_realm, \
     get_client, get_stream, Message, get_unique_open_realm, \
     completely_open
 
@@ -29,8 +29,6 @@ from zerver.lib.actions import \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
     do_add_subscription, do_remove_subscription, do_make_stream_private
-from zerver.lib.alert_words import alert_words_in_realm, user_alert_words, \
-    add_user_alert_words, remove_user_alert_words
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
@@ -41,7 +39,6 @@ from django.conf import settings
 from django.core import mail
 from six import text_type
 from six.moves import range
-import datetime
 import os
 import re
 import sys
@@ -92,6 +89,16 @@ class SlowQueryTest(TestCase):
         self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
         self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
+class ModelTest(TestCase):
+    def test_miscellaneous_things(self):
+        # type: () -> None
+        '''
+        This is a kitchen sink test that is designed simply to get
+        test coverage up to 100% for models.py.
+        '''
+        client = make_client('some_client')
+        self.assertEqual(str(client), u'<Client: some_client>')
+
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, email, new_realm_name):
         # type: (text_type, text_type) -> None
@@ -125,7 +132,7 @@ class RealmTest(ZulipTestCase):
             value = new_name,
         ))
 
-    def test_realm_name_api(self):
+    def test_update_realm_api(self):
         # type: () -> None
         new_name = 'Zulip: Worldwide Exporter of APIs'
 
@@ -134,11 +141,64 @@ class RealmTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         do_change_is_admin(user_profile, True)
 
-        req = dict(name=ujson.dumps(new_name))
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_success(result)
-        realm = get_realm('zulip.com')
+        def set_up_db(attr, value):
+            # type: (str, Any) -> None
+            realm = get_realm('zulip.com')
+            setattr(realm, attr, value)
+            realm.save()
+
+        def update_with_api(**kwarg):
+            # type: (**Any) -> Realm
+            params = {k: ujson.dumps(v) for k, v in kwarg.items()}
+            result = self.client_patch('/json/realm', params)
+            self.assert_json_success(result)
+            return get_realm('zulip.com') # refresh data
+
+        # name
+        realm = update_with_api(name=new_name)
         self.assertEqual(realm.name, new_name)
+
+        # restricted
+        set_up_db('restricted_to_domain', False)
+        realm = update_with_api(restricted_to_domain=True)
+        self.assertEqual(realm.restricted_to_domain, True)
+        realm = update_with_api(restricted_to_domain=False)
+        self.assertEqual(realm.restricted_to_domain, False)
+
+        # invite_required
+        set_up_db('invite_required', False)
+        realm = update_with_api(invite_required=True)
+        self.assertEqual(realm.invite_required, True)
+        realm = update_with_api(invite_required=False)
+        self.assertEqual(realm.invite_required, False)
+
+        # invite_by_admins_only
+        set_up_db('invite_by_admins_only', False)
+        realm = update_with_api(invite_by_admins_only=True)
+        self.assertEqual(realm.invite_by_admins_only, True)
+        realm = update_with_api(invite_by_admins_only=False)
+        self.assertEqual(realm.invite_by_admins_only, False)
+
+        # create_stream_by_admins_only
+        set_up_db('create_stream_by_admins_only', False)
+        realm = update_with_api(create_stream_by_admins_only=True)
+        self.assertEqual(realm.create_stream_by_admins_only, True)
+        realm = update_with_api(create_stream_by_admins_only=False)
+        self.assertEqual(realm.create_stream_by_admins_only, False)
+
+        # allow_message_editing
+        set_up_db('allow_message_editing', False)
+        set_up_db('message_content_edit_limit_seconds', 0)
+        realm = update_with_api(allow_message_editing=True,
+                                message_content_edit_limit_seconds=100)
+        self.assertEqual(realm.allow_message_editing, True)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        realm = update_with_api(allow_message_editing=False)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        realm = update_with_api(message_content_edit_limit_seconds=200)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
 
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
@@ -268,6 +328,72 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
 
+class ZephyrTest(ZulipTestCase):
+    def test_webathena_kerberos_login(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        def post(**kwargs):
+            # type: (**Any) -> HttpResponse
+            params = {k: ujson.dumps(v) for k, v in kwargs.items()}
+            return self.client_post('/accounts/webathena_kerberos_login/', params)
+
+        result = post()
+        self.assert_json_error(result, 'Could not find Kerberos credential')
+
+        result = post(cred='whatever')
+        self.assert_json_error(result, 'Webathena login not enabled')
+
+        email = 'starnine@mit.edu'
+        self.login(email)
+
+        def ccache_mock(**kwargs):
+            # type: (**Any) -> Any
+            return patch('zerver.views.zephyr.make_ccache', **kwargs)
+
+        def ssh_mock(**kwargs):
+            # type: (**Any) -> Any
+            return patch('zerver.views.zephyr.subprocess.check_call', **kwargs)
+
+        def mirror_mock():
+            # type: () -> Any
+            return self.settings(PERSONAL_ZMIRROR_SERVER='server')
+
+        def logging_mock():
+            # type: () -> Any
+            return patch('logging.exception')
+
+        cred = dict(cname=dict(nameString=['starnine']))
+
+        with ccache_mock(side_effect=KeyError('foo')):
+            result = post(cred=cred)
+        self.assert_json_error(result, 'Invalid Kerberos cache')
+
+        with \
+                ccache_mock(return_value=b'1234'), \
+                ssh_mock(side_effect=KeyError('foo')), \
+                logging_mock() as log:
+            result = post(cred=cred)
+
+        self.assert_json_error(result, 'We were unable to setup mirroring for you')
+        log.assert_called_with("Error updating the user's ccache")
+
+        with ccache_mock(return_value=b'1234'), mirror_mock(), ssh_mock() as ssh:
+            result = post(cred=cred)
+
+        self.assert_json_success(result)
+        ssh.assert_called_with([
+            'ssh',
+            'server',
+            '--',
+            '/home/zulip/zulip/bots/process_ccache',
+            'starnine',
+            get_user_profile_by_email(email).api_key,
+            'MTIzNA=='])
+
+
+
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self):
         # type: () -> None
@@ -325,9 +451,11 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assert_json_error(result,
             "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
 
+        RealmAlias.objects.create(realm=get_realm('zulip.com'), domain='zulip.net')
+
         # HAPPY PATH STARTS HERE
         valid_params = dict(
-            email='romeo@zulip.com',
+            email='romeo@zulip.net',
             password='xxxx',
             full_name='Romeo Montague',
             short_name='Romeo',
@@ -335,7 +463,7 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_put("/json/users", valid_params)
         self.assert_json_success(result)
 
-        new_user = get_user_profile_by_email('romeo@zulip.com')
+        new_user = get_user_profile_by_email('romeo@zulip.net')
         self.assertEqual(new_user.full_name, 'Romeo Montague')
         self.assertEqual(new_user.short_name, 'Romeo')
 
@@ -343,7 +471,7 @@ class AdminCreateUserTest(ZulipTestCase):
         # the same user twice.
         result = self.client_put("/json/users", valid_params)
         self.assert_json_error(result,
-            "Email 'romeo@zulip.com' already in use")
+            "Email 'romeo@zulip.net' already in use")
 
 class WorkerTest(TestCase):
     class FakeClient(object):
@@ -453,27 +581,6 @@ class WorkerTest(TestCase):
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             worker = TestWorker()
             worker.consume({})
-
-class ActivityTest(ZulipTestCase):
-    def test_activity(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-        client, _ = Client.objects.get_or_create(name='website')
-        query = '/json/users/me/pointer'
-        last_visit = datetime.datetime.now()
-        count=150
-        for user_profile in UserProfile.objects.all():
-            UserActivity.objects.get_or_create(
-                user_profile=user_profile,
-                client=client,
-                query=query,
-                count=count,
-                last_visit=last_visit
-            )
-        with queries_captured() as queries:
-            self.client_get('/activity')
-
-        self.assert_length(queries, 13)
 
 class DocPageTest(ZulipTestCase):
         def _test(self, url, expected_content):
@@ -724,6 +831,52 @@ class BotTest(ZulipTestCase):
 
         profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.default_sending_stream.name, 'Rome')
+
+    def test_bot_add_subscription(self):
+        # type: () -> None
+        """
+        Calling POST /json/users/me/subscriptions should successfully add
+        streams, and a stream to the
+        list of subscriptions and confirm the right number of events
+        are generated.
+        When 'principals' has a bot, no notification message event or invitation email
+        is sent when add_subscriptions_backend is called in the above api call.
+        """
+        self.login("hamlet@zulip.com")
+
+        # Normal user i.e. not a bot.
+        request_data = {
+            'principals': '["iago@zulip.com"]'
+        }
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.common_subscribe_to_streams("hamlet@zulip.com", ['Rome'], request_data)
+            self.assert_json_success(result)
+
+        msg_event = [e for e in events if e['event']['type'] == 'message']
+        self.assert_length(msg_event, 1, exact=True) # Notification message event is sent.
+
+        # Create a bot.
+        self.assert_num_bots_equal(0)
+        result = self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        # A bot
+        bot_request_data = {
+            'principals': '["hambot-bot@zulip.com"]'
+        }
+        events_bot = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events_bot):
+            result = self.common_subscribe_to_streams("hamlet@zulip.com", ['Rome'], bot_request_data)
+            self.assert_json_success(result)
+
+        # No notification message event or invitation email is sent because of bot.
+        msg_event = [e for e in events_bot if e['event']['type'] == 'message']
+        self.assert_length(msg_event, 0, exact=True)
+        self.assertEqual(len(events_bot), len(events) - 1)
+
+        # Test runner automatically redirects all sent email to a dummy 'outbox'.
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_add_bot_with_default_sending_stream_private_allowed(self):
         # type: () -> None
@@ -1355,6 +1508,31 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_illegal_name_changes(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email(email)
+        full_name = user.full_name
+
+        with self.settings(NAME_CHANGES_DISABLED=True):
+            json_result = self.client_post("/json/settings/change",
+                dict(full_name='Foo Bar'))
+
+        # We actually fail silently here, since this only happens if
+        # somebody is trying to game our API, and there's no reason to
+        # give them the courtesy of an error reason.
+        self.assert_json_success(json_result)
+
+        user = get_user_profile_by_email(email)
+        self.assertEqual(user.full_name, full_name)
+
+        # Now try a too-long name
+        json_result = self.client_post("/json/settings/change",
+            dict(full_name='x' * 1000))
+        self.assert_json_error(json_result, 'Name too long!')
+
+
     # This is basically a don't-explode test.
     def test_notify_settings(self):
         # type: () -> None
@@ -1478,6 +1656,15 @@ class GetProfileTest(ZulipTestCase):
         self.assertEqual(json["max_message_id"], max_id)
         return json
 
+    def test_get_pointer(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        result = self.client_get("/json/users/me/pointer")
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("pointer", json)
+
     def test_cache_behavior(self):
         # type: () -> None
         with queries_captured() as queries:
@@ -1531,283 +1718,6 @@ class GetProfileTest(ZulipTestCase):
                     user['avatar_url'],
                     get_avatar_url(user_profile.avatar_source, user_profile.email),
                 )
-
-class UserPresenceTests(ZulipTestCase):
-    def test_get_empty(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-        result = self.client_post("/json/get_active_statuses")
-
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        for email, presence in json['presences'].items():
-            self.assertEqual(presence, {})
-
-    def test_set_idle(self):
-        # type: () -> None
-        email = "hamlet@zulip.com"
-        self.login(email)
-        client = 'website'
-
-        def test_result(result):
-            # type: (HttpResponse) -> datetime.datetime
-            self.assert_json_success(result)
-            json = ujson.loads(result.content)
-            self.assertEqual(json['presences'][email][client]['status'], 'idle')
-            self.assertIn('timestamp', json['presences'][email][client])
-            self.assertIsInstance(json['presences'][email][client]['timestamp'], int)
-            self.assertEqual(list(json['presences'].keys()), ['hamlet@zulip.com'])
-            return json['presences'][email][client]['timestamp']
-
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
-        test_result(result)
-
-        result = self.client_post("/json/get_active_statuses", {})
-        timestamp = test_result(result)
-
-        email = "othello@zulip.com"
-        self.login(email)
-        self.client_post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client_post("/json/get_active_statuses", {})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
-        self.assertEqual(sorted(json['presences'].keys()), ['hamlet@zulip.com', 'othello@zulip.com'])
-        newer_timestamp = json['presences'][email][client]['timestamp']
-        self.assertGreaterEqual(newer_timestamp, timestamp)
-
-    def test_set_active(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-        client = 'website'
-
-        self.client_post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client_post("/json/get_active_statuses", {})
-
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences']["hamlet@zulip.com"][client]['status'], 'idle')
-
-        email = "othello@zulip.com"
-        self.login("othello@zulip.com")
-        self.client_post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client_post("/json/get_active_statuses", {})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
-
-        self.client_post("/json/users/me/presence", {'status': 'active'})
-        result = self.client_post("/json/get_active_statuses", {})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences'][email][client]['status'], 'active')
-        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
-
-    def test_no_mit(self):
-        # type: () -> None
-        """Zephyr mirror realms such as MIT never get a list of users"""
-        self.login("espuser@mit.edu")
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences'], {})
-
-    def test_same_realm(self):
-        # type: () -> None
-        self.login("espuser@mit.edu")
-        self.client_post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client_post("/accounts/logout/")
-
-        # Ensure we don't see hamlet@zulip.com information leakage
-        self.login("hamlet@zulip.com")
-        result = self.client_post("/json/users/me/presence", {'status': 'idle'})
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-        self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
-        # We only want @zulip.com emails
-        for email in json['presences'].keys():
-            self.assertEqual(split_email_to_domain(email), 'zulip.com')
-
-class AlertWordTests(ZulipTestCase):
-    interesting_alert_word_list = ['alert', 'multi-word word', u'☃']
-
-    def test_internal_endpoint(self):
-        # type: () -> None
-        email = "cordelia@zulip.com"
-        self.login(email)
-
-        params = {
-            'alert_words': ujson.dumps(['milk', 'cookies'])
-        }
-        result = self.client_post('/json/users/me/alert_words', params)
-        self.assert_json_success(result)
-        user = get_user_profile_by_email(email)
-        words = user_alert_words(user)
-        self.assertEqual(words, ['milk', 'cookies'])
-
-
-    def test_default_no_words(self):
-        # type: () -> None
-        """
-        Users start out with no alert words.
-        """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
-
-        words = user_alert_words(user)
-
-        self.assertEqual(words, [])
-
-    def test_add_word(self):
-        # type: () -> None
-        """
-        add_user_alert_words can add multiple alert words at once.
-        """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
-
-        # Add several words, including multi-word and non-ascii words.
-        add_user_alert_words(user, self.interesting_alert_word_list)
-
-        words = user_alert_words(user)
-        self.assertEqual(words, self.interesting_alert_word_list)
-
-    def test_remove_word(self):
-        # type: () -> None
-        """
-        Removing alert words works via remove_user_alert_words, even
-        for multi-word and non-ascii words.
-        """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
-
-        add_user_alert_words(user, self.interesting_alert_word_list)
-
-        theoretical_remaining_alerts = self.interesting_alert_word_list[:]
-
-        for alert_word in self.interesting_alert_word_list:
-            remove_user_alert_words(user, alert_word)
-            theoretical_remaining_alerts.remove(alert_word)
-            actual_remaining_alerts = user_alert_words(user)
-            self.assertEqual(actual_remaining_alerts,
-                             theoretical_remaining_alerts)
-
-    def test_realm_words(self):
-        # type: () -> None
-        """
-        We can gather alert words for an entire realm via
-        alert_words_in_realm. Alerts added for one user do not impact other
-        users.
-        """
-        email = "cordelia@zulip.com"
-        user1 = get_user_profile_by_email(email)
-
-        add_user_alert_words(user1, self.interesting_alert_word_list)
-
-        email = "othello@zulip.com"
-        user2 = get_user_profile_by_email(email)
-        add_user_alert_words(user2, ['another'])
-
-        realm_words = alert_words_in_realm(user2.realm)
-        self.assertEqual(len(realm_words), 2)
-        self.assertEqual(list(realm_words.keys()), [user1.id, user2.id])
-        self.assertEqual(realm_words[user1.id],
-                         self.interesting_alert_word_list)
-        self.assertEqual(realm_words[user2.id], ['another'])
-
-    def test_json_list_default(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], [])
-
-    def test_json_list_add(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
-        self.assert_json_success(result)
-
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
-
-    def test_json_list_remove(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
-        self.assert_json_success(result)
-
-        result = self.client_delete('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one'])})
-        self.assert_json_success(result)
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['two', 'three'])
-
-    def test_json_list_set(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
-        self.assert_json_success(result)
-
-        result = self.client_post('/json/users/me/alert_words', {'alert_words': ujson.dumps(['a', 'b', 'c'])})
-        self.assert_json_success(result)
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
-
-    def message_does_alert(self, user_profile, message):
-        # type: (UserProfile, text_type) -> bool
-        """Send a bunch of messages as othello, so Hamlet is notified"""
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
-        user_message = most_recent_usermessage(user_profile)
-        return 'has_alert_word' in user_message.flags_list()
-
-    def test_alert_flags(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-        user_profile_hamlet = get_user_profile_by_email("hamlet@zulip.com")
-
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
-        self.assert_json_success(result)
-
-        result = self.client_get('/json/users/me/alert_words')
-        self.assert_json_success(result)
-        data = ujson.loads(result.content)
-        self.assertEqual(data['alert_words'], ['one', 'two', 'three'])
-
-        # Alerts in the middle of messages work.
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one time"))
-        # Alerts at the end of messages work.
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Normal alert one"))
-        # Alerts at the beginning of messages work.
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "two normal alerts"))
-        # Alerts with surrounding punctuation work.
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "This one? should alert"))
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Definitely time for three."))
-        # Multiple alerts in a message work.
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "One two three o'clock"))
-        # Alerts are case-insensitive.
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "One o'clock"))
-        self.assertTrue(self.message_does_alert(user_profile_hamlet, "Case of ONE, won't stop me"))
-
-        # We don't cause alerts for matches in URLs.
-        self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one/ urls"))
-        self.assertFalse(self.message_does_alert(user_profile_hamlet, "Don't alert on http://t.co/one urls"))
 
 class HomeTest(ZulipTestCase):
     @slow('big method')
@@ -1911,6 +1821,7 @@ class HomeTest(ZulipTestCase):
             "unread_count",
             "unsubbed_info",
             "user_id",
+            "zulip_version",
         ]
 
         email = "hamlet@zulip.com"
@@ -1921,26 +1832,137 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         self.login(email)
-        with \
-                patch('zerver.lib.actions.request_event_queue', return_value=42), \
-                patch('zerver.lib.actions.get_user_events', return_value=[]):
-            result = self.client_get('/', dict(stream='Denmark'))
+        result = self._get_home_page(stream='Denmark')
         html = result.content.decode('utf-8')
 
         for html_bit in html_bits:
             if html_bit not in html:
                 self.fail('%s not in result' % (html_bit,))
 
-        lines = html.split('\n')
-        page_params_line = [l for l in lines if l.startswith('var page_params')][0]
-        page_params_json = page_params_line.split(' = ')[1].rstrip(';')
-        page_params = ujson.loads(page_params_json)
+        page_params = self._get_page_params(result)
 
         actual_keys = sorted([str(k) for k in page_params.keys()])
         self.assertEqual(actual_keys, expected_keys)
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
+
+    def _get_home_page(self, **kwargs):
+        # type: (**Any) -> HttpResponse
+        with \
+                patch('zerver.lib.actions.request_event_queue', return_value=42), \
+                patch('zerver.lib.actions.get_user_events', return_value=[]):
+            result = self.client_get('/', dict(**kwargs))
+        return result
+
+    def _get_page_params(self, result):
+        # type: (HttpResponse) -> Dict[str, Any]
+        html = result.content.decode('utf-8')
+        lines = html.split('\n')
+        page_params_line = [l for l in lines if l.startswith('var page_params')][0]
+        page_params_json = page_params_line.split(' = ')[1].rstrip(';')
+        page_params = ujson.loads(page_params_json)
+        return page_params
+
+    def _sanity_check(self, result):
+        # type: (HttpResponse) -> None
+        '''
+        Use this for tests that are geared toward specific edge cases, but
+        which still want the home page to load properly.
+        '''
+        html = result.content.decode('utf-8')
+        if 'Compose your message' not in html:
+            self.fail('Home page probably did not load.')
+
+    def test_terms_of_service(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        with \
+                self.settings(TERMS_OF_SERVICE='whatever'), \
+                self.settings(TOS_VERSION='99.99'):
+
+            result = self.client_get('/', dict(stream='Denmark'))
+
+        html = result.content.decode('utf-8')
+        self.assertIn('There is a new terms of service', html)
+
+    def test_bad_narrow(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        with patch('logging.exception') as mock:
+            result = self._get_home_page(stream='Invalid Stream')
+        mock.assert_called_once_with('Narrow parsing')
+        self._sanity_check(result)
+
+    def test_bad_pointer(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        user_profile.pointer = 999999
+        user_profile.save()
+
+        self.login(email)
+        with patch('logging.warning') as mock:
+            result = self._get_home_page()
+        mock.assert_called_once_with('hamlet@zulip.com has invalid pointer 999999')
+        self._sanity_check(result)
+
+    def test_topic_narrow(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self._get_home_page(stream='Denmark', topic='lunch')
+        self._sanity_check(result)
+        html = result.content.decode('utf-8')
+        self.assertIn('lunch', html)
+
+    def test_notifications_stream(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        realm = get_realm('zulip.com')
+        realm.notifications_stream = get_stream('Denmark', realm)
+        realm.save()
+        self.login(email)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['notifications_stream'], 'Denmark')
+
+    def test_new_stream(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        stream_name = 'New stream'
+        self.subscribe_to_stream(email, stream_name)
+        self.login(email)
+        result = self._get_home_page(stream=stream_name)
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['narrow_stream'], stream_name)
+        self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
+        self.assertEqual(page_params['initial_pointer'], -1)
+        self.assertEqual(page_params['max_message_id'], -1)
+        self.assertEqual(page_params['have_initial_messages'], False)
+
+    def test_invites_by_admins_only(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+
+        realm = user_profile.realm
+        realm.invite_by_admins_only = True
+        realm.save()
+
+        self.login(email)
+        self.assertFalse(user_profile.is_realm_admin)
+        result = self._get_home_page()
+        html = result.content.decode('utf-8')
+        self.assertNotIn('Invite more users', html)
+
+        user_profile.is_realm_admin = True
+        user_profile.save()
+        result = self._get_home_page()
+        html = result.content.decode('utf-8')
+        self.assertIn('Invite more users', html)
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):

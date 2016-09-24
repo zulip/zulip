@@ -1,14 +1,14 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Optional
+
 import sys
 import unittest
 
 try:
     from tools.lib.template_parser import (
         TemplateParserException,
-        get_tag_info,
-        html_tag_tree,
         is_django_block_tag,
         tokenize,
         validate,
@@ -19,9 +19,8 @@ except ImportError:
 
 class ParserTest(unittest.TestCase):
     def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
-        # See https://github.com/python/typeshed/issues/372
-        # for why we have to ingore types here.
-        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore
+        # type: (str, Optional[str], Optional[str], bool) -> None
+        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
             validate(fn=fn, text=text, check_indent=check_indent)
 
     def test_is_django_block_tag(self):
@@ -228,24 +227,3 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'django_end')
         self.assertEqual(token.tag, 'if')
-
-    def test_get_tag_info(self):
-        html = '''
-            <p id="test" class="test1 test2">foo</p>
-        '''
-
-        start_tag, end_tag = tokenize(html)
-
-        start_tag_info = get_tag_info(start_tag)
-        end_tag_info = get_tag_info(end_tag)
-
-        self.assertEqual(start_tag_info.text(), 'p.test1.test2#test')
-        self.assertEqual(end_tag_info.text(), 'p')
-
-    def test_html_tag_tree(self):
-        # type: () -> None
-        html = '''
-        <body><p>Hello world</p></body>
-        '''
-        tree = html_tag_tree(html)
-        self.assertEqual(tree.children[0].children[0].token.s, '<p>')

@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from typing import Any
+
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 
@@ -17,6 +20,7 @@ class Command(BaseCommand):
     help = """UserMessage fetching helper for export.py"""
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('--path',
                             dest='path',
                             action="store",
@@ -29,6 +33,7 @@ class Command(BaseCommand):
                             help='Thread ID')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         logging.info("Starting UserMessage batch thread %s" % (options['thread'],))
         files = set(glob.glob(os.path.join(options['path'], 'messages-*.json.partial')))
         for partial_path in files:

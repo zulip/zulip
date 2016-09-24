@@ -46,83 +46,111 @@ common.then_send_many([
 // Define the messages we expect to see when narrowed.
 
 function expect_home() {
-    common.expected_messages('zhome', [
-        'Verona > frontend test',
-        'You and Cordelia Lear, King Hamlet',
-        'You and Cordelia Lear'
-    ], [
-        '<p>test message D</p>',
-        '<p>personal D</p>',
-        '<p>personal E</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zhome', function () {
+            common.expected_messages('zhome', [
+                'Verona > frontend test',
+                'You and Cordelia Lear, King Hamlet',
+                'You and Cordelia Lear'
+            ], [
+                '<p>test message D</p>',
+                '<p>personal D</p>',
+                '<p>personal E</p>'
+            ]);
+        });
+    });
 }
 
 function expect_stream() {
-    common.expected_messages('zfilt', [
-        'Verona > frontend test',
-        'Verona > other subject',
-        'Verona > frontend test'
-    ], [
-        '<p>test message A</p>',
-        '<p>test message B</p>',
-        '<p>test message C</p>',
-        '<p>test message D</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zfilt', function () {
+            common.expected_messages('zfilt', [
+                'Verona > frontend test',
+                'Verona > other subject',
+                'Verona > frontend test'
+            ], [
+                '<p>test message A</p>',
+                '<p>test message B</p>',
+                '<p>test message C</p>',
+                '<p>test message D</p>'
+            ]);
+        });
+    });
 }
 
 function expect_stream_subject() {
-    common.expected_messages('zfilt', [
-        'Verona > frontend test'
-    ], [
-        '<p>test message A</p>',
-        '<p>test message B</p>',
-        '<p>test message D</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zfilt', function () {
+            common.expected_messages('zfilt', [
+                'Verona > frontend test'
+            ], [
+                '<p>test message A</p>',
+                '<p>test message B</p>',
+                '<p>test message D</p>'
+            ]);
+        });
+    });
 }
 
 function expect_subject() {
-    common.expected_messages('zfilt', [
-        'Verona > frontend test',
-        'Denmark > frontend test',
-        'Verona > frontend test'
-    ], [
-        '<p>test message A</p>',
-        '<p>test message B</p>',
-        '<p>other message</p>',
-        '<p>test message D</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zfilt', function () {
+            common.expected_messages('zfilt', [
+                'Verona > frontend test',
+                'Denmark > frontend test',
+                'Verona > frontend test'
+            ], [
+                '<p>test message A</p>',
+                '<p>test message B</p>',
+                '<p>other message</p>',
+                '<p>test message D</p>'
+            ]);
+        });
+    });
 }
 
 function expect_huddle() {
-    common.expected_messages('zfilt', [
-        'You and Cordelia Lear, King Hamlet'
-    ], [
-        '<p>personal A</p>',
-        '<p>personal B</p>',
-        '<p>personal D</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zfilt', function () {
+            common.expected_messages('zfilt', [
+                'You and Cordelia Lear, King Hamlet'
+            ], [
+                '<p>personal A</p>',
+                '<p>personal B</p>',
+                '<p>personal D</p>'
+            ]);
+        });
+    });
 }
 
 function expect_1on1() {
-    common.expected_messages('zfilt', [
-        'You and Cordelia Lear'
-    ], [
-        '<p>personal C</p>',
-        '<p>personal E</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zfilt', function () {
+            common.expected_messages('zfilt', [
+                'You and Cordelia Lear'
+            ], [
+                '<p>personal C</p>',
+                '<p>personal E</p>'
+            ]);
+        });
+    });
 }
 
 function expect_all_pm() {
-    common.expected_messages('zfilt', [
-        'You and Cordelia Lear, King Hamlet',
-        'You and Cordelia Lear'
-    ], [
-        '<p>personal A</p>',
-        '<p>personal B</p>',
-        '<p>personal C</p>',
-        '<p>personal D</p>',
-        '<p>personal E</p>'
-    ]);
+    casper.then(function () {
+        casper.waitUntilVisible('#zfilt', function () {
+            common.expected_messages('zfilt', [
+                'You and Cordelia Lear, King Hamlet',
+                'You and Cordelia Lear'
+            ], [
+                '<p>personal A</p>',
+                '<p>personal B</p>',
+                '<p>personal C</p>',
+                '<p>personal D</p>',
+                '<p>personal E</p>'
+            ]);
+        });
+    });
 }
 
 function check_narrow_title(title) {
@@ -135,134 +163,148 @@ function check_narrow_title(title) {
 
 function un_narrow() {
     casper.then(common.un_narrow);
-    casper.then(expect_home);
+    expect_home();
     casper.then(check_narrow_title('home - Zulip Dev - Zulip'));
 }
 
-// Narrow by clicking links.
-
-common.wait_for_receive(function () {
-    casper.test.info('Narrowing by clicking stream');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
-});
-
-casper.waitUntilVisible('#zfilt', function () {
-    expect_stream();
-});
-casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
-un_narrow();
-
-casper.waitUntilVisible('#zhome', function () {
-    expect_home();
-    casper.test.info('Narrowing by clicking subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
-});
-casper.then(check_narrow_title('frontend test - Zulip Dev - Zulip'));
-
-casper.waitUntilVisible('#zfilt', function () {
-    expect_stream_subject();
-
-    // This time, un-narrow by hitting the search 'x'
-    casper.test.info('Un-narrowing');
-    casper.click('#search_exit');
-});
-
-casper.waitUntilVisible('#zhome', function () {
-    expect_home();
-    casper.test.info('Narrowing by clicking personal');
-    casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
-});
-
-casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
-
-casper.waitUntilVisible('#zfilt', function () {
-    expect_huddle();
-
-    // Un-narrow by clicking "Zulip"
-    casper.test.info('Un-narrowing');
-    casper.click('.brand');
-});
-
-
-// Narrow by typing in search strings or operators.
-
 function search_and_check(str, item, check, narrow_title) {
     common.select_item_via_typeahead('#search_query', str, item);
-    casper.then(check);
+    check();
     casper.then(check_narrow_title(narrow_title));
     un_narrow();
 }
 
 function search_silent_user(str, item) {
     common.select_item_via_typeahead('#search_query', str, item);
-    casper.waitUntilVisible('#silent_user', function () {
-        casper.test.info("Empty feed for silent user visible.");
-        var expected_message = "\n        You haven't received any messages sent by this user yet!"+
-                                "\n      ";
-        this.test.assertEquals(casper.fetchText('#silent_user'), expected_message);
+    casper.then(function () {
+        casper.waitUntilVisible('#silent_user', function () {
+            casper.test.info("Empty feed for silent user visible.");
+            var expected_message = "\n        You haven't received any messages sent by this user yet!"+
+                                    "\n      ";
+            this.test.assertEquals(casper.fetchText('#silent_user'), expected_message);
+        });
     });
     un_narrow();
 }
 
 function search_non_existing_user(str, item) {
     common.select_item_via_typeahead('#search_query', str, item);
-    casper.waitUntilVisible('#non_existing_user', function () {
-        casper.test.info("Empty feed for non existing user visible.");
-        var expected_message = "\n        This user does not exist!"+
-                                "\n      ";
-        this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
+    casper.then(function () {
+        casper.waitUntilVisible('#non_existing_user', function () {
+            casper.test.info("Empty feed for non existing user visible.");
+            var expected_message = "\n        This user does not exist!"+
+                                    "\n      ";
+            this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
+        });
     });
     un_narrow();
 }
 
-casper.waitUntilVisible('#zhome', expect_home);
+// Narrow by clicking links.
 
+casper.then(function () {
+    common.wait_for_receive(function () {
+        casper.test.info('Narrowing by clicking stream');
+        casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
+    });
+});
+
+expect_stream();
+
+casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
+
+un_narrow();
+
+expect_home();
+
+casper.then(function () {
+    casper.test.info('Narrowing by clicking subject');
+    casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
+});
+
+expect_stream_subject();
+
+casper.then(check_narrow_title('frontend test - Zulip Dev - Zulip'));
+
+casper.then(function () {
+    // This time, un-narrow by hitting the search 'x'
+    casper.test.info('Un-narrowing');
+    casper.click('#search_exit');
+});
+
+expect_home();
+
+casper.then(function () {
+    casper.test.info('Narrowing by clicking personal');
+    casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
+});
+
+expect_huddle();
+
+casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
+
+casper.then(function () {
+    // Un-narrow by clicking "Zulip"
+    casper.test.info('Un-narrowing');
+    casper.click('.brand');
+});
+
+expect_home();
+
+// Narrow by typing in search strings or operators.
 // Test stream / recipient autocomplete in the search bar
 search_and_check('Verona', 'Narrow to stream', expect_stream,
                  'Verona - Zulip Dev - Zulip');
+
 search_and_check('Cordelia', 'Narrow to private', expect_1on1,
-                'private - Zulip Dev - Zulip');
+                 'private - Zulip Dev - Zulip');
 
 // Test operators
 search_and_check('stream:Verona', 'Narrow', expect_stream,
-                'Verona - Zulip Dev - Zulip');
+                 'Verona - Zulip Dev - Zulip');
+
 search_and_check('stream:Verona subject:frontend+test', 'Narrow', expect_stream_subject,
-                'frontend test - Zulip Dev - Zulip');
+                 'frontend test - Zulip Dev - Zulip');
+
 search_and_check('subject:frontend+test', 'Narrow', expect_subject,
-                'home - Zulip Dev - Zulip');
+                 'home - Zulip Dev - Zulip');
 
 search_silent_user('sender:emailgateway@zulip.com', 'Narrow');
+
 search_non_existing_user('sender:dummyuser@zulip.com', 'Narrow');
 
 // Narrow by clicking the left sidebar.
 casper.then(function () {
     casper.test.info('Narrowing with left sidebar');
+    casper.click('#stream_filters [data-name="Verona"] a');
 });
-casper.thenClick('#stream_filters [data-name="Verona"]  a', expect_stream);
-casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
-casper.thenClick('#global_filters [data-name="home"]    a', expect_home);
-casper.then(check_narrow_title('home - Zulip Dev - Zulip'));
-casper.thenClick('#global_filters [data-name="private"] a', expect_all_pm);
-casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
-un_narrow();
 
+expect_stream();
+
+casper.then(check_narrow_title('Verona - Zulip Dev - Zulip'));
+
+casper.thenClick('#global_filters [data-name="home"] a');
+
+expect_home();
+
+casper.then(check_narrow_title('home - Zulip Dev - Zulip'));
+
+casper.thenClick('#global_filters [data-name="private"] a');
+
+expect_all_pm();
+
+casper.then(check_narrow_title('private - Zulip Dev - Zulip'));
+
+un_narrow();
 
 // Make sure stream search filters the stream list
 casper.then(function () {
     casper.test.info('Search streams using left sidebar');
-});
-
-casper.then(function () {
     casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible initially');
+    casper.click('#streams_header .sidebar-title');
 });
 
-casper.thenClick('#streams_header .sidebar-title');
-
-casper.then(function () {
-    casper.test.assertDoesntExist('.stream-list-filter.notdisplayed', 'Stream filter box visible after click');
-});
-
-casper.then(function () {
+casper.waitWhileSelector('.stream-list-filter.notdisplayed', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Original stream list contains Denmark');
     casper.test.assertExists('#stream_filters [data-name="Scotland"]', 'Original stream list contains Scotland');
     casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Original stream list contains Verona');
@@ -277,9 +319,17 @@ casper.then(function () {
             .trigger($.Event('input'));
     });
 });
-casper.then(function () {
+
+// There will be no race condition between these two waits because we
+// expect them to happen in parallel.
+casper.waitWhileSelector('#stream_filters [data-name="Denmark"]', function () {
     casper.test.assertDoesntExist('#stream_filters [data-name="Denmark"]', 'Filtered stream list does not contain Denmark');
+});
+casper.waitWhileSelector('#stream_filters [data-name="Scotland"]', function () {
     casper.test.assertDoesntExist('#stream_filters [data-name="Scotland"]', 'Filtered stream list does not contain Scotland');
+});
+
+casper.then(function () {
     casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Filtered stream list does contain Verona');
 });
 
@@ -292,20 +342,27 @@ casper.then(function () {
             .trigger($.Event('input'));
     });
 });
-casper.then(function () {
+
+// There will be no race condition between these waits because we
+// expect them to happen in parallel.
+casper.waitForSelector('#stream_filters [data-name="Denmark"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Denmark');
-    casper.test.assertExists('#stream_filters [data-name="Scotland"]', 'Restored stream list contains Scotland');
-    casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Restored stream list contains Verona');
 });
+casper.waitForSelector('#stream_filters [data-name="Scotland"]', function () {
+    casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Scotland');
+});
+casper.waitForSelector('#stream_filters [data-name="Verona"]', function () {
+    casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Verona');
+});
+
 
 casper.thenClick('#streams_header .sidebar-title');
 
-casper.then(function () {
+casper.waitForSelector('.stream-list-filter.notdisplayed', function () {
     casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible after second click');
 });
 
 un_narrow();
-
 
 common.then_log_out();
 

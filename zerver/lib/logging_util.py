@@ -1,7 +1,10 @@
 from __future__ import absolute_import
 
+import hashlib
 import logging
+import traceback
 from datetime import datetime, timedelta
+from zerver.lib.str_utils import force_bytes
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
@@ -26,9 +29,11 @@ class _RateLimitFilter(object):
                 use_cache = False
 
             if use_cache:
-                key = self.__class__.__name__.upper()
+                tb = force_bytes('\n'.join(traceback.format_exception(*record.exc_info)))
+                key = self.__class__.__name__.upper() + hashlib.sha1(tb).hexdigest()
                 duplicate = cache.get(key) == 1
-                cache.set(key, 1, rate)
+                if not duplicate:
+                    cache.set(key, 1, rate)
             else:
                 min_date = datetime.now() - timedelta(seconds=rate)
                 duplicate = (self.last_error >= min_date)

@@ -9,7 +9,7 @@ from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from six import text_type
-from typing import Any, AnyStr, Iterable, Optional, Tuple
+from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
 from zerver.lib.str_utils import force_bytes, force_text
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
@@ -20,7 +20,7 @@ from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body
+    extract_recipients, truncate_body, render_incoming_message
 from zerver.lib.cache import generic_bulk_cached_fetch
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -33,11 +33,11 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
     stringify_message_dict, \
     resolve_email_to_domain, get_realm, get_active_streams, \
-    bulk_get_streams
+    bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias, Selectable
+    or_, not_, union_all, alias, Selectable, Select, ColumnElement
 
 import re
 import ujson
@@ -48,11 +48,16 @@ import six
 
 class BadNarrowOperator(JsonableError):
     def __init__(self, desc, status_code=400):
+        # type: (str, int) -> None
         self.desc = desc
         self.status_code = status_code
 
     def to_json_error_msg(self):
+        # type: () -> str
         return _('Invalid narrow operator: {}').format(self.desc)
+
+Query = Any # TODO: Should be Select, but sqlalchemy stubs are busted
+ConditionTransform = Any # TODO: should be Callable[[ColumnElement], ColumnElement], but sqlalchemy stubs are busted
 
 # When you add a new operator to this, also update zerver/lib/narrow.py
 class NarrowBuilder(object):
@@ -62,6 +67,8 @@ class NarrowBuilder(object):
         self.msg_id_column = msg_id_column
 
     def add_term(self, query, term):
+        # type: (Query, Dict[str, Any]) -> Query
+
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
@@ -83,6 +90,7 @@ class NarrowBuilder(object):
         return method(query, operand, maybe_negate)
 
     def by_has(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         if operand not in ['attachment', 'image', 'link']:
             raise BadNarrowOperator("unknown 'has' operand " + operand)
         col_name = 'has_' + operand
@@ -90,6 +98,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
     def by_in(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         if operand == 'home':
             conditions = exclude_muting_conditions(self.user_profile, [])
             return query.where(and_(*conditions))
@@ -99,6 +108,7 @@ class NarrowBuilder(object):
         raise BadNarrowOperator("unknown 'in' operand " + operand)
 
     def by_is(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         if operand == 'private':
             query = query.select_from(join(query.froms[0], "zerver_recipient",
                                            column("recipient_id") ==
@@ -118,6 +128,7 @@ class NarrowBuilder(object):
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
     def _pg_re_escape(self, pattern):
+        # type: (text_type) -> text_type
         """
         Escape user input to place in a regex
 
@@ -139,6 +150,7 @@ class NarrowBuilder(object):
         return ''.join(s)
 
     def by_stream(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         stream = get_stream(operand, self.user_profile.realm)
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
@@ -164,6 +176,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         if self.user_profile.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -187,6 +200,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
     def by_sender(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         try:
             sender = get_user_profile_by_email(operand)
         except UserProfile.DoesNotExist:
@@ -196,13 +210,16 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(cond))
 
     def by_near(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         return query
 
     def by_id(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
     def by_pm_with(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         if ',' in operand:
             # Huddle
             try:
@@ -236,12 +253,14 @@ class NarrowBuilder(object):
             return query.where(maybe_negate(cond))
 
     def by_search(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         if settings.USING_PGROONGA:
             return self._by_search_pgroonga(query, operand, maybe_negate)
         else:
             return self._by_search_tsearch(query, operand, maybe_negate)
 
     def _by_search_pgroonga(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         match_positions_byte = func.pgroonga.match_positions_byte
         query_extract_keywords = func.pgroonga.query_extract_keywords
         keywords = query_extract_keywords(operand)
@@ -253,6 +272,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
@@ -339,6 +359,8 @@ def narrow_parameter(json):
         raise ValueError("argument is not a list")
 
     def convert_term(elem):
+        # type: (Union[Dict, List]) -> Dict[str, Any]
+
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
             if (len(elem) != 2
@@ -455,6 +477,7 @@ def exclude_muting_conditions(user_profile, narrow):
 
         if muted_topics:
             def mute_cond(muted):
+                # type: (Tuple[str, str]) -> Selectable
                 stream_cond = column("recipient_id") == recipient_map[muted[0].lower()]
                 topic_cond = func.upper(column("subject")) == func.upper(muted[1])
                 return and_(stream_cond, topic_cond)
@@ -887,9 +910,19 @@ def update_message_backend(request, user_profile,
         if content == "":
             raise JsonableError(_("Content can't be empty"))
         content = truncate_body(content)
-        rendered_content = message.render_markdown(content)
-        if not rendered_content:
-            raise JsonableError(_("We were unable to render your updated message"))
+
+        # We exclude UserMessage.flags.historical rows since those
+        # users did not receive the message originally, and thus
+        # probably are not relevant for reprocessed alert_words,
+        # mentions and similar rendering features.  This may be a
+        # decision we change in the future.
+        ums = UserMessage.objects.filter(message=message.id,
+                                         flags=~UserMessage.flags.historical)
+        message_users = {get_user_profile_by_id(um.user_profile_id) for um in ums}
+        # If rendering fails, the called code will raise a JsonableError.
+        rendered_content = render_incoming_message(message,
+                                                   content=content,
+                                                   message_users=message_users)
 
     do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
     return json_success()

@@ -87,6 +87,12 @@ os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')
 
+# HACK to fix up node_modules/.bin/handlebars deletion issue
+if not os.path.exists("node_modules/.bin/handlebars") and os.path.exists("node_modules/handlebars"):
+    print("Handlebars binary missing due to rebase past .gitignore fixup; fixing...")
+    subprocess.check_call(["rm", "-rf", "node_modules/handlebars"])
+    subprocess.check_call(["npm", "install"])
+
 if options.clear_memcached:
     print("Clearing memcached ...")
     subprocess.check_call('./scripts/setup/flush-memcached')

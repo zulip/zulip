@@ -23,17 +23,27 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     get_display_recipient, Attachment
 from zerver.lib.parallel import run_parallel
 from zerver.lib.utils import mkdir_p
-from six import text_type
 from six.moves import range
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 # Custom mypy types follow:
 Record = Dict[str, Any]
 TableName = str
 TableData = Dict[TableName, List[Record]]
 Field = str
-Path = text_type
+Path = str
 Context = Dict[str, Any]
+FilterArgs = Dict[str, Any]
+IdSource = Tuple[TableName, Field]
+SourceFilter = Callable[[Record], bool]
+
+# These next two types are callbacks, which mypy does not
+# support well, because PEP 484 says "using callbacks
+# with keyword arguments is not perceived as a common use case."
+# CustomFetch = Callable[[TableData, Config, Context], None]
+# PostProcessData = Callable[[TableData, Config, Context], None]
+CustomFetch = Any # TODO: make more specific, see above
+PostProcessData = Any # TODO: make more specific
 
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
@@ -119,7 +129,7 @@ DATE_FIELDS = {
 } # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data):
-    # (TableData) -> None
+    # type: (TableData) -> None
     tables = set(ALL_ZERVER_TABLES)
     tables -= set(NON_EXPORTED_TABLES)
     tables -= set(IMPLICIT_TABLES)
@@ -178,6 +188,9 @@ class Config(object):
                 post_process_data=None,
                 concat_and_destroy=None, id_source=None, source_filter=None,
                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
+        # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
+
+
         assert table or custom_tables
         self.table = table
         self.model = model
@@ -234,6 +247,7 @@ class Config(object):
 
 
 def export_from_config(response, config, seed_object=None, context=None):
+    # type: (TableData, Config, Any, Context) -> None
     table = config.table
     parent = config.parent
     model = config.model
@@ -973,6 +987,7 @@ def export_avatars_from_local(realm, local_dir, output_dir):
         ujson.dump(records, records_file, indent=4)
 
 def do_write_stats_file_for_realm_export(output_dir):
+    # type: (Path) -> None
     stats_file = os.path.join(output_dir, 'stats.txt')
     realm_file = os.path.join(output_dir, 'realm.json')
     attachment_file = os.path.join(output_dir, 'attachment.json')
@@ -1059,6 +1074,7 @@ def export_attachment_table(realm, output_dir, message_ids):
     write_data_to_file(output_file=output_file, data=response)
 
 def create_soft_link(source, in_progress=True):
+    # type: (Path, bool) -> None
     is_done = not in_progress
     in_progress_link = '/tmp/zulip-export-in-progress'
     done_link = '/tmp/zulip-export-most-recent'

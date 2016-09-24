@@ -35,7 +35,7 @@ function wrap_code(code) {
     while (code.length > 2 && code.substr(code.length - 2) === '\n\n') {
         code = code.substring(0, code.length - 1);
     }
-    return '<div class="codehilite"><pre>' + escape_func(code) + '</pre></div>\n';
+    return '<div class="codehilite"><pre><span></span>' + escape_func(code) + '</pre></div>\n';
 }
 
 function wrap_quote(text) {

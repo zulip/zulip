@@ -76,14 +76,24 @@ def missed_message_redis_key(token):
 def is_missed_message_address(address):
     # type: (text_type) -> bool
     msg_string = get_email_gateway_message_string_from_address(address)
+    return is_mm_32_format(msg_string)
 
+def is_mm_32_format(msg_string):
+    # type: (text_type) -> bool
+    '''
+    Missed message strings are formatted with a little "mm" prefix
+    followed by a randomly generated 32-character string.
+    '''
     return msg_string.startswith('mm') and len(msg_string) == 34
 
 def get_missed_message_token_from_address(address):
     # type: (text_type) -> text_type
     msg_string = get_email_gateway_message_string_from_address(address)
 
-    if not msg_string.startswith('mm') and len(msg_string) != 34:
+    if msg_string is None:
+        raise ZulipEmailForwardError('Address not recognized by gateway.')
+
+    if not is_mm_32_format(msg_string):
         raise ZulipEmailForwardError('Could not parse missed message address')
 
     # strip off the 'mm' before returning the redis key
@@ -168,7 +178,8 @@ def send_to_missed_message_address(address, message):
 
     internal_send_message(user_profile.email, recipient_type_name,
                           recipient_str, subject, body)
-
+    logging.info("Successfully processed email from %s to %s" % (
+        user_profile.email, recipient_str))
 
 ## Sending the Zulip ##
 
@@ -300,6 +311,8 @@ def process_stream_message(to, subject, message, debug_info):
     body += extract_and_upload_attachments(message, stream.realm)
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
+    logging.info("Successfully processed email to %s (%s)" % (
+        stream.name, stream.realm.domain))
 
 def process_missed_message(to, message, pre_checked):
     # type: (text_type, message.Message, bool) -> None

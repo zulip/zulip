@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
+from zerver.lib.bugdown import BugdownRenderingException
 from zerver.lib.cache import flush_user_profile
 from zerver.lib.context_managers import lockfile
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
@@ -24,6 +25,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_users
 
+from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
 from django.db import transaction, IntegrityError
@@ -67,7 +69,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
-from zerver.lib.str_utils import NonBinaryStr
+from zerver.lib.str_utils import NonBinaryStr, force_str
 
 import DNS
 import ujson
@@ -112,7 +114,7 @@ def log_event(event):
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
-            log.write(ujson.dumps(event) + u'\n')
+            log.write(force_str(ujson.dumps(event) + u'\n'))
 
 def active_user_ids(realm):
     # type: (Realm) -> List[int]
@@ -626,6 +628,19 @@ def do_send_message(message, rendered_content = None, no_log = False, stream = N
                               'stream': stream,
                               'local_id': local_id}])[0]
 
+def render_incoming_message(message, content, message_users):
+    # type: (Message, text_type, Set[UserProfile]) -> text_type
+    realm_alert_words = alert_words_in_realm(message.get_realm())
+    try:
+        rendered_content = message.render_markdown(
+            content=content,
+            realm_alert_words=realm_alert_words,
+            message_users=message_users,
+        )
+    except BugdownRenderingException:
+        raise JsonableError(_('Unable to render message'))
+    return rendered_content
+
 def do_send_messages(messages):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
@@ -684,7 +699,17 @@ def do_send_messages(messages):
         # Only deliver the message to active user recipients
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
-        message['message'].maybe_render_content(None)
+
+    # Render our messages.
+    for message in messages:
+        assert message['message'].rendered_content is None
+        rendered_content = render_incoming_message(
+            message['message'],
+            message['message'].content,
+            message_users=message['active_recipients'])
+        message['message'].set_rendered_content(rendered_content)
+
+    for message in messages:
         message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
@@ -805,6 +830,21 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
             send_event(event, active_user_ids(realm))
     return stream, created
 
+def create_streams_if_needed(realm, stream_names, invite_only):
+    # type: (Realm, List[text_type], bool) -> Tuple[List[Stream], List[Stream]]
+    added_streams = [] # type: List[Stream]
+    existing_streams = [] # type: List[Stream]
+    for stream_name in stream_names:
+        stream, created = create_stream_if_needed(realm,
+                                                  stream_name,
+                                                  invite_only=invite_only)
+        if created:
+            added_streams.append(stream)
+        else:
+            existing_streams.append(stream)
+
+    return added_streams, existing_streams
+
 def recipient_for_emails(emails, not_forged_mirror_message,
                          user_profile, sender):
     # type: (Iterable[text_type], bool, UserProfile, UserProfile) -> Recipient
@@ -882,7 +922,7 @@ def extract_recipients(s):
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
-        data = ujson.loads(s)
+        data = ujson.loads(s) # type: ignore # This function has a super weird union argument.
     except ValueError:
         data = s
 
@@ -1049,8 +1089,8 @@ def check_message(sender, client, message_type_name, message_to,
         message.pub_date = timezone.now()
     message.sending_client = client
 
-    if not message.maybe_render_content(realm.domain):
-        raise JsonableError(_("Unable to render message"))
+    # We render messages later in the process.
+    assert message.rendered_content is None
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)

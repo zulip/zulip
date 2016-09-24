@@ -12,6 +12,7 @@ from zilencer.models import Deployment
 from zerver.lib.test_helpers import (
     ZulipTestCase,
     get_user_messages,
+    make_client,
     message_ids, message_stream_count,
     most_recent_message,
     queries_captured,
@@ -19,7 +20,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Client, Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
+    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     get_realm, get_stream, get_user_profile_by_email,
 )
 
@@ -324,7 +325,7 @@ class StreamMessagesTest(ZulipTestCase):
         sender_email = 'hamlet@zulip.com'
         sender = get_user_profile_by_email(sender_email)
         message_type_name = "stream"
-        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+        sending_client = make_client(name="test suite")
         stream = 'Denmark'
         subject = 'foo'
         content = 'whatever'
@@ -416,7 +417,7 @@ class MessageDictTest(ZulipTestCase):
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream, _ = create_stream_if_needed(realm, 'devel')
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        sending_client, _ = Client.objects.get_or_create(name="test suite")
+        sending_client = make_client(name="test suite")
 
         for i in range(300):
             for recipient in [pm_recipient, stream_recipient]:
@@ -454,7 +455,7 @@ class MessageDictTest(ZulipTestCase):
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        sending_client, _ = Client.objects.get_or_create(name="test suite")
+        sending_client = make_client(name="test suite")
         message = Message(
             sender=sender,
             recipient=recipient,
@@ -799,6 +800,24 @@ class EditMessageTest(ZulipTestCase):
         })
         self.assert_json_success(result)
         self.check_message(msg_id, subject="edited")
+
+    def test_fetch_raw_message(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="**before** edit")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEquals(data['raw_content'], '**before** edit')
+
+        # Test error cases
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=999999))
+        self.assert_json_error(result, 'No such message')
+
+        self.login("cordelia@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Message was not sent by you')
 
     def test_edit_message_no_changes(self):
         # type: () -> None
@@ -1197,8 +1216,6 @@ class AttachmentTest(ZulipTestCase):
         self.assertFalse(Message.content_has_attachment('yo http://foo.com'))
         self.assertTrue(Message.content_has_attachment('yo\n https://staging.zulip.com/user_uploads/'))
         self.assertTrue(Message.content_has_attachment('yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.jpg foo'))
-        self.assertTrue(Message.content_has_attachment('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
-        self.assertTrue(Message.content_has_attachment('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
         self.assertFalse(Message.content_has_image('whatever'))
         self.assertFalse(Message.content_has_image('yo http://foo.com'))
@@ -1206,15 +1223,11 @@ class AttachmentTest(ZulipTestCase):
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp", ".JPG"]:
             content = 'yo\n /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.%s foo' % (ext,)
             self.assertTrue(Message.content_has_image(content))
-        self.assertTrue(Message.content_has_image('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
-        self.assertTrue(Message.content_has_image('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
         self.assertFalse(Message.content_has_link('whatever'))
         self.assertTrue(Message.content_has_link('yo\n http://foo.com'))
         self.assertTrue(Message.content_has_link('yo\n https://example.com?spam=1&eggs=2'))
         self.assertTrue(Message.content_has_link('yo /user_uploads/1/wEAnI-PEmVmCjo15xxNaQbnj/photo-10.pdf foo'))
-        self.assertTrue(Message.content_has_link('https://humbug-user-uploads.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
-        self.assertTrue(Message.content_has_link('https://humbug-user-uploads-test.s3.amazonaws.com/sX_TIQx/screen-shot.jpg'))
 
     def test_claim_attachment(self):
         # type: () -> None
@@ -1277,7 +1290,7 @@ class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self):
         # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
-        client, _ = Client.objects.get_or_create(name="test suite")
+        client = make_client(name="test suite")
         stream_name = 'integration'
         stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
         message_type_name = 'stream'
@@ -1307,7 +1320,7 @@ class CheckMessageTest(ZulipTestCase):
         bot.last_reminder = None
 
         sender = bot
-        client, _ = Client.objects.get_or_create(name="test suite")
+        client = make_client(name="test suite")
         stream_name = 'integration'
         stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
         message_type_name = 'stream'

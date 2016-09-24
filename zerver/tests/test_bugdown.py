@@ -11,12 +11,20 @@ from zerver.lib.actions import (
     do_set_alert_words,
     get_realm,
 )
+from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
+from zerver.lib.request import (
+    JsonableError,
+)
+from zerver.lib.test_helpers import (
+    ZulipTestCase,
+)
 from zerver.models import (
     get_client,
     get_user_profile_by_email,
     Message,
     RealmFilter,
+    Recipient,
 )
 
 import mock
@@ -376,8 +384,17 @@ class BugdownTest(TestCase):
 
     def test_realm_patterns(self):
         realm = get_realm('zulip.com')
-        RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
-                    url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+        self.assertEqual(
+            str(realm_filter),
+            '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
+            ' https://trac.zulip.net/ticket/%(id)s>')
+
+
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")
 
@@ -401,14 +418,20 @@ class BugdownTest(TestCase):
         user_profile = get_user_profile_by_email("othello@zulip.com")
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
+        realm_alert_words = alert_words_in_realm(user_profile.realm)
+
+        def render(msg, content):
+            return msg.render_markdown(content,
+                                       realm_alert_words=realm_alert_words,
+                                       message_users={user_profile})
 
         content = "We have an ALERTWORD day today!"
-        self.assertEqual(msg.render_markdown(content), "<p>We have an ALERTWORD day today!</p>")
+        self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set([user_profile.id]))
 
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         content = "We have a NOTHINGWORD day today!"
-        self.assertEqual(msg.render_markdown(content), "<p>We have a NOTHINGWORD day today!</p>")
+        self.assertEqual(render(msg, content), "<p>We have a NOTHINGWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set())
 
     def test_mention_wildcard(self):
@@ -537,6 +560,9 @@ class BugdownTest(TestCase):
         )
 
     def test_mit_rendering(self):
+        """Test the markdown configs for the MIT Zephyr mirroring system;
+        verifies almost all inline patterns are disabled, but
+        inline_interesting_links is still enabled"""
         msg = "**test**"
         converted = bugdown.convert(msg, "zephyr_mirror")
         self.assertEqual(
@@ -556,3 +582,33 @@ class BugdownTest(TestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
 
+class BugdownApiTests(ZulipTestCase):
+    def test_render_message_api(self):
+        # type: () -> None
+        content = 'That is a **bold** statement'
+        result = self.client_get(
+            '/api/v1/messages/render',
+            dict(content=content),
+            **self.api_auth('othello@zulip.com')
+        )
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['rendered'],
+            u'<p>That is a <strong>bold</strong> statement</p>')
+
+class BugdownErrorTests(ZulipTestCase):
+    def test_bugdown_error_handling(self):
+        # type: () -> None
+        with self.simulated_markdown_failure():
+            with self.assertRaises(bugdown.BugdownRenderingException):
+                bugdown.convert('', 'zulip.com')
+
+    def test_send_message_errors(self):
+        # type: () -> None
+
+        message = 'whatever'
+        with self.simulated_markdown_failure():
+            # We don't use assertRaisesRegexp because it seems to not
+            # handle i18n properly here on some systems.
+            with self.assertRaises(JsonableError):
+                self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)

@@ -73,7 +73,7 @@ experience that will benefit all users.
 This category focuses on issues users experience when installing a new
 Zulip server or setting up a new Zulip realm.
 
-* [Create a web flow for setting up a new realm / the first realm on a new server (currently, it's a command-line process)](https://github.com/zulip/zulip/issues/260)
+* <strike>[Create a web flow for setting up a new realm / the first realm on a new server (currently, it's a command-line process)](https://github.com/zulip/zulip/issues/260)</strike>
 * [Document or better script solution to rabbitmq startup issues](https://github.com/zulip/zulip/issues/465)
 * [Add a mechanism for deleting early test messages](https://github.com/zulip/zulip/issues/135)
 * [Merge a supported way to use Zulip in Docker in production
@@ -177,7 +177,7 @@ of its size, it takes work to keep it that way.
 
 * [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/732)
 * [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
-* [Add Python static type-checking to Zulip using mypy](https://github.com/zulip/zulip/issues/733)
+* <strike>[Add Python static type-checking to Zulip using mypy](https://github.com/zulip/zulip/issues/733)</strike>
 * <strike>[Improve the runtime of Zulip's backend test suite](https://github.com/zulip/zulip/issues/441)</strike>
 * <strike>[Use caching to make Travis CI runtimes faster](https://github.com/zulip/zulip/issues/712)</strike>
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
@@ -224,16 +224,16 @@ but there is still a lot of work to do. Most of the things listed below
 will eventually apply to the iOS app as well.
 
 * <strike>[Support using a non-zulip.com server](https://github.com/zulip/zulip-android/issues/1)</strike>
-* [Support Google authentication with a non-Zulip.com server](https://github.com/zulip/zulip-android/issues/49)
+* <strike>[Support Google authentication with a non-Zulip.com server](https://github.com/zulip/zulip-android/issues/49)</strike>
 * [Add support for narrowing to @-mentions](https://github.com/zulip/zulip-android/issues/39)
 * [Support having multiple Zulip realms open simultaneously](https://github.com/zulip/zulip-android/issues/47)
 * <strike>[Build a slick development login page to simplify testing (similar to
   the development homepage on web)](https://github.com/zulip/zulip-android/issues/48)</strike>
 * <strike>[Improve the compose box to let you see what you're replying to](https://github.com/zulip/zulip-android/issues/8)</strike>
-* [Make it easy to compose messages with mentions, emoji, etc.](https://github.com/zulip/zulip-android/issues/11)
-* [Display unread counts and improve navigation](https://github.com/zulip/zulip-android/issues/57)
+* <strike>[Make it easy to compose messages with mentions, emoji, etc.](https://github.com/zulip/zulip-android/issues/11)</strike>
+* <strike>[Display unread counts and improve navigation](https://github.com/zulip/zulip-android/issues/57)</strike>
 * <strike>[Hide messages sent to muted topics](https://github.com/zulip/zulip-android/issues/9)</strike>
-* [Fill out documentation to make it easy to get started](https://github.com/zulip/zulip-android/issues/58)
+* <strike>[Fill out documentation to make it easy to get started](https://github.com/zulip/zulip-android/issues/58)</strike>
 
 ## iOS app
 
@@ -271,4 +271,4 @@ but they are important goals for the project.
 * <strike>Setup a Zulip server for the Zulip development community</strike>
 * Expand the number of core developers able to do code reviews
 * <strike>Expand the number of contributors regularly adding features to Zulip</strike>
-* Have a successful summer with Zulip's 3 GSOC students
+* <strike>Have a successful summer with Zulip's 3 GSOC students</strike>

@@ -70,6 +70,7 @@
               <td class="messagebox" colspan="2">
                 <textarea class="new_message_textarea" name="content" id="new_message_content"
                           value="" placeholder="{{ _('Compose your message here') }}..." tabindex="140" maxlength="10000"></textarea>
+                <div class="scrolling_list" id="preview_message_area" style="display:none;"></div>
                 <div id="below-compose-content">
                   <input type="file" id="file_input" class="notvisible pull-left" multiple />
                   <a class="message-control-button icon-vector-dropbox notdisplayed"
@@ -78,6 +79,8 @@
                      id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
                   <a class="message-control-button icon-vector-font"
                      href="#markdown-help" title="Formatting" data-toggle="modal"></a>
+                  <a id="undo_markdown_preview" class="icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
+                  <a id="markdown_preview" class="icon-vector-eye-open" title="{{ _('Preview') }}"></a>
                   <a id="restore-draft" onclick="compose.restore_message();">{{ _('Restore draft') }}</a>
                   <span id="sending-indicator">{{ _('Sending') }}...</span>
                   <div id="send_controls">

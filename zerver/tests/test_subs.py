@@ -3,6 +3,9 @@ from __future__ import absolute_import
 
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
@@ -11,6 +14,11 @@ from zerver.lib.test_helpers import (
 
 from zerver.decorator import (
     JsonableError
+)
+
+from zerver.lib.response import (
+    json_error,
+    json_success,
 )
 
 from zerver.lib.test_runner import (
@@ -27,7 +35,12 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user_profile_by_email, set_default_streams, get_subscription
+    get_user_profile_by_email, set_default_streams, get_subscription,
+    create_streams_if_needed
+)
+
+from zerver.views.streams import (
+    compose_views
 )
 
 from django.http import HttpResponse
@@ -38,6 +51,43 @@ import six
 from six import text_type
 from six.moves import range, urllib
 
+class TestCreateStreams(ZulipTestCase):
+    def test_creating_streams(self):
+        # type: () -> None
+        stream_names = [u'new1', u'new2', u'new3']
+        realm = get_realm('zulip.com')
+
+        new_streams, existing_streams = create_streams_if_needed(
+            realm,
+            stream_names,
+            invite_only=True)
+        self.assertEqual(len(new_streams), 3)
+        self.assertEqual(len(existing_streams), 0)
+
+        actual_stream_names = {stream.name for stream in new_streams}
+        self.assertEqual(actual_stream_names, set(stream_names))
+
+        new_streams, existing_streams = create_streams_if_needed(
+            realm,
+            stream_names,
+            invite_only=True)
+        self.assertEqual(len(new_streams), 0)
+        self.assertEqual(len(existing_streams), 3)
+
+        actual_stream_names = {stream.name for stream in existing_streams}
+        self.assertEqual(actual_stream_names, set(stream_names))
+
+class RecipientTest(ZulipTestCase):
+    def test_recipient(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        stream = get_stream('Verona', realm)
+        recipient = Recipient.objects.get(
+            type_id=stream.id,
+            type=Recipient.STREAM,
+        )
+        self.assertEqual(str(recipient), '<Recipient: Verona (%d, %d)>' % (
+            stream.id, Recipient.STREAM))
 
 class StreamAdminTest(ZulipTestCase):
     def test_make_stream_public(self):
@@ -589,6 +639,24 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_error(
             result, "stream key is missing from subscription_data[0]")
 
+    def test_set_color_unsubscribed_stream_name(self):
+        # type: () -> None
+        """
+        Updating the color property requires a subscribed stream.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+
+        unsubs_stream = 'Rome'
+        result = self.client_post(
+            "/json/subscriptions/property",
+            {"subscription_data": ujson.dumps([{"property": "color",
+                                                "stream": unsubs_stream,
+                                                "value": "#ffffff"}])})
+        self.assert_json_error(
+            result, "Not subscribed to stream %s" % (unsubs_stream,) )
+
+
     def test_json_subscription_property_invalid_verb(self):
         # type: () -> None
         """
@@ -862,6 +930,36 @@ class SubscriptionRestApiTest(ZulipTestCase):
         )
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
+
+    def test_compose_views_rollback(self):
+        # type: () -> None
+        '''
+        The compose_views function() is used under the hood by
+        update_subscriptions_backend.  It's a pretty simple method in terms of
+        control flow, but it uses a Django rollback, which may make it brittle
+        code when we upgrade Django.  We test the functions's rollback logic
+        here with a simple scenario to avoid false positives related to
+        subscription complications.
+        '''
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile.full_name = 'Hamlet'
+        user_profile.save()
+
+        def method1 (req, user_profile):
+            # type: (HttpRequest, UserProfile) -> HttpResponse
+            user_profile.full_name = 'Should not be committed'
+            user_profile.save()
+            return json_success({})
+
+        def method2(req, user_profile):
+            # type: (HttpRequest, UserProfile) -> HttpResponse
+            return json_error(_('random failure'))
+
+        with self.assertRaises(JsonableError):
+            compose_views(None, user_profile, [(method1, {}), (method2, {})])
+
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user_profile.full_name, 'Hamlet')
 
 class SubscriptionAPITest(ZulipTestCase):
 

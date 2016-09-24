@@ -57,6 +57,9 @@ if False:
     # mypy requires the Optional to be inside Union
     ElementStringNone = Union[Element, Optional[text_type]]
 
+class BugdownRenderingException(Exception):
+    pass
+
 def unescape(s):
     # type: (text_type) -> (text_type)
     if six.PY2:
@@ -884,23 +887,28 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
         # type: (Iterable[text_type]) -> Iterable[text_type]
         if current_message and db_data is not None:
-            # We check for a user's custom notifications here, as we want
-            # to check for plaintext words that depend on the recipient.
-            realm_words = db_data['realm_alert_words']
+            # We check for custom alert words here, the set of which are
+            # dependent on which users may see this message.
+            #
+            # Our caller passes in the list of possible_words.  We
+            # don't do any special rendering; we just append the alert words
+            # we find to the set current_message.alert_words.
+
+            realm_words = db_data['possible_words']
+
             content = '\n'.join(lines).lower()
 
             allowed_before_punctuation = "|".join([r'\s', '^', r'[\(\".,\';\[\*`>]'])
             allowed_after_punctuation = "|".join([r'\s', '$', r'[\)\"\?:.,\';\]!\*`]'])
 
-            for user_id, words in six.iteritems(realm_words):
-                for word in words:
-                    escaped = re.escape(word.lower())
-                    match_re = re.compile(u'(?:%s)%s(?:%s)' %
-                                            (allowed_before_punctuation,
-                                             escaped,
-                                             allowed_after_punctuation))
-                    if re.search(match_re, content):
-                        current_message.user_ids_with_alert_words.add(user_id)
+            for word in realm_words:
+                escaped = re.escape(word.lower())
+                match_re = re.compile(u'(?:%s)%s(?:%s)' %
+                                        (allowed_before_punctuation,
+                                         escaped,
+                                         allowed_after_punctuation))
+                if re.search(match_re, content):
+                    current_message.alert_words.add(word)
 
         return lines
 
@@ -1026,16 +1034,16 @@ class Bugdown(markdown.Extension):
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
             # not removed
-            for k in md.inlinePatterns.keys():
+            for k in list(md.inlinePatterns.keys()):
                 if k not in ["autolink"]:
                     del md.inlinePatterns[k]
-            for k in md.treeprocessors.keys():
+            for k in list(md.treeprocessors.keys()):
                 if k not in ["inline_interesting_links", "inline", "rewrite_to_https"]:
                     del md.treeprocessors[k]
-            for k in md.preprocessors.keys():
+            for k in list(md.preprocessors.keys()):
                 if k not in ["custom_text_notifications"]:
                     del md.preprocessors[k]
-            for k in md.parser.blockprocessors.keys():
+            for k in list(md.parser.blockprocessors.keys()):
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]
 
@@ -1121,8 +1129,16 @@ current_message = None # type: Optional[Message]
 # threads themselves, as well.
 db_data = None # type: Dict[text_type, Any]
 
-def do_convert(md, realm_domain=None, message=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[Message]) -> Optional[text_type]
+def log_bugdown_error(msg):
+    # type: (str) -> None
+    """We use this unusual logging approach to log the bugdown error, in
+    order to prevent AdminZulipHandler from sending the santized
+    original markdown formatting into another Zulip message, which
+    could cause an infinite exception loop."""
+    logging.getLogger('').error(msg)
+
+def do_convert(md, realm_domain=None, message=None, possible_words=None):
+    # type: (markdown.Markdown, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, UserProfile
 
@@ -1144,7 +1160,10 @@ def do_convert(md, realm_domain=None, message=None):
     if message:
         realm_users = get_active_user_dicts_in_realm(message.get_realm())
 
-        db_data = {'realm_alert_words': alert_words.alert_words_in_realm(message.get_realm()),
+        if possible_words is None:
+            possible_words = set() # Set[text_type]
+
+        db_data = {'possible_words':    possible_words,
                    'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
                    'emoji':             message.get_realm().get_emoji()}
@@ -1160,7 +1179,7 @@ def do_convert(md, realm_domain=None, message=None):
         cleaned = _sanitize_for_log(md)
 
         # Output error to log as well as sending a zulip and email
-        logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
+        log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
             % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
@@ -1169,7 +1188,7 @@ def do_convert(md, realm_domain=None, message=None):
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
-        return None
+        raise BugdownRenderingException()
     finally:
         current_message = None
         db_data = None
@@ -1199,9 +1218,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(md, realm_domain=None, message=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[Message]) -> Optional[text_type]
+def convert(md, realm_domain=None, message=None, possible_words=None):
+    # type: (markdown.Markdown, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     bugdown_stats_start()
-    ret = do_convert(md, realm_domain, message)
+    ret = do_convert(md, realm_domain, message, possible_words)
     bugdown_stats_finish()
     return ret

@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from argparse import RawTextHelpFormatter
+from typing import Any
+
+from argparse import ArgumentParser, RawTextHelpFormatter
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
 
@@ -87,11 +89,13 @@ class Command(BaseCommand):
 
     # Fix support for multi-line usage
     def create_parser(self, *args, **kwargs):
+        # type: (*Any, **Any) -> ArgumentParser
         parser = super(Command, self).create_parser(*args, **kwargs)
         parser.formatter_class = RawTextHelpFormatter
         return parser
 
     def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
         parser.add_argument('realm', metavar='<realm>', type=str,
                             help="realm to export")
         parser.add_argument('--output',
@@ -106,6 +110,7 @@ class Command(BaseCommand):
                             help='Threads to use in exporting UserMessage objects in parallel')
 
     def handle(self, *args, **options):
+        # type: (*Any, **Any) -> None
         try:
             realm = get_realm(options["realm"])
         except ValidationError:

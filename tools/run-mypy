@@ -27,6 +27,7 @@ api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
 api/integrations/trac/zulip_trac.py
+api/zulip/__init__.py
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
 tools/deprecated/generate-activity-metrics.py
@@ -38,6 +39,11 @@ zerver/tests/test_decorators.py
 zerver/tests/test_upload.py
 zerver/tests/test_narrow.py
 """.split()
+
+# We don't run mypy on contrib_bots, since the code there will
+# often be shared with other projects that do not want a mypy
+# dependency (at least while it's still kind of beta).
+exclude_common  += ['contrib_bots']
 
 exclude_py2 = [] # type: List[str]
 
@@ -55,11 +61,9 @@ api/integrations/rss/rss-bot
 api/integrations/svn/post-commit
 api/integrations/twitter/twitter-bot
 api/integrations/twitter/twitter-search-bot
-bots/check-mirroring
 bots/gcal-bot
 bots/githook-post-receive
 tools/deprecated/inject-messages/inject-messages
-tools/deprecated/review
 """.split()
 
 exclude_scripts_py2 = [] # type: List[str]
@@ -78,8 +82,8 @@ parser.add_argument('-a', '--all', dest='all', action='store_true', default=Fals
                     This is useful if you have to find out which files fail mypy check.""")
 parser.add_argument('--linecoverage-report', dest='linecoverage_report', action='store_true', default=False,
                     help="""run the linecoverage report to see annotation coverage""")
-parser.add_argument('--disallow-untyped-defs', dest='disallow_untyped_defs', action='store_true', default=False,
-                    help="""throw errors when functions are not annotated""")
+parser.add_argument('--no-disallow-untyped-defs', dest='disallow_untyped_defs', action='store_false', default=True,
+                    help="""Don't throw errors when functions are not annotated""")
 parser.add_argument('--scripts-only', dest='scripts_only', action='store_true', default=False,
                     help="""Only type check extensionless python scripts""")
 

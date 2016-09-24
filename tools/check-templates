@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from lib.template_parser import validate
-import optparse
+import argparse
 import sys
 
 from six.moves import filter
@@ -17,21 +17,21 @@ except ImportError as e:
 
 def check_our_files():
     # type: () -> None
-    parser = optparse.OptionParser()
-    parser.add_option('--modified', '-m',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--modified',
         action='store_true', default=False,
-        help='Only check modified files')
-    (options, _) = parser.parse_args()
+        help='only check modified files')
+    args = parser.parse_args()
 
     by_lang = cast(
         Dict[str, List[str]],
         lister.list_files(
-            modified_only=options.modified,
+            modified_only=args.modified,
             ftypes=['handlebars', 'html'],
             group_by_ftype=True))
 
-    check_handlebar_templates(by_lang['handlebars'], options.modified)
-    check_html_templates(by_lang['html'], options.modified)
+    check_handlebar_templates(by_lang['handlebars'], args.modified)
+    check_html_templates(by_lang['html'], args.modified)
 
 def check_html_templates(templates, modified_only):
     # type: (Iterable[str], bool) -> None

@@ -14,8 +14,8 @@ from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 from django.conf import settings
 
-def serve_s3(request, user_profile, realm_id_str, filename, redir):
-    # type: (HttpRequest, UserProfile, str, str, bool) -> HttpResponse
+def serve_s3(request, user_profile, realm_id_str, filename):
+    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
     url_path = "%s/%s" % (realm_id_str, filename)
 
     if realm_id_str == "unk":
@@ -29,10 +29,7 @@ def serve_s3(request, user_profile, realm_id_str, filename, redir):
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == realm_id or user_profile.realm.domain == 'zulip.com':
         uri = get_signed_upload_url(url_path)
-        if redir:
-            return redirect(uri)
-        else:
-            return json_success({'uri': uri})
+        return redirect(uri)
     else:
         return HttpResponseForbidden()
 
@@ -45,19 +42,18 @@ def serve_local(request, path_id):
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
     filename = os.path.basename(local_path)
-    response = FileResponse(open(local_path, 'rb'), content_type = mimetypes.guess_type(filename))
+    response = FileResponse(open(local_path, 'rb'),
+                            content_type = mimetypes.guess_type(filename))  # type: ignore # https://github.com/python/typeshed/issues/559
     return response
-    response['Content-Disposition'] = 'attachment; filename=%s' % (filename)
 
 @has_request_variables
-def serve_file_backend(request, user_profile, realm_id_str, filename,
-                       redir=REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, str, str, bool) -> HttpResponse
+def serve_file_backend(request, user_profile, realm_id_str, filename):
+    # type: (HttpRequest, UserProfile, str, str) -> HttpResponse
     path_id = "%s/%s" % (realm_id_str, filename)
     if settings.LOCAL_UPLOADS_DIR is not None:
         return serve_local(request, path_id)
 
-    return serve_s3(request, user_profile, realm_id_str, filename, redir)
+    return serve_s3(request, user_profile, realm_id_str, filename)
 
 @authenticated_json_post_view
 def json_upload_file(request, user_profile):

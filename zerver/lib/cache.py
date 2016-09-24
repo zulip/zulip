@@ -104,7 +104,7 @@ def get_cache_backend(cache_name):
     return get_cache(cache_name)
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
-    # type: ignore # CANNOT_INFER_LAMBDA_TYPE issue with models.py
+    # type: (Any, Optional[str], Optional[int], Optional[str]) -> Any
     # This function can't be typed perfectly because returning a generic function
     # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
     """Decorator which applies Django caching to a function.

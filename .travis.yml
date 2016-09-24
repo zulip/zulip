@@ -2,6 +2,8 @@ dist: trusty
 before_install:
    - nvm install 0.10
 install:
+  # Disable Travis CI's built-in NVM installation
+  - mv ~/.nvm ~/.travis-nvm-disabled
   - pip install coveralls
   - tools/travis/setup-$TEST_SUITE
   - tools/clean-venv-cache --travis
@@ -32,7 +34,6 @@ matrix:
       env: TEST_SUITE=static-analysis
     - python: "2.7"
       env: TEST_SUITE=production
-      sudo: required
 # command to run tests
 script:
   - unset GEM_PATH

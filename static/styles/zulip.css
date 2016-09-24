@@ -1773,12 +1773,13 @@ blockquote p {
 
 textarea.new_message_textarea {
     display: table-cell;
-    width: 99%;
+    width: calc(100% - 10px);
+    padding: 5px;
     height: 1.5em;
     max-height: 22em;
     margin-bottom: 0px;
     resize: none;
-    margin-top: 6px;
+    margin-top: 5px;
 }
 
 input.recipient_box {
@@ -2525,7 +2526,7 @@ div.floating_recipient {
 .subscription-info-container {
     display: inline-block;
     /* subtract out the width of the subscribe button and arrow. */
-    width: calc(100% - 230px);
+    width: calc(100% - 260px);
     /* to center the container vertically. */
     margin-top: 13px;
 }
@@ -2746,7 +2747,28 @@ div.floating_recipient {
     margin-right: 10px;
 }
 
+.subscription_row:hover .preview-stream {
+    display: inline-block;
+}
+
+.preview-stream {
+    display: none;
+    float: right;
+    padding: 3px 10px;
+    border: 1px solid #ccc;
+    margin: 9px 10px 0px 0px;
+    color: #333;
+}
+
+.preview-stream:hover {
+    color: #333;
+    text-decoration: none;
+    background-color: #ebebeb;
+    border: 1px solid #adadad;
+}
+
 .sub_unsub_button {
+    display: inline-block;
     min-width: 140px;
     float: right;
     margin-top: 9px;
@@ -3097,11 +3119,6 @@ li.expanded_private_message {
 .star:hover {
     cursor:  pointer;
     color: #0d7245;
-}
-
-.settings_separator {
-    margin-top:    2em;
-    margin-bottom: 2em;
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
@@ -3547,3 +3564,31 @@ li.show-more-private-messages a {
     margin-left: 5px;
 }
 
+#preview_message_area {
+    /* minus 5px padding. */
+    width: calc(100% - 10px);
+    padding: 5px;
+    /* the maximum height the textarea gets to. */
+    max-height: 308px;
+    /* the minimum height the textarea collapses to. */
+    min-height: 42px;
+    overflow: auto;
+
+    margin-top: 5px;
+
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+a#markdown_preview,
+a#undo_markdown_preview {
+    text-decoration: none;
+    position: relative;
+    top: 3px;
+    font-size: 16px;
+    color: #777;
+}

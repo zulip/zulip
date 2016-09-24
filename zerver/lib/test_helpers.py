@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
 
+from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
@@ -44,6 +45,7 @@ from zerver.lib.request import JsonableError
 
 
 import base64
+import mock
 import os
 import re
 import time
@@ -59,6 +61,7 @@ import six
 API_KEYS = {} # type: Dict[text_type, text_type]
 
 skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
+
 
 @contextmanager
 def simulated_queue_client(client):
@@ -140,6 +143,11 @@ def queries_captured():
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
 
+def make_client(name):
+    # type: (str) -> Client
+    client, _ = Client.objects.get_or_create(name=name)
+    return client
+
 def find_key_by_email(address):
     # type: (text_type) -> text_type
     from django.core.mail import outbox
@@ -197,13 +205,17 @@ class POSTRequestMock(object):
         self.META = {'PATH_INFO': 'test'}
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
-INSTRUMENTED_CALLS = []
+INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
+
+UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
 
 def instrument_url(f):
+    # type: (UrlFuncT) -> UrlFuncT
     if not INSTRUMENTING:
         return f
     else:
         def wrapper(self, url, info={}, **kwargs):
+            # type: (Any, text_type, Dict[str, Any], **Any) -> HttpResponse
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
@@ -329,11 +341,13 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_post(self, url, info={}, **kwargs):
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.post(url, info, **kwargs)
 
     @instrument_url
     def client_get(self, url, info={}, **kwargs):
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.get(url, info, **kwargs)
 
@@ -371,6 +385,16 @@ class ZulipTestCase(TestCase):
                                 {'full_name': username, 'password': password,
                                  'key': find_key_by_email(username + '@' + domain),
                                  'terms': True})
+
+    def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
+        # type: (text_type, text_type) -> text_type
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email_address in message.to:
+                return re.search(settings.EXTERNAL_HOST + path_pattern,
+                                 message.body).groups()[0]
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
 
     def get_api_key(self, email):
         # type: (text_type) -> text_type
@@ -532,6 +556,83 @@ class ZulipTestCase(TestCase):
     def get_second_to_last_message(self):
         # type: () -> Message
         return Message.objects.all().order_by('-id')[1]
+
+    @contextmanager
+    def simulated_markdown_failure(self):
+        # type: () -> Generator[None, None, None]
+        '''
+        This raises a failure inside of the try/except block of
+        bugdown.__init__.do_convert.
+        '''
+        with \
+                self.settings(ERROR_BOT=None), \
+                mock.patch('zerver.lib.bugdown.timeout', side_effect=KeyError('foo')), \
+                mock.patch('zerver.lib.bugdown.log_bugdown_error'):
+            yield
+
+class WebhookTestCase(ZulipTestCase):
+    """
+    Common for all webhooks tests
+
+    Override below class attributes and run send_and_test_message
+    If you create your url in uncommon way you can override build_webhook_url method
+    In case that you need modify body or create it without using fixture you can also override get_body method
+    """
+    STREAM_NAME = None # type: Optional[text_type]
+    TEST_USER_EMAIL = 'webhook-bot@zulip.com'
+    URL_TEMPLATE = None # type: Optional[text_type]
+    FIXTURE_DIR_NAME = None # type: Optional[text_type]
+
+    def setUp(self):
+        # type: () -> None
+        self.url = self.build_webhook_url()
+
+    def send_and_test_stream_message(self, fixture_name, expected_subject=None,
+                                     expected_message=None, content_type="application/json", **kwargs):
+        # type: (text_type, Optional[text_type], Optional[text_type], Optional[text_type], **Any) -> Message
+        payload = self.get_body(fixture_name)
+        if content_type is not None:
+            kwargs['content_type'] = content_type
+        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+                                     self.STREAM_NAME, **kwargs)
+        self.do_test_subject(msg, expected_subject)
+        self.do_test_message(msg, expected_message)
+
+        return msg
+
+    def send_and_test_private_message(self, fixture_name, expected_subject=None,
+                                      expected_message=None, content_type="application/json", **kwargs):
+        # type: (text_type, text_type, text_type, str, **Any) -> Message
+        payload = self.get_body(fixture_name)
+        if content_type is not None:
+            kwargs['content_type'] = content_type
+
+        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+                                     stream_name=None, **kwargs)
+        self.do_test_message(msg, expected_message)
+
+        return msg
+
+    def build_webhook_url(self):
+        # type: () -> text_type
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+
+    def get_body(self, fixture_name):
+        # type: (text_type) -> Union[text_type, Dict[str, text_type]]
+        """Can be implemented either as returning a dictionary containing the
+        post parameters or as string containing the body of the request."""
+        return ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
+
+    def do_test_subject(self, msg, expected_subject):
+        # type: (Message, Optional[text_type]) -> None
+        if expected_subject is not None:
+            self.assertEqual(msg.topic_name(), expected_subject)
+
+    def do_test_message(self, msg, expected_message):
+        # type: (Message, Optional[text_type]) -> None
+        if expected_message is not None:
+            self.assertEqual(msg.content, expected_message)
 
 def get_all_templates():
     # type: () -> List[str]

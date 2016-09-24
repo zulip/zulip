@@ -48,6 +48,29 @@ class ParserTestHappyPath(unittest.TestCase):
         declaration = block.declarations[0]
         self.assertIn('/* comment here */', declaration.text())
 
+    def test_no_semicolon(self):
+        # type: () -> None
+        my_css = '''
+            p { color: red }
+        '''
+
+        res = parse(my_css)
+
+        self.assertEqual(res.text(), my_css)
+
+        section = cast(CssSection, res.sections[0])
+
+        self.assertFalse(section.declaration_block.declarations[0].semicolon)
+
+    def test_empty_block(self):
+        # type: () -> None
+        my_css = '''
+            div {
+            }'''
+        error = 'Empty declaration'
+        with self.assertRaisesRegexp(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+            parse(my_css)
+
     def test_multi_line_selector(self):
         # type: () -> None
         my_css = '''
@@ -105,9 +128,8 @@ class ParserTestSadPath(unittest.TestCase):
     '''
 
     def _assert_error(self, my_css, error):
-        # See https://github.com/python/typeshed/issues/372
-        # for why we have to ingore types here.
-        with self.assertRaisesRegexp(CssParserException, error): # type: ignore
+        # type: (str, str) -> None
+        with self.assertRaisesRegexp(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
             parse(my_css)
 
     def test_unexpected_end_brace(self):

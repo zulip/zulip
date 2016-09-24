@@ -143,11 +143,11 @@ def get_repository_homepage(payload):
 
 def get_branch_name(payload):
     # type: (Dict[str, Any]) -> text_type
-    return payload['ref'].lstrip('refs/heads/')
+    return payload['ref'].replace('refs/heads/', '')
 
 def get_tag_name(payload):
     # type: (Dict[str, Any]) -> text_type
-    return payload['ref'].lstrip('refs/tags/')
+    return payload['ref'].replace('refs/tags/', '')
 
 def get_object_iid(payload):
     # type: (Dict[str, Any]) -> text_type
@@ -184,13 +184,19 @@ def api_gitlab_webhook(request, user_profile, client,
     # type: (HttpRequest, UserProfile, Client, text_type, Dict[str, Any]) -> HttpResponse
     event = get_event(request, payload)
     body = get_body_based_on_event(event)(payload)
-    subject = "Repository: {}".format(get_repo_name(payload))
+    subject = get_subject_based_on_event(event, payload)
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_body_based_on_event(event):
     # type: (str) -> Any
     return EVENT_FUNCTION_MAPPER[event]
+
+def get_subject_based_on_event(event, payload):
+    # type: (str, Dict[str, Any]) -> str
+    if event == 'Push Hook':
+        return "Repository: {} - branch: {}".format(get_repo_name(payload), get_branch_name(payload))
+    return "Repository: {}".format(get_repo_name(payload))
 
 def get_event(request, payload):
     # type: (HttpRequest,  Dict[str, Any]) -> str

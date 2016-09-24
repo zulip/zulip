@@ -61,8 +61,11 @@ Jump to:
 
 #### OS X
 
-1. Install [VirtualBox][vbox-dl]
-2. Install [Vagrant][vagrant-dl]
+1. Install [Vagrant][vagrant-dl]
+
+2. Install [VirtualBox][vbox-dl] or (for better performance;
+Virtualbox is quite slow) [VMWare Fusion][vmware-fusion-dl] with the
+[VMWare Fusion Vagrant plugin][vagrant-vmware-fusion-dl].
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
@@ -143,6 +146,8 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
 [vbox-dl]: https://www.virtualbox.org/wiki/Downloads
+[vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
+[vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 
 #### Windows 10

@@ -129,6 +129,14 @@ function clear_box() {
     $("#send-status").hide(0);
 }
 
+function clear_preview_area () {
+    $("#new_message_content").show();
+    $("#undo_markdown_preview").hide();
+    $("#preview_message_area").hide();
+    $("#preview_message_area").empty();
+    $("#markdown_preview").show();
+}
+
 function hide_box() {
     $('.message_comp').find('input, textarea, button').blur();
     $('#stream-message').hide();
@@ -137,6 +145,7 @@ function hide_box() {
     compose_fade.clear_compose();
     $('.message_comp').hide();
     $("#compose_controls").show();
+    clear_preview_area();
 }
 
 function update_lock_icon_for_stream(stream_name) {
@@ -673,6 +682,7 @@ exports.finish = function () {
         return false;
     }
     send_message();
+    clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger($.Event('compose_finished.zulip'));
@@ -989,6 +999,28 @@ $(function () {
         e.preventDefault();
         $("#compose #file_input").trigger("click");
     } );
+
+
+    $("#compose").on("click", "#markdown_preview", function (e) {
+        e.preventDefault();
+        var message = $("#new_message_content").val();
+        var preview = echo.apply_markdown(message);
+        $("#new_message_content").hide();
+        $("#markdown_preview").hide();
+        $("#undo_markdown_preview").show();
+        $("#preview_message_area").show();
+
+        if (message.length === 0) {
+            $("#preview_message_area").html(i18n.t("Nothing to preview"));
+        } else {
+            $("#preview_message_area").html(preview);
+        }
+    });
+
+    $("#compose").on("click", "#undo_markdown_preview", function (e) {
+        e.preventDefault();
+        clear_preview_area();
+    });
 
     $("#compose").on("click", "#attach_dropbox_files", function (e) {
         e.preventDefault();

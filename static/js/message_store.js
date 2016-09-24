@@ -8,8 +8,6 @@ var load_more_enabled = true;
 // since the last time that we ran load_more_messages(), we do
 // not load_more_messages().
 
-// used for our URL rewriting in insert_new_messages
-var humbug_images_re = new RegExp("https://humbug-user-uploads.s3.amazonaws.com/([^\"]+)", 'g');
 exports.recent_private_messages = [];
 
 exports.get = function get(message_id) {
@@ -198,10 +196,6 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
     }
 
     opts = _.extend({messages_are_new: false, delay_render: false}, opts);
-
-    _.each(messages, function (msg) {
-        msg.content = msg.content.replace(humbug_images_re, "/user_uploads/unk/$1");
-    });
 
     loading.destroy_indicator($('#page_loading_indicator'));
     $('#first_run_message').remove();

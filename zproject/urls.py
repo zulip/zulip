@@ -7,7 +7,7 @@ import os.path
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView
+from zerver.views.integrations import IntegrationView, APIView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 # NB: There are several other pieces of code which route requests by URL:
@@ -93,9 +93,10 @@ i18n_urls = [
     url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),
 
     # API and integrations documentation
-    url(r'^api/$', TemplateView.as_view(template_name='zerver/api.html')),
-    url(r'^api/endpoints/$', 'zerver.views.api_endpoint_docs'),
+    url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
+    url(r'^api/endpoints/$', 'zerver.views.integrations.api_endpoint_docs'),
     url(r'^integrations/$', IntegrationView.as_view()),
+    url(r'^about/$', TemplateView.as_view(template_name='zerver/about.html')),
     url(r'^apps/$', TemplateView.as_view(template_name='zerver/apps.html')),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
@@ -174,10 +175,10 @@ v1_api_and_json_patterns = [
 
     # users/me -> zerver.views
     url(r'^users/me$', 'zerver.lib.rest.rest_dispatch',
-        {'GET': 'zerver.views.get_profile_backend'}),
+        {'GET': 'zerver.views.pointer.get_profile_backend'}),
     url(r'^users/me/pointer$', 'zerver.lib.rest.rest_dispatch',
-        {'GET': 'zerver.views.get_pointer_backend',
-         'PUT': 'zerver.views.update_pointer_backend'}),
+        {'GET': 'zerver.views.pointer.get_pointer_backend',
+         'PUT': 'zerver.views.pointer.update_pointer_backend'}),
     url(r'^users/me/presence$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.presence.update_active_status_backend'}),
     # Endpoint used by mobile devices to register their push

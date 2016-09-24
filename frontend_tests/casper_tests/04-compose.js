@@ -19,60 +19,78 @@ casper.waitForText("And reply to this message", function () {
     casper.page.sendEvent('keypress', "c");
 });
 
-casper.waitUntilVisible('#compose', function () {
-    casper.test.assertVisible('#stream', 'Stream input box visible');
-    common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
-    casper.click('body');
-    casper.page.sendEvent('keypress', "C");
+casper.then(function () {
+    casper.waitUntilVisible('#compose', function () {
+        casper.test.assertVisible('#stream', 'Stream input box visible');
+        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+        casper.click('body');
+        casper.page.sendEvent('keypress', "C");
+    });
 });
 
-casper.waitUntilVisible('#private_message_recipient', function () {
-    common.check_form('#send_message_form', {recipient: ''}, "Recipient empty on new PM");
-    casper.click('body');
-    casper.page.sendEvent('keypress', 'c');
+casper.then(function () {
+    casper.waitUntilVisible('#private_message_recipient', function () {
+        common.check_form('#send_message_form', {recipient: ''}, "Recipient empty on new PM");
+        casper.click('body');
+        casper.page.sendEvent('keypress', 'c');
+    });
 });
 
-casper.waitUntilVisible('#stream', function () {
-    common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
+casper.then(function () {
+    casper.waitUntilVisible('#stream', function () {
+        common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
 
-    // Check that when you reply to a message it pre-populates the stream and subject fields
-    casper.click('body');
+        // Check that when you reply to a message it pre-populates the stream and subject fields
+        casper.click('body');
+    });
 });
 
-casper.waitWhileVisible('#stream', function () {
-    casper.clickLabel("We reply to this message");
+casper.then(function () {
+    casper.waitWhileVisible('#stream', function () {
+        casper.clickLabel("We reply to this message");
+    });
 });
 
-casper.waitUntilVisible('#stream', function () {
-    common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
-    // Or recipient field
-    casper.click('body');
-    casper.clickLabel("And reply to this message");
+casper.then(function () {
+    casper.waitUntilVisible('#stream', function () {
+        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
+        // Or recipient field
+        casper.click('body');
+        casper.clickLabel("And reply to this message");
+    });
 });
 
-casper.waitUntilVisible('#private_message_recipient', function () {
-    common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"}, "Recipient populated after PM click");
+casper.then(function () {
+    casper.waitUntilVisible('#private_message_recipient', function () {
+        common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"}, "Recipient populated after PM click");
 
-    common.keypress(27); //escape
-    casper.page.sendEvent('keypress', 'k');
-    casper.page.sendEvent('keypress', 'r');
+        common.keypress(27); //escape
+        casper.page.sendEvent('keypress', 'k');
+        casper.page.sendEvent('keypress', 'r');
+    });
 });
 
-casper.waitUntilVisible('#stream', function () {
-    common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
+casper.then(function () {
+    casper.waitUntilVisible('#stream', function () {
+        common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
 
-    // Test "closing" the compose box
-    casper.click('body');
+        // Test "closing" the compose box
+        casper.click('body');
+    });
 });
 
-casper.waitWhileVisible('#stream', function () {
-    casper.test.assertNotVisible('#stream', 'Close stream compose box');
-    casper.page.sendEvent('keypress', "C");
-    casper.click('body');
+casper.then(function () {
+    casper.waitWhileVisible('#stream', function () {
+        casper.test.assertNotVisible('#stream', 'Close stream compose box');
+        casper.page.sendEvent('keypress', "C");
+        casper.click('body');
+    });
 });
 
-casper.waitWhileVisible('#private-message', function () {
-    casper.test.assertNotVisible('#private-message', 'Close PM compose box');
+casper.then(function () {
+    casper.waitWhileVisible('#private-message', function () {
+        casper.test.assertNotVisible('#private-message', 'Close PM compose box');
+    });
 });
 
 // Test focus after narrowing to PMs with a user and typing 'c'
@@ -82,10 +100,13 @@ casper.then(function () {
 casper.waitUntilVisible('#tab_list li.private_message', function () {
     casper.page.sendEvent('keypress', 'c');
 });
-casper.waitUntilVisible('#compose', function () {
-    casper.test.assertEval(function () {
-        return document.activeElement === $('#stream')[0];
-    }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
+
+casper.then(function () {
+    casper.waitUntilVisible('#compose', function () {
+        casper.test.assertEval(function () {
+            return document.activeElement === $('#stream')[0];
+        }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
+    });
 });
 
 // Make sure multiple PM recipients display properly.
@@ -107,14 +128,52 @@ casper.then(function () {
 casper.waitUntilVisible('#zhome', function () {
     casper.clickLabel('A huddle to check spaces');
 });
-casper.waitUntilVisible('#compose', function () {
-    // It may be possible to get the textbox contents with CasperJS,
-    // but it's easier to just evaluate jQuery in page context here.
-    var displayed_recipients = casper.evaluate(function () {
-        return $('#private_message_recipient').val();
+
+casper.then(function () {
+    casper.waitUntilVisible('#compose', function () {
+        // It may be possible to get the textbox contents with CasperJS,
+        // but it's easier to just evaluate jQuery in page context here.
+        var displayed_recipients = casper.evaluate(function () {
+            return $('#private_message_recipient').val();
+        });
+        casper.test.assertEquals(displayed_recipients, recipients.join(', '),
+            'Recipients are displayed correctly in a huddle reply');
     });
-    casper.test.assertEquals(displayed_recipients, recipients.join(', '),
-        'Recipients are displayed correctly in a huddle reply');
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#markdown_preview', function () {
+        casper.test.assertNotVisible('#undo_markdown_preview', 'Write button is hidden');
+        casper.click("#markdown_preview");
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileVisible("#markdown_preview", function () {
+        casper.test.assertVisible('#undo_markdown_preview', 'Write button is visible');
+        casper.test.assertEquals(casper.getHTML('#preview_message_area'), "Nothing to preview", "Nothing to preview");
+        casper.click("#undo_markdown_preview");
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileVisible("#undo_markdown_preview", function () {
+        casper.test.assertVisible('#markdown_preview', 'Preview button is visible.');
+        casper.test.assertNotVisible('#undo_markdown_preview', 'Write button is hidden.');
+        casper.test.assertEquals(casper.getHTML('#preview_message_area'), "", "Markdown preview area is empty");
+
+        casper.fill('form[action^="/json/messages"]', {
+            content: '**Markdown Preview** >> Test for markdown preview'
+        }, false);
+
+        casper.click("#markdown_preview");
+    });
+});
+
+casper.then(function () {
+    casper.waitWhileVisible("#markdown_preview", function () {
+        casper.test.assertEquals(casper.getHTML('#preview_message_area'), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
+    });
 });
 
 common.then_log_out();

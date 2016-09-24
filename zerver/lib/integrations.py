@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, TypeVar
 from django.conf import settings
 from django.conf.urls import url
+from django.core.urlresolvers import LocaleRegexProvider
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -42,6 +43,7 @@ class Integration(object):
 
 class EmailIntegration(Integration):
     def is_enabled(self):
+        # type: () -> bool
         return settings.EMAIL_GATEWAY_BOT != ""
 
 class WebhookIntegration(Integration):
@@ -66,6 +68,7 @@ class WebhookIntegration(Integration):
 
     @property
     def url_object(self):
+        # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
 
 
@@ -84,11 +87,13 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
+    WebhookIntegration('librato'),
     WebhookIntegration('newrelic', display_name='New Relic'),
     WebhookIntegration('pagerduty'),
     WebhookIntegration('pingdom'),
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
+    WebhookIntegration('sentry'),
     WebhookIntegration('stash'),
     WebhookIntegration('taiga'),
     WebhookIntegration('teamcity'),

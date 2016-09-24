@@ -24,7 +24,7 @@ Install the following non-Python dependencies:
 
 ### On Debian or Ubuntu systems:
 
-#### Using the official Ubuntu repositories and `tsearch-extras` deb package:
+#### Using the official Ubuntu repositories, PGroonga PPA and `tsearch-extras` deb package:
 
 Start by cloning this repository: `git clone
 https://github.com/zulip/zulip.git`
@@ -35,6 +35,14 @@ sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     postgresql-server-dev-all libmemcached-dev python-dev \
     hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
     puppet gettext postgresql
+
+# Next, install PGroonga from its PPA
+sudo add-apt-repository -y ppa:groonga/ppa
+sudo apt-get update
+# On 14.04
+sudo apt-get install postgresql-9.3-pgroonga
+# On 16.04
+sudo apt-get install postgresql-9.5-pgroonga
 
 # Next, install Zulip's tsearch-extras postgresql extension
 # If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
@@ -285,12 +293,9 @@ if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_
 ./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ./manage.py compilemessages
+sudo ./tools/setup/install-node
 npm install
 ```
-
-If `npm install` fails, the issue may be that you need a newer version
-of `npm`.  You can use `npm install -g npm` to update your version of
-`npm` and try again.
 
 To start the development server:
 

@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, List, Set, Tuple, TypeVar, \
+from typing import Any, Dict, List, Set, Tuple, TypeVar, \
     Union, Optional, Sequence, AbstractSet
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
@@ -45,6 +45,8 @@ import datetime
 
 # TODO: see #1379 to eliminate bugdown dependencies
 bugdown = None # type: Any
+
+RealmAlertWords = Dict[int, List[text_type]]
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -192,10 +194,12 @@ class Realm(ModelReprMixin, models.Model):
 
     @property
     def uri(self):
+        # type: () -> str
         return settings.SERVER_URI
 
     @property
     def host(self):
+        # type: () -> str
         return settings.EXTERNAL_HOST
 
     @property
@@ -605,16 +609,6 @@ class Stream(ModelReprMixin, models.Model):
     class Meta(object):
         unique_together = ("name", "realm")
 
-    @classmethod
-    def create(cls, name, realm):
-        # type: (Any, text_type, Realm) -> Tuple[Stream, Recipient]
-        stream = cls(name=name, realm=realm)
-        stream.save()
-
-        recipient = Recipient.objects.create(type_id=stream.id,
-                                             type=Recipient.STREAM)
-        return (stream, recipient)
-
     def num_subscribers(self):
         # type: () -> int
         return Subscription.objects.filter(
@@ -702,12 +696,8 @@ def get_client_remote_cache(name):
 @cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_stream_backend(stream_name, realm):
     # type: (text_type, Realm) -> Stream
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
     return Stream.objects.select_related("realm").get(
-        name__iexact=stream_name.strip(), realm_id=realm_id)
+        name__iexact=stream_name.strip(), realm_id=realm.id)
 
 def get_active_streams(realm):
     # type: (Realm) -> QuerySet
@@ -716,9 +706,8 @@ def get_active_streams(realm):
     """
     return Stream.objects.filter(realm=realm, deactivated=False)
 
-# get_stream takes either a realm id or a realm
 def get_stream(stream_name, realm):
-    # type: (text_type, Union[int, Realm]) -> Optional[Stream]
+    # type: (text_type, Realm) -> Optional[Stream]
     try:
         return get_stream_backend(stream_name, realm)
     except Stream.DoesNotExist:
@@ -726,10 +715,6 @@ def get_stream(stream_name, realm):
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[text_type, Any]
-    if isinstance(realm, Realm):
-        realm_id = realm.id
-    else:
-        realm_id = realm
 
     def fetch_streams_by_name(stream_names):
         # type: (List[text_type]) -> Sequence[Stream]
@@ -745,7 +730,7 @@ def bulk_get_streams(realm, stream_names):
             return []
         upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
         where_clause = "UPPER(zerver_stream.name::text) IN (%s)" % (upper_list,)
-        return get_active_streams(realm_id).select_related("realm").extra(
+        return get_active_streams(realm.id).select_related("realm").extra(
             where=[where_clause],
             params=stream_names)
 
@@ -775,11 +760,6 @@ def bulk_get_recipients(type, type_ids):
 
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
-
-# NB: This function is currently unused, but may come in handy.
-def linebreak(string):
-    # type: (text_type) -> text_type
-    return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
@@ -829,8 +809,8 @@ class Message(ModelReprMixin, models.Model):
         # type: () -> Realm
         return self.sender.realm
 
-    def render_markdown(self, content, domain=None):
-        # type: (text_type, Optional[text_type]) -> text_type
+    def render_markdown(self, content, domain=None, realm_alert_words=None, message_users=None):
+        # type: (text_type, Optional[text_type], Optional[RealmAlertWords], Set[UserProfile]) -> text_type
         """Return HTML for given markdown. Bugdown may add properties to the
         message object such as `mentions_user_ids` and `mentions_wildcard`.
         These are only on this Django object and are not saved in the
@@ -842,10 +822,15 @@ class Message(ModelReprMixin, models.Model):
             import zerver.lib.bugdown as bugdown
             # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
+        if message_users is None:
+            message_user_ids = set() # type: Set[int]
+        else:
+            message_user_ids = {u.id for u in message_users}
+
         self.mentions_wildcard = False
         self.is_me_message = False
         self.mentions_user_ids = set() # type: Set[int]
-        self.user_ids_with_alert_words = set() # type: Set[int]
+        self.alert_words = set() # type: Set[text_type]
 
         if not domain:
             domain = self.sender.realm.domain
@@ -853,7 +838,23 @@ class Message(ModelReprMixin, models.Model):
             # Use slightly customized Markdown processor for content
             # delivered via zephyr_mirror
             domain = u"zephyr_mirror"
-        rendered_content = bugdown.convert(content, domain, self)
+
+        possible_words = set() # type: Set[text_type]
+        if realm_alert_words is not None:
+            for user_id, words in realm_alert_words.items():
+                if user_id in message_user_ids:
+                    possible_words.update(set(words))
+
+        # DO MAIN WORK HERE -- call bugdown to convert
+        rendered_content = bugdown.convert(content, domain, self, possible_words)
+
+        self.user_ids_with_alert_words = set() # type: Set[int]
+
+        if realm_alert_words is not None:
+            for user_id, words in realm_alert_words.items():
+                if user_id in message_user_ids:
+                    if set(words).intersection(self.alert_words):
+                        self.user_ids_with_alert_words.add(user_id)
 
         self.is_me_message = Message.is_status_message(content, rendered_content)
 

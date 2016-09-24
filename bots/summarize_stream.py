@@ -7,8 +7,9 @@ import zulip
 import re
 import collections
 
-def get_recent_messages(client, narrow, count=100):
-    narrow = [word.split(':') for word in narrow.split()]
+def get_recent_messages(client, narrow_str, count=100):
+    # type: (zulip.Client, str, int) -> List[Dict[str, Any]]
+    narrow = [word.split(':') for word in narrow_str.split()]
     req = {
         'narrow': narrow,
         'num_before': count,
@@ -22,6 +23,7 @@ def get_recent_messages(client, narrow, count=100):
     return old_messages['messages']
 
 def get_words(content):
+    # type: (str) -> List[str]
     regex = "[A-Z]{2,}(?![a-z])|[A-Z][a-z]+(?=[A-Z])|[\'\w\-]+"
     words = re.findall(regex, content, re.M)
     words = [w.lower() for w in words]
@@ -29,6 +31,7 @@ def get_words(content):
     return words
 
 def analyze_messages(msgs, word_count, email_count):
+    # type: (List[Dict[str, Any]], Dict[str, int], Dict[str, int]) -> None
     for msg in msgs:
         if False:
             if ' ack' in msg['content']:
@@ -47,6 +50,7 @@ def analyze_messages(msgs, word_count, email_count):
                 print('%-20s: %s' % (k, v))
 
 def generate_support_stats():
+    # type: () -> None
     client = zulip.Client()
     narrow = 'stream:support'
     count = 2000

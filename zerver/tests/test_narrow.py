@@ -28,6 +28,7 @@ from zerver.views.messages import (
     NarrowBuilder, BadNarrowOperator
 )
 
+from six import text_type
 from six.moves import range
 import os
 import re
@@ -502,6 +503,57 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             self.assertEqual(message["sender_email"], "othello@zulip.com")
 
+    def _update_tsvector_index(self):
+        # type: () -> None
+        # We use brute force here and update our text search index
+        # for the entire zerver_message table (which is small in test
+        # mode).  In production there is an async process which keeps
+        # the search index up to date.
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            UPDATE zerver_message SET
+            search_tsvector = to_tsvector('zulip.english_us_search',
+            subject || rendered_content)
+            """)
+
+    @override_settings(USING_PGROONGA=False)
+    def test_messages_in_narrow(self):
+        # type: () -> None
+        email = 'cordelia@zulip.com'
+        self.login(email)
+
+        def send(content):
+            # type: (text_type) -> None
+            msg_id = self.send_message(
+                sender_name=email,
+                raw_recipients="Verona",
+                message_type=Recipient.STREAM,
+                content=content,
+            )
+            return msg_id
+
+        good_id = send('KEYWORDMATCH and should work')
+        bad_id = send('no match')
+        msg_ids = [good_id, bad_id]
+        send('KEYWORDMATCH but not in msg_ids')
+
+        self._update_tsvector_index()
+
+        narrow = [
+            dict(operator='search', operand='KEYWORDMATCH'),
+        ]
+
+        raw_params = dict(msg_ids=msg_ids, narrow=narrow)
+        params = {k: ujson.dumps(v) for k, v in raw_params.items()}
+        result = self.client_post('/json/messages_in_narrow', params)
+        self.assert_json_success(result)
+        messages = ujson.loads(result.content)['messages']
+        self.assertEqual(len(list(messages.keys())), 1)
+        message = messages[str(good_id)]
+        self.assertEqual(message['match_content'],
+            u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
+
+
     @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search(self):
         self.login("cordelia@zulip.com")
@@ -523,16 +575,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 subject=topic,
             )
 
-        # We use brute force here and update our text search index
-        # for the entire zerver_message table (which is small in test
-        # mode).  In production there is an async process which keeps
-        # the search index up to date.
-        with connection.cursor() as cursor:
-            cursor.execute("""
-            UPDATE zerver_message SET
-            search_tsvector = to_tsvector('zulip.english_us_search',
-            subject || rendered_content)
-            """)
+        self._update_tsvector_index()
 
         narrow = [
             dict(operator='sender', operand='cordelia@zulip.com'),
