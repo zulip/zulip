@@ -10,12 +10,14 @@ casper.then(function () {
 
 common.then_log_in();
 
+
 casper.waitForSelector('#zhome', function () {
     casper.test.info('Logging out');
     casper.click('li[title="Log out"] a');
 });
 
 casper.then(function () {
+    casper.capture('steve.png');
     casper.test.assertHttpStatus(200);
     casper.test.assertUrlMatch(/accounts\/login\/$/);
 });
