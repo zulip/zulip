@@ -184,8 +184,6 @@ class Runner(DiscoverRunner):
 
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         # type: (List[str], Optional[List[TestCase]], **Any) -> bool
-        
-        
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
