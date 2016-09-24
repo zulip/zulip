@@ -10,6 +10,8 @@ import os
 
 if False: from typing import Any
 
+USE_FAST_MODE = os.environ.get('USE_FAST_MODE', False)
+
 # find out python version
 major_version = int(subprocess.check_output(['python', '-c', 'import sys; print(sys.version_info[0])']))
 if major_version != 2:
@@ -85,7 +87,8 @@ webpack_port = base_port+3
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
 # Clean up stale .pyc files etc.
-subprocess.check_call('./tools/clean-repo')
+if not USE_FAST_MODE:
+    subprocess.check_call('./tools/clean-repo')
 
 # HACK to fix up node_modules/.bin/handlebars deletion issue
 if not os.path.exists("node_modules/.bin/handlebars") and os.path.exists("node_modules/handlebars"):
