@@ -346,7 +346,7 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 7)
+        self.assert_max_length(queries, 7)
 
     def test_stream_message_unicode(self):
         # type: () -> None
@@ -464,7 +464,7 @@ class MessageDictTest(ZulipTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assert_length(queries, 7)
+        self.assert_max_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):

@@ -40,7 +40,7 @@ class ActivityTest(ZulipTestCase):
         with queries_captured() as queries:
             self.client_get('/activity')
 
-        self.assert_length(queries, 13)
+        self.assert_max_length(queries, 13)
 
 class UserPresenceTests(ZulipTestCase):
     def test_get_empty(self):
