@@ -107,7 +107,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 0, True)
+        self.assert_length(events, 0)
 
         local_id = 10.01
         self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
@@ -120,7 +120,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
@@ -140,7 +140,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
@@ -187,7 +187,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 0, True)
+        self.assert_length(events, 0)
 
         self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
         self.send_message(email, "Denmark", Recipient.STREAM, "hello")
@@ -200,7 +200,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
@@ -847,7 +847,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         self.assertFalse(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
-        self.assert_length(result['realm_bots'], 0)
+        self.assert_max_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
         api_key = get_user_profile_by_email('notification-bot@zulip.com').api_key

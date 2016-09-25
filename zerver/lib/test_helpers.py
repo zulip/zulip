@@ -475,12 +475,15 @@ class ZulipTestCase(TestCase):
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, queries, count, exact=False):
-        # type: (Sized, int, bool) -> None
+    def assert_length(self, queries, count):
+        # type: (Sized, int) -> None
         actual_count = len(queries)
-        if exact:
-            return self.assertTrue(actual_count == count,
+        return self.assertTrue(actual_count == count,
                                    "len(%s) == %s, != %s" % (queries, actual_count, count))
+
+    def assert_max_length(self, queries, count):
+        # type: (Sized, int) -> None
+        actual_count = len(queries)
         return self.assertTrue(actual_count <= count,
                                "len(%s) == %s, > %s" % (queries, actual_count, count))
 
