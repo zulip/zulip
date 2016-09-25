@@ -848,7 +848,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         self.assertFalse(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
-        self.assert_length(result['realm_bots'], 0)
+        self.assert_max_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
         api_key = get_user_profile_by_email('notification-bot@zulip.com').api_key

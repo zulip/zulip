@@ -189,7 +189,11 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
+<<<<<<< HEAD
         self.assert_max_length(queries, 69)
+=======
+        self.assert_max_length(queries, 67)
+>>>>>>> Patch for issue #1400
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
