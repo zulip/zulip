@@ -1878,14 +1878,21 @@ class HomeTest(ZulipTestCase):
         # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
-        with \
-                self.settings(TERMS_OF_SERVICE='whatever'), \
-                self.settings(TOS_VERSION='99.99'):
 
-            result = self.client_get('/', dict(stream='Denmark'))
+        for user_tos_version in [None, '1.1', '2.0.3.4']:
+            user = get_user_profile_by_email(email)
+            user.tos_version = user_tos_version
+            user.save()
 
-        html = result.content.decode('utf-8')
-        self.assertIn('There is a new terms of service', html)
+            with \
+                    self.settings(TERMS_OF_SERVICE='whatever'), \
+                    self.settings(TOS_VERSION='99.99'):
+
+                result = self.client_get('/', dict(stream='Denmark'))
+
+            html = result.content.decode('utf-8')
+            self.assertIn('There is a new terms of service', html)
+
 
     def test_bad_narrow(self):
         # type: () -> None

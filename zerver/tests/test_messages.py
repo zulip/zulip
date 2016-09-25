@@ -195,7 +195,13 @@ class PersonalMessagesTest(ZulipTestCase):
 
         recipient = Recipient.objects.get(type_id=user_profile.id,
                                           type=Recipient.PERSONAL)
-        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient, recipient)
+
+        with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
+            self.assertEqual(str(message),
+                u'<Message: recip /  / '
+                '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
@@ -341,6 +347,17 @@ class StreamMessagesTest(ZulipTestCase):
             send_message()
 
         self.assert_length(queries, 7)
+
+    def test_stream_message_unicode(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("iago@zulip.com")
+        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="whatever", subject="my topic")
+        message = most_recent_message(user_profile)
+        self.assertEqual(str(message),
+            u'<Message: Denmark / my topic / '
+            '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
 
     def test_message_mentions(self):
         # type: () -> None

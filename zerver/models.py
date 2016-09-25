@@ -171,6 +171,10 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def deployment(self):
         # type: () -> Any # returns a Deployment from zilencer.models
+
+        # see https://github.com/zulip/zulip/issues/1845 before you
+        # attempt to add test coverage for this method, as we may
+        # be revisiting the deployments model soon
         try:
             return self._deployments.all()[0]
         except IndexError:
@@ -334,10 +338,15 @@ def get_realm_filters_cache_key(domain):
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
 per_request_realm_filters_cache = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+
+def domain_in_local_realm_filters_cache(domain):
+    # type: (text_type) -> bool
+    return domain in per_request_realm_filters_cache
+
 def realm_filters_for_domain(domain):
     # type: (text_type) -> List[Tuple[text_type, text_type]]
     domain = domain.lower()
-    if domain not in per_request_realm_filters_cache:
+    if not domain_in_local_realm_filters_cache(domain):
         per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
     return per_request_realm_filters_cache[domain]
 
@@ -492,15 +501,6 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
             return True
         else:
             return False
-
-    def last_reminder_tzaware(self):
-        # type: () -> Optional[datetime.datetime]
-        if self.last_reminder is not None and timezone.is_naive(self.last_reminder):
-            logging.warning(u"Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
-                              % (self.email, text_type(self.last_reminder)))
-            return self.last_reminder.replace(tzinfo=timezone.utc)
-
-        return self.last_reminder
 
     def __unicode__(self):
         # type: () -> text_type
@@ -1129,12 +1129,6 @@ class Message(ModelReprMixin, models.Model):
             'sender__is_mirror_dummy',
         ]
         return Message.objects.filter(id__in=needed_ids).values(*fields)
-
-    @classmethod
-    def remove_unreachable(cls):
-        # type: (Any) -> None
-        """Remove all Messages that are not referred to by any UserMessage."""
-        cls.objects.exclude(id__in = UserMessage.objects.values('message_id')).delete()
 
     def sent_by_human(self):
         # type: () -> bool
