@@ -70,6 +70,15 @@ class zulip_ops::base {
     mode       => 600,
   }
 
+  file { '/etc/pam.d/common-session':
+    require    => Package['openssh-server'],
+    ensure     => file,
+    source     => 'puppet:///modules/zulip_ops/common-session',
+    owner      => 'root',
+    group      => 'root',
+    mode       => 644,
+  }
+
   file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     ensure     => file,
