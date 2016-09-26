@@ -3592,3 +3592,7 @@ a#undo_markdown_preview {
     font-size: 16px;
     color: #777;
 }
+
+#markdown_preview_spinner {
+    margin: auto;
+}
