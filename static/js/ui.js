@@ -532,6 +532,7 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     activity.initialize();
+    emoji.initialize();
 });
 
 
