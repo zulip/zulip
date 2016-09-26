@@ -198,6 +198,37 @@ li,
     width: auto;
 }
 
+.header-main .column-right #user-info {
+    float: right;
+    margin-right: 40px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+
+    border-right: 1px solid #dadada;
+}
+
+.header-main .column-left #org-info {
+    vertical-align: top;
+    display: inline-block;
+}
+
+#org-info .organization,
+#user-info .username {
+    margin-top: 10px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#org-info .organization {
+    max-width: 155px;
+}
+
+#user-info .username {
+    max-width: 170px;
+}
+
 #user-settings-avatar {
     width: 100px;
     height: 100px;
@@ -233,6 +264,9 @@ strong {
     font-weight: 600;
 }
 
+.light {
+    font-weight: 300;
+}
 
 /* Inline and block code */
 
