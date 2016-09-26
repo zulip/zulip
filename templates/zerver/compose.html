@@ -70,7 +70,10 @@
               <td class="messagebox" colspan="2">
                 <textarea class="new_message_textarea" name="content" id="new_message_content"
                           value="" placeholder="{{ _('Compose your message here') }}..." tabindex="140" maxlength="10000"></textarea>
-                <div class="scrolling_list" id="preview_message_area" style="display:none;"></div>
+                <div class="scrolling_list" id="preview_message_area" style="display:none;">
+                  <div id="markdown_preview_spinner"></div>
+                  <div id="preview_content"></div>
+                </div>
                 <div id="below-compose-content">
                   <input type="file" id="file_input" class="notvisible pull-left" multiple />
                   <a class="message-control-button icon-vector-dropbox notdisplayed"
