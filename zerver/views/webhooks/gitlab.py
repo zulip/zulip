@@ -193,9 +193,9 @@ def get_body_based_on_event(event):
     return EVENT_FUNCTION_MAPPER[event]
 
 def get_subject_based_on_event(event, payload):
-    # type: (str, Dict[str, Any]) -> str
+    # type: (str, Dict[str, Any]) -> text_type
     if event == 'Push Hook':
-        return "{} / {}".format(get_repo_name(payload), get_branch_name(payload))
+        return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
     return get_repo_name(payload)
 
 def get_event(request, payload):
