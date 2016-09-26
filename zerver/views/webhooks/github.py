@@ -5,6 +5,7 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, has_request_variables, to_non_negative_int, flexible_boolean
 from zerver.views.messages import send_message_backend
+from zerver.lib.webhooks.git import get_push_commits_event_message
 import logging
 import re
 import ujson
@@ -245,7 +246,7 @@ def build_commit_list_content(commits, branch, compare_url, pusher):
     return content
 
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
-    # type: (UserProfile, text_type, text_type, Sequence[Mapping[text_type, Any]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
+    # type: (UserProfile, text_type, text_type, List[Dict[str, str]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = name
 
@@ -260,6 +261,18 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
                       short_ref,
                       after[:7]))
     else:
-        content = build_commit_list_content(commits, short_ref, url, pusher)
+        commits = _transform_commits_list_to_common_format(commits)
+        content = get_push_commits_event_message(pusher, url, short_ref, commits)
 
     return subject, content
+
+def _transform_commits_list_to_common_format(commits):
+    # type: (List[Dict[str, str]]) -> List[Dict[str, str]]
+    new_commits_list = []
+    for commit in commits:
+        new_commits_list.append({
+            'sha': commit.get('id'),
+            'url': commit.get('url'),
+            'message': commit.get('message'),
+        })
+    return new_commits_list
