@@ -19,7 +19,7 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
-def address_test(filepath,suite,args):
+def address_test(filepath, suite, args):
     filepath = filepath.replace(".py", ".")
     new_suite = filepath + suite
     args[args.index(suite)] = new_suite
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                     if not os.path.isdir(filepath):
                         for line in open(filepath):
                             if classname in line:
-                                address_test(filepath,suite,args)
+                                address_test(filepath, suite, args)
                                 found_file = True
                                 break
                 if found_file == True:
@@ -106,7 +106,7 @@ if __name__ == "__main__":
                     if not os.path.isdir(filepath):
                         for line in open(filepath):
                             if suite in line:
-                                address_test(filepath,suite,args)
+                                address_test(filepath, suite, args)
                                 found_file = True
                                 break
                 if found_file == True:
