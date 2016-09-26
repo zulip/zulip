@@ -144,7 +144,7 @@ exports.update = function update(person) {
         person_obj.avatar_url = url;
 
         if (util.is_current_user(person.email)) {
-          page_params.avatar_url = url;
+          url = page_params.avatar_url_medium;
           $("#user-settings-avatar").attr("src", url);
         }
 

@@ -492,8 +492,10 @@ function _setup_page() {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
-                $("#user-settings-avatar").expectOne().attr("src", url);
+
+                var url = $("#user-settings-avatar").attr("src");
+
+                $("#user-settings-avatar").expectOne().attr("src", url + '&stamp=' + exports.avatar_stamp);
                 exports.avatar_stamp += 1;
             }
         });
