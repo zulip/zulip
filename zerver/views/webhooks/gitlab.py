@@ -195,8 +195,8 @@ def get_body_based_on_event(event):
 def get_subject_based_on_event(event, payload):
     # type: (str, Dict[str, Any]) -> str
     if event == 'Push Hook':
-        return "Repository: {} - branch: {}".format(get_repo_name(payload), get_branch_name(payload))
-    return "Repository: {}".format(get_repo_name(payload))
+        return "{} / {}".format(get_repo_name(payload), get_branch_name(payload))
+    return get_repo_name(payload)
 
 def get_event(request, payload):
     # type: (HttpRequest,  Dict[str, Any]) -> str
