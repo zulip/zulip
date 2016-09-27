@@ -42,6 +42,9 @@ sudo: required
 services:
 - docker
 addons:
+  artifacts:
+    paths:
+      - $(ls var/casper/* | tr "\n" ":")
   postgresql: "9.3"
 after_success:
   coveralls
