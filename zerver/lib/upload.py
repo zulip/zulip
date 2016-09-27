@@ -9,7 +9,7 @@ from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 import unicodedata
 
-from zerver.lib.avatar import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_hash
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_text, force_str, NonBinaryStr
 

@@ -21,7 +21,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import force_bytes, ModelReprMixin, dict_with_str_keys
 from django.db import transaction
-from zerver.lib.avatar import gravatar_hash, get_avatar_url
+from zerver.lib.avatar import get_avatar_url
+from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.camo import get_camo_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
