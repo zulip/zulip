@@ -240,10 +240,10 @@ Filter.parse = function (str) {
             // I will use Filter.operator_to_prefix to check if the operator is
             // known or not this function returns '' for uknown operators.
 
-            if (Filter.operator_to_prefix(operator, feature_flags.negated_search) === '') {
-              //Unkonwn operator
-              operator = 'search'
-              operand = operator + ":" + operand
+            if (Filter.operator_to_prefix(operator, true) === '') {
+              // Unkonwn operator
+              operator = 'search';
+              operand = operator + ":" + operand;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
