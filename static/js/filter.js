@@ -223,7 +223,6 @@ Filter.parse = function (str) {
             search_term.push(token);
         } else {
             // Looks like an operator.
-            // FIXME: Should we skip unknown operator names here?
             negated = false;
             operator = parts.shift();
 
@@ -240,10 +239,10 @@ Filter.parse = function (str) {
             // I will use Filter.operator_to_prefix to check if the operator is
             // known or not this function returns '' for uknown operators.
 
-            if (Filter.operator_to_prefix(operator, true) === '') {
+            if (Filter.operator_to_prefix(operator, negated) === '') {
               // Unkonwn operator
               operator = 'search';
-              operand = operator + ":" + operand;
+              operand = token;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
