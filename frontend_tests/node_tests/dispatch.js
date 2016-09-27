@@ -546,9 +546,12 @@ run(function (override, capture, args) {
 
     event = event_fixtures.realm_bot__update;
     override('bot_data', 'update', capture(['email', 'bot']));
+    override('admin', 'update_user_full_name', capture(['update_email', 'name']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
     assert_same(args.bot, event.bot);
+    assert_same(args.update_email, event.bot.email);
+    assert_same(args.name, event.bot.full_name);
 
 });
 
@@ -585,8 +588,11 @@ run(function (override, capture, args) {
 
     event = event_fixtures.realm_user__update;
     override('people', 'update', capture(['person']));
+    override('admin', 'update_user_full_name', capture(['email', 'name']));
     dispatch(event);
     assert_same(args.person, event.person);
+    assert_same(args.email, event.person.email);
+    assert_same(args.name, event.person.full_name);
 
 });
 

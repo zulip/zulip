@@ -393,3 +393,7 @@ input[type=checkbox].inline-block {
     word-break: break-all;
     white-space: normal;
 }
+
+.open-user-form {
+    min-width: initial !important;
+}
