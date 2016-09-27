@@ -225,21 +225,26 @@ Filter.parse = function (str) {
             // Looks like an operator.
             negated = false;
             operator = parts.shift();
-
             if (feature_flags.negated_search) {
                 if (operator[0] === '-') {
                     negated = true;
                     operator = operator.slice(1);
                 }
             }
+
             operand = decodeOperand(parts.join(':'), operator);
 
             // If operator is not known use 'search' as operator name and the
             // rest as operand to 'search' operator
             // I will use Filter.operator_to_prefix to check if the operator is
             // known or not this function returns '' for uknown operators.
-
-            if (Filter.operator_to_prefix(operator, negated) === '') {
+            // Hint: when using Filter.operator_to_prefix we must not pass
+            // operators that start with '-' we must strip it first
+            _operator = operator;
+            if (operator[0] === '-'){
+              _operator = operator.slice(1);
+            }
+            if (Filter.operator_to_prefix(_operator, negated) === '') {
               // Unkonwn operator
               operator = 'search';
               operand = token;
