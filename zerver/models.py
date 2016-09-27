@@ -240,6 +240,7 @@ post_save.connect(flush_realm, sender=Realm)
 
 class RealmAlias(models.Model):
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True, unique=True) # type: text_type
 
 # These functions should only be used on email addresses that have

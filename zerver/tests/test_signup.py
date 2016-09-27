@@ -10,13 +10,14 @@ from zerver.views import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
-    PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
+    PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
 from zerver.lib.actions import (
     create_stream_if_needed,
     do_add_subscription,
     set_default_streams,
+    do_create_realm
 )
 
 from zerver.lib.initial_password import initial_password
@@ -636,6 +637,10 @@ class RealmCreationTest(ZulipTestCase):
             self.assertIsNotNone(realm)
             self.assertEqual(realm.domain, domain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+            # Make sure the RealmAlias is created
+            realmalias = RealmAlias.objects.get(domain = domain)
+            self.assertEqual(realmalias.realm, realm)
 
             # Check defaults
             self.assertEquals(realm.org_type, Realm.COMMUNITY)
