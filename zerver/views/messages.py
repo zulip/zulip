@@ -778,12 +778,6 @@ def same_realm_jabber_user(user_profile, email):
 
     return user_profile.realm.domain == domain
 
-
-@authenticated_api_view(is_webhook=False)
-def api_send_message(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return send_message_backend(request, user_profile)
-
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
