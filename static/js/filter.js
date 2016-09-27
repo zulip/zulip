@@ -240,8 +240,8 @@ Filter.parse = function (str) {
             // known or not this function returns '' for uknown operators.
             // Hint: when using Filter.operator_to_prefix we must not pass
             // operators that start with '-' we must strip it first
-            _operator = operator;
-            if (operator[0] === '-'){
+            var _operator = operator;
+            if (operator[0] === '-') {
               _operator = operator.slice(1);
             }
             if (Filter.operator_to_prefix(_operator, negated) === '') {
