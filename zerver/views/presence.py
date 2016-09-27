@@ -49,7 +49,3 @@ def update_active_status_backend(request, user_profile, status=REQ(),
 
     return json_success(ret)
 
-@authenticated_json_post_view
-def json_get_active_statuses(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return json_success(get_status_list(user_profile))
