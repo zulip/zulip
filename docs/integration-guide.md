@@ -168,8 +168,7 @@ documentation for the third party software in order to learn how to
 write the integration.  But we have a few notes on how to do these:
 
 * You should always send messages by POSTing to URLs of the form
-`https://zulip.example.com/v1/messages/`, not the legacy
-`/api/v1/send_message` message sending API.
+`https://zulip.example.com/v1/messages/`.
 
 * We usually build Python script integration with (at least) 2 files:
 `zulip_foo_config.py`` containing the configuration for the

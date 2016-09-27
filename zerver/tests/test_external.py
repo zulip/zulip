@@ -68,13 +68,13 @@ class RateLimitTests(ZulipTestCase):
 
     def send_api_message(self, email, api_key, content):
         # type: (text_type, text_type, text_type) -> HttpResponse
-        return self.client_post("/api/v1/send_message", {"type": "stream",
-                                                                   "to": "Verona",
-                                                                   "client": "test suite",
-                                                                   "content": content,
-                                                                   "subject": "Test subject",
-                                                                   "email": email,
-                                                                   "api-key": api_key})
+        return self.client_post("/api/v1/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": content,
+                                                     "subject": "Test subject"},
+                                **self.api_auth(email))
+
     def test_headers(self):
         # type: () -> None
         email = "hamlet@zulip.com"
