@@ -19,8 +19,8 @@
       <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
          {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
       <label for="id_realm_restricted_to_domain" class="inline-block"
-        title="{{#tr this}}If checked, only users with an @__domain__ e-mail address will be able to join the organization.{{/tr}}">
-        {{#tr this}}Users restricted to __domain__{{/tr}}
+        title="{{#tr this}}If checked, only users with an e-mail address ending in __atdomains_string__ will be able to join the organization.{{/tr}}">
+        {{#tr this}}Users restricted to __domains_string__{{/tr}}
       </label>
     </div>
     <div class="input-group">

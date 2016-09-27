@@ -1785,6 +1785,7 @@ class HomeTest(ZulipTestCase):
             "desktop_notifications_enabled",
             "development_environment",
             "domain",
+            "domains",
             "email",
             "email_dict",
             "enable_digest_emails",
