@@ -226,6 +226,7 @@ Filter.parse = function (str) {
             // FIXME: Should we skip unknown operator names here?
             negated = false;
             operator = parts.shift();
+
             if (feature_flags.negated_search) {
                 if (operator[0] === '-') {
                     negated = true;
@@ -233,6 +234,17 @@ Filter.parse = function (str) {
                 }
             }
             operand = decodeOperand(parts.join(':'), operator);
+
+            // If operator is not known use 'search' as operator name and the
+            // rest as operand to 'search' operator
+            // I will use Filter.operator_to_prefix to check if the operator is
+            // known or not this function returns '' for uknown operators.
+
+            if (Filter.operator_to_prefix(operator, feature_flags.negated_search) === '') {
+              //Unkonwn operator
+              operator = 'search'
+              operand = operator + ":" + operand
+            }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }

@@ -148,11 +148,6 @@ exports.activate = function (raw_operators, opts) {
     if (raw_operators.length === 0) {
         return exports.deactivate();
     }
-    var known_operators = ["stream", "topic", "is", "pm-with", "sender", "subject"];
-    if (known_operators.indexOf(raw_operators[0].operator) === -1) {
-      raw_operators[0].operand = raw_operators[0].operator + ":" + raw_operators[0].operand;
-      raw_operators[0].operator = "search";
-    }
     var filter = new Filter(raw_operators);
     var operators = filter.operators();
 
