@@ -33,4 +33,3 @@ describe Puppet::Parser::Functions.function(:has_ip_network) do
     end
   end
 end
-

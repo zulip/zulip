@@ -7,4 +7,3 @@ info('has_interface_with(\'network\', \'127.0.0.0\'):', has_interface_with('netw
 info('has_interface_with(\'network\', \'128.0.0.0\'):', has_interface_with('network', '128.0.0.0'))
 info('has_interface_with(\'netmask\', \'255.0.0.0\'):', has_interface_with('netmask', '255.0.0.0'))
 info('has_interface_with(\'netmask\', \'256.0.0.0\'):', has_interface_with('netmask', '256.0.0.0'))
-

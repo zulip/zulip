@@ -120,4 +120,3 @@ describe 'apt::key', :type => :define do
   end
 
 end
-

@@ -19,4 +19,3 @@ describe 'apt::release', :type => :class do
     })
   }
 end
-
