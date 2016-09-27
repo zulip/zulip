@@ -296,6 +296,10 @@ def alias_for_realm(domain):
     except RealmAlias.DoesNotExist:
         return None
 
+def list_of_domains_for_realm(realm):
+    # type: (Realm) -> List[text_type]
+    return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
+
 def remote_user_to_email(remote_user):
     # type: (text_type) -> text_type
     if settings.SSO_APPEND_DOMAIN is not None:
