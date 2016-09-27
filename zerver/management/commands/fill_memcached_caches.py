@@ -19,4 +19,3 @@ class Command(BaseCommand):
 
         for cache in cache_fillers.keys():
             fill_remote_cache(cache)
-

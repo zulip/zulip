@@ -35,4 +35,3 @@ def nagios_from_file(results_file):
             data = pieces[3]
 
     return (ret, "%s: %s" % (state, data))
-

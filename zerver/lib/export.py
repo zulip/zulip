@@ -1587,4 +1587,3 @@ def import_attachments(data):
         cursor.executemany(sql_template, tups)
 
     logging.info('Successfully imported M2M table %s' % (m2m_table_name,))
-

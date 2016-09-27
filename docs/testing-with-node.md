@@ -129,4 +129,3 @@ here is this:
 >     global.narrow.stream = function () {
 >         return 'office';
 >     };
-

@@ -721,5 +721,3 @@ run(function (override, capture, args) {
     assert_same(args.message_id, 99);
     assert_same(args.new_value, true); // for 'add'
 });
-
-

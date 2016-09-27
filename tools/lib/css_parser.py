@@ -503,4 +503,3 @@ def tokenize(text):
         advance(len(s))
 
     return tokens
-

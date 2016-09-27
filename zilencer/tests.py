@@ -19,4 +19,3 @@ class EndpointDiscoveryTest(TestCase):
         data = ujson.loads(response.content)
         self.assertEqual(data["result"]["base_site_url"], "https://zulip.com/")
         self.assertEqual(data["result"]["base_api_url"], "https://api.zulip.com/")
-

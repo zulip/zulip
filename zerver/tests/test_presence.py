@@ -182,4 +182,3 @@ class UserPresenceTests(ZulipTestCase):
         # We only want @zulip.com emails
         for email in json['presences'].keys():
             self.assertEqual(split_email_to_domain(email), 'zulip.com')
-

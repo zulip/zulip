@@ -236,4 +236,3 @@ linter or an automated test.
 Our goal is to have most common style issues by caught by the linters, so new
 contributors to the codebase can efficiently fix produce code with correct
 style without needing to go back-and-forth with a reviewer.
-

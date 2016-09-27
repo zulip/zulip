@@ -582,5 +582,3 @@ request:
 
 If you would like feedback on your integration as you go, feel free to submit
 pull requests as you go, prefixing them with `[WIP]`.
-
-

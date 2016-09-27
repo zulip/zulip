@@ -299,6 +299,20 @@ class FileUploadTest(ZulipTestCase):
         self.assertTrue(message not in f2_attachment.messages.all())
         self.assertTrue(message not in f3_attachment.messages.all())
 
+    def test_file_name(self):
+        # type: () -> None
+        """
+        Unicode filenames should be processed correctly.
+        """
+        self.login("hamlet@zulip.com")
+        for expected in ["Здравейте.txt", "test"]:
+            fp = StringIO("bah!")
+            fp.name = urllib.parse.quote(expected)
+
+            result = self.client_post("/json/upload_file", {'f1': fp})
+            content = ujson.loads(result.content)
+            assert sanitize_name(expected) in content['uri']
+
     def tearDown(self):
         # type: () -> None
         destroy_uploads()

@@ -64,4 +64,3 @@ if __name__ == "__main__":
         f.close()
 
         subprocess.call(["mv", "/home/zulip/public_streams.tmp", "/home/zulip/public_streams"])
-

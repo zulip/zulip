@@ -106,4 +106,3 @@ If you are not interested in running your bots on the
 server, then you can still use the full Zulip API.  The
 hope, though, is that this architecture will make
 writing simple bots a quick/easy process.
-

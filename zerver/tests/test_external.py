@@ -126,4 +126,3 @@ class RateLimitTests(ZulipTestCase):
         result = self.send_api_message(email, api_key, "Good message")
 
         self.assert_json_success(result)
-

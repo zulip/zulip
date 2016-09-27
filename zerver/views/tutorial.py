@@ -41,4 +41,3 @@ def json_tutorial_status(request, user_profile,
     user_profile.save(update_fields=["tutorial_status"])
 
     return json_success()
-

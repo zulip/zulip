@@ -151,7 +151,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitWhileVisible("#markdown_preview", function () {
         casper.test.assertVisible('#undo_markdown_preview', 'Write button is visible');
-        casper.test.assertEquals(casper.getHTML('#preview_message_area'), "Nothing to preview", "Nothing to preview");
+        casper.test.assertEquals(casper.getHTML('#preview_content'), "Nothing to preview", "Nothing to preview");
         casper.click("#undo_markdown_preview");
     });
 });
@@ -160,7 +160,7 @@ casper.then(function () {
     casper.waitWhileVisible("#undo_markdown_preview", function () {
         casper.test.assertVisible('#markdown_preview', 'Preview button is visible.');
         casper.test.assertNotVisible('#undo_markdown_preview', 'Write button is hidden.');
-        casper.test.assertEquals(casper.getHTML('#preview_message_area'), "", "Markdown preview area is empty");
+        casper.test.assertEquals(casper.getHTML('#preview_content'), "", "Markdown preview area is empty");
 
         casper.fill('form[action^="/json/messages"]', {
             content: '**Markdown Preview** >> Test for markdown preview'
@@ -172,7 +172,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitWhileVisible("#markdown_preview", function () {
-        casper.test.assertEquals(casper.getHTML('#preview_message_area'), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
+        casper.test.assertEquals(casper.getHTML('#preview_content'), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
     });
 });
 

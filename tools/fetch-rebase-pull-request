@@ -7,4 +7,3 @@ git fetch upstream "pull/$request_id/head"
 git checkout upstream/master -b "review-${request_id}"
 git reset --hard FETCH_HEAD
 git pull --rebase
-

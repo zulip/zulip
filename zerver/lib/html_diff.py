@@ -127,4 +127,3 @@ def highlight_html_differences(s1, s2):
         return s2
 
     return retval
-

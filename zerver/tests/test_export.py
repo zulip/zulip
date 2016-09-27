@@ -310,4 +310,3 @@ class ExportTest(TestCase):
         dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
         self.assertIn('iago@zulip.com', dummy_user_emails)
         self.assertNotIn('cordelia@zulip.com', dummy_user_emails)
-

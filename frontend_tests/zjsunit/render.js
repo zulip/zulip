@@ -39,4 +39,3 @@ exports.use_template = function (name) {
 return exports;
 }());
 module.exports = render;
-
