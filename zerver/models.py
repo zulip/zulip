@@ -21,7 +21,6 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import force_bytes, ModelReprMixin, dict_with_str_keys
 from django.db import transaction
-from zerver.lib.avatar import get_avatar_url
 from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.camo import get_camo_url
 from django.utils import timezone
@@ -1018,6 +1017,8 @@ class Message(ModelReprMixin, models.Model):
             import zerver.lib.bugdown as bugdown
             # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
 
+        # TODO: Remove this import cycle
+        from zerver.lib.avatar import get_avatar_url
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
         display_recipient = get_display_recipient_by_id(
@@ -1354,6 +1355,9 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
                                         bot_owner=user_profile).values(*active_bot_dict_fields)
+    # TODO: Remove this import cycle
+    from zerver.lib.avatar import get_avatar_url
+
     return [{'email': botdict['email'],
              'full_name': botdict['full_name'],
              'api_key': botdict['api_key'],
