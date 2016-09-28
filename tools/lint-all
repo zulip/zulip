@@ -306,7 +306,7 @@ def build_custom_checkers(by_lang):
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
         ] + whitespace_rules[0:1] # type: RuleList
-    css_rules = [
+    css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},
         {'pattern': '[a-z]{',
@@ -314,11 +314,10 @@ def build_custom_checkers(by_lang):
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
          'exclude': set(['static/styles/thirdparty-fonts.css']),
-         'strip': '\n',
-        },
+         'strip': '\n',},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
-        ] + whitespace_rules # type: RuleList
+        ]) + whitespace_rules # type: RuleList
     handlebars_rules = whitespace_rules
     html_rules = whitespace_rules + [
         {'pattern': 'placeholder="[^{]',
