@@ -53,3 +53,8 @@ def get_migration_status(**options):
     out.seek(0)
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
+
+def write_migration_status_into_file(file_name, **options):
+    # type: (text_type, **Any) -> None
+    with open(file_name, 'w') as file_to_write:
+        file_to_write.write(get_migration_status(**options))
