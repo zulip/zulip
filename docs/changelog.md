@@ -4,6 +4,19 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.4.2 - 2016-09-27
+- Upgraded Django to version 1.8.15 (with the Zulip patches applied),
+  fixing a CSRF vulnerability in Django (see
+  https://www.djangoproject.com/weblog/2016/sep/26/security-releases/),
+  and a number of other Django bugs from past Django stable releases
+  that largely affects parts of Django that are not used by Zulip.
+- Fixed buggy logrotate configuration.
+
+### 1.4.1 - 2016-09-03
+- Fixed settings bug upgrading from pre-1.4.0 releases to 1.4.0.
+- Fixed local file uploads integration being broken for new 1.4.0
+  installations.
+
 ### 1.4 - 2016-08-25
 
 - Migrated Zulip's python dependencies to be installed via a virtualenv,
