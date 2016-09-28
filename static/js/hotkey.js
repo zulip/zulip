@@ -66,7 +66,7 @@ var tab_up_down = (function () {
 
     return function (e) {
         var $target = $(e.target);
-        var flag = $target.closest(list.join(", "));
+        var flag = $target.closest(list.join(", ")).length > 0;
 
         return {
             flag: flag,
