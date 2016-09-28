@@ -140,6 +140,21 @@ def get_build_hook_event_body(payload):
         action
     )
 
+def get_pipeline_event_body(payload):
+    # type: (Dict[str, Any]) -> text_type
+    pipeline_status = payload.get('object_attributes').get('status')
+    if pipeline_status == 'pending':
+        action = 'was created'
+    elif pipeline_status == 'running':
+        action = 'started'
+    else:
+        action = 'changed status to {}'.format(pipeline_status)
+
+    builds_status = u""
+    for build in payload.get('builds'):
+        builds_status += u"* {} - {}\n".format(build.get('name'), build.get('status'))
+    return u"Pipeline {} with build(s):\n{}.".format(action, builds_status[:-1])
+
 def get_repo_name(payload):
     # type: (Dict[str, Any]) -> text_type
     return payload['project']['name']
@@ -190,6 +205,7 @@ EVENT_FUNCTION_MAPPER = {
     'Wiki Page Hook create': partial(get_wiki_page_event_body, action='created'),
     'Wiki Page Hook update': partial(get_wiki_page_event_body, action='updated'),
     'Build Hook': get_build_hook_event_body,
+    'Pipeline Hook': get_pipeline_event_body,
 }
 
 @api_key_only_webhook_view("Gitlab")
@@ -214,6 +230,10 @@ def get_subject_based_on_event(event, payload):
         return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
     elif event == 'Build Hook':
         return u"{} / {}".format(payload.get('repository').get('name'), get_branch_name(payload))
+    elif event == 'Pipeline Hook':
+        return u"{} / {}".format(
+            get_repo_name(payload),
+            payload.get('object_attributes').get('ref').replace('refs/heads/', ''))
     return get_repo_name(payload)
 
 def get_event(request, payload):
