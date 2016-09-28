@@ -244,10 +244,15 @@ Filter.parse = function (str) {
             if (operator[0] === '-') {
               _operator = operator.slice(1);
             }
-            if (Filter.operator_to_prefix(_operator, negated) === '') {
-              // Unkonwn operator
-              operator = 'search';
-              operand = token;
+
+            // If operator is 'is' keep it
+
+            if (operator !== "is") {
+              if (Filter.operator_to_prefix(_operator, negated) === '') {
+                // Unkonwn operator
+                operator = 'search';
+                operand = token;
+              }
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
