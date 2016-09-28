@@ -646,6 +646,7 @@ PIPELINE = {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
+                'styles/components.css',
                 'styles/zulip.css',
                 'styles/media.css',
                 'styles/settings.css',
@@ -660,6 +661,7 @@ PIPELINE = {
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
+                'styles/components.css',
                 'styles/zulip.css',
                 'styles/media.css',
                 'styles/settings.css',
