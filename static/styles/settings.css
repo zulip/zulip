@@ -8,7 +8,7 @@ label {
 }
 
 .display-none {
-  display: none;
+    display: none;
 }
 
 .inline-block {
@@ -171,7 +171,7 @@ input[type=checkbox].inline-block {
 }
 
 .remove-alert-word {
-  margin-top: 1px;
+    margin-top: 1px;
 }
 
 @media (max-width: 480px) {

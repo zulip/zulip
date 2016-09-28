@@ -311,6 +311,11 @@ def build_custom_checkers(by_lang):
          'description': "Missing whitespace after : in CSS"},
         {'pattern': '[a-z]{',
          'description': "Missing whitespace before '{' in CSS."},
+        {'pattern': '^[ ][ ][a-zA-Z0-9]',
+         'description': "Incorrect 2-space indentation in CSS",
+         'exclude': set(['static/styles/thirdparty-fonts.css']),
+         'strip': '\n',
+        },
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
         ] + whitespace_rules # type: RuleList

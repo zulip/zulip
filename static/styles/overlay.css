@@ -85,8 +85,8 @@
 }
 
 #overlay .image-description {
-  /* approx width of screen minus action buttons on the side. */
-  width: calc(100% - 290px);
+    /* approx width of screen minus action buttons on the side. */
+    width: calc(100% - 290px);
 }
 
 #overlay .image-description .title {
@@ -108,7 +108,7 @@
 }
 
 .image-actions a.button {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 .button .download {
