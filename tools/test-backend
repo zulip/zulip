@@ -19,11 +19,6 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
-def address_test(filepath, suite, args):
-    filepath = filepath.replace(".py", ".")
-    new_suite = filepath + suite
-    args[args.index(suite)] = new_suite
-
 if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
@@ -83,34 +78,24 @@ if __name__ == "__main__":
     for suite in args:
         args[args.index(suite)] = suite.replace("/", ".")
 
+    def rewrite_arguments(search_key):
+        for file_name in os.listdir(zerver_test_dir):
+            if file_name.endswith(".py"):
+                filepath = zerver_test_dir + file_name
+                if os.path.isdir(filepath):
+                    continue
+                for line in open(filepath):
+                    if search_key in line:
+                        new_suite = filepath.replace(".py", ".") + suite
+                        args[args.index(suite)] = new_suite
+                        return
+
     for suite in args:
-        found_file = False
         if suite[0].isupper() and "test_" in suite:
             classname = suite.rsplit('.', 1)[0]
-            for file_name in os.listdir(zerver_test_dir):
-                if file_name.endswith(".py"):
-                    filepath = zerver_test_dir + file_name
-                    if not os.path.isdir(filepath):
-                        for line in open(filepath):
-                            if classname in line:
-                                address_test(filepath, suite, args)
-                                found_file = True
-                                break
-                if found_file == True:
-                    break
-
+            rewrite_arguments(classname)
         elif suite[0].isupper():
-            for file_name in os.listdir(zerver_test_dir):
-                if file_name.endswith(".py"):
-                    filepath = zerver_test_dir + file_name
-                    if not os.path.isdir(filepath):
-                        for line in open(filepath):
-                            if suite in line:
-                                address_test(filepath, suite, args)
-                                found_file = True
-                                break
-                if found_file == True:
-                    break
+            rewrite_arguments(suite)
 
     for suite in args:
         if suite.startswith('test'):
