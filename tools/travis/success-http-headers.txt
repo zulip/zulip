@@ -24,7 +24,6 @@ Reusing existing connection to localhost:443.
   Content-Type: text/html; charset=utf-8
   Transfer-Encoding: chunked
   Connection: keep-alive
-  Cache-Control: max-age=0
   Strict-Transport-Security: max-age=15768000
 Length: unspecified [text/html]
 Saving to: ‘/tmp/index.html’

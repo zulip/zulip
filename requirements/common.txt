@@ -1,6 +1,6 @@
 -r ipython.txt
 # Django itself; we use a slightly patched version
-git+https://github.com/zulip/truncated-django.git
+git+https://github.com/zulip/truncated-django-1.8.15.git@cbf4fa3aef1b17f37d75a70e57f9b69a0f99ed5c#egg=Django==1.8.15
 
 GitPython==0.3.2.1
 
