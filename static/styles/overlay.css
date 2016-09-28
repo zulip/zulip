@@ -84,10 +84,21 @@
     top: 2px;
 }
 
+#overlay .image-description {
+  /* approx width of screen minus action buttons on the side. */
+  width: calc(100% - 290px);
+}
+
 #overlay .image-description .title {
     font-size: 2rem;
     font-weight: 300;
     line-height: normal;
+    max-width: calc(100%);
+
+    /* Required for text-overflow */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #overlay .image-description .user {
