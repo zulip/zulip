@@ -4,7 +4,7 @@ from typing import Any
 from django.db import DEFAULT_DB_ALIAS
 from django.core.management.base import BaseCommand
 
-from tools.lib.get_migration_status import get_migration_status
+from zerver.lib.test_fixtures import get_migration_status
 
 
 class Command(BaseCommand):

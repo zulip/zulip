@@ -3,7 +3,7 @@ import argparse
 from typing import Any
 from django.core.management.base import BaseCommand
 
-from tools.lib.check_if_database_exist import check_if_database_exist
+from zerver.lib.test_fixtures import check_if_database_exist
 
 
 class Command(BaseCommand):
