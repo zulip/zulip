@@ -100,8 +100,8 @@ p.n-margin {
 }
 
 #unmute_muted_topic_notification h3 {
-  font-size: 16pt;
-  margin-top: 2px;
+    font-size: 16pt;
+    margin-top: 2px;
 }
 
 @keyframes pulse {
@@ -1079,7 +1079,7 @@ td.pointer {
 
 .messages-expand,
 .messages-collapse {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 /*
@@ -2689,12 +2689,12 @@ div.floating_recipient {
 }
 
 .subscription-name-row {
-  display: inline-block;
+    display: inline-block;
 }
 
 .subscription-name-row,
 .subscription-description-row {
-  vertical-align: top;
+    vertical-align: top;
 }
 
 .subscription_header .subscription_lock {
@@ -2823,7 +2823,7 @@ div.floating_recipient {
 }
 
 .sp-container {
-  z-index: 100;
+    z-index: 100;
 }
 
 .streams_popover .sp-palette-container {
