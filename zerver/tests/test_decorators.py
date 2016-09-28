@@ -9,7 +9,7 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    ZulipTestCase, WebhookTestCase
+    HostRequestMock, ZulipTestCase, WebhookTestCase
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
@@ -165,7 +165,7 @@ class DecoratorTestCase(TestCase):
         def my_webhook(request, user_profile, client):
             return user_profile.email
 
-        class Request(object):
+        class Request(HostRequestMock):
             REQUEST = {} # type: Dict[str, str]
             COOKIES = {}
             META = {'PATH_INFO': ''}
@@ -614,27 +614,27 @@ class TestValidateApiKey(ZulipTestCase):
 
     def test_validate_api_key_if_profile_does_not_exist(self):
         with self.assertRaises(JsonableError):
-            validate_api_key('email@doesnotexist.com', 'api_key')
+            validate_api_key(HostRequestMock(), 'email@doesnotexist.com', 'api_key')
 
     def test_validate_api_key_if_api_key_does_not_match_profile_api_key(self):
         with self.assertRaises(JsonableError):
-            validate_api_key(self.webhook_bot.email, 'not_32_length')
+            validate_api_key(HostRequestMock(), self.webhook_bot.email, 'not_32_length')
 
         with self.assertRaises(JsonableError):
-            validate_api_key(self.webhook_bot.email, self.default_bot.api_key)
+            validate_api_key(HostRequestMock(), self.webhook_bot.email, self.default_bot.api_key)
 
     def test_validate_api_key_if_profile_is_not_active(self):
         self._change_is_active_field(self.default_bot, False)
         with self.assertRaises(JsonableError):
-            validate_api_key(self.default_bot.email, self.default_bot.api_key)
+            validate_api_key(HostRequestMock(), self.default_bot.email, self.default_bot.api_key)
         self._change_is_active_field(self.default_bot, True)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self):
         with self.assertRaises(JsonableError):
-            validate_api_key(self.webhook_bot.email, self.webhook_bot.api_key)
+            validate_api_key(HostRequestMock(), self.webhook_bot.email, self.webhook_bot.api_key)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self):
-        profile = validate_api_key(self.webhook_bot.email, self.webhook_bot.api_key, is_webhook=True)
+        profile = validate_api_key(HostRequestMock(), self.webhook_bot.email, self.webhook_bot.api_key, is_webhook=True)
         self.assertEqual(profile.pk, self.webhook_bot.pk)
 
     def _change_is_active_field(self, profile, value):
