@@ -204,6 +204,17 @@ class POSTRequestMock(object):
         self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
+class HostRequestMock(object):
+    """A mock request object where get_host() works.  Useful for testing
+    routes that use Zulip's subdomains feature"""
+    def __init__(self, host=settings.EXTERNAL_HOST):
+        # type: (text_type) -> None
+        self.host = host
+
+    def get_host(self):
+        # type: () -> text_type
+        return self.host
+
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
 INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 

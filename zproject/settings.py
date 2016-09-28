@@ -646,9 +646,11 @@ PIPELINE = {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
+                'styles/components.css',
                 'styles/zulip.css',
                 'styles/media.css',
                 'styles/settings.css',
+                'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
@@ -660,9 +662,11 @@ PIPELINE = {
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
+                'styles/components.css',
                 'styles/zulip.css',
                 'styles/media.css',
                 'styles/settings.css',
+                'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 'styles/fonts.css',

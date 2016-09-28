@@ -15,6 +15,7 @@ GENERIC_KEYWORDS = [
     'error',
     'expanded',
     'hide',
+    'show',
     'notdisplayed',
     'popover',
     'success',

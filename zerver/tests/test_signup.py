@@ -78,8 +78,7 @@ class PublicURLTest(ZulipTestCase):
                            "/json/users/me/subscriptions",
                            "/api/v1/users/me/subscriptions",
                            ],
-                     400: ["/api/v1/send_message",
-                           "/api/v1/external/github",
+                     400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
                 }

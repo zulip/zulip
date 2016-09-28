@@ -945,7 +945,7 @@ a.bottom-signup-button {
 }
 
 .center-block .submit-button-box .controls {
-  margin: 0px;
+    margin: 0px;
 }
 
 .center-block {
@@ -975,7 +975,7 @@ a.bottom-signup-button {
 }
 
 .center-block #send_confirm input[type=text] {
-  margin-top: 20px;
+    margin-top: 20px;
 }
 
 .center-block .button {

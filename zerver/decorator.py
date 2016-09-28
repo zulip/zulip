@@ -160,8 +160,8 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
     request.client = get_client(client_name)
     update_user_activity(request, user_profile)
 
-def validate_api_key(role, api_key, is_webhook=False):
-    # type: (text_type, text_type, bool) -> Union[UserProfile, Deployment]
+def validate_api_key(request, role, api_key, is_webhook=False):
+    # type: (HttpRequest, text_type, text_type, bool) -> Union[UserProfile, Deployment]
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
@@ -330,7 +330,7 @@ def authenticated_api_view(is_webhook=False):
                 raise RequestVariableMissingError("api_key")
             elif not api_key:
                 api_key = api_key_legacy
-            user_profile = validate_api_key(email, api_key, is_webhook)
+            user_profile = validate_api_key(request, email, api_key, is_webhook)
             request.user = user_profile
             request._email = user_profile.email
             process_client(request, user_profile)
@@ -367,7 +367,7 @@ def authenticated_rest_api_view(is_webhook=False):
             # Now we try to do authentication or die
             try:
                 # Could be a UserProfile or a Deployment
-                profile = validate_api_key(role, api_key, is_webhook)
+                profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
                 return json_unauthorized(e.error)
             request.user = profile

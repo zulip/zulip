@@ -281,6 +281,29 @@ exports.small_avatar_url = function (message) {
     }
 };
 
+exports.lightbox_photo = function (image, user) {
+    // image should be an Image Object in JavaScript.
+    var url = $(image).attr("src"),
+        title = $(image).parent().attr("title");
+
+    $("#overlay .image-preview")
+        .css("background-image", "url(" + url + ")");
+
+    $("#overlay").addClass("show");
+
+    $(".right-sidebar, .column-middle-inner, .left-sidebar").addClass("visual-blur");
+
+    $(".title").text(title || "N/A");
+    $(".user").text(user);
+
+    $(".image-actions .open, .image-actions .download").attr("href", url);
+};
+
+exports.exit_lightbox_photo = function (image) {
+    $("#overlay").removeClass("show");
+    $(".right-sidebar, .column-middle-inner, .left-sidebar").removeClass("visual-blur");
+};
+
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_more_messages_indicator = function () {
     if (! loading_more_messages_indicator_showing) {

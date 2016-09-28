@@ -61,6 +61,25 @@ var hotkeys_shift_insensitive = {
     119: {name: 'query_streams', message_view_only: false} // 'w'
 };
 
+var tab_up_down = (function () {
+    var list = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
+
+    return function (e) {
+        var $target = $(e.target);
+        var flag = $target.closest(list.join(", "));
+
+        return {
+            flag: flag,
+            next: function () {
+                return $target.closest("li").next().find("a");
+            },
+            prev: function () {
+                return $target.closest("li").prev().find("a");
+            }
+        };
+    };
+}());
+
 function get_hotkey_from_event(e) {
 
     // We're in the middle of a combo; stop processing because
@@ -93,6 +112,17 @@ function process_hotkey(e) {
 
     if (ui.home_tab_obscured() && hotkey.message_view_only) {
         return false;
+    }
+
+    var tab_list = tab_up_down(e);
+    if (tab_list.flag) {
+        if (hotkey.name === "up_arrow") {
+            tab_list.prev().focus();
+            return true;
+        } else if (hotkey.name === "down_arrow") {
+            tab_list.next().focus();
+            return true;
+        }
     }
 
     if (event_name === 'ignore') {
@@ -216,6 +246,10 @@ function process_hotkey(e) {
         }
     }
 
+    if (event_name === "escape" && $("#overlay").hasClass("show")) {
+        ui.exit_lightbox_photo();
+    }
+
     // If we're on a button or a link and have pressed enter, let the
     // browser handle the keypress
     //
@@ -331,7 +365,8 @@ function process_hotkey(e) {
 
 $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
-    if (48 > e.which || 90 < e.which) {
+    // check if 27 (esc) because it doesn't register under .keypress()
+    if (48 > e.which || 90 < e.which || e.which === 27) {
         if (process_hotkey(e)) {
             e.preventDefault();
         }

@@ -624,6 +624,21 @@ class BugdownTest(TestCase):
             '</p>'
         )
 
+    def test_image_preview_title(self):
+        msg = '[My favorite image](https://example.com/testimage.png)'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<a href="https://example.com/testimage.png" target="_blank" title="https://example.com/testimage.png">My favorite image</a>'
+            '</p>\n'
+            '<div class="message_inline_image">'
+            '<a href="https://example.com/testimage.png" target="_blank" title="My favorite image">'
+            '<img src="https://example.com/testimage.png">'
+            '</a>'
+            '</div>'
+        )
+
     def test_mit_rendering(self):
         """Test the markdown configs for the MIT Zephyr mirroring system;
         verifies almost all inline patterns are disabled, but

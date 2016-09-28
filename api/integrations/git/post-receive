@@ -36,7 +36,7 @@ import subprocess
 import os.path
 
 sys.path.insert(0, os.path.dirname(__file__))
-from . import zulip_git_config as config
+import zulip_git_config as config
 VERSION = "0.9"
 
 if config.ZULIP_API_PATH is not None:

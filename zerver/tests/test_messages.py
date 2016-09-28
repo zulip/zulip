@@ -371,29 +371,28 @@ class StreamMessagesTest(ZulipTestCase):
     def test_stream_message_mirroring(self):
         # type: () -> None
         from zerver.lib.actions import do_change_is_admin
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        email = "iago@zulip.com"
+        user_profile = get_user_profile_by_email(email)
 
         do_change_is_admin(user_profile, True, 'api_super_user')
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "to": "Verona",
-                                                           "sender": "cordelia@zulip.com",
-                                                           "client": "test suite",
-                                                           "subject": "announcement",
-                                                           "content": "Everyone knows Iago rules",
-                                                           "forged": "true",
-                                                           "email": user_profile.email,
-                                                           "api-key": user_profile.api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "to": "Verona",
+                                                       "sender": "cordelia@zulip.com",
+                                                       "client": "test suite",
+                                                       "subject": "announcement",
+                                                       "content": "Everyone knows Iago rules",
+                                                       "forged": "true"},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
         do_change_is_admin(user_profile, False, 'api_super_user')
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "to": "Verona",
-                                                           "sender": "cordelia@zulip.com",
-                                                           "client": "test suite",
-                                                           "subject": "announcement",
-                                                           "content": "Everyone knows Iago rules",
-                                                           "forged": "true",
-                                                           "email": user_profile.email,
-                                                           "api-key": user_profile.api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "to": "Verona",
+                                                       "sender": "cordelia@zulip.com",
+                                                       "client": "test suite",
+                                                       "subject": "announcement",
+                                                       "content": "Everyone knows Iago rules",
+                                                       "forged": "true",},
+                                  **self.api_auth(email))
         self.assert_json_error(result, "User not authorized for this query")
 
     @slow('checks all users')
@@ -517,14 +516,12 @@ class MessagePOSTTest(ZulipTestCase):
         Same as above, but for the API view
         """
         email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "to": "Verona",
-                                                           "client": "test suite",
-                                                           "content": "Test message",
-                                                           "subject": "Test subject",
-                                                           "email": email,
-                                                           "api-key": api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "to": "Verona",
+                                                       "client": "test suite",
+                                                       "content": "Test message",
+                                                       "subject": "Test subject"},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
 
     def test_api_message_with_default_to(self):
@@ -534,16 +531,14 @@ class MessagePOSTTest(ZulipTestCase):
         stream for the user_profile.
         """
         email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email(email)
         user_profile.default_sending_stream = get_stream('Verona', user_profile.realm)
         user_profile.save()
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "client": "test suite",
-                                                           "content": "Test message no to",
-                                                           "subject": "Test subject",
-                                                           "email": email,
-                                                           "api-key": api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "client": "test suite",
+                                                       "content": "Test message no to",
+                                                       "subject": "Test subject"},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
