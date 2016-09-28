@@ -89,12 +89,10 @@ def run_test(test):
     # type: (TestCase) -> bool
     failed = False
     test_method = get_test_method(test)
-
     if fast_tests_only() and is_known_slow_test(test_method):
         return failed
 
     test_name = full_test_name(test)
-
     bounce_key_prefix_for_testing(test_name)
 
     print('Running', test_name)

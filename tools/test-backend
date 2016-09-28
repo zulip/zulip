@@ -19,6 +19,11 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
+def address_test(filepath, suite, args):
+    filepath = filepath.replace(".py", ".")
+    new_suite = filepath + suite
+    args[args.index(suite)] = new_suite
+
 if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
@@ -30,10 +35,15 @@ if __name__ == "__main__":
     usage = """%prog [options]
     test-backend # Runs all backend tests
     test-backend zerver.tests.test_bugdown # run all tests in a test module
+    test-backend zerver/tests/test_bugdown.py # run all tests in a test module
+    test-backend test_bugdown # run all tests in a test module
     test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
-    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test"""
+    test-backend BugdownTest # run all tests in a test class
+    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
+    test-backend BugdownTest.test_inline_youtube # run a single test"""
 
     parser = optparse.OptionParser(usage)
+
     parser.add_option('--nonfatal-errors', action="store_false", default=True,
                       dest="fatal_errors", help="Continue past test failures to run all tests")
     parser.add_option('--coverage', dest='coverage',
@@ -66,6 +76,56 @@ if __name__ == "__main__":
                       help="Show which tests are slowest.")
 
     (options, args) = parser.parse_args()
+
+    zerver_test_dir = 'zerver/tests/'
+
+    # to transform forward slashes '/' present in the argument into dots '.'
+    for suite in args:
+        args[args.index(suite)] = suite.replace("/", ".")
+
+    for suite in args:
+        found_file = False
+        if suite[0].isupper() and "test_" in suite:
+            classname = suite.rsplit('.', 1)[0]
+            for file_name in os.listdir(zerver_test_dir):
+                if file_name.endswith(".py"):
+                    filepath = zerver_test_dir + file_name
+                    if not os.path.isdir(filepath):
+                        for line in open(filepath):
+                            if classname in line:
+                                address_test(filepath, suite, args)
+                                found_file = True
+                                break
+                if found_file == True:
+                    break
+
+        elif suite[0].isupper():
+            for file_name in os.listdir(zerver_test_dir):
+                if file_name.endswith(".py"):
+                    filepath = zerver_test_dir + file_name
+                    if not os.path.isdir(filepath):
+                        for line in open(filepath):
+                            if suite in line:
+                                address_test(filepath, suite, args)
+                                found_file = True
+                                break
+                if found_file == True:
+                    break
+
+    for suite in args:
+        if suite.startswith('test'):
+            new_suite = "zerver.tests." + suite
+            args[args.index(suite)] = new_suite
+
+    for suite in args:
+        args[args.index(suite)] = suite.replace(".py", "")
+
+    # to transform forward slashes '/' introduced by the zerver_test_dir into dots '.'
+    # taking care of any forward slashes that might be present
+    for suite in args:
+        args[args.index(suite)] = suite.replace("/", ".")
+
+
     if len(args) == 0:
         suites = ["zerver.tests"]
     else:
