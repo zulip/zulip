@@ -189,7 +189,11 @@ class StreamAdminTest(ZulipTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+            result = self.client_patch('/json/rename_stream',
+                                       {
+                                           'old_name': 'stream_name1',
+                                           'new_name': 'stream_name2',
+                                       })
         self.assert_json_success(result)
 
         event = events[1]['event']
@@ -222,7 +226,11 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
 
-        result = self.client_post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        result = self.client_patch('/json/rename_stream',
+                                  {
+                                      'old_name': 'stream_name1',
+                                      'new_name': 'stream_name2',
+                                  })
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_change_stream_description(self):

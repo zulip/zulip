@@ -222,6 +222,10 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.streams.list_subscriptions_backend',
          'POST': 'zerver.views.streams.add_subscriptions_backend',
          'PATCH': 'zerver.views.streams.update_subscriptions_backend'}),
+    # PATCH update stream name
+    url(r'^rename_stream$', 'zerver.lib.rest.rest_dispatch',
+        {'PATCH': 'zerver.views.streams.json_rename_stream'}),
+
 
     # used to register for an event queue in tornado
     url(r'^register$', 'zerver.lib.rest.rest_dispatch',

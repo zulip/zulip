@@ -148,7 +148,6 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     do_remove_default_stream(user_profile.realm, stream_name)
     return json_success()
 
-@authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
 def json_rename_stream(request, user_profile, old_name=REQ(), new_name=REQ()):
