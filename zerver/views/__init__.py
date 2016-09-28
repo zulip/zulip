@@ -25,7 +25,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_stream, UserPresence, get_recipient, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
-    get_cross_realm_users
+    get_cross_realm_users, resolve_subdomain_to_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     internal_send_message, update_user_presence, do_events_register, \
@@ -49,7 +49,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import statsd
+from zerver.lib.utils import statsd, get_subdomain
 from version import ZULIP_VERSION
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 
@@ -198,7 +198,12 @@ def accounts_register(request):
 
         if realm_creation:
             domain = split_email_to_domain(email)
-            realm = do_create_realm(domain, form.cleaned_data['realm_name'])[0]
+            if settings.REALMS_HAVE_SUBDOMAINS:
+                realm = do_create_realm(domain, form.cleaned_data['realm_name'],
+                                        subdomain=form.cleaned_data['realm_subdomain'])[0]
+            else:
+                realm = do_create_realm(domain, form.cleaned_data['realm_name'])[0]
+
             set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
 
         full_name = form.cleaned_data['full_name']
@@ -225,11 +230,29 @@ def accounts_register(request):
 
         # This logs you in using the ZulipDummyBackend, since honestly nothing
         # more fancy than this is required.
-        login(request, authenticate(username=user_profile.email, use_dummy_backend=True))
+        return_data = {} # type: Dict[str, bool]
+        auth_result = authenticate(username=user_profile.email,
+                                   realm_subdomain=realm.subdomain,
+                                   return_data=return_data,
+                                   use_dummy_backend=True)
+        if return_data.get('invalid_subdomain'):
+            # By construction, this should never happen.
+            logging.error("Subdomain mismatch in registration %s: %s" % (
+                realm.subdomain, user_profile.email,))
+            return redirect('/')
+        login(request, auth_result)
 
         if first_in_realm:
             do_change_is_admin(user_profile, True)
-            return HttpResponseRedirect(reverse('zerver.views.initial_invite_page'))
+            invite_url = reverse('zerver.views.initial_invite_page')
+            if (realm_creation and settings.REALMS_HAVE_SUBDOMAINS):
+                invite_url = "%s%s.%s%s" % (
+                    settings.EXTERNAL_URI_SCHEME,
+                    form.cleaned_data['realm_subdomain'],
+                    settings.EXTERNAL_HOST,
+                    reverse('zerver.views.initial_invite_page')
+                )
+            return HttpResponseRedirect(invite_url)
         else:
             return HttpResponseRedirect(reverse('zerver.views.home'))
 
@@ -244,6 +267,7 @@ def accounts_register(request):
              # but for the registration form, there is no logged in user yet, so
              # we have to set it here.
              'creating_new_team': realm_creation,
+             'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
              'password_auth_enabled': password_auth_enabled(realm),
             },
         request=request)
@@ -316,10 +340,11 @@ def get_invitee_emails_set(invitee_emails_raw):
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
     if user_info:
-        return HomepageForm(user_info, domain=request.session.get("domain"))
+        return HomepageForm(user_info, domain=request.session.get("domain"),
+                            subdomain=get_subdomain(request))
     # An empty fields dict is not treated the same way as not
     # providing it.
-    return HomepageForm(domain=request.session.get("domain"))
+    return HomepageForm(domain=request.session.get("domain"), subdomain=get_subdomain(request))
 
 def maybe_send_to_registration(request, email, full_name=''):
     # type: (HttpRequest, text_type, text_type) -> HttpResponse
@@ -362,6 +387,11 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
     else:
         login(request, user_profile)
+        if settings.OPEN_REALM_CREATION and user_profile.realm.subdomain is not None:
+            return HttpResponseRedirect("%s%s.%s" % (settings.EXTERNAL_URI_SCHEME,
+                                                     user_profile.realm.subdomain,
+                                                     settings.EXTERNAL_HOST))
+
         return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                               request.get_host()))
 
@@ -372,7 +402,7 @@ def remote_user_sso(request):
     except KeyError:
         raise JsonableError(_("No REMOTE_USER set."))
 
-    user_profile = authenticate(remote_user=remote_user)
+    user_profile = authenticate(remote_user=remote_user, realm_subdomain=get_subdomain(request))
     return login_or_register_remote_user(request, remote_user, user_profile)
 
 @csrf_exempt
@@ -401,7 +431,14 @@ def remote_user_jwt(request):
         # We do all the authentication we need here (otherwise we'd have to
         # duplicate work), but we need to call authenticate with some backend so
         # that the request.backend attribute gets set.
-        user_profile = authenticate(username=email, use_dummy_backend=True)
+        return_data = {} # type: Dict[str, bool]
+        user_profile = authenticate(username=email,
+                                    realm_subdomain=get_subdomain(request),
+                                    return_data=return_data,
+                                    use_dummy_backend=True)
+        if return_data.get('invalid_subdomain'):
+            logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (get_subdomain(request), email,))
+            raise JsonableError(_("Wrong subdomain"))
     except (jwt.DecodeError, jwt.ExpiredSignature):
         raise JsonableError(_("Bad JSON web token signature"))
     except KeyError:
@@ -503,7 +540,14 @@ def finish_google_oauth2(request):
         logging.error('Google oauth2 account email not found: %s' % (body,))
         return HttpResponse(status=400)
     email_address = email['value']
-    user_profile = authenticate(username=email_address, use_dummy_backend=True)
+    return_data = {} # type: Dict[str, bool]
+    user_profile = authenticate(username=email_address,
+                                realm_subdomain=get_subdomain(request),
+                                use_dummy_backend=True,
+                                return_data=return_data)
+    if return_data.get('invalid_subdomain'):
+        logging.warning("User attempted to Google login to wrong subdomain %s: %s" % (get_subdomain(request), email_address,))
+        return redirect('/')
     return login_or_register_remote_user(request, email_address, user_profile, full_name)
 
 def login_page(request, **kwargs):
@@ -536,10 +580,16 @@ def dev_direct_login(request, **kwargs):
         # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
         raise Exception('Direct login not supported.')
     email = request.POST['direct_email']
-    user_profile = authenticate(username=email)
+    user_profile = authenticate(username=email, realm_subdomain=get_subdomain(request))
     if user_profile is None:
         raise Exception("User cannot login")
     login(request, user_profile)
+    if settings.OPEN_REALM_CREATION and settings.DEVELOPMENT:
+        if user_profile.realm.subdomain is not None:
+            return HttpResponseRedirect("%s%s.%s" % (settings.EXTERNAL_URI_SCHEME,
+                                                     user_profile.realm.subdomain,
+                                                     settings.EXTERNAL_HOST))
+
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
 
@@ -555,7 +605,9 @@ def api_dev_fetch_api_key(request, username=REQ()):
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
     return_data = {} # type: Dict[str, bool]
-    user_profile = authenticate(username=username, return_data=return_data)
+    user_profile = authenticate(username=username,
+                                realm_subdomain=get_subdomain(request),
+                                return_data=return_data)
     if return_data.get("inactive_realm") == True:
         return json_error(_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
@@ -660,7 +712,8 @@ def send_registration_completion_email(email, request, realm_creation=False):
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
     return Confirmation.objects.send_confirmation(prereg_user, email,
-                                                  additional_context=context)
+                                                  additional_context=context,
+                                                  host=request.get_host())
 
 def redirect_to_email_login_url(email):
     # type: (str) -> HttpResponseRedirect
@@ -1003,9 +1056,14 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
     # type: (HttpRequest, str, str) -> HttpResponse
     return_data = {} # type: Dict[str, bool]
     if username == "google-oauth2-token":
-        user_profile = authenticate(google_oauth2_token=password, return_data=return_data)
+        user_profile = authenticate(google_oauth2_token=password,
+                                    realm_subdomain=get_subdomain(request),
+                                    return_data=return_data)
     else:
-        user_profile = authenticate(username=username, password=password, return_data=return_data)
+        user_profile = authenticate(username=username,
+                                    password=password,
+                                    realm_subdomain=get_subdomain(request),
+                                    return_data=return_data)
     if return_data.get("inactive_user") == True:
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
@@ -1039,7 +1097,8 @@ def api_get_auth_backends(request):
 def json_fetch_api_key(request, user_profile, password=REQ(default='')):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
     if password_auth_enabled(user_profile.realm):
-        if not authenticate(username=user_profile.email, password=password):
+        if not authenticate(username=user_profile.email, password=password,
+                            realm_subdomain=get_subdomain(request)):
             return json_error(_("Your username or password is incorrect."))
     return json_success({"api_key": user_profile.api_key})
 

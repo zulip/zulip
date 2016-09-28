@@ -3,7 +3,8 @@ from __future__ import absolute_import
 
 import os
 
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from typing import Any
 
 from zproject.settings import DEPLOY_ROOT
@@ -17,9 +18,27 @@ class IntegrationTest(TestCase):
         for integration in INTEGRATIONS.values():
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
 
+    @override_settings(REALMS_HAVE_SUBDOMAINS=False)
     def test_api_url_view_base(self):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "localhost:9991/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://localhost:9991/api")
+        self.assertEqual(context["external_api_path_subdomain"], "zulipdev.com:9991/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://zulipdev.com:9991/api")
+
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
+    def test_api_url_view_subdomains_base(self):
+        # type: () -> None
+        context = dict()  # type: Dict[str, Any]
+        add_api_uri_context(context, HostRequestMock())
+        self.assertEqual(context["external_api_path_subdomain"], "yourZulipDomain.zulipdev.com:9991/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.zulipdev.com:9991/api")
+
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True, EXTERNAL_HOST="zulipdev.com")
+    def test_api_url_view_subdomains_full(self):
+        # type: () -> None
+        context = dict()  # type: Dict[str, Any]
+        request = HostRequestMock(host="mysubdomain.zulipdev.com")
+        add_api_uri_context(context, request)
+        self.assertEqual(context["external_api_path_subdomain"], "mysubdomain.zulipdev.com:9991/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://mysubdomain.zulipdev.com:9991/api")

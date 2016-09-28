@@ -14,7 +14,7 @@ from django.utils.timezone import now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.utils import statsd
+from zerver.lib.utils import statsd, get_subdomain, check_subdomain
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
      api_calls_left
@@ -189,6 +189,15 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     except AttributeError:
         # Deployment objects don't have realms
         pass
+    if (not check_subdomain(get_subdomain(request), profile.realm.subdomain)
+        # Allow access to localhost for Tornado
+        and not (settings.RUNNING_INSIDE_TORNADO and
+                 request.META["SERVER_NAME"] == "127.0.0.1" and
+                 request.META["REMOTE_ADDR"] == "127.0.0.1")):
+        logging.warning("User %s attempted to access API on wrong subdomain %s" % (
+            profile.email, get_subdomain(request)))
+        raise JsonableError(_("Account is not associated with this subdomain"))
+
     return profile
 
 # Use this for webhook views that don't get an email passed in.
@@ -212,6 +221,10 @@ def api_key_only_webhook_view(client_name):
                 raise JsonableError(_("Account not active"))
             if user_profile.realm.deactivated:
                 raise JsonableError(_("Realm for account has been deactivated"))
+            if not check_subdomain(get_subdomain(request), user_profile.realm.subdomain):
+                logging.warning("User %s attempted to access webhook API on wrong subdomain %s" % (
+                    user_profile.email, get_subdomain(request)))
+                raise JsonableError(_("Account is not associated with this subdomain"))
 
             request.user = user_profile
             request._email = user_profile.email
@@ -279,7 +292,7 @@ def logged_in_and_active(request):
         return False
     if request.user.realm.deactivated:
         return False
-    return True
+    return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
 
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
@@ -422,6 +435,15 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
         raise JsonableError(_("Realm for account has been deactivated"))
     if user_profile.is_incoming_webhook:
         raise JsonableError(_("Webhook bots can only access webhooks"))
+    if (not check_subdomain(get_subdomain(request), user_profile.realm.subdomain) and
+        # Exclude the SOCKET requests from this filter; they were
+        # checked when the original websocket request reached Tornado
+        not (request.method == "SOCKET" and
+             request.META['SERVER_NAME'] == "127.0.0.1")):
+        logging.warning("User %s attempted to access JSON API on wrong subdomain %s" % (
+            user_profile.email, get_subdomain(request)))
+        raise JsonableError(_("Account is not associated with this subdomain"))
+
     process_client(request, user_profile, True)
     request._email = user_profile.email
     return view_func(request, user_profile, *args, **kwargs)

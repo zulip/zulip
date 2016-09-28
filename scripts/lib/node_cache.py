@@ -35,7 +35,7 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     print("Using cached node modules from %s" % (cached_node_modules,))
     cmds = [
         ['rm', '-rf', 'node_modules'],
-        ["sudo", "ln", "-nsf", cached_node_modules, 'node_modules'],
+        ["ln", "-nsf", cached_node_modules, 'node_modules'],
         ['touch', success_stamp],
     ]
     for cmd in cmds:
