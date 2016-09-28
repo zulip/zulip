@@ -125,6 +125,21 @@ def get_wiki_page_event_body(payload, action):
         payload.get('object_attributes').get('url'),
     )
 
+def get_build_hook_event_body(payload):
+    # type: (Dict[str, Any]) -> text_type
+    build_status = payload.get('build_status')
+    if build_status == 'created':
+        action = 'was created'
+    elif build_status == 'running':
+        action = 'started'
+    else:
+        action = 'changed status to {}'.format(build_status)
+    return u"Build {} from {} stage {}.".format(
+        payload.get('build_name'),
+        payload.get('build_stage'),
+        action
+    )
+
 def get_repo_name(payload):
     # type: (Dict[str, Any]) -> text_type
     return payload['project']['name']
@@ -174,6 +189,7 @@ EVENT_FUNCTION_MAPPER = {
     'Merge Request Hook close': partial(get_merge_request_event_body, action='closed'),
     'Wiki Page Hook create': partial(get_wiki_page_event_body, action='created'),
     'Wiki Page Hook update': partial(get_wiki_page_event_body, action='updated'),
+    'Build Hook': get_build_hook_event_body,
 }
 
 @api_key_only_webhook_view("Gitlab")
@@ -196,6 +212,8 @@ def get_subject_based_on_event(event, payload):
     # type: (str, Dict[str, Any]) -> text_type
     if event == 'Push Hook':
         return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
+    elif event == 'Build Hook':
+        return u"{} / {}".format(payload.get('repository').get('name'), get_branch_name(payload))
     return get_repo_name(payload)
 
 def get_event(request, payload):
