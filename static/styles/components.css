@@ -1,0 +1,41 @@
+/* -- base button styling -- */
+.button {
+    padding: 8px 15px;
+    margin: 0;
+    min-width: 130px;
+
+    font-weight: 400;
+    text-align: center;
+
+    background-color: #478fca;
+    color: #FFF;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* -- button states -- */
+.button:hover {
+    -webkit-filter: brightness(1.1);
+    -moz-filter: brightness(1.1);
+    filter: brightness(1.1);
+}
+
+.button:active {
+    -webkit-filter: brightness(0.9);
+    -moz-filter: brightness(0.9);
+    filter: brightness(0.9);
+}
+
+.button.sea-green {
+    background-color: #24cac2;
+    color: #fff;
+}
+
+.button.small-flex {
+    width: auto;
+    min-width: inherit;
+}
