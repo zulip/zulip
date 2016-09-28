@@ -204,6 +204,10 @@ def main():
     # This is a wrapper around `npm install`, which we run last since
     # it can often fail due to network issues beyond our control.
     try:
+        # Hack: We remove `node_modules` as root to work around an
+        # issue with the symlinks being improperly owned by root.
+        if os.path.islink("node_modules"):
+            run(["sudo", "rm", "-f", "node_modules"])
         setup_node_modules()
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
