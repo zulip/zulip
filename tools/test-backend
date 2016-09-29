@@ -30,10 +30,15 @@ if __name__ == "__main__":
     usage = """%prog [options]
     test-backend # Runs all backend tests
     test-backend zerver.tests.test_bugdown # run all tests in a test module
+    test-backend zerver/tests/test_bugdown.py # run all tests in a test module
+    test-backend test_bugdown # run all tests in a test module
     test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
-    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test"""
+    test-backend BugdownTest # run all tests in a test class
+    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
+    test-backend BugdownTest.test_inline_youtube # run a single test"""
 
     parser = optparse.OptionParser(usage)
+
     parser.add_option('--nonfatal-errors', action="store_false", default=True,
                       dest="fatal_errors", help="Continue past test failures to run all tests")
     parser.add_option('--coverage', dest='coverage',
@@ -66,6 +71,46 @@ if __name__ == "__main__":
                       help="Show which tests are slowest.")
 
     (options, args) = parser.parse_args()
+
+    zerver_test_dir = 'zerver/tests/'
+
+    # to transform forward slashes '/' present in the argument into dots '.'
+    for suite in args:
+        args[args.index(suite)] = suite.replace("/", ".")
+
+    def rewrite_arguments(search_key):
+        for file_name in os.listdir(zerver_test_dir):
+            if file_name.endswith(".py"):
+                filepath = zerver_test_dir + file_name
+                if os.path.isdir(filepath):
+                    continue
+                for line in open(filepath):
+                    if search_key in line:
+                        new_suite = filepath.replace(".py", ".") + suite
+                        args[args.index(suite)] = new_suite
+                        return
+
+    for suite in args:
+        if suite[0].isupper() and "test_" in suite:
+            classname = suite.rsplit('.', 1)[0]
+            rewrite_arguments(classname)
+        elif suite[0].isupper():
+            rewrite_arguments(suite)
+
+    for suite in args:
+        if suite.startswith('test'):
+            new_suite = "zerver.tests." + suite
+            args[args.index(suite)] = new_suite
+
+    for suite in args:
+        args[args.index(suite)] = suite.replace(".py", "")
+
+    # to transform forward slashes '/' introduced by the zerver_test_dir into dots '.'
+    # taking care of any forward slashes that might be present
+    for suite in args:
+        args[args.index(suite)] = suite.replace("/", ".")
+
+
     if len(args) == 0:
         suites = ["zerver.tests"]
     else:
