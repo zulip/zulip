@@ -187,6 +187,11 @@ function process_hotkey(e) {
         }
     }
 
+    if (event_name === "escape" && $("#overlay").hasClass("show")) {
+        ui.exit_lightbox_photo();
+        return true;
+    }
+
     // Process hotkeys specially when in an input, select, textarea, or send button
     if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
         if (event_name === 'escape') {
@@ -244,11 +249,6 @@ function process_hotkey(e) {
             // Let the browser handle the key normally.
             return false;
         }
-    }
-
-    if (event_name === "escape" && $("#overlay").hasClass("show")) {
-        ui.exit_lightbox_photo();
-        return true;
     }
 
     // If we're on a button or a link and have pressed enter, let the
