@@ -217,6 +217,63 @@ class StreamAdminTest(ZulipTestCase):
         ).exists()
         self.assertTrue(stream_name2_exists)
 
+        # Test case to handle unicode stream name change
+        # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/stream_name2',
+                                       {
+                                           'new_name': u'नया नाम'.encode('utf-8'),
+                                       })
+        self.assert_json_success(result)
+        # While querying, system can handle unicode strings.
+        stream_name_uni_exists = Stream.objects.filter(
+            name=u'नया नाम',
+            realm=realm,
+        ).exists()
+        self.assertTrue(stream_name_uni_exists)
+
+        # Test case to handle changing of unicode stream name to newer name
+        # NOTE: Unicode string being part of URL is handled cleanly
+        # by client_patch call, encoding of URL is not needed.
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/नया नाम',
+                                       {
+                                           'new_name': u'नाम में क्या रक्खा हे'.encode('utf-8'),
+                                       })
+        self.assert_json_success(result)
+        # While querying, system can handle unicode strings.
+        stream_name_new_uni_exists = Stream.objects.filter(
+            name=u'नाम में क्या रक्खा हे',
+            realm=realm,
+        ).exists()
+        self.assertTrue(stream_name_new_uni_exists)
+
+        # Test case to change name from one language to other.
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/नाम में क्या रक्खा हे',
+                                       {
+                                           'new_name': u'français'.encode('utf-8'),
+                                       })
+        self.assert_json_success(result)
+        stream_name_fr_exists = Stream.objects.filter(
+            name=u'français',
+            realm=realm,
+        ).exists()
+        self.assertTrue(stream_name_fr_exists)
+
+        # Test case to change name to mixed language name.
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/français',
+                                       {
+                                           'new_name': u'français name'.encode('utf-8'),
+                                       })
+        self.assert_json_success(result)
+        stream_name_mixed_exists = Stream.objects.filter(
+            name=u'français name',
+            realm=realm,
+        ).exists()
+        self.assertTrue(stream_name_mixed_exists)
+
     def test_rename_stream_requires_realm_admin(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
