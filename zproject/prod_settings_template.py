@@ -104,14 +104,14 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
 # A comma-separated list of strings representing the host/domain names
-# that this Django site can serve. You should reset it to be a list of
-# domains/IP addresses for your site. This is a security measure to
-# prevent an attacker from poisoning caches and triggering password
-# reset emails with links to malicious hosts by submitting requests
-# with a fake HTTP Host header. See Django's documentation here:
+# that your users will enter in their browsers to access your Zulip
+# server. This is a security measure to prevent an attacker from
+# poisoning caches and triggering password reset emails with links to
+# malicious hosts by submitting requests with a fake HTTP Host
+# header. See Django's documentation here:
 # <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
 # Zulip adds 'localhost' to the list automatically.
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['zulip.example.com']
 
 ### OPTIONAL SETTINGS
 
