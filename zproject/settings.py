@@ -212,7 +212,6 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
-                     ("ALLOWED_HOSTS", ['zulip.example.com', '127.0.0.1', 'localhost']),
                      ]
 
 if ADMINS == "":

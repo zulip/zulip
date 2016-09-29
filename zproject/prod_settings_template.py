@@ -111,7 +111,7 @@ NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 # header. See Django's documentation here:
 # <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
 # Zulip adds 'localhost' to the list automatically.
-ALLOWED_HOSTS = ['zulip.example.com']
+ALLOWED_HOSTS = [EXTERNAL_HOST]
 
 ### OPTIONAL SETTINGS
 

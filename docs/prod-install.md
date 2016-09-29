@@ -89,9 +89,6 @@ These settings include:
   your configuration using `manage.py send_test_email` to confirm
   your outgoing email configuration is working correctly.
 
-- `ALLOWED_HOSTS`: Replace `*` with the fully qualified DNS name for
-  your Zulip server here.
-
 ## Step 4: Initialize Zulip database
 
 At this point, you are done doing things as root.  To initialize the
