@@ -11,6 +11,7 @@ try:
     # outside a Zulip virtualenv.
     from typing import Iterable
     import requests
+    import django
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip tests inside a Zulip dev environment.")
@@ -38,6 +39,14 @@ parser.add_option('--remote-debug',
                   action="store_true",
                   default=False)
 (options, args) = parser.parse_args()
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+from zerver.lib.test_fixtures import get_migrations_comparison_result_if_database_exist
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+django.setup()
+os.environ['PYTHONUNBUFFERED'] = 'y'
 
 os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
@@ -72,7 +81,11 @@ def run_tests(realms_have_subdomains, files):
             file = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests', file)
         test_files.append(os.path.abspath(file))
 
-    subprocess.check_call('tools/setup/generate-fixtures')
+    generate_fixtures_path = ['tools/setup/generate-fixtures']
+    if not get_migrations_comparison_result_if_database_exist():
+        generate_fixtures_path.append('--force')
+
+    subprocess.check_call(generate_fixtures_path)
 
     remote_debug = ""
     if options.remote_debug:

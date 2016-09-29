@@ -5,21 +5,14 @@ function migration_status {
     ./manage.py get_migration_status --settings=zproject.test_settings > $1
 }
 
-template_grep_error_code=$(python manage.py check_if_database_exist zulip_test_template --settings=zproject.test_settings)
-
-if [ "$template_grep_error_code" == "0" ]; then
-    migration_status var/available-migrations
-    if [ -e var/migration-status ] &&
-        cmp -s var/available-migrations var/migration-status &&
-        [ "$1" != "--force" ]; then
-        "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
-        psql -h localhost postgres zulip_test << EOF
+if  [ "$1" != "--force" ]; then
+    "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" zulip zulip_test zulip_test_base zulip_test_template
+    psql -h localhost postgres zulip_test << EOF
 DROP DATABASE IF EXISTS zulip_test;
 CREATE DATABASE zulip_test TEMPLATE zulip_test_template;
 EOF
-        sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
-        exit 0
-    fi
+    sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+    exit 0
 fi
 
 mkdir -p zerver/fixtures
