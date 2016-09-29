@@ -2,7 +2,7 @@
 import os
 import re
 import filecmp
-from typing import Any
+from typing import Any, Optional
 from importlib import import_module
 from six import text_type
 from six.moves import cStringIO as StringIO
@@ -58,3 +58,15 @@ def write_migration_status_into_file(file_name, **options):
     # type: (text_type, **Any) -> None
     with open(file_name, 'w') as file_to_write:
         file_to_write.write(get_migration_status(**options))
+
+def get_migrations_comparison_result_if_database_exist(
+        database_name='zulip_test_template',
+        available_migrations='var/available-migrations',
+        migration_status='var/migration-status',
+        settings='zproject.test_settings'
+    ):
+    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
+    if check_if_database_exist(database_name):
+        write_migration_status_into_file(available_migrations, settings=settings)
+        return compare_files_if_exist(available_migrations, migration_status)
+    return False
