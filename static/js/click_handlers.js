@@ -385,6 +385,10 @@ $(function () {
         $("#overlay .exit").click(function (e) {
             ui.exit_lightbox_photo();
         });
+
+        $("#overlay .download").click(function (e) {
+          this.blur();
+        });
     }());
 
     // MAIN CLICK HANDLER
