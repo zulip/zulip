@@ -148,13 +148,6 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     do_remove_default_stream(user_profile.realm, stream_name)
     return json_success()
 
-@require_realm_admin
-@has_request_variables
-def json_rename_stream(request, user_profile, old_name=REQ(), new_name=REQ()):
-    # type: (HttpRequest, UserProfile, text_type, text_type) -> HttpResponse
-    do_rename_stream(user_profile.realm, old_name, new_name)
-    return json_success()
-
 @authenticated_json_post_view
 @require_realm_admin
 @has_request_variables
@@ -174,11 +167,13 @@ def json_make_stream_private(request, user_profile, stream_name=REQ()):
 @require_realm_admin
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
-                          description=REQ(validator=check_string, default=None)):
+                          description=REQ(validator=check_string, default=None),
+                          new_name=REQ(default=None)):
     # type: (HttpRequest, UserProfile, text_type, Optional[text_type]) -> HttpResponse
     if description is not None:
-       do_change_stream_description(user_profile.realm, stream_name, description)
-
+        do_change_stream_description(user_profile.realm, stream_name, description)
+    if stream_name is not None and new_name is not None:
+        do_rename_stream(user_profile.realm, stream_name, new_name)
     return json_success({})
 
 def list_subscriptions_backend(request, user_profile):
