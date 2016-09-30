@@ -241,8 +241,11 @@ common.then_send_message('stream', {
     subject: 'edits',
     content: 'test editing 2'
 });
-casper.waitForText("test editing 1");
-casper.waitForText("test editing 2");
+
+casper.then(function () {
+    casper.waitForText("test editing 1");
+    casper.waitForText("test editing 2");
+});
 
 // wait for message to be sent
 casper.waitFor(function () {
