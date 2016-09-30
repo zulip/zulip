@@ -38,13 +38,13 @@ casper.then(function () {
 
 common.then_send_many([
     { stream:  'Verona', subject: 'frontend test',
-      content: 'test message A' },
+      content: 'test verona A' },
 
     { stream:  'Verona', subject: 'frontend test',
-      content: 'test message B' },
+      content: 'test verona B' },
 
     { stream:  'Verona', subject: 'other subject',
-      content: 'test message C' },
+      content: 'test verona C' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal A' },
@@ -62,9 +62,9 @@ common.wait_for_receive(function () {
         'You and Cordelia Lear, King Hamlet',
         'You and Cordelia Lear'
     ], [
-        '<p>test message A</p>',
-        '<p>test message B</p>',
-        '<p>test message C</p>',
+        '<p>test verona A</p>',
+        '<p>test verona B</p>',
+        '<p>test verona C</p>',
         '<p>personal A</p>',
         '<p>personal B</p>',
         '<p>personal C</p>'
@@ -75,7 +75,7 @@ common.wait_for_receive(function () {
 
 common.then_send_many([
     { stream:  'Verona', subject: 'frontend test',
-      content: 'test message D' },
+      content: 'test verona D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal D' }
