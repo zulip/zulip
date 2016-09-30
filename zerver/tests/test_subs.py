@@ -190,9 +190,7 @@ class StreamAdminTest(ZulipTestCase):
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/stream_name1',
-                                       {
-                                           'new_name': 'stream_name2',
-                                       })
+                                       {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_success(result)
 
         event = events[1]['event']
@@ -206,30 +204,19 @@ class StreamAdminTest(ZulipTestCase):
         users = events[1]['users']
         self.assertEqual(users, [user_profile.id])
 
-        stream_name1_exists = Stream.objects.filter(
-            name='stream_name1',
-            realm=realm,
-        ).exists()
+        stream_name1_exists = get_stream('stream_name1', realm)
         self.assertFalse(stream_name1_exists)
-        stream_name2_exists = Stream.objects.filter(
-            name='stream_name2',
-            realm=realm,
-        ).exists()
+        stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
 
         # Test case to handle unicode stream name change
         # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/stream_name2',
-                                       {
-                                           'new_name': u'नया नाम'.encode('utf-8'),
-                                       })
+                                       {'new_name': ujson.dumps(u'नया नाम'.encode('utf-8'))})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
-        stream_name_uni_exists = Stream.objects.filter(
-            name=u'नया नाम',
-            realm=realm,
-        ).exists()
+        stream_name_uni_exists = get_stream(u'नया नाम', realm)
         self.assertTrue(stream_name_uni_exists)
 
         # Test case to handle changing of unicode stream name to newer name
@@ -237,41 +224,28 @@ class StreamAdminTest(ZulipTestCase):
         # by client_patch call, encoding of URL is not needed.
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/नया नाम',
-                                       {
-                                           'new_name': u'नाम में क्या रक्खा हे'.encode('utf-8'),
-                                       })
+                                       {'new_name': ujson.dumps(u'नाम में क्या रक्खा हे'.encode('utf-8'))})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
-        stream_name_new_uni_exists = Stream.objects.filter(
-            name=u'नाम में क्या रक्खा हे',
-            realm=realm,
-        ).exists()
+        stream_name_old_uni_exists = get_stream(u'नया नाम',realm)
+        self.assertFalse(stream_name_old_uni_exists)
+        stream_name_new_uni_exists = get_stream(u'नाम में क्या रक्खा हे',realm)
         self.assertTrue(stream_name_new_uni_exists)
 
         # Test case to change name from one language to other.
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/नाम में क्या रक्खा हे',
-                                       {
-                                           'new_name': u'français'.encode('utf-8'),
-                                       })
+                                       {'new_name': ujson.dumps(u'français'.encode('utf-8'))})
         self.assert_json_success(result)
-        stream_name_fr_exists = Stream.objects.filter(
-            name=u'français',
-            realm=realm,
-        ).exists()
+        stream_name_fr_exists = get_stream(u'français',realm)
         self.assertTrue(stream_name_fr_exists)
 
         # Test case to change name to mixed language name.
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/français',
-                                       {
-                                           'new_name': u'français name'.encode('utf-8'),
-                                       })
+                                       {'new_name': ujson.dumps(u'français name'.encode('utf-8'))})
         self.assert_json_success(result)
-        stream_name_mixed_exists = Stream.objects.filter(
-            name=u'français name',
-            realm=realm,
-        ).exists()
+        stream_name_mixed_exists = get_stream(u'français name',realm)
         self.assertTrue(stream_name_mixed_exists)
 
     def test_rename_stream_requires_realm_admin(self):
@@ -283,9 +257,7 @@ class StreamAdminTest(ZulipTestCase):
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
 
         result = self.client_patch('/json/streams/stream_name1',
-                                  {
-                                      'new_name': 'stream_name2',
-                                  })
+                                   {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_change_stream_description(self):

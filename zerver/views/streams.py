@@ -168,8 +168,8 @@ def json_make_stream_private(request, user_profile, stream_name=REQ()):
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
                           description=REQ(validator=check_string, default=None),
-                          new_name=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, text_type, Optional[text_type]) -> HttpResponse
+                          new_name=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[text_type]) -> HttpResponse
     if description is not None:
         do_change_stream_description(user_profile.realm, stream_name, description)
     if stream_name is not None and new_name is not None:
