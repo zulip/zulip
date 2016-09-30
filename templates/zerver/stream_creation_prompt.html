@@ -1,5 +1,5 @@
 <div class="modal hide" id="stream-creation" tabindex="-1" role="dialog"
-     aria-labelledby="stream-creation-label" aria-hidden="true">
+     aria-labelledby="stream-creation-label" aria-hidden="true" xmlns="http://www.w3.org/1999/html">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
     <h3 id="stream-creation-label">{% trans %}Create stream{% endtrans %} <span id="stream_name"></span></h3>
@@ -35,7 +35,7 @@
       </div>
       <div class="modal-footer">
           <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{ _("Cancel") }}</button>
-          <button class="btn btn-primary" type="submit">{{ _("Create") }}</button>
+          <button class="btn btn-primary" id="stream_creation_form_button" type="submit">{{ _("Create") }}</button>
       </div>
   </form>
 </div>

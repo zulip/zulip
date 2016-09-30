@@ -844,7 +844,17 @@ $(function () {
             $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
             $('#announce-new-stream input').prop('checked')
             );
+        $('#stream_creation_form_button').val(i18n.t("Subscribe"));
+
     });
+
+    $("#stream_creation_form").keyup(function(e){
+        if(e.keyCode == 13){
+            e.preventDefault();
+            $("#stream_creation_form_button").submit();
+        }
+    });
+
 
     $("body").on("mouseover", ".subscribed-button", function (e) {
         $(e.target).addClass("btn-danger").text(i18n.t("Unsubscribe"));
