@@ -848,10 +848,25 @@ $(function () {
 
     });
 
-    $("#stream_creation_form").keyup(function(e){
+
+    $("#stream_creation_form").onkeydown(function(e){
         if(e.keyCode == 13){
             e.preventDefault();
-            $("#stream_creation_form_button").submit();
+            var stream = $.trim($("#create_stream_name").val());
+            var principals = _.map(
+                $("#stream_creation_form input:checkbox[name=user]:checked"),
+                function (elem) {
+                    return $(elem).val();
+                }
+            );
+            // You are always subscribed to streams you create.
+            principals.push(page_params.email);
+            ajaxSubscribeForCreation(stream,
+                principals,
+                $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
+                $('#announce-new-stream input').prop('checked')
+            );
+            $('#stream_creation_form').submit();
         }
     });
 
