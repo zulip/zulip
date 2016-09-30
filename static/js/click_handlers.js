@@ -241,6 +241,14 @@ $(function () {
         e.preventDefault();
     });
 
+    (function () {
+        var sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
+
+        $(sel).on("click", "a", function () {
+            this.blur();
+        });
+    }());
+
     popovers.register_click_handlers();
     notifications.register_click_handlers();
 
@@ -384,6 +392,10 @@ $(function () {
 
         $("#overlay .exit").click(function (e) {
             ui.exit_lightbox_photo();
+        });
+
+        $("#overlay .download").click(function (e) {
+          this.blur();
         });
     }());
 

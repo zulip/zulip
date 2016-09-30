@@ -45,6 +45,7 @@ addons:
   artifacts:
     paths:
       - $(ls var/casper/* | tr "\n" ":")
+      - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
   postgresql: "9.3"
 after_success:
   coveralls

@@ -156,8 +156,12 @@ exports.check_form = function (form_selector, expected, test_name) {
 
 // Wait for any previous send to finish, then send a message.
 exports.then_send_message = function (type, params) {
-    casper.waitForSelector('#compose-send-button:enabled');
-    casper.waitForSelector('#new_message_content', function () {
+    casper.then(function () {
+        casper.waitForSelector('#compose-send-button:enabled');
+        casper.waitForSelector('#new_message_content');
+    });
+
+    casper.then(function () {
         if (type === "stream") {
             casper.page.sendEvent('keypress', "c");
         } else if (type === "private") {
@@ -168,9 +172,14 @@ exports.then_send_message = function (type, params) {
         casper.fill('form[action^="/json/messages"]', params);
         casper.click('#compose-send-button');
     });
-    casper.waitFor(function emptyComposeBox() {
-        return casper.getFormValues('form[action^="/json/messages"]').content === '';
-    }, function () {
+
+    casper.then(function () {
+        casper.waitFor(function emptyComposeBox() {
+            return casper.getFormValues('form[action^="/json/messages"]').content === '';
+        });
+    });
+
+    casper.then(function () {
         last_send_or_update = timestamp();
     });
 };
