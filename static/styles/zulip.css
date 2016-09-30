@@ -26,12 +26,6 @@ body,
    transition: background-color 200ms linear;
 }
 
-.visual-blur {
-    filter: blur(15px);
-    -moz-filter: blur(15px);
-    -webkit-filter: blur(15px);
-}
-
 input,
 button,
 select,
