@@ -9,7 +9,7 @@
     pointer-events: none;
     opacity: 0;
 
-    background-color: rgba(255,255,255,0.4);
+    background-color: #19203a;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
     z-index: 101;
 
@@ -23,11 +23,11 @@
 
 #overlay .image-preview {
     position: relative;
-    width: 100%;
-    height: calc(100% - 80px);
+    width: calc(100% - 40px);
+    height: calc(100% - 65px - 40px);
+    margin: 20px;
 
     background-color: #19203a;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
 
     background-size: contain;
     background-repeat: no-repeat;
@@ -36,8 +36,8 @@
 
 #overlay .image-preview .exit {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 0px;
+    right: 0px;
 
     color: rgba(255,255,255,0.8);
     font-size: 2rem;
@@ -52,6 +52,10 @@
 #overlay .image-preview:hover .exit {
     pointer-events: auto;
     opacity: 1;
+}
+
+#overlay .image-info-wrapper {
+    background-color: #fff;
 }
 
 #overlay .image-description,
@@ -90,7 +94,7 @@
 }
 
 #overlay .image-description .title {
-    font-size: 2rem;
+    font-size: 1.4rem;
     font-weight: 300;
     line-height: normal;
     max-width: calc(100%);
@@ -113,4 +117,8 @@
 
 .button .download {
     top: 1px;
+}
+
+#overlay .clear-float {
+    clear: both;
 }
