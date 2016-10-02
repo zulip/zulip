@@ -124,9 +124,9 @@ def main():
     # project.
     os.chdir(ZULIP_PATH)
 
-    run(["sudo", "./scripts/lib/setup-apt-repo"])
+    run(["sudo","./scripts/lib/setup-apt-repo"])
     # Add groonga repository to get the pgroonga packages
-    run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+#    run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
@@ -178,7 +178,7 @@ def main():
         run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
-    run(["scripts/setup/generate_secrets.py", "-d"])
+    run(["scripts/setup/generate_secrets.py"])
     if TRAVIS and not PRODUCTION_TRAVIS:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
