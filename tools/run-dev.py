@@ -142,6 +142,17 @@ class Resource(resource.Resource):
 
         return proxy.ReverseProxyResource('127.0.0.1', django_port, '/'+name)
 
+
+    # log which services/ports will be started
+    print("Starting Zulip services on ports:  web proxy: {},".format(proxy_port),
+          "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
+    if options.test:
+        print("")  # no webpack for --test
+    else:
+        print(", webpack: {}".format(webpack_port))
+
+    print("Note: only port {} is exposed to the host in a Vagrant environment.".format(proxy_port))
+
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)
     reactor.run()
