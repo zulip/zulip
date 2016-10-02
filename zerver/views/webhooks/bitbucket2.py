@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import re
 from functools import partial
+from six import text_type
 from typing import Any, Callable
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -9,12 +10,12 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
+from zerver.lib.webhooks.git import get_push_commits_event_message
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
 USER_PART = 'User {display_name}(login: {username})'
 
-BITBUCKET_PUSH_BODY = USER_PART + ' pushed [{number_of_commits} commit{s}]({commits_url}) into {branch} branch.'
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_COMMENT_BODY = USER_PART + ' added [comment]({url_to_comment}) to commit.'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
@@ -89,16 +90,20 @@ def get_body_based_on_type(type):
     return GET_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
 
 def get_push_body(payload):
-    # type: (Dict[str, Any]) -> str
+    # type: (Dict[str, Any]) -> text_type
     change = payload['push']['changes'][-1]
-    number_of_commits = len(change['commits'])
-    return BITBUCKET_PUSH_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
-        number_of_commits=number_of_commits if number_of_commits <= 5 else "more than 5",
-        s='' if number_of_commits == 1 else 's',
-        commits_url=change['links']['html']['href'],
-        branch=change['new']['name']
+
+    commits_data = [{
+        'sha': commit.get('hash'),
+        'url': commit.get('links').get('html').get('href'),
+        'message': commit.get('message'),
+    } for commit in change['commits']]
+
+    return get_push_commits_event_message(
+        get_user_username(payload),
+        change['links']['html']['href'],
+        change['new']['name'],
+        commits_data
     )
 
 def get_fork_body(payload):

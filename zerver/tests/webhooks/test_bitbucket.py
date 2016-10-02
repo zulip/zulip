@@ -5,11 +5,11 @@ class Bitbucket2HookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket2'
     URL_TEMPLATE = "/api/v1/external/bitbucket2?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'bitbucket2'
-    EXPECTED_SUBJECT =  u"Repository name"
+    EXPECTED_SUBJECT = u"Repository name"
 
     def test_bitbucket2_on_push_event(self):
         # type: () -> None
-        expected_message = u"User Tomasz(login: kolaszek) pushed [1 commit](https://bitbucket.org/kolaszek/repository-name/branch/master) into master branch."
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit"
         self.send_and_test_stream_message('push', self.EXPECTED_SUBJECT, expected_message)
 
     def test_bitbucket2_on_fork_event(self):
