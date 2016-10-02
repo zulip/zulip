@@ -1,0 +1,11 @@
+{{#with method}}
+<tr class="method_row" method="{{method}}" id="method_{{method}}">
+  <td>
+    <span class="method">{{method}}</span>
+  </td>
+  <td>
+  <input type="checkbox" id="enabled"
+    {{#if enabled}}checked="checked"{{/if}} />
+  </td>
+</tr>
+{{/with}}

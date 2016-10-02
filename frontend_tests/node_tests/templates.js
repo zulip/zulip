@@ -829,6 +829,105 @@ function render(template_name, args) {
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
 }());
 
+(function notification_docs() {
+    var html = render('propagate_notification_change');
+    global.write_test_output("propagate_notification_change.handlebars", html);
+
+    var button_area = $(html).find(".propagate-notifications-controls");
+    assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
+    assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
+}());
+
+(function settings_tab() {
+    var page_param_checkbox_options = {
+        stream_desktop_notifications_enabled: true,
+        stream_sounds_enabled: true, desktop_notifications_enabled: true,
+        sounds_enabled: true, enable_offline_email_notifications: true,
+        enable_offline_push_notifications: true, enable_digest_emails: true,
+        autoscroll_forever: true, default_desktop_notifications: true
+    };
+    var page_params = $.extend(page_param_checkbox_options, {
+        fullname: "Alyssa P. Hacker", password_auth_enabled: true,
+        avatar_url: "https://google.com",
+        domain: "zulip.com"
+    });
+
+    var checkbox_ids = ["enable_stream_desktop_notifications",
+                        "enable_stream_sounds", "enable_desktop_notifications",
+                        "enable_sounds", "enable_offline_push_notifications",
+                        "enable_digest_emails", "autoscroll_forever",
+                        "default_desktop_notifications"];
+
+    // Render with all booleans set to true.
+    var html = render('settings_tab', {page_params: page_params});
+    global.write_test_output("settings_tab.handlebars", html);
+
+    // All checkboxes should be checked.
+    _.each(checkbox_ids, function (checkbox) {
+        assert.equal($(html).find("#" + checkbox).is(":checked"), true);
+    });
+
+    // Re-render with checkbox booleans set to false.
+    _.each(page_param_checkbox_options, function (value, option) {
+        page_params[option] = false;
+    });
+
+    html = render('settings_tab', {page_params: page_params});
+
+    // All checkboxes should be unchecked.
+    _.each(checkbox_ids, function (checkbox) {
+        assert.equal($(html).find("#" + checkbox).is(":checked"), false);
+    });
+
+}());
+
+(function admin_auth_methods_list() {
+    global.use_template('admin_auth_methods_list');
+    var args = {
+        method: {
+            "method": "Email",
+            "enabled" : false
+        }
+    };
+
+    var html = '';
+    html += '<tbody id="admin_auth_methods_table">';
+    html += render('admin_auth_methods_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_auth_methods_list.handlebars', html);
+
+    var method = $(html).find('tr.method_row:first span.method');
+
+    assert.equal(method.text(), 'Email');
+    assert.equal(method.is("checked"), false);
+}());
+
+
+(function admin_emoji_list() {
+    global.use_template('admin_emoji_list');
+    var args = {
+        emoji: {
+            "name": "MouseFace",
+            "display_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
+            "source_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
+        }
+    };
+
+    var html = '';
+    html += '<tbody id="admin_emoji_table">';
+    html += render('admin_emoji_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_emoji_list.handlebars', html);
+
+    var emoji_name = $(html).find('tr.emoji_row:first span.emoji_name');
+    var emoji_url = $(html).find('tr.emoji_row:first span.emoji_image img');
+
+    assert.equal(emoji_name.text(), 'MouseFace');
+    assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

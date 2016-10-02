@@ -42,6 +42,7 @@ from zerver.lib.actions import (
     do_set_realm_invite_by_admins_only,
     do_set_realm_message_editing,
     do_set_realm_default_language,
+    do_set_realm_authentication_methods,
     do_update_message,
     do_update_pointer,
     do_change_twenty_four_hour_time,
@@ -462,6 +463,26 @@ class EventsRegisterTest(ZulipTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for invite_required in (False, True, False):
             events = self.do_test(lambda: do_set_realm_invite_required(self.user_profile.realm, invite_required))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_authentication_methods(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update_dict')),
+            ('property', equals('default')),
+            ('data', check_dict([])),
+        ])
+        # Test transitions; any new backends should be tested with T/T/T/F/T
+        for (auth_method_dict) in \
+                ({'Google': True, 'Email': True, 'GitHub': True},
+                {'Google': True, 'Email': True, 'GitHub': False},
+                {'Google': True, 'Email': False, 'GitHub': False},
+                {'Google': True, 'Email': False, 'GitHub': True},
+                {'Google': False, 'Email': True, 'GitHub': True}):
+            events = self.do_test(lambda: do_set_realm_authentication_methods(self.user_profile.realm,
+                                                                              auth_method_dict))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
