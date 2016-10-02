@@ -87,8 +87,17 @@ def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> int
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
-    process = subprocess.Popen(args, **kwargs)
-    rc = process.wait()
-    if rc:
-        raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
+    if kwargs.get('shell'):
+        # With shell=True we can only pass string to Popen
+        args = " ".join(args)    
+    def run_wrapper(args,**kwargs):
+        process = subprocess.Popen(args,stderr=subprocess.PIPE)
+        output = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            #The next print line prints the exact error as to why a child process failed.
+            #the subprocess.CalledProcessError is just raised to break the further execution
+            print("Exacterror>>\n"+str(output[1])+"<<")
+            raise subprocess.CalledProcessError(retcode," ".join(args),output=output[1])# type: ignore # https://github.com/python/typeshed/pull/329
+    run_wrapper(args,**kwargs)
     return 0
