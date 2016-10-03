@@ -97,7 +97,7 @@ def run(args, **kwargs):
         if retcode:
             #The next print line prints the exact error as to why a child process failed.
             #the subprocess.CalledProcessError is just raised to break the further execution
-            print("Exacterror>>\n"+str(output[1])+"<<")
+            print("Exact error>>\n"+str(output[1])+"<<")
             raise subprocess.CalledProcessError(retcode," ".join(args),output=output[1])# type: ignore # https://github.com/python/typeshed/pull/329
     run_wrapper(args,**kwargs)
     return 0
