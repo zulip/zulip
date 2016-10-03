@@ -184,6 +184,9 @@ def do_patch_activate_script(venv_path):
             lines[i] = 'VIRTUAL_ENV="%s"\n' % (venv_path,)
     file_obj.close()
 
+    print(script_path)
+    print(lines)
+    print("\n")
     file_obj = open(script_path, 'w')
     file_obj.write("".join(lines))
     file_obj.close()
