@@ -158,6 +158,14 @@ exports.check_form = function (form_selector, expected, test_name) {
     }
 };
 
+exports.wait_for_message_actually_sent = function () {
+    casper.waitFor(function () {
+        return casper.evaluate(function () {
+            return current_msg_list.last().local_id === undefined;
+        });
+    });
+};
+
 // Wait for any previous send to finish, then send a message.
 exports.then_send_message = function (type, params) {
     casper.then(function () {
@@ -181,6 +189,7 @@ exports.then_send_message = function (type, params) {
         casper.waitFor(function emptyComposeBox() {
             return casper.getFormValues('form[action^="/json/messages"]').content === '';
         });
+        exports.wait_for_message_actually_sent();
     });
 
     casper.then(function () {
