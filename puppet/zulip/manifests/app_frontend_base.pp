@@ -88,6 +88,12 @@ class zulip::app_frontend_base {
     owner  => 'zulip',
     group  => 'zulip',
   }
+  file { "/srv/zulip-npm-cache":
+    ensure => directory,
+    owner => "zulip",
+    group => "zulip",
+    mode => 755,
+  }
   file { "/etc/cron.d/email-mirror":
     ensure => absent,
   }

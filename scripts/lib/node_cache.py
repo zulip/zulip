@@ -49,9 +49,8 @@ def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules
                    success_stamp=None):
     # type: (str, List[str], Optional[IO], Optional[IO], Optional[bool], Optional[str]) -> None
     cmds = [
-        ["sudo", "rm", "-rf", target_path],
-        ['sudo', 'mkdir', '-p', target_path],
-        ["sudo", "chown", "{}:{}".format(os.getuid(), os.getgid()), target_path],
+        ["rm", "-rf", target_path],
+        ['mkdir', '-p', target_path],
         ['cp', 'package.json', target_path],
     ]
     if copy_modules:
