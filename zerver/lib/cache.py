@@ -268,7 +268,7 @@ def display_recipient_cache_key(recipient_id):
 
 def user_profile_by_email_cache_key(email):
     # type: (text_type) -> text_type
-    # See the comment in zerver/lib/avatar.py:gravatar_hash for why we
+    # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
     return u'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)

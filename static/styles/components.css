@@ -63,6 +63,7 @@
 }
 
 .button.small {
+    font-size: 0.8rem;
     min-width: inherit;
     padding: 6px 10px;
 }

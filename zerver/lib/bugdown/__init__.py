@@ -27,7 +27,7 @@ import requests
 from django.core import mail
 from django.conf import settings
 
-from zerver.lib.avatar  import gravatar_hash
+from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.bugdown import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE

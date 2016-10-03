@@ -26,11 +26,11 @@ class MissingGlyphError(Exception):
     pass
 
 
-def color_font(code_point, code_point_to_fname_map):
-    # type: (str, Dict[int, Union[text_type, bytes]]) -> None
-    name = code_point_to_fname_map[int(code_point, 16)]
+def color_font(name, code_point, code_point_to_fname_map):
+    # type: (str, str, Dict[int, Union[text_type, bytes]]) -> None
+    glyph_name = code_point_to_fname_map[int(code_point, 16)]
 
-    in_name = 'bitmaps/strike0/{}.png'.format(name)
+    in_name = 'bitmaps/strike0/{}.png'.format(glyph_name)
     out_name = 'out/unicode/{}.png'.format(code_point)
     out_sprite_name = 'out/sprite/{}.png'.format(name)
 
@@ -118,7 +118,7 @@ def main():
     failed = False
     for name, code_point in emoji_map.items():
         try:
-            color_font(code_point, code_point_to_fname_map)
+            color_font(name, code_point, code_point_to_fname_map)
         except MissingGlyphError:
             print("Warning: Missing color glyph for %s; using black/white." % (name,))
             try:

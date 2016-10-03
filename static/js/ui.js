@@ -291,8 +291,6 @@ exports.lightbox_photo = function (image, user) {
 
     $("#overlay").addClass("show");
 
-    $(".right-sidebar, .column-middle-inner, .left-sidebar").addClass("visual-blur");
-
     $(".title").text(title || "N/A");
     $(".user").text(user);
 
@@ -301,7 +299,6 @@ exports.lightbox_photo = function (image, user) {
 
 exports.exit_lightbox_photo = function (image) {
     $("#overlay").removeClass("show");
-    $(".right-sidebar, .column-middle-inner, .left-sidebar").removeClass("visual-blur");
 };
 
 var loading_more_messages_indicator_showing = false;

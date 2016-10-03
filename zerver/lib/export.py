@@ -14,7 +14,7 @@ import ujson
 import shutil
 import subprocess
 import tempfile
-from zerver.lib.avatar import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_hash
 from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
