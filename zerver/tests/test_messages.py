@@ -15,6 +15,7 @@ from zerver.lib.test_helpers import (
     make_client,
     message_ids, message_stream_count,
     most_recent_message,
+    most_recent_usermessage,
     queries_captured,
 )
 
@@ -202,6 +203,11 @@ class PersonalMessagesTest(ZulipTestCase):
             self.assertEqual(str(message),
                 u'<Message: recip /  / '
                 '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
+
+            user_message = most_recent_usermessage(user_profile)
+            self.assertEqual(str(user_message),
+                u'<UserMessage: recip / test@zulip.com ([])>'
+            )
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
