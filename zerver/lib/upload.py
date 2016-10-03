@@ -32,6 +32,8 @@ import io
 import random
 import logging
 
+DEFAULT_AVATAR_SIZE = 100
+
 # Performance Note:
 #
 # For writing files to S3, the file could either be stored in RAM
@@ -80,12 +82,11 @@ def random_name(bytes=60):
 class BadImageError(JsonableError):
     pass
 
-def resize_avatar(image_data):
-    # type: (binary_type) -> binary_type
-    AVATAR_SIZE = 100
+def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
+    # type: (binary_type, int) -> binary_type
     try:
         im = Image.open(io.BytesIO(image_data))
-        im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
+        im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
         raise BadImageError("Could not decode avatar image; did you upload an image file?")
     out = io.BytesIO()
