@@ -479,6 +479,27 @@ class BugdownTest(TestCase):
         converted_boring_subject = bugdown.subject_links(realm.domain.lower(), boring_msg.subject)
         self.assertEqual(converted_boring_subject,  [])
 
+    def test_is_status_message(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = '/me makes a list\n* one\n* two'
+        rendered_content = msg.render_markdown(content)
+        self.assertEqual(
+            rendered_content,
+            '<p>/me makes a list</p>\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>'
+        )
+        self.assertFalse(Message.is_status_message(content, rendered_content))
+
+        content = '/me takes a walk'
+        rendered_content = msg.render_markdown(content)
+        self.assertEqual(
+            rendered_content,
+            '<p>/me takes a walk</p>'
+        )
+        self.assertTrue(Message.is_status_message(content, rendered_content))
+
     def test_alert_words(self):
         user_profile = get_user_profile_by_email("othello@zulip.com")
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
