@@ -65,6 +65,17 @@ $(function () {
         clicking = false;
     });
 
+    $("body").on("click", "[data-nav]", function (e) {
+        var hash = window.location.hash,
+            regex = ui.is_tab_focusable.regex;
+
+        if (ui.is_tab_focusable(hash)) {
+            ui.deploy_focused_path(hash.match(regex)[0], hash.split(/\//)[1]);
+        }
+    });
+
+    $("#administration").on("click", "ul[role='tablist'] [data-toggle='tab']", ui.set_focus_hash);
+
     function toggle_star(message_id) {
         // Update the message object pointed to by the various message
         // lists.
