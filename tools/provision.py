@@ -126,7 +126,7 @@ def main():
 
     run(["sudo","./scripts/lib/setup-apt-repo"])
     # Add groonga repository to get the pgroonga packages
-#    run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+    run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
