@@ -8,7 +8,7 @@ from zilencer.models import Deployment
 
 from zerver.views import get_invitee_emails_set, do_change_password
 from zerver.models import (
-    get_realm, get_user_profile_by_email,
+    get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
@@ -499,6 +499,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # We only sent emails to the new users.
         self.check_sent_emails(new)
+
+        prereg_user = get_prereg_user_by_email('foo-test@zulip.com')
+        self.assertEqual(prereg_user.email, 'foo-test@zulip.com')
 
     def test_invite_outside_domain_in_closed_realm(self):
         # type: () -> None
