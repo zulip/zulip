@@ -101,6 +101,10 @@ exports.then_log_out = function () {
         casper.test.info('Logging out');
         casper.click('li[title="Log out"] a');
     });
+
+    casper.waitForSelector(".login-page-header", function () {
+        casper.test.info("Logged out");
+    });
 };
 
 // Put the specified string into the field_selector, then
