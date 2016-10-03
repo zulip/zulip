@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import optparse
+import pwd
 import subprocess
 import signal
 import traceback
@@ -57,13 +58,25 @@ parser.add_option('--test',
 
 parser.add_option('--interface',
     action='store', dest='interface',
-    default='127.0.0.1', help='Set the IP or hostname for the proxy to listen on')
+    default=None, help='Set the IP or hostname for the proxy to listen on')
 
 parser.add_option('--no-clear-memcached',
     action='store_false', dest='clear_memcached',
     default=True, help='Do not clear memcached')
 
 (options, args) = parser.parse_args()
+
+if options.interface is None:
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    if user_name == "vagrant":
+        # In the Vagrant development environment, we need to listen on
+        # all ports, and it's safe to do so, because Vagrant is only
+        # exposing certain guest ports (by default just 9991) to the host.
+        options.interface = ""
+    else:
+        # Otherwise, only listen to requests on localhost for security.
+        options.interface = "127.0.0.1"
 
 base_port   = 9991
 if options.test:
