@@ -1277,22 +1277,6 @@ class Attachment(ModelReprMixin, models.Model):
         # type: () -> bool
         return self.messages.count() > 0
 
-    def get_url(self):
-        # type: () -> text_type
-        return u"/user_uploads/%s" % (self.path_id)
-
-def get_attachments_by_owner_id(uid):
-    # type: (int) -> Sequence[Attachment]
-    # TODO: Change return type to QuerySet[Attachment]
-    return Attachment.objects.filter(owner=uid).select_related('owner')
-
-def get_owners_from_file_name(file_name):
-    # type: (str) -> Sequence[Attachment]
-    # TODO: Change return type to QuerySet[Attachment]
-    # The returned vaule will list of owners since different users can upload
-    # same files with the same filename.
-    return Attachment.objects.filter(file_name=file_name).select_related('owner')
-
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
     # TODO: Change return type to QuerySet[Attachment]
