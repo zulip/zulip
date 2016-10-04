@@ -19,7 +19,8 @@ STATIC_PATH = 'static/'
 
 def get_templates():
     # type: () -> List[str]
-    return glob.glob(os.path.join(STATIC_PATH, 'templates/*.handlebars'))
+    return (glob.glob(os.path.join(STATIC_PATH, 'templates/*.handlebars')) +
+        glob.glob(os.path.join(STATIC_PATH, 'templates/settings/*.handlebars')))
 
 def run():
     # type: () -> None
