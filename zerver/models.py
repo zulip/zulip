@@ -854,26 +854,6 @@ class Message(ModelReprMixin, models.Model):
 
         return rendered_content
 
-    def set_rendered_content(self, rendered_content, save = False):
-        # type: (text_type, bool) -> bool
-        """Set the content on the message.
-        """
-        # TODO: see #1379 to eliminate bugdown dependencies
-        global bugdown
-        if bugdown is None:
-            import zerver.lib.bugdown as bugdown
-            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
-
-        self.rendered_content = rendered_content
-        self.rendered_content_version = bugdown.version
-
-        if self.rendered_content is not None:
-            if save:
-                self.save_rendered_content()
-            return True
-        else:
-            return False
-
     def save_rendered_content(self):
         # type: () -> None
         self.save(update_fields=["rendered_content", "rendered_content_version"])
