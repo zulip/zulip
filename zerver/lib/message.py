@@ -197,7 +197,9 @@ class MessageDict(object):
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
                 rendered_content = message.render_markdown(content, sender_realm_domain)
-                message.set_rendered_content(rendered_content, True)
+                message.rendered_content = rendered_content
+                message.rendered_content_version = bugdown.version
+                message.save_rendered_content()
 
             if rendered_content is not None:
                 obj['content'] = rendered_content

@@ -9,7 +9,10 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
-from zerver.lib.bugdown import BugdownRenderingException
+from zerver.lib.bugdown import (
+    BugdownRenderingException,
+    version as bugdown_version
+)
 from zerver.lib.cache import (
     to_dict_cache_key,
     to_dict_cache_key_id,
@@ -714,7 +717,8 @@ def do_send_messages(messages):
             message['message'],
             message['message'].content,
             message_users=message['active_recipients'])
-        message['message'].set_rendered_content(rendered_content)
+        message['message'].rendered_content = rendered_content
+        message['message'].rendered_content_version = bugdown_version
 
     for message in messages:
         message['message'].update_calculated_fields()
@@ -2498,7 +2502,8 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
         message.content = content
-        message.set_rendered_content(rendered_content)
+        message.rendered_content = rendered_content
+        message.rendered_content_version = bugdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
 
