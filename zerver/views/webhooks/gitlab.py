@@ -3,6 +3,7 @@ from functools import partial
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
+from zerver.lib.webhooks.git import get_push_commits_event_message
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -15,20 +16,27 @@ class UnknownEventType(Exception):
 
 def get_push_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    total_commits_count = payload['total_commits_count']
     compare_url = u'{}/compare/{}...{}'.format(
         get_repository_homepage(payload),
         payload['before'],
         payload['after']
     )
-    body = u"{} pushed [{} commit{}]({}) to {} branch.".format(
+
+    commits = [
+        {
+            'sha': commit.get('id'),
+            'message': commit.get('message'),
+            'url': commit.get('url')
+        }
+        for commit in payload.get('commits')
+    ]
+
+    return get_push_commits_event_message(
         get_user_name(payload),
-        total_commits_count,
-        u's' if total_commits_count > 1 else u'',
         compare_url,
-        get_branch_name(payload)
+        get_branch_name(payload),
+        commits
     )
-    return body
 
 def get_tag_push_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
