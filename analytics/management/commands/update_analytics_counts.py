@@ -40,7 +40,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-
         LOCK_DIR = "/tmp/update_analytics_lock"
         try:
             os.mkdir(LOCK_DIR)
@@ -48,13 +47,12 @@ class Command(BaseCommand):
             print(WARNING + "cronjob in progress; waiting for lock... " + ENDC)
             return
         try:
-            self.run_update_analytics_counts(**options)
+            self.run_update_analytics_counts(options)
         finally:
             run(["sudo", "rmdir", LOCK_DIR])
 
-    def run_update_analytics_counts(self, **options):
-        # type: (**Any) -> None
-
+    def run_update_analytics_counts(self, options):
+        # type: (Dict[str, Any]) -> None
         range_start = parse_datetime(options['range_start'])
         if 'range_end' in options:
             range_end = parse_datetime(options['range_end'])
