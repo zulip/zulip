@@ -17,9 +17,12 @@ from zerver.models import (
     get_display_recipient_by_id,
     Message,
     Recipient,
+    UserProfile,
 )
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
+
+RealmAlertWords = Dict[int, List[text_type]]
 
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
@@ -196,7 +199,7 @@ class MessageDict(object):
 
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
-                rendered_content = message.render_markdown(content, sender_realm_domain)
+                rendered_content = render_markdown(message, content, sender_realm_domain)
                 message.rendered_content = rendered_content
                 message.rendered_content_version = bugdown.version
                 message.save_rendered_content()
@@ -224,8 +227,54 @@ def re_render_content_for_management_command(message):
                                           message.rendered_content_version,
                                           bugdown.version)
 
-    rendered_content = message.render_markdown(message.content)
+    rendered_content = render_markdown(message, message.content)
     message.rendered_content = rendered_content
     message.rendered_content_version = bugdown.version
     message.save_rendered_content()
+
+def render_markdown(message, content, domain=None, realm_alert_words=None, message_users=None):
+    # type: (Message, text_type, Optional[text_type], Optional[RealmAlertWords], Set[UserProfile]) -> text_type
+    """Return HTML for given markdown. Bugdown may add properties to the
+    message object such as `mentions_user_ids` and `mentions_wildcard`.
+    These are only on this Django object and are not saved in the
+    database.
+    """
+
+    if message_users is None:
+        message_user_ids = set() # type: Set[int]
+    else:
+        message_user_ids = {u.id for u in message_users}
+
+    message.mentions_wildcard = False
+    message.is_me_message = False
+    message.mentions_user_ids = set()
+    message.alert_words = set()
+
+    if not domain:
+        domain = message.sender.realm.domain
+    if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
+        # Use slightly customized Markdown processor for content
+        # delivered via zephyr_mirror
+        domain = u"zephyr_mirror"
+
+    possible_words = set() # type: Set[text_type]
+    if realm_alert_words is not None:
+        for user_id, words in realm_alert_words.items():
+            if user_id in message_user_ids:
+                possible_words.update(set(words))
+
+    # DO MAIN WORK HERE -- call bugdown to convert
+    rendered_content = bugdown.convert(content, domain, message, possible_words)
+
+    message.user_ids_with_alert_words = set()
+
+    if realm_alert_words is not None:
+        for user_id, words in realm_alert_words.items():
+            if user_id in message_user_ids:
+                if set(words).intersection(message.alert_words):
+                    message.user_ids_with_alert_words.add(user_id)
+
+    message.is_me_message = Message.is_status_message(content, rendered_content)
+
+    return rendered_content
 

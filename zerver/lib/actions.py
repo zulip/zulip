@@ -21,6 +21,7 @@ from zerver.lib.context_managers import lockfile
 from zerver.lib.message import (
     MessageDict,
     message_to_dict,
+    render_markdown,
 )
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
@@ -642,7 +643,8 @@ def render_incoming_message(message, content, message_users):
     # type: (Message, text_type, Set[UserProfile]) -> text_type
     realm_alert_words = alert_words_in_realm(message.get_realm())
     try:
-        rendered_content = message.render_markdown(
+        rendered_content = render_markdown(
+            message=message,
             content=content,
             realm_alert_words=realm_alert_words,
             message_users=message_users,
@@ -733,7 +735,7 @@ def do_send_messages(messages):
                              for user_profile in message['active_recipients']]
 
             # These properties on the Message are set via
-            # Message.render_markdown by code in the bugdown inline patterns
+            # render_markdown by code in the bugdown inline patterns
             wildcard = message['message'].mentions_wildcard
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
