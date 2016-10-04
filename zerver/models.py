@@ -17,7 +17,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    active_bot_dict_fields
+    active_bot_dict_fields, flush_message, to_dict_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import force_bytes, ModelReprMixin, dict_with_str_keys
 from django.db import transaction
@@ -782,14 +782,6 @@ def stringify_message_dict(message_dict):
     # type: (Dict[str, Any]) -> binary_type
     return zlib.compress(force_bytes(ujson.dumps(message_dict)))
 
-def to_dict_cache_key_id(message_id, apply_markdown):
-    # type: (int, bool) -> text_type
-    return u'message_dict:%d:%d' % (message_id, apply_markdown)
-
-def to_dict_cache_key(message, apply_markdown):
-    # type: (Message, bool) -> text_type
-    return to_dict_cache_key_id(message.id, apply_markdown)
-
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
@@ -1203,12 +1195,6 @@ def get_context_for_message(message):
         id__lt=message.id,
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
-
-def flush_message(sender, **kwargs):
-    # type: (Any, **Any) -> None
-    message = kwargs['instance']
-    cache_delete(to_dict_cache_key(message, False))
-    cache_delete(to_dict_cache_key(message, True))
 
 post_save.connect(flush_message, sender=Message)
 

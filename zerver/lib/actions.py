@@ -10,16 +10,20 @@ from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
 from zerver.lib.bugdown import BugdownRenderingException
-from zerver.lib.cache import flush_user_profile
+from zerver.lib.cache import (
+    flush_user_profile,
+    to_dict_cache_key,
+    to_dict_cache_key_id,
+)
 from zerver.lib.context_managers import lockfile
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, bulk_get_recipients, \
+    get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
+    get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
