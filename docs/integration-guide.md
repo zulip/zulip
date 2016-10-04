@@ -32,8 +32,9 @@ products, ordered here by which types we prefer to write:
 1. **[Webhook integrations](#webhook-integrations)** (examples: Freshdesk,
    GitHub), where the third-party service supports posting content to a
    particular URI on our site with data about the event.  For these, you
-   usually just need to add a new handler in `zerver/views/webhooks.py` (plus
-   test/document/etc.).  An example commit implementing a new webhook is:
+   usually just need to add a new handler in `zerver/views/webhooks/`
+   directory (plus test/document/etc.).
+   An example commit implementing a new webhook is:
    https://github.com/zulip/zulip/pull/324.
 
 2. **[Python script integrations](#python-script-and-plugin-integrations)**
@@ -103,14 +104,14 @@ Here's how we recommend doing it:
   file to find the existing ones (and please add yours in the
   alphabetically correct place).
 
-* Then write a test for your fixture in `zerver/tests/test_hooks.py`, and
-  you can iterate on the tests and webhooks handler until they work,
+* Then write a test for your fixture in `zerver/tests/webhooks/` directory,
+  and you can iterate on the tests and webhooks handler until they work,
   all without ever needing to post directly from the server you're
   integrating to your Zulip development machine.  To run just the
   tests from the test class you wrote, you can use e.g.
 
   ```
-  test-backend zerver.tests.test_hooks.PagerDutyHookTests
+  test-backend zerver.tests.webhooks.test_pagerduty.PagerDutyHookTests
   ```
 
   See [this guide](testing.html) for more details on the Zulip test
