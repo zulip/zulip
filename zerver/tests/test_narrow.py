@@ -13,6 +13,9 @@ from zerver.models import (
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.actions import create_stream_if_needed, do_add_subscription
+from zerver.lib.message import (
+    MessageDict,
+)
 from zerver.lib.narrow import (
     build_narrow_filter,
 )
@@ -816,7 +819,7 @@ class GetOldMessagesTest(ZulipTestCase):
         m.rendered_content = m.rendered_content_version = None
         m.content = 'test content'
         # Use to_dict_uncached_helper directly to avoid having to deal with remote cache
-        d = m.to_dict_uncached_helper(True)
+        d = MessageDict.to_dict_uncached_helper(m, True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
     def common_check_get_old_messages_query(self, query_params, expected):

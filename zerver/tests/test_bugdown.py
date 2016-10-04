@@ -13,6 +13,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
+from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
@@ -485,7 +486,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = '/me makes a list\n* one\n* two'
-        rendered_content = msg.render_markdown(content)
+        rendered_content = render_markdown(msg, content)
         self.assertEqual(
             rendered_content,
             '<p>/me makes a list</p>\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>'
@@ -493,7 +494,7 @@ class BugdownTest(TestCase):
         self.assertFalse(Message.is_status_message(content, rendered_content))
 
         content = '/me takes a walk'
-        rendered_content = msg.render_markdown(content)
+        rendered_content = render_markdown(msg, content)
         self.assertEqual(
             rendered_content,
             '<p>/me takes a walk</p>'
@@ -507,9 +508,10 @@ class BugdownTest(TestCase):
         realm_alert_words = alert_words_in_realm(user_profile.realm)
 
         def render(msg, content):
-            return msg.render_markdown(content,
-                                       realm_alert_words=realm_alert_words,
-                                       message_users={user_profile})
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words=realm_alert_words,
+                                   message_users={user_profile})
 
         content = "We have an ALERTWORD day today!"
         self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
@@ -525,7 +527,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = "@all test"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="*">@all</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
@@ -534,7 +536,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = "@everyone test"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="*">@everyone</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
@@ -544,7 +546,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet**"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
@@ -554,7 +556,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**hamlet**"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
@@ -565,7 +567,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet** and @**cordelia**, check this out"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p>'
                          '<span class="user-mention" '
                          'data-user-email="hamlet@zulip.com">@King Hamlet</span> and '
@@ -579,7 +581,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "Hey @**Nonexistent User**"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 

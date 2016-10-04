@@ -9,6 +9,11 @@ from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zilencer.models import Deployment
 
+from zerver.lib.message import (
+    MessageDict,
+    message_to_dict,
+)
+
 from zerver.lib.test_helpers import (
     ZulipTestCase,
     get_user_messages,
@@ -464,7 +469,7 @@ class MessageDictTest(ZulipTestCase):
             rows = list(Message.get_raw_db_rows(ids))
 
             for row in rows:
-                Message.build_dict_from_raw_db_row(row, False)
+                MessageDict.build_dict_from_raw_db_row(row, False)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
@@ -493,7 +498,7 @@ class MessageDictTest(ZulipTestCase):
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
         row = Message.get_raw_db_rows([message.id])[0]
-        dct = Message.build_dict_from_raw_db_row(row, apply_markdown=True)
+        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         expected_content = '<p>hello <strong>world</strong></p>'
         self.assertEqual(dct['content'], expected_content)
         message = Message.objects.get(id=message.id)
@@ -789,8 +794,8 @@ class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[text_type], Optional[text_type]) -> Message
         msg = Message.objects.get(id=msg_id)
-        cached = msg.to_dict(False)
-        uncached = msg.to_dict_uncached_helper(False)
+        cached = message_to_dict(msg, False)
+        uncached = MessageDict.to_dict_uncached_helper(msg, False)
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.topic_name(), subject)

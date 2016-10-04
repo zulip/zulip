@@ -24,7 +24,7 @@ import six
 from six import text_type
 
 if False:
-    from zerver.models import UserProfile, Realm
+    from zerver.models import UserProfile, Realm, Message
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
 
@@ -376,3 +376,19 @@ def flush_stream(sender, **kwargs):
            Q(default_events_register_stream=stream)
        ).exists():
         cache_delete(active_bot_dicts_in_realm_cache_key(stream.realm))
+
+# TODO: Rename to_dict_cache_key_id and to_dict_cache_key
+def to_dict_cache_key_id(message_id, apply_markdown):
+    # type: (int, bool) -> text_type
+    return u'message_dict:%d:%d' % (message_id, apply_markdown)
+
+def to_dict_cache_key(message, apply_markdown):
+    # type: (Message, bool) -> text_type
+    return to_dict_cache_key_id(message.id, apply_markdown)
+
+def flush_message(sender, **kwargs):
+    # type: (Any, **Any) -> None
+    message = kwargs['instance']
+    cache_delete(to_dict_cache_key(message, False))
+    cache_delete(to_dict_cache_key(message, True))
+
