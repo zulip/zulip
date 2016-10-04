@@ -878,22 +878,6 @@ class Message(ModelReprMixin, models.Model):
         # type: () -> None
         self.save(update_fields=["rendered_content", "rendered_content_version"])
 
-    def maybe_render_content(self, domain, save = False):
-        # type: (Optional[text_type], bool) -> bool
-        """Render the markdown if there is no existing rendered_content"""
-        # TODO: see #1379 to eliminate bugdown dependencies
-        global bugdown
-        if bugdown is None:
-            import zerver.lib.bugdown as bugdown
-            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
-
-        if Message.need_to_render_content(self.rendered_content,
-                                          self.rendered_content_version,
-                                          bugdown.version):
-            return self.set_rendered_content(self.render_markdown(self.content, domain), save)
-        else:
-            return True
-
     @staticmethod
     def need_to_render_content(rendered_content, rendered_content_version, bugdown_version):
         # type: (Optional[text_type], int, int) -> bool

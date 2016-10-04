@@ -213,3 +213,19 @@ class MessageDict(object):
 
         return obj
 
+def re_render_content_for_management_command(message):
+    # type: (Message) -> None
+
+    '''
+    Please avoid using this function, as its only used in a management command that
+    is somewhat deprecated.
+    '''
+    assert Message.need_to_render_content(message.rendered_content,
+                                          message.rendered_content_version,
+                                          bugdown.version)
+
+    rendered_content = message.render_markdown(message.content)
+    message.rendered_content = rendered_content
+    message.rendered_content_version = bugdown.version
+    message.save_rendered_content()
+
