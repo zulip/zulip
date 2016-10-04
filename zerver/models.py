@@ -40,9 +40,6 @@ from six import text_type
 import time
 import datetime
 
-# TODO: see #1379 to eliminate bugdown dependencies
-bugdown = None # type: Any
-
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH = 50 # type: int
