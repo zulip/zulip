@@ -29,11 +29,12 @@ to share your ideas!
 We have several different ways that we integrate with 3rd part
 products, ordered here by which types we prefer to write:
 
-1. **[Webhook integrations](#webhook-integrations)** (examples: Freshdesk,
-   GitHub), where the third-party service supports posting content to a
-   particular URI on our site with data about the event.  For these, you
-   usually just need to add a new handler in `zerver/views/webhooks.py` (plus
-   test/document/etc.).  An example commit implementing a new webhook is:
+1. **[Webhook integrations](#webhook-integrations)** (examples:
+   Freshdesk, GitHub), where the third-party service supports posting
+   content to a particular URI on our site with data about the event.
+   For these, you usually just need to add a new view file in the
+   `zerver/views/webhooks/` directory (plus test/document/etc.).  An
+   example commit implementing a new webhook is:
    https://github.com/zulip/zulip/pull/324.
 
 2. **[Python script integrations](#python-script-and-plugin-integrations)**
@@ -103,14 +104,15 @@ Here's how we recommend doing it:
   file to find the existing ones (and please add yours in the
   alphabetically correct place).
 
-* Then write a test for your fixture in `zerver/tests/test_hooks.py`, and
-  you can iterate on the tests and webhooks handler until they work,
-  all without ever needing to post directly from the server you're
-  integrating to your Zulip development machine.  To run just the
-  tests from the test class you wrote, you can use e.g.
+* Then write a test for your fixture in a new file in the
+  `zerver/tests/webhooks/` directory, and you can iterate on the tests
+  and webhooks handler until they work, all without ever needing to
+  post directly from the server you're integrating to your Zulip
+  development machine.  To run just the tests from the test class you
+  wrote, you can use e.g.
 
   ```
-  test-backend zerver.tests.test_hooks.PagerDutyHookTests
+  test-backend zerver.tests.webhooks.test_pagerduty.PagerDutyHookTests
   ```
 
   See [this guide](testing.html) for more details on the Zulip test
@@ -148,13 +150,13 @@ for a webhook named 'MyWebHook'.
   integration. See [Testing and writing tests](testing.html) for details.
 * `zerver/views/webhooks/mywebhook.py`: Includes the main webhook integration
   function including any needed helper functions.
+* `zerver/tests/webhooks/mywebhook.py`: Add tests for your
+  webbook. See [Testing and writing tests](testing.html) for details.
 
 ### Files that need to be updated
 
 * `templates/zerver/integrations.html`: Edit to add end-user documentation. See
   [Documenting your integration](#documenting-your-integration) for details.
-* `zerver/test_hooks.py`: Edit to include tests for your webbook. See [Testing
-  and writing tests](testing.html) for details.
 * `zerver/lib/integrations.py`: Add your integration to
 `WEBHOOK_INTEGRATIONS` to register it.  This will automatically
 register a url for the webhook of the form `api/v1/external/mywebhook`
@@ -428,8 +430,8 @@ Using either method will create a message in Zulip:
 
 ### Step 3: Create tests
 
-Every webhook integraton should have a corresponding test class in
-`zerver/tests/test_hooks.py`.
+Every webhook integration should have a corresponding test file in
+`zerver/tests/webhooks/`.
 
 You should name the class `<WebhookName>HookTests` and this class should accept
 `WebhookTestCase`. For our HelloWorld webhook, we name the test class
@@ -491,15 +493,16 @@ the Zulip dev environment with this command:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
-./tools/test-backend zerver.tests.test_hooks.HelloWorldHookTests
+./tools/test-backend zerver.tests.webhooks.test_hello_world.HelloWorldHookTests
 ```
 
-(Note: You must run the tests from `/srv/zulip` directory.)
+(Note: You must run the tests from the `/srv/zulip` directory.)
 
 You will see some script output and if all the tests have passed, you will see:
 
 ```
-Running zerver.tests.test_hooks.HelloWorldHookTests.test_hello_message
+Running zerver.tests.webhooks.test_hello_world.HelloWorldHookTests.test_goodbye_message
+Running zerver.tests.webhooks.test_hello_world.HelloWorldHookTests.test_hello_message
 DONE!
 ```
 
@@ -515,7 +518,7 @@ This div shows the logo of your webhook, its name, and a link to its
 installation and usage instructions.
 
 Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
-in `zerver/lib/integratins.py`, this div will be generated automatically.
+in `zerver/lib/integrations.py`, this div will be generated automatically.
 
 The second part is a `div` with the webhook's usage instructions:
 
