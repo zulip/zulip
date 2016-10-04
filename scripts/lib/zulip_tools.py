@@ -92,8 +92,13 @@ def run(args, **kwargs):
         # With shell=True we can only pass string to Popen
         args = " ".join(args)
 
-    process = subprocess.Popen(args, **kwargs)
-    rc = process.wait()
-    if rc:
-        raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
+    def run_wrapper(args,**kwargs):
+        # type: (Sequence[str], **Any) -> None
+        process = subprocess.Popen(args, **kwargs)
+        output=process.communicate()
+        retcode = process.wait()
+        if retcode:
+            print("Exact Error>>\n"+str(output[1])+"<<")
+            raise subprocess.CalledProcessError(retcode, args, output[1]) # type: ignore # https://github.com/python/typeshed/pull/329
+    run_wrapper(args,**kwargs)
     return 0
