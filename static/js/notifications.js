@@ -609,6 +609,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params.enable_offline_email_notifications = setting;
     } else if (notification_name === "enable_offline_push_notifications") {
         page_params.enable_offline_push_notifications= setting;
+    } else if (notification_name === "enable_online_push_notifications") {
+        page_params.enable_online_push_notifications = setting;
     } else if (notification_name === "enable_digest_emails") {
         page_params.enable_digest_emails = setting;
     }
