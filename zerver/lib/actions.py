@@ -11,11 +11,14 @@ from django.core import validators
 from django.contrib.sessions.models import Session
 from zerver.lib.bugdown import BugdownRenderingException
 from zerver.lib.cache import (
-    flush_user_profile,
     to_dict_cache_key,
     to_dict_cache_key_id,
 )
 from zerver.lib.context_managers import lockfile
+from zerver.lib.message import (
+    MessageDict,
+    message_to_dict,
+)
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
@@ -768,8 +771,8 @@ def do_send_messages(messages):
         event = dict(
             type         = 'message',
             message      = message['message'].id,
-            message_dict_markdown = message['message'].to_dict(apply_markdown=True),
-            message_dict_no_markdown = message['message'].to_dict(apply_markdown=False),
+            message_dict_markdown = message_to_dict(message['message'], apply_markdown=True),
+            message_dict_no_markdown = message_to_dict(message['message'], apply_markdown=False),
             presences    = presences)
         users = [{'id': user.id,
                   'flags': user_flags.get(user.id, []),
@@ -2562,9 +2565,9 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (changed_message.to_dict_uncached(apply_markdown=True),)
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (changed_message.to_dict_uncached(apply_markdown=False),)
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
 
     def user_info(um):
