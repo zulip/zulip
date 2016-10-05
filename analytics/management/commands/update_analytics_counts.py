@@ -1,15 +1,20 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import os
+import sys
+from scripts.lib.zulip_tools import ENDC, WARNING
+
 from argparse import ArgumentParser
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.conf import settings
 
 from analytics.models import RealmCount, UserCount
-from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
+from analytics.lib.counts import COUNT_STATS, process_count_stat
 from zerver.lib.timestamp import datetime_to_string, is_timezone_aware
 from zerver.models import UserProfile, Message
 
@@ -39,6 +44,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
+        try:
+            os.mkdir(settings.ANALYTICS_LOCK_DIR)
+        except OSError:
+            print(WARNING + "Analytics lock %s is unavailable; exiting... " + ENDC)
+            return
+
+        try:
+            self.run_update_analytics_counts(options)
+        finally:
+            os.rmdir(settings.ANALYTICS_LOCK_DIR)
+
+    def run_update_analytics_counts(self, options):
+        # type: (Dict[str, Any]) -> None
         fill_to_time = parse_datetime(options['time'])
         if options['utc']:
             fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
