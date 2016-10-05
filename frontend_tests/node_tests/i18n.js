@@ -24,6 +24,8 @@ i18n.init({
 });
 
 var jsdom = require("jsdom");
+var fs = require("fs");
+var path = require("path");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
 var _ = global._;
@@ -79,6 +81,10 @@ function render(template_name, args) {
             "default_desktop_notifications": false
         }
     };
+
+    fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
+        render(o.replace(/\.handlebars/, ""));
+    });
 
     var html = render('settings_tab', args);
     var div = $(html).find("div.notification-reminder");
