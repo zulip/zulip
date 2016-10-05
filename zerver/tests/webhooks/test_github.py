@@ -61,19 +61,19 @@ class GithubV1HookTests(WebhookTestCase):
 
     def test_user_specified_branches(self):
         # type: () -> None
-        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+        self.basic_test('push', 'my_commits', 'zulip-test / master', self.push_content,
                         send_stream=True, branches="master,staging")
 
     def test_user_specified_stream(self):
         # type: () -> None
         """Around May 2013 the github webhook started to specify the stream.
         Before then, the stream was hard coded to "commits"."""
-        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+        self.basic_test('push', 'my_commits', 'zulip-test / master', self.push_content,
                         send_stream=True)
 
     def test_legacy_hook(self):
         # type: () -> None
-        self.basic_test('push', 'commits', 'zulip-test', self.push_content)
+        self.basic_test('push', 'commits', 'zulip-test / master', self.push_content)
 
     def test_issues_opened(self):
         # type: () -> None
@@ -192,19 +192,19 @@ class GithubV2HookTests(WebhookTestCase):
 
     def test_user_specified_branches(self):
         # type: () -> None
-        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+        self.basic_test('push', 'my_commits', 'zulip-test / master', self.push_content,
                         send_stream=True, branches="master,staging")
 
     def test_user_specified_stream(self):
         # type: () -> None
         """Around May 2013 the github webhook started to specify the stream.
         Before then, the stream was hard coded to "commits"."""
-        self.basic_test('push', 'my_commits', 'zulip-test', self.push_content,
+        self.basic_test('push', 'my_commits', 'zulip-test / master', self.push_content,
                         send_stream=True)
 
     def test_legacy_hook(self):
         # type: () -> None
-        self.basic_test('push', 'commits', 'zulip-test', self.push_content)
+        self.basic_test('push', 'commits', 'zulip-test / master', self.push_content)
 
     def test_issues_opened(self):
         # type: () -> None

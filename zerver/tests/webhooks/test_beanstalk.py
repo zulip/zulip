@@ -8,7 +8,7 @@ class BeanstalkHookTests(WebhookTestCase):
 
     def test_git_single(self):
         # type: () -> None
-        expected_subject = "work-test"
+        expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
 
 * [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff
@@ -19,7 +19,7 @@ class BeanstalkHookTests(WebhookTestCase):
 
     def test_git_multiple(self):
         # type: () -> None
-        expected_subject = "work-test"
+        expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
 
 * [edf529c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7): Added new file

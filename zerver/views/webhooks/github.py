@@ -5,7 +5,7 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, has_request_variables, to_non_negative_int, flexible_boolean
 from zerver.views.messages import send_message_backend
-from zerver.lib.webhooks.git import get_push_commits_event_message
+from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE
 import logging
 import re
 import ujson
@@ -225,7 +225,7 @@ def api_github_landing(request, user_profile, event=REQ(),
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
     # type: (UserProfile, text_type, text_type, List[Dict[str, str]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
     short_ref = re.sub(r'^refs/heads/', '', ref)
-    subject = name
+    subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     if re.match(r'^0+$', after):
         content = u'%s deleted branch %s' % (pusher,
