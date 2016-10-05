@@ -1,3 +1,5 @@
+global.stub_out_jquery();
+
 add_dependencies({
     stream_color: 'js/stream_color.js'
 });
