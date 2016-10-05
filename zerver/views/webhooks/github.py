@@ -5,7 +5,8 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, has_request_variables, to_non_negative_int, flexible_boolean
 from zerver.views.messages import send_message_backend
-from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE
+from zerver.lib.webhooks.git import get_push_commits_event_message,\
+    SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message
 import logging
 import re
 import ujson
@@ -232,11 +233,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
                                             short_ref)
     # 'created' and 'forced' are github flags; the second check is for beanstalk
     elif (forced and not created) or (forced is None and len(commits) == 0):
-        content = (u'%s [force pushed](%s) to branch %s.  Head is now %s'
-                   % (pusher,
-                      url,
-                      short_ref,
-                      after[:7]))
+        content = get_force_push_commits_event_message(pusher, url, short_ref, after[:7])
     else:
         commits = _transform_commits_list_to_common_format(commits)
         content = get_push_commits_event_message(pusher, url, short_ref, commits)
