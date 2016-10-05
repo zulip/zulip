@@ -24,7 +24,7 @@ class Command(BaseCommand):
                             help="Time to backfill from.")
         parser.add_argument('--range-end', '-e',
                             type=str,
-                            help='Time to backfill to.',
+                            help='Time to backfill to, defaulst to now.',
                             default=datetime_to_string(timezone.now()))
         parser.add_argument('--utc',
                             type=bool,
@@ -36,24 +36,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        range_start = parse_datetime(options['range_start'])
-        if 'range_end' in options:
-            range_end = parse_datetime(options['range_end'])
+        range_end = parse_datetime(options['range_end'])
+        if options['range_start'] is not None:
+            range_start = parse_datetime(options['range_start'])
         else:
-            range_end = range_start - timedelta(seconds = 3600)
+            range_start = range_end - timedelta(seconds = 3600)
 
         # throw error if start time is greater than end time
         if range_start > range_end:
             raise ValueError("--range-start cannot be greater than --range-end.")
 
-        if options['utc'] is True:
+        if options['utc']:
             range_start = range_start.replace(tzinfo=timezone.utc)
             range_end = range_end.replace(tzinfo=timezone.utc)
 
         if not (is_timezone_aware(range_start) and is_timezone_aware(range_end)):
             raise ValueError("--range-start and --range-end must be timezone aware. Maybe you meant to use the --utc option?")
 
-        if 'stat' in options:
+        if options['stat'] is not None:
             process_count_stat(COUNT_STATS[options['stat']], range_start, range_end)
         else:
             for stat in COUNT_STATS.values():
