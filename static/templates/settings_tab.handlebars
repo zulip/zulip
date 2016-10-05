@@ -76,21 +76,7 @@
 
 {{ partial "bot-settings" }}
 
-<div id="alert-word-settings" class="settings-section">
-  <div class="settings-section-title">
-    <i class="icon-vector-book settings-section-icon"></i>
-    {{t "Custom Alert Words" }}
-  </div>
-  <form class="form-horizontal" id="alert_word_info_box">
-    {{#tr this}}
-    <p class="alert-word-settings-note">
-      {{t "Alert words allow you to be notified as if you were @-mentioned
-      when certain words or phrases are used in Zulip."}}
-    </p>
-    {{/tr}}
-  </form>
-  <ul id="alert_words_list"></ul>
-</div>
+{{ partial "alert-word-settings" }}
 
 <div class="ui-settings">
   <div id="ui-settings" class="settings-section">
