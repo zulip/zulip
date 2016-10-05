@@ -23,22 +23,22 @@ class IntegrationTest(TestCase):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "zulipdev.com:9991/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://zulipdev.com:9991/api")
+        self.assertEqual(context["external_api_path_subdomain"], "testserver/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://testserver/api")
 
     @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_api_url_view_subdomains_base(self):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
         add_api_uri_context(context, HostRequestMock())
-        self.assertEqual(context["external_api_path_subdomain"], "yourZulipDomain.zulipdev.com:9991/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.zulipdev.com:9991/api")
+        self.assertEqual(context["external_api_path_subdomain"], "yourZulipDomain.testserver/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://yourZulipDomain.testserver/api")
 
-    @override_settings(REALMS_HAVE_SUBDOMAINS=True, EXTERNAL_HOST="zulipdev.com")
+    @override_settings(REALMS_HAVE_SUBDOMAINS=True)
     def test_api_url_view_subdomains_full(self):
         # type: () -> None
         context = dict()  # type: Dict[str, Any]
-        request = HostRequestMock(host="mysubdomain.zulipdev.com")
+        request = HostRequestMock(host="mysubdomain.testserver")
         add_api_uri_context(context, request)
-        self.assertEqual(context["external_api_path_subdomain"], "mysubdomain.zulipdev.com:9991/api")
-        self.assertEqual(context["external_api_uri_subdomain"], "http://mysubdomain.zulipdev.com:9991/api")
+        self.assertEqual(context["external_api_path_subdomain"], "mysubdomain.testserver/api")
+        self.assertEqual(context["external_api_uri_subdomain"], "http://mysubdomain.testserver/api")
