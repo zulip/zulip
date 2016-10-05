@@ -14,6 +14,8 @@ PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_
 {commits_more_than_limit}
 """
 
+FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
+
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data):
     # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]]) -> text_type
     commits_list_message = u''
@@ -42,3 +44,12 @@ def get_push_commits_event_message(user_name, compare_url, branch_name, commits_
         commits_list=commits_list_message.rstrip(),
         commits_more_than_limit=commits_more_than_limit_message
     ).rstrip()
+
+def get_force_push_commits_event_message(user_name, url, branch_name, head):
+    # type: (text_type, text_type, text_type, text_type) -> text_type
+    return FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        url=url,
+        branch_name=branch_name,
+        head=head
+    )
