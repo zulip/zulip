@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-import filecmp
 from typing import Any, Optional
 from importlib import import_module
 from six import text_type
@@ -11,10 +10,6 @@ from django.db import connections, DEFAULT_DB_ALIAS
 from django.apps import apps
 from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
-
-def compare_files_if_exist(file1, file2):
-    # type: (text_type, text_type) -> bool
-    return os.path.exists(file1) and os.path.exists(file2) and filecmp.cmp(file1, file2)
 
 def check_if_database_exist(database_name, **options):
     # type: (text_type, **Any) -> bool
@@ -54,19 +49,21 @@ def get_migration_status(**options):
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def write_migration_status_into_file(file_name, **options):
-    # type: (text_type, **Any) -> None
-    with open(file_name, 'w') as file_to_write:
-        file_to_write.write(get_migration_status(**options))
+def compare_file_with_current_migration(migration_file, **options):
+    # type: (text_type, **Any) -> bool
+    if not os.path.exists(migration_file):
+        return False
+
+    with open(migration_file) as f:
+        migration_content = f.read()
+    return migration_content == get_migration_status(**options)
 
 def get_migrations_comparison_result_if_database_exist(
         database_name='zulip_test_template',
-        available_migrations='var/available-migrations',
         migration_status='var/migration-status',
         settings='zproject.test_settings'
     ):
-    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
+    # type: (Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
     if check_if_database_exist(database_name):
-        write_migration_status_into_file(available_migrations, settings=settings)
-        return compare_files_if_exist(available_migrations, migration_status)
+        return compare_file_with_current_migration(migration_status, settings=settings)
     return False
