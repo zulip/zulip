@@ -15,7 +15,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.utils.crypto import get_random_string
 from six import text_type
 import six
-
+import argparse
 from zerver.lib.str_utils import force_str
 from zerver.lib.utils import generate_random_token
 
@@ -96,10 +96,10 @@ def generate_secrets(development=False):
 
 if __name__ == '__main__':
 
-    development = False
-    extra_args = sys.argv[1:]
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--development', action='store_true', dest='development', help='For setting up the developer env for zulip')
+    group.add_argument('--production', action='store_false', dest='development', help='For setting up the production env for zulip')
+    results = parser.parse_args()
 
-    if len(extra_args) and extra_args[0] in ('-d', '--development'):
-        development = True
-
-    generate_secrets(development)
+    generate_secrets(results.development)
