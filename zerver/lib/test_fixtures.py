@@ -11,7 +11,7 @@ from django.apps import apps
 from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
-def check_if_database_exist(database_name, **options):
+def database_exists(database_name, **options):
     # type: (text_type, **Any) -> bool
     db = options.get('database', DEFAULT_DB_ALIAS)
     connection = connections[db]
@@ -49,7 +49,7 @@ def get_migration_status(**options):
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def compare_file_with_current_migration(migration_file, **options):
+def are_migrations_the_same(migration_file, **options):
     # type: (text_type, **Any) -> bool
     if not os.path.exists(migration_file):
         return False
@@ -58,12 +58,12 @@ def compare_file_with_current_migration(migration_file, **options):
         migration_content = f.read()
     return migration_content == get_migration_status(**options)
 
-def get_migrations_comparison_result_if_database_exist(
+def is_template_database_current(
         database_name='zulip_test_template',
         migration_status='var/migration-status',
         settings='zproject.test_settings'
     ):
     # type: (Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
-    if check_if_database_exist(database_name):
-        return compare_file_with_current_migration(migration_status, settings=settings)
+    if database_exists(database_name):
+        return are_migrations_the_same(migration_status, settings=settings)
     return False

@@ -43,7 +43,7 @@ parser.add_option('--remote-debug',
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-from zerver.lib.test_fixtures import get_migrations_comparison_result_if_database_exist
+from zerver.lib.test_fixtures import is_template_database_current
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
 os.environ['PYTHONUNBUFFERED'] = 'y'
@@ -82,7 +82,7 @@ def run_tests(realms_have_subdomains, files):
         test_files.append(os.path.abspath(file))
 
     generate_fixtures_path = ['tools/setup/generate-fixtures']
-    if not get_migrations_comparison_result_if_database_exist():
+    if not is_template_database_current():
         generate_fixtures_path.append('--force')
 
     subprocess.check_call(generate_fixtures_path)
