@@ -17,11 +17,10 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    active_bot_dict_fields
+    active_bot_dict_fields, flush_message
 from zerver.lib.utils import make_safe_digest, generate_random_token
-from zerver.lib.str_utils import force_bytes, ModelReprMixin, dict_with_str_keys
+from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
-from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.camo import get_camo_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
@@ -29,7 +28,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.core.validators import MinLengthValidator, RegexValidator
 from django.utils.translation import ugettext_lazy as _
-import zlib
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -37,16 +35,10 @@ from collections import defaultdict
 from datetime import timedelta
 import pylibmc
 import re
-import ujson
 import logging
-from six import binary_type, text_type
+from six import text_type
 import time
 import datetime
-
-# TODO: see #1379 to eliminate bugdown dependencies
-bugdown = None # type: Any
-
-RealmAlertWords = Dict[int, List[text_type]]
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -774,22 +766,6 @@ def bulk_get_recipients(type, type_ids):
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
 
-def extract_message_dict(message_bytes):
-    # type: (binary_type) -> Dict[str, Any]
-    return dict_with_str_keys(ujson.loads(zlib.decompress(message_bytes).decode("utf-8")))
-
-def stringify_message_dict(message_dict):
-    # type: (Dict[str, Any]) -> binary_type
-    return zlib.compress(force_bytes(ujson.dumps(message_dict)))
-
-def to_dict_cache_key_id(message_id, apply_markdown):
-    # type: (int, bool) -> text_type
-    return u'message_dict:%d:%d' % (message_id, apply_markdown)
-
-def to_dict_cache_key(message, apply_markdown):
-    # type: (Message, bool) -> text_type
-    return to_dict_cache_key_id(message.id, apply_markdown)
-
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
@@ -822,283 +798,14 @@ class Message(ModelReprMixin, models.Model):
         # type: () -> Realm
         return self.sender.realm
 
-    def render_markdown(self, content, domain=None, realm_alert_words=None, message_users=None):
-        # type: (text_type, Optional[text_type], Optional[RealmAlertWords], Set[UserProfile]) -> text_type
-        """Return HTML for given markdown. Bugdown may add properties to the
-        message object such as `mentions_user_ids` and `mentions_wildcard`.
-        These are only on this Django object and are not saved in the
-        database.
-        """
-        # TODO: see #1379 to eliminate bugdown dependencies
-        global bugdown
-        if bugdown is None:
-            import zerver.lib.bugdown as bugdown
-            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
-
-        if message_users is None:
-            message_user_ids = set() # type: Set[int]
-        else:
-            message_user_ids = {u.id for u in message_users}
-
-        self.mentions_wildcard = False
-        self.is_me_message = False
-        self.mentions_user_ids = set() # type: Set[int]
-        self.alert_words = set() # type: Set[text_type]
-
-        if not domain:
-            domain = self.sender.realm.domain
-        if self.sending_client.name == "zephyr_mirror" and self.sender.realm.is_zephyr_mirror_realm:
-            # Use slightly customized Markdown processor for content
-            # delivered via zephyr_mirror
-            domain = u"zephyr_mirror"
-
-        possible_words = set() # type: Set[text_type]
-        if realm_alert_words is not None:
-            for user_id, words in realm_alert_words.items():
-                if user_id in message_user_ids:
-                    possible_words.update(set(words))
-
-        # DO MAIN WORK HERE -- call bugdown to convert
-        rendered_content = bugdown.convert(content, domain, self, possible_words)
-
-        self.user_ids_with_alert_words = set() # type: Set[int]
-
-        if realm_alert_words is not None:
-            for user_id, words in realm_alert_words.items():
-                if user_id in message_user_ids:
-                    if set(words).intersection(self.alert_words):
-                        self.user_ids_with_alert_words.add(user_id)
-
-        self.is_me_message = Message.is_status_message(content, rendered_content)
-
-        return rendered_content
-
-    def set_rendered_content(self, rendered_content, save = False):
-        # type: (text_type, bool) -> bool
-        """Set the content on the message.
-        """
-        # TODO: see #1379 to eliminate bugdown dependencies
-        global bugdown
-        if bugdown is None:
-            import zerver.lib.bugdown as bugdown
-            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
-
-        self.rendered_content = rendered_content
-        self.rendered_content_version = bugdown.version
-
-        if self.rendered_content is not None:
-            if save:
-                self.save_rendered_content()
-            return True
-        else:
-            return False
-
     def save_rendered_content(self):
         # type: () -> None
         self.save(update_fields=["rendered_content", "rendered_content_version"])
 
-    def maybe_render_content(self, domain, save = False):
-        # type: (Optional[text_type], bool) -> bool
-        """Render the markdown if there is no existing rendered_content"""
-        # TODO: see #1379 to eliminate bugdown dependencies
-        global bugdown
-        if bugdown is None:
-            import zerver.lib.bugdown as bugdown
-            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
-
-        if Message.need_to_render_content(self.rendered_content, self.rendered_content_version):
-            return self.set_rendered_content(self.render_markdown(self.content, domain), save)
-        else:
-            return True
-
     @staticmethod
-    def need_to_render_content(rendered_content, rendered_content_version):
-        # type: (Optional[text_type], int) -> bool
-        return rendered_content is None or rendered_content_version < bugdown.version
-
-    def to_dict(self, apply_markdown):
-        # type: (bool) -> Dict[str, Any]
-        return extract_message_dict(self.to_dict_json(apply_markdown))
-
-    @cache_with_key(to_dict_cache_key, timeout=3600*24)
-    def to_dict_json(self, apply_markdown):
-        # type: (bool) -> binary_type
-        return self.to_dict_uncached(apply_markdown)
-
-    def to_dict_uncached(self, apply_markdown):
-        # type: (bool) -> binary_type
-        return stringify_message_dict(self.to_dict_uncached_helper(apply_markdown))
-
-    def to_dict_uncached_helper(self, apply_markdown):
-        # type: (bool) -> Dict[str, Any]
-        return Message.build_message_dict(
-                apply_markdown = apply_markdown,
-                message = self,
-                message_id = self.id,
-                last_edit_time = self.last_edit_time,
-                edit_history = self.edit_history,
-                content = self.content,
-                subject = self.subject,
-                pub_date = self.pub_date,
-                rendered_content = self.rendered_content,
-                rendered_content_version = self.rendered_content_version,
-                sender_id = self.sender.id,
-                sender_email = self.sender.email,
-                sender_realm_domain = self.sender.realm.domain,
-                sender_full_name = self.sender.full_name,
-                sender_short_name = self.sender.short_name,
-                sender_avatar_source = self.sender.avatar_source,
-                sender_is_mirror_dummy = self.sender.is_mirror_dummy,
-                sending_client_name = self.sending_client.name,
-                recipient_id = self.recipient.id,
-                recipient_type = self.recipient.type,
-                recipient_type_id = self.recipient.type_id,
-        )
-
-    @staticmethod
-    def build_dict_from_raw_db_row(row, apply_markdown):
-        # type: (Dict[str, Any], bool) -> Dict[str, Any]
-        '''
-        row is a row from a .values() call, and it needs to have
-        all the relevant fields populated
-        '''
-        return Message.build_message_dict(
-                apply_markdown = apply_markdown,
-                message = None,
-                message_id = row['id'],
-                last_edit_time = row['last_edit_time'],
-                edit_history = row['edit_history'],
-                content = row['content'],
-                subject = row['subject'],
-                pub_date = row['pub_date'],
-                rendered_content = row['rendered_content'],
-                rendered_content_version = row['rendered_content_version'],
-                sender_id = row['sender_id'],
-                sender_email = row['sender__email'],
-                sender_realm_domain = row['sender__realm__domain'],
-                sender_full_name = row['sender__full_name'],
-                sender_short_name = row['sender__short_name'],
-                sender_avatar_source = row['sender__avatar_source'],
-                sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
-                sending_client_name = row['sending_client__name'],
-                recipient_id = row['recipient_id'],
-                recipient_type = row['recipient__type'],
-                recipient_type_id = row['recipient__type_id'],
-        )
-
-    @staticmethod
-    def build_message_dict(
-            apply_markdown,
-            message,
-            message_id,
-            last_edit_time,
-            edit_history,
-            content,
-            subject,
-            pub_date,
-            rendered_content,
-            rendered_content_version,
-            sender_id,
-            sender_email,
-            sender_realm_domain,
-            sender_full_name,
-            sender_short_name,
-            sender_avatar_source,
-            sender_is_mirror_dummy,
-            sending_client_name,
-            recipient_id,
-            recipient_type,
-            recipient_type_id,
-    ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
-        # TODO: see #1379 to eliminate bugdown dependencies
-        global bugdown
-        if bugdown is None:
-            import zerver.lib.bugdown as bugdown
-            # 'from zerver.lib import bugdown' gives mypy error in python 3 mode.
-
-        # TODO: Remove this import cycle
-        from zerver.lib.avatar import get_avatar_url
-        avatar_url = get_avatar_url(sender_avatar_source, sender_email)
-
-        display_recipient = get_display_recipient_by_id(
-                recipient_id,
-                recipient_type,
-                recipient_type_id
-        )
-
-        if recipient_type == Recipient.STREAM:
-            display_type = "stream"
-        elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
-            assert not isinstance(display_recipient, text_type)
-            display_type = "private"
-            if len(display_recipient) == 1:
-                # add the sender in if this isn't a message between
-                # someone and his self, preserving ordering
-                recip = {'email': sender_email,
-                         'domain': sender_realm_domain,
-                         'full_name': sender_full_name,
-                         'short_name': sender_short_name,
-                         'id': sender_id,
-                         'is_mirror_dummy': sender_is_mirror_dummy}
-                if recip['email'] < display_recipient[0]['email']:
-                    display_recipient = [recip, display_recipient[0]]
-                elif recip['email'] > display_recipient[0]['email']:
-                    display_recipient = [display_recipient[0], recip]
-
-        obj = dict(
-            id                = message_id,
-            sender_email      = sender_email,
-            sender_full_name  = sender_full_name,
-            sender_short_name = sender_short_name,
-            sender_domain     = sender_realm_domain,
-            sender_id         = sender_id,
-            type              = display_type,
-            display_recipient = display_recipient,
-            recipient_id      = recipient_id,
-            subject           = subject,
-            timestamp         = datetime_to_timestamp(pub_date),
-            gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
-            avatar_url        = avatar_url,
-            client            = sending_client_name)
-
-        obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
-
-        if last_edit_time != None:
-            obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
-            obj['edit_history'] = ujson.loads(edit_history)
-
-        if apply_markdown:
-            if Message.need_to_render_content(rendered_content, rendered_content_version):
-                if message is None:
-                    # We really shouldn't be rendering objects in this method, but there is
-                    # a scenario where we upgrade the version of bugdown and fail to run
-                    # management commands to re-render historical messages, and then we
-                    # need to have side effects.  This method is optimized to not need full
-                    # blown ORM objects, but the bugdown renderer is unfortunately highly
-                    # coupled to Message, and we also need to persist the new rendered content.
-                    # If we don't have a message object passed in, we get one here.  The cost
-                    # of going to the DB here should be overshadowed by the cost of rendering
-                    # and updating the row.
-                    # TODO: see #1379 to eliminate bugdown dependencies
-                    message = Message.objects.select_related().get(id=message_id)
-
-                # It's unfortunate that we need to have side effects on the message
-                # in some cases.
-                rendered_content = message.render_markdown(content, sender_realm_domain)
-                message.set_rendered_content(rendered_content, True)
-
-            if rendered_content is not None:
-                obj['content'] = rendered_content
-            else:
-                obj['content'] = u'<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
-
-            obj['content_type'] = 'text/html'
-        else:
-            obj['content'] = content
-            obj['content_type'] = 'text/x-markdown'
-
-        return obj
+    def need_to_render_content(rendered_content, rendered_content_version, bugdown_version):
+        # type: (Optional[text_type], int, int) -> bool
+        return rendered_content is None or rendered_content_version < bugdown_version
 
     def to_log_dict(self):
         # type: () -> Dict[str, Any]
@@ -1204,12 +911,6 @@ def get_context_for_message(message):
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
 
-def flush_message(sender, **kwargs):
-    # type: (Any, **Any) -> None
-    message = kwargs['instance']
-    cache_delete(to_dict_cache_key(message, False))
-    cache_delete(to_dict_cache_key(message, True))
-
 post_save.connect(flush_message, sender=Message)
 
 # Whenever a message is sent, for each user current subscribed to the
@@ -1278,22 +979,6 @@ class Attachment(ModelReprMixin, models.Model):
     def is_claimed(self):
         # type: () -> bool
         return self.messages.count() > 0
-
-    def get_url(self):
-        # type: () -> text_type
-        return u"/user_uploads/%s" % (self.path_id)
-
-def get_attachments_by_owner_id(uid):
-    # type: (int) -> Sequence[Attachment]
-    # TODO: Change return type to QuerySet[Attachment]
-    return Attachment.objects.filter(owner=uid).select_related('owner')
-
-def get_owners_from_file_name(file_name):
-    # type: (str) -> Sequence[Attachment]
-    # TODO: Change return type to QuerySet[Attachment]
-    # The returned vaule will list of owners since different users can upload
-    # same files with the same filename.
-    return Attachment.objects.filter(file_name=file_name).select_related('owner')
 
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]

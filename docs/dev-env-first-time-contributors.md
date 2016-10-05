@@ -317,7 +317,7 @@ Next, start the Zulip server:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~ $
-/srv/zulip/tools/run-dev.py --interface=''
+/srv/zulip/tools/run-dev.py
 ```
 
 As you can see above the application's root directory, where you can
@@ -494,7 +494,7 @@ server:
 christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
-/srv/zulip/tools/run-dev.py --interface=''
+/srv/zulip/tools/run-dev.py
 ```
 
 #### Next Steps

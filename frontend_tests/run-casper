@@ -11,6 +11,7 @@ try:
     # outside a Zulip virtualenv.
     from typing import Iterable
     import requests
+    import django
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip tests inside a Zulip dev environment.")
@@ -38,6 +39,13 @@ parser.add_option('--remote-debug',
                   action="store_true",
                   default=False)
 (options, args) = parser.parse_args()
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+from zerver.lib.test_fixtures import is_template_database_current
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+django.setup()
+os.environ['PYTHONUNBUFFERED'] = 'y'
 
 os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
@@ -72,7 +80,11 @@ def run_tests(realms_have_subdomains, files):
             file = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests', file)
         test_files.append(os.path.abspath(file))
 
-    subprocess.check_call('tools/setup/generate-fixtures')
+    generate_fixtures_command = ['tools/setup/generate-fixtures']
+    if not is_template_database_current():
+        generate_fixtures_command.append('--force')
+
+    subprocess.check_call(generate_fixtures_command)
 
     remote_debug = ""
     if options.remote_debug:
@@ -115,11 +127,11 @@ Oops, the frontend tests failed. Tips for debugging:
 
         sys.exit(ret)
 
-# Run tests with REALMS_HAVE_SUBDOMAINS set to True
+# First, run all tests with REALMS_HAVE_SUBDOMAINS set to False
 run_tests(False, args)
 os.environ["EXTERNAL_HOST"] = "zulipdev.com:9981"
 os.environ["REALMS_HAVE_SUBDOMAINS"] = "True"
-# Run tests with REALMS_HAVE_SUBDOMAINS set to True
+# Now run a subset of the tests with REALMS_HAVE_SUBDOMAINS set to True
 if len(args) == 0:
     run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"])
 else:

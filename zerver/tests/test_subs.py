@@ -1659,6 +1659,13 @@ class SubscriptionAPITest(ZulipTestCase):
         invite_streams = self.make_random_stream_names([current_stream])
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
+
+        with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
+            self.assertEqual(str(subscription),
+                u'<Subscription: '
+                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
+            )
+
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)
 

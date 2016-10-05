@@ -9,17 +9,28 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
-from zerver.lib.bugdown import BugdownRenderingException
-from zerver.lib.cache import flush_user_profile
+from zerver.lib.bugdown import (
+    BugdownRenderingException,
+    version as bugdown_version
+)
+from zerver.lib.cache import (
+    to_dict_cache_key,
+    to_dict_cache_key_id,
+)
 from zerver.lib.context_managers import lockfile
+from zerver.lib.message import (
+    MessageDict,
+    message_to_dict,
+    render_markdown,
+)
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, bulk_get_recipients, \
+    get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
+    get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
@@ -632,7 +643,8 @@ def render_incoming_message(message, content, message_users):
     # type: (Message, text_type, Set[UserProfile]) -> text_type
     realm_alert_words = alert_words_in_realm(message.get_realm())
     try:
-        rendered_content = message.render_markdown(
+        rendered_content = render_markdown(
+            message=message,
             content=content,
             realm_alert_words=realm_alert_words,
             message_users=message_users,
@@ -707,7 +719,8 @@ def do_send_messages(messages):
             message['message'],
             message['message'].content,
             message_users=message['active_recipients'])
-        message['message'].set_rendered_content(rendered_content)
+        message['message'].rendered_content = rendered_content
+        message['message'].rendered_content_version = bugdown_version
 
     for message in messages:
         message['message'].update_calculated_fields()
@@ -722,7 +735,7 @@ def do_send_messages(messages):
                              for user_profile in message['active_recipients']]
 
             # These properties on the Message are set via
-            # Message.render_markdown by code in the bugdown inline patterns
+            # render_markdown by code in the bugdown inline patterns
             wildcard = message['message'].mentions_wildcard
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
@@ -764,8 +777,8 @@ def do_send_messages(messages):
         event = dict(
             type         = 'message',
             message      = message['message'].id,
-            message_dict_markdown = message['message'].to_dict(apply_markdown=True),
-            message_dict_no_markdown = message['message'].to_dict(apply_markdown=False),
+            message_dict_markdown = message_to_dict(message['message'], apply_markdown=True),
+            message_dict_no_markdown = message_to_dict(message['message'], apply_markdown=False),
             presences    = presences)
         users = [{'id': user.id,
                   'flags': user_flags.get(user.id, []),
@@ -2491,7 +2504,8 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
         message.content = content
-        message.set_rendered_content(rendered_content)
+        message.rendered_content = rendered_content
+        message.rendered_content_version = bugdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
 
@@ -2558,9 +2572,9 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (changed_message.to_dict_uncached(apply_markdown=True),)
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (changed_message.to_dict_uncached(apply_markdown=False),)
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
 
     def user_info(um):

@@ -212,7 +212,9 @@ def build_custom_checkers(by_lang):
         {'pattern': '".*"%\([a-z_].*\)?$',
          'description': 'Missing space around "%"'},
         {'pattern': "'.*'%\([a-z_].*\)?$",
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all',
+                         'analytics/lib/counts.py',
+                         ]),
          'exclude_line': set([
              ('zerver/views/users.py',
               "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
