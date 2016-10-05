@@ -178,7 +178,7 @@ def main():
         run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
-    run(["scripts/setup/generate_secrets.py", "-d"])
+    run(["scripts/setup/generate_secrets.py", "--development"])
     if TRAVIS and not PRODUCTION_TRAVIS:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
