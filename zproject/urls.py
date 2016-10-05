@@ -71,7 +71,6 @@ i18n_urls = [
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'), name='send_confirm'),
     url(r'^accounts/register/', 'zerver.views.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
-    url(r'^invite/$', 'zerver.views.initial_invite_page', name='initial-invite-users'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
