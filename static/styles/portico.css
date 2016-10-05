@@ -79,6 +79,36 @@ li {
     font-style: italic;
 }
 
+.help-box {
+    width: 500px;
+
+    padding: 10px;
+    margin: 10px 0px;
+
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.2;
+
+    color: #444;
+
+    border-width: order: 1px solid #CCC;
+    border-radius: 4px;
+    background-color: #FAFAFA;
+}
+
+.display-none {
+    display: none;
+}
+
+.help-box .blob {
+    margin-top: 0px;
+}
+
+.help-inline {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
 #company-email {
     display: none;
 }
@@ -936,7 +966,7 @@ a.bottom-signup-button {
 
 .center-container {
     height: calc(100vh - 94px);
-    min-height: 500px;
+    min-height: 700px;
     display: flex;
     align-items: center;
     -wekbit-box-align: center;
@@ -1147,4 +1177,102 @@ a.bottom-signup-button {
     height: 25px;
     width: 25px;
     vertical-align: text-bottom;
+}
+
+/* --- new settings styling --- */
+.input-group input[type=radio],
+.input-group input[type=checkbox] {
+    margin: 0 10px 0 0;
+}
+
+.input-group input[type=radio] {
+    position: relative;
+    top: 8px;
+}
+
+.input-group label {
+    padding: 5px 0px;
+}
+
+.input-group label {
+    margin: 0;
+    padding: 5px 0px;
+}
+
+.m-v-20 {
+    margin: 20px 0px;
+}
+
+.input-group.radio {
+    margin-left: 25px;
+}
+
+.input-group.grid label.inline-block {
+    width: 300px;
+}
+
+.input-group.grid {
+    padding: 10px 0px;
+    border-bottom: 1px solid #DDD;
+}
+
+label.label-title {
+    font-weight: 600;
+}
+
+.input-group label.inline-block {
+  /* eyeballing off-centered aesth. */
+    margin-top: 1px;
+}
+
+.display-none {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.button-new {
+    padding: 8px 15px;
+    margin: 0;
+    min-width: 130px;
+
+    font-weight: 400;
+
+    background-color: #478fca;
+    color: #FFF;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* -- button states -- */
+.button-new:hover {
+    -webkit-filter: brightness(1.1);
+    -moz-filter: brightness(1.1);
+    filter: brightness(1.1);
+}
+
+.button-new:active {
+    -webkit-filter: brightness(0.9);
+    -moz-filter: brightness(0.9);
+    filter: brightness(0.9);
+}
+
+.button-new.sea-green {
+    background-color: #24cac2;
+    color: #fff;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
 }

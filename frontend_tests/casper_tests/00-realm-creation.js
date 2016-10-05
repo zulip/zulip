@@ -47,9 +47,11 @@ casper.then(function () {
         this.test.assertSelectorContains('.pitch', "You're almost there.");
     });
 
-    this.test.assertEvalEquals(function () {
-        return $('.controls.fakecontrol input[type=text]').attr('placeholder');
-    }, email);
+    this.waitForSelector('#id_email', function () {
+        this.test.assertEvalEquals(function () {
+            return $('#id_email').attr('placeholder');
+        }, email);
+    });
 
     this.waitForSelector('label[for=id_team_name]', function () {
         this.test.assertSelectorHasText('label[for=id_team_name]', 'Organization name');
@@ -87,9 +89,12 @@ casper.then(function () {
         this.test.assertSelectorHasText('.app-main.portico-page-container', "You're the first one here!");
     });
 
-    this.waitForSelector('.invite_row', function () {
-        this.test.assertSelectorHasText('.invite_row', domain);
-    });
+    // Getting rid of the invite page in the onboarding flow, so getting rid
+    // of this currently failing test. The test is implicitly expecting a
+    // realm created with restricted_to_domain=True, but we changed the
+    // default when introducting org_type
+    // this.waitForSelector('.invite_row', function () {
+    // this.test.assertSelectorHasText('.invite_row', domain); });
 
     this.waitForSelector('#submit_invitation', function () {
         this.click('#submit_invitation');

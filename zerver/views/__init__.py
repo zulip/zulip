@@ -198,11 +198,13 @@ def accounts_register(request):
 
         if realm_creation:
             domain = split_email_to_domain(email)
+            realm_name = form.cleaned_data['realm_name']
+            org_type = int(form.cleaned_data['realm_org_type'])
             if settings.REALMS_HAVE_SUBDOMAINS:
-                realm = do_create_realm(domain, form.cleaned_data['realm_name'],
+                realm = do_create_realm(domain, realm_name, org_type=org_type,
                                         subdomain=form.cleaned_data['realm_subdomain'])[0]
             else:
-                realm = do_create_realm(domain, form.cleaned_data['realm_name'])[0]
+                realm = do_create_realm(domain, realm_name, org_type=org_type)[0]
 
             set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
 

@@ -1942,13 +1942,33 @@ def do_change_stream_description(realm, stream_name, new_description):
                  value=new_description)
     send_event(event, stream_user_ids(stream))
 
-def do_create_realm(domain, name, restricted_to_domain=True, subdomain=None):
-    # type: (text_type, text_type, bool, Optional[text_type]) -> Tuple[Realm, bool]
+def get_realm_creation_defaults(org_type=None, restricted_to_domain=None, invite_required=None):
+    # type: (Optional[int], Optional[bool], Optional[bool]) -> Dict[text_type, Any]
+    if org_type is None:
+        org_type = Realm.CORPORATE
+    # not totally clear what the defaults should be if exactly one of
+    # restricted_to_domain or invite_required are set. Just doing the
+    # least complicated thing that works when both are unset.
+    if restricted_to_domain is None:
+        restricted_to_domain = (org_type == Realm.CORPORATE)
+    if invite_required is None:
+        invite_required = not (org_type == Realm.CORPORATE)
+    return {'org_type': org_type,
+            'restricted_to_domain': restricted_to_domain,
+            'invite_required': invite_required}
+
+def do_create_realm(domain, name, subdomain=None, restricted_to_domain=None,
+                    invite_required=None, org_type=None):
+    # type: (text_type, text_type, Optional[text_type], Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
     realm = get_realm(domain)
     created = not realm
     if created:
-        realm = Realm(domain=domain, name=name, subdomain=subdomain,
-                      restricted_to_domain=restricted_to_domain)
+        realm_params = get_realm_creation_defaults(org_type, restricted_to_domain, invite_required)
+        org_type = realm_params['org_type']
+        restricted_to_domain = realm_params['restricted_to_domain']
+        invite_required = realm_params['invite_required']
+        realm = Realm(domain=domain, name=name, org_type=org_type, subdomain=subdomain,
+                      restricted_to_domain=restricted_to_domain, invite_required=invite_required)
         realm.save()
 
         # Create stream once Realm object has been saved
@@ -1970,7 +1990,9 @@ system-generated notifications.""" % (product_name, notifications_stream.name,)
         # Log the event
         log_event({"type": "realm_created",
                    "domain": domain,
-                   "restricted_to_domain": restricted_to_domain})
+                   "restricted_to_domain": restricted_to_domain,
+                   "invite_required": invite_required,
+                   "org_type": org_type})
 
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"
