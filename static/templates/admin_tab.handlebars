@@ -32,18 +32,7 @@
           {{ partial "user-list-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="deactivated-users">
-          <div id="admin-deactivated-users-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-trash settings-section-icon"></i>
-          {{t "Deactivated Users" }}</div>
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_deactivated_users_table" class="admin_user_table">
-              <th>{{t "Name" }}</th>
-              <th>{{t "Email" }}</th>
-              <th>{{t "Actions" }}</th>
-            </tbody>
-          </table>
-          <div id="admin_page_deactivated_users_loading_indicator"></div>
-          </div>
+          {{ partial "deactivated-users-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="bots">
           <div id="admin-user-list" class="settings-section">
