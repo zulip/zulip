@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, HuddleCount, BaseCount
-from analytics.lib.interval import TimeInterval, timeinterval_range
+from analytics.lib.interval import TimeInterval, timeinterval_range, subintervals
 from zerver.models import Realm, UserProfile, Message, Stream, models
 
 from typing import Any, Optional, Type
@@ -39,11 +39,10 @@ def process_count_stat(stat, range_start, range_end):
 
     # aggregate to summary tables
     for interval in ['hour', 'day', 'gauge']:
-        for frequency in ['hour', 'day']:
-            for time_interval in timeinterval_range(range_start, range_end, interval, frequency):
-                analytics_table = stat.zerver_count_query.analytics_table
-                if stat.smallest_interval <= interval and stat.frequency == frequency and \
-                                 analytics_table in (UserCount, StreamCount):
+        for time_interval in timeinterval_range(range_start, range_end, interval, stat.frequency):
+            analytics_table = stat.zerver_count_query.analytics_table
+            if stat.smallest_interval in subintervals(interval):
+                if analytics_table in (UserCount, StreamCount):
                     do_aggregate_to_summary_table(stat, time_interval, analytics_table, RealmCount)
                 do_aggregate_to_summary_table(stat, time_interval, RealmCount, InstallationCount)
 
