@@ -79,29 +79,7 @@ casper.then(function () {
     });
 
     this.waitWhileSelector('form[action^="/accounts/register/"]', function () {
-        casper.test.assertUrlMatch(realm_host + '/invite/', 'Invite more users page loaded');
-    });
-});
-
-// Tests for invite more users page
-casper.then(function () {
-    this.waitForSelector('.app-main.portico-page-container', function () {
-        this.test.assertSelectorHasText('.app-main.portico-page-container', "You're the first one here!");
-    });
-
-    // Getting rid of the invite page in the onboarding flow, so getting rid
-    // of this currently failing test. The test is implicitly expecting a
-    // realm created with restricted_to_domain=True, but we changed the
-    // default when introducting org_type
-    // this.waitForSelector('.invite_row', function () {
-    // this.test.assertSelectorHasText('.invite_row', domain); });
-
-    this.waitForSelector('#submit_invitation', function () {
-        this.click('#submit_invitation');
-    });
-
-    this.waitWhileSelector('#submit_invitation', function () {
-        this.test.assertUrlMatch(realm_host, 'Realm created and logged in');
+        casper.test.assertUrlMatch(realm_host + '/', 'Home page loaded');
     });
 });
 

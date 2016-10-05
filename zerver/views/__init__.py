@@ -240,17 +240,7 @@ def accounts_register(request):
 
         if first_in_realm:
             do_change_is_admin(user_profile, True)
-            invite_url = reverse('zerver.views.initial_invite_page')
-            if (realm_creation and settings.REALMS_HAVE_SUBDOMAINS):
-                invite_url = "%s%s.%s%s" % (
-                    settings.EXTERNAL_URI_SCHEME,
-                    form.cleaned_data['realm_subdomain'],
-                    settings.EXTERNAL_HOST,
-                    reverse('zerver.views.initial_invite_page')
-                )
-            return HttpResponseRedirect(invite_url)
-        else:
-            return HttpResponseRedirect(reverse('zerver.views.home'))
+        return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
 
     return render_to_response('zerver/register.html',
             {'form': form,
@@ -656,25 +646,6 @@ def json_bulk_invite_users(request, user_profile,
         internal_send_message(settings.NEW_USER_BOT, "stream", "signups",
                               user_profile.realm.domain, internal_message)
         return json_success()
-
-@zulip_login_required
-def initial_invite_page(request):
-    # type: (HttpRequest) -> HttpResponse
-    user = request.user
-    # Only show the bulk-invite page for the first user in a realm
-    domain_count = len(UserProfile.objects.filter(realm=user.realm))
-    if domain_count > 1:
-        return redirect('zerver.views.home')
-
-    params = {'company_name': user.realm.domain}
-
-    if (user.realm.restricted_to_domain):
-        params['invite_suffix'] = user.realm.domain
-    else:
-        params['invite_suffix'] = ''
-
-    return render_to_response('zerver/initial_invite_page.html', params,
-                              request=request)
 
 @require_post
 def logout_then_login(request, **kwargs):

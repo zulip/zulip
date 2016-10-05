@@ -247,69 +247,6 @@ class LoginTest(ZulipTestCase):
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
-    def test_register_first_user_with_invites(self):
-        # type: () -> None
-        """
-        The first user in a realm has a special step in their signup workflow
-        for inviting other users. Do as realistic an end-to-end test as we can
-        without Tornado running.
-        """
-        username = "user1"
-        password = "test"
-        domain = "test.com"
-        email = "user1@test.com"
-
-        # Create a new realm to ensure that we're the first user in it.
-        Realm.objects.create(domain=domain, name="Test Inc.")
-
-        # Start the signup process by supplying an email address.
-        result = self.client_post('/accounts/home/', {'email': email})
-
-        # Check the redirect telling you to check your mail for a confirmation
-        # link.
-        self.assertEquals(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s@%s" % (username, domain)))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEquals(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(username, password, domain)
-        self.assertEquals(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith("/invite/"))
-
-        # Invite other users to join you.
-        result = self.client_get(result["Location"])
-        self.assert_in_response("You're the first one here!", result)
-
-        # Reset the outbox for our invites.
-        from django.core.mail import outbox
-        outbox.pop()
-
-        invitees = ['alice@' + domain, 'bob@' + domain]
-        params = {
-            'invitee_emails': ujson.dumps(invitees)
-        }
-        result = self.client_post('/json/bulk_invite_users', params)
-        self.assert_json_success(result)
-
-        # We really did email these users, and they have PreregistrationUser
-        # objects.
-        email_recipients = [message.recipients()[0] for message in outbox]
-        self.assertEqual(len(outbox), len(invitees))
-        self.assertEqual(sorted(email_recipients), sorted(invitees))
-
-        user_profile = get_user_profile_by_email(email)
-        self.assertEqual(len(invitees), PreregistrationUser.objects.filter(
-                referred_by=user_profile).count())
-
-        # After this we start manipulating browser information, so stop here.
-
 class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams):
@@ -702,10 +639,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEquals(realm.restricted_to_domain, False)
             self.assertEquals(realm.invite_required, True)
 
-            self.assertTrue(result["Location"].endswith("/invite/"))
-
-            result = self.client_get(result["Location"])
-            self.assert_in_response("You're the first one here!", result)
+            self.assertTrue(result["Location"].endswith("/"))
 
     def test_realm_corporate_defaults(self):
         # type: () -> None
