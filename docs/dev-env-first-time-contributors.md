@@ -296,12 +296,12 @@ Congrats, you're now inside the Zulip dev environment!
 You can confirm this by looking at the command prompt, which starts with
 `(zulip-venv)`. In case it does not, your development environment might be haulted
 while provisioning the vagrant guest. Check the `/var/log/zulip_provision.log`
-file to find it ending with something similar to the following lines
-in case of successful completion:
+file present inside the guest machine to find it ending with something similar
+to the following lines in case of successful completion:
 
 ```
 ....
-^[[94mZulip development environment setup succeeded!^[[0m
+Zulip development environment setup succeeded!
 Get:1 http://archive.ubuntu.com trusty InRelease
 Ign http://archive.ubuntu.com trusty InRelease
 ....
@@ -714,7 +714,8 @@ $ sudo patch --directory /usr/lib/ruby/vendor_ruby/vagrant < vagrant-plugin.patc
 patching file bundler.rb
 ```
 #### Lost Connectivity or power during vagrant setup
-If you see the following when you run `vagrant ssh` on Ubuntu:
+If you dont see `(zulip-env)` in the command prompt of the guest machine but
+something as follows when you run `vagrant ssh`
 
 ```
 $ vagrant ssh
@@ -723,7 +724,7 @@ Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-31-generic x86_64)
     Documentation: https://help.ubuntu.com/
     vagrant@vagrant-base-trusty-amd64:~$
 ```
-Check the logs `/var/log/zulip_provision.log` and try to re-provision
+Check the logs `/var/log/zulip_provision.log` in the guest machine and try to re-provision
 your vagrant machine by `vagrant provision` and then run `vagrant ssh`.
 
 #### Permissions errors when running the test suite in LXC
