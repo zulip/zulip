@@ -10,7 +10,7 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
-from zerver.lib.webhooks.git import get_push_commits_event_message
+from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
@@ -46,8 +46,8 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
                            stream=REQ(default='bitbucket')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
     try:
-        subject = get_subject(payload)
         type = get_type(request, payload)
+        subject = get_subject_based_on_type(payload, type)
         body = get_body_based_on_type(type)(payload)
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
@@ -55,9 +55,22 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
+def get_subject_for_branch_specified_events(payload):
+    # type: (Dict[str, Any]) -> text_type
+    return SUBJECT_WITH_BRANCH_TEMPLATE.format(
+        repo=get_repository_name(payload['repository']),
+        branch=get_branch_name_for_push_event(payload)
+    )
+
 def get_subject(payload):
     # type: (Dict[str, Any]) -> str
-    return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=payload['repository']['name'])
+    return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
+
+def get_subject_based_on_type(payload, type):
+    # type: (Dict[str, Any], str) -> text_type
+    if type == 'push':
+        return get_subject_for_branch_specified_events(payload)
+    return get_subject(payload)
 
 def get_type(request, payload):
     # type: (HttpRequest, Dict[str, Any]) -> str
@@ -111,7 +124,7 @@ def get_fork_body(payload):
     return BITBUCKET_FORK_BODY.format(
         display_name=get_user_display_name(payload),
         username=get_user_username(payload),
-        fork_name=get_repository_name(payload['fork']),
+        fork_name=get_repository_full_name(payload['fork']),
         fork_url=get_repository_url(payload['fork'])
     )
 
@@ -182,6 +195,10 @@ def get_repository_url(repository_payload):
 
 def get_repository_name(repository_payload):
     # type: (Dict[str, Any]) -> str
+    return repository_payload['name']
+
+def get_repository_full_name(repository_payload):
+    # type: (Dict[str, Any]) -> str
     return repository_payload['full_name']
 
 def get_user_display_name(payload):
@@ -191,6 +208,10 @@ def get_user_display_name(payload):
 def get_user_username(payload):
     # type: (Dict[str, Any]) -> str
     return payload['actor']['username']
+
+def get_branch_name_for_push_event(payload):
+    # type: (Dict[str, Any]) -> str
+    return payload['push']['changes'][-1]['new']['name']
 
 GET_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'push': get_push_body,
