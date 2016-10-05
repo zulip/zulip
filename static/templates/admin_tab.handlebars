@@ -38,22 +38,7 @@
           {{ partial "bot-list-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="streams">
-          <div id="admin-streams-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
-          {{t "Streams Deletion" }}</div>
-
-          <div class="side-padded-container">
-            <p class="admin-streams-note">Most stream administration is done on the <a href="/#subscriptions">subscriptions page</a>.</p>
-          </div>
-
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_streams_table" class="admin_stream_table">
-              <th>{{t "Name" }}</th>
-              <th>{{t "Actions" }}</th>
-            </tbody>
-          </table>
-          <div id="admin_page_streams_loading_indicator"></div>
-          </div>
+          {{ partial "streams-list-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="default-streams">
           <div id="admin-default-streams-list" class="settings-section">
