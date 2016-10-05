@@ -4,70 +4,7 @@
 
   <div class="alert" id="settings-status"></div>
 
-  <div id="account-settings" class="settings-section">
-    <div class="settings-section-title">
-      <i class="icon-vector-user settings-section-icon"></i>
-      {{t "Your Account" }}
-    </div>
-    <div class="account-settings-form">
-      <form action="/json/settings/change" method="post"
-            class="form-horizontal your-account-settings">
-        <div class="input-group" id="name_change_container">
-          <label for="full_name">{{t "Full name" }}</label>
-          <input type="text" name="full_name" id="full_name" value="{{ page_params.fullname }}" />
-        </div>
-
-        <!-- password start -->
-        {{#if page_params.password_auth_enabled}}
-        <div class="input-group" id="pw_change_link">
-          <label for="change_password_button">{{t "Password" }}</label>
-          <button class="change_password_button button" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
-        </div>
-
-        <div id="pw_change_controls">
-          <div class="input-group">
-            <label for="old_password">{{t "Old password" }}</label>
-            <input type="password" autocomplete="off" name="old_password" id="old_password" value="" />
-            (<a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a>)
-          </div>
-
-          <div class="input-group">
-            <label for="new_password">{{t "New password" }}</label>
-            <input type="password" autocomplete="off" name="new_password" id="new_password" value="" />
-          </div>
-
-          <div class="input-group">
-            <label>{{t "Password strength" }}</label>
-            <div class="progress" id="pw_strength">
-              <div class="bar bar-danger fade" style="width: 10%;"></div>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label for="confirm_password">{{t "Confirm password" }}</label>
-            <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" value="" />
-          </div>
-
-        </div>
-        {{/if}}
-
-        <div class="input-group">
-          <input type="submit" class="button green" name="change_settings" value="Save Changes" />
-        </div>
-
-        <div class="input-group">
-          <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
-          <div id="user_avatar_file_input_error" class="text-error"></div>
-          <div id="user_avatar_file"></div>
-          <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
-          <div id="upload_avatar_spinner"></div>
-          <button class="button standalone" id="user_avatar_upload_button">{{t 'Customize avatar' }}</button>
-        </div>
-
-      </form>
-
-    </div>
-  </div>
+  {{ partial "account-settings" }}
 
   {{ partial "display-settings" }}
 
