@@ -29,3 +29,4 @@ SAVE_FRONTEND_STACKTRACES = True
 EVENT_LOGS_ENABLED = True
 SYSTEM_ONLY_REALMS = set() # type: Set[str]
 USING_PGROONGA = True
+ANALYTICS_LOCK_DIR = 'var/update_analytics_counts_lock'

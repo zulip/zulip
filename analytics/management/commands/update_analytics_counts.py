@@ -1,5 +1,6 @@
 import os
 import sys
+from __future__ import print_function
 from scripts.lib.zulip_tools import run, ENDC, WARNING
 
 from argparse import ArgumentParser
@@ -8,6 +9,7 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.conf import settings
 
 from analytics.models import RealmCount, UserCount
 from analytics.lib.counts import COUNT_STATS, process_count_stat
@@ -40,16 +42,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        LOCK_DIR = "/tmp/update_analytics_lock"
         try:
-            os.mkdir(LOCK_DIR)
+            os.mkdir(settings.ANALYTICS_LOCK_DIR)
         except OSError:
             print(WARNING + "cronjob in progress; waiting for lock... " + ENDC)
             return
         try:
             self.run_update_analytics_counts(options)
         finally:
-            run(["sudo", "rmdir", LOCK_DIR])
+            run(["sudo", "rmdir", settings.ANALYTICS_LOCK_DIR])
 
     def run_update_analytics_counts(self, options):
         # type: (Dict[str, Any]) -> None
