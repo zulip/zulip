@@ -1,0 +1,5 @@
+MAILTO=root
+
+# Run update analytics tables every 5 minutes past the hour
+5 * * * *   zulip cd /home/zulip/analytics/management/commands && python manage.py update_analytics_counts
+

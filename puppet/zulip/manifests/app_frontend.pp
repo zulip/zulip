@@ -42,4 +42,12 @@ class zulip::app_frontend {
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
   }
+  # Run update analytics counts every 5 minutes after the hour.
+  file { "/etc/cron.d/update-analytics-counts":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/update-analytics-counts",
+  }
 }

@@ -1,3 +1,7 @@
+import os
+import sys
+from scripts.lib.zulip_tools import run, ENDC, WARNING
+
 from argparse import ArgumentParser
 from datetime import timedelta
 
@@ -6,7 +10,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from analytics.models import RealmCount, UserCount
-from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
+from analytics.lib.counts import COUNT_STATS, process_count_stat
 from zerver.lib.timestamp import datetime_to_string, is_timezone_aware
 from zerver.models import UserProfile, Message
 
@@ -36,6 +40,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
+        LOCK_DIR = "/tmp/update_analytics_lock"
+        try:
+            os.mkdir(LOCK_DIR)
+        except OSError:
+            print(WARNING + "cronjob in progress; waiting for lock... " + ENDC)
+            return
+        try:
+            self.run_update_analytics_counts(options)
+        finally:
+            run(["sudo", "rmdir", LOCK_DIR])
+
+    def run_update_analytics_counts(self, options):
+        # type: (Dict[str, Any]) -> None
         range_start = parse_datetime(options['range_start'])
         if 'range_end' in options:
             range_end = parse_datetime(options['range_end'])
