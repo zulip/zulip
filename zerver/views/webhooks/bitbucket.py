@@ -10,7 +10,7 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
-from zerver.lib.webhooks.git import get_push_commits_event_message
+from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE
 
 
 @authenticated_rest_api_view(is_webhook=True)
@@ -32,17 +32,17 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
         for commit in payload.get('commits')
     ]
 
-    subject = repository['name']
     if len(commits) == 0:
         # Bitbucket doesn't give us enough information to really give
         # a useful message :/
+        subject = repository['name']
         content = (u"%s [force pushed](%s)"
                    % (payload['user'],
                       payload['canon_url'] + repository['absolute_url']))
     else:
         branch = payload['commits'][-1]['branch']
         content = get_push_commits_event_message(payload.get('user'), None, branch, commits)
-        subject += u'/%s' % (branch,)
+        subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=repository['name'], branch=branch)
 
     check_send_message(user_profile, get_client("ZulipBitBucketWebhook"), "stream",
                        [stream], subject, content)
