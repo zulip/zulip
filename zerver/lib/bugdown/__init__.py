@@ -980,7 +980,11 @@ class Bugdown(markdown.Extension):
             '_end')
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE[len(markdown.inlinepatterns.NOIMG):],
+<<<<<<< HEAD
 			md), '>backtick')
+=======
+	    md), '>backtick')
+>>>>>>> f30432b350f8eae96e465343dd74699b7ea3097d
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
