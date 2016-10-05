@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from __future__ import print_function
 
 import optparse
@@ -10,17 +10,6 @@ import sys
 import os
 
 if False: from typing import Any
-
-# find out python version
-major_version = int(subprocess.check_output(['python', '-c', 'import sys; print(sys.version_info[0])']))
-if major_version != 2:
-    # use twisted from its python2 venv but use django, tornado, etc. from the python3 venv.
-    PATH = os.environ["PATH"]
-    activate_this = "/srv/zulip-venv/bin/activate_this.py"
-    if not os.path.exists(activate_this):
-        activate_this = "/srv/zulip-py2-twisted-venv/bin/activate_this.py"
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
-    os.environ["PATH"] = PATH
 
 from twisted.internet import reactor
 from twisted.web      import proxy, server, resource
@@ -137,23 +126,22 @@ for cmd in cmds:
 
 class Resource(resource.Resource):
     def getChild(self, name, request):
-        # type: (str, server.Request) -> resource.Resource
+        # type: (bytes, server.Request) -> resource.Resource
 
         # Assume an HTTP 1.1 request
         proxy_host = request.requestHeaders.getRawHeaders('Host')
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', proxy_host)
+        if (request.uri in [b'/json/get_events'] or
+            request.uri.startswith(b'/json/events') or
+            request.uri.startswith(b'/api/v1/events') or
+            request.uri.startswith(b'/sockjs')):
+            return proxy.ReverseProxyResource('127.0.0.1', tornado_port, b'/' + name)
 
-        if (request.uri in ['/json/get_events'] or
-            request.uri.startswith('/json/events') or
-            request.uri.startswith('/api/v1/events') or
-            request.uri.startswith('/sockjs')):
-            return proxy.ReverseProxyResource('127.0.0.1', tornado_port, '/'+name)
+        elif (request.uri.startswith(b'/webpack') or
+              request.uri.startswith(b'/socket.io')):
+            return proxy.ReverseProxyResource('127.0.0.1', webpack_port, b'/' + name)
 
-        elif (request.uri.startswith('/webpack') or
-              request.uri.startswith('/socket.io')):
-            return proxy.ReverseProxyResource('127.0.0.1', webpack_port, '/'+name)
-
-        return proxy.ReverseProxyResource('127.0.0.1', django_port, '/'+name)
+        return proxy.ReverseProxyResource('127.0.0.1', django_port, b'/'+name)
 
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)
