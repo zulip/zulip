@@ -16,6 +16,8 @@ i18n.init({
 });
 
 var jsdom = require("jsdom");
+var fs = require("fs");
+var path = require("path");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
 var _ = global._;
@@ -27,6 +29,10 @@ function render(template_name, args) {
     global.use_template(template_name);
     return global.templates.render(template_name, args);
 }
+
+fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
+    render(o.replace(/\.handlebars/, ""));
+});
 
 (function test_handlebars_bug () {
     // There was a bug in 1.0.9 where identically structured
