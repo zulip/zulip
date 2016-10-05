@@ -648,7 +648,18 @@ Finally, if you encounter any issues that weren't caused by your
 Internet connection, please report them!  We try hard to keep Zulip
 development environment provisioning free of bugs.
 
-#### npm install error
+##### `pip install` fails during `vagrant up` on Ubuntu
+
+Likely causes are:
+
+1. Networking issues
+2. Insufficient RAM. Check whether you've allotted at least two
+gigabytes of RAM, which is the minimum Zulip
+[requires](dev-env-first-time-contributors.html#requirements). If
+not, go to your VM settings and increase the RAM, then restart
+the VM.
+
+##### npm install errors
 
 The `tools/provision.py` script may encounter an error related to `npm install`
 that looks something like:
