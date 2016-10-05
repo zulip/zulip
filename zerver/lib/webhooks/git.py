@@ -1,6 +1,8 @@
 from six import text_type
 from typing import Optional, Any
 
+SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
+
 PUSH_COMMITS_LIMIT = 10
 PUSH_PUSHED_TEXT_WITH_URL = u"[pushed]({compare_url})"
 PUSH_PUSHED_TEXT_WITHOUT_URL = u"pushed"
