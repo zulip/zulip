@@ -11,7 +11,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
 from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
-    get_force_push_commits_event_message
+    get_force_push_commits_event_message, get_remove_branch_event_message
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
@@ -106,10 +106,19 @@ def get_body_based_on_type(type):
 def get_push_body(payload):
     # type: (Dict[str, Any]) -> text_type
     change = payload['push']['changes'][-1]
-    if change.get('forced'):
+    if change.get('closed'):
+        return get_remove_branch_push_body(payload, change)
+    elif change.get('forced'):
         return get_force_push_body(payload, change)
     else:
         return get_normal_push_body(payload, change)
+
+def get_remove_branch_push_body(payload, change):
+    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    return get_remove_branch_event_message(
+        get_user_username(payload),
+        change['old']['name'],
+    )
 
 def get_force_push_body(payload, change):
     # type: (Dict[str, Any], Dict[str, Any]) -> text_type
@@ -227,7 +236,11 @@ def get_user_username(payload):
 
 def get_branch_name_for_push_event(payload):
     # type: (Dict[str, Any]) -> str
-    return payload['push']['changes'][-1]['new']['name']
+    change = payload['push']['changes'][-1]
+    if change.get('new'):
+        return change['new']['name']
+    else:
+        return change['old']['name']
 
 GET_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'push': get_push_body,
