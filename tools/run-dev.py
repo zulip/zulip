@@ -90,6 +90,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from scripts.lib.zulip_tools import WARNING, ENDC
+
 proxy_port   = base_port
 django_port  = base_port+1
 tornado_port = base_port+2
@@ -157,14 +159,14 @@ class Resource(resource.Resource):
 
 
     # log which services/ports will be started
-    print("Starting Zulip services on ports:  web proxy: {},".format(proxy_port),
+    print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
           "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
     if options.test:
         print("")  # no webpack for --test
     else:
         print(", webpack: {}".format(webpack_port))
 
-    print("Note: only port {} is exposed to the host in a Vagrant environment.".format(proxy_port))
+    print(WARNING + "Note: only port {} is exposed to the host in a Vagrant environment.".format(proxy_port) + ENDC)
 
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)
