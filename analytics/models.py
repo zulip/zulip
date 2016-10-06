@@ -18,10 +18,13 @@ class Anomaly(ModelReprMixin, models.Model):
         return u"<Anomaly: %s... %s>" % (self.info, self.id)
 
 class BaseCount(ModelReprMixin, models.Model):
-    value = models.BigIntegerField() # type: int
+    # Note: When inheriting from BaseCount, you may want to rearrange
+    # the order of the columns in the migration to make sure they
+    # match how you'd like the table to be arranged.
     property = models.CharField(max_length=40) # type: text_type
     end_time = models.DateTimeField() # type: datetime.datetime
     interval = models.CharField(max_length=20) # type: text_type
+    value = models.BigIntegerField() # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
     class Meta(object):
