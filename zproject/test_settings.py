@@ -1,6 +1,8 @@
 from __future__ import absolute_import
-from .settings import *
 import os
+if os.getenv("EXTERNAL_HOST") is None:
+    os.environ["EXTERNAL_HOST"] = "testserver"
+from .settings import *
 
 DATABASES["default"] = {"NAME": "zulip_test",
                         "USER": "zulip_test",
@@ -82,7 +84,6 @@ LOCAL_UPLOADS_DIR = 'var/test_uploads'
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
-EXTERNAL_HOST = os.getenv('EXTERNAL_HOST', "testserver")
 REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 
 # Test Custom TOS template rendering
