@@ -6,7 +6,8 @@ from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, has_request_variables, to_non_negative_int, flexible_boolean
 from zerver.views.messages import send_message_backend
 from zerver.lib.webhooks.git import get_push_commits_event_message,\
-    SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message
+    SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message, \
+    get_remove_branch_event_message
 import logging
 import re
 import ujson
@@ -229,8 +230,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
     subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     if re.match(r'^0+$', after):
-        content = u'%s deleted branch %s' % (pusher,
-                                            short_ref)
+        content = get_remove_branch_event_message(pusher, short_ref)
     # 'created' and 'forced' are github flags; the second check is for beanstalk
     elif (forced and not created) or (forced is None and len(commits) == 0):
         content = get_force_push_commits_event_message(pusher, url, short_ref, after[:7])
