@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import optparse
+import pwd
 import subprocess
 import signal
 import traceback
@@ -57,13 +58,25 @@ parser.add_option('--test',
 
 parser.add_option('--interface',
     action='store', dest='interface',
-    default='127.0.0.1', help='Set the IP or hostname for the proxy to listen on')
+    default=None, help='Set the IP or hostname for the proxy to listen on')
 
 parser.add_option('--no-clear-memcached',
     action='store_false', dest='clear_memcached',
     default=True, help='Do not clear memcached')
 
 (options, args) = parser.parse_args()
+
+if options.interface is None:
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    if user_name == "vagrant":
+        # In the Vagrant development environment, we need to listen on
+        # all ports, and it's safe to do so, because Vagrant is only
+        # exposing certain guest ports (by default just 9991) to the host.
+        options.interface = ""
+    else:
+        # Otherwise, only listen to requests on localhost for security.
+        options.interface = "127.0.0.1"
 
 base_port   = 9991
 if options.test:
@@ -76,6 +89,8 @@ manage_args = ['--settings=%s' % (settings_module,)]
 os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from scripts.lib.zulip_tools import WARNING, ENDC
 
 proxy_port   = base_port
 django_port  = base_port+1
@@ -141,6 +156,17 @@ class Resource(resource.Resource):
             return proxy.ReverseProxyResource('127.0.0.1', webpack_port, '/'+name)
 
         return proxy.ReverseProxyResource('127.0.0.1', django_port, '/'+name)
+
+
+    # log which services/ports will be started
+    print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
+          "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
+    if options.test:
+        print("")  # no webpack for --test
+    else:
+        print(", webpack: {}".format(webpack_port))
+
+    print(WARNING + "Note: only port {} is exposed to the host in a Vagrant environment.".format(proxy_port) + ENDC)
 
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)

@@ -201,6 +201,7 @@ class FileUploadTest(ZulipTestCase):
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()
+        self.assertEqual(str(d1_attachment), u'<Attachment: dummy_1.txt>')
         d2_attachment = Attachment.objects.get(path_id = d2_path_id)
         d2_attachment.create_time = two_week_ago
         d2_attachment.save()

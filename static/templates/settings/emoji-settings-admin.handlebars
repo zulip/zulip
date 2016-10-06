@@ -1,0 +1,31 @@
+<div id="emoji-settings" class="settings-section">
+  <div class="settings-section-title"><i class="icon-vector-smile settings-section-icon"></i>
+  {{t "Custom emoji" }}</div>
+  <div class="admin-table-wrapper">
+  <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
+    <table class="table table-condensed table-striped admin_emoji_table">
+      <tbody id="admin_emoji_table">
+        <th>{{t "Name" }}</th>
+        <th class="image">{{t "Image" }}</th>
+        <th class="actions">{{t "Actions" }}</th>
+      </tbody>
+    </table>
+  </div>
+  <form class="form-horizontal admin-emoji-form">
+    <div class="add-new-emoji-box grey-bg green-bg">
+      <div class="new-emoji-form">
+        <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a New Emoji" }}</div>
+        <div class="alert" id="admin-emoji-status"></div>
+        <div class="input-group">
+          <label for="emoji_name">{{t "Emoji name" }}</label>
+          <input type="text" name="name" id="emoji_name" placeholder="{{t 'mouse_face' }}" />
+        </div>
+        <div class="input-group">
+          <label for="emoji_url">{{t "Emoji URL" }}</label>
+          <input type="text" name="url" id="emoji_url" placeholder="http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png" />
+        </div>
+        <input type="submit" class="button" value="{{t 'Add emoji' }}" />
+      </div>
+    </div>
+  </form>
+</div>

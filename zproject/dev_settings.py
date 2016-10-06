@@ -2,9 +2,12 @@
 # For the Dev VM environment, we use the same settings as the
 # sample prod_settings.py file, with a few exceptions.
 from .prod_settings_template import *
+import os
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
-EXTERNAL_HOST = 'zulipdev.com:9991'
+# We check the environment to support test_settings.py controlling
+# EXTERNAL_HOST.
+EXTERNAL_HOST = os.getenv('EXTERNAL_HOST', 'zulipdev.com:9991')
 ALLOWED_HOSTS = ['*']
 AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
 # Add some of the below if you're testing other backends

@@ -25,216 +25,23 @@
       </ul>
       <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="organization">
-          <div id="organization-settings" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
-          {{t "Organization settings" }}</div>
-            <form class="form-horizontal admin-realm-form">
-              <div class="alert" id="admin-realm-name-status"></div>
-              <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
-              <div class="alert" id="admin-realm-invite-required-status"></div>
-              <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
-              <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
-              <div class="alert" id="admin-realm-message-editing-status"></div>
-              <div class="alert" id="admin-realm-default-language-status"></div>
-
-              <div class="input-group admin-realm">
-                <label for="realm_name">{{t "Your organization's name" }}</label>
-                <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
-                       value="{{ realm_name }}" />
-              </div>
-              <div class="input-group">
-                <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
-                   {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
-                <label for="id_realm_restricted_to_domain" class="inline-block"
-                  title="{{#tr this}}If checked, only users with an @__domain__ e-mail address will be able to join the organization.{{/tr}}">
-                  {{#tr this}}Users restricted to __domain__{{/tr}}
-                </label>
-              </div>
-              <div class="input-group">
-                <input type="checkbox" class="inline-block" id="id_realm_invite_required" name="realm_invite_required"
-                  {{#if realm_invite_required}}checked="checked"{{/if}} />
-                <label for="id_realm_invite_required" class="inline-block"
-                  title="{{t 'If checked, users must be invited in order to join your organization.' }}">
-                  {{t "E-mail invitation required" }}
-                </label>
-              </div>
-              <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
-                <input type="checkbox" class="inline-block" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only"
-                  {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
-                  {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
-                <label for="id_realm_invite_by_admins_only"
-                  id="id_realm_invite_by_admins_only_label"
-                  title="{{t 'If checked, only administrators may invite new users.' }}"
-                  class="inline-block">
-                  {{t "Only admins may invite" }}
-                </label>
-              </div>
-              <div class="input-group">
-                <input type="checkbox" class="inline-block" id="id_realm_create_stream_by_admins_only"
-                       name="realm_create_stream_by_admins_only"
-                  {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
-
-                <label for="id_realm_create_stream_by_admins_only" class="inline-block"
-                  id="id_realm_create_stream_by_admins_only_label"
-                  title="{{t 'If checked, only administrators may create new streams.'}}">
-                  {{t "Only admins may create streams" }}
-                </label>
-              </div>
-              <div class="input-group">
-                <input type="checkbox" class="inline-block" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
-                  {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
-
-                <label for="id_realm_allow_message_editing"
-                  title="{{t 'If checked, users can edit the content and topics of their old messages.' }}"
-                  class="inline-block">
-                  {{t "Users can edit old messages" }}
-                </label>
-              </div>
-              <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
-                <label for="realm_message_content_edit_limit_minutes"
-                  id="id_realm_message_content_edit_limit_minutes_label"
-                  title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}">
-                  {{t 'Message edit limit in minutes (0 for no limit)' }}
-                </label>
-                <input type="text" id="id_realm_message_content_edit_limit_minutes"
-                       name="realm_message_content_edit_limit_minutes"
-                       class="admin-realm-message-content-edit-limit-minutes"
-                       value="{{ realm_message_content_edit_limit_minutes }}"
-                  {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
-              </div>
-              <div class="input-group">
-                <label for="realm_default_language">{{t "Default Language" }}:</label>
-                <select name="realm_default_language" id="id_realm_default_language">
-                  {{#each language_list}}
-                  <option value='{{this.code}}'>{{this.name}}</option>
-                  {{/each}}
-                </select>
-              </div>
-              <div class="input-group organization-submission">
-                <input type="submit" class="button" value="{{t 'Save changes' }}" />
-              </div>
-            </form>
-          </div>
-          <div id="emoji-settings" class="settings-section">
-            <div class="settings-section-title"><i class="icon-vector-smile settings-section-icon"></i>
-            {{t "Custom emoji" }}</div>
-            <div class="admin-table-wrapper">
-            <p>{{#tr this}}Add extra emoji for members of the __realm_name__ organization.{{/tr}}</p>
-              <table class="table table-condensed table-striped admin_emoji_table">
-                <tbody id="admin_emoji_table">
-                  <th>{{t "Name" }}</th>
-                  <th class="image">{{t "Image" }}</th>
-                  <th class="actions">{{t "Actions" }}</th>
-                </tbody>
-              </table>
-            </div>
-            <form class="form-horizontal admin-emoji-form">
-              <div class="add-new-emoji-box grey-bg green-bg">
-                <div class="new-emoji-form">
-                  <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a New Emoji" }}</div>
-                  <div class="alert" id="admin-emoji-status"></div>
-                  <div class="input-group">
-                    <label for="emoji_name">{{t "Emoji name" }}</label>
-                    <input type="text" name="name" id="emoji_name" placeholder="{{t 'mouse_face' }}" />
-                  </div>
-                  <div class="input-group">
-                    <label for="emoji_url">{{t "Emoji URL" }}</label>
-                    <input type="text" name="url" id="emoji_url" placeholder="http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png" />
-                  </div>
-                  <input type="submit" class="button" value="{{t 'Add emoji' }}" />
-                </div>
-              </div>
-            </form>
-          </div>
+          {{ partial "organization-settings-admin" }}
+          {{ partial "emoji-settings-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="users">
-          <div id="admin-user-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-user settings-section-icon"></i>
-          {{t "Users" }}</div>
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_users_table" class="admin_user_table">
-              <th>{{t "Name" }}</th>
-              <th>{{t "Email" }}</th>
-              <th>{{t "Actions" }}</th>
-            </tbody>
-          </table>
-          <div id="admin_page_users_loading_indicator"></div>
-          </div>
+          {{ partial "user-list-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="deactivated-users">
-          <div id="admin-deactivated-users-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-trash settings-section-icon"></i>
-          {{t "Deactivated Users" }}</div>
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_deactivated_users_table" class="admin_user_table">
-              <th>{{t "Name" }}</th>
-              <th>{{t "Email" }}</th>
-              <th>{{t "Actions" }}</th>
-            </tbody>
-          </table>
-          <div id="admin_page_deactivated_users_loading_indicator"></div>
-          </div>
+          {{ partial "deactivated-users-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="bots">
-          <div id="admin-user-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-github settings-section-icon"></i>
-          {{t "Bots" }}</div>
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_bots_table" class="admin_bot_table">
-              <th>{{t "Name" }}</th>
-              <th>{{t "Email" }}</th>
-              <th>{{t "Owner" }}</th>
-              <th>{{t "Actions" }}</th>
-            </tbody>
-          </table>
-          <div id="admin_page_bots_loading_indicator"></div>
-          </div>
+          {{ partial "bot-list-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="streams">
-          <div id="admin-streams-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
-          {{t "Streams Deletion" }}</div>
-
-          <div class="side-padded-container">
-            <p class="admin-streams-note">Most stream administration is done on the <a href="/#subscriptions">subscriptions page</a>.</p>
-          </div>
-
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_streams_table" class="admin_stream_table">
-              <th>{{t "Name" }}</th>
-              <th>{{t "Actions" }}</th>
-            </tbody>
-          </table>
-          <div id="admin_page_streams_loading_indicator"></div>
-          </div>
+          {{ partial "streams-list-admin" }}
         </div>
         <div role="tabpanel" class="tab-pane" id="default-streams">
-          <div id="admin-default-streams-list" class="settings-section">
-          <div class="settings-section-title"><i class="icon-vector-exchange settings-section-icon"></i>
-          {{t "Default Streams"}}</div>
-
-          <div class="side-padded-container">
-            <p>{{#tr this}}Configure the default streams new users are subscribed to when joining the {{domain}} organization.{{/tr}}</p>
-          </div>
-
-          <table class="table table-condensed table-striped">
-            <tbody id="admin_default_streams_table" class="admin_default_stream_table">
-              <th>{{t "Name" }}</th>
-              <th class="actions">{{t "Actions" }}</th>
-            </tbody>
-          </table>
-
-          <div id="admin_page_default_streams_loading_indicator"></div>
-            <form class="form-horizontal default-stream-form">
-              <div class="add-new-default-stream-box grey-bg green-bg">
-                <div class="new-default-stream-section-title">{{t "Add New Default Stream" }}</div>
-                <div class="control-group" id="default_stream_inputs">
-                  <label for="default_stream_name" class="control-label">{{t "Stream Name" }}</label>
-                  <input class="create_default_stream" type="text" placeholder="{{t "Stream Name" }}" name="stream_name" autocomplete="off"></input>
-                </div>
-              </div>
-            </form>
-          </div>
+          {{ partial "default-streams-list-admin" }}
         </div>
       </div>
 

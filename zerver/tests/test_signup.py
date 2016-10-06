@@ -8,7 +8,7 @@ from zilencer.models import Deployment
 
 from zerver.views import get_invitee_emails_set, do_change_password
 from zerver.models import (
-    get_realm, get_user_profile_by_email,
+    get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
@@ -500,6 +500,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
+        prereg_user = get_prereg_user_by_email('foo-test@zulip.com')
+        self.assertEqual(prereg_user.email, 'foo-test@zulip.com')
+
     def test_invite_outside_domain_in_closed_realm(self):
         # type: () -> None
         """
@@ -665,10 +668,11 @@ class RealmCreationTest(ZulipTestCase):
         username = "user1"
         password = "test"
         domain = "test.com"
+        org_type = Realm.COMMUNITY
         email = "user1@test.com"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm("test.com"))
+        self.assertIsNone(get_realm(domain))
 
         with self.settings(OPEN_REALM_CREATION=True):
             # Create new realm with the email
@@ -684,20 +688,48 @@ class RealmCreationTest(ZulipTestCase):
             result = self.client_get(confirmation_url)
             self.assertEquals(result.status_code, 200)
 
-            result = self.submit_reg_form_for_user(username, password, domain)
+            result = self.submit_reg_form_for_user(username, password, domain=domain, realm_org_type=org_type)
             self.assertEquals(result.status_code, 302)
 
             # Make sure the realm is created
-            realm = get_realm("test.com")
-
+            realm = get_realm(domain)
             self.assertIsNotNone(realm)
             self.assertEqual(realm.domain, domain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+            # Check defaults
+            self.assertEquals(realm.org_type, Realm.COMMUNITY)
+            self.assertEquals(realm.restricted_to_domain, False)
+            self.assertEquals(realm.invite_required, True)
 
             self.assertTrue(result["Location"].endswith("/invite/"))
 
             result = self.client_get(result["Location"])
             self.assert_in_response("You're the first one here!", result)
+
+    def test_realm_corporate_defaults(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "test.com"
+        org_type = Realm.CORPORATE
+        email = "user1@test.com"
+
+        # Make sure the realm does not exist
+        self.assertIsNone(get_realm(domain))
+
+        # Create new realm with the email
+        with self.settings(OPEN_REALM_CREATION=True):
+            self.client_post('/create_realm/', {'email': email})
+            confirmation_url = self.get_confirmation_url_from_outbox(email)
+            self.client_get(confirmation_url)
+            self.submit_reg_form_for_user(username, password, domain=domain, realm_org_type=org_type)
+
+        # Check corporate defaults were set correctly
+        realm = get_realm(domain)
+        self.assertEquals(realm.org_type, Realm.CORPORATE)
+        self.assertEquals(realm.restricted_to_domain, True)
+        self.assertEquals(realm.invite_required, False)
 
 class UserSignUpTest(ZulipTestCase):
 

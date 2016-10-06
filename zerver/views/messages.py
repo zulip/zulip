@@ -21,7 +21,15 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message
-from zerver.lib.cache import generic_bulk_cached_fetch
+from zerver.lib.cache import (
+    generic_bulk_cached_fetch,
+    to_dict_cache_key_id,
+)
+from zerver.lib.message import (
+    MessageDict,
+    extract_message_dict,
+    stringify_message_dict,
+)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.utils import statsd
@@ -30,8 +38,7 @@ from zerver.lib.validator import \
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
-    parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
-    stringify_message_dict, \
+    parse_usermessage_flags, \
     resolve_email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams, get_user_profile_by_id
 
@@ -633,7 +640,7 @@ def get_old_messages_backend(request, user_profile,
                 search_fields[message_id] = get_search_fields(rendered_content, subject,
                                                               content_matches, subject_matches)
 
-    cache_transformer = lambda row: Message.build_dict_from_raw_db_row(row, apply_markdown)
+    cache_transformer = lambda row: MessageDict.build_dict_from_raw_db_row(row, apply_markdown)
     id_fetcher = lambda row: row['id']
 
     message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),

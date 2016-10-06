@@ -70,30 +70,41 @@ commit it, and then finish implementing your feature.
 
 ## Commit Messages
 
--   The first line of commit messages should be written in the
+First, check out
+[these](https://github.com/zulip/zulip/commit/4869e1b0b2bc6d56fcf44b7d0e36ca20f45d0521)
+[examples](https://github.com/zulip/zulip/commit/cd5b38f5d8bdcc1771ad794f37262a61843c56c0)
+of commits with good commit messages.  There are a few mistakes we see
+often that make commit messages less useful than they could be.
+
+- The first line of commit messages should be written in the
     imperative and be kept relatively short while concisely explaining
-    what the commit does. For example:
+    what the commit does.  And it should be clear about what part of
+    the code is affected.  For example:
+
+Good:
+``` text
+gather_subscriptions: Fix exception handling bad input.
+zjsunit: Fix running stream_data and node tests individually.
+Add GitLab integration.
+```
 
 Bad:
 
-    bugfix
-    gather_subscriptions was broken
-    fix bug #234.
-
-Good:
-
-    Fix gather_subscriptions throwing an exception when given bad input.
+``` text
+bugfix
+gather_subscriptions was broken
+fixing exception when given bad input
+fix bug #234.
+```
 
 -   Use present-tense action verbs in your commit messages.
 
 Bad:
 
-    Fixing gather_subscriptions throwing an exception when given bad input.
-    Fixed gather_subscriptions throwing an exception when given bad input.
-
-Good:
-
-    Fix gather_subscriptions throwing an exception when given bad input.
+``` text
+gather_subscriptions: Fixing exception when given bad input.
+gather_subscriptions: Fixed exception when given bad input.
+```
 
 -   Please use a complete sentence in the summary, ending with a period.
 -   The rest of the commit message should be written in full prose and
