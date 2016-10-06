@@ -222,29 +222,6 @@ def api_github_landing(request, user_profile, event=REQ(),
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
-def build_commit_list_content(commits, branch, compare_url, pusher):
-    # type: (Sequence[Mapping[text_type, Any]], text_type, Optional[text_type], text_type) -> text_type
-    if compare_url is not None:
-        push_text = u'[pushed](%s)' % (compare_url,)
-    else:
-        push_text = u'pushed'
-    content = (u'%s %s to branch %s\n\n'
-               % (pusher,
-                  push_text,
-                  branch))
-    num_commits = len(commits)
-    truncated_commits = commits[:COMMITS_IN_LIST_LIMIT]
-    for commit in truncated_commits:
-        short_id = commit['id'][:7]
-        (short_commit_msg, _, _) = commit['message'].partition('\n')
-        content += u'* [%s](%s): %s\n' % (short_id, commit['url'],
-                                         short_commit_msg)
-    if num_commits > COMMITS_IN_LIST_LIMIT:
-        content += (u'\n[and %d more commits]'
-                    % (num_commits - COMMITS_IN_LIST_LIMIT,))
-
-    return content
-
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
     # type: (UserProfile, text_type, text_type, List[Dict[str, str]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
     short_ref = re.sub(r'^refs/heads/', '', ref)
