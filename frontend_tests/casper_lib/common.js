@@ -90,7 +90,7 @@ exports.start_and_log_in = function (credentials, viewport) {
     if (REALMS_HAVE_SUBDOMAINS) {
         log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
     } else {
-        log_in_url = "http://localhost:9981/accounts/login";
+        log_in_url = "http://zulipdev.com:9981/accounts/login";
     }
     exports.init_viewport();
     casper.start(log_in_url, function () {

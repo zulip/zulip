@@ -151,7 +151,7 @@ casper.then(function () {
     casper.waitForSelector('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
             'name': 'MouseFace',
-            'url': 'http://localhost:9991/static/images/integrations/logos/jenkins.png'
+            'url': 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png'
         });
         casper.click('form.admin-emoji-form input.button');
     });
@@ -166,7 +166,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitForSelector('.emoji_row', function () {
         casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
-        casper.test.assertExists('.emoji_row img[src="http://localhost:9991/static/images/integrations/logos/jenkins.png"]');
+        casper.test.assertExists('.emoji_row img[src="http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png"]');
         casper.click('.emoji_row button.delete');
     });
 });

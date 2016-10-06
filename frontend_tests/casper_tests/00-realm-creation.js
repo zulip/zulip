@@ -12,7 +12,7 @@ if (REALMS_HAVE_SUBDOMAINS) {
     host = 'zulipdev.com:9981';
     realm_host = subdomain + '.' + host;
 } else {
-    host = realm_host = 'localhost:9981';
+    host = realm_host = 'zulipdev.com:9981';
 }
 
 casper.start('http://' + host + '/create_realm/');
