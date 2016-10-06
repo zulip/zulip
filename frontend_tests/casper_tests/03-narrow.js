@@ -48,6 +48,21 @@ common.then_send_many([
 function expect_home() {
     casper.then(function () {
         casper.waitUntilVisible('#zhome', function () {
+            var delay = 400; // ms
+            var widths = [300, 600, 900, 1200];
+            casper.each(widths, function(self, width) {
+                casper.then(function () {
+                    casper.page.viewportSize = {width: width, height: 800};
+                    casper.wait(delay).then(function () {
+                        casper.capture('steve' + width + '.png');
+                        if (width == 900) {
+                            casper.captureSelector(
+                                'steve' + width + '-streams.png',
+                                '#stream_filters');
+                        };
+                    });
+                });
+            });
             common.expected_messages('zhome', [
                 'Verona > frontend test',
                 'You and Cordelia Lear, King Hamlet',

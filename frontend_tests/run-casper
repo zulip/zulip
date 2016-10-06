@@ -28,6 +28,8 @@ except ImportError as e:
 
 os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
 
+USE_FAST_MODE = os.environ.get('USE_FAST_MODE', False)
+
 usage = """%prog [options]
     test-js-with-casper # Run all test files
     test-js-with-casper 09-navigation.js # Run a single test file
@@ -96,9 +98,13 @@ def run_tests(realms_have_subdomains, files):
     else:
         cmd += 'frontend_tests/casper_tests'
 
+    if USE_FAST_MODE:
+        kwargs = {}
+    else:
+        kwargs = dict(stdout=log, stderr=log)
+        
     # Run this not through the shell, so that we have the actual PID.
-    server = subprocess.Popen(('tools/run-dev.py', '--test'),
-                              stdout=log, stderr=log)
+    server = subprocess.Popen(('tools/run-dev.py', '--test'), **kwargs)
 
     ret = 1
 
@@ -106,10 +112,16 @@ def run_tests(realms_have_subdomains, files):
         # Wait for the server to start up.
         sys.stdout.write('Waiting for test server')
         while not server_is_up(server):
-            sys.stdout.write('.')
-            sys.stdout.flush()
-            time.sleep(0.1)
+            if USE_FAST_MODE:
+                time.sleep(0.5)
+            else:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+                time.sleep(0.1)
         sys.stdout.write('\n')
+
+        if USE_FAST_MODE:
+            print('\n\nCOMPLETED\n\n')
 
         print("Running %s" % (cmd,))
         ret = subprocess.call(cmd, shell=True)
