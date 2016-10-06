@@ -3,7 +3,8 @@ from functools import partial
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
-from zerver.lib.webhooks.git import get_push_commits_event_message
+from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
+    get_remove_branch_event_message
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -14,7 +15,14 @@ from typing import Dict, Any, Iterable, Optional
 class UnknownEventType(Exception):
     pass
 
+
 def get_push_event_body(payload):
+    # type: (Dict[str, Any]) -> text_type
+    if payload.get('after') == EMPTY_SHA:
+        return get_remove_branch_event_body(payload)
+    return get_normal_push_event_body(payload)
+
+def get_normal_push_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     compare_url = u'{}/compare/{}...{}'.format(
         get_repository_homepage(payload),
@@ -36,6 +44,13 @@ def get_push_event_body(payload):
         compare_url,
         get_branch_name(payload),
         commits
+    )
+
+def get_remove_branch_event_body(payload):
+    # type: (Dict[str, Any]) -> text_type
+    return get_remove_branch_event_message(
+        get_user_name(payload),
+        get_branch_name(payload)
     )
 
 def get_tag_push_event_body(payload):

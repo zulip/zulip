@@ -13,6 +13,13 @@ class GitlabHookTests(WebhookTestCase):
 
         self.send_and_test_stream_message('push', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
 
+    def test_remove_branch_event_message(self):
+        # type: () -> None
+        expected_subject = u"my-awesome-project / tomek"
+        expected_message = u"Tomasz Kolek deleted branch tomek"
+
+        self.send_and_test_stream_message('remove_branch', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
+
     def test_add_tag_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project"
