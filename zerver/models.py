@@ -125,6 +125,12 @@ def get_realm_emoji_cache_key(realm):
     # type: (Realm) -> text_type
     return u'realm_emoji:%s' % (realm.id,)
 
+def name_changes_disabled(realm):
+    # type: (Optional[Realm]) -> bool
+    if realm is None:
+        return settings.NAME_CHANGES_DISABLED
+    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
+
 class Realm(ModelReprMixin, models.Model):
     # domain is a domain in the Internet sense. It must be structured like a
     # valid email domain. We use is to restrict access, identify bots, etc.

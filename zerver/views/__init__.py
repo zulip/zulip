@@ -22,7 +22,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
-    get_stream, UserPresence, get_recipient, \
+    get_stream, UserPresence, get_recipient, name_changes_disabled, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
     get_cross_realm_users, resolve_subdomain_to_realm
@@ -71,12 +71,6 @@ import hmac
 import os
 
 from zproject.jinja2 import render_to_response
-
-def name_changes_disabled(realm):
-    # type: (Optional[Realm]) -> bool
-    if realm is None:
-        return settings.NAME_CHANGES_DISABLED
-    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 @require_post
 def accounts_register(request):
