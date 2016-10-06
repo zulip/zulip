@@ -10,7 +10,8 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
-from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE
+from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
+    get_force_push_commits_event_message
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
@@ -105,7 +106,22 @@ def get_body_based_on_type(type):
 def get_push_body(payload):
     # type: (Dict[str, Any]) -> text_type
     change = payload['push']['changes'][-1]
+    if change.get('forced'):
+        return get_force_push_body(payload, change)
+    else:
+        return get_normal_push_body(payload, change)
 
+def get_force_push_body(payload, change):
+    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    return get_force_push_commits_event_message(
+        get_user_username(payload),
+        change['links']['html']['href'],
+        change['new']['name'],
+        change['new']['target']['hash']
+    )
+
+def get_normal_push_body(payload, change):
+    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
     commits_data = [{
         'sha': commit.get('hash'),
         'url': commit.get('links').get('html').get('href'),

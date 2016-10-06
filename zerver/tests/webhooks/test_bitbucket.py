@@ -13,6 +13,11 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit"
         self.send_and_test_stream_message('push', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
+    def test_bitbucket2_on_force_push_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek [force pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master. Head is now 25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12"
+        self.send_and_test_stream_message('force_push', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
     def test_bitbucket2_on_fork_event(self):
         # type: () -> None
         expected_message = u"User Tomasz(login: kolaszek) forked the repository into [kolaszek/repository-name2](https://bitbucket.org/kolaszek/repository-name2)."
