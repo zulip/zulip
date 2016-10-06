@@ -15,6 +15,7 @@ PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_
 """
 
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
+REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
 
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data):
     # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]]) -> text_type
@@ -52,4 +53,11 @@ def get_force_push_commits_event_message(user_name, url, branch_name, head):
         url=url,
         branch_name=branch_name,
         head=head
+    )
+
+def get_remove_branch_event_message(user_name, branch_name):
+    # type: (text_type, text_type) -> text_type
+    return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        branch_name=branch_name,
     )
