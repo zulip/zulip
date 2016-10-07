@@ -6,21 +6,28 @@ common.start_and_log_in();
 
 var form_sel = 'form[action^="/json/settings/change"]';
 
-casper.waitForSelector('a[href^="#settings"]', function () {
+casper.then(function () {
+    var menu_selector = '#settings-dropdown';
+    casper.waitUntilVisible(menu_selector, function () {
+        casper.click(menu_selector);
+    });
+});
+
+casper.waitUntilVisible('a[href^="#settings"]', function () {
     casper.test.info('Settings page');
     casper.click('a[href^="#settings"]');
 });
 
-casper.waitForSelector("#settings-change-box", function () {
+casper.waitUntilVisible("#settings-change-box", function () {
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
     casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
 
-    casper.test.assertNotVisible("#old_password");
+    casper.test.assertNotVisible("#pw_change_controls");
 
     casper.click(".change_password_button");
 });
 
-casper.waitUntilVisible("#old_password", function () {
+casper.waitUntilVisible("#pw_change_controls", function () {
     casper.waitForResource("zxcvbn.js", function () {
         casper.test.assertVisible("#old_password");
         casper.test.assertVisible("#new_password");
@@ -49,7 +56,7 @@ casper.waitUntilVisible('#get_api_key_password', function () {
     casper.click('input[name="view_api_key"]');
 });
 
-casper.waitUntilVisible('#api_key_value', function () {
+casper.waitUntilVisible('#show_api_key_box', function () {
     casper.test.assertMatch(casper.fetchText('#api_key_value'), /[a-zA-Z0-9]{32}/, "Looks like an API key");
 
     // Change it all back so the next test can still log in
