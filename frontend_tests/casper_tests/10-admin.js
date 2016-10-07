@@ -5,6 +5,13 @@ var stream_name = "Scotland";
 common.start_and_log_in();
 
 casper.then(function () {
+    var menu_selector = '#settings-dropdown';
+    casper.waitUntilVisible(menu_selector, function () {
+        casper.click(menu_selector);
+    });
+});
+
+casper.then(function () {
     casper.test.info('Administration page');
     casper.click('a[href^="#administration"]');
 });
@@ -230,21 +237,26 @@ casper.then(function () {
     casper.click('.global-filter[data-name="home"]');
 });
 
+// For clarity these should be different than what 08-edit uses, until
+// we find a more robust way to manage DB state between tests.
+var content1 = 'admin: edit test message 1';
+var content2 = 'admin: edit test message 2';
+
 // send two messages
 common.then_send_message('stream', {
     stream:  'Verona',
     subject: 'edits',
-    content: 'test editing 1'
+    content: content1
 });
 common.then_send_message('stream', {
     stream:  'Verona',
     subject: 'edits',
-    content: 'test editing 2'
+    content: content2
 });
 
 casper.then(function () {
-    casper.waitForText("test editing 1");
-    casper.waitForText("test editing 2");
+    casper.waitForText(content1);
+    casper.waitForText(content2);
 });
 
 // wait for message to be sent
@@ -263,18 +275,20 @@ casper.then(function () {
     });
 });
 
+var edited_value = 'admin tests: test edit';
+
 casper.waitForSelector(".message_edit_content", function () {
-    casper.evaluate(function () {
+    casper.evaluate(function (edited_value) {
         var msg = $('#zhome .message_row:last');
-        msg.find('.message_edit_content').val("test edited");
+        msg.find('.message_edit_content').val(edited_value);
         msg.find('.message_edit_save').click();
-    });
+    }, edited_value);
 });
 
 casper.then(function () {
     // check that the message was indeed edited
     casper.waitWhileVisible("textarea.message_edit_content", function () {
-        casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+        casper.test.assertSelectorHasText(".last_message .message_content", edited_value);
     });
 });
 
