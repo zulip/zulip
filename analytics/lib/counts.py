@@ -249,7 +249,11 @@ zerver_count_message_by_huddle = ZerverCountQuery(Message, HuddleCount, count_me
 
 COUNT_STATS = {
     'active_humans': CountStat('active_humans', zerver_count_user_by_realm,
-                               {'is_bot': False, 'is_active': True}, 'gauge', 'day'),
+                               {'is_bot': False, 'is_active': True}, 'gauge', 'hour'),
+    'new_humans': CountStat('new_humans', zerver_count_user_by_realm,
+                               {'is_bot': False, 'is_active': True}, 'hour', 'hour'),
     'active_bots': CountStat('active_bots', zerver_count_user_by_realm,
-                             {'is_bot': True, 'is_active': True}, 'gauge', 'day'),
+                             {'is_bot': True, 'is_active': True}, 'gauge', 'hour'),
+    'new_bots': CountStat('new_bots', zerver_count_user_by_realm,
+                             {'is_bot': True, 'is_active': True}, 'hour', 'hour'),
     'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')}
