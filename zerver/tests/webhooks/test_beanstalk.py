@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from six import text_type
+from zerver.lib.webhooks.git import PUSH_COMMITS_LIMIT
 from zerver.lib.test_helpers import WebhookTestCase
 
 class BeanstalkHookTests(WebhookTestCase):
@@ -11,8 +12,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
 
-* [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff
-"""
+* [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff"""
         self.send_and_test_stream_message('git_singlecommit', expected_subject, expected_message,
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
@@ -24,9 +24,19 @@ class BeanstalkHookTests(WebhookTestCase):
 
 * [edf529c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7): Added new file
 * [c2a191b](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9): Filled in new file with some stuff
-* [2009815](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158): More work to fix some bugs
-"""
+* [2009815](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158): More work to fix some bugs"""
         self.send_and_test_stream_message('git_multiple', expected_subject, expected_message,
+                                          content_type=None,
+                                          **self.api_auth(self.TEST_USER_EMAIL))
+
+    def test_git_more_than_limit(self):
+        # type: () -> None
+        commits_info = "* [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff\n"
+        expected_subject = "work-test / master"
+        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
+
+{}[and {} more commit(s)]""".format((commits_info * PUSH_COMMITS_LIMIT), 50 - PUSH_COMMITS_LIMIT)
+        self.send_and_test_stream_message('git_morethanlimitcommits', expected_subject, expected_message,
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
