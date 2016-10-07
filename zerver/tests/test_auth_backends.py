@@ -181,19 +181,38 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.user_profile = get_user_profile_by_email(self.email)
         self.user_profile.backend = self.backend
 
-    def test_github_backend_do_auth(self):
+        rf = RequestFactory()
+        request = rf.get('/complete')
+        request.session = {}
+        request.get_host = lambda: 'acme.testserver'
+        request.user = self.user_profile
+        self.backend.strategy.request = request
+
+    def test_github_backend_do_auth_without_subdomains(self):
         # type: () -> None
         def do_auth(*args, **kwargs):
             # type: (*Any, **Any) -> UserProfile
-            return self.user_profile
+            return self.backend.authenticate(*args, **kwargs)
 
-        with mock.patch('zerver.views.login_or_register_remote_user') as result, \
-                 mock.patch('social.backends.github.GithubOAuth2.do_auth',
-                            side_effect=do_auth):
+        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth), \
+                mock.patch('zerver.views.login'):
             response=dict(email=self.email, name=self.name)
-            self.backend.do_auth(response=response)
-            result.assert_called_with(None, self.email, self.user_profile,
-                                      self.name)
+            result = self.backend.do_auth(response=response)
+            self.assertNotIn('subdomain=1', result.url)
+
+    def test_github_backend_do_auth_with_subdomains(self):
+        # type: () -> None
+        def do_auth(*args, **kwargs):
+            # type: (*Any, **Any) -> UserProfile
+            return self.backend.authenticate(*args, **kwargs)
+
+        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth):
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                response=dict(email=self.email, name=self.name)
+                result = self.backend.do_auth(response=response)
+                self.assertIn('subdomain=1', result.url)
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
