@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from zerver.lib.webhooks.git import PUSH_COMMITS_LIMIT
 from zerver.lib.test_helpers import WebhookTestCase
 
 class Bitbucket2HookTests(WebhookTestCase):
@@ -10,8 +11,19 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_event(self):
         # type: () -> None
-        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit"
+        commit_info = u'* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit'
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n{}".format(commit_info)
         self.send_and_test_stream_message('push', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
+    def test_bitbucket2_on_push_commits_above_limit_event(self):
+        # type: () -> None
+        number_of_hidden_commits = 50 - PUSH_COMMITS_LIMIT
+        commit_info = '* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit\n'
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n{}[and {} more commit(s)]".format(
+            (commit_info * 10),
+            number_of_hidden_commits
+        )
+        self.send_and_test_stream_message('push_commits_above_limit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
     def test_bitbucket2_on_force_push_event(self):
         # type: () -> None
