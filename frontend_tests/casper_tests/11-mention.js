@@ -22,6 +22,7 @@ casper.waitForText("Are you sure you want to message all", function () {
 });
 
 casper.then( function () {
+    common.turn_off_press_enter_to_send();
     casper.test.info('Click Send Button');
     casper.click('#compose-send-button');
 });
@@ -39,7 +40,7 @@ casper.waitForSelector('.compose-all-everyone-confirm', function () {
 casper.waitWhileVisible('.compose-all-everyone-confirm', function () {
     casper.test.info('Check that error messages are gone.');
     casper.test.assertNotVisible('.compose-all-everyone-msg');
-    casper.test.assertNotVisible('#error-msg');
+    casper.test.assertNotVisible('#send-status');
 });
 
 casper.then( function () {
