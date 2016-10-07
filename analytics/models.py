@@ -18,10 +18,10 @@ class Anomaly(ModelReprMixin, models.Model):
         return u"<Anomaly: %s... %s>" % (self.info, self.id)
 
 class BaseCount(ModelReprMixin, models.Model):
-    value = models.BigIntegerField() # type: int
-    property = models.CharField(max_length=40) # type: text_type
+    property = models.CharField(max_length=40)  # type: text_type
     end_time = models.DateTimeField() # type: datetime.datetime
     interval = models.CharField(max_length=20) # type: text_type
+    value = models.BigIntegerField()  # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
     class Meta(object):
