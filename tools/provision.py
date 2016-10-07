@@ -144,9 +144,6 @@ def main():
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
             setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE, patch_activate_script=True)
         else:
-            TWISTED_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "twisted.txt")
-            setup_virtualenv("/srv/zulip-py2-twisted-venv", TWISTED_REQS_FILE,
-                             patch_activate_script=True)
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
             setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
                              virtualenv_args=['-p', 'python3'])
