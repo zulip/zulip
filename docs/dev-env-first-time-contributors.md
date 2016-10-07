@@ -333,8 +333,10 @@ Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
 
 Congrats, you're now inside the Zulip development environment!
 
-You can confirm this by looking at the command prompt, which starts with
-`(zulip-venv)`.
+You can confirm this by looking at the command prompt, which starts
+with `(zulip-venv)vagrant@`.  If it just starts with `vagrant@`, your
+provisioning failed and you should look at the
+[troubleshooting section](#troubleshooting-common-errors).
 
 Next, start the Zulip server:
 
@@ -542,7 +544,10 @@ Next, read the following to learn more about developing for Zulip:
 
 ### Troubleshooting & Common Errors
 
-Below you'll find a list of common errors and their solutions.
+Below you'll find a list of common errors and their solutions.  Most
+issues are resolved by just provisioning again (via
+`tools/provision.py` inside the Vagrant guest or equivalently `vagrant
+provision` from outside).
 
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
@@ -559,7 +564,32 @@ When reporting your issue, please include the following information:
 * installation method (Vagrant or direct)
 * whether or not you are using a proxy
 * a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/provision.log` on your virtual machine
+  `/var/log/provision.log` on your virtual machine.  If you choose to
+  post just the error output, please include the **beginning of the
+  error output**, not just the last few lines.
+
+The output of `tools/diagnose` run inside the Vagrant guest is also
+usually helpful.
+
+#### Vagrant guest doesn't show (zulip-venv) at start of prompt
+
+This is caused by provisioning failing to complete successfully.  You
+can see the errors in `var/log/provision.log`; it should end with
+something like this:
+
+```
+ESC[94mZulip development environment setup succeeded!ESC[0m
+```
+
+The `ESC` stuff are the terminal color codes that make it show as a nice
+blue in the terminal, which unfortunately looks ugly in the logs.
+
+If you encounter an incomplete `/var/log/provision.log file`, you need to
+update your environment. Re-provision your vagrant machine; if the problem
+persists, please come chat with us (see instructions above) for help.
+
+After you provision successfully, you'll need to exit your `vagrant ssh`
+shell and run `vagrant ssh` again to get the virtualenv setup properly.
 
 #### The box 'ubuntu/trusty64' could not be found
 
