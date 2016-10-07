@@ -3,13 +3,22 @@ var common = require('../casper_lib/common.js').common;
 common.start_and_log_in();
 
 casper.then(function () {
+    var menu_selector = '#settings-dropdown';
+
     casper.test.info('Subscriptions page');
-    casper.click('a[href^="#subscriptions"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#subscriptions/, 'URL suggests we are on subscriptions page');
-    casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
-    // subscriptions need to load; if they have *any* subs,
-    // the word "Unsubscribe" will appear
+
+    casper.waitUntilVisible(menu_selector, function () {
+        casper.click(menu_selector);
+        casper.then(function () {
+            casper.click('a[href^="#subscriptions"]');
+            casper.test.assertUrlMatch(
+                /^http:\/\/[^\/]+\/#subscriptions/,
+                'URL suggests we are on subscriptions page');
+            casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
+        });
+    });
 });
+
 casper.waitForSelector('.sub_unsub_button.subscribed-button', function () {
     casper.test.assertTextExists('Subscribed', 'Initial subscriptions loaded');
     casper.fill('form#add_new_subscription', {stream_name: 'Waseemio'});
