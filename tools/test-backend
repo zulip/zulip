@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
     # to transform forward slashes '/' present in the argument into dots '.'
     for suite in args:
-        args[args.index(suite)] = suite.replace("/", ".")
+        args[args.index(suite)] = suite.rstrip('/').replace("/", ".")
 
     def rewrite_arguments(search_key):
         for file_name in os.listdir(zerver_test_dir):
