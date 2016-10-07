@@ -80,6 +80,12 @@ class AuthBackendTest(TestCase):
                             good_kwargs=dict(use_dummy_backend=True),
                             bad_kwargs=dict(use_dummy_backend=False))
 
+    def setup_subdomain(self, user_profile):
+        # type: (UserProfile) -> None
+        realm = user_profile.realm
+        realm.subdomain = 'zulip'
+        realm.save()
+
     def test_email_auth_backend(self):
         # type: () -> None
         email = "hamlet@zulip.com"
@@ -87,9 +93,23 @@ class AuthBackendTest(TestCase):
         password = "testpassword"
         user_profile.set_password(password)
         user_profile.save()
+        self.setup_subdomain(user_profile)
+
         self.verify_backend(EmailAuthBackend(),
                             bad_kwargs=dict(password=''),
                             good_kwargs=dict(password=password))
+
+        self.verify_backend(EmailAuthBackend(),
+                            good_kwargs=dict(password=password,
+                                            realm_subdomain='acme',
+                                            return_data=dict()))
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            self.verify_backend(EmailAuthBackend(),
+                                bad_kwargs=dict(password=password,
+                                                realm_subdomain='acme',
+                                                return_data=dict()),
+                                good_kwargs=dict(password=password))
 
     def test_email_auth_backend_disabled_password_auth(self):
         # type: () -> None
@@ -108,8 +128,20 @@ class AuthBackendTest(TestCase):
         backend = GoogleMobileOauth2Backend()
         payload = dict(email_verified=True,
                        email=email)
+        user_profile = get_user_profile_by_email(email)
+        self.setup_subdomain(user_profile)
+
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
             self.verify_backend(backend)
+
+        with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
+            self.verify_backend(backend,
+                                good_kwargs=dict(realm_subdomain='acme'))
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
+                self.verify_backend(backend,
+                                    bad_kwargs=dict(realm_subdomain='acme'))
 
         # Verify valid_attestation parameter is set correctly
         unverified_payload = dict(email_verified=False)
@@ -131,6 +163,9 @@ class AuthBackendTest(TestCase):
         # type: () -> None
         email = "hamlet@zulip.com"
         password = "test_password"
+        user_profile = get_user_profile_by_email(email)
+        self.setup_subdomain(user_profile)
+
         backend = ZulipLDAPAuthBackend()
 
         # Test LDAP auth fails when LDAP server rejects password
@@ -148,28 +183,68 @@ class AuthBackendTest(TestCase):
                         return_value=dict(full_name=['Hamlet'])):
             self.verify_backend(backend, good_kwargs=dict(password=password))
 
+        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), \
+             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements'), \
+             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                        return_value=dict(full_name=['Hamlet'])):
+            self.verify_backend(backend, good_kwargs=dict(password=password,
+                                                          realm_subdomain='acme'))
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), \
+                 mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements'), \
+                 mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                            return_value=dict(full_name=['Hamlet'])):
+                self.verify_backend(backend,
+                                    bad_kwargs=dict(password=password,
+                                                    realm_subdomain='acme'),
+                                    good_kwargs=dict(password=password))
+
     def test_devauth_backend(self):
         # type: () -> None
         self.verify_backend(DevAuthBackend())
 
     def test_remote_user_backend(self):
         # type: () -> None
-        self.verify_backend(ZulipRemoteUserBackend())
+        self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
+        self.verify_backend(ZulipRemoteUserBackend(),
+                            good_kwargs=dict(realm_subdomain='acme'))
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            self.verify_backend(ZulipRemoteUserBackend(),
+                                bad_kwargs=dict(realm_subdomain='acme'))
 
     def test_remote_user_backend_sso_append_domain(self):
         # type: () -> None
+        self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
         with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
             self.verify_backend(ZulipRemoteUserBackend(),
-                                email_to_username=email_to_username)
+                                email_to_username=email_to_username,
+                                good_kwargs=dict(realm_subdomain='acme'))
+
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
+                self.verify_backend(ZulipRemoteUserBackend(),
+                                    email_to_username=email_to_username,
+                                    bad_kwargs=dict(realm_subdomain='acme'))
 
     def test_github_backend(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
-        good_kwargs = dict(response=dict(email=email), return_data=dict())
-        bad_kwargs = dict()  # type: Dict[str, str]
+        self.setup_subdomain(get_user_profile_by_email(email))
+        good_kwargs = dict(response=dict(email=email), return_data=dict(),
+                           realm_subdomain='acme')
         self.verify_backend(GitHubAuthBackend(),
                             good_kwargs=good_kwargs,
-                            bad_kwargs=bad_kwargs)
+                            bad_kwargs=dict())
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            good_kwargs = dict(response=dict(email=email), return_data=dict())
+            bad_kwargs = dict(response=dict(email=email), return_data=dict(),
+                              realm_subdomain='acme')
+            self.verify_backend(GitHubAuthBackend(),
+                                good_kwargs=good_kwargs,
+                                bad_kwargs=bad_kwargs)
 
 class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self):
