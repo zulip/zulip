@@ -10,7 +10,6 @@ install:
 cache:
   - apt: false
   - directories:
-    - $HOME/phantomjs
     - $HOME/zulip-venv-cache
     - node_modules
     - $HOME/node

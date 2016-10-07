@@ -239,16 +239,6 @@ Files: zerver/lib/decorator.py zerver/management/commands/runtornado.py scripts/
 Copyright: Django Software Foundation and individual contributors
 License: BSD-3-Clause
 
-Files: frontend_tests/casperjs/*
-Copyright: 2011-2012 Nicolas Perriault
- Joyent, Inc. and other Node contributors
-License: Expat
-
-Files: frontend_tests/casperjs/modules/vendors/*
-Copyright: 2011, Jeremy Ashkenas
-License: Expat
-
-
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
