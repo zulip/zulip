@@ -552,10 +552,10 @@ def finish_google_oauth2(request):
                                 realm_subdomain=get_subdomain(request),
                                 use_dummy_backend=True,
                                 return_data=return_data)
-    if return_data.get('invalid_subdomain'):
-        logging.warning("User attempted to Google login to wrong subdomain %s: %s" % (get_subdomain(request), email_address,))
-        return redirect('/')
-    return login_or_register_remote_user(request, email_address, user_profile, full_name)
+
+    invalid_subdomain = bool(return_data.get('invalid_subdomain'))
+    return login_or_register_remote_user(request, email_address, user_profile, full_name,
+                                         invalid_subdomain)
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse

@@ -368,6 +368,17 @@ class GoogleLoginTest(ZulipTestCase):
         self.assertEquals(result.status_code, 302)
         self.assertEquals(result.url, "http://testserver/")
 
+    def test_google_oauth2_wrong_subdomain(self):
+        # type: () -> None
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(formatted="Full Name"),
+                            emails=[dict(type="account",
+                                         value="hamlet@zulip.com")])
+        account_response = ResponseMock(200, account_data)
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            result = self.google_oauth2_test(token_response, account_response)
+            self.assertIn('subdomain=1', result.url)
+
     def test_google_oauth2_400_token_response(self):
         # type: () -> None
         token_response = ResponseMock(400, {})
