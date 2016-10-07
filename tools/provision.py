@@ -178,10 +178,6 @@ def main():
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    if TRAVIS:
-        run(["tools/setup/install-phantomjs", "--travis"])
-    else:
-        run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "-d"])
