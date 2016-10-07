@@ -44,6 +44,7 @@ class zulip::supervisor {
     exec {"enable supervisor":
       unless => "systemctl is-enabled supervisor",
       command => "systemctl enable supervisor",
+      require => Package["supervisor"],
     }
   }
 }
