@@ -36,7 +36,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
-    CreateUserForm, OurAuthenticationForm
+    CreateUserForm, OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import is_inactive
 from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -380,9 +380,14 @@ def maybe_send_to_registration(request, email, full_name=''):
                                   {'form': form, 'current_url': lambda: url},
                                   request=request)
 
-def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
-    # type: (HttpRequest, text_type, UserProfile, text_type) -> HttpResponse
-    if user_profile is None or user_profile.is_mirror_dummy:
+def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
+                                  invalid_subdomain=False):
+    # type: (HttpRequest, text_type, UserProfile, text_type, Optional[bool]) -> HttpResponse
+    if invalid_subdomain:
+        # Show login page with an error message
+        return redirect_to_subdomain_login_url()
+
+    elif user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, the client specified a remote user
         # but no associated user account exists. Send them over to the
         # PreregistrationUser flow.
@@ -572,6 +577,12 @@ def login_page(request, **kwargs):
     except KeyError:
         pass
 
+    try:
+        template_response.context_data['subdomain'] = request.GET['subdomain']
+        template_response.context_data['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
+    except KeyError:
+        pass
+
     return template_response
 
 def dev_direct_login(request, **kwargs):
@@ -721,6 +732,12 @@ def redirect_to_email_login_url(email):
     # type: (str) -> HttpResponseRedirect
     login_url = reverse('django.contrib.auth.views.login')
     redirect_url = login_url + '?email=' + urllib.parse.quote_plus(email)
+    return HttpResponseRedirect(redirect_url)
+
+def redirect_to_subdomain_login_url():
+    # type: () -> HttpResponseRedirect
+    login_url = reverse('django.contrib.auth.views.login')
+    redirect_url = login_url + '?subdomain=1'
     return HttpResponseRedirect(redirect_url)
 
 """

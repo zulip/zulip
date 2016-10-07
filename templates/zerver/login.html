@@ -78,6 +78,12 @@ autofocus('#id_username');
     </div>
     {% endif %}
 
+    {% if subdomain %}
+    <div class="alert">
+        {{ wrong_subdomain_error }}.
+    </div>
+    {% endif %}
+
         {% if password_auth_enabled or desktop_sso_dispatch %}
         <form name="login_form" id="login_form" method="post" class="login-form"
             {% if desktop_sso_dispatch %}
