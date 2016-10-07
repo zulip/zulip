@@ -8,6 +8,7 @@ if (REALMS_HAVE_SUBDOMAINS) {
     realm_url = "http://localhost:9981/";
 }
 // Start of test script.
+common.init_viewport();
 casper.start(realm_url, common.initialize_casper);
 
 casper.then(function () {
