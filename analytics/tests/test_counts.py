@@ -88,44 +88,8 @@ class AnalyticsTestCase(TestCase):
                          .filter(**kwargs).values_list('value', flat=True)[0],
                          value)
 
-class TestDataCollectors(AnalyticsTestCase):
-    def test_human_and_bot_count_by_realm(self):
-        # type: () -> None
-        stats = [
-            CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
-                      'hour', 'hour'),
-            CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
-                      'hour', 'hour')]
-
-        # TODO these dates should probably be explicit, since the default args for the commands are timezone.now() dependent.
-        self.create_user('email1-bot', is_bot=True)
-        self.create_user('email2-bot', is_bot=True)
-        self.create_user('email3-human', is_bot=False)
-
-        for stat in stats:
-            self.process_last_hour(stat)
-
-        self.assertCountEquals(1, 'test_active_humans')
-        self.assertCountEquals(2, 'test_active_bots')
-
-    # test users added in last hour
-    def test_add_new_users(self):
-        # type: () -> None
-        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, 'hour', 'hour')
-
-        # add new users to realm in last hour
-        self.create_user('email1')
-        self.create_user('email2')
-
-        # add a new user before an hour
-        self.create_user('email3', date_joined=self.TIME_ZERO - 2*self.HOUR)
-
-        # check if user added before the hour is not included
-        self.process_last_hour(stat)
-        # do_update is writing the stat.property to all zerver tables
-
-        self.assertCountEquals(2, 'add_new_user_test')
-
+# Tests manangement commands, backfilling, adding new stats, etc
+class TestUpdateAnalyticsCounts(AnalyticsTestCase):
     def test_analytics_stat_write(self):
         # type: () -> None
         # might change if we refactor count_query
@@ -144,28 +108,6 @@ class TestDataCollectors(AnalyticsTestCase):
         # check analytics_* values are correct
         self.assertCountEquals(3, 'test_stat_write')
 
-    # test if process count does nothing if count already processed
-    def test_process_count(self):
-        # type: () -> None
-        # add some active and inactive users that are human
-        self.create_user('email1', is_bot=False, is_active=False)
-        self.create_user('email2', is_bot=False, is_active=False)
-        self.create_user('email3', is_bot=False, is_active=True)
-
-        # run stat to pull active humans
-        stat = CountStat('active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
-
-        self.process_last_hour(stat)
-        self.assertCountEquals(1, 'active_humans')
-
-        # run command again
-        self.process_last_hour(stat)
-
-        # check that row is same as before
-        self.assertCountEquals(1, 'active_humans')
-
-    # test management commands
     def test_update_analytics_tables(self):
         # type: () -> None
         stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')
@@ -189,6 +131,46 @@ class TestDataCollectors(AnalyticsTestCase):
         # check no earlier rows created, old ones still there
         self.assertFalse(UserCount.objects.filter(end_time__lt = self.TIME_ZERO - 2*self.HOUR).exists())
         self.assertCountEquals(1, 'test_messages_sent', table = UserCount, user = user1)
+
+class TestProcessCountStat(AnalyticsTestCase):
+    # test users added in last hour
+    def test_add_new_users(self):
+        # type: () -> None
+        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, 'hour', 'hour')
+
+        # add new users to realm in last hour
+        self.create_user('email1')
+        self.create_user('email2')
+
+        # add a new user before an hour
+        self.create_user('email3', date_joined=self.TIME_ZERO - 2*self.HOUR)
+
+        # check if user added before the hour is not included
+        self.process_last_hour(stat)
+        # do_update is writing the stat.property to all zerver tables
+
+        self.assertCountEquals(2, 'add_new_user_test')
+
+    # test if process count does nothing if count already processed
+    def test_process_count(self):
+        # type: () -> None
+        # add some active and inactive users that are human
+        self.create_user('email1', is_bot=False, is_active=False)
+        self.create_user('email2', is_bot=False, is_active=False)
+        self.create_user('email3', is_bot=False, is_active=True)
+
+        # run stat to pull active humans
+        stat = CountStat('active_humans', zerver_count_user_by_realm,
+                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
+
+        self.process_last_hour(stat)
+        self.assertCountEquals(1, 'active_humans')
+
+        # run command again
+        self.process_last_hour(stat)
+
+        # check that row is same as before
+        self.assertCountEquals(1, 'active_humans')
 
     def test_do_aggregate(self):
         # type: () -> None
@@ -218,24 +200,6 @@ class TestDataCollectors(AnalyticsTestCase):
                                                            property='test_messages_aggregate') \
                           .values_list('value', flat=True)[0], 3)
 
-    def test_message_to_stream_aggregation(self):
-        # type: () -> None
-        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, 'hour', 'hour')
-
-        # write some messages
-        user = self.create_user('email')
-        stream = self.create_stream(date_created=self.TIME_ZERO - 2*self.HOUR)
-
-        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
-        recipient.save()
-
-        self.create_message(user, recipient = recipient)
-
-        # run command
-        self.process_last_hour(stat)
-
-        self.assertCountEquals(1, 'test_messages_to_stream', table = StreamCount)
-
     def test_count_before_realm_creation(self):
         # type: () -> None
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
@@ -264,3 +228,45 @@ class TestDataCollectors(AnalyticsTestCase):
         self.assertCountEquals(0, 'test_active_humans', end_time = self.TIME_ZERO - 2*self.HOUR)
         self.assertCountEquals(0, 'test_active_humans', end_time = self.TIME_LAST_HOUR)
         self.assertCountEquals(1, 'test_active_humans', end_time = self.TIME_ZERO)
+
+class TestAggregates(AnalyticsTestCase):
+    pass
+
+class TestXByYQueries(AnalyticsTestCase):
+    def test_message_to_stream_aggregation(self):
+        # type: () -> None
+        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, 'hour', 'hour')
+
+        # write some messages
+        user = self.create_user('email')
+        stream = self.create_stream(date_created=self.TIME_ZERO - 2*self.HOUR)
+
+        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
+        recipient.save()
+
+        self.create_message(user, recipient = recipient)
+
+        # run command
+        self.process_last_hour(stat)
+
+        self.assertCountEquals(1, 'test_messages_to_stream', table = StreamCount)
+
+class TestCountStats(AnalyticsTestCase):
+    def test_human_and_bot_count_by_realm(self):
+        # type: () -> None
+        stats = [
+            CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+                      'hour', 'hour'),
+            CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
+                      'hour', 'hour')]
+
+        # TODO these dates should probably be explicit, since the default args for the commands are timezone.now() dependent.
+        self.create_user('email1-bot', is_bot=True)
+        self.create_user('email2-bot', is_bot=True)
+        self.create_user('email3-human', is_bot=False)
+
+        for stat in stats:
+            self.process_last_hour(stat)
+
+        self.assertCountEquals(1, 'test_active_humans')
+        self.assertCountEquals(2, 'test_active_bots')
