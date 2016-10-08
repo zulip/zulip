@@ -1560,6 +1560,11 @@ def bulk_remove_subscriptions(users, streams):
     new_vacant_streams = [stream for stream in
                           set(occupied_streams_before) - set(occupied_streams_after)
                           if not stream.invite_only]
+
+    Stream.objects.filter(id__in=[stream.id for stream in streams
+                                  if stream.num_subscribers() == 0 and stream.invite_only])\
+        .update(deactivated=True)
+
     if new_vacant_streams:
         event = dict(type="stream", op="vacate",
                      streams=[stream.to_dict()
