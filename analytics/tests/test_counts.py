@@ -1,18 +1,21 @@
-from django.utils import timezone
+from django.db import models
 from django.test import TestCase
-
-from datetime import datetime, timedelta
+from django.utils import timezone
 
 from analytics.lib.interval import TimeInterval
 from analytics.lib.counts import CountStat, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
     zerver_count_message_by_huddle
-from analytics.models import UserCount, RealmCount, StreamCount, InstallationCount, Stream, Recipient
+from analytics.models import BaseCount, InstallationCount, RealmCount, \
+    UserCount, StreamCount
 
-from zerver.models import Realm, UserProfile, Message, get_user_profile_by_email, get_client
+from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
+    get_user_profile_by_email, get_client
 
-from typing import Any
+from datetime import datetime, timedelta
+
+from typing import Any, Type, Optional
 from six import text_type
 
 class AnalyticsTestCase(TestCase):
@@ -71,19 +74,23 @@ class AnalyticsTestCase(TestCase):
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
 
+    # Note that this doesn't work for InstallationCount, since InstallationCount has no realm_id
+    # kwargs should only ever be a UserProfile or Stream.
+    def assertCountEquals(self, value, property, interval = 'hour', end_time = TIME_ZERO,
+                          table = RealmCount, realm = None, **kwargs):
+        # type: (int, text_type, str, datetime, Type[BaseCount], Optional[Realm], **models.Model) -> None
+        if realm is None:
+            realm = self.default_realm
+        self.assertEqual(table.objects.filter(realm=realm,
+                                              property=property,
+                                              interval=interval,
+                                              end_time=end_time) \
+                         .filter(**kwargs).values_list('value', flat=True)[0],
+                         value)
+
 class TestDataCollectors(AnalyticsTestCase):
-    # TODO uk refactor tests to use this assert
-    def assertRealmCountEquals(self, realm, property, interval, value):
-        # type: (Realm, str, str, Any) -> None
-        realm_count_value = RealmCount.objects.filter(realm=realm,
-                                                      property=property,
-                                                      interval=interval).values_list('value', flat=True)[0]
-
-        self.assertEqual(realm_count_value, value)
-
     def test_human_and_bot_count_by_realm(self):
         # type: () -> None
-
         stats = [
             CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
                       'hour', 'hour'),
@@ -98,15 +105,8 @@ class TestDataCollectors(AnalyticsTestCase):
         for stat in stats:
             self.process_last_hour(stat)
 
-        human_row = RealmCount.objects.filter(realm=self.default_realm, interval='day',
-                                              property='test_active_humans') \
-                                      .values_list('value', flat=True)[0]
-        assert (human_row == 1)
-
-        bot_row = RealmCount.objects.filter(realm=self.default_realm, interval='day',
-                                            property='test_active_bots') \
-                                    .values_list('value', flat=True)[0]
-        assert (bot_row == 2)
+        self.assertCountEquals(1, 'test_active_humans')
+        self.assertCountEquals(2, 'test_active_bots')
 
     # test users added in last hour
     def test_add_new_users(self):
@@ -123,10 +123,8 @@ class TestDataCollectors(AnalyticsTestCase):
         # check if user added before the hour is not included
         self.process_last_hour(stat)
         # do_update is writing the stat.property to all zerver tables
-        row = RealmCount.objects.filter(realm=self.default_realm, property='add_new_user_test',
-                                        interval='hour').values_list('value', flat=True)[0]
-        # assert only 2 users
-        assert (row == 2)
+
+        self.assertCountEquals(2, 'add_new_user_test')
 
     def test_analytics_stat_write(self):
         # type: () -> None
@@ -144,9 +142,7 @@ class TestDataCollectors(AnalyticsTestCase):
         self.process_last_hour(stat)
 
         # check analytics_* values are correct
-        row = RealmCount.objects.filter(realm=self.default_realm, interval='day',
-                                        property='test_stat_write').values_list('value', flat=True)[0]
-        assert (row == 3)
+        self.assertCountEquals(3, 'test_stat_write')
 
     # test if process count does nothing if count already processed
     def test_process_count(self):
@@ -161,21 +157,13 @@ class TestDataCollectors(AnalyticsTestCase):
                          {'is_bot': False, 'is_active': True}, 'hour', 'hour')
 
         self.process_last_hour(stat)
-
-        # get row in analytics table
-        row_before = RealmCount.objects.filter(realm=self.default_realm, interval='day',
-                                               property='active_humans')\
-                                       .values_list('value', flat=True)[0]
+        self.assertCountEquals(1, 'active_humans')
 
         # run command again
         self.process_last_hour(stat)
 
-        # check if row is same as before
-        row_after = RealmCount.objects.filter(realm=self.default_realm, interval='day',
-                                              property='active_humans').values_list('value', flat=True)[0]
-
-        assert (row_before == 1)
-        assert (row_before == row_after)
+        # check that row is same as before
+        self.assertCountEquals(1, 'active_humans')
 
     # test management commands
     def test_update_analytics_tables(self):
@@ -198,17 +186,9 @@ class TestDataCollectors(AnalyticsTestCase):
         process_count_stat(stat, range_start=self.TIME_ZERO - 2*self.HOUR,
                            range_end=self.TIME_LAST_HOUR)
 
-        # check new row has no entries, old ones still there
-        updated_usercount_row = UserCount.objects.filter(
-            realm=self.default_realm, interval='hour', property='test_messages_sent') \
-                                                 .values_list('value', flat=True)[0]
-
-        new_row = UserCount.objects.filter(realm=self.default_realm, interval='hour',
-                                           property='test_messages_sent',
-                                           end_time=self.TIME_ZERO - 3*self.HOUR).exists()
-        self.assertFalse(new_row)
-
-        assert (updated_usercount_row == 1)
+        # check no earlier rows created, old ones still there
+        self.assertFalse(UserCount.objects.filter(end_time__lt = self.TIME_ZERO - 2*self.HOUR).exists())
+        self.assertCountEquals(1, 'test_messages_sent', table = UserCount, user = user1)
 
     def test_do_aggregate(self):
         # type: () -> None
@@ -229,20 +209,14 @@ class TestDataCollectors(AnalyticsTestCase):
         self.process_last_hour(stat)
 
         # check no rows for hour interval on usercount granularity
-        usercount_row = UserCount.objects.filter(realm=self.default_realm, interval='hour').exists()
-
-        self.assertFalse(usercount_row)
+        self.assertFalse(UserCount.objects.filter(realm=self.default_realm, interval='hour').exists())
 
         # see if aggregated correctly to realmcount and installationcount
-        realmcount_row = RealmCount.objects.filter(realm=self.default_realm, interval='day',
-                                                   property='test_messages_aggregate').values_list(
-            'value', flat=True)[0]
-        assert (realmcount_row == 3)
+        self.assertCountEquals(3, 'test_messages_aggregate', interval = 'day')
 
-        installationcount_row = InstallationCount.objects.filter(interval='day',
-                                                                 property='test_messages_aggregate') \
-                                                         .values_list('value', flat=True)[0]
-        assert (installationcount_row == 3)
+        self.assertEquals(InstallationCount.objects.filter(interval='day',
+                                                           property='test_messages_aggregate') \
+                          .values_list('value', flat=True)[0], 3)
 
     def test_message_to_stream_aggregation(self):
         # type: () -> None
@@ -260,10 +234,7 @@ class TestDataCollectors(AnalyticsTestCase):
         # run command
         self.process_last_hour(stat)
 
-        stream_row = StreamCount.objects.filter(realm=self.default_realm, interval='hour',
-                                                property='test_messages_to_stream').values_list(
-            'value', flat=True)[0]
-        assert (stream_row == 1)
+        self.assertCountEquals(1, 'test_messages_to_stream', table = StreamCount)
 
     def test_count_before_realm_creation(self):
         # type: () -> None
@@ -276,10 +247,8 @@ class TestDataCollectors(AnalyticsTestCase):
         # run count prior to realm creation
         process_count_stat(stat, range_start=self.TIME_ZERO - 2*self.HOUR,
                            range_end=self.TIME_LAST_HOUR)
-        realm_count = RealmCount.objects.values('realm__name', 'value', 'property') \
-                                        .filter(realm=realm, interval='hour').exists()
-        # assert no rows exist
-        self.assertFalse(realm_count)
+
+        self.assertFalse(RealmCount.objects.filter(realm=realm).exists())
 
     def test_empty_counts_in_realm(self):
         # type: () -> None
@@ -292,14 +261,6 @@ class TestDataCollectors(AnalyticsTestCase):
 
         process_count_stat(stat, range_start=self.TIME_ZERO - 2*self.HOUR,
                            range_end=self.TIME_ZERO)
-        realm_count = RealmCount.objects.values('end_time', 'value') \
-                                        .filter(realm=self.default_realm, interval='hour')
-        empty1 = realm_count.filter(end_time=self.TIME_ZERO - 2*self.HOUR) \
-                            .values_list('value', flat=True)[0]
-        empty2 = realm_count.filter(end_time=self.TIME_LAST_HOUR) \
-                            .values_list('value', flat=True)[0]
-        nonempty = realm_count.filter(end_time=self.TIME_ZERO) \
-                              .values_list('value', flat=True)[0]
-        assert (empty1 == 0)
-        assert (empty2 == 0)
-        assert (nonempty == 1)
+        self.assertCountEquals(0, 'test_active_humans', end_time = self.TIME_ZERO - 2*self.HOUR)
+        self.assertCountEquals(0, 'test_active_humans', end_time = self.TIME_LAST_HOUR)
+        self.assertCountEquals(1, 'test_active_humans', end_time = self.TIME_ZERO)
