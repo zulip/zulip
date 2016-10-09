@@ -76,7 +76,7 @@ of somebody "out in the world."
 the outside world and produces a response in Zulip.  (So, a world
 reader is a Zulip writer.)
 
-- A **World Writer** is an app that gets some stumulus from
+- A **World Writer** is an app that gets some stimulus from
 Zulip and produces a response in the outside world.  (So, a world
 writer is a Zulip reader.)
 
