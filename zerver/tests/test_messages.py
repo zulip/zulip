@@ -358,6 +358,7 @@ class StreamMessagesTest(ZulipTestCase):
             send_message()
 
         self.assert_max_length(queries, 7)
+<<<<<<< HEAD
 
     def test_stream_message_unicode(self):
         # type: () -> None
@@ -369,6 +370,12 @@ class StreamMessagesTest(ZulipTestCase):
         self.assertEqual(str(message),
             u'<Message: Denmark / my topic / '
             '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
+=======
+<<<<<<< HEAD
+>>>>>>> Patch for issue #1400
+=======
+>>>>>>> f30432b350f8eae96e465343dd74699b7ea3097d
+>>>>>>> 1b7a1b186084e1294590c9710b720baa363e5225
 
     def test_message_mentions(self):
         # type: () -> None

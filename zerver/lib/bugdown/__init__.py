@@ -979,7 +979,19 @@ class Bugdown(markdown.Extension):
             u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
             '_end')
 
-        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
+        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE[len(markdown.inlinepatterns.NOIMG):],
+<<<<<<< HEAD
+<<<<<<< HEAD
+	    md), '>backtick')
+=======
+			md), '>backtick')
+>>>>>>> Display image preceded by exclamation #387
+=======
+			md), '>backtick')
+=======
+	    md), '>backtick')
+>>>>>>> f30432b350f8eae96e465343dd74699b7ea3097d
+>>>>>>> 1b7a1b186084e1294590c9710b720baa363e5225
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
