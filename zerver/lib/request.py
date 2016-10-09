@@ -79,7 +79,7 @@ class REQ(object):
 # argument to the function.
 #
 # To use, assign a function parameter a default value that is an
-# instance of the REQ class.  That paramter will then be automatically
+# instance of the REQ class.  That parameter will then be automatically
 # populated from the HTTP request.  The request object must be the
 # first argument to the decorated function.
 #
