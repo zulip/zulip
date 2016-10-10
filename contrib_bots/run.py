@@ -42,6 +42,18 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
 
     message_handler = lib_module.handler_class()
 
+    class StateHandler(object):
+        def __init__(self):
+            self.state = None
+
+        def set_state(self, state):
+            self.state = state
+
+        def get_state(self):
+            return self.state
+
+    state_handler = StateHandler()
+
     if not quiet:
         print(message_handler.usage())
 
@@ -50,7 +62,9 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
         if message_handler.triage_message(message=message):
             message_handler.handle_message(
                 message=message,
-                client=restricted_client)
+                client=restricted_client,
+                state_handler=state_handler
+                )
 
     logging.info('starting message handling...')
     client.call_on_each_message(handle_message)
