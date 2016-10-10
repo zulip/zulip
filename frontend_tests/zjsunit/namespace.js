@@ -54,4 +54,3 @@ exports.stub_out_jquery = function () {
 return exports;
 }());
 module.exports = namespace;
-

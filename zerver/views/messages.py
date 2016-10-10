@@ -20,8 +20,16 @@ from zerver.lib import bugdown
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body
-from zerver.lib.cache import generic_bulk_cached_fetch
+    extract_recipients, truncate_body, render_incoming_message
+from zerver.lib.cache import (
+    generic_bulk_cached_fetch,
+    to_dict_cache_key_id,
+)
+from zerver.lib.message import (
+    MessageDict,
+    extract_message_dict,
+    stringify_message_dict,
+)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.utils import statsd
@@ -30,10 +38,9 @@ from zerver.lib.validator import \
 from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
-    parse_usermessage_flags, to_dict_cache_key_id, extract_message_dict, \
-    stringify_message_dict, \
+    parse_usermessage_flags, \
     resolve_email_to_domain, get_realm, get_active_streams, \
-    bulk_get_streams
+    bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
@@ -633,7 +640,7 @@ def get_old_messages_backend(request, user_profile,
                 search_fields[message_id] = get_search_fields(rendered_content, subject,
                                                               content_matches, subject_matches)
 
-    cache_transformer = lambda row: Message.build_dict_from_raw_db_row(row, apply_markdown)
+    cache_transformer = lambda row: MessageDict.build_dict_from_raw_db_row(row, apply_markdown)
     id_fetcher = lambda row: row['id']
 
     message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
@@ -778,12 +785,6 @@ def same_realm_jabber_user(user_profile, email):
 
     return user_profile.realm.domain == domain
 
-
-@authenticated_api_view(is_webhook=False)
-def api_send_message(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return send_message_backend(request, user_profile)
-
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
@@ -910,9 +911,19 @@ def update_message_backend(request, user_profile,
         if content == "":
             raise JsonableError(_("Content can't be empty"))
         content = truncate_body(content)
-        rendered_content = message.render_markdown(content)
-        if not rendered_content:
-            raise JsonableError(_("We were unable to render your updated message"))
+
+        # We exclude UserMessage.flags.historical rows since those
+        # users did not receive the message originally, and thus
+        # probably are not relevant for reprocessed alert_words,
+        # mentions and similar rendering features.  This may be a
+        # decision we change in the future.
+        ums = UserMessage.objects.filter(message=message.id,
+                                         flags=~UserMessage.flags.historical)
+        message_users = {get_user_profile_by_id(um.user_profile_id) for um in ums}
+        # If rendering fails, the called code will raise a JsonableError.
+        rendered_content = render_incoming_message(message,
+                                                   content=content,
+                                                   message_users=message_users)
 
     do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
     return json_success()

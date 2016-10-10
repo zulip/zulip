@@ -1,6 +1,23 @@
 from __future__ import absolute_import
-from .settings import *
 import os
+# test_settings.py works differently from
+# dev_settings.py/prod_settings.py; it actually is directly referenced
+# by the test suite as DJANGO_SETTINGS_MODULE and imports settings.py
+# directly and then hacks up the values that are different for the
+# test suite.  As will be explained, this is kinda messy and probably
+# we'd be better off switching it to work more like dev_settings.py,
+# but for now, this is what we have.
+#
+# An important downside of the test_settings.py approach is that if we
+# want to change any settings that settings.py then computes
+# additional settings from (e.g. EXTERNAL_HOST), we need to do a hack
+# like the below line(s) before we import from settings, for
+# transmitting the value of EXTERNAL_HOST to dev_settings.py so that
+# it can be set there, at the right place in the settings.py flow.
+# Ick.
+if os.getenv("EXTERNAL_HOST") is None:
+    os.environ["EXTERNAL_HOST"] = "testserver"
+from .settings import *
 
 DATABASES["default"] = {"NAME": "zulip_test",
                         "USER": "zulip_test",
@@ -82,6 +99,7 @@ LOCAL_UPLOADS_DIR = 'var/test_uploads'
 S3_KEY = 'test-key'
 S3_SECRET_KEY = 'test-secret-key'
 S3_AUTH_UPLOADS_BUCKET = 'test-authed-bucket'
+REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'

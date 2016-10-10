@@ -1,0 +1,119 @@
+<div id="notification-settings" class="settings-section">
+  <div class="settings-section-title">
+    <i class="icon-vector-warning-sign settings-section-icon"></i>
+    {{t "Notifications" }}
+  </div>
+
+  <form class="notification-settings-form">
+    <div class="notification-reminder w-70 padded-container center-block">{{#tr this }}You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.{{/tr}}</div>
+    <div class="alert" id="notify-settings-status"></div>
+
+    <h4>{{t "Stream messages" }}</h4>
+
+    <div class="padded-container">
+      <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
+               id="enable_stream_desktop_notifications"
+               {{#if page_params.stream_desktop_notifications_enabled}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_stream_desktop_notifications" class="inline-block">
+          {{t "Desktop notifications" }}
+        </label>
+        <div class="propagate_stream_notifications_change"></div>
+      </div>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_stream_sounds" id="enable_stream_sounds"
+               {{#if page_params.stream_sounds_enabled}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_stream_sounds" class="inline-block">
+          {{t "Audible notifications" }}
+        </label>
+        <div class="propagate_stream_notifications_change"></div>
+      </div>
+
+      <p class="notification-settings-note">
+        {{#tr this}}Change notification settings for individual streams on your <a href="/#subscriptions">Streams page</a>.{{/tr}}
+      </p>
+    </div>
+
+    <h4>{{t "Private messages and @-mentions" }}</h4>
+
+    <div class="padded-container">
+      <p>{{t "I want:" }}</p>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_desktop_notifications" id="enable_desktop_notifications"
+               {{#if page_params.desktop_notifications_enabled}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_desktop_notifications" class="inline-block">
+          {{t "Desktop notifications" }}
+        </label>
+      </div>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_sounds" id="enable_sounds"
+               {{#if page_params.sounds_enabled}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_sounds" class="inline-block">
+          {{t "Audible notifications" }}
+        </label>
+      </div>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
+               {{#if page_params.enable_offline_email_notifications}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_offline_email_notifications" class="inline-block">
+          {{t "Email notifications when offline" }}
+        </label>
+      </div>
+
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
+               {{#if page_params.enable_offline_push_notifications}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_offline_push_notifications" class="inline-block">
+          {{t "Mobile push notifications when offline" }}
+        </label>
+      </div>
+    </div>
+
+    <div id="other_notifications">
+
+    <h4>{{t "Other notifications" }} {{t "I want" }}:</h4>
+
+    <div class="padded-container">
+      <div class="input-group no-margin" id="digest_container">
+        <input type="checkbox" class="inline-block" name="enable_digest_emails" id="enable_digest_emails"
+               {{#if page_params.enable_digest_emails}}
+               checked="checked"
+               {{/if}} />
+        <label for="enable_digest_emails" class="inline-block">
+          {{t "Digest emails when I'm away" }}
+        </label>
+      </div>
+    </div>
+    {{!-- If you add another control group here, make sure to change
+          $("#other_notifications").hide(); in settings.js to
+                $("#digest_container").hide();
+    --}}
+    </div>
+
+    <div class="input-group">
+      <div class="controls notification-submission">
+        <input type="submit" id="change_notification_settings"
+               name="change_notification_settings" value="{{t 'Save Changes' }}"
+               class="button green" />
+      </div>
+    </div>
+  </form>
+</div>

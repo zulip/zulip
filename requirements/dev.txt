@@ -3,6 +3,9 @@
 -r moto.txt
 -r py3k.txt
 
+# Needed for running tools/run-dev.py
+-r twisted.txt
+
 # Needed to compute test coverage
 coverage==4.2
 

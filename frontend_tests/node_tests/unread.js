@@ -387,4 +387,3 @@ var zero_counts = {
     assert(unread.message_unread({flags: []}));
     assert(!unread.message_unread({flags: ['read']}));
 }());
-

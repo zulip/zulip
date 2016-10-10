@@ -11,7 +11,9 @@ from zerver.lib.actions import (
     do_set_alert_words,
     get_realm,
 )
+from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
+from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
@@ -19,9 +21,14 @@ from zerver.lib.test_helpers import (
     ZulipTestCase,
 )
 from zerver.models import (
+    domain_in_local_realm_filters_cache,
+    flush_per_request_caches,
+    flush_realm_filter,
     get_client,
     get_user_profile_by_email,
+    realm_filters_for_domain,
     Message,
+    Realm,
     RealmFilter,
     Recipient,
 )
@@ -397,12 +404,72 @@ class BugdownTest(TestCase):
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")
 
+        flush_per_request_caches()
+
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
         converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
         converted_subject = bugdown.subject_links(realm.domain.lower(), msg.subject)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
+
+    def test_maybe_update_realm_filters(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
+        realm_filter = RealmFilter(realm=realm,
+                                   pattern=r"#(?P<id>[0-9]{2,8})",
+                                   url_format_string=url_format_string)
+        realm_filter.save()
+
+        bugdown.realm_filter_data = {}
+        bugdown.maybe_update_realm_filters(domain=None)
+        all_filters = bugdown.realm_filter_data
+        zulip_filters = all_filters['zulip.com']
+        self.assertEqual(len(zulip_filters), 1)
+        self.assertEqual(zulip_filters[0],
+            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s'))
+
+    def test_flush_realm_filter(self):
+        # type: () -> None
+        domain = 'zulip.com'
+        realm = get_realm(domain)
+
+        def flush():
+            # type: () -> None
+            '''
+            flush_realm_filter is a post-save hook, so calling it
+            directly for testing is kind of awkward
+            '''
+            class Instance(object):
+                pass
+            instance = Instance()
+            instance.realm = realm
+            flush_realm_filter(sender=None, instance=instance)
+
+        def save_new_realm_filter():
+            # type: () -> None
+            realm_filter = RealmFilter(realm=realm,
+                                       pattern=r"whatever",
+                                       url_format_string='whatever')
+            realm_filter.save()
+
+        # start fresh for our domain
+        flush()
+        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+
+        # call this just for side effects of populating the cache
+        realm_filters_for_domain(domain=domain)
+        self.assertTrue(domain_in_local_realm_filters_cache(domain))
+
+        # Saving a new RealmFilter should have the side effect of
+        # flushing the cache.
+        save_new_realm_filter()
+        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+
+        # and flush it one more time, to make sure we don't get a KeyError
+        flush()
+        self.assertFalse(domain_in_local_realm_filters_cache(domain))
 
     def test_realm_patterns_negative(self):
         realm = get_realm('zulip.com')
@@ -413,18 +480,46 @@ class BugdownTest(TestCase):
         converted_boring_subject = bugdown.subject_links(realm.domain.lower(), boring_msg.subject)
         self.assertEqual(converted_boring_subject,  [])
 
+    def test_is_status_message(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = '/me makes a list\n* one\n* two'
+        rendered_content = render_markdown(msg, content)
+        self.assertEqual(
+            rendered_content,
+            '<p>/me makes a list</p>\n<ul>\n<li>one</li>\n<li>two</li>\n</ul>'
+        )
+        self.assertFalse(Message.is_status_message(content, rendered_content))
+
+        content = '/me takes a walk'
+        rendered_content = render_markdown(msg, content)
+        self.assertEqual(
+            rendered_content,
+            '<p>/me takes a walk</p>'
+        )
+        self.assertTrue(Message.is_status_message(content, rendered_content))
+
     def test_alert_words(self):
         user_profile = get_user_profile_by_email("othello@zulip.com")
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
+        realm_alert_words = alert_words_in_realm(user_profile.realm)
+
+        def render(msg, content):
+            return render_markdown(msg,
+                                   content,
+                                   realm_alert_words=realm_alert_words,
+                                   message_users={user_profile})
 
         content = "We have an ALERTWORD day today!"
-        self.assertEqual(msg.render_markdown(content), "<p>We have an ALERTWORD day today!</p>")
+        self.assertEqual(render(msg, content), "<p>We have an ALERTWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set([user_profile.id]))
 
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         content = "We have a NOTHINGWORD day today!"
-        self.assertEqual(msg.render_markdown(content), "<p>We have a NOTHINGWORD day today!</p>")
+        self.assertEqual(render(msg, content), "<p>We have a NOTHINGWORD day today!</p>")
         self.assertEqual(msg.user_ids_with_alert_words, set())
 
     def test_mention_wildcard(self):
@@ -432,7 +527,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = "@all test"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="*">@all</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
@@ -441,7 +536,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = "@everyone test"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="*">@everyone</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
@@ -451,7 +546,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet**"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
@@ -461,7 +556,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**hamlet**"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
@@ -472,7 +567,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet** and @**cordelia**, check this out"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p>'
                          '<span class="user-mention" '
                          'data-user-email="hamlet@zulip.com">@King Hamlet</span> and '
@@ -486,7 +581,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "Hey @**Nonexistent User**"
-        self.assertEqual(msg.render_markdown(content),
+        self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
@@ -550,6 +645,21 @@ class BugdownTest(TestCase):
             '<p>'
             '<a data-toggle="modal" href="#settings" title="#settings">Settings page</a>'
             '</p>'
+        )
+
+    def test_image_preview_title(self):
+        msg = '[My favorite image](https://example.com/testimage.png)'
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>'
+            '<a href="https://example.com/testimage.png" target="_blank" title="https://example.com/testimage.png">My favorite image</a>'
+            '</p>\n'
+            '<div class="message_inline_image">'
+            '<a href="https://example.com/testimage.png" target="_blank" title="My favorite image">'
+            '<img src="https://example.com/testimage.png">'
+            '</a>'
+            '</div>'
         )
 
     def test_mit_rendering(self):

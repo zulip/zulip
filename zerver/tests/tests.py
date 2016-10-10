@@ -854,7 +854,7 @@ class BotTest(ZulipTestCase):
             self.assert_json_success(result)
 
         msg_event = [e for e in events if e['event']['type'] == 'message']
-        self.assert_length(msg_event, 1, exact=True) # Notification message event is sent.
+        self.assert_length(msg_event, 1) # Notification message event is sent.
 
         # Create a bot.
         self.assert_num_bots_equal(0)
@@ -872,7 +872,7 @@ class BotTest(ZulipTestCase):
 
         # No notification message event or invitation email is sent because of bot.
         msg_event = [e for e in events_bot if e['event']['type'] == 'message']
-        self.assert_length(msg_event, 0, exact=True)
+        self.assert_length(msg_event, 0)
         self.assertEqual(len(events_bot), len(events) - 1)
 
         # Test runner automatically redirects all sent email to a dummy 'outbox'.
@@ -1671,8 +1671,8 @@ class GetProfileTest(ZulipTestCase):
             with simulated_empty_cache() as cache_queries:
                 user_profile = get_user_profile_by_email('hamlet@zulip.com')
 
-        self.assert_length(queries, 1)
-        self.assert_length(cache_queries, 1, exact=True)
+        self.assert_max_length(queries, 1)
+        self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
     def test_api_get_empty_profile(self):
@@ -1878,14 +1878,21 @@ class HomeTest(ZulipTestCase):
         # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
-        with \
-                self.settings(TERMS_OF_SERVICE='whatever'), \
-                self.settings(TOS_VERSION='99.99'):
 
-            result = self.client_get('/', dict(stream='Denmark'))
+        for user_tos_version in [None, '1.1', '2.0.3.4']:
+            user = get_user_profile_by_email(email)
+            user.tos_version = user_tos_version
+            user.save()
 
-        html = result.content.decode('utf-8')
-        self.assertIn('There is a new terms of service', html)
+            with \
+                    self.settings(TERMS_OF_SERVICE='whatever'), \
+                    self.settings(TOS_VERSION='99.99'):
+
+                result = self.client_get('/', dict(stream='Denmark'))
+
+            html = result.content.decode('utf-8')
+            self.assertIn('There is a new terms of service', html)
+
 
     def test_bad_narrow(self):
         # type: () -> None

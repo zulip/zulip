@@ -4,7 +4,6 @@ from django.conf.urls import url
 
 legacy_urls = [
     # These are json format views used by the web client.  They require a logged in browser.
-    url(r'^json/rename_stream$',            'zerver.views.streams.json_rename_stream'),
     url(r'^json/make_stream_public$',       'zerver.views.streams.json_make_stream_public'),
     url(r'^json/make_stream_private$',      'zerver.views.streams.json_make_stream_private'),
     url(r'^json/invite_users$',             'zerver.views.json_invite_users'),
@@ -17,7 +16,6 @@ legacy_urls = [
     url(r'^json/subscriptions/property$',   'zerver.views.streams.json_subscription_property'),
     url(r'^json/get_subscribers$',          'zerver.views.streams.json_get_subscribers'),
     url(r'^json/fetch_api_key$',            'zerver.views.json_fetch_api_key'),
-    url(r'^json/get_active_statuses$',      'zerver.views.presence.json_get_active_statuses'),
     url(r'^json/tutorial_send_message$',    'zerver.views.tutorial.json_tutorial_send_message'),
     url(r'^json/tutorial_status$',          'zerver.views.tutorial.json_tutorial_status'),
     url(r'^json/report_error$',             'zerver.views.report.json_report_error'),
@@ -34,8 +32,4 @@ legacy_urls = [
     url(r'^json/time_setting$',             'zerver.views.user_settings.json_time_setting'),
     url(r'^json/left_side_userlist$',       'zerver.views.user_settings.json_left_side_userlist'),
     url(r'^json/language_setting$',         'zerver.views.user_settings.json_language_setting'),
-
-    # This json format view is used by the LEGACY pre-REST API.  It
-    # requires an API key.
-    url(r'^api/v1/send_message$',           'zerver.views.messages.api_send_message'),
 ]

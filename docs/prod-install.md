@@ -141,12 +141,16 @@ administrator for your new Zulip organization.  After getting
 oriented, we recommend visiting the special "Administration" tab
 linked to from the upper-right gear menu in the Zulip app to configure
 important policy settings like how users can join your new
-organization.  By default, your organization will be configured as
-follows ([screenshot here](_images/zulip-admin-settings.png)):
+organization. By default, your organization will be configured as
+follows depending on what type of organization you selected:
 
-* `restricted_to_domain=True`: Only people with emails with the same ending as yours can join.
-* `invite_required=False`: An invitation is not required to join the realm.
-* `invite_by_admin_only=False`: You don't need to be an admin user to invite other users.
+Community Organization:
+* `restricted_to_domain=False`: No restriction on user email addresses.
+* `invite_required=True`: A user must be invited to join.
+
+Corporate Organization:
+* `restricted_to_domain=True`: New users must have an email address in the same domain (e.g. @acme.com) as yours.
+* `invite_required=False`: No invitation is required to join.
 
 Next, you'll likely want to do one of the following:
 
@@ -163,4 +167,3 @@ help" stream in the Zulip developers'
 chat](https://zulip.tabbott.net/#narrow/stream/installation.20help)
 for realtime help or email zulip-help@googlegroups.com with the
 traceback and we'll try to help you out!
-

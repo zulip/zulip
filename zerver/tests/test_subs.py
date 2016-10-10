@@ -189,7 +189,8 @@ class StreamAdminTest(ZulipTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+            result = self.client_patch('/json/streams/stream_name1',
+                                       {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_success(result)
 
         event = events[1]['event']
@@ -203,16 +204,49 @@ class StreamAdminTest(ZulipTestCase):
         users = events[1]['users']
         self.assertEqual(users, [user_profile.id])
 
-        stream_name1_exists = Stream.objects.filter(
-            name='stream_name1',
-            realm=realm,
-        ).exists()
+        stream_name1_exists = get_stream('stream_name1', realm)
         self.assertFalse(stream_name1_exists)
-        stream_name2_exists = Stream.objects.filter(
-            name='stream_name2',
-            realm=realm,
-        ).exists()
+        stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
+
+        # Test case to handle unicode stream name change
+        # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/stream_name2',
+                                       {'new_name': ujson.dumps(u'नया नाम'.encode('utf-8'))})
+        self.assert_json_success(result)
+        # While querying, system can handle unicode strings.
+        stream_name_uni_exists = get_stream(u'नया नाम', realm)
+        self.assertTrue(stream_name_uni_exists)
+
+        # Test case to handle changing of unicode stream name to newer name
+        # NOTE: Unicode string being part of URL is handled cleanly
+        # by client_patch call, encoding of URL is not needed.
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/नया नाम',
+                                       {'new_name': ujson.dumps(u'नाम में क्या रक्खा हे'.encode('utf-8'))})
+        self.assert_json_success(result)
+        # While querying, system can handle unicode strings.
+        stream_name_old_uni_exists = get_stream(u'नया नाम', realm)
+        self.assertFalse(stream_name_old_uni_exists)
+        stream_name_new_uni_exists = get_stream(u'नाम में क्या रक्खा हे', realm)
+        self.assertTrue(stream_name_new_uni_exists)
+
+        # Test case to change name from one language to other.
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/नाम में क्या रक्खा हे',
+                                       {'new_name': ujson.dumps(u'français'.encode('utf-8'))})
+        self.assert_json_success(result)
+        stream_name_fr_exists = get_stream(u'français', realm)
+        self.assertTrue(stream_name_fr_exists)
+
+        # Test case to change name to mixed language name.
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/français',
+                                       {'new_name': ujson.dumps(u'français name'.encode('utf-8'))})
+        self.assert_json_success(result)
+        stream_name_mixed_exists = get_stream(u'français name', realm)
+        self.assertTrue(stream_name_mixed_exists)
 
     def test_rename_stream_requires_realm_admin(self):
         # type: () -> None
@@ -222,7 +256,8 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream, _ = create_stream_if_needed(realm, 'stream_name1')
 
-        result = self.client_post('/json/rename_stream?old_name=stream_name1&new_name=stream_name2')
+        result = self.client_patch('/json/streams/stream_name1',
+                                   {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_change_stream_description(self):
@@ -1056,7 +1091,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                 add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assert_length(events, 6, True)
+        self.assert_length(events, 6)
 
     def test_successful_subscriptions_add_with_announce(self):
         # type: () -> None
@@ -1291,9 +1326,9 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
             )
-        self.assert_length(queries, 43)
+        self.assert_max_length(queries, 43)
 
-        self.assert_length(events, 8, exact=True)
+        self.assert_length(events, 8)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
             if isinstance(ev['event']['subscriptions'][0], dict):
                 self.assertEqual(ev['event']['op'], 'add')
@@ -1319,9 +1354,9 @@ class SubscriptionAPITest(ZulipTestCase):
                         streams_to_sub,
                         dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assert_length(queries, 8)
+        self.assert_max_length(queries, 8)
 
-        self.assert_length(events, 2, True)
+        self.assert_length(events, 2)
         add_event, add_peer_event = events
         self.assertEqual(add_event['event']['type'], 'subscription')
         self.assertEqual(add_event['event']['op'], 'add')
@@ -1347,7 +1382,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             do_add_subscription(user_profile, stream)
 
-        self.assert_length(events, 2, True)
+        self.assert_length(events, 2)
         add_event, add_peer_event = events
 
         self.assertEqual(add_event['event']['type'], 'subscription')
@@ -1381,8 +1416,8 @@ class SubscriptionAPITest(ZulipTestCase):
                 )
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
-        self.assert_length(events, 0, True)
-        self.assert_length(queries, 7)
+        self.assert_length(events, 0)
+        self.assert_max_length(queries, 7)
 
     def test_bulk_subscribe_many(self):
         # type: () -> None
@@ -1400,7 +1435,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 9)
+        self.assert_max_length(queries, 9)
 
     @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
@@ -1624,6 +1659,13 @@ class SubscriptionAPITest(ZulipTestCase):
         invite_streams = self.make_random_stream_names([current_stream])
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
         subscription = self.get_subscription(user_profile, invite_streams[0])
+
+        with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
+            self.assertEqual(str(subscription),
+                u'<Subscription: '
+                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
+            )
+
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)
 
@@ -1874,7 +1916,7 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 4, exact=True)
+        self.assert_length(queries, 4)
 
     @slow("common_subscribe_to_streams is slow")
     def test_never_subscribed_streams(self):
@@ -1907,7 +1949,7 @@ class GetSubscribersTest(ZulipTestCase):
             if stream_dict["name"].startswith("stream_"):
                 self.assertFalse(stream_dict['name'] == "stream_invite_only_1")
                 self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 4, exact=True)
+        self.assert_length(queries, 4)
 
     @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
@@ -1938,7 +1980,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assert_length(queries, 4, exact=True)
+        self.assert_length(queries, 4)
 
     def test_nonsubscriber(self):
         # type: () -> None

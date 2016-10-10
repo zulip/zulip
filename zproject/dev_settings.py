@@ -2,10 +2,13 @@
 # For the Dev VM environment, we use the same settings as the
 # sample prod_settings.py file, with a few exceptions.
 from .prod_settings_template import *
+import os
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
-EXTERNAL_HOST = 'localhost:9991'
-ALLOWED_HOSTS = ['localhost']
+# We check the environment to support test_settings.py controlling
+# EXTERNAL_HOST.
+EXTERNAL_HOST = os.getenv('EXTERNAL_HOST', 'zulipdev.com:9991')
+ALLOWED_HOSTS = ['*']
 AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
 # Add some of the below if you're testing other backends
 # AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
@@ -20,6 +23,9 @@ EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 # Disable Camo in development
 CAMO_URI = ''
 OPEN_REALM_CREATION = True
+# Default to subdomains disabled in development until we can update
+# the development documentation to make sense with subdomains.
+REALMS_HAVE_SUBDOMAINS = False
 TERMS_OF_SERVICE = 'zproject/terms.md.template'
 
 SAVE_FRONTEND_STACKTRACES = True

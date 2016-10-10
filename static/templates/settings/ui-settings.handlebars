@@ -1,0 +1,35 @@
+<div class="ui-settings">
+  <div id="ui-settings" class="settings-section">
+    <div class="settings-section-title"><i class="icon-vector-beaker settings-section-icon"></i>{{#tr this}}__page_params.product_name__ Labs{{/tr}}</div>
+    <div class="alert" id="ui-settings-status"></div>
+    <form class="ui-settings-form">
+      <p class="input-group">
+        {{t "Warning: the below features are experimental features and may not work as well as you would like." }}
+      </p>
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="autoscroll_forever" id="autoscroll_forever"
+               {{#if page_params.autoscroll_forever}}
+               checked="checked"
+            {{/if}} />
+        <label for="autoscroll_forever" class="inline-block">
+          {{t "Always auto-scroll to new messages" }}
+        </label>
+      </div>
+      <div class="input-group thinner">
+        <input type="checkbox" class="inline-block" name="default_desktop_notifications" id="default_desktop_notifications"
+               {{#if page_params.default_desktop_notifications}}
+               checked="checked"
+            {{/if}} />
+        <label for="default_desktop_notifications" class="inline-block">
+          {{t "Enable desktop notifications for new streams" }}
+        </label>
+
+      </div>
+      <div class="input-group">
+        <div class="ui-submission">
+          <input type="submit" name="change_settings" value="{{t 'Save Changes' }}" class="button green" />
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -51,6 +51,7 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.event_queue import allocate_client_descriptor
+from zerver.lib.message import render_markdown
 from zerver.lib.test_helpers import ZulipTestCase, POSTRequestMock
 from zerver.lib.validator import (
     check_bool, check_dict, check_int, check_list, check_string,
@@ -107,7 +108,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 0, True)
+        self.assert_length(events, 0)
 
         local_id = 10.01
         self.send_message(email, recipient_email, Recipient.PERSONAL, "hello", local_id=local_id, sender_queue_id=queue_id)
@@ -120,7 +121,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
@@ -140,7 +141,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
@@ -187,7 +188,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 0, True)
+        self.assert_length(events, 0)
 
         self.send_message(email, "othello@zulip.com", Recipient.PERSONAL, "hello")
         self.send_message(email, "Denmark", Recipient.STREAM, "hello")
@@ -200,7 +201,7 @@ class GetEventsTest(ZulipTestCase):
                                     })
         events = ujson.loads(result.content)["events"]
         self.assert_json_success(result)
-        self.assert_length(events, 1, True)
+        self.assert_length(events, 1)
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
@@ -326,7 +327,7 @@ class EventsRegisterTest(ZulipTestCase):
         topic = 'new_topic'
         propagate_mode = 'change_all'
         content = 'new content'
-        rendered_content = message.render_markdown(content)
+        rendered_content = render_markdown(message, content)
         events = self.do_test(lambda: do_update_message(self.user_profile, message, topic, propagate_mode, content, rendered_content))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
 
+from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
@@ -203,6 +204,17 @@ class POSTRequestMock(object):
         self._log_data = {} # type: Dict[str, Any]
         self.META = {'PATH_INFO': 'test'}
 
+class HostRequestMock(object):
+    """A mock request object where get_host() works.  Useful for testing
+    routes that use Zulip's subdomains feature"""
+    def __init__(self, host=settings.EXTERNAL_HOST):
+        # type: (text_type) -> None
+        self.host = host
+
+    def get_host(self):
+        # type: () -> text_type
+        return self.host
+
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
 INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
@@ -372,18 +384,36 @@ class ZulipTestCase(TestCase):
                          {'email': username + "@" + domain})
         return self.submit_reg_form_for_user(username, password, domain=domain)
 
-    def submit_reg_form_for_user(self, username, password, domain="zulip.com"):
-        # type: (text_type, text_type, text_type) -> HttpResponse
+    def submit_reg_form_for_user(self, username, password, domain="zulip.com",
+                                 realm_name=None, realm_subdomain=None,
+                                 realm_org_type=Realm.COMMUNITY, **kwargs):
+        # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], int, **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
         If things are working correctly the account should be fully
         registered after this call.
+
+        You can pass the HTTP_HOST variable for subdomains via kwargs.
         """
         return self.client_post('/accounts/register/',
                                 {'full_name': username, 'password': password,
+                                 'realm_name': realm_name,
+                                 'realm_subdomain': realm_subdomain,
                                  'key': find_key_by_email(username + '@' + domain),
-                                 'terms': True})
+                                 'realm_org_type': realm_org_type,
+                                 'terms': True},
+                                **kwargs)
+
+    def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
+        # type: (text_type, text_type) -> text_type
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email_address in message.to:
+                return re.search(settings.EXTERNAL_HOST + path_pattern,
+                                 message.body).groups()[0]
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
 
     def get_api_key(self, email):
         # type: (text_type) -> text_type
@@ -475,12 +505,15 @@ class ZulipTestCase(TestCase):
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, queries, count, exact=False):
-        # type: (Sized, int, bool) -> None
+    def assert_length(self, queries, count):
+        # type: (Sized, int) -> None
         actual_count = len(queries)
-        if exact:
-            return self.assertTrue(actual_count == count,
+        return self.assertTrue(actual_count == count,
                                    "len(%s) == %s, != %s" % (queries, actual_count, count))
+
+    def assert_max_length(self, queries, count):
+        # type: (Sized, int) -> None
+        actual_count = len(queries)
         return self.assertTrue(actual_count <= count,
                                "len(%s) == %s, > %s" % (queries, actual_count, count))
 
@@ -559,6 +592,69 @@ class ZulipTestCase(TestCase):
                 mock.patch('zerver.lib.bugdown.log_bugdown_error'):
             yield
 
+class WebhookTestCase(ZulipTestCase):
+    """
+    Common for all webhooks tests
+
+    Override below class attributes and run send_and_test_message
+    If you create your url in uncommon way you can override build_webhook_url method
+    In case that you need modify body or create it without using fixture you can also override get_body method
+    """
+    STREAM_NAME = None # type: Optional[text_type]
+    TEST_USER_EMAIL = 'webhook-bot@zulip.com'
+    URL_TEMPLATE = None # type: Optional[text_type]
+    FIXTURE_DIR_NAME = None # type: Optional[text_type]
+
+    def setUp(self):
+        # type: () -> None
+        self.url = self.build_webhook_url()
+
+    def send_and_test_stream_message(self, fixture_name, expected_subject=None,
+                                     expected_message=None, content_type="application/json", **kwargs):
+        # type: (text_type, Optional[text_type], Optional[text_type], Optional[text_type], **Any) -> Message
+        payload = self.get_body(fixture_name)
+        if content_type is not None:
+            kwargs['content_type'] = content_type
+        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+                                     self.STREAM_NAME, **kwargs)
+        self.do_test_subject(msg, expected_subject)
+        self.do_test_message(msg, expected_message)
+
+        return msg
+
+    def send_and_test_private_message(self, fixture_name, expected_subject=None,
+                                      expected_message=None, content_type="application/json", **kwargs):
+        # type: (text_type, text_type, text_type, str, **Any) -> Message
+        payload = self.get_body(fixture_name)
+        if content_type is not None:
+            kwargs['content_type'] = content_type
+
+        msg = self.send_json_payload(self.TEST_USER_EMAIL, self.url, payload,
+                                     stream_name=None, **kwargs)
+        self.do_test_message(msg, expected_message)
+
+        return msg
+
+    def build_webhook_url(self):
+        # type: () -> text_type
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+
+    def get_body(self, fixture_name):
+        # type: (text_type) -> Union[text_type, Dict[str, text_type]]
+        """Can be implemented either as returning a dictionary containing the
+        post parameters or as string containing the body of the request."""
+        return ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
+
+    def do_test_subject(self, msg, expected_subject):
+        # type: (Message, Optional[text_type]) -> None
+        if expected_subject is not None:
+            self.assertEqual(msg.topic_name(), expected_subject)
+
+    def do_test_message(self, msg, expected_message):
+        # type: (Message, Optional[text_type]) -> None
+        if expected_message is not None:
+            self.assertEqual(msg.content, expected_message)
 
 def get_all_templates():
     # type: () -> List[str]

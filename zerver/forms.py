@@ -10,6 +10,8 @@ from django.db.models.query import QuerySet
 from jinja2 import Markup as mark_safe
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+from zerver.models import resolve_subdomain_to_realm
+from zerver.lib.utils import get_subdomain, check_subdomain
 
 import logging
 
@@ -23,6 +25,11 @@ from six import text_type
 
 SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
                 u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
+
+def subdomain_unavailable(subdomain):
+    # type: (text_type) -> text_type
+    return u"The subdomain '%s' is not available. Please choose another one." % (subdomain)
+
 if settings.SHOW_OSS_ANNOUNCEMENT:
     SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
                     u"The zulip.com service is not taking new customer teams. <br /> " + \
@@ -32,7 +39,10 @@ if settings.SHOW_OSS_ANNOUNCEMENT:
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        u'If you want to sign up an alias for Zulip, ' + \
-                       u'<a href="mailto:"' + settings.ZULIP_ADMINISTRATOR + '">contact us</a>.'
+                       u'<a href="mailto:support@zulipchat.com">contact us</a>.'
+WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
+                        "organization associated with this subdomain.  " + \
+                        "Please contact %s with any questions!" % (settings.ZULIP_ADMINISTRATOR,)
 
 def get_registration_string(domain):
     # type: (text_type) -> text_type
@@ -73,9 +83,21 @@ class RegistrationForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput, max_length=100,
                                required=False)
     realm_name = forms.CharField(max_length=100, required=False)
+    realm_subdomain = forms.CharField(max_length=40, required=False)
+    realm_org_type = forms.ChoiceField(((Realm.COMMUNITY, 'Community'),
+                                        (Realm.CORPORATE, 'Corporate')), \
+                                       initial=Realm.COMMUNITY, required=False)
 
     if settings.TERMS_OF_SERVICE:
         terms = forms.BooleanField(required=True)
+
+    def clean_realm_subdomain(self):
+        # type: () -> str
+        data = self.cleaned_data['realm_subdomain']
+        realm = resolve_subdomain_to_realm(data)
+        if realm is not None:
+            raise ValidationError(subdomain_unavailable(data))
+        return data
 
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
@@ -89,8 +111,11 @@ class HomepageForm(forms.Form):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         self.domain = kwargs.get("domain")
+        self.subdomain = kwargs.get("subdomain")
         if "domain" in kwargs:
             del kwargs["domain"]
+        if "subdomain" in kwargs:
+            del kwargs["subdomain"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -104,6 +129,12 @@ class HomepageForm(forms.Form):
 
         # If a realm is specified and that realm is open, pass
         if completely_open(self.domain):
+            return data
+
+        # If the subdomain encodes a complete open realm, pass
+        subdomain_realm = resolve_subdomain_to_realm(self.subdomain)
+        if (subdomain_realm is not None and
+            completely_open(subdomain_realm.domain)):
             return data
 
         # If no realm is specified, fail
@@ -191,4 +222,8 @@ Please contact %s to reactivate this group.""" % (
                 settings.ZULIP_ADMINISTRATOR)
             raise ValidationError(mark_safe(error_msg))
 
+        if not check_subdomain(get_subdomain(self.request), user_profile.realm.subdomain):
+            logging.warning("User %s attempted to password login to wrong subdomain %s" %
+                            (user_profile.email, get_subdomain(self.request)))
+            raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
         return email

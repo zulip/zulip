@@ -24,7 +24,6 @@ EXCLUDED_FILES = """
 api/integrations/perforce/git_p4.py
 api/setup.py
 docs/html_unescape.py
-frontend_tests/casperjs
 node_modules
 puppet/apt/.forge-release
 puppet/apt/README.md
@@ -212,7 +211,9 @@ def build_custom_checkers(by_lang):
         {'pattern': '".*"%\([a-z_].*\)?$',
          'description': 'Missing space around "%"'},
         {'pattern': "'.*'%\([a-z_].*\)?$",
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all',
+                         'analytics/lib/counts.py',
+                         ]),
          'exclude_line': set([
              ('zerver/views/users.py',
               "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
@@ -306,14 +307,18 @@ def build_custom_checkers(by_lang):
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
         ] + whitespace_rules[0:1] # type: RuleList
-    css_rules = [
+    css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},
         {'pattern': '[a-z]{',
          'description': "Missing whitespace before '{' in CSS."},
+        {'pattern': '^[ ][ ][a-zA-Z0-9]',
+         'description': "Incorrect 2-space indentation in CSS",
+         'exclude': set(['static/styles/thirdparty-fonts.css']),
+         'strip': '\n',},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
-        ] + whitespace_rules # type: RuleList
+        ]) + whitespace_rules # type: RuleList
     handlebars_rules = whitespace_rules
     html_rules = whitespace_rules + [
         {'pattern': 'placeholder="[^{]',

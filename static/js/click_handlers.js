@@ -241,6 +241,14 @@ $(function () {
         e.preventDefault();
     });
 
+    (function () {
+        var sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
+
+        $(sel).on("click", "a", function () {
+            this.blur();
+        });
+    }());
+
     popovers.register_click_handlers();
     notifications.register_click_handlers();
 
@@ -367,6 +375,29 @@ $(function () {
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
                .text("Bringing you to your latest messages…"));
     });
+
+    (function () {
+        $("#main_div").on("click", ".message_inline_image a", function (e) {
+            var img = e.target,
+                row = rows.id($(img).closest(".message_row")),
+                user = current_msg_list.get(row).sender_full_name;
+
+            // prevent the link from opening in a new page.
+            e.preventDefault();
+            // prevent the message compose dialog from happening.
+            e.stopPropagation();
+
+            ui.lightbox_photo(img, user);
+        });
+
+        $("#overlay .exit").click(function (e) {
+            ui.exit_lightbox_photo();
+        });
+
+        $("#overlay .download").click(function (e) {
+          this.blur();
+        });
+    }());
 
     // MAIN CLICK HANDLER
 

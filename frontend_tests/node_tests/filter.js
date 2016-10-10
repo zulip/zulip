@@ -496,4 +496,3 @@ function get_predicate(operators) {
     assert.equal(Filter.describe(narrow), string);
 
 }());
-

@@ -66,23 +66,22 @@ class RateLimitTests(ZulipTestCase):
         settings.RATE_LIMITING = False
         remove_ratelimit_rule(1, 5)
 
-    def send_api_message(self, email, api_key, content):
+    def send_api_message(self, email, content):
         # type: (text_type, text_type, text_type) -> HttpResponse
-        return self.client_post("/api/v1/send_message", {"type": "stream",
-                                                                   "to": "Verona",
-                                                                   "client": "test suite",
-                                                                   "content": content,
-                                                                   "subject": "Test subject",
-                                                                   "email": email,
-                                                                   "api-key": api_key})
+        return self.client_post("/api/v1/messages", {"type": "stream",
+                                                     "to": "Verona",
+                                                     "client": "test suite",
+                                                     "content": content,
+                                                     "subject": "Test subject"},
+                                **self.api_auth(email))
+
     def test_headers(self):
         # type: () -> None
         email = "hamlet@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
-        api_key = self.get_api_key(email)
 
-        result = self.send_api_message(email, api_key, "some stuff")
+        result = self.send_api_message(email, "some stuff")
         self.assertTrue('X-RateLimit-Remaining' in result)
         self.assertTrue('X-RateLimit-Limit' in result)
         self.assertTrue('X-RateLimit-Reset' in result)
@@ -92,11 +91,10 @@ class RateLimitTests(ZulipTestCase):
         email = "hamlet@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
-        api_key = self.get_api_key(email)
-        result = self.send_api_message(email, api_key, "some stuff")
+        result = self.send_api_message(email, "some stuff")
         limit = int(result['X-RateLimit-Remaining'])
 
-        result = self.send_api_message(email, api_key, "some stuff 2")
+        result = self.send_api_message(email, "some stuff 2")
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
@@ -107,9 +105,8 @@ class RateLimitTests(ZulipTestCase):
         user = get_user_profile_by_email(email)
         clear_user_history(user)
 
-        api_key = self.get_api_key(email)
         for i in range(6):
-            result = self.send_api_message(email, api_key, "some stuff %s" % (i,))
+            result = self.send_api_message(email, "some stuff %s" % (i,))
 
         self.assertEqual(result.status_code, 429)
         json = ujson.loads(result.content)
@@ -123,7 +120,6 @@ class RateLimitTests(ZulipTestCase):
         # after some time has passed.
         time.sleep(1)
 
-        result = self.send_api_message(email, api_key, "Good message")
+        result = self.send_api_message(email, "Good message")
 
         self.assert_json_success(result)
-

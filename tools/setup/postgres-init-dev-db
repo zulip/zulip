@@ -85,4 +85,3 @@ EOF
 sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
 
 echo "Database created"
-

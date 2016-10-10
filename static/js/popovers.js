@@ -136,6 +136,23 @@ exports.hide_actions_popover = function () {
     }
 };
 
+exports.topic_ops = {
+    mute: function (stream, topic) {
+        popovers.hide_topic_sidebar_popover();
+        muting.mute_topic(stream, topic);
+        muting_ui.persist_and_rerender();
+        muting_ui.notify_with_undo_option(stream, topic);
+    },
+    // we don't run a unmute_notif function because it isn't an issue as much
+    // if someone accidentally unmutes a stream rather than if they mute it
+    // and miss out on info.
+    unmute: function (stream, topic) {
+        popovers.hide_topic_sidebar_popover();
+        muting.unmute_topic(stream, topic);
+        muting_ui.persist_and_rerender();
+    }
+};
+
 function message_info_popped() {
     return current_message_info_popover_elem !== undefined;
 }
@@ -364,9 +381,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.sidebar-popover-mute-topic', function (e) {
         var stream = $(e.currentTarget).attr('data-stream-name');
         var topic = $(e.currentTarget).attr('data-topic-name');
-        popovers.hide_topic_sidebar_popover();
-        muting.mute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
+        exports.topic_ops.mute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -374,9 +389,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.sidebar-popover-unmute-topic', function (e) {
         var stream = $(e.currentTarget).attr('data-stream-name');
         var topic = $(e.currentTarget).attr('data-topic-name');
-        popovers.hide_topic_sidebar_popover();
-        muting.unmute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
+        exports.topic_ops.unmute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -514,9 +527,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.popover_mute_topic', function (e) {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
-        popovers.hide_actions_popover();
-        muting.mute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
+        exports.topic_ops.mute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });

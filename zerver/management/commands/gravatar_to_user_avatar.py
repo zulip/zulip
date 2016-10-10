@@ -5,7 +5,7 @@ from typing import Any
 from argparse import ArgumentParser
 import requests
 from zerver.models import get_user_profile_by_email, UserProfile
-from zerver.lib.avatar import gravatar_hash
+from zerver.lib.avatar_hash import gravatar_hash
 from zerver.lib.upload import upload_avatar_image
 from django.core.management.base import BaseCommand, CommandError
 from django.core.files.uploadedfile import SimpleUploadedFile

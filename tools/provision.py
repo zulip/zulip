@@ -25,10 +25,8 @@ SUPPORTED_PLATFORMS = {
     ],
 }
 
-NPM_VERSION = '3.9.3'
 PY2_VENV_PATH = "/srv/zulip-venv"
 PY3_VENV_PATH = "/srv/zulip-py3-venv"
-TRAVIS_NODE_PATH = os.path.join(os.environ['HOME'], 'node')
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, 'var')
 LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
 UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
@@ -81,11 +79,9 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "rabbitmq-server",
     "redis-server",
     "hunspell-en-us",
-    "nodejs",
-    "nodejs-legacy",
     "supervisor",
     "git",
-    "npm",
+    "libssl-dev",
     "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
@@ -120,29 +116,6 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
-def install_npm():
-    # type: () -> None
-    if not TRAVIS:
-        if subprocess_text_output(['npm', '--version']) != NPM_VERSION:
-            run(["sudo", "npm", "install", "-g", "npm@{}".format(NPM_VERSION)])
-
-        return
-
-    run(['mkdir', '-p', TRAVIS_NODE_PATH])
-
-    npm_exe = os.path.join(TRAVIS_NODE_PATH, 'bin', 'npm')
-    travis_npm = subprocess_text_output(['which', 'npm'])
-    if os.path.exists(npm_exe):
-        run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
-
-    version = subprocess_text_output(['npm', '--version'])
-    if os.path.exists(npm_exe) and version == NPM_VERSION:
-        print("Using cached npm")
-        return
-
-    run(["npm", "install", "-g", "--prefix", TRAVIS_NODE_PATH, "npm@{}".format(NPM_VERSION)])
-    run(['sudo', 'ln', '-sf', npm_exe, travis_npm])
-
 
 def main():
     # type: () -> int
@@ -152,8 +125,14 @@ def main():
     os.chdir(ZULIP_PATH)
 
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-    # Add groonga repository to get the pgroonga packages
-    run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+
+    # Add groonga repository to get the pgroonga packages; retry if it fails :/
+    try:
+        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+    except subprocess.CalledProcessError:
+        print(WARNING + "`Could not add groonga; retrying..." + ENDC)
+        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
@@ -165,9 +144,6 @@ def main():
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
             setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE, patch_activate_script=True)
         else:
-            TWISTED_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "twisted.txt")
-            setup_virtualenv("/srv/zulip-py2-twisted-venv", TWISTED_REQS_FILE,
-                             patch_activate_script=True)
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
             setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
                              virtualenv_args=['-p', 'python3'])
@@ -199,13 +175,9 @@ def main():
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    if TRAVIS:
-        run(["tools/setup/install-phantomjs", "--travis"])
-    else:
-        run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
-    run(["scripts/setup/generate_secrets.py", "-d"])
+    run(["scripts/setup/generate_secrets.py", "--development"])
     if TRAVIS and not PRODUCTION_TRAVIS:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
@@ -224,11 +196,17 @@ def main():
         run(["tools/setup/postgres-init-test-db"])
         run(["tools/do-destroy-rebuild-test-database"])
         run(["python", "./manage.py", "compilemessages"])
-    # Install the pinned version of npm.
-    install_npm()
-    # Run npm install last because it can be flaky, and that way one
-    # only needs to rerun `npm install` to fix the installation.
+
+    # Here we install nvm, node, and npm.
+    run(["sudo", "tools/setup/install-node"])
+
+    # This is a wrapper around `npm install`, which we run last since
+    # it can often fail due to network issues beyond our control.
     try:
+        # Hack: We remove `node_modules` as root to work around an
+        # issue with the symlinks being improperly owned by root.
+        if os.path.islink("node_modules"):
+            run(["sudo", "rm", "-f", "node_modules"])
         setup_node_modules()
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)

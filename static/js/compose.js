@@ -133,7 +133,7 @@ function clear_preview_area () {
     $("#new_message_content").show();
     $("#undo_markdown_preview").hide();
     $("#preview_message_area").hide();
-    $("#preview_message_area").empty();
+    $("#preview_content").empty();
     $("#markdown_preview").show();
 }
 
@@ -1004,16 +1004,44 @@ $(function () {
     $("#compose").on("click", "#markdown_preview", function (e) {
         e.preventDefault();
         var message = $("#new_message_content").val();
-        var preview = echo.apply_markdown(message);
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
         if (message.length === 0) {
-            $("#preview_message_area").html(i18n.t("Nothing to preview"));
+            $("#preview_content").html(i18n.t("Nothing to preview"));
         } else {
-            $("#preview_message_area").html(preview);
+            if (echo.contains_bugdown(message))  {
+                var spinner = $("#markdown_preview_spinner").expectOne();
+                loading.make_indicator(spinner);
+            } else {
+                // For messages that don't appear to contain
+                // bugdown-specific syntax not present in our
+                // marked.js frontend processor, we render using the
+                // frontend markdown processor message (but still
+                // render server-side to ensure the preview is
+                // accurate; if the `echo.contains_bugdown` logic is
+                // incorrect wrong, users will see a brief flicker).
+                $("#preview_content").html(echo.apply_markdown(message));
+            }
+            channel.get({
+                url: '/json/messages/render',
+                idempotent: true,
+                data: {content: message},
+                success: function (response_data) {
+                    if (echo.contains_bugdown(message)) {
+                        loading.destroy_indicator($("#markdown_preview_spinner"));
+                    }
+                    $("#preview_content").html(response_data.rendered);
+                },
+                error: function () {
+                    if (echo.contains_bugdown(message)) {
+                        loading.destroy_indicator($("#markdown_preview_spinner"));
+                    }
+                    $("#preview_content").html(i18n.t("Failed to generate preview"));
+                }
+            });
         }
     });
 

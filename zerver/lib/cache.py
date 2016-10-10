@@ -24,7 +24,7 @@ import six
 from six import text_type
 
 if False:
-    from zerver.models import UserProfile, Realm
+    from zerver.models import UserProfile, Realm, Message
     # These modules have to be imported for type annotations but
     # they cannot be imported at runtime due to cyclic dependency.
 
@@ -213,12 +213,15 @@ def cache_delete_many(items, cache_name=None):
 ObjKT = TypeVar('ObjKT', int, text_type)
 ItemT = Any # https://github.com/python/mypy/issues/1721
 CompressedItemT = Any # https://github.com/python/mypy/issues/1721
-def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
-                              extractor=lambda obj: obj,
-                              setter=lambda obj: obj,
-                              id_fetcher=lambda obj: obj.id,
-                              cache_transformer=lambda obj: obj):
-    # type: (Callable[[ObjKT], text_type], Callable[[List[ObjKT]], Iterable[Any]], Iterable[ObjKT], Callable[[CompressedItemT], ItemT], Callable[[ItemT], CompressedItemT], Callable[[Any], ObjKT], Callable[[Any], ItemT]) -> Dict[ObjKT, Any]
+def generic_bulk_cached_fetch(cache_key_function, # type: Callable[[ObjKT], text_type]
+                              query_function, # type: Callable[[List[ObjKT]], Iterable[Any]]
+                              object_ids, # type: Iterable[ObjKT]
+                              extractor=lambda obj: obj, # type: Callable[[CompressedItemT], ItemT]
+                              setter=lambda obj: obj, # type: Callable[[ItemT], CompressedItemT]
+                              id_fetcher=lambda obj: obj.id, # type: Callable[[Any], ObjKT]
+                              cache_transformer=lambda obj: obj # type: Callable[[Any], ItemT]
+                              ):
+    # type: (...) -> Dict[ObjKT, Any]
     cache_keys = {} # type: Dict[ObjKT, text_type]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
@@ -265,7 +268,7 @@ def display_recipient_cache_key(recipient_id):
 
 def user_profile_by_email_cache_key(email):
     # type: (text_type) -> text_type
-    # See the comment in zerver/lib/avatar.py:gravatar_hash for why we
+    # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
     return u'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
@@ -373,3 +376,19 @@ def flush_stream(sender, **kwargs):
            Q(default_events_register_stream=stream)
        ).exists():
         cache_delete(active_bot_dicts_in_realm_cache_key(stream.realm))
+
+# TODO: Rename to_dict_cache_key_id and to_dict_cache_key
+def to_dict_cache_key_id(message_id, apply_markdown):
+    # type: (int, bool) -> text_type
+    return u'message_dict:%d:%d' % (message_id, apply_markdown)
+
+def to_dict_cache_key(message, apply_markdown):
+    # type: (Message, bool) -> text_type
+    return to_dict_cache_key_id(message.id, apply_markdown)
+
+def flush_message(sender, **kwargs):
+    # type: (Any, **Any) -> None
+    message = kwargs['instance']
+    cache_delete(to_dict_cache_key(message, False))
+    cache_delete(to_dict_cache_key(message, True))
+

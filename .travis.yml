@@ -2,13 +2,14 @@ dist: trusty
 before_install:
    - nvm install 0.10
 install:
+  # Disable Travis CI's built-in NVM installation
+  - mv ~/.nvm ~/.travis-nvm-disabled
   - pip install coveralls
   - tools/travis/setup-$TEST_SUITE
   - tools/clean-venv-cache --travis
 cache:
   - apt: false
   - directories:
-    - $HOME/phantomjs
     - $HOME/zulip-venv-cache
     - node_modules
     - $HOME/node
@@ -32,7 +33,6 @@ matrix:
       env: TEST_SUITE=static-analysis
     - python: "2.7"
       env: TEST_SUITE=production
-      sudo: required
 # command to run tests
 script:
   - unset GEM_PATH
@@ -41,6 +41,10 @@ sudo: required
 services:
 - docker
 addons:
+  artifacts:
+    paths:
+      - $(ls var/casper/* | tr "\n" ":")
+      - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
   postgresql: "9.3"
 after_success:
   coveralls

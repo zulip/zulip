@@ -122,4 +122,3 @@ def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
 
         min_id = upper + 1
         time.sleep(sleep)
-

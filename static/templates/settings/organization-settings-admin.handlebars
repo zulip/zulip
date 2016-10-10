@@ -1,0 +1,90 @@
+<div id="organization-settings" class="settings-section">
+<div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
+{{t "Organization settings" }}</div>
+  <form class="form-horizontal admin-realm-form">
+    <div class="alert" id="admin-realm-name-status"></div>
+    <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
+    <div class="alert" id="admin-realm-invite-required-status"></div>
+    <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
+    <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
+    <div class="alert" id="admin-realm-message-editing-status"></div>
+    <div class="alert" id="admin-realm-default-language-status"></div>
+
+    <div class="input-group admin-realm">
+      <label for="realm_name">{{t "Your organization's name" }}</label>
+      <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
+             value="{{ realm_name }}" />
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
+         {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+      <label for="id_realm_restricted_to_domain" class="inline-block"
+        title="{{#tr this}}If checked, only users with an @__domain__ e-mail address will be able to join the organization.{{/tr}}">
+        {{#tr this}}Users restricted to __domain__{{/tr}}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_invite_required" name="realm_invite_required"
+        {{#if realm_invite_required}}checked="checked"{{/if}} />
+      <label for="id_realm_invite_required" class="inline-block"
+        title="{{t 'If checked, users must be invited in order to join your organization.' }}">
+        {{t "E-mail invitation required" }}
+      </label>
+    </div>
+    <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
+      <input type="checkbox" class="inline-block" id="id_realm_invite_by_admins_only" name="realm_invite_by_admins_only"
+        {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
+        {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+      <label for="id_realm_invite_by_admins_only"
+        id="id_realm_invite_by_admins_only_label"
+        title="{{t 'If checked, only administrators may invite new users.' }}"
+        class="inline-block">
+        {{t "Only admins may invite" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_create_stream_by_admins_only"
+             name="realm_create_stream_by_admins_only"
+        {{#if realm_create_stream_by_admins_only}}checked="checked"{{/if}} />
+
+      <label for="id_realm_create_stream_by_admins_only" class="inline-block"
+        id="id_realm_create_stream_by_admins_only_label"
+        title="{{t 'If checked, only administrators may create new streams.'}}">
+        {{t "Only admins may create streams" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
+        {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
+
+      <label for="id_realm_allow_message_editing"
+        title="{{t 'If checked, users can edit the content and topics of their old messages.' }}"
+        class="inline-block">
+        {{t "Users can edit old messages" }}
+      </label>
+    </div>
+    <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
+      <label for="realm_message_content_edit_limit_minutes"
+        id="id_realm_message_content_edit_limit_minutes_label"
+        title="{{t 'If non-zero, users can edit their message for this many minutes after it is sent. If zero, users can edit all their past messages.' }}">
+        {{t 'Message edit limit in minutes (0 for no limit)' }}
+      </label>
+      <input type="text" id="id_realm_message_content_edit_limit_minutes"
+             name="realm_message_content_edit_limit_minutes"
+             class="admin-realm-message-content-edit-limit-minutes"
+             value="{{ realm_message_content_edit_limit_minutes }}"
+        {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+    </div>
+    <div class="input-group">
+      <label for="realm_default_language">{{t "Default Language" }}:</label>
+      <select name="realm_default_language" id="id_realm_default_language">
+        {{#each language_list}}
+        <option value='{{this.code}}'>{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="input-group organization-submission">
+      <input type="submit" class="button" value="{{t 'Save changes' }}" />
+    </div>
+  </form>
+</div>

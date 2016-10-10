@@ -14,7 +14,7 @@ import ujson
 import shutil
 import subprocess
 import tempfile
-from zerver.lib.avatar import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_hash
 from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
@@ -1587,4 +1587,3 @@ def import_attachments(data):
         cursor.executemany(sql_template, tups)
 
     logging.info('Successfully imported M2M table %s' % (m2m_table_name,))
-

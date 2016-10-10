@@ -42,6 +42,99 @@ a {
     cursor: pointer;
 }
 
+p.n-margin {
+    margin: 10px 0px 0px 0px;
+}
+
+.small-line-height {
+    line-height: 1.1;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-clear {
+    clear: both;
+}
+
+.light {
+    font-weight: 300;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.border-radius {
+    border-radius: 4px;
+}
+
+#unmute_muted_topic_notification {
+    display: none;
+    position: absolute;
+    width: 400px;
+    top: 0px;
+    left: calc(50vw - 220px);
+    padding: 15px;
+
+    background-color: #FAFAFA;
+    border-radius: 5px;
+    box-shadow: 0px 0px 30px rgba(0,0,0,0.25);
+    z-index: 101;
+
+    animation-name: pulse;
+    animation-iteration-count: infinite;
+    animation-duration: 2s;
+
+    transition-property: top, bottom;
+    transition-duration: 0.5s;
+}
+
+#unmute_muted_topic_notification.show {
+    top: 50px;
+}
+
+#unmute_muted_topic_notification h3 {
+    font-size: 16pt;
+    margin-top: 2px;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0px 0px 30px rgba(0,0,0,0.35);
+    }
+    50% {
+        box-shadow: 0px 0px 30px rgba(0,0,0,0.15);
+    }
+    100% {
+        box-shadow: 0px 0px 30px rgba(0,0,0,0.35);
+    }
+}
+
+#unmute_muted_topic_notification .btn {
+    background-color: transparent;
+    border: 1px solid #444;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+#unmute_muted_topic_notification .btn:hover {
+    background-color: #444;
+    color: #FAFAFA;
+}
+
+#unmute_muted_topic_notification .exit-me {
+    font-size: 30pt;
+    font-weight: 200;
+    margin: 5px 0px 0px 10px;
+    cursor: pointer;
+}
+
 .ztable_comp_col1 {
     width: 10px;
 }
@@ -986,7 +1079,7 @@ td.pointer {
 
 .messages-expand,
 .messages-collapse {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 /*
@@ -2596,12 +2689,12 @@ div.floating_recipient {
 }
 
 .subscription-name-row {
-  display: inline-block;
+    display: inline-block;
 }
 
 .subscription-name-row,
 .subscription-description-row {
-  vertical-align: top;
+    vertical-align: top;
 }
 
 .subscription_header .subscription_lock {
@@ -2730,7 +2823,7 @@ div.floating_recipient {
 }
 
 .sp-container {
-  z-index: 100;
+    z-index: 100;
 }
 
 .streams_popover .sp-palette-container {
@@ -3591,4 +3684,8 @@ a#undo_markdown_preview {
     top: 3px;
     font-size: 16px;
     color: #777;
+}
+
+#markdown_preview_spinner {
+    margin: auto;
 }

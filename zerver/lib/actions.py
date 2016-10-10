@@ -9,22 +9,34 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
-from zerver.lib.bugdown import BugdownRenderingException
-from zerver.lib.cache import flush_user_profile
+from zerver.lib.bugdown import (
+    BugdownRenderingException,
+    version as bugdown_version
+)
+from zerver.lib.cache import (
+    to_dict_cache_key,
+    to_dict_cache_key_id,
+)
 from zerver.lib.context_managers import lockfile
+from zerver.lib.message import (
+    MessageDict,
+    message_to_dict,
+    render_markdown,
+)
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, bulk_get_recipients, \
+    get_realm, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user_profile_by_email, get_stream_cache_key, to_dict_cache_key_id, \
+    get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_users
 
+from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
 from django.db import transaction, IntegrityError
@@ -627,6 +639,20 @@ def do_send_message(message, rendered_content = None, no_log = False, stream = N
                               'stream': stream,
                               'local_id': local_id}])[0]
 
+def render_incoming_message(message, content, message_users):
+    # type: (Message, text_type, Set[UserProfile]) -> text_type
+    realm_alert_words = alert_words_in_realm(message.get_realm())
+    try:
+        rendered_content = render_markdown(
+            message=message,
+            content=content,
+            realm_alert_words=realm_alert_words,
+            message_users=message_users,
+        )
+    except BugdownRenderingException:
+        raise JsonableError(_('Unable to render message'))
+    return rendered_content
+
 def do_send_messages(messages):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
@@ -685,7 +711,18 @@ def do_send_messages(messages):
         # Only deliver the message to active user recipients
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
-        message['message'].maybe_render_content(None)
+
+    # Render our messages.
+    for message in messages:
+        assert message['message'].rendered_content is None
+        rendered_content = render_incoming_message(
+            message['message'],
+            message['message'].content,
+            message_users=message['active_recipients'])
+        message['message'].rendered_content = rendered_content
+        message['message'].rendered_content_version = bugdown_version
+
+    for message in messages:
         message['message'].update_calculated_fields()
 
     # Save the message receipts in the database
@@ -698,7 +735,7 @@ def do_send_messages(messages):
                              for user_profile in message['active_recipients']]
 
             # These properties on the Message are set via
-            # Message.render_markdown by code in the bugdown inline patterns
+            # render_markdown by code in the bugdown inline patterns
             wildcard = message['message'].mentions_wildcard
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
@@ -740,8 +777,8 @@ def do_send_messages(messages):
         event = dict(
             type         = 'message',
             message      = message['message'].id,
-            message_dict_markdown = message['message'].to_dict(apply_markdown=True),
-            message_dict_no_markdown = message['message'].to_dict(apply_markdown=False),
+            message_dict_markdown = message_to_dict(message['message'], apply_markdown=True),
+            message_dict_no_markdown = message_to_dict(message['message'], apply_markdown=False),
             presences    = presences)
         users = [{'id': user.id,
                   'flags': user_flags.get(user.id, []),
@@ -959,7 +996,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
             # We warn the user once every 5 minutes to avoid a flood of
             # PMs on a misconfigured integration, re-using the
             # UserProfile.last_reminder field, which is not used for bots.
-            last_reminder = sender.last_reminder_tzaware()
+            last_reminder = sender.last_reminder
             waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
             if not last_reminder or timezone.now() - last_reminder > waitperiod:
                 if stream is None:
@@ -1065,10 +1102,8 @@ def check_message(sender, client, message_type_name, message_to,
         message.pub_date = timezone.now()
     message.sending_client = client
 
-    try:
-        message.maybe_render_content(realm.domain)
-    except BugdownRenderingException:
-        raise JsonableError(_("Unable to render message"))
+    # We render messages later in the process.
+    assert message.rendered_content is None
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
@@ -1907,13 +1942,35 @@ def do_change_stream_description(realm, stream_name, new_description):
                  value=new_description)
     send_event(event, stream_user_ids(stream))
 
-def do_create_realm(domain, name, restricted_to_domain=True):
-    # type: (text_type, text_type, bool) -> Tuple[Realm, bool]
+def get_realm_creation_defaults(org_type=None, restricted_to_domain=None, invite_required=None):
+    # type: (Optional[int], Optional[bool], Optional[bool]) -> Dict[text_type, Any]
+    if org_type is None:
+        org_type = Realm.CORPORATE
+    # not totally clear what the defaults should be if exactly one of
+    # restricted_to_domain or invite_required are set. Just doing the
+    # least complicated thing that works when both are unset.
+    if restricted_to_domain is None:
+        restricted_to_domain = (org_type == Realm.CORPORATE)
+    if invite_required is None:
+        invite_required = not (org_type == Realm.CORPORATE)
+    return {'org_type': org_type,
+            'restricted_to_domain': restricted_to_domain,
+            'invite_required': invite_required}
+
+def do_create_realm(domain, name, subdomain=None, restricted_to_domain=None,
+                    invite_required=None, org_type=None):
+    # type: (text_type, text_type, Optional[text_type], Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
     realm = get_realm(domain)
     created = not realm
     if created:
-        realm = Realm(domain=domain, name=name,
-                      restricted_to_domain=restricted_to_domain)
+        realm_params = get_realm_creation_defaults(org_type=org_type,
+                                                   restricted_to_domain=restricted_to_domain,
+                                                   invite_required=invite_required)
+        org_type = realm_params['org_type']
+        restricted_to_domain = realm_params['restricted_to_domain']
+        invite_required = realm_params['invite_required']
+        realm = Realm(domain=domain, name=name, org_type=org_type, subdomain=subdomain,
+                      restricted_to_domain=restricted_to_domain, invite_required=invite_required)
         realm.save()
 
         # Create stream once Realm object has been saved
@@ -1935,7 +1992,9 @@ system-generated notifications.""" % (product_name, notifications_stream.name,)
         # Log the event
         log_event({"type": "realm_created",
                    "domain": domain,
-                   "restricted_to_domain": restricted_to_domain})
+                   "restricted_to_domain": restricted_to_domain,
+                   "invite_required": invite_required,
+                   "org_type": org_type})
 
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"
@@ -2469,7 +2528,8 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
         message.content = content
-        message.set_rendered_content(rendered_content)
+        message.rendered_content = rendered_content
+        message.rendered_content_version = bugdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
 
@@ -2536,9 +2596,9 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     for changed_message in changed_messages:
         event['message_ids'].append(changed_message.id)
         items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (changed_message.to_dict_uncached(apply_markdown=True),)
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
         items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (changed_message.to_dict_uncached(apply_markdown=False),)
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
 
     def user_info(um):

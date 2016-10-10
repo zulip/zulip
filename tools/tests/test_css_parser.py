@@ -62,6 +62,15 @@ class ParserTestHappyPath(unittest.TestCase):
 
         self.assertFalse(section.declaration_block.declarations[0].semicolon)
 
+    def test_empty_block(self):
+        # type: () -> None
+        my_css = '''
+            div {
+            }'''
+        error = 'Empty declaration'
+        with self.assertRaisesRegexp(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+            parse(my_css)
+
     def test_multi_line_selector(self):
         # type: () -> None
         my_css = '''
@@ -179,4 +188,3 @@ class ParserTestSadPath(unittest.TestCase):
             }'''
         error = 'Comments in selector section are not allowed'
         self._assert_error(my_css, error)
-

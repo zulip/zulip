@@ -15,4 +15,3 @@ def get_mandrill_client():
         MAIL_CLIENT = mandrill.Mandrill(settings.MANDRILL_API_KEY)
 
     return MAIL_CLIENT
-

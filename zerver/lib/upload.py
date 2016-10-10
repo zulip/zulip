@@ -9,7 +9,7 @@ from django.http import HttpRequest
 from jinja2 import Markup as mark_safe
 import unicodedata
 
-from zerver.lib.avatar import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_hash
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_text, force_str, NonBinaryStr
 
@@ -31,6 +31,8 @@ from six import binary_type, text_type
 import io
 import random
 import logging
+
+DEFAULT_AVATAR_SIZE = 100
 
 # Performance Note:
 #
@@ -80,12 +82,11 @@ def random_name(bytes=60):
 class BadImageError(JsonableError):
     pass
 
-def resize_avatar(image_data):
-    # type: (binary_type) -> binary_type
-    AVATAR_SIZE = 100
+def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
+    # type: (binary_type, int) -> binary_type
     try:
         im = Image.open(io.BytesIO(image_data))
-        im = ImageOps.fit(im, (AVATAR_SIZE, AVATAR_SIZE), Image.ANTIALIAS)
+        im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
         raise BadImageError("Could not decode avatar image; did you upload an image file?")
     out = io.BytesIO()
@@ -105,6 +106,10 @@ class ZulipUploadBackend(object):
 
     def delete_message_image(self, path_id):
         # type: (text_type) -> bool
+        raise NotImplementedError()
+
+    def get_avatar_url(self, hash_key):
+        # type: (text_type) -> text_type
         raise NotImplementedError()
 
 ### S3
@@ -149,6 +154,8 @@ def get_file_info(request, user_file):
     # type: (HttpRequest, File) -> Tuple[text_type, Optional[text_type]]
 
     uploaded_file_name = user_file.name
+    assert isinstance(uploaded_file_name, str)
+
     content_type = request.GET.get('mimetype')
     if content_type is None:
         guessed_type = guess_type(uploaded_file_name)[0]
@@ -238,6 +245,12 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
+    def get_avatar_url(self, hash_key):
+        # type: (text_type) -> text_type
+        bucket = settings.S3_AVATAR_BUCKET
+        # ?x=x allows templates to append additional parameters with &s
+        return u"https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
+
 ### Local
 
 def mkdirs(path):
@@ -297,6 +310,11 @@ class LocalUploadBackend(ZulipUploadBackend):
 
         resized_data = resize_avatar(image_data)
         write_local_file('avatars', email_hash+'.png', resized_data)
+
+    def get_avatar_url(self, hash_key):
+        # type: (text_type) -> text_type
+        # ?x=x allows templates to append additional parameters with &s
+        return u"/user_avatars/%s.png?x=x" % (hash_key)
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:

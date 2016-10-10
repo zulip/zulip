@@ -8,7 +8,7 @@ from zilencer.models import Deployment
 
 from zerver.views import get_invitee_emails_set, do_change_password
 from zerver.models import (
-    get_realm, get_user_profile_by_email,
+    get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
@@ -78,8 +78,7 @@ class PublicURLTest(ZulipTestCase):
                            "/json/users/me/subscriptions",
                            "/api/v1/users/me/subscriptions",
                            ],
-                     400: ["/api/v1/send_message",
-                           "/api/v1/external/github",
+                     400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
                 }
@@ -136,17 +135,8 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assert_in_response("Check your email to finish the process.", result)
 
-        # visit password reset link
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                password_reset_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)")
-                password_reset_url = password_reset_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise ValueError("Couldn't find a password reset email.")
-
+        # Visit the password reset link.
+        password_reset_url = self.get_confirmation_url_from_outbox(email, "(\S+)")
         result = self.client_get(password_reset_url)
         self.assertEquals(result.status_code, 200)
 
@@ -199,7 +189,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 67)
+        self.assert_max_length(queries, 69)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -284,16 +274,7 @@ class LoginTest(ZulipTestCase):
         self.assert_in_response("Check your email so we can get started.", result)
 
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise ValueError("Couldn't find a confirmation email.")
-
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
         self.assertEquals(result.status_code, 200)
 
@@ -307,6 +288,7 @@ class LoginTest(ZulipTestCase):
         self.assert_in_response("You're the first one here!", result)
 
         # Reset the outbox for our invites.
+        from django.core.mail import outbox
         outbox.pop()
 
         invitees = ['alice@' + domain, 'bob@' + domain]
@@ -518,6 +500,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
+        prereg_user = get_prereg_user_by_email('foo-test@zulip.com')
+        self.assertEqual(prereg_user.email, 'foo-test@zulip.com')
+
     def test_invite_outside_domain_in_closed_realm(self):
         # type: () -> None
         """
@@ -683,10 +668,11 @@ class RealmCreationTest(ZulipTestCase):
         username = "user1"
         password = "test"
         domain = "test.com"
+        org_type = Realm.COMMUNITY
         email = "user1@test.com"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm("test.com"))
+        self.assertIsNone(get_realm(domain))
 
         with self.settings(OPEN_REALM_CREATION=True):
             # Create new realm with the email
@@ -698,33 +684,52 @@ class RealmCreationTest(ZulipTestCase):
             self.assert_in_response("Check your email so we can get started.", result)
 
             # Visit the confirmation link.
-            from django.core.mail import outbox
-            for message in reversed(outbox):
-                if email in message.to:
-                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                    confirmation_url = confirmation_link_pattern.search(
-                        message.body).groups()[0]
-                    break
-            else:
-                raise ValueError("Couldn't find a confirmation email.")
-
+            confirmation_url = self.get_confirmation_url_from_outbox(email)
             result = self.client_get(confirmation_url)
             self.assertEquals(result.status_code, 200)
 
-            result = self.submit_reg_form_for_user(username, password, domain)
+            result = self.submit_reg_form_for_user(username, password, domain=domain, realm_org_type=org_type)
             self.assertEquals(result.status_code, 302)
 
             # Make sure the realm is created
-            realm = get_realm("test.com")
-
+            realm = get_realm(domain)
             self.assertIsNotNone(realm)
             self.assertEqual(realm.domain, domain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+            # Check defaults
+            self.assertEquals(realm.org_type, Realm.COMMUNITY)
+            self.assertEquals(realm.restricted_to_domain, False)
+            self.assertEquals(realm.invite_required, True)
 
             self.assertTrue(result["Location"].endswith("/invite/"))
 
             result = self.client_get(result["Location"])
             self.assert_in_response("You're the first one here!", result)
+
+    def test_realm_corporate_defaults(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "test.com"
+        org_type = Realm.CORPORATE
+        email = "user1@test.com"
+
+        # Make sure the realm does not exist
+        self.assertIsNone(get_realm(domain))
+
+        # Create new realm with the email
+        with self.settings(OPEN_REALM_CREATION=True):
+            self.client_post('/create_realm/', {'email': email})
+            confirmation_url = self.get_confirmation_url_from_outbox(email)
+            self.client_get(confirmation_url)
+            self.submit_reg_form_for_user(username, password, domain=domain, realm_org_type=org_type)
+
+        # Check corporate defaults were set correctly
+        realm = get_realm(domain)
+        self.assertEquals(realm.org_type, Realm.CORPORATE)
+        self.assertEquals(realm.restricted_to_domain, True)
+        self.assertEquals(realm.invite_required, False)
 
 class UserSignUpTest(ZulipTestCase):
 
@@ -749,22 +754,66 @@ class UserSignUpTest(ZulipTestCase):
         self.assert_in_response("Check your email so we can get started.", result)
 
         # Visit the confirmation link.
-        from django.core.mail import outbox
-        for message in reversed(outbox):
-            if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                confirmation_url = confirmation_link_pattern.search(
-                    message.body).groups()[0]
-                break
-        else:
-            raise ValueError("Couldn't find a confirmation email.")
-
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
         result = self.client_get(confirmation_url)
         self.assertEquals(result.status_code, 200)
+
         # Pick a password and agree to the ToS.
         result = self.submit_reg_form_for_user(username, password, domain)
         self.assertEquals(result.status_code, 302)
 
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.default_language, realm.default_language)
+        from django.core.mail import outbox
         outbox.pop()
+
+    def test_create_realm_with_subdomain(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "test.com"
+        email = "user1@test.com"
+        subdomain = "test"
+        realm_name = "Test"
+
+        # Make sure the realm does not exist
+        self.assertIsNone(get_realm(domain))
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.settings(OPEN_REALM_CREATION=True):
+            # Create new realm with the email
+            result = self.client_post('/create_realm/', {'email': email})
+            self.assertEquals(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith(
+                    "/accounts/send_confirm/%s@%s" % (username, domain)))
+            result = self.client_get(result["Location"])
+            self.assert_in_response("Check your email so we can get started.", result)
+            # Visit the confirmation link.
+            from django.core.mail import outbox
+            for message in reversed(outbox):
+                if email in message.to:
+                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                    confirmation_url = confirmation_link_pattern.search(
+                        message.body).groups()[0]
+                    break
+            else:
+                raise ValueError("Couldn't find a confirmation email.")
+
+            result = self.client_get(confirmation_url)
+            self.assertEquals(result.status_code, 200)
+
+            result = self.submit_reg_form_for_user(username,
+                                                   password,
+                                                   domain=domain,
+                                                   realm_name=realm_name,
+                                                   realm_subdomain=subdomain,
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEquals(result.status_code, 302)
+
+            # Make sure the realm is created
+            realm = get_realm(domain)
+
+            self.assertIsNotNone(realm)
+            self.assertEqual(realm.domain, domain)
+            self.assertEqual(realm.name, realm_name)
+            self.assertEqual(realm.subdomain, subdomain)
+            self.assertEqual(get_user_profile_by_email(email).realm, realm)

@@ -1,7 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 from __future__ import print_function
 
 import optparse
+import pwd
 import subprocess
 import signal
 import traceback
@@ -9,17 +10,6 @@ import sys
 import os
 
 if False: from typing import Any
-
-# find out python version
-major_version = int(subprocess.check_output(['python', '-c', 'import sys; print(sys.version_info[0])']))
-if major_version != 2:
-    # use twisted from its python2 venv but use django, tornado, etc. from the python3 venv.
-    PATH = os.environ["PATH"]
-    activate_this = "/srv/zulip-venv/bin/activate_this.py"
-    if not os.path.exists(activate_this):
-        activate_this = "/srv/zulip-py2-twisted-venv/bin/activate_this.py"
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
-    os.environ["PATH"] = PATH
 
 from twisted.internet import reactor
 from twisted.web      import proxy, server, resource
@@ -57,13 +47,25 @@ parser.add_option('--test',
 
 parser.add_option('--interface',
     action='store', dest='interface',
-    default='127.0.0.1', help='Set the IP or hostname for the proxy to listen on')
+    default=None, help='Set the IP or hostname for the proxy to listen on')
 
 parser.add_option('--no-clear-memcached',
     action='store_false', dest='clear_memcached',
     default=True, help='Do not clear memcached')
 
 (options, args) = parser.parse_args()
+
+if options.interface is None:
+    user_id = os.getuid()
+    user_name = pwd.getpwuid(user_id).pw_name
+    if user_name == "vagrant":
+        # In the Vagrant development environment, we need to listen on
+        # all ports, and it's safe to do so, because Vagrant is only
+        # exposing certain guest ports (by default just 9991) to the host.
+        options.interface = ""
+    else:
+        # Otherwise, only listen to requests on localhost for security.
+        options.interface = "127.0.0.1"
 
 base_port   = 9991
 if options.test:
@@ -76,6 +78,8 @@ manage_args = ['--settings=%s' % (settings_module,)]
 os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from scripts.lib.zulip_tools import WARNING, ENDC
 
 proxy_port   = base_port
 django_port  = base_port+1
@@ -124,23 +128,33 @@ for cmd in cmds:
 
 class Resource(resource.Resource):
     def getChild(self, name, request):
-        # type: (str, server.Request) -> resource.Resource
+        # type: (bytes, server.Request) -> resource.Resource
 
         # Assume an HTTP 1.1 request
         proxy_host = request.requestHeaders.getRawHeaders('Host')
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', proxy_host)
+        if (request.uri in [b'/json/get_events'] or
+            request.uri.startswith(b'/json/events') or
+            request.uri.startswith(b'/api/v1/events') or
+            request.uri.startswith(b'/sockjs')):
+            return proxy.ReverseProxyResource('127.0.0.1', tornado_port, b'/' + name)
 
-        if (request.uri in ['/json/get_events'] or
-            request.uri.startswith('/json/events') or
-            request.uri.startswith('/api/v1/events') or
-            request.uri.startswith('/sockjs')):
-            return proxy.ReverseProxyResource('127.0.0.1', tornado_port, '/'+name)
+        elif (request.uri.startswith(b'/webpack') or
+              request.uri.startswith(b'/socket.io')):
+            return proxy.ReverseProxyResource('127.0.0.1', webpack_port, b'/' + name)
 
-        elif (request.uri.startswith('/webpack') or
-              request.uri.startswith('/socket.io')):
-            return proxy.ReverseProxyResource('127.0.0.1', webpack_port, '/'+name)
+        return proxy.ReverseProxyResource('127.0.0.1', django_port, b'/'+name)
 
-        return proxy.ReverseProxyResource('127.0.0.1', django_port, '/'+name)
+
+    # log which services/ports will be started
+    print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
+          "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
+    if options.test:
+        print("")  # no webpack for --test
+    else:
+        print(", webpack: {}".format(webpack_port))
+
+    print(WARNING + "Note: only port {} is exposed to the host in a Vagrant environment.".format(proxy_port) + ENDC)
 
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)

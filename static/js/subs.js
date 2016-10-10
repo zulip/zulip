@@ -1063,9 +1063,9 @@ $(function () {
 
         $("#subscriptions-status").hide();
 
-        channel.post({
-            url: "/json/rename_stream",
-            data: {"old_name": old_name, "new_name": new_name},
+        channel.patch({
+            url: "/json/streams/" + old_name,
+            data: {"new_name": JSON.stringify(new_name)},
             success: function (data) {
                 new_name_box.val('');
                 // Update all visible instances of the old name to the new name.

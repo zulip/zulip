@@ -62,17 +62,11 @@ Once that finishes, you can run the development server as follows:
 ```
 vagrant ssh
 # Now inside the container
-/srv/zulip/tools/run-dev.py --interface=''
+/srv/zulip/tools/run-dev.py
 ```
 
 To get shell access to the virtual machine running the server to run
 lint, management commands, etc., use `vagrant ssh`.
-
-(A small note on tools/run-dev.py: the `--interface=''` option will
-make the development server listen on all network interfaces.  While
-this is correct for the Vagrant guest sitting behind a NAT, you
-probably don't want to use that option when using run-dev.py in other
-environments).
 
 At this point you should [read about using the development
 environment][using-dev].

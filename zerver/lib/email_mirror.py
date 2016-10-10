@@ -76,14 +76,24 @@ def missed_message_redis_key(token):
 def is_missed_message_address(address):
     # type: (text_type) -> bool
     msg_string = get_email_gateway_message_string_from_address(address)
+    return is_mm_32_format(msg_string)
 
+def is_mm_32_format(msg_string):
+    # type: (text_type) -> bool
+    '''
+    Missed message strings are formatted with a little "mm" prefix
+    followed by a randomly generated 32-character string.
+    '''
     return msg_string.startswith('mm') and len(msg_string) == 34
 
 def get_missed_message_token_from_address(address):
     # type: (text_type) -> text_type
     msg_string = get_email_gateway_message_string_from_address(address)
 
-    if not msg_string.startswith('mm') and len(msg_string) != 34:
+    if msg_string is None:
+        raise ZulipEmailForwardError('Address not recognized by gateway.')
+
+    if not is_mm_32_format(msg_string):
         raise ZulipEmailForwardError('Could not parse missed message address')
 
     # strip off the 'mm' before returning the redis key

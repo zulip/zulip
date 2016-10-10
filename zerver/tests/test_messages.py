@@ -9,12 +9,18 @@ from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zilencer.models import Deployment
 
+from zerver.lib.message import (
+    MessageDict,
+    message_to_dict,
+)
+
 from zerver.lib.test_helpers import (
     ZulipTestCase,
     get_user_messages,
     make_client,
     message_ids, message_stream_count,
     most_recent_message,
+    most_recent_usermessage,
     queries_captured,
 )
 
@@ -195,7 +201,18 @@ class PersonalMessagesTest(ZulipTestCase):
 
         recipient = Recipient.objects.get(type_id=user_profile.id,
                                           type=Recipient.PERSONAL)
-        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
+        message = most_recent_message(user_profile)
+        self.assertEqual(message.recipient, recipient)
+
+        with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
+            self.assertEqual(str(message),
+                u'<Message: recip /  / '
+                '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
+
+            user_message = most_recent_usermessage(user_profile)
+            self.assertEqual(str(user_message),
+                u'<UserMessage: recip / test@zulip.com ([])>'
+            )
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
@@ -340,7 +357,18 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_length(queries, 7)
+        self.assert_max_length(queries, 7)
+
+    def test_stream_message_unicode(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("iago@zulip.com")
+        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="whatever", subject="my topic")
+        message = most_recent_message(user_profile)
+        self.assertEqual(str(message),
+            u'<Message: Denmark / my topic / '
+            '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
 
     def test_message_mentions(self):
         # type: () -> None
@@ -354,29 +382,28 @@ class StreamMessagesTest(ZulipTestCase):
     def test_stream_message_mirroring(self):
         # type: () -> None
         from zerver.lib.actions import do_change_is_admin
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        email = "iago@zulip.com"
+        user_profile = get_user_profile_by_email(email)
 
         do_change_is_admin(user_profile, True, 'api_super_user')
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "to": "Verona",
-                                                           "sender": "cordelia@zulip.com",
-                                                           "client": "test suite",
-                                                           "subject": "announcement",
-                                                           "content": "Everyone knows Iago rules",
-                                                           "forged": "true",
-                                                           "email": user_profile.email,
-                                                           "api-key": user_profile.api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "to": "Verona",
+                                                       "sender": "cordelia@zulip.com",
+                                                       "client": "test suite",
+                                                       "subject": "announcement",
+                                                       "content": "Everyone knows Iago rules",
+                                                       "forged": "true"},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
         do_change_is_admin(user_profile, False, 'api_super_user')
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "to": "Verona",
-                                                           "sender": "cordelia@zulip.com",
-                                                           "client": "test suite",
-                                                           "subject": "announcement",
-                                                           "content": "Everyone knows Iago rules",
-                                                           "forged": "true",
-                                                           "email": user_profile.email,
-                                                           "api-key": user_profile.api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "to": "Verona",
+                                                       "sender": "cordelia@zulip.com",
+                                                       "client": "test suite",
+                                                       "subject": "announcement",
+                                                       "content": "Everyone knows Iago rules",
+                                                       "forged": "true",},
+                                  **self.api_auth(email))
         self.assert_json_error(result, "User not authorized for this query")
 
     @slow('checks all users')
@@ -442,12 +469,12 @@ class MessageDictTest(ZulipTestCase):
             rows = list(Message.get_raw_db_rows(ids))
 
             for row in rows:
-                Message.build_dict_from_raw_db_row(row, False)
+                MessageDict.build_dict_from_raw_db_row(row, False)
 
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assert_length(queries, 7)
+        self.assert_max_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
@@ -471,7 +498,7 @@ class MessageDictTest(ZulipTestCase):
         # An important part of this test is to get the message through this exact code path,
         # because there is an ugly hack we need to cover.  So don't just say "row = message".
         row = Message.get_raw_db_rows([message.id])[0]
-        dct = Message.build_dict_from_raw_db_row(row, apply_markdown=True)
+        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
         expected_content = '<p>hello <strong>world</strong></p>'
         self.assertEqual(dct['content'], expected_content)
         message = Message.objects.get(id=message.id)
@@ -500,14 +527,12 @@ class MessagePOSTTest(ZulipTestCase):
         Same as above, but for the API view
         """
         email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "to": "Verona",
-                                                           "client": "test suite",
-                                                           "content": "Test message",
-                                                           "subject": "Test subject",
-                                                           "email": email,
-                                                           "api-key": api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "to": "Verona",
+                                                       "client": "test suite",
+                                                       "content": "Test message",
+                                                       "subject": "Test subject"},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
 
     def test_api_message_with_default_to(self):
@@ -517,16 +542,14 @@ class MessagePOSTTest(ZulipTestCase):
         stream for the user_profile.
         """
         email = "hamlet@zulip.com"
-        api_key = self.get_api_key(email)
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email(email)
         user_profile.default_sending_stream = get_stream('Verona', user_profile.realm)
         user_profile.save()
-        result = self.client_post("/api/v1/send_message", {"type": "stream",
-                                                           "client": "test suite",
-                                                           "content": "Test message no to",
-                                                           "subject": "Test subject",
-                                                           "email": email,
-                                                           "api-key": api_key})
+        result = self.client_post("/api/v1/messages", {"type": "stream",
+                                                       "client": "test suite",
+                                                       "content": "Test message no to",
+                                                       "subject": "Test subject"},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
@@ -771,8 +794,8 @@ class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[text_type], Optional[text_type]) -> Message
         msg = Message.objects.get(id=msg_id)
-        cached = msg.to_dict(False)
-        uncached = msg.to_dict_uncached_helper(False)
+        cached = message_to_dict(msg, False)
+        uncached = MessageDict.to_dict_uncached_helper(msg, False)
         self.assertEqual(cached, uncached)
         if subject:
             self.assertEqual(msg.topic_name(), subject)

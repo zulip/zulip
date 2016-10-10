@@ -169,8 +169,6 @@ function _setup_page() {
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
-    $("#admin-emoji-name-status").expectOne().hide();
-    $("#admin-emoji-url-status").expectOne().hide();
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
@@ -639,9 +637,6 @@ function _setup_page() {
         e.preventDefault();
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');
-        var emoji_name_status = $('#admin-emoji-name-status');
-        var emoji_url_status = $('#admin-emoji-url-status');
-        var emoji_table = $('.admin_emoji_table');
         var emoji = {};
         $(this).serializeArray().map(function (x){emoji[x.name] = x.value;});
 
@@ -649,24 +644,14 @@ function _setup_page() {
             url: "/json/realm/emoji",
             data: $(this).serialize(),
             success: function () {
-                $('#admin-emoji-status, #admin-emoji-name-status, #admin-emoji-url-status').hide();
+                $('#admin-emoji-status').hide();
                 ui.report_success(i18n.t("Custom emoji added!"), emoji_status);
             },
             error: function (xhr, error) {
-                $('#admin-emoji-status, #admin-emoji-name-status, #admin-emoji-url-status').hide();
+                $('#admin-emoji-status').hide();
                 var errors = JSON.parse(xhr.responseText).msg;
-                if (errors.name !== undefined) {
-                    xhr.responseText = JSON.stringify({msg: errors.name});
-                    ui.report_error(i18n.t("Failed!"), xhr, emoji_name_status);
-                }
-                if (errors.img_url !== undefined) {
-                    xhr.responseText = JSON.stringify({msg: errors.img_url});
-                    ui.report_error(i18n.t("Failed!"), xhr, emoji_url_status);
-                }
-                if (errors.__all__ !== undefined) {
-                    xhr.responseText = JSON.stringify({msg: errors.__all__});
-                    ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
-                }
+                xhr.responseText = JSON.stringify({msg: errors});
+                ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
             }
         });
     });

@@ -13,14 +13,6 @@ function then_edit_last_message() {
     casper.waitForSelector(".message_edit_content");
 }
 
-function wait_for_message_actually_sent() {
-    casper.waitFor(function () {
-        return casper.evaluate(function () {
-            return current_msg_list.last().local_id === undefined;
-        });
-    });
-}
-
 // Send and edit a stream message
 
 common.then_send_message('stream', {
@@ -30,7 +22,7 @@ common.then_send_message('stream', {
 });
 
 casper.waitForText("test editing");
-wait_for_message_actually_sent();
+common.wait_for_message_actually_sent();
 
 then_edit_last_message();
 
@@ -54,7 +46,7 @@ common.then_send_message('stream', {
 });
 
 casper.waitForText("test editing one line with me");
-wait_for_message_actually_sent();
+common.wait_for_message_actually_sent();
 
 then_edit_last_message();
 
@@ -77,7 +69,7 @@ common.then_send_message('private', {
 });
 
 casper.waitForText("test editing pm");
-wait_for_message_actually_sent();
+common.wait_for_message_actually_sent();
 then_edit_last_message();
 
 casper.then(function () {

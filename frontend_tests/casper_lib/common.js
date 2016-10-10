@@ -1,3 +1,4 @@
+var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 var common = (function () {
 
 var exports = {};
@@ -23,6 +24,11 @@ function log_in(credentials) {
     }, true /* submit form */);
 }
 
+
+exports.init_viewport = function () {
+    casper.options.viewportSize = {width: 1280, height: 1024};
+};
+
 exports.initialize_casper = function (viewport) {
     if (casper.zulip_initialized !== undefined) {
         return;
@@ -30,9 +36,6 @@ exports.initialize_casper = function (viewport) {
     casper.zulip_initialized = true;
     // These initialization steps will fail if they run before
     // casper.start has been called.
-
-    // Set default viewport size to something reasonable
-    casper.page.viewportSize = viewport || {width: 1280, height: 1024};
 
     // Fail if we get a JavaScript error in the page's context.
     // Based on the example at http://phantomjs.org/release-1.5.html
@@ -52,7 +55,7 @@ exports.initialize_casper = function (viewport) {
     var casper_failure_count = 1;
     casper.test.on('fail', function failure() {
         if (casper_failure_count <= 10) {
-            casper.capture("/tmp/casper-failure" + casper_failure_count + ".png");
+            casper.capture("var/casper/casper-failure" + casper_failure_count + ".png");
             casper_failure_count++;
         }
     });
@@ -83,16 +86,38 @@ exports.then_log_in = function (credentials) {
 };
 
 exports.start_and_log_in = function (credentials, viewport) {
-    casper.start('http://127.0.0.1:9981/accounts/login', function () {
+    var log_in_url = "";
+    if (REALMS_HAVE_SUBDOMAINS) {
+        log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
+    } else {
+        log_in_url = "http://localhost:9981/accounts/login";
+    }
+    exports.init_viewport();
+    casper.start(log_in_url, function () {
         exports.initialize_casper(viewport);
         log_in(credentials);
     });
 };
 
 exports.then_log_out = function () {
-    casper.then(function () {
-        casper.test.info('Logging out');
-        casper.click('li[title="Log out"] a');
+    var menu_selector = '#settings-dropdown';
+    var logout_selector = 'li[title="Log out"] a';
+
+    casper.waitUntilVisible(menu_selector, function () {
+        casper.click(menu_selector);
+
+        casper.waitUntilVisible(logout_selector, function () {
+            casper.test.info('Logging out');
+            casper.click(logout_selector);
+
+            casper.then(function () {
+                casper.test.assertUrlMatch(/accounts\/login\/$/);
+            });
+        });
+
+    });
+    casper.waitForSelector(".login-page-header", function () {
+        casper.test.info("Logged out");
     });
 };
 
@@ -147,10 +172,35 @@ exports.check_form = function (form_selector, expected, test_name) {
     }
 };
 
+exports.wait_for_message_actually_sent = function () {
+    casper.waitFor(function () {
+        return casper.evaluate(function () {
+            return current_msg_list.last().local_id === undefined;
+        });
+    });
+};
+
+exports.turn_off_press_enter_to_send = function () {
+    var enter_send_selector = '#enter_sends';
+    casper.waitForSelector(enter_send_selector);
+
+    var is_checked = casper.evaluate(function (enter_send_selector) {
+        return document.querySelector(enter_send_selector).checked;
+    }, enter_send_selector);
+
+    if (is_checked) {
+        casper.click(enter_send_selector);
+    }
+};
+
 // Wait for any previous send to finish, then send a message.
 exports.then_send_message = function (type, params) {
-    casper.waitForSelector('#compose-send-button:enabled');
-    casper.waitForSelector('#new_message_content', function () {
+    casper.then(function () {
+        casper.waitForSelector('#compose-send-button:enabled');
+        casper.waitForSelector('#new_message_content');
+    });
+
+    casper.then(function () {
         if (type === "stream") {
             casper.page.sendEvent('keypress', "c");
         } else if (type === "private") {
@@ -159,11 +209,22 @@ exports.then_send_message = function (type, params) {
             casper.test.assertTrue(false, "send_message got valid message type");
         }
         casper.fill('form[action^="/json/messages"]', params);
-        casper.click('#compose-send-button');
+
+        exports.turn_off_press_enter_to_send();
+
+        casper.then(function () {
+            casper.click('#compose-send-button');
+        });
     });
-    casper.waitFor(function emptyComposeBox() {
-        return casper.getFormValues('form[action^="/json/messages"]').content === '';
-    }, function () {
+
+    casper.then(function () {
+        casper.waitFor(function emptyComposeBox() {
+            return casper.getFormValues('form[action^="/json/messages"]').content === '';
+        });
+        exports.wait_for_message_actually_sent();
+    });
+
+    casper.then(function () {
         last_send_or_update = timestamp();
     });
 };

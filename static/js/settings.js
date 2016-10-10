@@ -375,9 +375,9 @@ function _setup_page() {
         data.left_side_userlist = JSON.stringify(left_side_userlist);
         var context = {};
         if (data.left_side_userlist === "true") {
-            context.side = 'left';
+            context.side = i18n.t('left');
         } else {
-            context.side = 'right';
+            context.side = i18n.t('right');
         }
 
         channel.patch({

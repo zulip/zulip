@@ -402,4 +402,3 @@ highly locked down, e.g. enforce that they truly only have read access
 to Zulip messages.
 - **UI**: We will want to provide some UI features that give admins and/or
 regular users visibility into which server-side apps are running.
-
