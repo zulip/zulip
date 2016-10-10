@@ -127,6 +127,9 @@ class Command(makemessages.Command):
         trans_real.templatize = my_templatize
 
         try:
+            ignore_patterns = options.get('ignore_patterns', [])
+            ignore_patterns.append('docs/*')
+            options['ignore_patterns'] = ignore_patterns
             super(Command, self).handle(*args, **options)
         finally:
             trans_real.endblock_re = old_endblock_re
