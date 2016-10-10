@@ -13,7 +13,7 @@ from django.conf import settings
 from django.template import loader, Context
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
 
@@ -132,7 +132,7 @@ class ConfirmationManager(models.Manager):
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     date_sent = models.DateTimeField(_('sent'))
     confirmation_key = models.CharField(_('activation key'), max_length=40)
 
