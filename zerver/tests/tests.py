@@ -14,6 +14,7 @@ from zerver.lib.test_helpers import (
     most_recent_message, make_client
 )
 from zerver.lib.test_runner import slow
+from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
@@ -2136,3 +2137,9 @@ class TestOpenRealms(ZulipTestCase):
             self.assertEquals(get_unique_open_realm(), mit_realm)
         mit_realm.restricted_to_domain = True
         mit_realm.save()
+
+class TestLoginPage(ZulipTestCase):
+    def test_login_page_with_subdomains(self):
+        # type: () -> None
+        result = self.client_get("/login/?subdomain=1")
+        self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
