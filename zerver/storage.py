@@ -14,7 +14,7 @@ class AddHeaderMixin(object):
         if dry_run:
             return []
 
-        with open(settings.STATIC_HEADER_FILE) as header_file:
+        with open(settings.STATIC_HEADER_FILE, 'rb') as header_file:
             header = header_file.read().decode(settings.FILE_CHARSET)
 
         # A dictionary of path to tuples of (old_path, new_path,
@@ -30,7 +30,7 @@ class AddHeaderMixin(object):
                 continue
 
             # Prepend the header
-            with storage.open(path) as orig_file:
+            with storage.open(path, 'rb') as orig_file:
                 orig_contents = orig_file.read().decode(settings.FILE_CHARSET)
 
             storage.delete(path)
