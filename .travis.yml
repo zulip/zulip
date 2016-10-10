@@ -31,6 +31,8 @@ matrix:
   include:
     - python: "3.4"
       env: TEST_SUITE=static-analysis
+    - python: "3.4"
+      env: TEST_SUITE=production
     - python: "2.7"
       env: TEST_SUITE=production
 # command to run tests
