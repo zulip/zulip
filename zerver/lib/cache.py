@@ -4,7 +4,7 @@ from __future__ import print_function
 from functools import wraps
 
 from django.core.cache import cache as djcache
-from django.core.cache import get_cache
+from django.core.cache import caches
 from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
@@ -101,7 +101,7 @@ def get_cache_backend(cache_name):
     # type: (Optional[str]) -> BaseCache
     if cache_name is None:
         return djcache
-    return get_cache(cache_name)
+    return caches[cache_name]
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
     # type: (Any, Optional[str], Optional[int], Optional[str]) -> Any
