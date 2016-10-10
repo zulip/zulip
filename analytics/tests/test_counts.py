@@ -76,9 +76,9 @@ class AnalyticsTestCase(TestCase):
 
     # Note that this doesn't work for InstallationCount, since InstallationCount has no realm_id
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(self, value, property, interval = 'hour', end_time = TIME_ZERO,
-                          table = RealmCount, realm = None, **kwargs):
-        # type: (int, text_type, str, datetime, Type[BaseCount], Optional[Realm], **models.Model) -> None
+    def assertCountEquals(self, table, property, value, end_time = TIME_ZERO, interval = 'hour',
+                          realm = None, **kwargs):
+        # type: (Type[BaseCount], text_type, int, datetime, str, Optional[Realm], **models.Model) -> None
         if realm is None:
             realm = self.default_realm
         self.assertEqual(table.objects.filter(realm=realm,
@@ -106,7 +106,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
         self.process_last_hour(stat)
 
         # check analytics_* values are correct
-        self.assertCountEquals(3, 'test_stat_write')
+        self.assertCountEquals(RealmCount, 'test_stat_write', 3)
 
     def test_update_analytics_tables(self):
         # type: () -> None
@@ -130,7 +130,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
 
         # check no earlier rows created, old ones still there
         self.assertFalse(UserCount.objects.filter(end_time__lt = self.TIME_ZERO - 2*self.HOUR).exists())
-        self.assertCountEquals(1, 'test_messages_sent', table = UserCount, user = user1)
+        self.assertCountEquals(UserCount, 'test_messages_sent', 1, user = user1)
 
 class TestProcessCountStat(AnalyticsTestCase):
     # test users added in last hour
@@ -149,7 +149,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.process_last_hour(stat)
         # do_update is writing the stat.property to all zerver tables
 
-        self.assertCountEquals(2, 'add_new_user_test')
+        self.assertCountEquals(RealmCount, 'add_new_user_test', 2)
 
     # test if process count does nothing if count already processed
     def test_process_count(self):
@@ -164,13 +164,13 @@ class TestProcessCountStat(AnalyticsTestCase):
                          {'is_bot': False, 'is_active': True}, 'hour', 'hour')
 
         self.process_last_hour(stat)
-        self.assertCountEquals(1, 'active_humans')
+        self.assertCountEquals(RealmCount, 'active_humans', 1)
 
         # run command again
         self.process_last_hour(stat)
 
         # check that row is same as before
-        self.assertCountEquals(1, 'active_humans')
+        self.assertCountEquals(RealmCount, 'active_humans', 1)
 
     def test_do_aggregate(self):
         # type: () -> None
@@ -194,7 +194,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertFalse(UserCount.objects.filter(realm=self.default_realm, interval='hour').exists())
 
         # see if aggregated correctly to realmcount and installationcount
-        self.assertCountEquals(3, 'test_messages_aggregate', interval = 'day')
+        self.assertCountEquals(RealmCount, 'test_messages_aggregate', 3, interval = 'day')
 
         self.assertEquals(InstallationCount.objects.filter(interval='day',
                                                            property='test_messages_aggregate') \
@@ -225,9 +225,9 @@ class TestProcessCountStat(AnalyticsTestCase):
 
         process_count_stat(stat, range_start=self.TIME_ZERO - 2*self.HOUR,
                            range_end=self.TIME_ZERO)
-        self.assertCountEquals(0, 'test_active_humans', end_time = self.TIME_ZERO - 2*self.HOUR)
-        self.assertCountEquals(0, 'test_active_humans', end_time = self.TIME_LAST_HOUR)
-        self.assertCountEquals(1, 'test_active_humans', end_time = self.TIME_ZERO)
+        self.assertCountEquals(RealmCount, 'test_active_humans', 0, end_time = self.TIME_ZERO - 2*self.HOUR)
+        self.assertCountEquals(RealmCount, 'test_active_humans', 0, end_time = self.TIME_LAST_HOUR)
+        self.assertCountEquals(RealmCount, 'test_active_humans', 1, end_time = self.TIME_ZERO)
 
 class TestAggregates(AnalyticsTestCase):
     pass
@@ -249,7 +249,7 @@ class TestXByYQueries(AnalyticsTestCase):
         # run command
         self.process_last_hour(stat)
 
-        self.assertCountEquals(1, 'test_messages_to_stream', table = StreamCount)
+        self.assertCountEquals(StreamCount, 'test_messages_to_stream', 1)
 
 class TestCountStats(AnalyticsTestCase):
     def test_human_and_bot_count_by_realm(self):
@@ -268,5 +268,5 @@ class TestCountStats(AnalyticsTestCase):
         for stat in stats:
             self.process_last_hour(stat)
 
-        self.assertCountEquals(1, 'test_active_humans')
-        self.assertCountEquals(2, 'test_active_bots')
+        self.assertCountEquals(RealmCount, 'test_active_humans', 1)
+        self.assertCountEquals(RealmCount, 'test_active_bots', 2)
