@@ -40,6 +40,7 @@ import six
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
+        # type: () -> None
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
         markdown = [
             '~~~ quote',
@@ -60,6 +61,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_quoting(self):
+        # type: () -> None
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
         markdown = [
             '~~~ quote',
@@ -86,6 +88,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_serial_code(self):
+        # type: () -> None
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
@@ -118,6 +121,7 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
     def test_nested_code(self):
+        # type: () -> None
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
@@ -163,6 +167,7 @@ class BugdownTest(TestCase):
         return test_fixtures, data['linkify_tests']
 
     def test_bugdown_fixtures(self):
+        # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
 
         self.maxDiff = None
@@ -195,12 +200,14 @@ class BugdownTest(TestCase):
             self.assertEqual(match, converted)
 
     def test_inline_youtube(self):
+        # type: () -> None
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="message_inline_image"><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
 
     def test_inline_dropbox(self):
+        # type: () -> None
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
         image_info = {'image': 'https://photos-4.dropbox.com/t/2/AABIre1oReJgPYuc_53iv0IHq1vUzRaDg2rrCfTpiWMccQ/12/129/jpeg/1024x1024/2/_/0/4/IMG_0923.JPG/CIEBIAEgAiAHKAIoBw/ymdijjcg67hv2ta/AABz2uuED1ox3vpWWvMpBxu6a/IMG_0923.JPG', 'desc': 'Shared with Dropbox', 'title': 'IMG_0923.JPG'}
         with mock.patch('zerver.lib.bugdown.fetch_open_graph_image', return_value=image_info):
@@ -216,6 +223,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=" target="_blank" title="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=">https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=</a></p>\n<div class="message_inline_ref"><a href="https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl=" target="_blank" title="Saves"><img src="https://cf.dropboxstatic.com/static/images/icons128/folder_dropbox.png"></a><div><div class="message_inline_image_title">Saves</div><desc class="message_inline_image_desc"></desc></div></div>')
 
     def test_inline_dropbox_preview(self):
+        # type: () -> None
         # Test photo album previews
         msg = 'https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5'
         image_info = {'image': 'https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0', 'desc': 'Shared with Dropbox', 'title': '1 photo'}
@@ -225,6 +233,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" target="_blank" title="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" target="_blank" title="1 photo"><img src="https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0"></a></div>')
 
     def test_inline_dropbox_negative(self):
+        # type: () -> None
         # Make sure we're not overzealous in our conversion:
         msg = 'Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png'
         with mock.patch('zerver.lib.bugdown.fetch_open_graph_image', return_value=None):
@@ -233,6 +242,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png"><img src="https://www.dropbox.com/static/images/home_logo.png"></a></div>')
 
     def test_inline_dropbox_bad(self):
+        # type: () -> None
         # Don't fail on bad dropbox links
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
         with mock.patch('zerver.lib.bugdown.fetch_open_graph_image', return_value=None):
@@ -240,6 +250,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
 
     def test_twitter_id_extraction(self):
+        # type: () -> None
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/status/409030735191097344'), '409030735191097344')
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/VizzQuotes/statuses/409030735191097344'), '409030735191097344')
@@ -249,6 +260,7 @@ class BugdownTest(TestCase):
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/'), '410766290349879296')
 
     def test_inline_interesting_links(self):
+        # type: () -> None
         def make_link(url):
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
@@ -359,10 +371,12 @@ class BugdownTest(TestCase):
                                          '</div>'))))
 
     def test_fetch_tweet_data_settings_validation(self):
+        # type: () -> None
         with self.settings(TEST_SUITE=False, TWITTER_CONSUMER_KEY=None):
             self.assertIs(None, bugdown.fetch_tweet_data('287977969287315459'))
 
     def test_realm_emoji(self):
+        # type: () -> None
         def emoji_img(name, url):
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
@@ -380,6 +394,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>:test:</p>')
 
     def test_unicode_emoji(self):
+        # type: () -> None
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
         self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
@@ -389,6 +404,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
 
     def test_realm_patterns(self):
+        # type: () -> None
         realm = get_realm('zulip.com')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
@@ -472,6 +488,7 @@ class BugdownTest(TestCase):
         self.assertFalse(domain_in_local_realm_filters_cache(domain))
 
     def test_realm_patterns_negative(self):
+        # type: () -> None
         realm = get_realm('zulip.com')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
@@ -502,6 +519,7 @@ class BugdownTest(TestCase):
         self.assertTrue(Message.is_status_message(content, rendered_content))
 
     def test_alert_words(self):
+        # type: () -> None
         user_profile = get_user_profile_by_email("othello@zulip.com")
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
@@ -523,6 +541,7 @@ class BugdownTest(TestCase):
         self.assertEqual(msg.user_ids_with_alert_words, set())
 
     def test_mention_wildcard(self):
+        # type: () -> None
         user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
@@ -532,6 +551,7 @@ class BugdownTest(TestCase):
         self.assertTrue(msg.mentions_wildcard)
 
     def test_mention_everyone(self):
+        # type: () -> None
         user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
@@ -541,6 +561,7 @@ class BugdownTest(TestCase):
         self.assertTrue(msg.mentions_wildcard)
 
     def test_mention_single(self):
+        # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -551,6 +572,7 @@ class BugdownTest(TestCase):
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
     def test_mention_shortname(self):
+        # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -561,6 +583,7 @@ class BugdownTest(TestCase):
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
     def test_mention_multiple(self):
+        # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         hamlet = get_user_profile_by_email("hamlet@zulip.com")
         cordelia = get_user_profile_by_email("cordelia@zulip.com")
@@ -577,6 +600,7 @@ class BugdownTest(TestCase):
         self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
 
     def test_mention_invalid(self):
+        # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
@@ -586,6 +610,7 @@ class BugdownTest(TestCase):
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_stream_subscribe_button_simple(self):
+        # type: () -> None
         msg = '!_stream_subscribe_button(simple)'
         converted = bugdown_convert(msg)
         self.assertEqual(
@@ -599,6 +624,7 @@ class BugdownTest(TestCase):
         )
 
     def test_stream_subscribe_button_in_name(self):
+        # type: () -> None
         msg = '!_stream_subscribe_button(simple (not\\))'
         converted = bugdown_convert(msg)
         self.assertEqual(
@@ -612,6 +638,7 @@ class BugdownTest(TestCase):
         )
 
     def test_stream_subscribe_button_after_name(self):
+        # type: () -> None
         msg = '!_stream_subscribe_button(simple) (not)'
         converted = bugdown_convert(msg)
         self.assertEqual(
@@ -625,6 +652,7 @@ class BugdownTest(TestCase):
         )
 
     def test_stream_subscribe_button_slash(self):
+        # type: () -> None
         msg = '!_stream_subscribe_button(simple\\\\)'
         converted = bugdown_convert(msg)
         self.assertEqual(
@@ -638,6 +666,7 @@ class BugdownTest(TestCase):
         )
 
     def test_in_app_modal_link(self):
+        # type: () -> None
         msg = '!modal_link(#settings, Settings page)'
         converted = bugdown_convert(msg)
         self.assertEqual(
@@ -648,6 +677,7 @@ class BugdownTest(TestCase):
         )
 
     def test_image_preview_title(self):
+        # type: () -> None
         msg = '[My favorite image](https://example.com/testimage.png)'
         converted = bugdown_convert(msg)
         self.assertEqual(
@@ -663,6 +693,7 @@ class BugdownTest(TestCase):
         )
 
     def test_mit_rendering(self):
+        # type: () -> None
         """Test the markdown configs for the MIT Zephyr mirroring system;
         verifies almost all inline patterns are disabled, but
         inline_interesting_links is still enabled"""
