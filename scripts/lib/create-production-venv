@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import os
 import argparse
@@ -19,5 +19,10 @@ args = parser.parse_args()
 # install dependencies for setting up the virtualenv
 run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
 
-cached_venv_path = setup_virtualenv(args.target, os.path.join(ZULIP_PATH, "requirements", "py2_prod.txt"))
+python_version = sys.version_info[0]
+
+cached_venv_path = setup_virtualenv(
+    args.target,
+    os.path.join(ZULIP_PATH, "requirements", "py{}_prod.txt".format(python_version)),
+    virtualenv_args=['-p', 'python{}'.format(python_version)])
 # Now the virtualenv has been activated
