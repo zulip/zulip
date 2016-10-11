@@ -127,13 +127,13 @@ command](prod-maintain-secure-upgrade.html#management-commands) :
   organization on your Zulip server.
 
 * Open the link generated with your web browser. You'll see the create
-organization page ([screenshot here](_images/zulip-create-realm.png)).
+organization page ([screenshot here](_static/zulip-create-realm.png)).
 Enter your email address and click *Create organization*.
 
 * Check your email to find the confirmation email and click the
 link. You'll be prompted to finish setting up your organization and
 initial administrator user ([screenshot
-here](_images/zulip-create-user-and-org.png)).  Complete this form and
+here](_static/zulip-create-user-and-org.png)).  Complete this form and
 log in!
 
 **Congratulations!** You are logged in as an organization
