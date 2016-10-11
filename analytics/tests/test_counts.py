@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from analytics.lib.interval import TimeInterval
-from analytics.lib.counts import CountStat, process_count_stat, \
+from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
     zerver_count_message_by_huddle
@@ -228,6 +228,19 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertCountEquals(RealmCount, 'test_active_humans', 0, end_time = self.TIME_ZERO - 2*self.HOUR)
         self.assertCountEquals(RealmCount, 'test_active_humans', 0, end_time = self.TIME_LAST_HOUR)
         self.assertCountEquals(RealmCount, 'test_active_humans', 1, end_time = self.TIME_ZERO)
+
+    def test_empty_message_aggregates(self):
+        # type: () -> None
+        # test that we write empty rows to realmcount in the event that we
+        # have no messages and no users
+        stat = COUNT_STATS['messages_sent']
+
+        process_count_stat(stat, range_start=self.TIME_ZERO - 2 * self.HOUR,
+                           range_end=self.TIME_ZERO)
+
+        self.assertCountEquals(RealmCount, 'messages_sent', 0, end_time=self.TIME_ZERO - 2 * self.HOUR)
+        self.assertCountEquals(RealmCount, 'messages_sent', 0, end_time=self.TIME_LAST_HOUR)
+        self.assertCountEquals(RealmCount, 'messages_sent', 0, end_time=self.TIME_ZERO)
 
 class TestAggregates(AnalyticsTestCase):
     pass
