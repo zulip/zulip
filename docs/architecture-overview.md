@@ -73,12 +73,48 @@ the most recent messages in all the streams a user has joined (except
 for the streams they've muted), as well as private messages from other
 users, in strict chronological order. A user can *narrow* to view only
 the messages in a single stream, and can further narrow to focus on a
-*topic* (thread) within that stream. Each narrow has its own URL.
+*topic* (thread) within that stream. Each narrow has its own URL. The
+user can quickly see what conversation they're in -- the stream and
+topic, or the names of the the user(s) they're private messaging with
+-- using *the recipient bar* displayed atop each conversation.
 
 Zulip's philosophy is to provide sensible defaults but give the user
 fine-grained control over their incoming information flow; a user can
 mute topics and streams, and can make fine-grained choices to reduce
 real-time notifications they find irrelevant.
+
+Glossary
+--------
+--------
+
+* **chevron**: A small downward-facing arrow next to a message's
+    timestamp, offering contextual options, e.g., "Reply", "Mute [this
+    topic]", or "Link to this conversation". To avoid visual clutter,
+    the chevron only appears in the web UI upon hover.
+
+* **message editing**: If the realm admin allows it, then after a user
+    posts a message, the user has a few minutes to click "Edit" and
+    change the content of their message. If they do, Zulip adds a
+    marker such as "(EDITED)" at the top of the message, visible to
+    anyone who can see the message.
+
+* **recipient bar**: A visual indication of the context of a message
+    or group of messages, displaying the stream and topic or private
+    message recipient list, at the top of a group of messages. A
+    typical 1-line message to a new recipient shows to the user as
+    three lines of content: first the recipient bar, second the
+    sender's name and avatar alongside the timestamp (and, on hover,
+    the star and the chevron), and third the message content. The
+    recipient bar is or contains hyperlinks to help the user narrow.
+
+* **star**: Zulip allows a user to mark any message they can see,
+    public or private, as "starred". A user can easily access messages
+    they've starred through the "Starred messages" link in the menu
+    near "Home", or use "is:starred" as a narrow or a search
+    constraint. Whether a user has or has not starred a particular
+    message is private; other users and realm admins don't know
+    whether a message has been starred, or by whom.
+
 
 Components
 ----------
