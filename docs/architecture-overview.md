@@ -87,6 +87,17 @@ Glossary
 --------
 --------
 
+* **chevron**: A small downward-facing arrow next to a message's
+    timestamp, offering contextual options, e.g., "Reply", "Mute [this
+    topic]", or "Link to this conversation". To avoid visual clutter,
+    the chevron only appears in the web UI upon hover.
+
+* **message editing**: If the realm admin allows it, then after a user
+    posts a message, the user has a few minutes to click "Edit" and
+    change the content of their message. If they do, Zulip adds a
+    marker such as "(EDITED)" at the top of the message, visible to
+    anyone who can see the message.
+
 * **recipient bar**: A visual indication of the context of a message
     or group of messages, displaying the stream and topic or private
     message recipient list, at the top of a group of messages. A
