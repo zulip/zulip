@@ -23,6 +23,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend
 
+from social.exceptions import AuthFailed
 from social.strategies.django_strategy import DjangoStrategy
 from social.storage.django_orm import BaseDjangoStorage
 from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
@@ -345,6 +346,20 @@ class GitHubAuthBackendTest(ZulipTestCase):
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
 
+    def test_github_backend_do_auth_for_team_auth_failed(self):
+        # type: () -> None
+        with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
+                        side_effect=AuthFailed('Not found')), \
+                mock.patch('logging.info'), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            response=dict(email=self.email, name=self.name)
+            with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
+                self.backend.do_auth('fake-access-token', response=response)
+                kwargs = {'realm_subdomain': 'acme',
+                          'response': response,
+                          'return_data': {}}
+                result.assert_called_with(None, 'fake-access-token', **kwargs)
+
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
         def authenticate(*args, **kwargs):
@@ -359,6 +374,30 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response=dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
+
+    def test_github_backend_do_auth_for_org_auth_failed(self):
+        # type: () -> None
+        with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
+                        side_effect=AuthFailed('Not found')), \
+                mock.patch('logging.info'), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            response=dict(email=self.email, name=self.name)
+            with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
+                self.backend.do_auth('fake-access-token', response=response)
+                kwargs = {'realm_subdomain': 'acme',
+                          'response': response,
+                          'return_data': {}}
+                result.assert_called_with(None, 'fake-access-token', **kwargs)
+
+    def test_github_backend_authenticate_nonexisting_user(self):
+        # type: () -> None
+        with mock.patch('zproject.backends.get_user_profile_by_email',
+                        side_effect=UserProfile.DoesNotExist("Do not exist")):
+            response=dict(email=self.email, name=self.name)
+            return_data = dict()
+            user = self.backend.authenticate(return_data=return_data, response=response)
+            self.assertIs(user, None)
+            self.assertTrue(return_data['valid_attestation'])
 
     def test_github_backend_inactive_user(self):
         # type: () -> None
