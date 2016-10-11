@@ -26,7 +26,7 @@
 
 #overlay .image-preview {
     position: relative;
-    width: calc(100% - 20px);
+    width: 100%;
     height: calc(100% - 65px - 30px);
     margin: 0px;
 
@@ -43,7 +43,7 @@
     color: rgba(255,255,255,0.8);
     font-size: 2rem;
     font-weight: 200;
-    margin: 22px 20px;
+    margin: 24px 20px 0px 0px;
 
     transform: scaleY(0.75);
     font-weight: 300;
