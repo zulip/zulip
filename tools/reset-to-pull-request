@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 set -x
 
 request_id="$1"
-git fetch upstream "pull/$request_id/head"
+remote=${2:-"upstream"}
+git fetch $remote "pull/$request_id/head"
 git reset --hard FETCH_HEAD
