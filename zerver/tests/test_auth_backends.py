@@ -319,32 +319,38 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
-        def authenticate(*args, **kwargs):
-            # type: (*Any, **Any) -> None
-            assert isinstance(kwargs['backend'], GithubOAuth2) == True
+        def do_auth(*args, **kwargs):
+            # type: (*Any, **Any) -> UserProfile
+            return self.backend.authenticate(*args, **kwargs)
 
-        with mock.patch('social.backends.github.GithubOAuth2.user_data',
-                         return_value=dict()), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth'), \
-                mock.patch('social.strategies.django_strategy.'
-                           'DjangoStrategy.authenticate', side_effect=authenticate):
+        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response=dict(email=self.email, name=self.name)
             self.backend.do_auth('fake-access-token', response=response)
 
+            kwargs = {'realm_subdomain': 'acme',
+                      'response': response,
+                      'return_data': {}}
+            result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
+
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
-        def authenticate(*args, **kwargs):
-            # type: (*Any, **Any) -> None
-            assert isinstance(kwargs['backend'], GithubTeamOAuth2) == True
+        def do_auth(*args, **kwargs):
+            # type: (*Any, **Any) -> UserProfile
+            return self.backend.authenticate(*args, **kwargs)
 
-        with mock.patch('social.backends.github.GithubTeamOAuth2.user_data',
-                         return_value=dict()), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth'), \
-                mock.patch('social.strategies.django_strategy.'
-                           'DjangoStrategy.authenticate', side_effect=authenticate):
+        with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
+                        side_effect=do_auth), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response=dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
+
+                kwargs = {'realm_subdomain': 'acme',
+                          'response': response,
+                          'return_data': {}}
+                result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
     def test_github_backend_do_auth_for_team_auth_failed(self):
         # type: () -> None
@@ -362,18 +368,21 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
-        def authenticate(*args, **kwargs):
-            # type: (*Any, **Any) -> None
-            assert isinstance(kwargs['backend'], GithubOrganizationOAuth2) == True
+        def do_auth(*args, **kwargs):
+            # type: (*Any, **Any) -> UserProfile
+            return self.backend.authenticate(*args, **kwargs)
 
-        with mock.patch('social.backends.github.GithubOrganizationOAuth2.user_data',
-                         return_value=dict()), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth'), \
-                mock.patch('social.strategies.django_strategy.'
-                           'DjangoStrategy.authenticate', side_effect=authenticate):
+        with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
+                        side_effect=do_auth), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response=dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
+
+                kwargs = {'realm_subdomain': 'acme',
+                          'response': response,
+                          'return_data': {}}
+                result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
 
     def test_github_backend_do_auth_for_org_auth_failed(self):
         # type: () -> None
