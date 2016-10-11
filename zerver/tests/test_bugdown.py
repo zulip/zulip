@@ -38,6 +38,10 @@ import os
 import ujson
 import six
 
+from six import text_type
+from zerver.lib.str_utils import NonBinaryStr
+from typing import Any, AnyStr, Dict, List, Optional, Tuple
+
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
         # type: () -> None
@@ -92,8 +96,8 @@ class FencedBlockPreprocessorTest(TestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'
+        processor.format_code = lambda lang, code: lang + ':' + code # type: ignore # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**' # type: ignore # https://github.com/python/mypy/issues/708
 
         markdown = [
             '``` .py',
@@ -125,8 +129,8 @@ class FencedBlockPreprocessorTest(TestCase):
         processor = bugdown.fenced_code.FencedBlockPreprocessor(None)
 
         # Simulate code formatting.
-        processor.format_code = lambda lang, code: lang + ':' + code
-        processor.placeholder = lambda s: '**' + s.strip('\n') + '**'
+        processor.format_code = lambda lang, code: lang + ':' + code # type: ignore # mypy doesn't allow monkey-patching functions
+        processor.placeholder = lambda s: '**' + s.strip('\n') + '**' # type: ignore # https://github.com/python/mypy/issues/708
 
         markdown = [
             '~~~ quote',
@@ -150,14 +154,17 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
 def bugdown_convert(text):
+    # type: (text_type) -> text_type
     return bugdown.convert(text, "zulip.com")
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
+        # type: (text_type, text_type) -> None
         converted = bugdown_convert(text)
         self.assertEqual(converted, expected)
 
     def load_bugdown_tests(self):
+        # type: () -> Tuple[Dict[text_type, Any], List[List[text_type]]]
         test_fixtures = {}
         data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/bugdown-data.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
@@ -170,7 +177,7 @@ class BugdownTest(TestCase):
         # type: () -> None
         format_tests, linkify_tests = self.load_bugdown_tests()
 
-        self.maxDiff = None
+        self.maxDiff = None # type: Optional[int]
         for name, test in six.iteritems(format_tests):
             converted = bugdown_convert(test['input'])
 
@@ -178,6 +185,7 @@ class BugdownTest(TestCase):
             self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload, url, phrase=''):
+            # type: (text_type, text_type, text_type) -> text_type
             target = " target=\"_blank\""
             if url[:4] == 'http':
                 href = url
@@ -190,7 +198,7 @@ class BugdownTest(TestCase):
 
 
         print("Running Bugdown Linkify tests")
-        self.maxDiff = None
+        self.maxDiff = None # type: Optional[int]
         for inline_url, reference, url in linkify_tests:
             try:
                 match = replaced(reference, url, phrase=inline_url)
@@ -262,6 +270,7 @@ class BugdownTest(TestCase):
     def test_inline_interesting_links(self):
         # type: () -> None
         def make_link(url):
+            # type: (text_type) -> text_type
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
         normal_tweet_html = ('<a href="https://twitter.com/twitter" target="_blank"'
@@ -280,6 +289,7 @@ class BugdownTest(TestCase):
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
+            # type: (text_type, text_type, text_type) -> text_type
             ## As of right now, all previews are mocked to be the exact same tweet
             return ('<div class="inline-preview-twitter">'
                       '<div class="twitter-tweet">'
@@ -378,6 +388,7 @@ class BugdownTest(TestCase):
     def test_realm_emoji(self):
         # type: () -> None
         def emoji_img(name, url):
+            # type: (text_type, text_type) -> text_type
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
         zulip_realm = get_realm('zulip.com')
@@ -458,7 +469,7 @@ class BugdownTest(TestCase):
             directly for testing is kind of awkward
             '''
             class Instance(object):
-                pass
+                realm = None # type: Optional[Realm]
             instance = Instance()
             instance.realm = realm
             flush_realm_filter(sender=None, instance=instance)
@@ -526,6 +537,7 @@ class BugdownTest(TestCase):
         realm_alert_words = alert_words_in_realm(user_profile.realm)
 
         def render(msg, content):
+            # type: (Message, text_type) -> text_type
             return render_markdown(msg,
                                    content,
                                    realm_alert_words=realm_alert_words,
