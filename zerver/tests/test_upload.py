@@ -20,7 +20,7 @@ from six.moves import urllib
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-from six.moves import StringIO
+from six.moves import StringIO as _StringIO
 import mock
 import os
 import shutil
@@ -35,10 +35,15 @@ from moto import mock_s3
 
 TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
+from typing import Any, Callable, TypeVar
+
 def destroy_uploads():
     # type: () -> None
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+
+class StringIO(_StringIO):
+    name = '' # https://github.com/python/typeshed/issues/598
 
 class FileUploadTest(ZulipTestCase):
 
@@ -239,6 +244,7 @@ class FileUploadTest(ZulipTestCase):
         self.assertEquals(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
     def test_check_attachment_reference_update(self):
+        # type: () -> None
         f1 = StringIO("file1")
         f1.name = "file1.txt"
         f2 = StringIO("file2")
@@ -473,10 +479,14 @@ class LocalStorageTest(ZulipTestCase):
         # type: () -> None
         destroy_uploads()
 
+FuncT = TypeVar('FuncT', bound=Callable[..., None])
+
 def use_s3_backend(method):
+    # type: (FuncT) -> FuncT
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args, **kwargs):
+        # type: (*Any, **Any) -> Any
         zerver.lib.upload.upload_backend = S3UploadBackend()
         try:
             return method(*args, **kwargs)
@@ -543,7 +553,8 @@ class S3Test(ZulipTestCase):
         response = self.client_get(uri)
         redirect_url = response['Location']
 
-        self.assertEquals(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
+        self.assertEquals(b"zulip!", urllib.request.urlopen(redirect_url).read().strip()) # type: ignore
+        # six.moves.urllib.request.urlopen is not defined in typeshed
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
