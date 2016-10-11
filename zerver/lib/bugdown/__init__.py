@@ -1125,7 +1125,7 @@ maybe_update_realm_filters(domain=None)
 # codes, which can do surprisingly nasty things.
 _privacy_re = re.compile(u'\\w', flags=re.UNICODE)
 def _sanitize_for_log(md):
-    # type: (markdown.Markdown) -> text_type
+    # type: (text_type) -> text_type
     return repr(_privacy_re.sub('x', md))
 
 
@@ -1147,7 +1147,7 @@ def log_bugdown_error(msg):
     logging.getLogger('').error(msg)
 
 def do_convert(md, realm_domain=None, message=None, possible_words=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
+    # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, UserProfile
 
@@ -1228,7 +1228,7 @@ def bugdown_stats_finish():
     bugdown_total_time += (time.time() - bugdown_time_start)
 
 def convert(md, realm_domain=None, message=None, possible_words=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
+    # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     bugdown_stats_start()
     ret = do_convert(md, realm_domain, message, possible_words)
     bugdown_stats_finish()
