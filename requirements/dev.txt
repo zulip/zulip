@@ -17,3 +17,7 @@ transifex-client==0.12.2
 
 # Dependency of transifex-client
 urllib3==1.18
+
+# Install the Zulip API bindings into the virtualenv in edit mode, so
+# that we're always running the latest version in git.
+-e api/
