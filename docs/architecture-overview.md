@@ -107,6 +107,14 @@ Glossary
     the star and the chevron), and third the message content. The
     recipient bar is or contains hyperlinks to help the user narrow.
 
+* **star**: Zulip allows a user to mark any message they can see,
+    public or private, as "starred". A user can easily access messages
+    they've starred through the "Starred messages" link in the menu
+    near "Home", or use "is:starred" as a narrow or a search
+    constraint. Whether a user has or has not starred a particular
+    message is private; other users and realm admins don't know
+    whether a message has been starred, or by whom.
+
 
 Components
 ----------
