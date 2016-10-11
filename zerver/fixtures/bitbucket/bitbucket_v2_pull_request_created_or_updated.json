@@ -62,7 +62,22 @@
          }
       },
       "reviewers":[
-
+         {
+            "links":{
+               "self":{
+                  "href":"https://api.bitbucket.org/2.0/users/tkolek"
+               },
+               "html":{
+                  "href":"https://bitbucket.org/tkolek/"
+               },
+               "avatar":{
+                  "href":"https://bitbucket.org/account/tkolek/avatar/32/"
+               } },
+            "type":"user",
+            "username":"tkolek",
+            "uuid":"{bf830c24-bde2-41f1-a790-2c9372a2e789}",
+            "display_name":"Tomasz Kolek"
+         }
       ],
       "reason":"",
       "author":{
@@ -98,7 +113,7 @@
 
       ],
       "created_on":"2016-07-04T19:15:30.118942+00:00",
-      "description":"",
+      "description":"description",
       "comment_count":0,
       "id":1,
       "updated_on":"2016-07-04T19:15:30.141038+00:00",
