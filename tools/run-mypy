@@ -34,7 +34,6 @@ tools/deprecated/generate-activity-metrics.py
 zproject/settings.py
 zproject/test_settings.py
 zerver/tests/test_decorators.py
-zerver/tests/test_upload.py
 zerver/tests/test_narrow.py
 """.split()
 
