@@ -37,6 +37,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import six
+from zerver.lib.str_utils import force_text
 from typing import Any, List, Generator
 
 from argparse import ArgumentParser
@@ -101,7 +102,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        rcpt_to = os.environ.get("ORIGINAL_RECIPIENT", options['recipient'])
+        rcpt_to = force_text(os.environ.get("ORIGINAL_RECIPIENT", options['recipient']))
         if rcpt_to is not None:
             if is_missed_message_address(rcpt_to):
                 try:

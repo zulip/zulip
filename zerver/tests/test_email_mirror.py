@@ -43,6 +43,7 @@ from six import text_type
 from six.moves import cStringIO as StringIO
 from django.conf import settings
 
+from zerver.lib.str_utils import force_str
 from typing import Any, Callable, Mapping, Union
 
 class TestEmailMirrorLibrary(ZulipTestCase):
@@ -372,6 +373,6 @@ class TestCommandMTA(TestCase):
 
             from zerver.management.commands import email_mirror
             command = email_mirror.Command()
-            command.handle(recipient=stream_to_address)
+            command.handle(recipient=force_str(stream_to_address))
         finally:
             sys.stdin = original_stdin
