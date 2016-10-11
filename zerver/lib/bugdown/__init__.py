@@ -1124,9 +1124,9 @@ maybe_update_realm_filters(domain=None)
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
 _privacy_re = re.compile(u'\\w', flags=re.UNICODE)
-def _sanitize_for_log(md):
+def _sanitize_for_log(content):
     # type: (text_type) -> text_type
-    return repr(_privacy_re.sub('x', md))
+    return repr(_privacy_re.sub('x', content))
 
 
 # Filters such as UserMentionPattern need a message, but python-markdown
@@ -1146,7 +1146,7 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(md, realm_domain=None, message=None, possible_words=None):
+def do_convert(content, realm_domain=None, message=None, possible_words=None):
     # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, UserProfile
@@ -1181,11 +1181,11 @@ def do_convert(md, realm_domain=None, message=None, possible_words=None):
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
         # https://trac.zulip.net/ticket/345
-        return timeout(5, _md_engine.convert, md)
+        return timeout(5, _md_engine.convert, content)
     except:
         from zerver.lib.actions import internal_send_message
 
-        cleaned = _sanitize_for_log(md)
+        cleaned = _sanitize_for_log(content)
 
         # Output error to log as well as sending a zulip and email
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
@@ -1227,9 +1227,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(md, realm_domain=None, message=None, possible_words=None):
+def convert(content, realm_domain=None, message=None, possible_words=None):
     # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     bugdown_stats_start()
-    ret = do_convert(md, realm_domain, message, possible_words)
+    ret = do_convert(content, realm_domain, message, possible_words)
     bugdown_stats_finish()
     return ret
