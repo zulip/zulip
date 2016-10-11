@@ -145,3 +145,13 @@
 #overlay .clear-float {
     clear: both;
 }
+
+@media (max-width: 450px) {
+    #overlay .image-actions {
+        display: none;
+    }
+
+    #overlay .image-description {
+        width: calc(100% - 100px);
+    }
+}
