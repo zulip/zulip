@@ -75,6 +75,7 @@ class TestEmailMirrorLibrary(ZulipTestCase):
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
@@ -103,6 +104,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test message with empty body is not sent
@@ -140,6 +142,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self):
+        # type: () -> None
 
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
@@ -179,6 +182,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
 
 class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_huddle_message_email_messages(self):
+        # type: () -> None
 
         # build dummy messages for missed messages email reply
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
@@ -225,6 +229,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
 
 class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
     def test_address_with_empty_gateway(self):
+        # type: () -> None
         self.login("othello@zulip.com")
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
@@ -264,6 +269,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
 class TestReplyExtraction(ZulipTestCase):
     def test_reply_is_extracted_from_plain(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
@@ -294,6 +300,7 @@ class TestReplyExtraction(ZulipTestCase):
         self.assertEqual(message.content, "Reply")
 
     def test_reply_is_extracted_from_html(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
