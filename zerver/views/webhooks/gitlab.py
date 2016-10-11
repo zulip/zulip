@@ -4,7 +4,8 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
-    get_remove_branch_event_message
+    get_remove_branch_event_message, get_pull_request_event_message,\
+    SUBJECT_WITH_PR_INFO_TEMPLATE
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -78,27 +79,34 @@ def get_issue_event_body(payload, action):
         get_object_url(payload)
     )
 
-def get_merge_request_created_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
-    body = get_merge_request_event_body(payload, "created")
-    assignee_name = payload.get('assignee', {}).get('name')
-    if assignee_name:
-        body = u"{} (assigned to {}).".format(body[:-1], assignee_name)
-    return body
-
 def get_merge_request_updated_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     if payload.get('object_attributes').get('oldrev'):
-        return get_merge_request_event_body(payload, "added commit to")
-    return get_merge_request_event_body(payload, "updated")
+        return get_merge_request_event_body(payload, "added commit(s) to")
+    return get_merge_request_open_or_updated_body(payload, "updated")
 
 def get_merge_request_event_body(payload, action):
     # type: (Dict[str, Any], text_type) -> text_type
-    return u"{} {} [Merge Request #{}]({}).".format(
+    pull_request = payload.get('object_attributes')
+    return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
-        get_object_iid(payload),
-        get_object_url(payload)
+        pull_request.get('url'),
+        type='MR',
+    )
+
+def get_merge_request_open_or_updated_body(payload, action):
+    # type: (Dict[str, Any], text_type) -> text_type
+    pull_request = payload.get('object_attributes')
+    return get_pull_request_event_message(
+        get_issue_user_name(payload),
+        action,
+        pull_request.get('url'),
+        pull_request.get('source_branch'),
+        pull_request.get('target_branch'),
+        pull_request.get('description'),
+        payload.get('assignee', {}).get('username'),
+        type='MR',
     )
 
 def get_commented_commit_event_body(payload):
@@ -221,7 +229,7 @@ EVENT_FUNCTION_MAPPER = {
     'Note Hook MergeRequest': get_commented_merge_request_event_body,
     'Note Hook Issue': get_commented_issue_event_body,
     'Note Hook Snippet': get_commented_snippet_event_body,
-    'Merge Request Hook open': get_merge_request_created_event_body,
+    'Merge Request Hook open': partial(get_merge_request_open_or_updated_body, action='created'),
     'Merge Request Hook update': get_merge_request_updated_event_body,
     'Merge Request Hook merge': partial(get_merge_request_event_body, action='merged'),
     'Merge Request Hook close': partial(get_merge_request_event_body, action='closed'),
@@ -257,6 +265,13 @@ def get_subject_based_on_event(event, payload):
         return u"{} / {}".format(
             get_repo_name(payload),
             payload.get('object_attributes').get('ref').replace('refs/heads/', ''))
+    elif event.startswith('Merge Request Hook'):
+        return SUBJECT_WITH_PR_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='MR',
+            id=payload.get('object_attributes').get('iid'),
+            title=payload.get('object_attributes').get('title')
+        )
     return get_repo_name(payload)
 
 def get_event(request, payload):
