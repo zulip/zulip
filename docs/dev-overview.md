@@ -2,11 +2,19 @@
 
 Zulip support a wide range of ways to install the Zulip development
 environment.  We recommend using the Vagrant development environment,
-since it is easiest to setup and uninstall.  If you have a very slow
-network connection, however, you may want to avoid installing Vagrant
-(which involves downloading an Ubuntu image) and either install
-[directly](install-ubuntu-without-vagrant-dev.html) or use
-[the manual install process](install-generic-unix-dev.html) instead.
+since it is easiest to setup and uninstall.
+
+If you have a very slow network connection, however, you may want to
+avoid using Vagrant (which involves downloading an Ubuntu image) and
+either [install directly](install-ubuntu-without-vagrant-dev.html) or
+use [the manual install process](install-generic-unix-dev.html)
+instead.  Note that those options only support Linux.
+
+An alternative option with poor network connectivity is to rent a
+cloud server (with at least 2GB of RAM), install the development
+environment there (we'd recommend the
+[install directly](install-ubuntu-without-vagrant-dev.html) approach),
+and connect to the development environment over SSH.
 
 #### For OS X
 
