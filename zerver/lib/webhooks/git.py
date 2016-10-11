@@ -2,6 +2,7 @@ from six import text_type
 from typing import Optional, Any
 
 SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
+SUBJECT_WITH_PR_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 
@@ -18,6 +19,11 @@ PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_
 
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
 REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
+
+PULL_REQUEST_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}]({url})"
+PULL_REQUEST_ASSIGNEE_INFO_TEMPLATE = u"(assigned to {assignee})"
+PULL_REQUEST_BRANCH_INFO_TEMPLATE = u"\nfrom `{target}` to `{base}`"
+PULL_REQUEST_CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
 
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data):
     # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]]) -> text_type
@@ -63,3 +69,27 @@ def get_remove_branch_event_message(user_name, branch_name):
         user_name=user_name,
         branch_name=branch_name,
     )
+
+def get_pull_request_event_message(
+        user_name, action, url,
+        target_branch=None, base_branch=None,
+        pr_message=None, assignee=None, type='PR'
+):
+    # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> text_type
+    main_message = PULL_REQUEST_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        action=action,
+        type=type,
+        url=url
+    )
+    if assignee:
+        main_message += PULL_REQUEST_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
+
+    if target_branch and base_branch:
+        main_message += PULL_REQUEST_BRANCH_INFO_TEMPLATE.format(
+            target=target_branch,
+            base=base_branch
+        )
+    if pr_message:
+        main_message += '\n' + PULL_REQUEST_CONTENT_MESSAGE_TEMPLATE.format(message=pr_message)
+    return main_message.rstrip()
