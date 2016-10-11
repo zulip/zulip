@@ -106,20 +106,20 @@ class GithubV1HookTests(WebhookTestCase):
     def test_pull_request_opened(self):
         # type: () -> None
         self.basic_test('pull_request_opened', 'commits',
-                        "zulip-test: pull request 7: Counting is hard.",
-                        "lfaraone opened [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)\n\n~~~ quote\nOmitted something I think?\n~~~")
+                        "zulip-test / PR #7 Counting is hard.",
+                        "lfaraone opened [PR](https://github.com/zbenjamin/zulip-test/pull/7)(assigned to lfaraone)\nfrom `patch-2` to `master`\n\n~~~ quote\nOmitted something I think?\n~~~")
 
     def test_pull_request_closed(self):
         # type: () -> None
         self.basic_test('pull_request_closed', 'commits',
-                        "zulip-test: pull request 7: Counting is hard.",
-                        "zbenjamin closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
+                        "zulip-test / PR #7 Counting is hard.",
+                        "zbenjamin closed [PR](https://github.com/zbenjamin/zulip-test/pull/7)")
 
     def test_pull_request_synchronize(self):
         # type: () -> None
         self.basic_test('pull_request_synchronize', 'commits',
-                        "zulip-test: pull request 13: Even more cowbell.",
-                        "zbenjamin synchronized [pull request 13](https://github.com/zbenjamin/zulip-test/pull/13)")
+                        "zulip-test / PR #13 Even more cowbell.",
+                        "zbenjamin synchronized [PR](https://github.com/zbenjamin/zulip-test/pull/13)")
 
     def test_pull_request_comment(self):
         # type: () -> None
@@ -247,20 +247,21 @@ class GithubV2HookTests(WebhookTestCase):
     def test_pull_request_opened(self):
         # type: () -> None
         self.basic_test('pull_request_opened', 'commits',
-                        "zulip-test: pull request 7: Counting is hard.",
-                        "lfaraone opened [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)\n\n~~~ quote\nOmitted something I think?\n~~~")
+                        "zulip-test / PR #7 Counting is hard.",
+                        "lfaraone opened [PR](https://github.com/zbenjamin/zulip-test/pull/7)(assigned to lfaraone)\nfrom `patch-2` to `master`\n\n~~~ quote\nOmitted something I think?\n~~~")
 
     def test_pull_request_closed(self):
         # type: () -> None
         self.basic_test('pull_request_closed', 'commits',
-                        "zulip-test: pull request 7: Counting is hard.",
-                        "zbenjamin closed [pull request 7](https://github.com/zbenjamin/zulip-test/pull/7)")
+                        "zulip-test / PR #7 Counting is hard.",
+                        "zbenjamin closed [PR](https://github.com/zbenjamin/zulip-test/pull/7)")
 
     def test_pull_request_synchronize(self):
         # type: () -> None
         self.basic_test('pull_request_synchronize', 'commits',
-                        "zulip-test: pull request 13: Even more cowbell.",
-                        "zbenjamin synchronized [pull request 13](https://github.com/zbenjamin/zulip-test/pull/13)")
+                        "zulip-test / PR #13 Even more cowbell.",
+
+                        "zbenjamin synchronized [PR](https://github.com/zbenjamin/zulip-test/pull/13)")
 
     def test_pull_request_comment(self):
         # type: () -> None
