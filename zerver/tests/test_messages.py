@@ -1248,6 +1248,83 @@ class StarTests(ZulipTestCase):
             if msg['id'] in message_ids:
                 self.assertEqual(msg['flags'], [])
 
+    def test_change_star_public_stream_historical(self):
+        # type: () -> None
+        """
+        You can set a message as starred/un-starred through
+        POST /json/messages/flags.
+        """
+        stream_name = "new_stream"
+        self.subscribe_to_stream("hamlet@zulip.com", stream_name)
+        self.login("hamlet@zulip.com")
+        message_ids = [self.send_message("hamlet@zulip.com", stream_name,
+                                         Recipient.STREAM, "test")]
+
+        # Now login as another user who wasn't on that stream
+        self.login("cordelia@zulip.com")
+
+        # We can't change flags other than "starred" on historical messages:
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps(message_ids),
+                                   "op": "add",
+                                   "flag": "read"})
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Trying to change a list of more than one historical message fails
+        result = self.change_star(message_ids * 2)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Confirm that one can change the historical flag now
+        result = self.change_star(message_ids)
+        self.assert_json_success(result)
+
+        for msg in self.get_old_messages():
+            if msg['id'] in message_ids:
+                self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
+            else:
+                self.assertEqual(msg['flags'], ['read'])
+
+        result = self.change_star(message_ids, False)
+        self.assert_json_success(result)
+
+        # But it still doesn't work if you're in another realm
+        self.login("sipbtest@mit.edu")
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_change_star_private_message_security(self):
+        # type: () -> None
+        """
+        You can set a message as starred/un-starred through
+        POST /json/messages/flags.
+        """
+        self.login("hamlet@zulip.com")
+        message_ids = [self.send_message("hamlet@zulip.com", "hamlet@zulip.com",
+                                         Recipient.PERSONAL, "test")]
+
+        # Starring private messages you didn't receive fails.
+        self.login("cordelia@zulip.com")
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_change_star_private_stream_security(self):
+        # type: () -> None
+        stream_name = "private_stream"
+        create_stream_if_needed(get_realm("zulip.com"), stream_name, invite_only=True)
+        self.subscribe_to_stream("hamlet@zulip.com", stream_name)
+        self.login("hamlet@zulip.com")
+        message_ids = [self.send_message("hamlet@zulip.com", stream_name,
+                                         Recipient.STREAM, "test")]
+
+        # Starring private stream messages you received works
+        result = self.change_star(message_ids)
+        self.assert_json_success(result)
+
+        # Starring private stream messages you didn't receive fails.
+        self.login("cordelia@zulip.com")
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
     def test_new_message(self):
         # type: () -> None
         """
