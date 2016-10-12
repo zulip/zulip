@@ -4,12 +4,14 @@ import datetime
 import ujson
 import zlib
 
+from django.utils.translation import ugettext as _
 from six import binary_type, text_type
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.avatar_hash import gravatar_hash
 import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
+from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from zerver.lib.timestamp import datetime_to_timestamp
 
@@ -17,10 +19,12 @@ from zerver.models import (
     get_display_recipient_by_id,
     Message,
     Recipient,
+    Stream,
     UserProfile,
+    UserMessage,
 )
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 RealmAlertWords = Dict[int, List[text_type]]
 
@@ -231,6 +235,45 @@ def re_render_content_for_management_command(message):
     message.rendered_content = rendered_content
     message.rendered_content_version = bugdown.version
     message.save_rendered_content()
+
+def access_message(user_profile, message_id):
+    # type: (UserProfile, int) -> Tuple[Message, UserMessage]
+    """You can access a message by ID in our APIs that either:
+    (1) You received or have previously accessed via starring
+        (aka have a UserMessage row for).
+    (2) Was sent to a public stream in your realm.
+
+    We produce consistent, boring error messages to avoid leaking any
+    information from a security perspective.
+    """
+    try:
+        message = Message.objects.select_related().get(id=message_id)
+    except Message.DoesNotExist:
+        raise JsonableError(_("Invalid message(s)"))
+
+    try:
+        user_message = UserMessage.objects.select_related().get(user_profile=user_profile,
+                                                                message=message)
+    except UserMessage.DoesNotExist:
+        user_message = None
+
+    if user_message is None:
+        if message.recipient.type != Recipient.STREAM:
+            # You can't access private messages you didn't receive
+            raise JsonableError(_("Invalid message(s)"))
+        stream = Stream.objects.get(id=message.recipient.type_id)
+        if not stream.is_public():
+            # You can't access messages sent to invite-only streams
+            # that you didn't receive
+            raise JsonableError(_("Invalid message(s)"))
+        # So the message is to a public stream
+        if stream.realm != user_profile.realm:
+            # You can't access public stream messages in other realms
+            raise JsonableError(_("Invalid message(s)"))
+
+    # Otherwise, the message must have been sent to a public
+    # stream in your realm, so return the message, user_message pair
+    return (message, user_message)
 
 def render_markdown(message, content, domain=None, realm_alert_words=None, message_users=None):
     # type: (Message, text_type, Optional[text_type], Optional[RealmAlertWords], Set[UserProfile]) -> text_type

@@ -836,7 +836,7 @@ class EditMessageTest(ZulipTestCase):
 
         # Test error cases
         result = self.client_post('/json/fetch_raw_message', dict(message_id=999999))
-        self.assert_json_error(result, 'No such message')
+        self.assert_json_error(result, 'Invalid message(s)')
 
         self.login("cordelia@zulip.com")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
@@ -844,7 +844,7 @@ class EditMessageTest(ZulipTestCase):
 
         self.login("othello@zulip.com")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
-        self.assert_json_error(result, 'Message is a private message you did not receive')
+        self.assert_json_error(result, 'Invalid message(s)')
 
     def test_fetch_raw_message_stream_wrong_realm(self):
         # type: () -> None
@@ -859,7 +859,7 @@ class EditMessageTest(ZulipTestCase):
 
         self.login("sipbtest@mit.edu")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
-        self.assert_json_error(result, 'Message was sent to a stream you cannot read')
+        self.assert_json_error(result, 'Invalid message(s)')
 
     def test_fetch_raw_message_private_stream(self):
         # type: () -> None
@@ -873,7 +873,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.login("othello@zulip.com")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
-        self.assert_json_error(result, 'Message was sent to a stream you cannot read')
+        self.assert_json_error(result, 'Invalid message(s)')
 
     def test_edit_message_no_changes(self):
         # type: () -> None
