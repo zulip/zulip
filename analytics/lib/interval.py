@@ -38,6 +38,10 @@ def floor_to_interval_boundary(datetime_object, interval):
     else:
         raise ValueError("Unknown or unfloorable interval", interval)
 
+def floor_to_day(datetime_object):
+    # type: (datetime) -> datetime
+    return datetime(*datetime_object.timetuple()[:3]).replace(tzinfo=datetime_object.tzinfo)
+
 # Don't have to worry about leap seconds, since datetime doesn't support it
 def subtract_interval(datetime_object, interval):
     # type: (datetime, str) -> datetime

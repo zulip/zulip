@@ -22,42 +22,29 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('--range-start', '-s',
+        parser.add_argument('--time', '-t',
                             type=str,
-                            help="Time to backfill from.")
-        parser.add_argument('--range-end', '-e',
-                            type=str,
-                            help='Time to backfill to, defaulst to now.',
+                            help='Update stat tables from current state to --time. Defaults to the current time.',
                             default=datetime_to_string(timezone.now()))
         parser.add_argument('--utc',
                             type=bool,
-                            help="Interpret --range-start and --range-end as times in UTC.",
+                            help="Interpret --time in UTC.",
                             default=False)
-        parser.add_argument('--stat', '-q',
+        parser.add_argument('--stat', '-s',
                             type=str,
-                            help="CountStat to process. If omitted, all stats are processed")
+                            help="CountStat to process. If omitted, all stats are processed.")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        range_end = parse_datetime(options['range_end'])
-        if options['range_start'] is not None:
-            range_start = parse_datetime(options['range_start'])
-        else:
-            range_start = range_end - timedelta(seconds = 3600)
-
-        # throw error if start time is greater than end time
-        if range_start > range_end:
-            raise ValueError("--range-start cannot be greater than --range-end.")
-
+        fill_to_time = parse_datetime(options['time'])
         if options['utc']:
-            range_start = range_start.replace(tzinfo=timezone.utc)
-            range_end = range_end.replace(tzinfo=timezone.utc)
+            fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
 
-        if not (is_timezone_aware(range_start) and is_timezone_aware(range_end)):
-            raise ValueError("--range-start and --range-end must be timezone aware. Maybe you meant to use the --utc option?")
+        if not (is_timezone_aware(fill_to_time)):
+            raise ValueError("--time must be timezone aware. Maybe you meant to use the --utc option?")
 
         if options['stat'] is not None:
-            process_count_stat(COUNT_STATS[options['stat']], range_start, range_end)
+            process_count_stat(COUNT_STATS[options['stat']], fill_to_time)
         else:
             for stat in COUNT_STATS.values():
-                process_count_stat(stat, range_start, range_end)
+                process_count_stat(stat, fill_to_time)

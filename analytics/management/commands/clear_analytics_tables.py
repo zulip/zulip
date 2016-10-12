@@ -14,6 +14,7 @@ DELETE FROM ONLY analytics_installationcount;
 DELETE FROM ONLY analytics_realmcount;
 DELETE FROM ONLY analytics_usercount;
 DELETE FROM ONLY analytics_streamcount;
+DELETE FROM ONLY analytics_fillstate;
 """
 
 class Command(BaseCommand):
