@@ -120,24 +120,3 @@ class StreamCount(BaseCount):
     def __unicode__(self):
         # type: () -> text_type
         return u"<StreamCount: %s %s %s %s>" % (self.stream, self.property, self.value, self.id)
-
-class HuddleCount(BaseCount):
-    huddle = models.ForeignKey(Recipient)
-    user = models.ForeignKey(UserProfile)
-
-    class Meta(object):
-        unique_together = ("huddle", "property", "end_time", "interval")
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('huddle_id', 'user_id')
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return Recipient
-
-    def __unicode__(self):
-        # type: () -> text_type
-        return u"<HuddleCount: %s %s %s %s>" % (self.huddle, self.property, self.value, self.id)

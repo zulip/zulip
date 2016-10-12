@@ -2,7 +2,7 @@ from django.db import connection, models
 from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
-    UserCount, StreamCount, HuddleCount, BaseCount
+    UserCount, StreamCount, BaseCount
 from analytics.lib.interval import TimeInterval, timeinterval_range, subintervals
 from zerver.models import Realm, UserProfile, Message, Stream, models
 
@@ -236,25 +236,6 @@ count_stream_by_realm_query = """
     GROUP BY zerver_stream.realm_id
 """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
-
-count_message_by_huddle_query = """
-    INSERT INTO analytics_huddlecount
-        (huddle_id, user_id, value, property, end_time, interval)
-    SELECT
-        zerver_message.recipient_id, zerver_message.sender_id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
-    FROM zerver_message
-    INNER JOIN zerver_recipient
-    ON
-    (
-        zerver_recipient.type = 3 AND
-        zerver_message.recipient_id = zerver_recipient.id AND
-        zerver_message.pub_date >= %%(time_start)s AND
-        zerver_message.pub_date < %%(time_end)s
-        %(join_args)s
-    )
-    GROUP BY zerver_message.recipient_id, zerver_message.sender_id
-"""
-zerver_count_message_by_huddle = ZerverCountQuery(Message, HuddleCount, count_message_by_huddle_query)
 
 COUNT_STATS = {
     'active_humans': CountStat('active_humans', zerver_count_user_by_realm,
