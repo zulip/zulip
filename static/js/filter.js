@@ -226,11 +226,9 @@ Filter.parse = function (str) {
             // FIXME: Should we skip unknown operator names here?
             negated = false;
             operator = parts.shift();
-            if (feature_flags.negated_search) {
-                if (operator[0] === '-') {
-                    negated = true;
-                    operator = operator.slice(1);
-                }
+            if (operator[0] === '-') {
+                negated = true;
+                operator = operator.slice(1);
             }
             operand = decodeOperand(parts.join(':'), operator);
             term = {negated: negated, operator: operator, operand: operand};
