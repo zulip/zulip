@@ -2945,6 +2945,12 @@ form#add_new_subscription {
     margin-right: 38px;
 }
 
+#stream_name_error {
+    display: none;
+    margin-left: 2px;
+    color: #FF0000;
+}
+
 .sub_settings_title {
     line-height: 30px;
     margin: 10px 0;

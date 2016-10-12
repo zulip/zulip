@@ -717,6 +717,8 @@ function show_new_stream_modal() {
     $('#announce-new-stream input').prop('disabled', false);
     $('#announce-new-stream input').prop('checked', true);
 
+    $("#stream_name_error").hide();
+
     $('#stream-creation').modal("show");
 }
 
@@ -783,6 +785,7 @@ $(function () {
         if (stream_status === "does-not-exist" || !stream) {
             $('#create_stream_name').val(stream);
             show_new_stream_modal();
+            $('#create_stream_name').focus();
         } else {
             ajaxSubscribe(stream);
         }
@@ -858,22 +861,38 @@ $(function () {
         e.stopPropagation();
     });
 
+    $("#create_stream_name").on("focusout", function () {
+        var stream = $.trim($("#create_stream_name").val());
+        var stream_status = compose.check_stream_existence(stream);
+        if (stream.length < 1) {
+            $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
+            $("#stream_name_error").show();
+        } else if (stream_status !== "does-not-exist") {
+            $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+            $("#stream_name_error").show();
+        } else {
+            $("#stream_name_error").hide();
+        }
+    });
+
     $("#stream_creation_form").on("submit", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
-        var principals = _.map(
-            $("#stream_creation_form input:checkbox[name=user]:checked"),
-            function (elem) {
-                return $(elem).val();
-            }
-        );
-        // You are always subscribed to streams you create.
-        principals.push(page_params.email);
-        ajaxSubscribeForCreation(stream,
-            principals,
-            $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
-            $('#announce-new-stream input').prop('checked')
+        if (!$("#stream_name_error").is(":visible")) {
+            var principals = _.map(
+                $("#stream_creation_form input:checkbox[name=user]:checked"),
+                function (elem) {
+                    return $(elem).val();
+                }
             );
+            // You are always subscribed to streams you create.
+            principals.push(page_params.email);
+            ajaxSubscribeForCreation(stream,
+                principals,
+                $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
+                $('#announce-new-stream input').prop('checked')
+            );
+        }
     });
 
     $("body").on("mouseover", ".subscribed-button", function (e) {
