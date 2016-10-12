@@ -8,7 +8,8 @@ from six import text_type
 from typing import Set
 
 from zerver.decorator import authenticated_json_post_view
-from zerver.lib.actions import do_invite_users, get_default_subs, internal_send_message
+from zerver.lib.actions import do_invite_users, do_refer_friend, \
+    get_default_subs, internal_send_message
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_list
@@ -81,4 +82,17 @@ def json_bulk_invite_users(request, user_profile,
         internal_send_message(settings.NEW_USER_BOT, "stream", "signups",
                               user_profile.realm.domain, internal_message)
         return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
+def json_refer_friend(request, user_profile, email=REQ()):
+    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+    if not email:
+        return json_error(_("No email address specified"))
+    if user_profile.invites_granted - user_profile.invites_used <= 0:
+        return json_error(_("Insufficient invites"))
+
+    do_refer_friend(user_profile, email);
+
+    return json_success()
 
