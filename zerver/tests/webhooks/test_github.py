@@ -3,7 +3,7 @@ from six import text_type
 from typing import Dict, Optional
 
 from zerver.models import Message
-from zerver.lib.webhooks.git import PUSH_COMMITS_LIMIT
+from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_helpers import WebhookTestCase
 
 class GithubV1HookTests(WebhookTestCase):
@@ -80,8 +80,8 @@ class GithubV1HookTests(WebhookTestCase):
         # type: () -> None
         commit_info = "* [48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e): Add baz\n"
         expected_subject = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master\n\n{}[and {} more commit(s)]".format(
-            commit_info * PUSH_COMMITS_LIMIT,
-            50 - PUSH_COMMITS_LIMIT,
+            commit_info * COMMITS_LIMIT,
+            50 - COMMITS_LIMIT,
         )
         self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_subject)
 
@@ -216,8 +216,8 @@ class GithubV2HookTests(WebhookTestCase):
         # type: () -> None
         commit_info = "* [48c329a](https://github.com/zbenjamin/zulip-test/commit/48c329a0b68a9a379ff195ee3f1c1f4ab0b2a89e): Add baz\n"
         expected_subject = "zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) to branch master\n\n{}[and {} more commit(s)]".format(
-            commit_info * PUSH_COMMITS_LIMIT,
-            50 - PUSH_COMMITS_LIMIT,
+            commit_info * COMMITS_LIMIT,
+            50 - COMMITS_LIMIT,
         )
         self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_subject)
 

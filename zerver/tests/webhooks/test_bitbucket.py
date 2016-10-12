@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from six import text_type
 from typing import Union
-from zerver.lib.webhooks.git import PUSH_COMMITS_LIMIT
+from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_helpers import WebhookTestCase
 
 class Bitbucket2HookTests(WebhookTestCase):
@@ -19,7 +19,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_commits_above_limit_event(self):
         # type: () -> None
-        number_of_hidden_commits = 50 - PUSH_COMMITS_LIMIT
+        number_of_hidden_commits = 50 - COMMITS_LIMIT
         commit_info = '* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit\n'
         expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n{}[and {} more commit(s)]".format(
             (commit_info * 10),
