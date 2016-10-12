@@ -252,7 +252,7 @@ database) and lead to a 500 error.  If an actions function is
 responsible for validation as well, it should have a name starting
 with `check_`.
 
-For example, in [zerver/views/__init__.py](https://github.com/zulip/zulip/blob/master/zerver/views/__init__.py):
+For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/master/zerver/views/realm.py):
 
 ```py
 @require_realm_admin
