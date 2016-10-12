@@ -30,6 +30,7 @@
         "settings": false,
         "resize": false,
         "loading": false,
+        "typing": false,
         "compose": false,
         "compose_fade": false,
         "subs": false,

@@ -170,6 +170,14 @@ function dispatch_normal_event(event) {
         }
         break;
 
+    case 'typing':
+        if (event.op === 'start') {
+            typing.display_notification(event);
+        } else if (event.op === 'stop') {
+            typing.hide_notification(event);
+        }
+        break;
+
     case 'update_display_settings':
         if (event.setting_name === 'twenty_four_hour_time') {
             page_params.twenty_four_hour_time = event.setting;
