@@ -266,7 +266,7 @@ function add_email_hint(row, email_address_hint_content) {
 function add_sub_to_table(sub) {
     sub = add_admin_options(sub);
     var html = templates.render('subscription', sub);
-    $('#create_stream_row').after(html);
+    $('#create_or_filter_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
     var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
     add_email_hint(sub, email_address_hint_content);
@@ -437,6 +437,54 @@ function populate_subscriptions(subs, subscribed) {
     return sub_rows;
 }
 
+exports.filter_table = function (query) {
+    var sub_name_elements = $('#subscriptions_table .subscription_name');
+
+    if (query === '') {
+        _.each(sub_name_elements, function (sub_name_elem) {
+            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+        });
+        return;
+    }
+
+    var search_terms = query.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+
+    _.each(sub_name_elements, function (sub_name_elem) {
+        var sub_name = $(sub_name_elem).text();
+        var matches = _.any(search_terms, function (search_term) {
+            var lower_sub_name = sub_name.toLowerCase();
+            var idx = lower_sub_name.indexOf(search_term);
+            if (idx === 0) {
+                // matched at beginning of the string
+                return true;
+            }
+            // we know now that idx === -1 or idx > 0
+            if (idx !== -1 && lower_sub_name.charAt(idx - 1) === ' ') {
+                // matched with a space immediately preceding
+                return true;
+            }
+            return false;
+        });
+
+        if (matches) {
+            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+        } else {
+            $(sub_name_elem).parents('.subscription_row').addClass("notdisplayed");
+        }
+    });
+};
+
+function actually_filter_streams() {
+    var search_box = $("#create_or_filter_stream_row input[type='text']");
+    var query = search_box.expectOne().val().trim();
+    exports.filter_table(query);
+}
+
+var filter_streams = _.throttle(actually_filter_streams, 50);
+
 exports.setup_page = function () {
     loading.make_indicator($('#subs_page_loading_indicator'));
 
@@ -483,9 +531,11 @@ exports.setup_page = function () {
         });
 
         $('#subscriptions_table').empty();
+
         var template_data = {
             can_create_streams: page_params.can_create_streams,
-            subscriptions: sub_rows
+            subscriptions: sub_rows,
+            hide_all_streams: !should_list_all_streams()
         };
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
@@ -496,6 +546,7 @@ exports.setup_page = function () {
         });
 
         loading.destroy_indicator($('#subs_page_loading_indicator'));
+        $("#create_or_filter_stream_row input[type='text']").on("input", filter_streams);
         $(document).trigger($.Event('subs_page_loaded.zulip'));
     }
 
@@ -575,6 +626,7 @@ function ajaxSubscribe(stream) {
         data: {"subscriptions": JSON.stringify([{"name": stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
+            exports.filter_table("");
 
             var res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
@@ -608,6 +660,10 @@ function ajaxUnsubscribe(stream) {
     });
 }
 
+function hide_new_stream_modal() {
+    $('#stream-creation').modal("hide");
+}
+
 function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
@@ -620,13 +676,13 @@ function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
         success: function (data) {
             $("#create_stream_name").val("");
             $("#subscriptions-status").hide();
-            $('#stream-creation').modal("hide");
+            hide_new_stream_modal();
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
             ui.report_error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-            $('#stream-creation').modal("hide");
+            hide_new_stream_modal();
         }
     });
 }
@@ -718,14 +774,14 @@ $(function () {
         e.preventDefault();
 
         if (!should_list_all_streams()) {
-            ajaxSubscribe($("#create_stream_name").val());
+            ajaxSubscribe($("#search_stream_name").val());
             return;
         }
 
-        var stream = $.trim($("#create_stream_name").val());
+        var stream = $.trim($("#search_stream_name").val());
         var stream_status = compose.check_stream_existence(stream);
-        if (stream_status === "does-not-exist") {
-            $("#stream_name").text(stream);
+        if (stream_status === "does-not-exist" || !stream) {
+            $('#create_stream_name').val(stream);
             show_new_stream_modal();
         } else {
             ajaxSubscribe(stream);
