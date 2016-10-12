@@ -401,6 +401,10 @@ Filter.operator_to_prefix = function (operator, negated) {
 
     case 'in':
         return verb + 'messages in';
+
+    // Note: We hack around using this in "describe" below.
+    case 'is':
+        return verb + 'messages that are';
     }
     return '';
 };
