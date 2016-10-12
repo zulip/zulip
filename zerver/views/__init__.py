@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Tuple, Iterable, Sequence
+from typing import Any, List, Dict, Optional
 
 from django.utils import translation
 from django.utils.translation import ugettext as _
@@ -35,7 +35,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSF
     CreateUserForm
 from zerver.lib.actions import is_inactive
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib.validator import check_string, check_list, check_bool
+from zerver.lib.validator import check_string, check_list
 from zerver.decorator import require_post, authenticated_json_post_view, \
     has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ, \
@@ -653,45 +653,6 @@ def is_buggy_ua(agent):
     """
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
         "Mac" not in agent
-
-# Does not need to be authenticated because it's called from rest_dispatch
-@has_request_variables
-def api_events_register(request, user_profile,
-                        apply_markdown=REQ(default=False, validator=check_bool),
-                        all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool]) -> HttpResponse
-    return events_register_backend(request, user_profile,
-                                   apply_markdown=apply_markdown,
-                                   all_public_streams=all_public_streams)
-
-def _default_all_public_streams(user_profile, all_public_streams):
-    # type: (UserProfile, Optional[bool]) -> bool
-    if all_public_streams is not None:
-        return all_public_streams
-    else:
-        return user_profile.default_all_public_streams
-
-def _default_narrow(user_profile, narrow):
-    # type: (UserProfile, Iterable[Sequence[text_type]]) -> Iterable[Sequence[text_type]]
-    default_stream = user_profile.default_events_register_stream
-    if not narrow and user_profile.default_events_register_stream is not None:
-        narrow = [['stream', default_stream.name]]
-    return narrow
-
-@has_request_variables
-def events_register_backend(request, user_profile, apply_markdown=True,
-                            all_public_streams=None,
-                            event_types=REQ(validator=check_list(check_string), default=None),
-                            narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
-                            queue_lifespan_secs=REQ(converter=int, default=0)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[Iterable[str]], Iterable[Sequence[text_type]], int) -> HttpResponse
-    all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
-    narrow = _default_narrow(user_profile, narrow)
-
-    ret = do_events_register(user_profile, request.client, apply_markdown,
-                             event_types, queue_lifespan_secs, all_public_streams,
-                             narrow=narrow)
-    return json_success(ret)
 
 @authenticated_json_post_view
 @has_request_variables
