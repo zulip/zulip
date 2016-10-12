@@ -34,16 +34,17 @@ i18n_urls = [
     # desktop app build for everyone in that case
     url(r'^desktop_home/$', 'zerver.views.desktop_home'),
 
-    url(r'^accounts/login/sso/$', 'zerver.views.remote_user_sso', name='login-sso'),
-    url(r'^accounts/login/jwt/$', 'zerver.views.remote_user_jwt', name='login-jwt'),
-    url(r'^accounts/login/google/$', 'zerver.views.start_google_oauth2'),
-    url(r'^accounts/login/google/done/$', 'zerver.views.finish_google_oauth2'),
-    url(r'^accounts/login/local/$', 'zerver.views.dev_direct_login'),
+    url(r'^accounts/login/sso/$', 'zerver.views.auth.remote_user_sso', name='login-sso'),
+    url(r'^accounts/login/jwt/$', 'zerver.views.auth.remote_user_jwt', name='login-jwt'),
+    url(r'^accounts/login/google/$', 'zerver.views.auth.start_google_oauth2'),
+    url(r'^accounts/login/google/done/$', 'zerver.views.auth.finish_google_oauth2'),
+    url(r'^accounts/login/local/$', 'zerver.views.auth.dev_direct_login'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
-    url(r'^accounts/login/',  'zerver.views.login_page',         {'template_name': 'zerver/login.html'}),
-    url(r'^accounts/login/',  'django.contrib.auth.views.login', {'template_name': 'zerver/login.html'}),
-    url(r'^accounts/logout/', 'zerver.views.logout_then_login'),
+    url(r'^accounts/login/', 'zerver.views.auth.login_page', {'template_name': 'zerver/login.html'}),
+    url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zerver/login.html'}),
+    url(r'^accounts/logout/', 'zerver.views.auth.logout_then_login'),
+
     url(r'^accounts/webathena_kerberos_login/', 'zerver.views.zephyr.webathena_kerberos_login'),
 
     url(r'^accounts/password/reset/$', 'django.contrib.auth.views.password_reset',
@@ -86,7 +87,7 @@ i18n_urls = [
 
     # Login/registration
     url(r'^register/$', 'zerver.views.accounts_home', name='register'),
-    url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),
+    url(r'^login/$',  'zerver.views.auth.login_page', {'template_name': 'zerver/login.html'}),
 
     # A registration page that passes through the domain, for totally open realms.
     url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),
@@ -259,19 +260,19 @@ for incoming_webhook in WEBHOOK_INTEGRATIONS:
 urls += [
     # This json format view used by the mobile apps lists which authentication
     # backends the server allows, to display the proper UI and check for server existence
-    url(r'^api/v1/get_auth_backends',       'zerver.views.api_get_auth_backends'),
+    url(r'^api/v1/get_auth_backends',       'zerver.views.auth.api_get_auth_backends'),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
-    url(r'^api/v1/fetch_api_key$',          'zerver.views.api_fetch_api_key'),
+    url(r'^api/v1/fetch_api_key$',          'zerver.views.auth.api_fetch_api_key'),
 
     # This is for the signing in through the devAuthBackEnd on mobile apps.
-    url(r'^api/v1/dev_fetch_api_key$',      'zerver.views.api_dev_fetch_api_key'),
+    url(r'^api/v1/dev_fetch_api_key$',      'zerver.views.auth.api_dev_fetch_api_key'),
     # This is for fetching the emails of the admins and the users.
-    url(r'^api/v1/dev_get_emails$',         'zerver.views.api_dev_get_emails'),
+    url(r'^api/v1/dev_get_emails$',         'zerver.views.auth.api_dev_get_emails'),
 
     # Used to present the GOOGLE_CLIENT_ID to mobile apps
-    url(r'^api/v1/fetch_google_client_id$', 'zerver.views.api_fetch_google_client_id'),
+    url(r'^api/v1/fetch_google_client_id$', 'zerver.views.auth.api_fetch_google_client_id'),
 ]
 
 # Include URL configuration files for site-specified extra installed

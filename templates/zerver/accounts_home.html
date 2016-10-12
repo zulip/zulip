@@ -36,7 +36,7 @@ $(function () {
             connect you with your coworkers{% endtrans %}.</div>
             {% if google_auth_enabled %}
                 <div class="register-google">
-                    <a href="{{ url('zerver.views.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
+                    <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
                 </div>
             {% endif %}
         </div>
