@@ -28,7 +28,7 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     update_user_presence, do_events_register, \
     do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_change_tos_version, \
-    user_email_is_unique, do_refer_friend, \
+    user_email_is_unique, \
     compute_mit_user_fullname, do_set_muted_topics, clear_followup_emails_queue, \
     do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -693,20 +693,6 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow)
     return json_success(ret)
-
-
-@authenticated_json_post_view
-@has_request_variables
-def json_refer_friend(request, user_profile, email=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if not email:
-        return json_error(_("No email address specified"))
-    if user_profile.invites_granted - user_profile.invites_used <= 0:
-        return json_error(_("Insufficient invites"))
-
-    do_refer_friend(user_profile, email);
-
-    return json_success()
 
 @authenticated_json_post_view
 @has_request_variables
