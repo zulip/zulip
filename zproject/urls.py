@@ -76,7 +76,7 @@ i18n_urls = [
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
     url(r'^accounts/unsubscribe/(?P<type>[\w]+)/(?P<token>[\w]+)',
-        'zerver.views.email_unsubscribe'),
+        'zerver.views.unsubscribe.email_unsubscribe'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
     url(r'^accounts/accept_terms/$', 'zerver.views.accounts_accept_terms'),
