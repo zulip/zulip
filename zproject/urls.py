@@ -169,6 +169,11 @@ v1_api_and_json_patterns = [
     url(r'^messages/flags$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.messages.update_message_flags'}),
 
+    # typing -> zerver.views.typing
+    # POST sends a typing notification event to recipients
+    url(r'^typing$', 'zerver.lib.rest.rest_dispatch',
+        {'POST': 'zerver.views.typing.send_notification_backend'}),
+
     # user_uploads -> zerver.views.upload
     url(r'^user_uploads$', 'zerver.lib.rest.rest_dispatch',
         {'POST': 'zerver.views.upload.upload_file_backend'}),
