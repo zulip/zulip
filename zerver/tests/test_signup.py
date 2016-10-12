@@ -6,7 +6,8 @@ from django.test import TestCase
 
 from zilencer.models import Deployment
 
-from zerver.views import get_invitee_emails_set, do_change_password
+from zerver.views import do_change_password
+from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,

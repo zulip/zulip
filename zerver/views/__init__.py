@@ -25,10 +25,10 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_cross_realm_users, resolve_subdomain_to_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    internal_send_message, update_user_presence, do_events_register, \
+    update_user_presence, do_events_register, \
     do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, do_change_tos_version, \
-    get_default_subs, user_email_is_unique, do_invite_users, do_refer_friend, \
+    user_email_is_unique, do_refer_friend, \
     compute_mit_user_fullname, do_set_muted_topics, clear_followup_emails_queue, \
     do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
@@ -271,50 +271,6 @@ def accounts_accept_terms(request):
           'special_message_template' : special_message_template },
         request=request)
 
-@authenticated_json_post_view
-@has_request_variables
-def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails")):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if not invitee_emails_raw:
-        return json_error(_("You must specify at least one email address."))
-
-    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
-
-    stream_names = request.POST.getlist('stream')
-    if not stream_names:
-        return json_error(_("You must specify at least one stream for invitees to join."))
-
-    # We unconditionally sub you to the notifications stream if it
-    # exists and is public.
-    notifications_stream = user_profile.realm.notifications_stream
-    if notifications_stream and not notifications_stream.invite_only:
-        stream_names.append(notifications_stream.name)
-
-    streams = [] # type: List[Stream]
-    for stream_name in stream_names:
-        stream = get_stream(stream_name, user_profile.realm)
-        if stream is None:
-            return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
-        streams.append(stream)
-
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
-
-    if ret_error is not None:
-        return json_error(data=error_data, msg=ret_error)
-    else:
-        return json_success()
-
-def get_invitee_emails_set(invitee_emails_raw):
-    # type: (str) -> Set[str]
-    invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
-    invitee_emails = set()
-    for email in invitee_emails_list:
-        is_email_with_name = re.search(r'<(?P<email>.*)>', email)
-        if is_email_with_name:
-            email = is_email_with_name.group('email')
-        invitee_emails.add(email.strip())
-    return invitee_emails
-
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
     if user_info:
@@ -323,28 +279,6 @@ def create_homepage_form(request, user_info=None):
     # An empty fields dict is not treated the same way as not
     # providing it.
     return HomepageForm(domain=request.session.get("domain"), subdomain=get_subdomain(request))
-
-@authenticated_json_post_view
-@has_request_variables
-def json_bulk_invite_users(request, user_profile,
-                           invitee_emails_list=REQ('invitee_emails',
-                                                   validator=check_list(check_string))):
-    # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
-    invitee_emails = set(invitee_emails_list)
-    streams = get_default_subs(user_profile)
-
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
-
-    if ret_error is not None:
-        return json_error(data=error_data, msg=ret_error)
-    else:
-        # Report bulk invites to internal Zulip.
-        invited = PreregistrationUser.objects.filter(referred_by=user_profile)
-        internal_message = "%s <`%s`> invited %d people to Zulip." % (
-            user_profile.full_name, user_profile.email, invited.count())
-        internal_send_message(settings.NEW_USER_BOT, "stream", "signups",
-                              user_profile.realm.domain, internal_message)
-        return json_success()
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
