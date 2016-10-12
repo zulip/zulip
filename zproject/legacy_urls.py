@@ -6,8 +6,8 @@ legacy_urls = [
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/make_stream_public$',       'zerver.views.streams.json_make_stream_public'),
     url(r'^json/make_stream_private$',      'zerver.views.streams.json_make_stream_private'),
-    url(r'^json/invite_users$',             'zerver.views.json_invite_users'),
-    url(r'^json/bulk_invite_users$',        'zerver.views.json_bulk_invite_users'),
+    url(r'^json/invite_users$',             'zerver.views.invite.json_invite_users'),
+    url(r'^json/bulk_invite_users$',        'zerver.views.invite.json_bulk_invite_users'),
     url(r'^json/settings/change$',          'zerver.views.user_settings.json_change_settings'),
     url(r'^json/notify_settings/change$',   'zerver.views.user_settings.json_change_notify_settings'),
     url(r'^json/ui_settings/change$',       'zerver.views.user_settings.json_change_ui_settings'),
