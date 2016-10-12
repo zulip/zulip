@@ -60,7 +60,7 @@ else:
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
 subprocess.check_call(["sudo", "apt-get", "update"])
-subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release", "software-properties-common"])
+subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 vendor = subprocess_text_output(["lsb_release", "-is"])
 codename = subprocess_text_output(["lsb_release", "-cs"])
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
@@ -125,14 +125,6 @@ def main():
     os.chdir(ZULIP_PATH)
 
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-
-    # Add groonga repository to get the pgroonga packages; retry if it fails :/
-    try:
-        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
-    except subprocess.CalledProcessError:
-        print(WARNING + "`Could not add groonga; retrying..." + ENDC)
-        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
-
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
