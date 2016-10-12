@@ -817,6 +817,72 @@ def do_send_messages(messages):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
+def get_typing_notification_recipients(notification):
+    # type: (Dict[str, Any]) -> Dict[str, Any]
+    if notification['recipient'].type == Recipient.PERSONAL:
+        recipients = [notification['sender'],
+                      get_user_profile_by_id(notification['recipient'].type_id)]
+    elif notification['recipient'].type == Recipient.HUDDLE:
+        # We use select_related()/only() here, while the PERSONAL case above uses
+        # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
+        # typically have more recipients than PMs, so get_user_profile_by_id() would be
+        # a bit more expensive here, given that we need to hit the DB anyway and only
+        # care about the email from the user profile.
+        fields = [
+            'user_profile__id',
+            'user_profile__email',
+            'user_profile__is_active',
+            'user_profile__realm__domain'
+        ]
+        query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
+                recipient=notification['recipient'], active=True)
+        recipients = [s.user_profile for s in query]
+    elif notification['recipient'].type == Recipient.STREAM:
+        raise ValueError('Forbidden recipient type')
+    else:
+        raise ValueError('Bad recipient type')
+    notification['recipients'] = [{'id': profile.id, 'email': profile.email} for profile in recipients]
+    notification['active_recipients'] = [profile for profile in recipients if profile.is_active]
+    return notification
+
+def do_send_typing_notification(notification):
+    # type: (Dict[str, Any]) -> None
+    notification = get_typing_notification_recipients(notification)
+    event = dict(
+            type            = 'typing',
+            op              = notification['op'],
+            sender          = notification['sender'],
+            recipients      = notification['recipients'])
+
+    # Only deliver the message to active user recipients
+    send_event(event, notification['active_recipients'])
+
+# check_send_typing_notification:
+# Checks the typing notification and sends it
+def check_send_typing_notification(sender, notification_to, operator):
+    # type: (UserProfile, Sequence[text_type], text_type) -> None
+    typing_notification = check_typing_notification(sender, notification_to, operator)
+    do_send_typing_notification(typing_notification)
+
+# check_typing_notification:
+# Returns typing notification ready for sending with do_send_typing_notification on success
+# or the error message (string) on error.
+def check_typing_notification(sender, notification_to, operator):
+    # type: (UserProfile, Sequence[text_type], text_type) -> Dict[str, Any]
+    if len(notification_to) == 0:
+        raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
+    elif operator not in ('start', 'stop'):
+        raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
+    else:
+        try:
+            recipient = recipient_for_emails(notification_to, False,
+                                             sender, sender)
+        except ValidationError as e:
+            assert isinstance(e.messages[0], six.string_types)
+            raise JsonableError(e.messages[0])
+    typing_notification = {'sender': sender, 'recipient': recipient, 'op': operator}
+    return typing_notification
+
 def do_create_stream(realm, stream_name):
     # type: (Realm, text_type) -> None
     # This is used by a management command now, mostly to facilitate testing.  It
