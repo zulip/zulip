@@ -1,0 +1,13 @@
+#!/bin/bash
+
+source tools/travis/activate-venv
+
+set -e
+set -x
+
+./tools/lint-all
+./tools/test-backend --coverage --no-verbose-coverage
+./tools/test-management
+./tools/test-migrations
+./tools/test-run-dev
+#./tools/test-queue-worker-reload

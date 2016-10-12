@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
+
+import os
+from os.path import dirname, abspath
+import sys
+
+BASE_DIR = dirname(dirname(abspath(__file__)))
+sys.path.append(BASE_DIR)
+import scripts.lib.setup_path_on_import
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+
+print(getattr(settings, sys.argv[1]))

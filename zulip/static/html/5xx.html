@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Zulip, from Zulip, Inc.</title>
+    <link href="/static/third/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/third/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <!-- NB: Relies on the fact that PipelineCachedStorage also includes
+         a copy of the file with no hash in the name.
+         This file will not load in dev unless you set DEBUG = False. -->
+    <link href="/static/min/portico.css" rel="stylesheet">
+
+    <meta http-equiv="refresh" content="60;URL='/'">
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="navbar">
+    <ul class="nav pull-right">
+        <li><a href="/accounts/login/?next=/">Log in</a></li>
+    </ul>
+</div>
+<div class="row-fluid">
+    <div class="span2"></div>
+    <div class="span10">
+        <div class="title">
+            <a class="title" href="/">Zulip</a>
+            <span class="for_you"> isn't feeling too good.</span>
+        </div>
+
+        <br/>
+        <p class="lead">Internal server error.</p>
+        <br/>
+
+        <p>Well oops. This one's probably our fault. Sorry about that! Updates on service availability are posted to
+        <a class="twitter-timeline" href="https://twitter.com/ZulipStatus"
+            data-widget-id="443457763394334720"
+            data-screen-name="ZulipStatus"
+            >@ZulipStatus on Twitter</a>.</p>
+
+        <p>If you'd like, you can <a href="mailto:zulip-devel@googlegroups.com?Subject=500%20error%20on%20%7Bwhich%20URL%3F%7D&Body=Hi%20there%21%0A%0AI%20was%20trying%20to%20do%20%7Bwhat%20were%20you%20trying%20to%20do%3F%7D%20at%20around%20%7Bwhen%20was%20this%3F%7D%20when%20I%20got%20a%20500%20error%20while%20accessing%20%7Bwhich%20URL%3F%7D.%0A%0AThanks!%0A%0ASincerely%2C%20%0A%0A%7BYour%20name%7D">drop us a line</a> to let us know what happened.</p>
+    </div>
+</div>
+
+</div>
+
+</body>
+
+</html>

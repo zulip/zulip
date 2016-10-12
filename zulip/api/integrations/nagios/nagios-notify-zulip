@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+import optparse
+import zulip
+
+VERSION = "0.9"
+# Nagios passes the notification details as command line options.
+# In Nagios, "output" means "first line of output", and "long
+# output" means "other lines of output".
+parser = optparse.OptionParser()
+parser.add_option('--output',      default='')
+parser.add_option('--long-output', default='')
+parser.add_option('--stream', default='nagios')
+parser.add_option('--config', default='/etc/nagios3/zuliprc')
+for opt in ('type', 'host', 'service', 'state'):
+    parser.add_option('--' + opt)
+(opts, args) = parser.parse_args()
+
+client = zulip.Client(config_file=opts.config, client="ZulipNagios/" + VERSION)
+
+msg = dict(type='stream', to=opts.stream)
+
+# Set a subject based on the host or service in question.  This enables
+# threaded discussion of multiple concurrent issues, and provides useful
+# context when narrowed.
+#
+# We send PROBLEM and RECOVERY messages to the same subject.
+if opts.service is None:
+    # Host notification
+    thing = 'host'
+    msg['subject'] = 'host %s' % (opts.host,)
+else:
+    # Service notification
+    thing = 'service'
+    msg['subject'] = 'service %s on %s' % (opts.service, opts.host)
+
+if len(msg['subject']) > 60:
+    msg['subject'] = msg['subject'][0:57].rstrip() + "..."
+# e.g. **PROBLEM**: service is CRITICAL
+msg['content'] = '**%s**: %s is %s' % (opts.type, thing, opts.state)
+
+# The "long output" can contain newlines represented by "\n" escape sequences.
+# The Nagios mail command uses /usr/bin/printf "%b" to expand these.
+# We will be more conservative and handle just this one escape sequence.
+output = (opts.output + '\n' + opts.long_output.replace(r'\n', '\n')).strip()
+if output:
+    # Put any command output in a code block.
+    msg['content'] += ('\n\n~~~~\n' + output + "\n~~~~\n")
+
+client.send_message(msg)

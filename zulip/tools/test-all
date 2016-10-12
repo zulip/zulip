@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")"/..
+
+function run {
+    echo '----'
+    echo "Running $@"
+    if ! "$@"; then
+        printf "\n\e[31;1mFAILED\e[0m $@\n"
+        exit 1
+    else
+        echo
+    fi
+}
+
+run ./tools/clean-repo
+run ./tools/test-tools
+run ./tools/lint-all
+run ./tools/test-migrations
+run ./tools/test-js-with-node
+run ./tools/run-mypy
+run ./tools/test-backend
+run ./tools/test-js-with-casper
+# Not running management test since it takes 40s and thus is too slow to be worth it.
+# run ./tools/test-management
+# Not running queue worker reload tests since it's low-churn code
+# run ./tools/test-queue-worker-reload
+
+printf '\n\e[32mAll OK!\e[0m\n'

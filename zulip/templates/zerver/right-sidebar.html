@@ -1,0 +1,52 @@
+          <div class="right-sidebar" id="right-sidebar">
+            <div class="alert-box">
+              <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+                <strong>{{ _('Unable to connect to') }} {{product_name}}.</strong>  {{ _('Updates may be delayed') }}.
+                <br /><br /> {{ _('Retrying soon') }}... <br /><br /> <a class="restart_get_updates_button">{{ _('Try now') }}</a>.
+              </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
+                <strong>{{ _('Unable to connect to') }} {{product_name}}.</strong>  {{ _('Could not fetch messages') }}.
+                <br /><br /> {{ _('Retrying soon') }}... <br /><br />
+              </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+                <strong>{{ _('Your Zephyr mirror is not working') }}.</strong>
+                  <span id="normal-zephyr-mirror-error-text">{% trans %}We
+                  recommend that you <a class="webathena_login">give
+                  {{product_name}} the ability to mirror the messages for you via
+                  WebAthena</a>.  If you'd prefer, you can instead
+                  <a href="/zephyr-mirror" target="_blank">run the Zephyr mirror script yourself</a>
+                  in a screen session{% endtrans %}.</span>
+                  <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">{% trans %}To fix
+                  this, you'll need
+                  to use <a href="https://zephyr.zulip.com">the web interface</a>{% endtrans %}</span>
+              </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
+            </div>
+            <div class="sidebar-items">
+              {% if enable_feedback %}
+              <div id="feedback_section">
+                <button type="button" class="btn btn-default btn-large" id="feedback_button">
+                  <i class="icon-vector-comment"></i>&nbsp;&nbsp;{{ _('Send feedback') }}
+                </button>
+              </div>
+              {% endif %}
+              <div id="user-list">
+                <div id="userlist-header">
+                  <h4 class='sidebar-title' id='userlist-title'>{{ _('USERS') }}</h4>
+                </div>
+                 <input class="user-list-filter" type="text" placeholder="{{ _('Search people') }}" />
+                 <ul id="user_presences" class="filters scrolling_list"></ul>
+              {% if show_invites %}
+                 <a id="invite-user-link" href="#invite-user" data-toggle="modal"><i class="icon-vector-plus-sign"></i>{{ _('Invite more users') }}</a>
+              {% endif %}
+              </div>
+              <div id="group-pm-list">
+                <div id="group-pm-header">
+                  <h4 class='sidebar-title' id='group-pm-title'>{{ _('GROUP PMs') }}</h4>
+                </div>
+                <ul id="group-pms" class="filters scrolling_list">
+                </ul>
+              </div>
+            </div>
+          </div>

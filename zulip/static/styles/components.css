@@ -1,0 +1,91 @@
+/* Reusable, object-oriented CSS base components for the Zulip redesign */
+
+/* -- base button styling -- */
+.button {
+    padding: 8px 15px;
+    margin: 0;
+    min-width: 130px;
+
+    font-weight: 400;
+    text-align: center;
+
+    background-color: #478fca;
+    color: #FFF;
+    outline: none;
+    border: none;
+    border-radius: 2px;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* -- button states -- */
+.button:hover {
+    -webkit-filter: brightness(1.1);
+    -moz-filter: brightness(1.1);
+    filter: brightness(1.1);
+}
+
+.button:active {
+    -webkit-filter: brightness(0.9);
+    -moz-filter: brightness(0.9);
+    filter: brightness(0.9);
+}
+
+/* -- button style variations -- */
+.button.no-style {
+    padding: 0px;
+    background-color: transparent;
+    border: none;
+    min-width: 0px;
+    width: auto;
+    outline: none;
+    box-shadow: none !important;
+}
+
+.button.green {
+    background-color: #64ad89;
+}
+
+.button.grey {
+    background-color: #aaa;
+}
+
+.button.white {
+    background-color: #fff;
+    color: inherit;
+    border: 1px solid #CCC;
+    box-shadow: none;
+}
+
+.button.standalone {
+    margin-top: 10px;
+}
+
+.button.small {
+    font-size: 0.8rem;
+    min-width: inherit;
+    padding: 6px 10px;
+}
+
+.button.btn-danger {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
+.button.btn-warning {
+    color: #fff;
+    background-color: #f0ad4e;
+    border-color: #eea236;
+}
+
+.button.sea-green {
+    background-color: #24cac2;
+    color: #fff;
+}
+
+.button.small-flex {
+    width: auto;
+    min-width: inherit;
+}

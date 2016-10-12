@@ -1,0 +1,161 @@
+-r ipython.txt
+# Django itself; we use a slightly patched version
+git+https://github.com/zulip/truncated-django-1.8.15.git@cbf4fa3aef1b17f37d75a70e57f9b69a0f99ed5c#egg=Django==1.8.15
+
+# Needed for rendering backend templates
+Jinja2==2.8
+
+# Needed for markdown processing
+Markdown==2.1.1
+MarkupSafe==0.23
+
+# Needed for Image Processing
+Pillow==3.3.1
+
+# Needed for markdown processing
+Pygments==2.1.3
+
+# Needed for building complex DB queries
+SQLAlchemy==0.7.8
+
+# Needed for Tornado >3.2 compatibility
+backports-abc==0.4
+
+# Needed for S3 file uploads
+boto==2.42.0
+
+certifi==2016.8.31
+chardet==2.3.0
+
+# Needed for integrations
+defusedxml==0.4.1
+
+# Needed to generate diffs for edits
+diff-match-patch==20121119
+
+# Needed for LDAP support
+django-auth-ldap==1.2.8
+
+# Django extension providing bitfield support
+django-bitfield==1.8.0
+
+# Django-guardian is actually no longer used; just needed for the
+# migration that removes it.
+git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69#egg=django-guardian==1.3
+
+# Django extension for sending data to statsd
+django-statsd-mozilla==0.3.16
+
+docopt==0.6.2
+fonttools==3.0
+
+# Needed for mock 2.0.0
+funcsigs==1.0.2
+
+# Needed for Android push notifications
+gcm-client==0.1.4
+
+gitdb==0.6.4
+
+# Needed for Google Apps mobile auth
+google-api-python-client==1.5.3
+
+# Needed for the email mirror
+html2text==2016.5.29
+httplib2==0.9.2
+
+# Needed for JWT-based auth
+jwt==0.3.2
+
+# Needed for USING_MANDRILL option for outgoing email
+mandrill==1.0.57
+
+# Needed for mock objects in decorators
+mock==2.0.0
+
+oauth2client==3.0.0
+oauthlib==1.1.2
+
+# Needed for mock>1.1.2
+pbr==1.10
+
+# Needed to access rabbitmq
+pika==0.10.0
+
+# Wrapper for mailchimp api
+postmonkey==1.0b0
+
+# Needed to access our database
+psycopg2==2.6.2
+
+pyasn1==0.1.9
+pyasn1-modules==0.0.8
+pycrypto==2.6.1
+
+# Needed for memcached usage
+pylibmc==1.5.1
+
+# Needed for timezone work
+pytz==2016.6.1
+
+# Needed for redis
+redis==2.10.5
+
+# Dependencies of our API
+requests==2.11.1
+
+requests_oauthlib==0.6.2
+rsa==3.4.2
+
+# Dependencies of our API
+simplejson==3.8.2
+
+# Needed for Tornado>3.2
+singledispatch==3.4.0.3
+
+# Needed for Python 2+3 compatibility
+six==1.10.0
+smmap==0.9.0
+
+# Needed for Tornado websockets support
+sockjs-tornado==1.0.3
+
+# Needed to parse source maps for error reporting
+sourcemap==0.1.8
+
+# Needed for django-statsd-mozilla
+statsd==3.2.1
+
+# Tornado used for server->client push system
+tornado==3.2.2
+
+# Needed for Python static typing
+typing==3.5.2.2
+
+# Fast JSON parser
+ujson==1.35
+
+uritemplate==0.6
+
+# Django extension for static asset pipeline
+django-pipeline==1.6.9
+
+# Needed for iOS push notifications
+git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
+
+# Needed for Twitter card integration
+git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5#egg=python-twitter==3.1
+
+# Needed for the email mirror
+-r emailmirror.txt
+
+# To parse po files
+polib==1.0.7
+
+# Needed for sprite generation
+# We're using this version from git to ensure compatibility with
+# Jinja2==2.8 (see https://github.com/jorgebastida/glue/pull/211).
+git+https://github.com/lorenzogil/glue@01c00cd33b9b78ea868300c266c16acd59a81bfc#egg=glue==0.11.1
+
+# Needed for cloning virtual environments
+git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6

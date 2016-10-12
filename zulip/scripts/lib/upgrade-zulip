@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os
+import shutil
+import sys
+import subprocess
+import logging
+
+TARBALL_ARCHIVE_PATH="/home/zulip/archives"
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
+    mkdir_p, su_to_zulip, get_deployment_lock, release_deployment_lock
+
+logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
+                    level=logging.INFO)
+
+if os.getuid() != 0:
+    logging.error("Must be run as root.")
+    sys.exit(1)
+
+if len(sys.argv) != 2:
+    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
+    sys.exit(1)
+
+tarball_path = sys.argv[1]
+
+error_rerun_script = "%s/current/scripts/upgrade-zulip %s" % (DEPLOYMENTS_DIR, tarball_path)
+get_deployment_lock(error_rerun_script)
+
+try:
+    # Copy the release tarball to an archival path that's readable by
+    # the Zulip user, and then unpack it from that directory, so that
+    # we can unpack using the Zulip user even if the original path was
+    # not readable by the Zulip user.
+    logging.info("Archiving the tarball under %s" % (TARBALL_ARCHIVE_PATH,))
+    mkdir_p(TARBALL_ARCHIVE_PATH)
+    archived_tarball_path = os.path.join(TARBALL_ARCHIVE_PATH, os.path.basename(tarball_path))
+    shutil.copy(tarball_path, archived_tarball_path)
+    subprocess.check_output(["chown", "-R", "zulip:zulip", TARBALL_ARCHIVE_PATH])
+
+    logging.info("Unpacking the tarball")
+    unpack_zulip = os.path.realpath(os.path.join(os.path.dirname(__file__), 'unpack-zulip'))
+    deploy_path = subprocess.check_output([unpack_zulip, archived_tarball_path],
+                                          preexec_fn=su_to_zulip, universal_newlines=True)
+
+    # Chdir to deploy_path and then run upgrade-zulip-stage-2 from the
+    # new version of Zulip (having the upgrade logic run from the new
+    # version is much better for fixing bugs in the upgrade process).
+    deploy_path = deploy_path.strip()
+    os.chdir(deploy_path)
+    subprocess.check_call([os.path.abspath("./scripts/lib/upgrade-zulip-stage-2"), deploy_path])
+finally:
+    release_deployment_lock()

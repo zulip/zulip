@@ -1,0 +1,14 @@
+# Shared memory settings for PostgreSQL
+
+# Maximum total size of shared memory in pages (normally 4096 bytes)
+kernel.shmall = 1703936
+# Maximum size of shared memory segment in bytes
+kernel.shmmax = 6979321856
+
+# Virtual memory settings
+vm.swappiness = 0
+vm.overcommit_memory = 2
+
+# These are the defaults on newer kernels
+vm.dirty_ratio = 10
+vm.dirty_background_ratio = 5

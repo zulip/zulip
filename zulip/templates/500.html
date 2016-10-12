@@ -1,0 +1,24 @@
+{% extends "zerver/portico.html" %}
+
+{% block for_you %} isn't feeling too good. {% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'">
+{% endblock %}
+
+{% block portico_content %}
+
+<br/>
+<p class="lead">500: Internal server error.</p>
+
+<p>Well oops. This one's probably our fault. Sorry about that! Updates on
+service availability are posted to
+<a class="twitter-timeline" href="https://twitter.com/ZulipStatus"
+   data-widget-id="443457763394334720"
+   data-screen-name="ZulipStatus"
+>@ZulipStatus on Twitter</a>.</p>
+
+<p>If you'd like, you can <a href="mailto:{{ zulip_admin }}?Subject=500%20error%20on%20%7Bwhich%20URL%3F%7D&Body=Hi%20there%21%0A%0AI%20was%20trying%20to%20do%20%7Bwhat%20were%20you%20trying%20to%20do%3F%7D%20at%20around%20%7Bwhen%20was%20this%3F%7D%20when%20I%20got%20a%20500%20error%20while%20accessing%20%7Bwhich%20URL%3F%7D.%0A%0AThanks!%0A%0ASincerely%2C%20%0A%0A%7BYour%20name%7D">drop us a line</a> to let us know what happened.</p>
+
+{% endblock %}

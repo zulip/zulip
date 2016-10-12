@@ -1,0 +1,59 @@
+{% extends "zerver/portico.html" %}
+
+{# API information page #}
+
+{% block customhead %}
+    {{ super() }}
+    {{ minified_js('api')|safe }}
+{% endblock %}
+
+
+{% block portico_content %}
+    <h1 class="api-page-header">API endpoints documentation</h1>
+
+    <p>In addition to our <a href="/api">pre-built API bindings for Python</a>, we also have a <a href="http://en.wikipedia.org/wiki/Representational_state_transfer">REST-ful</a> web API.</p>
+
+    <ul class="nav nav-tabs" id="api-example-tabs">
+      <li class="active"><a href="#curl" data-toggle="tab" data-class="curl">curl</a></li>
+      <li><a href="#python" data-toggle="tab" data-class="python">Python</a></li>
+    </ul>
+
+{% autoescape off %}
+
+{% for blurb in content %}
+<div class="api-block">
+    <h2 class="call">{{ blurb.call }}</h2>
+    <div class="endpoint"><code>{{blurb.method}} {{ blurb.endpoint }}</code></div>
+    <div class="api-details">
+        <h3>Arguments</h3>
+        <dl class="dl-horizontal arguments">
+        {% for argument in blurb.arguments %}
+            <dt><code>{{ argument.0 }}</code></dt>
+            <dd>{{ argument.1 }}</dd>
+        {% endfor %}
+        </dl>
+        <h3>Return values</h3>
+        <dl class="dl-horizontal returns">
+        {% for return in blurb.returns %}
+            <dt><code>{{ return.0 }}</code></dt>
+            <dd>{{ return.1 }}</dd>
+        {% endfor %}
+        </dl>
+        {% if blurb.example_request %}
+        <h3>Example request</h3>
+        {% for lang, req in blurb.example_request.items() %}
+            <div class="example_request {{ lang }}">
+                {{ req }}
+            </div>
+        {% endfor %}{% endif %}
+        {% if blurb.rendered_response %}
+        <h3>Example response</h3>
+        <div class="example_response">
+            {{ blurb.rendered_response }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% endautoescape %}
+{% endblock %}

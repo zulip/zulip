@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+USER=root
+
+* * * * * root /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers

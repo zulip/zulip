@@ -1,0 +1,47 @@
+{
+  "message": "Leo Franchi delivered this feature",
+  "primary_resources": [
+    {
+      "url": "http://www.pivotaltracker.com/story/show/63486316",
+      "kind": "story",
+      "story_type": "feature",
+      "id": 63486316,
+      "name": "Story of the Year"
+    }
+  ],
+  "guid": "807213_64",
+  "kind": "story_update_activity",
+  "project": {
+    "kind": "project",
+    "id": 807213,
+    "name": "Hard Code"
+  },
+  "occurred_at": 1389218691000,
+  "performed_by": {
+    "initials": "LF",
+    "kind": "person",
+    "id": 981905,
+    "name": "Leo Franchi"
+  },
+  "changes": [
+    {
+      "kind": "story",
+      "story_type": "feature",
+      "change_type": "update",
+      "id": 63486316,
+      "original_values": {
+        "current_state": "accepted",
+        "accepted_at": 1389218632000,
+        "updated_at": 1389218645000
+      },
+      "new_values": {
+        "current_state": "delivered",
+        "accepted_at": null,
+        "updated_at": 1389218691000
+      },
+      "name": "Story of the Year"
+    }
+  ],
+  "project_version": 64,
+  "highlight": "delivered"
+}

@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import sys
+import re
+import time
+import os
+import subprocess
+
+WARN_THRESHOLD_DEFAULT = 10
+WARN_THRESHOLD = {
+    'missedmessage_emails': 45,
+}
+CRIT_THRESHOLD_DEFAULT = 50
+CRIT_THRESHOLD = {
+    'missedmessage_emails': 70,
+}
+
+states = {
+    0: "OK",
+    1: "WARNING",
+    2: "CRITICAL",
+    3: "UNKNOWN"
+}
+
+pattern = re.compile(r'(\w+)\t(\d+)')
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], universal_newlines=True)
+
+status = 0
+max_count = 0
+warn_queues = []
+
+if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
+    print("This script must be run as the root or rabbitmq user")
+
+for line in output.split("\n"):
+    line = line.strip()
+    m = pattern.match(line)
+    if m:
+        queue = m.group(1)
+        count = int(m.group(2))
+        this_status = 0
+        if count > CRIT_THRESHOLD.get(queue, CRIT_THRESHOLD_DEFAULT):
+            this_status = 2
+            warn_queues.append(queue)
+        elif count > WARN_THRESHOLD.get(queue, WARN_THRESHOLD_DEFAULT):
+            this_status = max(status, 1)
+            warn_queues.append(queue)
+
+        status = max(status, this_status)
+        max_count = max(max_count, count)
+
+warn_about =  ", ".join(warn_queues)
+now = int(time.time())
+now_struct = time.gmtime(now)
+
+# While we are sending digest emails, at 11am each weekday, the mail queues can
+# get backed up; don't alert on those.
+if not set(warn_queues) - set(("missedmessage_emails", "digest_emails")) and \
+        now_struct.tm_hour == 15 and now_struct.tm_min < 25:
+    status = 0
+    print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (
+            now, status, states[status]))
+    exit(0)
+
+if status > 0:
+    print("%s|%s|%s|max count %s, queues affected: %s" % (now, status, states[status], max_count, warn_about))
+else:
+    print("%s|%s|%s|queues normal, max count %s" % (now, status, states[status], max_count))

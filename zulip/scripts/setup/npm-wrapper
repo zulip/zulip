@@ -1,0 +1,4 @@
+#!/bin/bash
+export NVM_DIR="/usr/local/nvm"
+[ -e "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+npm "$@"

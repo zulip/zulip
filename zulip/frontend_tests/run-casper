@@ -1,0 +1,144 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import subprocess
+import optparse
+import time
+import sys
+import os
+import glob
+try:
+    # We don't actually need typing, but it's a good guard for being
+    # outside a Zulip virtualenv.
+    from typing import Iterable
+    import requests
+    import django
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip tests inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
+
+#
+# In order to use remote casperjs debugging, pass the --remote-debug flag
+# This will start a remote debugging session listening on port 7777
+#
+# See https://wiki.zulip.net/wiki/Testing_the_app for more information
+# on how to use remote debugging
+#
+
+os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
+os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "../node_modules/.bin/phantomjs")
+
+usage = """%prog [options]
+    test-js-with-casper # Run all test files
+    test-js-with-casper 09-navigation.js # Run a single test file
+    test-js-with-casper 01-login.js 03-narrow.js # Run a few test files"""
+parser = optparse.OptionParser(usage)
+
+parser.add_option('--remote-debug',
+                  help='Whether or not to enable remote debugging on port 7777',
+                  action="store_true",
+                  default=False)
+(options, args) = parser.parse_args()
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+from zerver.lib.test_fixtures import is_template_database_current
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+django.setup()
+os.environ['PYTHONUNBUFFERED'] = 'y'
+
+os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+
+subprocess.check_call('tools/setup/generate-test-credentials')
+
+subprocess.check_call(['mkdir', '-p', 'var/casper'])
+
+subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
+
+log = open('var/casper/server.log', 'w')
+
+def assert_server_running(server):
+    # type: (subprocess.Popen) -> None
+    """Get the exit code of the server, or None if it is still running."""
+    if server.poll() is not None:
+        raise RuntimeError('Server died unexpectedly! Check var/casper/server.log')
+
+def server_is_up(server):
+    # type: (subprocess.Popen) -> bool
+    assert_server_running(server)
+    try:
+        # We could get a 501 error if the reverse proxy is up but the Django app isn't.
+        return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
+    except:
+        return False
+
+def run_tests(realms_have_subdomains, files):
+    # type: (bool, Iterable[str]) -> None
+    test_dir = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests')
+    test_files = []
+    for file in files:
+        if not os.path.exists(file):
+            file = os.path.join(test_dir, file)
+        test_files.append(os.path.abspath(file))
+
+    generate_fixtures_command = ['tools/setup/generate-fixtures']
+    if not is_template_database_current():
+        generate_fixtures_command.append('--force')
+
+    subprocess.check_call(generate_fixtures_command)
+
+    if not test_files:
+        test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
+
+    remote_debug = ""
+    if options.remote_debug:
+        remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
+
+    # Run this not through the shell, so that we have the actual PID.
+    server = subprocess.Popen(('tools/run-dev.py', '--test'),
+                              stdout=log, stderr=log)
+
+    ret = 1
+
+    try:
+        # Wait for the server to start up.
+        sys.stdout.write('Waiting for test server')
+        while not server_is_up(server):
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            time.sleep(0.1)
+        sys.stdout.write('\n')
+
+        for test_file in test_files:
+            cmd = "node_modules/.bin/casperjs %s test --subdomains=%s %s" % (
+                remote_debug, realms_have_subdomains, test_file)
+            print("\n\nRunning %s" % (cmd,))
+            ret = subprocess.call(cmd, shell=True)
+            if ret != 0:
+                break
+            time.sleep(0.3) # give a little breathing room for cleanup
+    finally:
+        assert_server_running(server)
+        server.terminate()
+
+    if ret != 0:
+        print("""
+Oops, the frontend tests failed. Tips for debugging:
+ * Check the frontend test server logs at var/casper/server.log
+ * Check the screenshots of failed tests at var/casper/casper-failure*.png
+ * Try remote debugging the test web browser as described in docs/testing.rst
+""", file=sys.stderr)
+
+        sys.exit(ret)
+
+os.environ["EXTERNAL_HOST"] = "zulipdev.com:9981"
+# First, run all tests with REALMS_HAVE_SUBDOMAINS set to False
+run_tests(False, args)
+# Now run a subset of the tests with REALMS_HAVE_SUBDOMAINS set to True
+os.environ["REALMS_HAVE_SUBDOMAINS"] = "True"
+if len(args) == 0:
+    run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"])
+else:
+    run_tests(True, args)
+sys.exit(0)

@@ -1,0 +1,135 @@
+<div class="modal hide" id="keyboard-shortcuts" tabindex="-1" role="dialog"
+     aria-labelledby="keyboard-shortcuts-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="keyboard-shortcuts-label">{% trans %}Keyboard shortcuts{% endtrans %}</h3>
+  </div>
+  <div class="modal-body">
+    <div>
+      <table class="hotkeys_table table table-striped table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th colspan="2">{{ _("Navigation") }}</th>
+          </tr>
+        </thead>
+        <tr>
+          <td class="hotkey">/</td>
+          <td class="definition">{% trans %}Initiate a search{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">q</td>
+          <td class="definition">{% trans %}Search people{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">w</td>
+          <td class="definition">{% trans %}Search streams{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Up or k</td>
+          <td class="definition">{% trans %}Previous message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Down or j</td>
+          <td class="definition">{% trans %}Next message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">PgUp, K</td>
+          <td class="definition">{% trans %}Scroll up{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">PgDn, J, Spacebar</td>
+          <td class="definition">{% trans %}Scroll down{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">End</td>
+          <td class="definition">{% trans %}Last message{% endtrans %}</td>
+        </tr>
+      </table>
+
+      <table class="hotkeys_table table table-striped table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th colspan="2">{% trans %}Composing messages{% endtrans %}</th>
+          </tr>
+        </thead>
+        <tr>
+          <td class="hotkey">Enter or r</td>
+          <td class="definition">{% trans %}Reply to message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">R</td>
+          <td class="definition">{% trans %}Reply to author{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">c</td>
+          <td class="definition">{% trans %}New stream message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">C</td>
+          <td class="definition">{% trans %}New private message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Tab then Enter</td>
+          <td class="definition">{% trans %}Send message{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Esc</td>
+          <td class="definition">{% trans %}Cancel compose{% endtrans %}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <table class="hotkeys_table table table-striped table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th colspan="2">{{ _("Narrowing") }}</th>
+          </tr>
+        </thead>
+        <tr>
+          <td class="hotkey">s</td>
+          <td class="definition">{% trans %}Narrow by stream{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">S</td>
+          <td class="definition">{% trans %}Narrow by topic{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">v</td>
+          <td class="definition">{% trans %}Narrow to all private messages{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">A or D</td>
+          <td class="definition">{% trans %}Cycle between stream narrows{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">Esc</td>
+          <td class="definition">{% trans %}Return to home view{% endtrans %}</td>
+        </tr>
+      </table>
+
+      <table class="hotkeys_table table table-striped table-bordered table-condensed">
+        <thead>
+          <tr>
+            <th colspan="2">{{ _("Menus") }}</th>
+          </tr>
+        </thead>
+        <tr>
+          <td class="hotkey">i</td>
+          <td class="definition">{% trans %}Open message actions menu{% endtrans %}</td>
+        </tr>
+        <tr id="edit-message-hotkey-help">
+          <td class="hotkey">i then Enter</td>
+          <td class="definition">{% trans %}Edit a message you sent{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">?</td>
+          <td class="definition">{% trans %}Show these keyboard shortcuts{% endtrans %}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{ _("Close") }}</button>
+  </div>
+</div>

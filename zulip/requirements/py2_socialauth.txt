@@ -1,0 +1,3 @@
+python_social_auth==0.2.20
+python-openid>=2.2.5
+PyJWT>=1.4.2

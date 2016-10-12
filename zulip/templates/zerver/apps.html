@@ -1,0 +1,184 @@
+{% extends "zerver/portico.html" %}
+{# API information page #}
+
+{% block portico_content %}
+    <div class="apps-page-header">{% trans %}Do we have apps? Appsolutely.{% endtrans %}</div>
+    <div class="apps-muted">{% trans %}Ok, I take it back, I'm sorry, please don't go.{% endtrans %}</div>
+
+    <h3 class="apps-instructions-header">{% trans %}Installation instructions{% endtrans %}</h3>
+    <ul class="nav nav-tabs" id="apps-tabs">
+      <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
+      <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
+      <li><a href="#electron" data-toggle="tab">Cross-platform desktop</a></li>
+      <li><a href="#mac" data-toggle="tab">Mac</a></li>
+      <li><a href="#linux" data-toggle="tab">Linux</a></li>
+      <li><a href="#windows" data-toggle="tab">Windows</a></li>
+      <li><a href="#plan9" data-toggle="tab">Plan 9</a></li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane active" id="android">
+        <img class="screenshot android-screenshot pull-left" src="/static/images/app-screenshots/zulip-android.png" alt="screenshot of the Zulip app on Android" />
+
+        <p>{% trans %}Zulip has a free, <strong>100% native app</strong> for Android,
+          and you can easily grab it from
+          the <a href="https://play.google.com/store/apps/details?id=com.zulip.android">Google
+          Play Store</a>{% endtrans %}.</p>
+
+        <a href="https://play.google.com/store/apps/details?id=com.zulip.android">
+          <img alt="Get it on Google Play"
+               src="/static/images/app-screenshots/play-badge.png"/>
+        </a>
+      </div>
+
+      <div class="tab-pane" id="iphone">
+        <img class="screenshot iphone-screenshot pull-left" src="/static/images/app-screenshots/zulip-iphone.png" alt="screenshot of the Zulip app on iOS" />
+
+        <p>{% trans %}Zulip has a free, <strong>100% native app</strong> for iPhone and
+        iPad. Please grab it from
+        the <a href="http://itunes.com/apps/zulip">App Store</a>{% endtrans %}!</p>
+
+        <a href="http://itunes.com/apps/zulip">
+          <img alt="Get it in the App Store" src="/static/images/app-screenshots/ios_badge.png" alt="Apple App Store icon for Zulip" />
+        </a>
+
+      </div>
+      <div class="tab-pane" id="electron">
+        <p>{% trans %}The beta version
+          of <a href="https://github.com/zulip/zulip-electron">our new
+          cross-platform desktop client</a> is ready for you to try
+          now, and should work on Mac, Windows, and Linux. (It's
+          implemented
+          in <a href="http://electron.atom.io/">Electron</a>, a
+          desktop app framework (maintained by GitHub) that uses
+          Chromium and Node.js, so in the future we'll be able to
+          concentrate on writing JavaScript instead of futzing with
+          Qt/WebKit and C++.){% endtrans %}</p>
+        <p>{% trans %}You'll have to install it using the command
+          line, and there might be some rough edges; if you run into
+          anything that doesn't feel
+          right, <a href="https://github.com/zulip/zulip-electron/issues/new">please
+          let us know</a>.{% endtrans %}</p>
+
+        <p style="text-align: center">
+          <a href="https://github.com/zulip/zulip-electron/"
+          class="btn btn-large btn-primary
+          btn-app-download"><i class="icon-vector-download"></i>
+          {% trans %}Download the beta of Zulip for desktop{% endtrans %}</a>
+        </p>
+
+        <img class="full-width-screenshot"
+        src="/static/images/app-screenshots/zulip-desktop-electron.png"
+        alt="screenshot of the cross-platform Zulip app" />
+      </div>
+
+      <div class="tab-pane" id="mac">
+        <p>{% trans %}You love your Mac. And you love Zulip. So what could be
+        better than a Zulip app for Mac? Enjoy notifications for
+        messages and PMs in your dock whether you're in Sublime,
+        emacs, or Photoshop.{% endtrans %}</p>
+
+        <p style="text-align: center">
+        {% if only_sso %}
+          <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Mac{% endtrans %}</a>
+        {% else %}
+          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Mac{% endtrans %}</a>
+        {% endif %}
+        </p>
+
+        <img class="full-width-screenshot" src="/static/images/app-screenshots/zulip-desktop-mac.png" alt="screenshot of the Zulip app on OS X" />
+      </div>
+
+      <div class="tab-pane" id="linux">
+        <p>{% trans %}Zulip provides a native Linux app that runs standalone
+        outside of your browser. How you install it depends on what
+        you're running:{% endtrans %}</p>
+
+        <h3>{% trans %}Debian and Ubuntu{% endtrans %}</h3>
+        {% trans %}We have an APT repository for Zulip, so adding and installing the app is easy:{% endtrans %}
+        <div class="codehilite"><pre>wget https://zulip.com/dist/keys/user-apt.asc
+cat user-apt.asc | sudo apt-key add -
+sudo apt-add-repository http://apt.zulip.com/user/
+sudo apt-get update
+{% if only_sso %}
+sudo apt-get install zulip-desktop-sso
+{% else %}
+sudo apt-get install zulip-desktop
+{% endif %}</pre></div>
+
+
+
+        <h3>{{ _("Other") }}</h3>
+        {% if only_sso %}
+          <p>{% trans %}We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
+          </p>
+        {% else %}
+          <p>{% trans %}We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="tab-pane" id="windows">
+        <p>{% trans %}Windows. It's the best OS for your needs: gaming,
+        coding, expense reports. But you always felt that something
+        was missing... until now.{% endtrans %}</p>
+
+        <p>{% trans %}We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after
+        Solitaire, obviously.){% endtrans %}</p>
+
+        <p style="text-align: center">
+          {% if only_sso %}
+            <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Windows{% endtrans %}</a>
+          {% else %}
+            <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Windows{% endtrans %}</a>
+          {% endif %}
+        </p>
+
+        <img class="full-width-screenshot" src="/static/images/app-screenshots/zulip-desktop-windows.png" alt="screenshot of the Zulip app on Windows" />
+      </div>
+
+      <div class="tab-pane" id="plan9">
+        <p>{% trans %}First, connect to our hosted 9P filesystem
+        at <code>plan9.zulip.com</code> and then... no, we're
+        totally kidding. There definitely isn't a version of Zulip
+        for Plan 9.{% endtrans %}</p>
+      </div>
+
+
+    </div>
+<script>
+$(function () {
+    var nav_version = {
+        "Win": "#windows",
+        "Mac": "#mac",
+        "Linux": "#linux"
+    };
+
+    for (var x in nav_version) {
+        if (navigator.appVersion.indexOf(x) !== -1) {
+            $("#apps-tabs [href='" + nav_version[x] + "']").tab("show");
+            break;
+        }
+    }
+
+    $('#apps-tabs [data-toggle]').click(function () {
+        TabHash.set($(this).attr("href"));
+    });
+
+    var TabHash = {
+        set: function (name) {
+            window.location.hash = name;
+            this.get(name);
+        },
+        get: function (name) {
+            var hash = window.location.hash;
+            if (hash && hash !== name) {
+                $('#apps-tabs [href="' + hash + '"]').tab('show');
+            }
+        }
+    }
+
+    TabHash.get();
+});
+</script>
+{% endblock %}

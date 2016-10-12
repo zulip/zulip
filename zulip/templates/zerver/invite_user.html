@@ -1,0 +1,33 @@
+<div class="modal hide" id="invite-user" tabindex="-1" role="dialog"
+     aria-labelledby="invite-user-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="invite-user-label">{{ _('Invite users to') }} {{product_name}}</h3>
+  </div>
+  <form id="invite_user_form" class="form-horizontal"
+        action="/json/invite_users" method="POST">{{ csrf_input }}
+    <div class="modal-body">
+      <div class="control-group">
+        <div id="invite-result"></div>
+        <label class="control-label" for="invitee_emails">{{ _('Emails (one on each line or comma-separated)') }}</label>
+        <div class="controls">
+          <textarea rows="2" id="invitee_emails"
+                    name="invitee_emails"
+                    placeholder="{{ _('One or more email addresses...') }}"></textarea>
+        </div>
+      </div>
+        <div class="alert" id="invite_status"></div>
+        {% if development_environment %}
+          <div class="alert" id="dev_env_msg"></div>
+        {% endif %}
+      <div class="control-group">
+        <label class="control-label" for="streams_to_add">{{ _('Streams they should join') }}</label>
+        <div class="controls" id="streams_to_add"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{ _('Cancel') }}</button>
+      <button id="submit-invitation" class="btn btn-primary" data-loading-text="Inviting..." type="submit">{{ _('Invite') }}</button>
+    </div>
+  </form>
+</div>

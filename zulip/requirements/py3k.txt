@@ -1,0 +1,4 @@
+six==1.10.0
+typing==3.5.2.2
+future==0.15.2
+modernize==0.5

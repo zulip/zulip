@@ -1,0 +1,54 @@
+{% extends "zerver/portico_signup.html" %}
+{# Home page for not logged-in users. #}
+
+{# This is where we pitch the app and solicit signups. #}
+
+{% block portico_content %}
+<script type="text/javascript">
+$(function () {
+    autofocus('#email');
+});
+</script>
+<div class="app register-page">
+  <div class="app-main register-page-container">
+    <div class="center-container">
+      <div class="center-block">
+        <div class="register-form">
+            <p class="lead">
+              <div class="register-page-header">{{ _("Let's get started") }}…</div>
+            </p>
+            <form class="form-inline" id="send_confirm" name="email_form"
+                  action="{{ current_url() }}" method="post">
+                {{ csrf_input }}
+                <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
+                       id="email" name="email"/>
+                <input type="submit" class="button btn btn-primary btn-large register-button" value="{{ _("Sign up") }}"/>
+            </form>
+            <div id="errors"></div>
+            {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="alert alert-pitch" id="company-email">{% trans %}Please use your
+            company email address to sign up. Otherwise, we won’t be able to
+            connect you with your coworkers{% endtrans %}.</div>
+            {% if google_auth_enabled %}
+                <div class="register-google">
+                    <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
+                </div>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+</div>
+<div class="footer-padder"></div>
+</div>
+
+        <script type="text/javascript">
+        if (window.location.hash.substring(0, 1) === "#") {
+            document.email_form.action += window.location.hash;
+        }
+        </script>
+{% endblock %}

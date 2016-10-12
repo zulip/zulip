@@ -1,0 +1,48 @@
+{{! Contents of the "message actions" popup }}
+<ul class="nav nav-list actions_popover pull-right">
+  {{#if can_edit_message}}
+  <li>
+    <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
+      <i class="icon-vector-pencil"></i> {{t "Edit" }}
+    </a>
+  </li>
+  {{/if}}
+
+  <li>
+    <a href="#" class="respond_button">
+      <i class="icon-vector-share-alt"></i> {{t "Reply" }}
+    </a>
+  </li>
+
+  <li>
+    <a href="#" class="popover_toggle_collapse" data-msgid="{{message.id}}">
+      <i class="{{#if message.collapsed}}icon-vector-plus{{else}}icon-vector-minus{{/if}}"></i>
+        {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
+    </a>
+  </li>
+
+  {{#if can_mute_topic}}
+  <li>
+    <a href="#" class="popover_mute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+      <i class="icon-vector-eye-close"></i>
+      {{#tr message}}Mute the topic <b>__subject__</b>{{/tr}}
+    </a>
+  </li>
+  {{/if}}
+
+  {{#if can_unmute_topic}}
+  <li>
+    <a href="#" class="popover_unmute_topic" data-msg-stream="{{message.stream}}" data-msg-topic="{{message.subject}}">
+      <i class="icon-vector-eye-open"></i>
+      {{#tr message}}Unmute the topic <b>__subject__</b>{{/tr}}
+    </a>
+  </li>
+  {{/if}}
+
+  <li>
+    <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
+      <i class="icon-vector-link"></i> {{t "Link to this conversation" }}
+    </a>
+  </li>
+
+</ul>

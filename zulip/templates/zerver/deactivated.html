@@ -1,0 +1,16 @@
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+
+<h3>{{ _('Deactivated organization') }}</h3>
+
+<p>{{ _('Hi there! Thank you for your interest in Zulip') }}.</p>
+
+<p>
+  {% trans %}
+  The organization you are trying to join, {{ deactivated_domain_name }}, has been deactivated.
+  Please contact <a href="mailto:{{ zulip_administrator }}">{{ zulip_administrator }}</a> to reactivate
+  this group.
+  {% endtrans %}
+</p>
+
+{% endblock %}

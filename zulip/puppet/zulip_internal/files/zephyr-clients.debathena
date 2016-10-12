@@ -1,0 +1,3 @@
+# This file is automatically rewritten by the zephyr-clients post-install
+# script.  So treat it right.
+zhm_args="-f z1.mit.edu z3.mit.edu"

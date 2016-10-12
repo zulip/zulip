@@ -1,0 +1,2 @@
+#!/bin/bash
+"$(dirname "$0")/lib/upgrade-zulip" "$@" 2>&1 | tee -a /var/log/zulip/upgrade.log

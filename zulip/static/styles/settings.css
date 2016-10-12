@@ -1,0 +1,399 @@
+#settings {
+    margin-top: 55px;
+    margin-left: 15px;
+}
+
+label {
+    margin: 0;
+}
+
+.display-none {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.center-block {
+    margin: 0 auto;
+}
+
+.w-70 {
+    width: 70%;
+}
+
+.light {
+    font-weight: 300;
+}
+
+.padded-container {
+    padding: 20px;
+}
+
+.side-padded-container {
+    padding: 0px 20px;
+}
+
+.table tbody {
+    border-bottom: 1px solid #ddd;
+}
+
+.table-condensed td {
+    vertical-align: middle;
+}
+
+td .button {
+    margin: 2px 0px;
+    box-shadow: none;
+}
+
+.settings-section {
+    background-color: #fafafa;
+    border-radius: 2px;
+    margin: 20px;
+    overflow: hidden;
+    border: 1px solid #dfdfdf;
+    border-top: 5px solid #dfdfdf;
+}
+
+.settings-section .settings-section-title {
+    font-size: 1.2em;
+    font-weight: 300;
+    padding: 10px;
+}
+
+.settings-section .settings-section-title.transparent {
+    background-color: transparent;
+    color: inherit;
+}
+
+.settings-section form {
+    padding: 0px 20px;
+    margin: 0;
+}
+
+.settings-section .no-padding {
+    padding: 0;
+}
+
+.dynamic-input {
+    display: inline-block;
+    padding: 5px;
+    background-color: #FFF;
+    border: 1px solid #CCC;
+    border-radius: 3px;
+    transition: box-shadow 0.3s ease;
+    min-width: 208px;
+}
+
+.dynamic-input:hover {
+    outline: none;
+    box-shadow: 0px 0px 4px rgba(56,177,232,1);
+}
+
+.dynamic-input div, .dynamic-input label {
+    display: inline-block;
+    margin: 0;
+}
+
+.dynamic-input div {
+    margin-right: -2px;
+}
+
+.dynamic-input [contenteditable=true] {
+    outline: none;
+}
+
+.dynamic-input div:empty::after {
+    content: "username";
+    color: #aaa;
+}
+
+.dynamic-input.bot_user_name div:empty::after {
+    content: "bot_user_name";
+    color: #aaa;
+}
+
+.button, .input-group {
+    margin: 20px 0px;
+}
+
+.input-group.thinner {
+    margin: 10px 0px;
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+input[type=checkbox] + .inline-block {
+    margin-left: 10px;
+}
+
+#user-settings-avatar {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+input[type=checkbox].inline-block {
+    margin: -2px 0px 0px 0px;
+}
+
+.list-container {
+    position: relative;
+    background-color: #e2e2e2;
+    padding: 10px;
+    width: 90%;
+    margin: 10px auto;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+}
+
+.grey-bg {
+    background: #e3e3e3;
+    padding: 10px;
+    width: 90%;
+    margin: 15px auto;
+    box-shadow: 0px 0px 2px rgba(0,0,0,0.5);
+    position: relative;
+    font-size: 14px;
+}
+
+.green-bg {
+    background-color: #cbe3cb;
+}
+
+.new-default-stream-section-title {
+    font-size: 18px;
+    font-weight: 300;
+    padding-bottom: 10px;
+}
+
+.remove-alert-word {
+    margin-top: 1px;
+}
+
+@media (max-width: 480px) {
+
+    #pw_strength {
+        margin: auto;
+    }
+
+    #administration .settings-section .organization-settings .admin-realm-form,
+    #settings .settings-section .account-settings-form,
+    #settings .settings-section .new-bot-form,
+    #settings .settings-section .new-alert-word-form,
+    #emoji-settings .new-emoji-form,
+    #settings .settings-section .notification-settings-form,
+    #settings .settings-section .display-settings-form,
+    #settings .settings-section .edit-bot-form-box {
+        width: 100%;
+    }
+
+    #administration .settings-section .admin-realm-form .control-label,
+    #settings .settings-section .account-settings-form .control-label,
+    #settings .settings-section .new-bot-form .control-label,
+    #settings .settings-section .new-alert-word-form .control-label,
+    #emoji-settings .new-emoji-form .control-label,
+    #settings .settings-section .edit-bot-form-box .control-label {
+        display: block;
+        width: 120px;
+        padding: 0px;
+        padding-top: 0;
+        text-align: center;
+        margin: auto;
+        float: none;
+    }
+
+    #administration .settings-section .admin-realm-form .controls,
+    #settings .settings-section .account-settings-form .controls,
+    #settings .settings-section .new-bot-form .controls,
+    #settings .settings-section .new-alert-word-form button,
+    #emoji-settings .new-emoji-form .controls,
+    #settings .settings-section .edit-bot-form-box .controls {
+        margin: auto;
+        text-align: center;
+    }
+
+}
+
+#administration .settings-section .settings-section-icon,
+#settings .settings-section .settings-section-icon {
+    margin-right: 8px;
+}
+#notification-settings .notification-reminder {
+    text-align: center;
+}
+
+.control-label-disabled {
+    color: #d3d3d3;
+}
+
+.disableable {
+    margin-left: 25px;
+}
+
+.admin-realm-message-content-edit-limit-minutes {
+    width: 5ch;
+    text-align: right;
+}
+
+#settings-status {
+    text-align: center;
+    width: 50%;
+    margin: auto;
+    margin-bottom: 20px;
+}
+
+.admin_emoji_table {
+    margin: 20px auto;
+}
+
+.emoji_image {
+    width: 50px; display: block;
+}
+
+.emoji_image img {
+    max-width: 100%;
+}
+
+.admin-table-wrapper {
+    width: 90%;
+    margin: 0 auto;
+}
+
+#bots_list {
+    display: none;
+    list-style-type: none;
+    margin-left: 0px;
+}
+
+#bots_list .image,
+#bots_list .bot_info {
+    margin: 10px;
+}
+
+#bots_list .image {
+    vertical-align: top;
+}
+
+#bots_list .name {
+    font-weight: 300;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+#bots_list .regenerate_bot_api_key {
+    position: relative;
+    top: -2px;
+    margin-left: 5px;
+    color: #666;
+}
+
+#bots_list .regenerate_bot_api_key:hover {
+    color: #000;
+}
+
+#bots_list .edit-bot-buttons {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+#bots_list img.avatar {
+    height: 35px;
+    width: 35px;
+}
+
+#bots_list .email .value,
+#bots_list .api_key .api-key-value-and-button {
+    display: block;
+    margin-left: 6em;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+.bot_info .field {
+    width: 6em;
+    font-weight: 300;
+    position: absolute;
+}
+
+.edit_bot_form {
+    font-size: 100%;
+}
+
+.edit_bot_email {
+    font-weight: 300;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.edit_bot_form .control-label,
+#create_bot_form .control-label,
+#create_alert_word_form .control-label,
+.admin-emoji-form .control-label,
+.default-stream-form .control-label {
+    width: 10em;
+    text-align: right;
+    margin-right: 20px;
+}
+
+#upload_avatar_spinner {
+    font-size: 14px;
+    margin: auto;
+}
+
+.bot_name_header {
+    width: 8em;
+}
+
+#empty_alert_word_error {
+    display: none;
+    width: 90%;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+#empty_alert_word_error .close {
+    position: inherit;
+}
+
+#alert_words_list {
+    list-style-type: none;
+    margin: auto;
+}
+
+#alert_words_list li.alert-word-item:last-child {
+    background: none;
+    margin-top: 8px;
+}
+
+#alert_words_list .edit-alert-word-buttons {
+    position: absolute;
+    right: 20px;
+    top: 5px;
+}
+
+#alert_words_list .alert_word_listing .value {
+    display: block;
+    white-space: -moz-pre-wrap !important;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: normal;
+}
+
+.open-user-form {
+    min-width: initial !important;
+}

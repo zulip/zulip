@@ -1,0 +1,143 @@
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-ExtraLight-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-ExtraLight-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-ExtraLight-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-ExtraLight-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-ExtraLight-webfont.svg#SourceSansProExtraLight') format('svg');
+    font-weight: 100;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-ExtraLightIt-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-ExtraLightIt-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-ExtraLightIt-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-ExtraLightIt-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-ExtraLightIt-webfont.svg#SourceSansProExtraLightItalic') format('svg');
+    font-weight: 100;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-Light-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-Light-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-Light-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-Light-webfont.svg#SourceSansProLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-LightIt-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-LightIt-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-LightIt-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-LightIt-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-LightIt-webfont.svg#SourceSansProLightItalic') format('svg');
+    font-weight: 300;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-Regular-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-Regular-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-Regular-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-Regular-webfont.svg#SourceSansProRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-It-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-It-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-It-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-It-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-It-webfont.svg#SourceSansProItalic') format('svg');
+    font-weight: normal;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-Semibold-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-Semibold-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-Semibold-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-Semibold-webfont.svg#SourceSansProSemibold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-SemiboldIt-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-SemiboldIt-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-SemiboldIt-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-SemiboldIt-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-SemiboldIt-webfont.svg#SourceSansProSemiboldItalic') format('svg');
+    font-weight: 600;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-Bold-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-Bold-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-Bold-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-Bold-webfont.svg#SourceSansProBold') format('svg');
+    font-weight: bold;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-BoldIt-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-BoldIt-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-BoldIt-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-BoldIt-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-BoldIt-webfont.svg#SourceSansProBoldItalic') format('svg');
+    font-weight: bold;
+    font-style: italic;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-Black-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-Black-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-Black-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-Black-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-Black-webfont.svg#SourceSansProBlack') format('svg');
+    font-weight: 900;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'Humbug';
+    src: url('../third/sourcesans/SourceSansPro-BlackIt-webfont.eot');
+    src: url('../third/sourcesans/SourceSansPro-BlackIt-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../third/sourcesans/SourceSansPro-BlackIt-webfont.woff') format('woff'),
+         url('../third/sourcesans/SourceSansPro-BlackIt-webfont.ttf') format('truetype'),
+         url('../third/sourcesans/SourceSansPro-BlackIt-webfont.svg#SourceSansProBlackItalic') format('svg');
+    font-weight: 900;
+    font-style: italic;
+
+}

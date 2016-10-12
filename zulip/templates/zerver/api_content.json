@@ -1,0 +1,149 @@
+[
+    {
+        "method": "POST",
+        "endpoint": "messages",
+        "example_response": "{'msg': '', 'result': 'success', 'id': 12345678}",
+        "returns": [
+            [
+                "id",
+                "The ID of the newly created message."
+            ]
+        ],
+        "call": "Send a message",
+        "arguments": [
+            [
+                "type",
+                "One of {private, stream}"
+            ],
+            [
+                "content",
+                "The content of the message. Maximum message size of 10000 bytes."
+            ],
+            [
+                "to",
+                "In the case of a stream message, a string identifying the stream. In the case of a private message, a JSON-encoded list containing the usernames of the recipients."
+            ],
+            [
+                "subject",
+                "The topic for the message (Only required if type is \u201cstream\u201d). Maximum length of 60 characters."
+            ]
+        ],
+        "example_request": {
+            "python": "<div class=\"codehilite\"><pre>\n<span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">send_message</span><span class=\"p\">({</span>\n    <span class=\"s\">\"type\"</span><span class=\"p\">:</span> <span class=\"s\">\"private\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"to\"</span><span class=\"p\">:</span> <span class=\"s\">\"wdaher@example.com\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"content\"</span><span class=\"p\">:</span> <span class=\"s\">\"I come not, friends, to steal away your hearts.\"</span>\n<span class=\"p\">}</span>)\n<span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">send_message</span><span class=\"p\">(</span><span class=\"n\"><span class=\"p\">{</span>\n    <span class=\"s\">\"type\"</span><span class=\"p\">:</span> <span class=\"s\">\"stream\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"to\"</span><span class=\"p\">:</span> <span class=\"s\">\"Denmark\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"subject\"</span><span class=\"p\">:</span> <span class=\"s\">\"Castle\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"content\"</span><span class=\"p\">:</span> <span class=\"s\">\"Something is rotten in the state of Denmark.\"</span>\n<span class=\"p\">}</span></span><span class=\"p\">)</span>\n</pre></div>\n",
+            "curl": "<h5>Stream message</h5>\n<div class=\"codehilite\"><pre>curl https://api.zulip.com/v1/messages <span class=\"se\">\\</span>\n    -u BOT_EMAIL_ADDRESS:BOT_API_KEY <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"type=stream\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"to=Denmark\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"subject=Castle\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"content=Something is rotten in the state of Denmark.\"</span>\n</pre></div>\n<h5>Private message</h5>\n<div class=\"codehilite\"><pre>curl https://api.zulip.com/v1/messages <span class=\"se\">\\</span>\n    -u BOT_EMAIL_ADDRESS:BOT_API_KEY <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"type=private\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"to=othello@example.com\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"content=I come not, friends, to steal away your hearts.\"</span>\n</pre></div>"
+        }
+    },
+    {
+        "method": "POST",
+        "endpoint": "register",
+        "example_response": "{'msg': '', 'last_event_id': -1, 'result': 'success', 'queue_id': '1375801870:2942'}",
+        "returns": [
+            [
+                "queue_id",
+                "The ID of the queue that has been allocated for your client"
+            ],
+            [
+                "last_event_id",
+                "The initial value of the `last_event_id` value for to pass to `GET /api/v1/events`."
+            ]
+        ],
+        "call": "Register a queue to receive new messages",
+        "arguments": [
+            [
+                "event_types",
+                "(optional) A JSON-encoded array indicating which types of events you're interested in.  Values that you might find useful include: <ul><li><strong>message</strong> (messages),</li> <li><strong>subscriptions</strong> (changes in your subscriptions),</li> <li><strong>realm_user</strong> (changes in the list of users in your realm), and</li> <li><strong>pointer</strong> (changes in your pointer).</li></ul>\n If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code.  For most applications, one is only interested in messages, so one specifies: <strong>event_types=[\"message\"]</strong>"
+            ],
+            [
+                "apply_markdown",
+                "(optional) set to \u201ctrue\u201d if you would like the content to be rendered in HTML format (by default, the API returns the raw text that the user entered)"
+            ]
+        ],
+        "example_request": {
+            "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">register<span class=\"p\">()</span>\n</span></pre></div>",
+            "curl": "<div class=\"codehilite\"><pre>curl https://api.zulip.com/v1/register <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">'event_types=[\"message\"]'</span>\n</pre></div>"
+        }
+    },
+    {
+        "method": "GET",
+        "endpoint": "events",
+        "example_response":
+"{'result': 'success',
+ 'msg': '',
+ 'events': [
+   {'type': 'message',
+    'id': 0,
+    'message': {
+      'content_type': 'text/x-markdown',
+      'avatar_url': 'https://url/for/othello-bots/avatar',
+      'timestamp': 1375978403,
+      'display_recipient': 'Denmark',
+      'sender_id': 13215,
+      'sender_full_name': 'Othello Bot',
+      'sender_email': 'othello-bot@example.com',
+      'sender_short_name': 'othello-bot',
+      'sender_domain': 'example.com',
+      'content': 'Something is rotten in the state of Denmark.',
+      'gravatar_hash': '17d93357cca1e793739836ecbc7a9bf7',
+      'recipient_id': 12314,
+      'client': 'website',
+      'subject_links': [],
+      'subject': 'Castle',
+      'type': 'stream',
+      'id': 12345678,
+     }
+   },
+   {'type': 'message',
+    'id': 1,
+    'message': {
+      'content_type': 'text/x-markdown',
+      'avatar_url': 'https://url/for/othello-bots/avatar',
+      'timestamp': 1375978404,
+      'display_recipient': [{'full_name': 'Hamlet of Denmark',
+                             'domain': 'example.com',
+                             'email': 'hamlet@example.com',
+                             'short_name': 'hamlet',
+                             'id': 31572}],
+      'sender_id': 13215,
+      'sender_full_name': 'Othello Bot',
+      'sender_email': 'othello-bot@example.com',
+      'sender_short_name': 'othello-bot',
+      'sender_domain': 'example.com',
+      'content': 'I come not, friends, to steal away your hearts.',
+      'gravatar_hash': '17d93357cca1e793739836ecbc7a9bf7',
+      'recipient_id': 18391,
+      'client': 'website',
+      'subject_links': [],
+      'subject': '',
+      'type': 'private',
+      'id': 12345679,
+     }
+   }
+ ]
+}",
+        "returns": [
+            [
+                "events",
+                "an array (possibly zero-length if dont_block is set) of events with IDs newer than `last_event_id`.  Event IDs are guaranted to be increasing, but they are not guaranteed to be consecutive."
+            ]
+        ],
+        "call": "Get new events from an events queue",
+        "arguments": [
+            [
+                "queue_id",
+                "The ID of a queue that you registered via <code>POST /api/v1/register</code>"
+            ],
+            [
+                "last_event_id",
+                "The highest event ID in this queue that you've received and wish to acknowledge.  See the code for <tt>call_on_each_event</tt> in the <tt>zulip</tt> Python module for an example implementation of correctly processing each event exactly once."
+            ],
+            [
+                "dont_block",
+                "(optional) set to \u201ctrue\u201d if the client is requesting a nonblocking reply.  If not specified, the request will block until either a new event is available or a few minutes have passed, in which case the server will send the client a heartbeat event."
+            ]
+        ],
+        "example_request": {
+            "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">get_events<span class=\"p\">()</span>\n</span></pre></div> or if you want the event queues managed for you, <div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">call_on_each_event<span class=\"p\">()</span>\n</span></pre></div>",
+            "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/events <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"queue_id=1375801870:2942\"</span> <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"last_event_id=-1\"</span>\n</pre></div>"
+        }
+    }
+]

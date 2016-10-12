@@ -1,0 +1,11 @@
+# This file is sourced by /etc/init.d/rabbitmq-server. Its primary
+# reason for existing is to allow adjustment of system limits for the
+# rabbitmq-server process.
+#
+# Maximum number of open file handles. This will need to be increased
+# to handle many simultaneous connections. Refer to the system
+# documentation for ulimit (in man bash) for more information.
+#
+#ulimit -n 1024
+
+export ERL_EPMD_ADDRESS=127.0.0.1

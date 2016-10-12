@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="16"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="infinite.svg"
+   inkscape:export-filename="/tmp/icon.png"
+   inkscape:export-xdpi="90.235413"
+   inkscape:export-ydpi="90.235413">
+  <title
+     id="title2993">Humbug Hat</title>
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="16"
+     inkscape:cx="-0.94670536"
+     inkscape:cy="2.2156128"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1278"
+     inkscape:window-height="1598"
+     inkscape:window-x="1200"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Humbug Hat</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Luke Faraone &lt;lfaraone@zulip.com&gt;</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>© 2012 Zulip, Inc. All Rights Reserved</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date>28 Sept 2012</dc:date>
+        <dc:language>The Hat transcends all language</dc:language>
+        <dc:coverage>Your head</dc:coverage>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-112.53125,-681.00001)">
+    <path
+       sodipodi:type="arc"
+       style="fill:#999999;fill-opacity:0.59633029;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path2985"
+       sodipodi:cx="314.15744"
+       sodipodi:cy="236.15892"
+       sodipodi:rx="81.822357"
+       sodipodi:ry="101.01525"
+       d="m 395.9798,236.15892 a 81.822357,101.01525 0 1 1 -163.64472,0 81.822357,101.01525 0 1 1 163.64472,0 z"
+       transform="matrix(0.02176684,0,0,0.01763114,113.69581,678.66514)" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ff0000;fill-opacity:0.59633029;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3761"
+       sodipodi:sides="3"
+       sodipodi:cx="165"
+       sodipodi:cy="545.36218"
+       sodipodi:r1="263.86551"
+       sodipodi:r2="131.93274"
+       sodipodi:arg1="0.52359878"
+       sodipodi:arg2="1.5707963"
+       inkscape:flatsided="false"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 393.51423,677.29494 165,677.29492 -63.514235,677.29494 50.742894,479.39582 165,281.49667 279.2571,479.39581 z"
+       inkscape:transform-center-y="-1.5751109"
+       transform="matrix(0.02387745,0,0,0.02387745,116.58065,677.92109)" />
+    <rect
+       style="fill:#b3b3b3;fill-opacity:0.59633029;stroke:#000000;stroke-width:0.02929281;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect3765"
+       width="12.223951"
+       height="2.8460152"
+       x="114.41927"
+       y="694.10614" />
+    <g
+       id="g3825"
+       transform="matrix(1.7498801,0,0,1.2477417,-86.966217,-171.8859)">
+      <text
+         inkscape:label="#text3802"
+         xml:space="preserve"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:none;stroke:#ffffff;stroke-width:2;stroke-miterlimit:4;stroke-opacity:0.84705882;stroke-dasharray:none;font-family:Monospace;-inkscape-font-specification:Monospace"
+         x="116.34375"
+         y="696.09375"
+         id="number_back"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan3804"
+           x="116.34375"
+           y="696.09375">∞</tspan></text>
+      <text
+         inkscape:label="#text3798"
+         sodipodi:linespacing="125%"
+         id="number_front"
+         y="696.09375"
+         x="116.34375"
+         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"
+         xml:space="preserve"><tspan
+           y="696.09375"
+           x="116.34375"
+           id="tspan3800"
+           sodipodi:role="line">∞</tspan></text>
+    </g>
+  </g>
+</svg>
