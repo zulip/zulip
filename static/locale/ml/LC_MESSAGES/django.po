@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-13 12:07-0400\n"
-"PO-Revision-Date: 2016-08-14 05:33+0000\n"
-"Last-Translator: Rag sagar <ragsagar@gmail.com>\n"
+"POT-Creation-Date: 2016-10-10 11:25-0400\n"
+"PO-Revision-Date: 2016-10-10 15:25+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/zulip/zulip/language/ml/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,83 +18,62 @@ msgstr ""
 "Language: ml\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: confirmation/models.py:103
+#: confirmation/models.py:136
 msgid "sent"
 msgstr "അയച്ചു"
 
-#: confirmation/models.py:104
+#: confirmation/models.py:137 confirmation/models.py:150
 msgid "activation key"
 msgstr "ആക്ടിവേഷൻ ചെയ്യാനുള്ള കീ"
 
-#: confirmation/models.py:109
+#: confirmation/models.py:142
 msgid "confirmation email"
 msgstr "സ്ഥിരീകരിക്കാനുള്ള ഈമെയിൽ"
 
-#: confirmation/models.py:110
+#: confirmation/models.py:143
 msgid "confirmation emails"
 msgstr "സ്ഥിരീകരിക്കാനുള്ള ഈമെയിലുകൾ"
 
-#: confirmation/models.py:113
+#: confirmation/models.py:147
 #, python-format
 msgid "confirmation email for %s"
 msgstr "%s -നുള്ള സ്ഥിരീകരണ ഈമെയിൽ"
 
-#: docs/_build/html/_sources/translating.txt:37
-msgid "English text"
-msgstr "ഇംഗ്ലീഷ് വാക്കുകൾ"
-
-#: docs/_build/html/_sources/translating.txt:49
-msgid "This string will have"
-msgstr ""
-
-#: docs/_build/html/_sources/translating.txt:49
-msgid "inside"
-msgstr "ഉള്ളിൽ"
-
-#: docs/_build/html/_sources/translating.txt:56
-#: docs/_build/html/_sources/translating.txt:58
-#, python-format
-msgid "This string will have %(value)s inside."
-msgstr ""
-
-#: templates/zerver/accounts_accept_terms.html:9
-msgid "Welcome! We think you'll like it here"
-msgstr "സ്വാഗതം! നിങ്ങൾക്കിവിടം ഇഷ്ടമാകുമെന്ന് കരുതുന്നൂ"
-
-#: templates/zerver/accounts_accept_terms.html:14
-#: templates/zerver/register.html:19
-msgid "You're almost there. We just need you to do one last thing"
+#: confirmation/models.py:151
+msgid "created"
 msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:15
-msgid "Accept the Zulip terms of service"
-msgstr "സുലിപ്പിന്റെ സേവന നിബന്ധനകൾ സ്വീകരിക്കുക"
+msgid "There is a new terms of service."
+msgstr ""
 
-#: templates/zerver/accounts_accept_terms.html:21
-#: templates/zerver/login.html:92 templates/zerver/register.html:26
-#: templates/zerver/reset.html:11
+#: templates/zerver/accounts_accept_terms.html:16
+msgid "Accept the terms of service"
+msgstr ""
+
+#: templates/zerver/accounts_accept_terms.html:23
+#: templates/zerver/login.html:92 templates/zerver/register.html:28
+#: templates/zerver/reset.html:11 templates/zerver/reset_confirm.html:20
 msgid "Email"
 msgstr "ഈമെയിൽ"
 
-#: templates/zerver/accounts_accept_terms.html:27
-msgid "Your name"
-msgstr "നിങ്ങളുടെ പേര്"
-
-#: templates/zerver/accounts_accept_terms.html:53
-#: templates/zerver/register.html:91
+#: templates/zerver/accounts_accept_terms.html:42
+#: templates/zerver/register.html:160
 msgid "I agree to the"
 msgstr "ഞാൻ ഇതിനു സമ്മതിക്കുന്നു"
 
-#: templates/zerver/accounts_accept_terms.html:53
-#: templates/zerver/register.html:91
+#: templates/zerver/accounts_accept_terms.html:42
+#: templates/zerver/register.html:160
 msgid "Terms of Service"
 msgstr "സേവന നിബന്ധനകൾ"
 
 #: templates/zerver/accounts_home.html:18
+#: templates/zerver/create_realm.html:18
 msgid "Let's get started"
 msgstr "നമുക്ക് തുടങ്ങാം"
 
 #: templates/zerver/accounts_home.html:23
+#: templates/zerver/create_realm.html:23
 msgid "Enter your work email address"
 msgstr "നിങ്ങളുടെ ജോലി സ്ഥലത്തെ ഈമെയിൽ വിലാസം"
 
@@ -122,10 +101,17 @@ msgid "Check your email so we can get started"
 msgstr "നമുക്ക് തുടങ്ങാൻ വേണ്ടി നിങ്ങളുടെ ഈമെയിൽ പരിശോധിക്കൂ"
 
 #: templates/zerver/accounts_send_confirm.html:10
+#: templates/zerver/initial_invite_page.html:24
+msgid ""
+"In the Zulip development environment, outgoing emails are printed to the "
+"run-dev.py console"
+msgstr ""
+
+#: templates/zerver/accounts_send_confirm.html:13
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>"
 msgstr ""
 
-#: templates/zerver/accounts_send_confirm.html:11
+#: templates/zerver/accounts_send_confirm.html:14
 msgid "Just in case, take a look at your Spam folder"
 msgstr ""
 
@@ -141,7 +127,7 @@ msgstr "ശരി ഞാനത് പിൻവലിക്കുന്നു, �
 msgid "Installation instructions"
 msgstr "ഇൻസ്റ്റാൽ ചെയ്യുന്നതിനുള്ള നിർദ്ദേശങ്ങൾ"
 
-#: templates/zerver/apps.html:25
+#: templates/zerver/apps.html:23
 #, python-format
 msgid ""
 "Zulip has a free, <strong>100%% native app</strong> for Android,\n"
@@ -150,7 +136,7 @@ msgid ""
 "          Play Store</a>"
 msgstr ""
 
-#: templates/zerver/apps.html:39
+#: templates/zerver/apps.html:37
 #, python-format
 msgid ""
 "Zulip has a free, <strong>100%% native app</strong> for iPhone and\n"
@@ -158,7 +144,34 @@ msgid ""
 "        the <a href=\"http://itunes.com/apps/zulip\">App Store</a>"
 msgstr ""
 
-#: templates/zerver/apps.html:50
+#: templates/zerver/apps.html:47
+msgid ""
+"The beta version\n"
+"          of <a href=\"https://github.com/zulip/zulip-electron\">our new\n"
+"          cross-platform desktop client</a> is ready for you to try\n"
+"          now, and should work on Mac, Windows, and Linux. (It's\n"
+"          implemented\n"
+"          in <a href=\"http://electron.atom.io/\">Electron</a>, a\n"
+"          desktop app framework (maintained by GitHub) that uses\n"
+"          Chromium and Node.js, so in the future we'll be able to\n"
+"          concentrate on writing JavaScript instead of futzing with\n"
+"          Qt/WebKit and C++.)"
+msgstr ""
+
+#: templates/zerver/apps.html:57
+msgid ""
+"You'll have to install it using the command\n"
+"          line, and there might be some rough edges; if you run into\n"
+"          anything that doesn't feel\n"
+"          right, <a href=\"https://github.com/zulip/zulip-electron/issues/new\">please\n"
+"          let us know</a>."
+msgstr ""
+
+#: templates/zerver/apps.html:67
+msgid "Download the beta of Zulip for desktop"
+msgstr ""
+
+#: templates/zerver/apps.html:76
 msgid ""
 "You love your Mac. And you love Zulip. So what could be\n"
 "        better than a Zulip app for Mac? Enjoy notifications for\n"
@@ -166,63 +179,63 @@ msgid ""
 "        emacs, or Photoshop."
 msgstr ""
 
-#: templates/zerver/apps.html:57 templates/zerver/apps.html.py:59
+#: templates/zerver/apps.html:83 templates/zerver/apps.html.py:85
 msgid "Download Zulip for Mac"
 msgstr "മാക്കിനു വേണ്ടിയുള്ള സുലിപ്പ് ഡൗൺലോഡ് ചെയ്യൂ"
 
-#: templates/zerver/apps.html:67
+#: templates/zerver/apps.html:93
 msgid ""
 "Zulip provides a native Linux app that runs standalone\n"
 "        outside of your browser. How you install it depends on what\n"
 "        you're running:"
 msgstr ""
 
-#: templates/zerver/apps.html:71
+#: templates/zerver/apps.html:97
 msgid "Debian and Ubuntu"
 msgstr "ഡെബിയനും ഉബുണ്ടുവും"
 
-#: templates/zerver/apps.html:72
+#: templates/zerver/apps.html:98
 msgid ""
 "We have an APT repository for Zulip, so adding and installing the app is "
 "easy:"
 msgstr "ഞങ്ങൾക്കു സുലിപ്പിനു വേണ്ടിയുള്ള APT സംഭരണിയുണ്ട്, അതുകൊണ്ട് ആപ്പ് ഇൻസ്റ്റാൽ ചെയ്യാനെളുപ്പമാണ്"
 
-#: templates/zerver/apps.html:85
+#: templates/zerver/apps.html:111
 msgid "Other"
 msgstr "മറ്റേത്‌"
 
-#: templates/zerver/apps.html:87
+#: templates/zerver/apps.html:113
 msgid ""
 "We provide a <a href=\"https://zulip.com/dist/apps/sso/linux/zulip-"
 "desktop_latest.bin.tar.gz\">binary tarball</a> of the Zulip application, "
 "built for 64-bit systems."
 msgstr ""
 
-#: templates/zerver/apps.html:90
+#: templates/zerver/apps.html:116
 msgid ""
 "We provide a <a href=\"https://zulip.com/dist/apps/linux/zulip-"
 "desktop_latest.bin.tar.gz\">binary tarball</a> of the Zulip application, "
 "built for 64-bit systems."
 msgstr ""
 
-#: templates/zerver/apps.html:96
+#: templates/zerver/apps.html:122
 msgid ""
 "Windows. It's the best OS for your needs: gaming,\n"
 "        coding, expense reports. But you always felt that something\n"
 "        was missing... until now."
 msgstr ""
 
-#: templates/zerver/apps.html:100
+#: templates/zerver/apps.html:126
 msgid ""
 "We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after\n"
 "        Solitaire, obviously.)"
 msgstr ""
 
-#: templates/zerver/apps.html:105 templates/zerver/apps.html.py:107
+#: templates/zerver/apps.html:131 templates/zerver/apps.html.py:133
 msgid "Download Zulip for Windows"
 msgstr "വിൻഡോസിനു വേണ്ടിയുള്ള സുലിപ്പ് ഡൗൺലോഡ് ചെയ്യൂ"
 
-#: templates/zerver/apps.html:115
+#: templates/zerver/apps.html:141
 msgid ""
 "First, connect to our hosted 9P filesystem\n"
 "        at <code>plan9.zulip.com</code> and then... no, we're\n"
@@ -247,6 +260,7 @@ msgid "Closed realm"
 msgstr "അടച്ച മണ്ഡലം"
 
 #: templates/zerver/closed_realm.html:6 templates/zerver/deactivated.html:6
+#: templates/zerver/invalid_realm.html:6
 msgid "Hi there! Thank you for your interest in Zulip"
 msgstr "ഹായ്! സുലിപ്പിലുള്ള താങ്കളുടെ താല്പര്യത്തിനു നന്ദി"
 
@@ -259,12 +273,12 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/compose.html:10
-#: templates/zerver/keyboard_shortcuts.html:61
+#: templates/zerver/keyboard_shortcuts.html:65
 msgid "New stream message"
 msgstr "പുതിയ ശാഖാ സന്ദേശം"
 
 #: templates/zerver/compose.html:17
-#: templates/zerver/keyboard_shortcuts.html:65
+#: templates/zerver/keyboard_shortcuts.html:69
 msgid "New private message"
 msgstr "പുതിയ സ്വകാര്യ സന്ദേശം"
 
@@ -292,37 +306,50 @@ msgstr "ഒന്നിൽ കൂടുതൽ ആളുകൾ"
 msgid "Compose your message here"
 msgstr "നിങ്ങളൂടെ സന്ദേശം ഇവിടെ എഴുതൂ"
 
-#: templates/zerver/compose.html:76
+#: templates/zerver/compose.html:80
 msgid "Attach files from Dropbox"
 msgstr "ഡ്രോപ്പ്ബോക്സിൽ നിന്നു ഫയലുകൽ ചേർക്കൂ"
 
-#: templates/zerver/compose.html:78
+#: templates/zerver/compose.html:82
 msgid "Attach files"
 msgstr "ഫയൽസ് ചേർക്കൂ"
 
-#: templates/zerver/compose.html:81
+#: templates/zerver/compose.html:85
+msgid "Write"
+msgstr ""
+
+#: templates/zerver/compose.html:86
+msgid "Preview"
+msgstr ""
+
+#: templates/zerver/compose.html:87
 msgid "Restore draft"
 msgstr ""
 
-#: templates/zerver/compose.html:82
+#: templates/zerver/compose.html:88
 msgid "Sending"
 msgstr "അയച്ചുകൊണ്ടിരിക്കുന്നൂ"
 
-#: templates/zerver/compose.html:84
+#: templates/zerver/compose.html:90
 msgid "Press Enter to send"
 msgstr "അയക്കാൻ വേണ്ടി എന്റർ അമർത്തൂ"
+
+#: templates/zerver/create_realm.html:25
+msgid "Create organization"
+msgstr ""
 
 #: templates/zerver/deactivated.html:4
 msgid "Deactivated organization"
 msgstr "നിഷ്ക്രീയമാക്കിയ സംഘടന"
 
-#: templates/zerver/deactivated.html:8
+#: templates/zerver/deactivated.html:9
 #, python-format
 msgid ""
-" The organization you are trying to join, %(deactivated_domain_name)s, has\n"
-"been deactivated. Please\n"
-"contact <a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a> to reactivate\n"
-"this group"
+"\n"
+"  The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
+"  Please contact <a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a> to reactivate\n"
+"  this group.\n"
+"  "
 msgstr ""
 
 #: templates/zerver/features.html:4
@@ -527,9 +554,10 @@ msgid "Integrations"
 msgstr ""
 
 #: templates/zerver/features.html:126
+#, python-format
 msgid ""
 "Get alerts and updates from your favorite services with\n"
-"        off-the-shelf <a href=\"/integrations\">integrations</a> for\n"
+"        off-the-shelf <a href=\"%(server_uri)s/integrations\">integrations</a> for\n"
 "        Trac, Nagios, Github, Jenkins, and more."
 msgstr ""
 
@@ -538,9 +566,10 @@ msgid "API"
 msgstr "എ പി ഐ"
 
 #: templates/zerver/features.html:133
+#, python-format
 msgid ""
 "Want to roll your own notifications? We've got a\n"
-"        dead-simple RESTful <a href=\"/api\">API and Python bindings</a>\n"
+"        dead-simple RESTful <a href=\"%(server_uri)s/api\">API and Python bindings</a>\n"
 "        that will make integrations&mdash;both sending and\n"
 "        receiving&mdash;a snap!"
 msgstr ""
@@ -594,8 +623,8 @@ msgid "Register now!"
 msgstr "ഇപ്പോൾ തന്നെ രെജിസ്റ്റർ ചെയ്യൂ"
 
 #: templates/zerver/hello.html:44
-msgid "Conversations, not messages"
-msgstr "സന്ദേശങ്ങളല്ലാ, സംഭാഷണങ്ങൾ"
+msgid "Make sense of your messages."
+msgstr ""
 
 #: templates/zerver/hello.html:47
 msgid ""
@@ -605,89 +634,87 @@ msgid ""
 "      No problem."
 msgstr ""
 
-#: templates/zerver/hello.html:52
-msgid ""
-"You wouldn’t tolerate email without subject lines or threading, so why do "
-"you for chat?"
+#: templates/zerver/hello.html:64
+msgid "Never miss the conversations you care about."
 msgstr ""
 
-#: templates/zerver/hello.html:65
-msgid "Easily read just the important things"
-msgstr ""
-
-#: templates/zerver/hello.html:68
+#: templates/zerver/hello.html:67
 msgid ""
 "Sometimes, important things get discussed when you&rsquo;re not\n"
 "      around. Unfortunately, so do a lot of unimportant things."
 msgstr ""
 
-#: templates/zerver/hello.html:71
+#: templates/zerver/hello.html:70
 msgid ""
-"<em>Narrowing</em> by stream or topic lets you focus on that important\n"
-"      customer project without having to read about how Jim&rsquo;s guitar lessons\n"
-"      are going."
+"Zulip makes it easy to review the conversations\n"
+"        you missed, so you can focus on that important project\n"
+"        without having to catch up on how Jim&rsquo;s guitar\n"
+"        lessons are going."
 msgstr ""
 
 #: templates/zerver/hello.html:86
-msgid "Search that's better than Gmail's"
+msgid "Fast and powerful search"
 msgstr ""
 
 #: templates/zerver/hello.html:89
 msgid ""
 "An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s\n"
-"      powerful and fast search will delight you with how quickly you can find\n"
+"      Gmail-style search will delight you with how quickly you can find\n"
 "      exactly what you&rsquo;re looking for."
 msgstr ""
 
 #: templates/zerver/hello.html:104
-msgid "Integrations that don't intrude"
+msgid "Integrations that don't intrude."
 msgstr ""
 
 #: templates/zerver/hello.html:107
 msgid ""
-"Zulip has <a href=\"/integrations\">many integrations</a> and\n"
-"      a powerful <a href=\"/api\">API</a> to match. But here&rsquo;s\n"
-"      where it gets interesting: thanks to how Zulip categorizes messages,\n"
-"      automated messages never overwhelm you. As with any topic in Zulip,\n"
-"      they&rsquo;re easy to focus on, skim, defer to later, or ignore&mdash;as appropriate."
+"Zulip has <a href=\"/integrations\">many\n"
+"      integrations</a> and a powerful <a href=\"/api\">API</a> to\n"
+"      match. But here&rsquo;s where it gets interesting: thanks to how\n"
+"      Zulip categorizes messages, automated messages never overwhelm\n"
+"      you. As with any topic in Zulip, they&rsquo;re easy to focus on,\n"
+"      skim, defer to later, or ignore&mdash;as appropriate."
 msgstr ""
 
-#: templates/zerver/hello.html:124
-msgid "As technical as you want to be"
-msgstr ""
-
-#: templates/zerver/hello.html:127
-msgid "Keyboard shortcuts? Check."
+#: templates/zerver/hello.html:125
+msgid "As technical as you want to be."
 msgstr ""
 
 #: templates/zerver/hello.html:128
-msgid "Syntax highlighting? Check."
+msgid "Keyboard shortcuts? Check."
 msgstr ""
 
 #: templates/zerver/hello.html:129
+msgid "Syntax highlighting? Check."
+msgstr ""
+
+#: templates/zerver/hello.html:130
 msgid "Discuss code and technical topics with ease."
 msgstr ""
 
-#: templates/zerver/hello.html:142
-msgid "and all the obvious stuff, too."
+#: templates/zerver/hello.html:143
+msgid "Everything else you need to be productive."
 msgstr ""
 
-#: templates/zerver/hello.html:145
+#: templates/zerver/hello.html:146
 msgid ""
-"Drag-and-drop file uploads, image pasting, group private messages,\n"
-"         audible notifications, missed-message emails, desktop apps, and\n"
-"        <a href=\"/features\">everything else you might want</a>. Including emoji, naturally."
+"Drag-and-drop file uploads, image pasting, group\n"
+"        private messages, audible notifications, missed-message\n"
+"        emails, desktop apps, and <a href=\"/features\">everything else\n"
+"        you might want</a>. Including emoji, naturally. And it's all\n"
+"        open source under the Apache license!"
 msgstr ""
 
-#: templates/zerver/hello.html:160
+#: templates/zerver/hello.html:163
 msgid "On the platform of your choice."
 msgstr ""
 
-#: templates/zerver/hello.html:196
+#: templates/zerver/hello.html:199
 msgid "Log in now"
 msgstr ""
 
-#: templates/zerver/hello.html:198
+#: templates/zerver/hello.html:201
 msgid "Register now"
 msgstr "ഇപ്പോൾ തന്നെ രെജിസ്റ്റർ ചെയ്യൂ"
 
@@ -745,35 +772,43 @@ msgid "You have no private messages with these people yet!"
 msgstr ""
 
 #: templates/zerver/home.html:40
+msgid "You haven't received any messages sent by this user yet!"
+msgstr ""
+
+#: templates/zerver/home.html:43
+msgid "This user does not exist!"
+msgstr ""
+
+#: templates/zerver/home.html:46
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
 msgstr ""
 
-#: templates/zerver/home.html:48
+#: templates/zerver/home.html:54
 msgid "You haven't starred anything yet!"
 msgstr ""
 
-#: templates/zerver/home.html:51
+#: templates/zerver/home.html:57
 msgid "You haven't been mentioned yet"
 msgstr ""
 
-#: templates/zerver/home.html:54
+#: templates/zerver/home.html:60
 msgid "Nobody has talked about that yet!"
 msgstr ""
 
-#: templates/zerver/index.html:51
+#: templates/zerver/index.html:52
 msgid "Loading"
 msgstr ""
 
-#: templates/zerver/index.html:52
+#: templates/zerver/index.html:53
 msgid "If this message does not go away, please wait a couple seconds and"
 msgstr ""
 
-#: templates/zerver/index.html:52
+#: templates/zerver/index.html:53
 msgid "reload"
 msgstr ""
 
-#: templates/zerver/index.html:52
+#: templates/zerver/index.html:53
 msgid "the page"
 msgstr ""
 
@@ -785,13 +820,21 @@ msgstr ""
 msgid "Let's invite some folks for you to chat with"
 msgstr "നമക്ക് ചാറ്റ് ചെയ്യാൻ വേണ്ടി കുറച്ച് പേരേ ക്ഷണിക്കാം"
 
-#: templates/zerver/initial_invite_page.html:27
+#: templates/zerver/initial_invite_page.html:30
 msgid "We'll email invitations to them"
 msgstr "നമ്മൾക്ക് ക്ഷണം ഈമെയിൽ വഴി അയക്കാം"
 
-#: templates/zerver/initial_invite_page.html:30
+#: templates/zerver/initial_invite_page.html:33
 msgid "Next"
 msgstr "അടുത്തത്"
+
+#: templates/zerver/invalid_realm.html:4
+msgid "Organization Does Not Exist"
+msgstr ""
+
+#: templates/zerver/invalid_realm.html:7
+msgid "There is no Zulip organization hosted at this subdomain"
+msgstr ""
 
 #: templates/zerver/invite_user.html:5
 msgid "Invite users to"
@@ -805,16 +848,16 @@ msgstr ""
 msgid "One or more email addresses..."
 msgstr "ഒന്നോ അതിൽ കൂടുതലോ ഈമെയിൽ വിലാസങ്ങൾ"
 
-#: templates/zerver/invite_user.html:21
+#: templates/zerver/invite_user.html:24
 msgid "Streams they should join"
 msgstr ""
 
-#: templates/zerver/invite_user.html:26
+#: templates/zerver/invite_user.html:29
 #: templates/zerver/stream_creation_prompt.html:37
 msgid "Cancel"
 msgstr "റദ്ദാക്കുക"
 
-#: templates/zerver/invite_user.html:27
+#: templates/zerver/invite_user.html:30
 msgid "Invite"
 msgstr "ക്ഷണിക്കൂ"
 
@@ -831,93 +874,98 @@ msgid "Initiate a search"
 msgstr "തിരയാൻ തുടങ്ങൂ"
 
 #: templates/zerver/keyboard_shortcuts.html:21
-#: templates/zerver/right-sidebar.html:35
+#: templates/zerver/right-sidebar.html:38
 msgid "Search people"
 msgstr "ആളുകളേ തിരയൂ"
 
 #: templates/zerver/keyboard_shortcuts.html:25
+#: templates/zerver/left-sidebar.html:26
+msgid "Search streams"
+msgstr ""
+
+#: templates/zerver/keyboard_shortcuts.html:29
 msgid "Previous message"
 msgstr "ഇതിനു മുന്നിലേ സന്ദേശം"
 
-#: templates/zerver/keyboard_shortcuts.html:29
+#: templates/zerver/keyboard_shortcuts.html:33
 msgid "Next message"
 msgstr "അടത്ത സന്ദേശം"
 
-#: templates/zerver/keyboard_shortcuts.html:33
+#: templates/zerver/keyboard_shortcuts.html:37
 msgid "Scroll up"
 msgstr "മുകളിലേക്ക് സ്ക്രോൾ ചെയ്യുക"
 
-#: templates/zerver/keyboard_shortcuts.html:37
+#: templates/zerver/keyboard_shortcuts.html:41
 msgid "Scroll down"
 msgstr "താഴേക്ക് സ്ക്രോൾ ചെയ്യുക"
 
-#: templates/zerver/keyboard_shortcuts.html:41
+#: templates/zerver/keyboard_shortcuts.html:45
 msgid "Last message"
 msgstr "അവസാനത്തെ സന്ദേശം"
 
-#: templates/zerver/keyboard_shortcuts.html:48
+#: templates/zerver/keyboard_shortcuts.html:52
 msgid "Composing messages"
 msgstr "സന്ദേശങ്ങൾ രചിക്കൽ"
 
-#: templates/zerver/keyboard_shortcuts.html:53
+#: templates/zerver/keyboard_shortcuts.html:57
 msgid "Reply to message"
 msgstr "സന്ദേശത്തിനു മറുപടി നൽകൂ"
 
-#: templates/zerver/keyboard_shortcuts.html:57
+#: templates/zerver/keyboard_shortcuts.html:61
 msgid "Reply to author"
 msgstr "ലേഖകനു മറുപടി നൽകൂ"
 
-#: templates/zerver/keyboard_shortcuts.html:69
+#: templates/zerver/keyboard_shortcuts.html:73
 msgid "Send message"
 msgstr "സന്ദേശം അയക്കൂ"
 
-#: templates/zerver/keyboard_shortcuts.html:73
+#: templates/zerver/keyboard_shortcuts.html:77
 msgid "Cancel compose"
 msgstr "രചിക്കൽ വേണ്ടെന്ന് വെക്കൂ"
 
-#: templates/zerver/keyboard_shortcuts.html:82
+#: templates/zerver/keyboard_shortcuts.html:86
 msgid "Narrowing"
 msgstr "ചുരുക്കൽ"
 
-#: templates/zerver/keyboard_shortcuts.html:87
+#: templates/zerver/keyboard_shortcuts.html:91
 msgid "Narrow by stream"
 msgstr "ശാഖയിലേക്ക് ചുരുക്കൂക"
 
-#: templates/zerver/keyboard_shortcuts.html:91
+#: templates/zerver/keyboard_shortcuts.html:95
 msgid "Narrow by topic"
 msgstr "വിഷയത്തിലേക്ക് ചുരുക്കൂക"
 
-#: templates/zerver/keyboard_shortcuts.html:95
+#: templates/zerver/keyboard_shortcuts.html:99
 msgid "Narrow to all private messages"
 msgstr "എല്ലാ സ്വകാര്യ സന്ദേശങ്ങളിലേക്ക് ചുരുക്കുക"
 
-#: templates/zerver/keyboard_shortcuts.html:99
+#: templates/zerver/keyboard_shortcuts.html:103
 msgid "Cycle between stream narrows"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:103
+#: templates/zerver/keyboard_shortcuts.html:107
 msgid "Return to home view"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:110
+#: templates/zerver/keyboard_shortcuts.html:114
 msgid "Menus"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:115
+#: templates/zerver/keyboard_shortcuts.html:119
 msgid "Open message actions menu"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:119
+#: templates/zerver/keyboard_shortcuts.html:123
 msgid "Edit a message you sent"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:123
+#: templates/zerver/keyboard_shortcuts.html:127
 msgid "Show these keyboard shortcuts"
 msgstr ""
 
-#: templates/zerver/keyboard_shortcuts.html:129
+#: templates/zerver/keyboard_shortcuts.html:133
 #: templates/zerver/markdown_help.html:98
-#: templates/zerver/search_operators.html:79
+#: templates/zerver/search_operators.html:91
 msgid "Close"
 msgstr ""
 
@@ -937,28 +985,28 @@ msgstr ""
 msgid "STREAMS"
 msgstr "ശാഖകൾ"
 
-#: templates/zerver/left-sidebar.html:19
+#: templates/zerver/left-sidebar.html:20
 msgid "All streams"
 msgstr "എല്ലാ ശാഖകൾ"
 
-#: templates/zerver/left-sidebar.html:30
+#: templates/zerver/left-sidebar.html:32
 msgid "SHARE THE LOVE"
 msgstr "സ്നേഹം പങ്കിടൂ"
 
-#: templates/zerver/left-sidebar.html:34
+#: templates/zerver/left-sidebar.html:36
 msgid "Thanks!"
 msgstr "നന്ദി!"
 
-#: templates/zerver/left-sidebar.html:34
+#: templates/zerver/left-sidebar.html:36
 msgid "A hand-crafted, artisanal invite is on the way"
 msgstr ""
 
-#: templates/zerver/left-sidebar.html:38
+#: templates/zerver/left-sidebar.html:40
 msgid ""
 "Know someone who would love Zulip for their company or group? Invite 'em!"
 msgstr ""
 
-#: templates/zerver/left-sidebar.html:43
+#: templates/zerver/left-sidebar.html:45
 msgid ""
 "We'll have more invites for you soon, but\n"
 "                              for now, enjoy this <a target=\"_blank\"\n"
@@ -967,11 +1015,11 @@ msgid ""
 "                                logged out</a>."
 msgstr ""
 
-#: templates/zerver/left-sidebar.html:59
+#: templates/zerver/left-sidebar.html:61
 msgid "invite"
 msgstr ""
 
-#: templates/zerver/left-sidebar.html:59
+#: templates/zerver/left-sidebar.html:61
 msgid "remaining"
 msgstr ""
 
@@ -1015,30 +1063,34 @@ msgstr ""
 msgid "You've already registered with this email address. Please log in below"
 msgstr ""
 
-#: templates/zerver/login.html:100 templates/zerver/register.html:51
-#: templates/zerver/reset_confirm.html:18
+#: templates/zerver/login.html:107 templates/zerver/register.html:122
+#: templates/zerver/reset_confirm.html:27
 msgid "Password"
 msgstr "രഹസ്യവാക്ക്"
 
-#: templates/zerver/login.html:111
+#: templates/zerver/login.html:118
 msgid "Forgot password?"
 msgstr "രഹസ്യവാക്ക് മറന്നോ?"
 
-#: templates/zerver/login.html:124
+#: templates/zerver/login.html:131
 msgid "or Choose a user"
 msgstr "അല്ലെങ്കിൽ ഒരു ഉപയോക്താവിനെ തിരഞ്ഞെടുക്കുക"
 
-#: templates/zerver/login.html:127
+#: templates/zerver/login.html:134
 msgid "Administrators"
 msgstr "നടത്തിപ്പുകാർ"
 
-#: templates/zerver/login.html:131
+#: templates/zerver/login.html:138
 msgid "Normal users"
 msgstr "സാധാരണ ഉപയോക്താക്കൾ"
 
-#: templates/zerver/login.html:142
+#: templates/zerver/login.html:149
 msgid "Sign in with Google"
 msgstr "ഗൂഗിളുപയോഗിച്ച് സൈനിൻ ചെയ്യൂ"
+
+#: templates/zerver/login.html:156
+msgid "Sign in with GitHub"
+msgstr ""
 
 #: templates/zerver/markdown_help.html:5 templates/zerver/navbar.html:64
 msgid "Message formatting"
@@ -1113,52 +1165,96 @@ msgstr ""
 msgid "Debug"
 msgstr ""
 
-#: templates/zerver/portico.html:28 templates/zerver/portico.html.py:61
+#: templates/zerver/portico.html:29 templates/zerver/portico.html.py:75
 msgid "Log in"
 msgstr "ലൊഗിൻ"
 
-#: templates/zerver/portico.html:32
+#: templates/zerver/portico.html:34
 msgid "Log In"
 msgstr "ലൊഗിൻ"
 
-#: templates/zerver/portico.html:34 templates/zerver/portico.html.py:67
+#: templates/zerver/portico.html:36 templates/zerver/portico.html.py:81
 msgid "Register"
 msgstr "രെജിസ്റ്റർ"
 
-#: templates/zerver/portico.html:55
+#: templates/zerver/portico.html:59
 msgid "About"
 msgstr ""
 
-#: templates/zerver/portico.html:58
+#: templates/zerver/portico.html:68
 msgid "Legal"
 msgstr "നിയമപരം"
 
-#: templates/zerver/register.html:20
-msgid "Tell us a bit about yourself"
-msgstr "നിങ്ങളേ പറ്റീ പറയൂ ഞങ്ങളോട്"
+#: templates/zerver/portico.html:70
+msgid "Privacy"
+msgstr ""
 
-#: templates/zerver/register.html:33
+#: templates/zerver/portico.html:85
+msgid "Create new organization"
+msgstr ""
+
+#: templates/zerver/realm_creation_failed.html:3
+msgid "got a bit lost there."
+msgstr ""
+
+#: templates/zerver/realm_creation_failed.html:10
+msgid ""
+"This server does not allow members of the public to create new "
+"organizations."
+msgstr ""
+
+#: templates/zerver/realm_creation_failed.html:11
+msgid ""
+"Zulip is open source, so you can install your own Zulip server by following "
+"the instructions on <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
+msgstr ""
+
+#: templates/zerver/register.html:34
 msgid "Full name"
 msgstr "മുഴുവൻ പേര്"
 
-#: templates/zerver/register.html:57
+#: templates/zerver/register.html:51
+msgid "Organization name"
+msgstr ""
+
+#: templates/zerver/register.html:53
+msgid "E.g. Acme"
+msgstr ""
+
+#: templates/zerver/register.html:66
+msgid "Subdomain"
+msgstr ""
+
+#: templates/zerver/register.html:69
+msgid "E.g. acme"
+msgstr ""
+
+#: templates/zerver/register.html:76
+msgid "The address you'll use to sign in to your organization."
+msgstr ""
+
+#: templates/zerver/register.html:82
+msgid "Organization Type"
+msgstr ""
+
+#: templates/zerver/register.html:128
 msgid ""
 "This is used for mobile applications and other tools that require a password"
 msgstr ""
 
-#: templates/zerver/register.html:67 templates/zerver/reset_confirm.html:31
+#: templates/zerver/register.html:138 templates/zerver/reset_confirm.html:40
 msgid "Password strength"
 msgstr "രഹസ്യവാക്കിന്റെ ബലം"
 
-#: templates/zerver/reset.html:5 templates/zerver/reset_confirm.html:11
+#: templates/zerver/reset.html:5 templates/zerver/reset_confirm.html:13
 msgid "Reset your password"
 msgstr "രഹസ്യവാക്ക് പുനഃക്രമീകരിക്കുക"
 
-#: templates/zerver/reset_confirm.html:39
+#: templates/zerver/reset_confirm.html:48
 msgid "Confirm password"
 msgstr "രഹസ്യവാക്ക് ഉറപ്പിക"
 
-#: templates/zerver/reset_confirm.html:63
+#: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used"
 msgstr ""
 
@@ -1186,31 +1282,31 @@ msgstr ""
 msgid "Or don't, but then why did you fill out this form?"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:3 templates/zerver/right-sidebar.html:7
+#: templates/zerver/right-sidebar.html:4 templates/zerver/right-sidebar.html:8
 msgid "Unable to connect to"
 msgstr "കണക്ട് ചെയ്യാൻ സാധിക്കുന്നില്ലാ"
 
-#: templates/zerver/right-sidebar.html:3
+#: templates/zerver/right-sidebar.html:4
 msgid "Updates may be delayed"
 msgstr "അപ്ഡേറ്റുകൾ വൈകാൻ സാധ്യത ഉണ്ട്"
 
-#: templates/zerver/right-sidebar.html:4 templates/zerver/right-sidebar.html:8
+#: templates/zerver/right-sidebar.html:5 templates/zerver/right-sidebar.html:9
 msgid "Retrying soon"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:4
+#: templates/zerver/right-sidebar.html:5
 msgid "Try now"
 msgstr "ഇപ്പോൾ ശ്രമിക്കുക"
 
-#: templates/zerver/right-sidebar.html:7
+#: templates/zerver/right-sidebar.html:8
 msgid "Could not fetch messages"
 msgstr "സന്ദേശങ്ങൾ ശേഖരിക്കുവാൻ സാധിക്കുന്നില്ലാ"
 
-#: templates/zerver/right-sidebar.html:11
+#: templates/zerver/right-sidebar.html:12
 msgid "Your Zephyr mirror is not working"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:12
+#: templates/zerver/right-sidebar.html:13
 #, python-format
 msgid ""
 "We\n"
@@ -1221,26 +1317,26 @@ msgid ""
 "                  in a screen session"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:18
+#: templates/zerver/right-sidebar.html:19
 msgid ""
 "To fix\n"
 "                  this, you'll need\n"
 "                  to use <a href=\"https://zephyr.zulip.com\">the web interface</a>"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:27
+#: templates/zerver/right-sidebar.html:30
 msgid "Send feedback"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:33
+#: templates/zerver/right-sidebar.html:36
 msgid "USERS"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:38
+#: templates/zerver/right-sidebar.html:41
 msgid "Invite more users"
 msgstr ""
 
-#: templates/zerver/right-sidebar.html:43
+#: templates/zerver/right-sidebar.html:46
 msgid "GROUP PMs"
 msgstr ""
 
@@ -1297,39 +1393,51 @@ msgid "Narrow to starred messages"
 msgstr "നക്ഷത്രമിട്ട സന്ദേശങ്ങളിലേക്ക് ചുരുക്കുക"
 
 #: templates/zerver/search_operators.html:61
-msgid "Search for"
-msgstr ""
-
-#: templates/zerver/search_operators.html:61
-msgid "keyword"
-msgstr ""
-
-#: templates/zerver/search_operators.html:61
-msgid "in the topic or message content"
+msgid "Narrow to messages containing links"
 msgstr ""
 
 #: templates/zerver/search_operators.html:65
+msgid "Narrow to messages containing images"
+msgstr ""
+
+#: templates/zerver/search_operators.html:69
+msgid "Narrow to messages containing uploads"
+msgstr ""
+
+#: templates/zerver/search_operators.html:73
+msgid "Search for"
+msgstr ""
+
+#: templates/zerver/search_operators.html:73
+msgid "keyword"
+msgstr ""
+
+#: templates/zerver/search_operators.html:73
+msgid "in the topic or message content"
+msgstr ""
+
+#: templates/zerver/search_operators.html:77
 msgid "Exclude messages with topic"
 msgstr ""
 
-#: templates/zerver/search_operators.html:68
+#: templates/zerver/search_operators.html:80
 msgid ""
 "You can use any combination of these search operators in a single query"
 msgstr ""
 
-#: templates/zerver/search_operators.html:68
+#: templates/zerver/search_operators.html:80
 msgid "For example"
 msgstr ""
 
-#: templates/zerver/search_operators.html:74
+#: templates/zerver/search_operators.html:86
 msgid "would search for messages sent by"
 msgstr ""
 
-#: templates/zerver/search_operators.html:74
+#: templates/zerver/search_operators.html:86
 msgid "to stream"
 msgstr ""
 
-#: templates/zerver/search_operators.html:76
+#: templates/zerver/search_operators.html:88
 msgid "containing the keyword"
 msgstr ""
 
@@ -1420,232 +1528,244 @@ msgstr ""
 #, python-format
 msgid ""
 "To undo this change or review your other subscription settings, please visit"
-" your <a href=\"https://%(external_host)s/#settings\">Zulip Settings "
-"page</a>"
+" your <a href=\"%(realm_uri)s/#settings\">Zulip Settings page</a>"
 msgstr ""
 
-#: zerver/decorator.py:96
+#: templates/zerver/zulipchat_migration_tos.html:1
+msgid "Welcome! We think you'll like it here"
+msgstr "സ്വാഗതം! നിങ്ങൾക്കിവിടം ഇഷ്ടമാകുമെന്ന് കരുതുന്നൂ"
+
+#: templates/zerver/zulipchat_migration_tos.html:5
+msgid ""
+"Your organization has been migrated from zulip.com to zulipchat.com! New "
+"service, same great conversation. We just need you to do one last thing."
+msgstr ""
+
+#: templates/zerver/zulipchat_migration_tos.html:6
+msgid "Accept the Zulip terms of service"
+msgstr "സുലിപ്പിന്റെ സേവന നിബന്ധനകൾ സ്വീകരിക്കുക"
+
+#: zerver/decorator.py:116
 msgid "Must be a realm administrator"
 msgstr ""
 
-#: zerver/decorator.py:148
+#: zerver/decorator.py:171
 #, python-format
 msgid "Invalid user: %s"
 msgstr ""
 
-#: zerver/decorator.py:150
+#: zerver/decorator.py:173
 #, python-format
 msgid "Invalid deployment: %s"
 msgstr ""
 
-#: zerver/decorator.py:154
+#: zerver/decorator.py:177
 #, python-format
 msgid ""
 "Incorrect API key length (keys should be 32 characters long) for role '%s'"
 msgstr ""
 
-#: zerver/decorator.py:157
+#: zerver/decorator.py:180
 #, python-format
 msgid "Invalid API key for role '%s'"
 msgstr ""
 
-#: zerver/decorator.py:160 zerver/decorator.py:183 zerver/decorator.py:369
+#: zerver/decorator.py:183 zerver/decorator.py:221 zerver/decorator.py:433
 msgid "Account not active"
 msgstr ""
 
-#: zerver/decorator.py:163 zerver/decorator.py:185 zerver/decorator.py:371
+#: zerver/decorator.py:185
+msgid "Account is not valid to post webhook messages"
+msgstr ""
+
+#: zerver/decorator.py:188 zerver/decorator.py:223 zerver/decorator.py:435
 msgid "Realm for account has been deactivated"
 msgstr ""
 
-#: zerver/decorator.py:181
+#: zerver/decorator.py:199 zerver/decorator.py:227 zerver/decorator.py:445
+msgid "Account is not associated with this subdomain"
+msgstr ""
+
+#: zerver/decorator.py:219
 msgid "Invalid API key"
 msgstr ""
 
-#: zerver/decorator.py:314
+#: zerver/decorator.py:373
 msgid "Only Basic authentication is supported."
 msgstr ""
 
-#: zerver/decorator.py:317
+#: zerver/decorator.py:376
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:319
-msgid "Missing authorization header for basic auth"
-msgstr ""
-
-#: zerver/decorator.py:366
+#: zerver/decorator.py:430
 msgid "Not logged in"
 msgstr ""
 
-#: zerver/decorator.py:373
+#: zerver/decorator.py:437
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
-#: zerver/decorator.py:410
+#: zerver/decorator.py:503
 msgid "Access denied"
 msgstr ""
 
-#: zerver/lib/actions.py:779
+#: zerver/forms.py:50
+#, python-format
+msgid ""
+"The organization with the domain already exists. Please register your "
+"account <a href=%(url)s>here</a>."
+msgstr ""
+
+#: zerver/lib/actions.py:653
+msgid "Unable to render message"
+msgstr ""
+
+#: zerver/lib/actions.py:874
 #, python-format
 msgid "Invalid email '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:782
+#: zerver/lib/actions.py:877
 #, python-format
 msgid "'%s' is no longer using Zulip."
 msgstr ""
 
-#: zerver/lib/actions.py:788 zerver/lib/actions.py:3192
-#: zerver/views/messages.py:737 zerver/views/messages.py:744
-#: zerver/views/messages.py:769
+#: zerver/lib/actions.py:883 zerver/lib/actions.py:3389
+#: zerver/views/messages.py:806 zerver/views/messages.py:813
+#: zerver/views/messages.py:838
 msgid "User not authorized for this query"
 msgstr ""
 
-#: zerver/lib/actions.py:797 zerver/lib/actions.py:799
+#: zerver/lib/actions.py:892 zerver/lib/actions.py:894
 msgid "You can't send private messages outside of your organization."
 msgstr ""
 
-#: zerver/lib/actions.py:875
+#: zerver/lib/actions.py:970
 msgid "Stream can't be empty"
 msgstr ""
 
-#: zerver/lib/actions.py:877
+#: zerver/lib/actions.py:972
 msgid "Stream name too long"
 msgstr ""
 
-#: zerver/lib/actions.py:879 zerver/views/messages.py:360
+#: zerver/lib/actions.py:974
 msgid "Invalid stream name"
 msgstr ""
 
-#: zerver/lib/actions.py:935
+#: zerver/lib/actions.py:1030
 msgid "Message must have recipients"
 msgstr ""
 
-#: zerver/lib/actions.py:937
+#: zerver/lib/actions.py:1032
 msgid "Message must not be empty"
 msgstr ""
 
-#: zerver/lib/actions.py:945
+#: zerver/lib/actions.py:1040
 msgid "Cannot send to multiple streams"
 msgstr ""
 
-#: zerver/lib/actions.py:951
+#: zerver/lib/actions.py:1046
 msgid "Missing topic"
 msgstr ""
 
-#: zerver/lib/actions.py:954 zerver/lib/actions.py:2410
+#: zerver/lib/actions.py:1049 zerver/views/messages.py:907
 msgid "Topic can't be empty"
 msgstr ""
 
-#: zerver/lib/actions.py:965 zerver/lib/actions.py:2047
+#: zerver/lib/actions.py:1060 zerver/lib/actions.py:2196
 msgid "Stream does not exist"
 msgstr ""
 
-#: zerver/lib/actions.py:983
+#: zerver/lib/actions.py:1078
 #, python-format
 msgid "Not authorized to send to stream '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:995
+#: zerver/lib/actions.py:1090
 msgid "Invalid message type"
 msgstr ""
 
-#: zerver/lib/actions.py:1011
-msgid "Unable to render message"
-msgstr ""
-
-#: zerver/lib/actions.py:1118
+#: zerver/lib/actions.py:1209
 msgid "You cannot get subscribers for public streams in this realm"
 msgstr ""
 
-#: zerver/lib/actions.py:1122
+#: zerver/lib/actions.py:1212
 msgid "Unable to retrieve subscribers for invite-only stream"
 msgstr ""
 
-#: zerver/lib/actions.py:1650 zerver/views/users.py:53
-#: zerver/views/users.py:66 zerver/views/users.py:81 zerver/views/users.py:133
-#: zerver/views/users.py:174 zerver/views/users.py:215
-#: zerver/views/users.py:223
+#: zerver/lib/actions.py:1756 zerver/views/users.py:49
+#: zerver/views/users.py:62 zerver/views/users.py:77 zerver/views/users.py:131
+#: zerver/views/users.py:172 zerver/views/users.py:213
+#: zerver/views/users.py:221
 msgid "Insufficient permission"
 msgstr ""
 
-#: zerver/lib/actions.py:1737 zerver/lib/actions.py:1751
-#: zerver/lib/actions.py:1764
+#: zerver/lib/actions.py:1843 zerver/lib/actions.py:1857
+#: zerver/lib/actions.py:1870
 #, python-format
 msgid "Unknown stream \"%s\""
 msgstr ""
 
-#: zerver/lib/actions.py:1740
+#: zerver/lib/actions.py:1846
 msgid "You are not invited to this stream."
 msgstr ""
 
-#: zerver/lib/actions.py:1770
+#: zerver/lib/actions.py:1876
 #, python-format
 msgid "Stream name \"%s\" is already taken"
 msgstr ""
 
-#: zerver/lib/actions.py:2234 zerver/lib/actions.py:2236
-#: zerver/lib/actions.py:2241 zerver/lib/actions.py:2244
-#: zerver/lib/actions.py:2247
+#: zerver/lib/actions.py:2383 zerver/lib/actions.py:2385
+#: zerver/lib/actions.py:2390 zerver/lib/actions.py:2393
+#: zerver/lib/actions.py:2396
 msgid "Invalid message(s)"
 msgstr ""
 
-#: zerver/lib/actions.py:2346
-msgid "Unknown message id"
-msgstr ""
-
-#: zerver/lib/actions.py:2364
-msgid "You don't have permission to edit this message"
-msgstr ""
-
-#: zerver/lib/actions.py:2387
-msgid "We were unable to render your updated message"
-msgstr ""
-
-#: zerver/lib/actions.py:2879
+#: zerver/lib/actions.py:3075
 msgid "Could not allocate event queue"
 msgstr ""
 
-#: zerver/lib/actions.py:3016
+#: zerver/lib/actions.py:3212
 msgid "Invalid address."
 msgstr ""
 
-#: zerver/lib/actions.py:3020
+#: zerver/lib/actions.py:3216
 msgid "Outside your domain."
 msgstr ""
 
-#: zerver/lib/actions.py:3035
+#: zerver/lib/actions.py:3231
 msgid "Already has an account."
 msgstr ""
 
-#: zerver/lib/actions.py:3050
+#: zerver/lib/actions.py:3246
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr ""
 
-#: zerver/lib/actions.py:3055
+#: zerver/lib/actions.py:3251
 msgid "We weren't able to invite anyone."
 msgstr ""
 
-#: zerver/lib/actions.py:3067
+#: zerver/lib/actions.py:3263
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 
-#: zerver/lib/event_queue.py:474
+#: zerver/lib/event_queue.py:522
 msgid "Missing 'queue_id' argument"
 msgstr ""
 
-#: zerver/lib/event_queue.py:477
+#: zerver/lib/event_queue.py:525
 msgid "Missing 'last_event_id' argument"
 msgstr ""
 
-#: zerver/lib/event_queue.py:480 zerver/tornadoviews.py:42
+#: zerver/lib/event_queue.py:528 zerver/tornadoviews.py:35
 #, python-format
 msgid "Bad event queue id: %s"
 msgstr ""
 
-#: zerver/lib/event_queue.py:482
+#: zerver/lib/event_queue.py:530
 msgid "You are not authorized to get events from this queue"
 msgstr ""
 
@@ -1681,11 +1801,11 @@ msgstr ""
 msgid "argument \"%s\" is not valid json."
 msgstr ""
 
-#: zerver/lib/rest.py:87
+#: zerver/lib/rest.py:110 zerver/lib/rest.py:113
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
 
-#: zerver/lib/upload.py:314
+#: zerver/lib/upload.py:351
 msgid ""
 "The upload was not successful. Please reupload the file again in a new "
 "message."
@@ -1736,114 +1856,110 @@ msgstr ""
 msgid "%(variable)s != %(expected_value)s (%(value)s is wrong)"
 msgstr ""
 
-#: zerver/middleware.py:285
+#: zerver/middleware.py:295
 msgid "Internal server error"
 msgstr ""
 
-#: zerver/middleware.py:302
+#: zerver/middleware.py:312
 #, python-format
 msgid "CSRF Error: %s"
 msgstr ""
 
-#: zerver/middleware.py:325
+#: zerver/middleware.py:335
 #, python-format
 msgid "API usage exceeded rate limit, try again in %s secs"
 msgstr ""
 
-#: zerver/models.py:255
+#: zerver/models.py:303
 msgid "Invalid characters in Emoji name"
 msgstr ""
 
-#: zerver/tests/test_decorators.py:29
+#: zerver/tests/test_decorators.py:80
 msgid "13 is an unlucky number!"
 msgstr ""
 
-#: zerver/tornadoviews.py:44
+#: zerver/tests/test_subs.py:991
+msgid "random failure"
+msgstr ""
+
+#: zerver/tornadoviews.py:37
 msgid "You are not authorized to access this queue"
 msgstr ""
 
-#: zerver/views/__init__.py:274
-msgid "Could not find Kerberos credential"
-msgstr ""
-
-#: zerver/views/__init__.py:276
-msgid "Webathena login only for mit.edu realm"
-msgstr ""
-
-#: zerver/views/__init__.py:288
-msgid "Invalid Kerberos cache"
-msgstr ""
-
-#: zerver/views/__init__.py:299
-msgid "We were unable to setup mirroring for you"
-msgstr ""
-
-#: zerver/views/__init__.py:333
+#: zerver/views/__init__.py:303
 msgid "You must specify at least one email address."
 msgstr ""
 
-#: zerver/views/__init__.py:339
+#: zerver/views/__init__.py:309
 msgid "You must specify at least one stream for invitees to join."
 msgstr ""
 
-#: zerver/views/__init__.py:351
+#: zerver/views/__init__.py:321
 #, python-format
 msgid "Stream does not exist: %s. No invites were sent."
 msgstr ""
 
-#: zerver/views/__init__.py:416
+#: zerver/views/__init__.py:405
 msgid "No REMOTE_USER set."
 msgstr ""
 
-#: zerver/views/__init__.py:428
+#: zerver/views/__init__.py:417
 msgid "No JSON web token passed in request"
 msgstr ""
 
-#: zerver/views/__init__.py:430
+#: zerver/views/__init__.py:419
 msgid "Bad JSON web token"
 msgstr ""
 
-#: zerver/views/__init__.py:434
+#: zerver/views/__init__.py:423
 msgid "No user specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/__init__.py:437
+#: zerver/views/__init__.py:426
 msgid "No domain specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/__init__.py:449
+#: zerver/views/__init__.py:443
+msgid "Wrong subdomain"
+msgstr ""
+
+#: zerver/views/__init__.py:445
 msgid "Bad JSON web token signature"
 msgstr ""
 
-#: zerver/views/__init__.py:451
+#: zerver/views/__init__.py:447
 msgid "Realm not authorized for JWT login"
 msgstr ""
 
-#: zerver/views/__init__.py:955
-msgid "Invalid message ID"
+#: zerver/views/__init__.py:608 zerver/views/__init__.py:626
+msgid "Dev environment not enabled."
 msgstr ""
 
-#: zerver/views/__init__.py:974
-msgid "Realm has too much data for non-batched export."
-msgstr ""
-
-#: zerver/views/__init__.py:1087
-msgid "Your account has been disabled."
-msgstr ""
-
-#: zerver/views/__init__.py:1089
+#: zerver/views/__init__.py:614 zerver/views/__init__.py:1073
 msgid "Your realm has been deactivated."
 msgstr ""
 
-#: zerver/views/__init__.py:1091
+#: zerver/views/__init__.py:617 zerver/views/__init__.py:1070
+msgid "Your account has been disabled."
+msgstr ""
+
+#: zerver/views/__init__.py:736
+msgid "New organization creation disabled."
+msgstr ""
+
+#: zerver/views/__init__.py:739
+msgid "The organization creation link has been expired or is not valid."
+msgstr ""
+
+#: zerver/views/__init__.py:1076
 msgid "Password auth is disabled in your team."
 msgstr ""
 
-#: zerver/views/__init__.py:1095
+#: zerver/views/__init__.py:1081
 msgid "This user is not registered; do so from a browser."
 msgstr ""
 
-#: zerver/views/__init__.py:1096 zerver/views/__init__.py:1104
+#: zerver/views/__init__.py:1083 zerver/views/__init__.py:1104
 msgid "Your username or password is incorrect."
 msgstr ""
 
@@ -1851,248 +1967,294 @@ msgstr ""
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr ""
 
-#: zerver/views/__init__.py:1125
-#, python-format
-msgid "Invalid presence status: %s"
-msgstr ""
-
-#: zerver/views/__init__.py:1195
+#: zerver/views/__init__.py:1159
 msgid "No email address specified"
 msgstr ""
 
-#: zerver/views/__init__.py:1197
+#: zerver/views/__init__.py:1161
 msgid "Insufficient invites"
 msgstr ""
 
-#: zerver/views/__init__.py:1214 zerver/views/__init__.py:1244
-msgid "Empty or invalid length token"
-msgstr ""
-
-#: zerver/views/__init__.py:1250
-msgid "Token does not exist"
-msgstr ""
-
-#: zerver/views/messages.py:89
+#: zerver/views/messages.py:64
 msgid "Invalid narrow operator: {}"
 msgstr ""
 
-#: zerver/views/messages.py:623 zerver/views/users.py:117
+#: zerver/views/messages.py:685 zerver/views/users.py:115
 #, python-format
 msgid "No such stream '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:630
+#: zerver/views/messages.py:692
 #, python-format
 msgid "No such topic '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:747
+#: zerver/views/messages.py:816
 #, python-format
 msgid "Unknown domain %s"
 msgstr ""
 
-#: zerver/views/messages.py:767
+#: zerver/views/messages.py:836
 msgid "Missing sender"
 msgstr ""
 
-#: zerver/views/messages.py:773
+#: zerver/views/messages.py:842
 msgid "Invalid mirrored message"
 msgstr ""
 
-#: zerver/views/messages.py:775
+#: zerver/views/messages.py:844
 msgid "Invalid mirrored realm"
 msgstr ""
 
-#: zerver/views/messages.py:778
+#: zerver/views/messages.py:847
 msgid "IRC stream names must start with #"
 msgstr ""
 
-#: zerver/views/messages.py:803
+#: zerver/views/messages.py:872
+msgid "Your organization has turned off message editing."
+msgstr ""
+
+#: zerver/views/messages.py:877
+msgid "Unknown message id"
+msgstr ""
+
+#: zerver/views/messages.py:889
+msgid "You don't have permission to edit this message"
+msgstr ""
+
+#: zerver/views/messages.py:900
+msgid "The time limit for editing this message has past"
+msgstr ""
+
+#: zerver/views/messages.py:903
 msgid "Nothing to change"
 msgstr ""
 
-#: zerver/views/messages.py:815
+#: zerver/views/messages.py:912 zerver/views/webhooks/ifttt.py:23
+msgid "Content can't be empty"
+msgstr ""
+
+#: zerver/views/messages.py:939
 msgid "No such message"
 msgstr ""
 
-#: zerver/views/messages.py:818
+#: zerver/views/messages.py:942
 msgid "Message was not sent by you"
 msgstr ""
 
-#: zerver/views/streams.py:62 zerver/views/streams.py:293
+#: zerver/views/pointer.py:32
+msgid "Invalid message ID"
+msgstr ""
+
+#: zerver/views/presence.py:29
+#, python-format
+msgid "Invalid presence status: %s"
+msgstr ""
+
+#: zerver/views/push_notifications.py:18 zerver/views/push_notifications.py:49
+msgid "Empty or invalid length token"
+msgstr ""
+
+#: zerver/views/push_notifications.py:55
+msgid "Token does not exist"
+msgstr ""
+
+#: zerver/views/realm.py:37 zerver/views/user_settings.py:124
+#, python-format
+msgid "Invalid language '%s'"
+msgstr ""
+
+#: zerver/views/streams.py:56 zerver/views/streams.py:312
 #, python-format
 msgid "Stream name (%s) too long."
 msgstr ""
 
-#: zerver/views/streams.py:64 zerver/views/streams.py:295
+#: zerver/views/streams.py:58 zerver/views/streams.py:314
 #, python-format
 msgid "Invalid stream name (%s)."
 msgstr ""
 
-#: zerver/views/streams.py:76
+#: zerver/views/streams.py:79
 msgid "User cannot create streams."
 msgstr ""
 
-#: zerver/views/streams.py:78
+#: zerver/views/streams.py:81
 #, python-format
 msgid "Stream(s) (%s) do not exist"
 msgstr ""
 
-#: zerver/views/streams.py:123
+#: zerver/views/streams.py:129
 msgid "No such stream name"
 msgstr ""
 
-#: zerver/views/streams.py:126 zerver/views/streams.py:226
+#: zerver/views/streams.py:132 zerver/views/streams.py:245
 msgid "Cannot administer invite-only streams this way"
 msgstr ""
 
-#: zerver/views/streams.py:190
+#: zerver/views/streams.py:191
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
-#: zerver/views/streams.py:217
+#: zerver/views/streams.py:236
 msgid "This action requires administrative rights"
 msgstr ""
 
-#: zerver/views/streams.py:304
+#: zerver/views/streams.py:323
 #, python-format
 msgid "Unable to access stream (%s)."
 msgstr ""
 
-#: zerver/views/streams.py:310
-msgid "You can only invite other mit.edu users to invite-only streams."
+#: zerver/views/streams.py:329
+msgid ""
+"You can only invite other Zephyr mirroring users to invite-only streams."
 msgstr ""
 
-#: zerver/views/streams.py:403
+#: zerver/views/streams.py:422
 #, python-format
 msgid "Stream does not exist: %s"
 msgstr ""
 
-#: zerver/views/streams.py:441
+#: zerver/views/streams.py:460
 msgid "Invalid characters in stream name"
 msgstr ""
 
-#: zerver/views/streams.py:458
+#: zerver/views/streams.py:477
 #, python-format
 msgid "Invalid stream %s"
 msgstr ""
 
-#: zerver/views/streams.py:464
+#: zerver/views/streams.py:483
 #, python-format
 msgid "Not subscribed to stream %s"
 msgstr ""
 
-#: zerver/views/streams.py:488
+#: zerver/views/streams.py:507
 msgid "Invalid verb"
 msgstr ""
 
-#: zerver/views/streams.py:501
+#: zerver/views/streams.py:521
 #, python-format
 msgid "Unknown subscription property: %s"
 msgstr ""
 
-#: zerver/views/tutorial.py:34
+#: zerver/views/tutorial.py:30
 msgid "Bad data passed in to tutorial_send_message"
 msgstr ""
 
-#: zerver/views/upload.py:20
+#: zerver/views/upload.py:67
 msgid "You must specify a file to upload"
 msgstr ""
 
-#: zerver/views/upload.py:22 zerver/views/users.py:154
-#: zerver/views/users.py:204
+#: zerver/views/upload.py:69 zerver/views/users.py:152
+#: zerver/views/users.py:202
 msgid "You may only upload one file at a time"
 msgstr ""
 
-#: zerver/views/upload.py:26
+#: zerver/views/upload.py:73
 msgid "File Upload is larger than allowed limit"
 msgstr ""
 
-#: zerver/views/user_settings.py:66
-msgid "New password must match confirmation password!"
+#: zerver/views/user_settings.py:64
+msgid "No new data supplied"
 msgstr ""
 
 #: zerver/views/user_settings.py:68
+msgid "New password must match confirmation password!"
+msgstr ""
+
+#: zerver/views/user_settings.py:70
 msgid "Wrong password!"
 msgstr ""
 
-#: zerver/views/user_settings.py:80
+#: zerver/views/user_settings.py:82
 msgid "Name too long!"
 msgstr ""
 
-#: zerver/views/user_settings.py:178
+#: zerver/views/user_settings.py:196
 msgid "You must upload exactly one avatar."
 msgstr ""
 
-#: zerver/views/users.py:35 zerver/views/users.py:37 zerver/views/users.py:63
-#: zerver/views/users.py:78 zerver/views/users.py:130
-#: zerver/views/users.py:171
+#: zerver/views/users.py:31 zerver/views/users.py:33 zerver/views/users.py:59
+#: zerver/views/users.py:74 zerver/views/users.py:128
+#: zerver/views/users.py:169
 msgid "No such user"
 msgstr ""
 
-#: zerver/views/users.py:45 zerver/views/users.py:47
+#: zerver/views/users.py:41 zerver/views/users.py:43
 msgid "No such bot"
 msgstr ""
 
-#: zerver/views/users.py:193 zerver/views/users.py:296
+#: zerver/views/users.py:191 zerver/views/users.py:294
 msgid "Bad name or username"
 msgstr ""
 
-#: zerver/views/users.py:197
+#: zerver/views/users.py:195
 msgid "Username already in use"
 msgstr ""
 
-#: zerver/views/users.py:303
+#: zerver/views/users.py:301
 #, python-format
 msgid "Email '%(email)s' does not belong to domain '%(domain)s'"
 msgstr ""
 
-#: zerver/views/users.py:308
+#: zerver/views/users.py:306
 #, python-format
 msgid "Email '%s' already in use"
 msgstr ""
 
+#: zerver/views/webhooks/airbrake.py:26 zerver/views/webhooks/bitbucket2.py:52
 #: zerver/views/webhooks/codeship.py:37
 #: zerver/views/webhooks/crashlytics.py:37
+#: zerver/views/webhooks/helloworld.py:30 zerver/views/webhooks/updown.py:28
 msgid "Missing key {} in JSON"
 msgstr ""
 
-#: zerver/views/webhooks/freshdesk.py:133 zerver/views/webhooks/stash.py:34
+#: zerver/views/webhooks/freshdesk.py:132
+#: zerver/views/webhooks/semaphore.py:37 zerver/views/webhooks/semaphore.py:44
+#: zerver/views/webhooks/semaphore.py:55 zerver/views/webhooks/stash.py:34
 #, python-format
 msgid "Missing key %s in JSON"
 msgstr ""
 
-#: zerver/views/webhooks/freshdesk.py:142
+#: zerver/views/webhooks/freshdesk.py:141
 #, python-format
 msgid "Malformed event %s"
+msgstr ""
+
+#: zerver/views/webhooks/ifttt.py:21
+msgid "Subject can't be empty"
 msgstr ""
 
 #: zerver/views/webhooks/jira.py:180
 msgid "Unknown JIRA event type"
 msgstr ""
 
+#: zerver/views/webhooks/librato.py:170
+msgid "Malformed JSON input"
+msgstr ""
+
 #: zerver/views/webhooks/newrelic.py:34
 msgid "Unknown webhook request"
 msgstr ""
 
-#: zerver/views/webhooks/pingdom.py:46
+#: zerver/views/webhooks/pingdom.py:47
 #, python-brace-format
 msgid "Unsupported check_type: {check_type}"
 msgstr ""
 
-#: zerver/views/webhooks/pivotal.py:168
+#: zerver/views/webhooks/pivotal.py:171
 msgid "Failed to extract data from Pivotal XML response"
 msgstr ""
 
-#: zerver/views/webhooks/pivotal.py:174
+#: zerver/views/webhooks/pivotal.py:177
 msgid "Failed to extract data from Pivotal V5 JSON response"
 msgstr ""
 
-#: zerver/views/webhooks/pivotal.py:177
+#: zerver/views/webhooks/pivotal.py:180
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 
-#: zerver/views/webhooks/taiga.py:256
+#: zerver/views/webhooks/taiga.py:268
 msgid "Unknown message"
 msgstr ""
 
@@ -2100,10 +2262,31 @@ msgstr ""
 msgid "Transifex wrong request"
 msgstr ""
 
-#: zilencer/views.py:96
+#: zerver/views/webhooks/trello/__init__.py:26
+#, python-brace-format
+msgid "Unsupported action_type: {action_type}"
+msgstr ""
+
+#: zerver/views/zephyr.py:27
+msgid "Could not find Kerberos credential"
+msgstr ""
+
+#: zerver/views/zephyr.py:29
+msgid "Webathena login not enabled"
+msgstr ""
+
+#: zerver/views/zephyr.py:41
+msgid "Invalid Kerberos cache"
+msgstr ""
+
+#: zerver/views/zephyr.py:52
+msgid "We were unable to setup mirroring for you"
+msgstr ""
+
+#: zilencer/views.py:98
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zilencer/views.py:117
+#: zilencer/views.py:119
 msgid "Cannot determine endpoint for user."
 msgstr ""
