@@ -5,8 +5,7 @@ from django.utils import timezone
 from analytics.lib.interval import TimeInterval
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
-    zerver_count_message_by_stream, zerver_count_stream_by_realm, \
-    zerver_count_message_by_huddle
+    zerver_count_message_by_stream, zerver_count_stream_by_realm
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount
 
