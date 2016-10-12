@@ -2,27 +2,23 @@
 from __future__ import print_function
 
 import optparse
-import pwd
-import subprocess
-import signal
-import traceback
-import sys
 import os
+import pwd
+import signal
+import subprocess
+import sys
+import time
+import traceback
 
-if False: from typing import Any
+from six.moves.urllib.parse import urlunparse
 
-from twisted.internet import reactor
-from twisted.web      import proxy, server, resource
+from tornado import httpclient
+from tornado import httputil
+from tornado import gen
+from tornado import web
+from tornado.ioloop import IOLoop
 
-# Monkey-patch twisted.web.http to avoid request.finish exceptions
-# https://trac.zulip.net/ticket/1728
-from twisted.web.http import Request
-orig_finish = Request.finish
-def patched_finish(self):
-    # type: (Any) -> None
-    if not self._disconnected:
-        orig_finish(self)
-Request.finish = patched_finish
+if False: from typing import Any, Callable, Generator, Optional
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
@@ -42,18 +38,18 @@ to this file.
 """)
 
 parser.add_option('--test',
-    action='store_true', dest='test',
-    help='Use the testing database and ports')
+                  action='store_true', dest='test',
+                  help='Use the testing database and ports')
 
 parser.add_option('--interface',
-    action='store', dest='interface',
-    default=None, help='Set the IP or hostname for the proxy to listen on')
+                  action='store', dest='interface',
+                  default=None, help='Set the IP or hostname for the proxy to listen on')
 
 parser.add_option('--no-clear-memcached',
-    action='store_false', dest='clear_memcached',
-    default=True, help='Do not clear memcached')
+                  action='store_false', dest='clear_memcached',
+                  default=True, help='Do not clear memcached')
 
-(options, args) = parser.parse_args()
+(options, arguments) = parser.parse_args()
 
 if options.interface is None:
     user_id = os.getuid()
@@ -67,9 +63,9 @@ if options.interface is None:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
 
-base_port   = 9991
+base_port = 9991
 if options.test:
-    base_port   = 9981
+    base_port = 9981
     settings_module = "zproject.test_settings"
 else:
     settings_module = "zproject.settings"
@@ -81,10 +77,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from scripts.lib.zulip_tools import WARNING, ENDC
 
-proxy_port   = base_port
-django_port  = base_port+1
-tornado_port = base_port+2
-webpack_port = base_port+3
+proxy_port = base_port
+django_port = base_port + 1
+tornado_port = base_port + 2
+webpack_port = base_port + 3
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -109,11 +105,11 @@ os.setpgrp()
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['python', 'manage.py', 'rundjango'] +
-          manage_args + ['127.0.0.1:%d' % (django_port,)],
+        manage_args + ['127.0.0.1:%d' % (django_port,)],
         ['python', '-u', 'manage.py', 'runtornado'] +
-          manage_args + ['127.0.0.1:%d' % (tornado_port,)],
+        manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
-        ['env', 'PGHOST=127.0.0.1', # Force password authentication using .pgpass
+        ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates']]
 if options.test:
     # Webpack doesn't support 2 copies running on the same system, so
@@ -126,38 +122,176 @@ else:
 for cmd in cmds:
     subprocess.Popen(cmd)
 
-class Resource(resource.Resource):
-    def getChild(self, name, request):
-        # type: (bytes, server.Request) -> resource.Resource
 
-        # Assume an HTTP 1.1 request
-        proxy_host = request.requestHeaders.getRawHeaders('Host')
-        request.requestHeaders.setRawHeaders('X-Forwarded-Host', proxy_host)
-        if (request.uri.startswith(b'/json/events') or
-            request.uri.startswith(b'/api/v1/events') or
-            request.uri.startswith(b'/sockjs')):
-            return proxy.ReverseProxyResource('127.0.0.1', tornado_port, b'/' + name)
-
-        elif (request.uri.startswith(b'/webpack') or
-              request.uri.startswith(b'/socket.io')):
-            return proxy.ReverseProxyResource('127.0.0.1', webpack_port, b'/' + name)
-
-        return proxy.ReverseProxyResource('127.0.0.1', django_port, b'/'+name)
+def transform_url(protocol, path, query, target_port, target_host):
+    # type: (str, str, str, int, str) -> str
+    # generate url with target host
+    host = ":".join((target_host, str(target_port)))
+    newpath = urlunparse((protocol, host, path, '', query, ''))
+    return newpath
 
 
-    # log which services/ports will be started
-    print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
-          "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
-    if options.test:
-        print("")  # no webpack for --test
+@gen.engine
+def fetch_request(url, callback, **kwargs):
+    # type: (str, Any, **Any) -> Generator[Callable[..., Any], Any, None]
+    # use large timeouts to handle polling requests
+    req = httpclient.HTTPRequest(url, connect_timeout=240.0, request_timeout=240.0, **kwargs)
+    client = httpclient.AsyncHTTPClient()
+    # wait for response
+    response = yield gen.Task(client.fetch, req)
+    callback(response)
+
+
+class BaseHandler(web.RequestHandler):
+    # target server ip
+    target_host = '127.0.0.1'  # type: str
+    # target server port
+    target_port = None  # type: int
+
+    def _add_request_headers(self, exclude_lower_headers_list=None):
+        # type: (Optional[List[str]]) -> httputil.HTTPHeaders
+        exclude_lower_headers_list = exclude_lower_headers_list or []
+        headers = httputil.HTTPHeaders()
+        for header, v in self.request.headers.get_all():
+            if header.lower() not in exclude_lower_headers_list:
+                headers.add(header, v)
+        return headers
+
+    def get(self):
+        # type: () -> None
+        pass
+
+    def head(self):
+        # type: () -> None
+        pass
+
+    def post(self):
+        # type: () -> None
+        pass
+
+    def put(self):
+        # type: () -> None
+        pass
+
+    def patch(self):
+        # type: () -> None
+        pass
+
+    def options(self):
+        # type: () -> None
+        pass
+
+    def delete(self):
+        # type: () -> None
+        pass
+
+    def handle_response(self, response):
+        # type: (Any) -> None
+        if response.error and not isinstance(response.error, httpclient.HTTPError):
+            self.set_status(500)
+            self.write('Internal server error:\n' + str(response.error))
+        else:
+            self.set_status(response.code, response.reason)
+            self._headers = httputil.HTTPHeaders()  # clear tornado default header
+
+            for header, v in response.headers.get_all():
+                if header != 'Content-Length':
+                    # some header appear multiple times, eg 'Set-Cookie'
+                    self.add_header(header, v)
+            if response.body:
+                # rewrite Content-Length Header by the response
+                self.set_header('Content-Length', len(response.body))
+                self.write(response.body)
+        self.finish()
+
+    @web.asynchronous
+    def prepare(self):
+        # type: () -> None
+        url = transform_url(
+            self.request.protocol,
+            self.request.path,
+            self.request.query,
+            self.target_port,
+            self.target_host,
+        )
+        try:
+            fetch_request(
+                url=url,
+                callback=self.handle_response,
+                method=self.request.method,
+                headers=self._add_request_headers(["upgrade-insecure-requests"]),
+                follow_redirects=False,
+                body=getattr(self.request, 'body'),
+                allow_nonstandard_methods=True
+            )
+        except httpclient.HTTPError as e:
+            if hasattr(e, 'response') and e.response:
+                self.handle_response(e.response)
+            else:
+                self.set_status(500)
+                self.write('Internal server error:\n' + str(e))
+                self.finish()
+
+
+class WebPackHandler(BaseHandler):
+    target_port = webpack_port
+
+
+class DjangoHandler(BaseHandler):
+    target_port = django_port
+
+
+class TornadoHandler(BaseHandler):
+    target_port = tornado_port
+
+
+class Application(web.Application):
+    def __init__(self):
+        # type: () -> None
+        handlers = [
+            (r"/sockjs/.*/websocket$", TornadoHandler),
+            (r"/json/events.*", TornadoHandler),
+            (r"/api/v1/events.*", TornadoHandler),
+            (r"/webpack.*", WebPackHandler),
+            (r"/sockjs.*", TornadoHandler),
+            (r"/socket.io.*", WebPackHandler),
+            (r"/.*", DjangoHandler)
+        ]
+        super(Application, self).__init__(handlers)
+
+
+def on_shutdown():
+    # type: () -> None
+    IOLoop.instance().stop()
+
+
+def shutdown_handler(*args, **kwargs):
+    # type: (*Any, **Any) -> None
+    io_loop = IOLoop.instance()
+    if io_loop._callbacks:
+        io_loop.add_timeout(time.time() + 1, shutdown_handler)
     else:
-        print(", webpack: {}".format(webpack_port))
+        io_loop.stop()
 
-    print(WARNING + "Note: only port {} is exposed to the host in a Vagrant environment.".format(proxy_port) + ENDC)
+# log which services/ports will be started
+print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
+      "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
+if options.test:
+    print("")  # no webpack for --test
+else:
+    print(", webpack: {}".format(webpack_port))
+
+print("".join((WARNING,
+               "Note: only port {} is exposed to the host in a Vagrant environment.".format(
+                   proxy_port), ENDC)))
 
 try:
-    reactor.listenTCP(proxy_port, server.Site(Resource()), interface=options.interface)
-    reactor.run()
+    app = Application()
+    app.listen(proxy_port)
+    ioloop = IOLoop.instance()
+    for s in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(s, shutdown_handler)
+    ioloop.start()
 except:
     # Print the traceback before we get SIGTERM and die.
     traceback.print_exc()
