@@ -1,13 +1,41 @@
 from django.db import models
+from django.utils import timezone
 
+from analytics.lib.interval import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Recipient
 from zerver.lib.str_utils import ModelReprMixin
 import datetime
 
 from six import text_type
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Dict, Any
 
-from analytics.lib.interval import MIN_TIME
+class FillState(ModelReprMixin, models.Model):
+    property = models.CharField(max_length=40, unique=True) # type: text_type
+    end_time = models.DateTimeField() # type: datetime.datetime
+
+    # Valid states are {DONE, STARTED}
+    DONE = 1
+    STARTED = 2
+    state = models.PositiveSmallIntegerField() # type: int
+
+    last_modified = models.DateTimeField(auto_now=True) # type: datetime.datetime
+
+    def __unicode__(self):
+        # type: () -> text_type
+        return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
+
+def get_fill_state(property):
+    # type: (text_type) -> Optional[Dict[str, Any]]
+    try:
+        return FillState.objects.filter(property = property).values('end_time', 'state')[0]
+    except IndexError:
+        return None
+
+# The earliest/starting end_time in FillState
+# We assume there is at least one realm
+def installation_epoch():
+    # type: () -> datetime.datetime
+    return floor_to_day(Realm.objects.aggregate(models.Min('date_created'))['date_created__min'])
 
 # would only ever make entries here by hand
 class Anomaly(ModelReprMixin, models.Model):
