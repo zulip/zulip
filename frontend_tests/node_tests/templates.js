@@ -1023,6 +1023,24 @@ function render(template_name, args) {
     });
 }());
 
+(function typing_notifications() {
+    var args = {
+        users: [{
+            full_name: 'Hamlet',
+            email: 'hamlet@zulip.com',
+        }],
+    };
+
+    var html = '';
+    html += '<ul>';
+    html += render('typing_notifications', args);
+    html += '</ul>';
+
+    global.write_handlebars_output('typing_notifications', html);
+    var li = $(html).find('li:first');
+    assert.equal(li.text(), 'Hamlet is typing...');
+}());
+
 (function user_presence_rows() {
     var args = {
         users: [
