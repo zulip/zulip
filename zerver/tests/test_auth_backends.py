@@ -299,7 +299,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=do_auth), \
-                mock.patch('zerver.views.login'):
+                mock.patch('zerver.views.auth.login'):
             response=dict(email=self.email, name=self.name)
             result = self.backend.do_auth(response=response)
             self.assertNotIn('subdomain=1', result.url)
@@ -416,7 +416,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             return_data['inactive_user'] = True
             return self.user_profile
 
-        with mock.patch('zerver.views.login_or_register_remote_user') as result, \
+        with mock.patch('zerver.views.auth.login_or_register_remote_user') as result, \
                 mock.patch('social.backends.github.GithubOAuth2.do_auth',
                            side_effect=do_auth_inactive):
             response=dict(email=self.email, name=self.name)
@@ -703,7 +703,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
 
     def test_dev_auth_disabled(self):
         # type: () -> None
-        with mock.patch('zerver.views.dev_auth_enabled', return_value=False):
+        with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
             result = self.client_post("/api/v1/dev_fetch_api_key",
                                       dict(username=self.email))
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
@@ -718,7 +718,7 @@ class DevGetEmailsTest(ZulipTestCase):
 
     def test_dev_auth_disabled(self):
         # type: () -> None
-        with mock.patch('zerver.views.dev_auth_enabled', return_value=False):
+        with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
             result = self.client_get("/api/v1/dev_get_emails")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
