@@ -19,6 +19,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.context_managers import lockfile
 from zerver.lib.message import (
+    access_message,
     MessageDict,
     message_to_dict,
     render_markdown,
@@ -2383,17 +2384,8 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
                 raise JsonableError(_("Invalid message(s)"))
             if flag != "starred":
                 raise JsonableError(_("Invalid message(s)"))
-            # Check that the user could have read the relevant message
-            try:
-                message = Message.objects.get(id=messages[0])
-            except Message.DoesNotExist:
-                raise JsonableError(_("Invalid message(s)"))
-            recipient = Recipient.objects.get(id=message.recipient_id)
-            if recipient.type != Recipient.STREAM:
-                raise JsonableError(_("Invalid message(s)"))
-            stream = Stream.objects.select_related("realm").get(id=recipient.type_id)
-            if not stream.is_public():
-                raise JsonableError(_("Invalid message(s)"))
+            # Validate that the user could have read the relevant message
+            message = access_message(user_profile, messages[0])[0]
 
             # OK, this is a message that you legitimately have access
             # to via narrowing to the stream it is on, even though you
