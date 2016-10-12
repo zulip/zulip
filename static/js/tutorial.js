@@ -1,5 +1,4 @@
 var tutorial = (function () {
-
 var exports = {};
 var is_running = false;
 var event_handlers = {};

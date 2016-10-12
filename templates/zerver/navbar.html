@@ -23,6 +23,7 @@
               </div>
             </form>
           </div>{# /searchbox #}
+
     </div>
   </div>
   <div class="column-right">
@@ -69,6 +70,11 @@
                       <i class="icon-vector-search"></i> {{ _('Search help') }}
                     </a>
                   </li>
+                  <li title="Tutorial">
+                    <a href="#tutorial" role="button" data-toggle="modal">
+                      <i class="icon-vector-search"></i> {{ _('Tutorial') }}
+                    </a>
+                  </li>
                   <li class="divider"></li>
                   <li title="Desktop & mobile apps">
                     <a href="/apps" target="_blank" role="button">
@@ -98,6 +104,7 @@
                     </a>
                   </li>
                   {% endif %}
+
                   {% if enable_feedback %}
                   <li title="Feedback">
                     <a href="#feedback" class="feedback">
