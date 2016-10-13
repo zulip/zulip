@@ -28,6 +28,7 @@ from six.moves import filter
 from six.moves import map
 from six.moves import range
 from six.moves import zip
+import json
 eastern_tz = pytz.timezone('US/Eastern')
 
 from zproject.jinja2 import render_to_response
@@ -343,8 +344,8 @@ def sent_messages_report(realm):
         'Bots'
     ]
 
-    today = datetime.today().replace(tzinfo=timezone.utc) + timedelta(days=1)
-    last_week = (datetime.today() - timedelta(days=7)).replace(tzinfo=timezone.utc)
+    today = timezone.now().replace(tzinfo=timezone.utc)
+    last_month = (datetime.today() - timedelta(days=30)).replace(tzinfo=timezone.utc)
 
     process_count_stat(COUNT_STATS['messages_sent:is_bot'], today)
     realmcount_human_table = RealmCount.objects.values('end_time', 'value').filter(
@@ -353,7 +354,7 @@ def sent_messages_report(realm):
         realm=realm_id, property='messages_sent:is_bot', subgroup='true')
 
     realm_rows = []
-    for i in range ((today-last_week).days):
+    for i in range ((today-last_month).days):
         realm_rows.append([floor_to_day(today)-timedelta(days=i), 0, 0])
 
     for row in realmcount_human_table:
@@ -368,17 +369,23 @@ def sent_messages_report(realm):
 
     realm_rows.reverse()
 
-    i = len(realm_rows) - 1
-    for row in realm_rows:
-        if i == 0:
-            row[0] = "Today"
-        elif i == 1:
-            row[0] = "{} Day Ago".format(i)
-        else:
-            row[0] = "{} Days Ago".format(i)
-        i -= 1
+    # i = len(realm_rows) - 1
+    # for row in realm_rows:
+    #     if i == 0:
+    #         row[0] = 'Today'
+    #     elif i == 1:
+    #         row[0] = '{} Day Ago'.format(i)
+    #     else:
+    #         row[0] = '{} Days Ago'.format(i)
+    #     i -= 1
 
-    return make_table(title, cols, realm_rows)
+    # In order for plotly to parse our dates properly, we strip out tzinfo
+    dates = []
+    for item in realm_rows:
+        dates.append(item[0].replace(tzinfo=None))
+
+    data = dict(title=title, dates=dates, rows=realm_rows)
+    return data
 
 def ad_hoc_queries():
     # type: () -> List[Dict[str, str]]

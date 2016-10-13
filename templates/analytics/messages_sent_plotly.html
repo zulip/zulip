@@ -1,0 +1,68 @@
+<html lang="en">
+<head>
+  <!-- Plotly.js -->
+  <!-- remove this once we install in package.json -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+
+  <div id="plotDiv" style="width: 1200px; height: 600px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+  <script>
+
+    var selectorOptions = {
+            buttons: [{
+                step: 'day',
+                stepmode: 'backward',
+                count: 2,
+                label: 'Last 2 Days'
+            }, {
+                step: 'day',
+                stepmode: 'backward',
+                count: 7,
+                label: 'Last Week'
+        }, {
+            step: 'all',
+            label: 'All Time'
+        }],
+    };
+    var trace1 = {
+        x: [{%  for date in data.dates %}
+        '{{ date }}',
+        {% endfor %}],
+        y: [{%  for item in data.rows %}
+        {{ item[1] }},
+        {% endfor %}],
+        mode: 'lines',
+        name: 'Messages from humans'
+      };
+
+    var trace2 = {
+        x: [{%  for date in data.dates %}
+        '{{ date }}',
+        {% endfor %}],
+        y: [{%  for item in data.rows %}
+        {{ item[2] }},
+        {% endfor %}],
+        mode: 'lines',
+        name: 'Messages from bots'
+
+      };
+
+
+    var data = [trace1, trace2];
+    var layout = {
+        title: '{{ data.title }}',
+        xaxis: {
+            rangeselector: selectorOptions,
+            rangeslider: {}
+        },
+        yaxis: {
+            fixedrange: true
+        }
+    };
+
+    Plotly.newPlot('plotDiv', data, layout);
+  </script>
+</body>
+</html>
