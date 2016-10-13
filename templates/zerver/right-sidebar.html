@@ -1,15 +1,15 @@
           <div class="right-sidebar" id="right-sidebar">
             <div class="alert-box">
               <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-                <strong>{{ _('Unable to connect to') }} {{product_name}}.</strong>  {{ _('Updates may be delayed') }}.
-                <br /><br /> {{ _('Retrying soon') }}... <br /><br /> <a class="restart_get_updates_button">{{ _('Try now') }}</a>.
+                {% trans %}<strong>Unable to connect to {{ product_name }}.</strong>  Updates may be delayed.{% endtrans %}
+                <br /><br /> {{ _('Retrying soon...') }} <br /><br /> <a class="restart_get_updates_button">{{ _('Try now.') }}</a>
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
-                <strong>{{ _('Unable to connect to') }} {{product_name}}.</strong>  {{ _('Could not fetch messages') }}.
-                <br /><br /> {{ _('Retrying soon') }}... <br /><br />
+                {% trans %}<strong>Unable to connect to {{ product_name }}.</strong>  Could not fetch messages.{% endtrans %}
+                <br /><br /> {{ _('Retrying soon...') }} <br /><br />
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-                <strong>{{ _('Your Zephyr mirror is not working') }}.</strong>
+                <strong>{{ _('Your Zephyr mirror is not working.') }}</strong>
                   <span id="normal-zephyr-mirror-error-text">{% trans %}We
                   recommend that you <a class="webathena_login">give
                   {{product_name}} the ability to mirror the messages for you via

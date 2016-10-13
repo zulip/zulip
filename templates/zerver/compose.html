@@ -62,14 +62,14 @@
                 <div class="pm_recipient">
                 <span class="you_text">{{ _('You and') }}</span>
                 <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
-                               value="" placeholder="{{ _('one or more people') }}..." autocomplete="off" tabindex="130"/>
+                               value="" placeholder="{{ _('one or more people...') }}" autocomplete="off" tabindex="130"/>
                 </div>
               </td>
             </tr>
             <tr>
               <td class="messagebox" colspan="2">
                 <textarea class="new_message_textarea" name="content" id="new_message_content"
-                          value="" placeholder="{{ _('Compose your message here') }}..." tabindex="140" maxlength="10000"></textarea>
+                          value="" placeholder="{{ _('Compose your message here...') }}" tabindex="140" maxlength="10000"></textarea>
                 <div class="scrolling_list" id="preview_message_area" style="display:none;">
                   <div id="markdown_preview_spinner"></div>
                   <div id="preview_content"></div>
@@ -89,7 +89,7 @@
                   <a id="undo_markdown_preview" class="icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
                   <a id="markdown_preview" class="icon-vector-eye-open" title="{{ _('Preview') }}"></a>
                   <a id="restore-draft" onclick="compose.restore_message();">{{ _('Restore draft') }}</a>
-                  <span id="sending-indicator">{{ _('Sending') }}...</span>
+                  <span id="sending-indicator">{{ _('Sending...') }}</span>
                   <div id="send_controls">
                     <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>
                     <input type="checkbox" id="enter_sends" name="enter_sends" value="enter_sends" />
