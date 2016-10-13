@@ -245,7 +245,7 @@ Filter.parse = function (str) {
 
             // If operator is 'is' keep it
 
-            if (operator !== "is") {
+            if (operator !== "is" || operator !== "subject") {
               if (Filter.operator_to_prefix(_operator, negated) === '') {
                 // Unkonwn operator
                 operator = 'search';
