@@ -252,6 +252,9 @@ Filter.parse = function (str) {
                 operand = token;
               }
             }
+            if (operator === "subject") {
+              operator = "topic";
+            }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }
