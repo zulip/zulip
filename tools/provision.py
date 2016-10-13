@@ -17,6 +17,8 @@ from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, W
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules
 
+from version import PROVISION_VERSION
+
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -203,6 +205,10 @@ def main():
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
         setup_node_modules()
+
+    version_file = os.path.join(ZULIP_PATH, 'var/provision_version')
+    print('writing to %s\n' % (version_file,))
+    open(version_file, 'w').write(PROVISION_VERSION + '\n')
 
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
