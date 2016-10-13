@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os
+import sys
+import subprocess
+import datetime
+import tempfile
+import glob
+
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', ".."))
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, ENDC, make_deploy_path
+
+if len(sys.argv) != 2:
+    print(FAIL + "Usage: %s <tarball>" % (sys.argv[0],) + ENDC)
+    sys.exit(1)
+
+tarball_path = sys.argv[1]
+
+deploy_path = make_deploy_path()
+
+extract_path = tempfile.mkdtemp()
+subprocess.check_call(["tar", "-xf", tarball_path, "-C", extract_path])
+subprocess.check_call(["mv", glob.glob(os.path.join(extract_path, "zulip-server-*"))[0], deploy_path])
+subprocess.check_call(["rmdir", extract_path])
+subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
+                       os.path.join(deploy_path, "zproject/prod_settings.py")])
+subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "next")])
+
+print(deploy_path)
+sys.exit(0)

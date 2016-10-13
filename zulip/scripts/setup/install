@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: The installation script must be run as root" >&2
+    exit 1
+fi
+mkdir -p /var/log/zulip
+
+"$(dirname "$(dirname "$0")")/lib/install" "$@" 2>&1 | tee -a /var/log/zulip/install.log
+failed=${PIPESTATUS[0]}
+
+if [ $failed = 1 ]; then
+    echo -e "\033[0;31m"
+    echo "Zulip installation failed!"
+    echo
+    echo -n "The install process is designed to be idempotent, so you can retry "
+    echo -n "after resolving whatever issue caused the failure (there should be a traceback above). "
+    echo -n "A log of this installation is available in /var/log/zulip/install.log"
+    echo -e "\033[0m"
+    exit 1
+fi

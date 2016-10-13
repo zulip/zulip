@@ -1,0 +1,178 @@
+{% extends "zerver/portico.html" %}
+
+{# Login page. #}
+
+{% block customhead %}
+    {{ super() }}
+    {{ minified_js('signup')|safe }}
+{% endblock %}
+
+{% block os_announcement %}
+  {% if show_oss_announcement %}
+  <div class="os-headline-container">
+    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
+    <div class="main-headline-text">
+      <span class="tagline os-tagline">
+         {{ _('Zulip has been released as open source software!') }}
+      </span>
+      <span class="footnote os-footnote">
+         {{ _('Read the') }} <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">{{ _('announcement') }}</a> {{ _('or go to') }} <a href="https://www.zulip.org" target="_blank">{{ _('the Zulip open source project website') }}</a>.
+      </span>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block portico_content %}
+
+{% if password_auth_enabled %}
+<script type="text/javascript">
+{% if email %}
+{% if not desktop_sso_dispatch %}
+autofocus('#id_password');
+{% endif %}
+{% else %}
+autofocus('#id_username');
+{% endif %}
+</script>
+{% endif %}
+
+
+<div class="app login-page">
+  <div class="app-main login-page-container">
+
+    {% if dev_auth_enabled %}
+    <h3 class="login-page-header">{{ _('Zulip Dev Login') }}</h3>
+    {% if not password_auth_enabled %}
+    <h4 class="login-page-subheader">{{ _('Choose a user') }}:</h4>
+    {% endif %}
+    {% else %}
+    <h3 class="login-page-header">{{ _('You look familiar') }}.</h3>
+    {% endif %}
+
+{% if only_sso %}
+    {# SSO users don't have a password. #}
+
+    <div class="login-sso">
+      <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Sign in with SSO') }}</a>
+    </div>
+
+{% else %}
+{# Non-SSO users. #}
+
+{% if form.errors or desktop_sso_unknown_email %}
+<div class="alert alert-error">
+    {% if desktop_sso_unknown_email %}
+        {{ _('Zulip is not currently available for your domain') }}. <br />
+    {% else %}
+        {% for error in form.errors.values() %}
+        <div>{{ error | striptags }}</div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endif %}
+
+    {% if email %}
+    <div class="alert">
+        {{ _("You've already registered with this email address. Please log in below") }}.
+    </div>
+    {% endif %}
+
+    {% if subdomain %}
+    <div class="alert">
+        {{ wrong_subdomain_error }}.
+    </div>
+    {% endif %}
+
+        {% if password_auth_enabled or desktop_sso_dispatch %}
+        <form name="login_form" id="login_form" method="post" class="login-form"
+            {% if desktop_sso_dispatch %}
+            {# desktop_sso_dispatch is only set when this template is invoked by zilencer.views #}
+              action="{{ url('zilencer.views.account_deployment_dispatch') }}"
+            {% else %}
+              action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}"
+            {% endif %}
+        >
+            {{ csrf_input }}
+            <div class="control-group">
+                <label for="id_username" class="control-label">{{ _('Email') }}</label>
+                <div class="controls">
+                  <input id="id_username" type="email" name="username"
+                         class="email required"
+                         {% if email %}
+                         value="{{ email }}"
+                         {% else %}
+                         value=""
+                         {% endif %}
+                         maxlength="72" />
+                </div>
+            </div>
+
+            {% if not desktop_sso_dispatch %}
+            <div class="control-group">
+                <label for="id_password" class="control-label">{{ _('Password') }}</label>
+                <div class="controls">
+                    <input id="id_password" name="password" class="required" type="password" />
+                </div>
+            </div>
+            {% endif %}
+            <div class="control-group">
+                <div class="controls">
+                    <input type="submit" class="btn btn-large btn-primary" value="Log in" />
+                    {% if not desktop_sso_dispatch %}
+                    <span class="login-forgot-password">
+                      <a href="{{ url('django.contrib.auth.views.password_reset') }}">{{ _('Forgot password?') }}</a>
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        {% endif %}
+        {% if dev_auth_enabled %}
+        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
+              action="{{ url('zerver.views.auth.dev_direct_login') }}">
+            {{ csrf_input }}
+            <div class="control-group">
+                {% if password_auth_enabled %}
+                <label for="direct_email" class="direct-label">{{ _('or Choose a user') }}:</label>
+                {% endif %}
+                <div class="controls">
+                    <p>({{ _('Administrators') }})</p>
+                    {% for user_email in direct_admins %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
+                    {% endfor %}
+                    <p>({{ _('Normal users') }})</p>
+                    {% for user_email in direct_users %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+        {% endif %}
+
+    {% if google_auth_enabled %}
+    <div class="login-google">
+    or <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="login-google-button zocial google">{{ _('Sign in with Google') }}</a>
+    </div>
+    {% endif %}
+
+    {% if github_auth_enabled %}
+    <div class="login-github">
+        or <a href="{{ url('social:begin', args=('github',)) }}" class="login-github-button zocial github">
+            <span>{{ _('Sign in with GitHub') }}</span>
+        </a>
+    </div>
+    {% endif %}
+
+{% endif %}
+
+</div>
+<div class="footer-padder"></div>
+</div>
+<script type="text/javascript">
+if (window.location.hash.substring(0, 1) === "#") {
+    document.login_form.action += window.location.hash;
+}
+</script>
+
+{% endblock %}

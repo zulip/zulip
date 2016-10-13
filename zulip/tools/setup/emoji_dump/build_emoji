@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+(cd tools/setup/emoji_dump && python ./emoji_dump.py)

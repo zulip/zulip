@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright © 2012-2014 Zulip, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import sys
+from os import path
+import optparse
+
+usage = """create-user --new-email=<email address> --new-password=<password> --new-full-name=<full name> --new-short-name=<short name> [options]
+
+Create a user. You must be a realm admin to use this API, and the user
+will be created in your realm.
+
+Example: create-user --site=http://localhost:9991 --user=rwbarton@zulip.com --new-email=jarthur@zulip.com --new-password=random17 --new-full-name 'J. Arthur Random' --new-short-name='jarthur'
+"""
+
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import zulip
+
+parser = optparse.OptionParser(usage=usage)
+parser.add_option_group(zulip.generate_option_group(parser))
+parser.add_option('--new-email')
+parser.add_option('--new-password')
+parser.add_option('--new-full-name')
+parser.add_option('--new-short-name')
+(options, args) = parser.parse_args()
+
+client = zulip.init_from_options(options)
+
+print(client.create_user({
+        'email': options.new_email,
+        'password': options.new_password,
+        'full_name': options.new_full_name,
+        'short_name': options.new_short_name
+        }))

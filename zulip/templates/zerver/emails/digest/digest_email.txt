@@ -1,0 +1,61 @@
+{#
+Mail sent to a user who hasn't logged in for 24 hours.
+#}
+
+Hello {{ name }},
+
+A lot has happened on Zulip while you've been away! Visit
+{{ realm_uri }} to catch up.
+
+{% if unread_pms %}
+** Missed private messages **
+
+You have some missed private messages. Here are some of them:
+
+{% for recipient_block in unread_pms %}{{ recipient_block.header.plain }}
+{% for sender_block in recipient_block.senders %}{% if sender_block.sender %}{{ sender_block.sender }}{% endif %}
+{% for message_block in sender_block.content %}{{ message_block.plain }}
+{% endfor %}
+{% endfor %}{% endfor %}
+{% if remaining_unread_pms_count > 0 %}+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}{% endif %}
+Catch up on the rest of your PMs: {{ realm_uri }}/#narrow/is/private{% endif %}
+
+{% if hot_conversations %}
+** Hot conversations **
+
+Here are some of the hot conversations that have happened while you've
+been gone:
+
+{% for convo in hot_conversations %}{% for recipient_block in convo.first_few_messages %}{{ recipient_block.header.plain }}
+{% for sender_block in recipient_block.senders %}{% if sender_block.sender %}{{ sender_block.sender }}
+{% endif %}
+{% for message_block in sender_block.content %}{{ message_block.plain }}
+{% endfor %}{% endfor %}
+{% if convo.count > 0 %}+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.{% endif %}
+{% endfor %}{% endfor %}
+Catch up on the rest of these conversations: {{ realm_uri }}.{% endif %}
+
+
+{% if new_users and new_streams.plain %}** Group updates **{% elif new_users %}** New users **{% elif new_streams.plain %}** New streams **{% endif %}
+
+{% if new_streams.plain %}{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:
+
+    {{ new_streams.plain|display_list(4) }}.
+
+Visit your Streams page to subscribe: {{ realm_uri }}/#subscriptions.{% endif %}
+
+{% if new_users %}{% if new_streams.plain or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!{% endif %}
+
+Click here to log in to Zulip and catch up: {{ realm_uri }}.
+
+Cheers,
+The Zulip Team
+
+--
+Manage email preferences:
+
+{{ realm_uri }}/#settings
+
+Unsubscribe from digest emails:
+
+{{ unsubscribe_link }}

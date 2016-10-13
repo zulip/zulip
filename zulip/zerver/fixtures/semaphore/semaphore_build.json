@@ -1,0 +1,20 @@
+{
+   "branch_name":"master",
+   "branch_url":"https://semaphoreci.com/rishig/semaphore-test/branches/master",
+   "project_name":"knighthood",
+   "project_hash_id":"dff749fa-6acf-467c-85c9-119d63c8af4b",
+   "build_url":"https://semaphoreci.com/donquixote/knighthood/branches/master/builds/314",
+   "build_number":314,
+   "result":"passed",
+   "event":"build",
+   "started_at":"1605-01-16T00:01:58Z",
+   "finished_at":"1605-01-16T00:02:09Z",
+   "commit":{
+      "id":"a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf",
+      "url":"https://github.com/donquixote/knighthood/commit/a490b8d508ebbdab1d77a5c2aefa35ceb2d62daf",
+      "author_name":"Don Quixote",
+      "author_email":"don@lamancha.com",
+      "message":"Create user account for Rocinante :horse:.",
+      "timestamp":"1605-01-16T00:01:41Z"
+   }
+}

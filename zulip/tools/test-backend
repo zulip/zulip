@@ -1,0 +1,187 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import optparse
+import os
+import sys
+import subprocess
+
+try:
+    import django
+    from django.conf import settings
+    from django.test.utils import get_runner
+    # We don't actually need typing, but it's a good guard for being
+    # outside a Zulip virtualenv.
+    import typing
+except ImportError as e:
+    print("ImportError: {}".format(e))
+    print("You need to run the Zulip tests inside a Zulip dev environment.")
+    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
+    sys.exit(1)
+
+if __name__ == "__main__":
+    TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(os.path.dirname(TOOLS_DIR))
+    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+    from zerver.lib.test_fixtures import is_template_database_current
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+    # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
+    os.environ['PYTHONUNBUFFERED'] = 'y'
+
+    usage = """%prog [options]
+    test-backend # Runs all backend tests
+    test-backend zerver.tests.test_bugdown # run all tests in a test module
+    test-backend zerver/tests/test_bugdown.py # run all tests in a test module
+    test-backend test_bugdown # run all tests in a test module
+    test-backend zerver.tests.test_bugdown.BugdownTest # run all tests in a test class
+    test-backend BugdownTest # run all tests in a test class
+    test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube # run a single test
+    test-backend BugdownTest.test_inline_youtube # run a single test"""
+
+    parser = optparse.OptionParser(usage)
+
+    parser.add_option('--nonfatal-errors', action="store_false", default=True,
+                      dest="fatal_errors", help="Continue past test failures to run all tests")
+    parser.add_option('--coverage', dest='coverage',
+                      action="store_true",
+                      default=False, help='Compute test coverage.')
+    parser.add_option('--url-coverage', dest='url_coverage',
+                      action="store_true",
+                      default=False, help='Write url coverage data.')
+    parser.add_option('--no-verbose-coverage', dest='verbose_coverage',
+                      action="store_false",
+                      default=True, help='Disable verbose print of coverage report.')
+    parser.add_option('--profile', dest='profile',
+                      action="store_true",
+                      default=False, help='Profile test runtime.')
+    parser.add_option('--no-shallow', dest='no_shallow',
+                      action="store_true",
+                      default=False,
+                      help="Don't allow shallow testing of templates")
+    parser.add_option('--verbose', dest='verbose',
+                      action="store_true",
+                      default=False,
+                      help="Show detailed output")
+    parser.add_option('--no-generate-fixtures', action="store_false", default=True,
+                      dest="generate_fixtures",
+                      help=("Reduce running time by not calling generate-fixtures. "
+                            "This may cause spurious failures for some tests."))
+    parser.add_option('--report-slow-tests', dest='report_slow_tests',
+                      action="store_true",
+                      default=False,
+                      help="Show which tests are slowest.")
+
+    (options, args) = parser.parse_args()
+
+    zerver_test_dir = 'zerver/tests/'
+
+    # to transform forward slashes '/' present in the argument into dots '.'
+    for suite in args:
+        args[args.index(suite)] = suite.rstrip('/').replace("/", ".")
+
+    def rewrite_arguments(search_key):
+        for file_name in os.listdir(zerver_test_dir):
+            if file_name.endswith(".py"):
+                filepath = zerver_test_dir + file_name
+                if os.path.isdir(filepath):
+                    continue
+                for line in open(filepath):
+                    if search_key in line:
+                        new_suite = filepath.replace(".py", ".") + suite
+                        args[args.index(suite)] = new_suite
+                        return
+
+    for suite in args:
+        if suite[0].isupper() and "test_" in suite:
+            classname = suite.rsplit('.', 1)[0]
+            rewrite_arguments(classname)
+        elif suite[0].isupper():
+            rewrite_arguments(suite)
+
+    for suite in args:
+        if suite.startswith('test'):
+            new_suite = "zerver.tests." + suite
+            args[args.index(suite)] = new_suite
+
+    for suite in args:
+        args[args.index(suite)] = suite.replace(".py", "")
+
+    # to transform forward slashes '/' introduced by the zerver_test_dir into dots '.'
+    # taking care of any forward slashes that might be present
+    for suite in args:
+        args[args.index(suite)] = suite.replace("/", ".")
+
+
+    if len(args) == 0:
+        suites = ["zerver.tests",
+                  "analytics.tests"]
+    else:
+        suites = args
+
+    if options.coverage:
+        import coverage
+        cov = coverage.Coverage(omit="*/zulip-venv-cache/*")
+        cov.start()
+    if options.profile:
+        import cProfile
+        prof = cProfile.Profile()
+        prof.enable()
+    if options.url_coverage:
+        # This is kind of hacky, but it's the most reliable way
+        # to make sure instrumentation decorators know the
+        # setting when they run.
+        os.environ['TEST_INSTRUMENT_URL_COVERAGE'] = 'TRUE'
+
+    # setup() needs to be called after coverage is started to get proper coverage reports of model
+    # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
+    django.setup()
+
+    if options.generate_fixtures:
+        generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
+        if not is_template_database_current():
+            generate_fixtures_command.append('--force')
+
+        subprocess.call(generate_fixtures_command)
+
+    TestRunner = get_runner(settings)
+    test_runner = TestRunner()
+    failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors)
+
+    templates_not_rendered = test_runner.get_shallow_tested_templates()
+    if templates_not_rendered:
+        missed_count = len(templates_not_rendered)
+        if options.no_shallow or options.verbose:
+            print("*** Shallow tested templates: {}".format(missed_count))
+
+        if options.verbose:
+            for template in templates_not_rendered:
+                print('--- {}'.format(template))
+
+        if options.no_shallow:
+            failures = True
+
+    if options.coverage:
+        cov.stop()
+        cov.save()
+        if options.verbose_coverage:
+            print("Printing coverage data")
+            cov.report(show_missing=False)
+        cov.html_report(directory='var/coverage')
+        print("HTML report saved to var/coverage")
+    if options.profile:
+        prof.disable()
+        prof.dump_stats("/tmp/profile.data")
+        print("Profile data saved to /tmp/profile.data")
+        print("You can visualize it using e.g. `runsnake /tmp/profile.data`")
+
+    if options.report_slow_tests:
+        from zerver.lib.test_runner import report_slow_tests
+        # We do this even with failures, since slowness can be
+        # an important clue as to why tests fail.
+        report_slow_tests()
+
+    if failures:
+        print('FAILED!')
+    else:
+        print('DONE!')
+    sys.exit(bool(failures))

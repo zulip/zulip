@@ -1,0 +1,21 @@
+# Mail address where logs are sent to (mandatory, no default!)
+$mailto = 'buildd-maintainers@zulip.net';
+
+# Directory for chroot symlinks and sbuild logs.  Defaults to the
+# current directory if unspecified. (Deprecated.) Leave this unset;
+# umt compare-bin relies upon this being unset.
+#
+# The above comment is a lie. ~ lfaraone
+$build_dir='/home/zulip/ubuntu/build';
+
+# Directory for writing build logs to
+$log_dir="/home/zulip/ubuntu/logs";
+
+# Override default sbuild dependency resolver (see 'man sbuild'). The default
+# resolver (apt) mostly works ok but not always (eg, oneiric libreoffice).
+# Use 'apt', 'aptitude', 'internal'. Can also use '--build-dep-resolver' with
+# sbuild or '--sbuild-dep-resolver' with umt.
+#$build_dep_resolver="apt";
+
+# don't remove this, Perl needs it:
+1;

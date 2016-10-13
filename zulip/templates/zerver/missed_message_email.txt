@@ -1,0 +1,40 @@
+{#
+Mail sent to user when she was not logged in and received a PM or @-mention
+#}
+
+Hello {{ name }},
+
+While you were away you received {{ message_count }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+
+
+{% for recipient_block in messages %}
+    {{ recipient_block.header.plain|safe }}
+    {% for sender_block in recipient_block.senders %}
+        {% if sender_block.sender %}{{ sender_block.sender }}{% endif %}{% for message_block in sender_block.content %}
+                {{ message_block.plain }}
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+
+
+Click here to log in to Zulip and view your new messages:
+
+{{ realm_uri }}
+
+{% if reply_to_zulip  %}
+Or just reply to this email.
+{% endif %}
+{% if reply_warning %}
+Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.
+{% endif %}
+
+Cheers,
+The Zulip Team
+
+Manage email preferences:
+
+{{ realm_uri }}/#settings
+
+Unsubscribe from missed message emails:
+
+{{ unsubscribe_link }}

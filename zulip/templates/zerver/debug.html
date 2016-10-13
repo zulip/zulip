@@ -1,0 +1,38 @@
+{#
+Debug tab of the app.
+
+Included if Django's DEBUG = True and the query
+parameter ?show_debug is present.
+#}
+
+<style>
+/* Hack to make it scrollable */
+.debug_content {
+    max-height: 1000px;
+}
+
+.sql_table th {
+    text-align: left;
+}
+
+.sql_table td {
+    padding: 4px 4px 4px 4px;
+    border-top: 1px solid #ccc;
+}
+</style>
+
+<div class="debug_content">
+
+<h2>{{ sql_queries|length }} SQL queries made for this page</h2>
+
+<table class="sql_table">
+
+<tr><th>Time</th><th>Query</th></tr>
+
+{% for query in sql_queries %}
+<tr><td>{{ query.time }}&nbsp;s</td><td>{{ query.sql }}</td></tr>
+{% endfor %}
+
+</table>
+
+</div>

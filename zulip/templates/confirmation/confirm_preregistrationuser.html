@@ -1,0 +1,23 @@
+{% extends "zerver/base.html" %}
+
+{% block content %}
+
+{#
+This template is referenced by the confirmation code and does not have the
+requisite context to make a useful signup form. Therefore, we immediately
+post to another view which executes in our code to produce the desired form.
+#}
+
+<form id="register" action="/accounts/register/" method="post">
+    {{ csrf_input }}
+    <input type="hidden" value="{{ key }}" name="key"/>
+    <input type="hidden" value="1" name="from_confirmation"/>
+    <input type="hidden" value="{% if full_name %}{{ full_name }}{% endif %}" name="full_name"/>
+</form>
+
+<script type="text/javascript">
+    $(function () {
+        $("#register").submit();
+    });
+</script>
+{% endblock %}

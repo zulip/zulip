@@ -1,0 +1,16 @@
+{{! Client-side Mustache template for rendering the trailing bookend.}}
+
+{{#if bookend_content}}
+<div class="{{#if trailing}}trailing_bookend{{/if}} bookend sub-unsub-message">
+    <span>{{bookend_content}}</span>
+    <div class="sub_button_row">
+        <button class="btn stream_sub_unsub_button btn-default" type="button" name="subscription">
+            {{#if subscribed}}
+            Unsubscribe
+            {{else}}
+            Subscribe
+            {{/if}}
+        </button>
+    </div>
+</div>
+{{/if}}

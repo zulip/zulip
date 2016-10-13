@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+vergte() {
+    [ "$1" = "`echo -e "$1\n$2" | sort -V | tail -n1`" ]
+}
+
+DEFAULT_USER="postgres"
+if [ "$(uname)" = "OpenBSD" ]; then
+  DEFAULT_USER="_postgresql"
+fi
+
+cd /
+if [ "$EUID" -eq 0 ]; then
+    version=$(sudo -u "$DEFAULT_USER"  sh -c 'psql -A -t -d postgres -c "show server_version"')
+else
+    version=$(psql -A -t -d postgres -c "show server_version")
+fi
+
+major=$(echo $version | cut -d. -f1,2)
+username=$1
+
+shift
+tables=$(echo "'$@'" | sed "s/ /','/g")
+if vergte "$major" "9.2"; then
+    pidname="pid"
+else
+    pidname="procpid"
+fi
+
+if [ "$EUID" -eq 0 ]; then
+    sudo -u "$DEFAULT_USER" sh -c "psql postgres '$DEFAULT_USER'" <<EOF
+SELECT pg_terminate_backend($pidname) FROM pg_stat_activity WHERE datname IN ($tables);
+EOF
+else
+    psql -h localhost postgres "$username" <<EOF
+SELECT pg_terminate_backend($pidname) FROM pg_stat_activity WHERE datname IN ($tables);
+EOF
+fi

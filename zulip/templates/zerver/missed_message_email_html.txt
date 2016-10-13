@@ -1,0 +1,45 @@
+{#
+Mail sent to user when she was not logged in and received a PM or @-mention
+#}
+
+Hello {{ name }},
+
+<p>
+While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{%endif %}!
+</p>
+
+<div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
+{% for recipient_block in messages %}
+    <div class='recipient_block' style="{% if not recipient_block.header.stream_message %}background-color: #feffe0;{% endif %}border: 1px solid black;margin-bottom: 4px;">
+        <div class='recipient_header' style="{% if recipient_block.header.stream_message %}background-color: #9ecaff;{% else %}color: #ffffff;background-color: #444444;{% endif %}border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
+        <div class='message_content' style="{% if not recipient_block.header.stream_message %}background-color: #feffe0;{% endif %}margin-left: 1px;margin-right: 2px;">
+        {% for sender_block in recipient_block.senders %}
+            {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
+            {% for message_block in sender_block.content %}
+                <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
+                    {{ message_block.html|safe }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+
+<p>
+    <a href="{{ realm_uri }}">Click here to log in to Zulip and view your new messages.</a>
+    {% if reply_to_zulip  %}
+    Or just reply to this email.
+    {% endif %}
+</p>
+
+{% if reply_warning %}
+<p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.</p>
+{% endif %}
+
+<p>Cheers,
+<br>
+The Zulip Team</p>
+
+<p><a href="{{ realm_uri }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>

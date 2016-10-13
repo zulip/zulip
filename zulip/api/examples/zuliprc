@@ -1,0 +1,4 @@
+; Save this file as ~/.zuliprc
+[api]
+key=<your bot's api key from the web interface>
+email=<your bot's email address>

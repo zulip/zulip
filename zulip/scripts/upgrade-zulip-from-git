@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import os
+from six.moves import configparser # type: ignore # https://github.com/python/typeshed/issues/307
+import sys
+import subprocess
+import logging
+
+config_file = configparser.RawConfigParser()
+config_file.read("/etc/zulip/zulip.conf")
+LOCAL_GIT_CACHE_DIR = '/srv/zulip.git'
+
+ZULIP_COM = config_file.get('machine', 'deploy_type') in ['zulip.com-prod',
+                                                          'zulip.com-staging']
+try:
+    git_url = config_file.get('deployment', 'git_repo_url')
+except (configparser.NoSectionError, configparser.NoOptionError):
+    git_url = "https://github.com/zulip/zulip.git"
+try:
+    deploy_options = config_file.get('deployment', 'deploy_options').strip().split()
+except (configparser.NoSectionError, configparser.NoOptionError):
+    deploy_options = []
+
+os.environ["PYTHONUNBUFFERED"] = "y"
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
+    get_deployment_lock, release_deployment_lock, su_to_zulip
+
+logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
+                    level=logging.INFO)
+
+if len(sys.argv) != 2:
+    print(FAIL + "Usage: update-deployment refname" + ENDC)
+    sys.exit(1)
+
+refname = sys.argv[1]
+
+subprocess.check_call(["mkdir", '-p',
+                       DEPLOYMENTS_DIR,
+                       '/home/zulip/logs'])
+
+error_rerun_script = "%s/current/tools/update-deployment %s" % (DEPLOYMENTS_DIR, refname)
+get_deployment_lock(error_rerun_script)
+
+try:
+    deploy_path = make_deploy_path()
+    if not os.path.exists(LOCAL_GIT_CACHE_DIR):
+        os.chdir('/srv/')
+        logging.info("Cloning the repository")
+        subprocess.check_call(["git", "clone", "-q", git_url, "--mirror", LOCAL_GIT_CACHE_DIR],
+                              stdout=open('/dev/null', 'w'))
+        subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
+
+    logging.info("Fetching the latest commits")
+    os.chdir(LOCAL_GIT_CACHE_DIR)
+    subprocess.check_call(["git", "fetch", "-q"], preexec_fn=su_to_zulip)
+
+    subprocess.check_call(["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
+                          stdout=open('/dev/null', 'w'),
+                          preexec_fn=su_to_zulip)
+
+    subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "next")])
+    os.chdir(deploy_path)
+
+    if ZULIP_COM:
+        # Install the zulip.com settings (local_settings.py) as prod_settings.py
+        subprocess.check_call(["ln", "-nsf", os.path.join(deploy_path, "zproject/local_settings.py"),
+                               os.path.join(deploy_path, "zproject/prod_settings.py")])
+    else:
+        # Install the prod_settings.py symlink
+        subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
+                               os.path.join(deploy_path, "zproject/prod_settings.py")])
+
+    # Hack to deploy images not included in open source project
+    if os.path.exists("/etc/zulip/zulip-dropbox.png"):
+        subprocess.check_call(["cp", "-a", "/etc/zulip/zulip-dropbox.png",
+                               os.path.join(deploy_path, "static/images/logo")])
+
+    subprocess.check_call(["sudo", os.path.join(deploy_path, "scripts", "lib", "upgrade-zulip-stage-2"),
+                           deploy_path, "--from-git"] + deploy_options)
+finally:
+    release_deployment_lock()

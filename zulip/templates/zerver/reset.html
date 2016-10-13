@@ -1,0 +1,34 @@
+{% extends "zerver/portico_signup.html" %}
+{% block portico_content %}
+
+<div class="pitch">
+    <h3>{{ _('Reset your password') }}.</h3>
+</div>
+
+<form method="post" class="form-horizontal" action="{{ url('django.contrib.auth.views.password_reset') }}">
+{{ csrf_input }}
+    <div class="control-group">
+        <label for="id_email" class="control-label">{{ _('Email') }}</label>
+        <div class="controls">
+            <input id="id_email" class="required" type="text" name="email"
+                   value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                   maxlength="100" />
+            {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" class="btn btn-primary" value="Reset password" /><br />
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+    autofocus('#id_email');
+</script>
+
+{% endblock %}

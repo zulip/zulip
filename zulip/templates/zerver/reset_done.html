@@ -1,0 +1,6 @@
+{% extends "zerver/portico_signup.html" %}
+{% block portico_content %}
+<h1 style="margin-top: 20px">{{ _("We've reset your password!") }}</h1>
+<p>{{ _('Please') }} <a href="{{ url('django.contrib.auth.views.login') }}">{{ _('log in') }}</a>.</p>
+
+{% endblock %}

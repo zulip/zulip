@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import subprocess
+from datetime import datetime, timedelta
+
+import sys
+import dateutil.parser
+import pytz
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+    }
+
+def report(state, msg):
+    print("%s: %s" % (state, msg))
+    exit(states[state])
+
+if subprocess.check_output(['psql', 'postgres', '-t', '-c',
+                            'SELECT pg_is_in_recovery()']).strip() != b'f':
+    report('OK', 'this is not the primary')
+
+try:
+    with open('/var/lib/nagios_state/last_postgres_backup', 'r') as f:
+        last_backup = dateutil.parser.parse(f.read())
+except IOError:
+    report('UNKNOWN', 'could not determine completion time of last Postgres backup')
+
+if datetime.now(tz=pytz.utc) - last_backup > timedelta(hours=25):
+    report('CRITICAL', 'last Postgres backup completed more than 25 hours ago: %s' % (last_backup,))
+
+report('OK', 'last Postgres backup completed less than 25 hours ago: %s' % (last_backup,))

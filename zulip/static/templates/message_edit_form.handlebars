@@ -1,0 +1,36 @@
+{{! Client-side Mustache template for rendering the message edit form. }}
+
+<form id="message_edit_form" class="form-horizontal">
+{{#if is_stream}}
+    <div class="control-group no-margin">
+        <label class="control-label edit-control-label" for="message_edit_topic">{{t "Topic" }}</label>
+        <div class="controls edit-controls">
+          <input type="text" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
+          <select class='message_edit_topic_propagate' style='display:none;'>
+            <option selected="selected" value="change_one"> {{t "Change only this message topic" }}</option>
+            <option value="change_later"> {{t "Change later messages to this topic" }}</option>
+            <option value="change_all"> {{t "Change previous and following messages to this topic" }}</option>
+          </select>
+        </div>
+    </div>
+{{/if}}
+
+    <div class="control-group">
+        <div class="controls edit-controls">
+            <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls edit-controls">
+            <button type="button" class="message_edit_save btn btn-primary btn-small">{{t "Save" }}</button>
+            <button type="button" class="message_edit_cancel btn btn-default btn-small">{{t "Cancel" }}</button>
+            <div class="message-edit-timer-control-group">
+                <span class="message_edit_countdown_timer"></span>
+                <span><i id="message_edit_tooltip" class="message_edit_tooltip icon-vector-question-sign" data-toggle="tooltip"
+                         title="This organization is configured to restrict editing of message content to {{minutes_to_edit}} minutes after it is sent."></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="alert alert-error edit_error hide"></div>
+</form>

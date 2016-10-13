@@ -1,0 +1,100 @@
+{#
+Mail sent to a user who hasn't logged in for 24 hours.
+#}
+
+Hello {{ name }},
+
+<p>A lot has happened on Zulip while you've been away! <a href="{{ realm_uri }}">Visit Zulip</a> to catch up.</p>
+
+{% if unread_pms %}
+<h2>Missed private messages</h2>
+<p>You have some missed private messages. Here are some of them:</p>
+<div id='private-messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
+    {% for recipient_block in unread_pms %}
+        <div class='recipient_block' style="background-color: #feffe0;border: 1px solid black;margin-bottom: 4px;">
+            <div class='recipient_header' style="color: #ffffff;background-color: #444444;border-bottom: 1px solid black;font-weight: bold;padding: 2px;">{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content' style="background-color: #feffe0;margin-left: 1px;margin-right: 2px;">
+            {% for sender_block in recipient_block.senders %}
+                {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
+                {% for message_block in sender_block.content %}
+                    <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
+                        {{ message_block.html|safe }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+{% if remaining_unread_pms_count > 0 %}<p>+ {{ remaining_unread_pms_count }} more new private message{{ remaining_unread_pms_count|pluralize }}</p>{% endif %}
+<p><a href="{{ realm_uri }}/#narrow/is/private">Catch up on the rest of your PMs.</a></p>
+</div>
+{% endif %}
+
+
+{% if hot_conversations %}
+<br />
+<h2>Hot conversations</h2>
+<p>
+Here are some of the hot conversations that have happened while you've been gone:
+</p>
+
+{% for convo in hot_conversations %}
+    <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
+    {% for recipient_block in convo.first_few_messages %}
+        <div class='recipient_block' style="border: 1px solid black;margin-bottom: 4px;">
+            <div class='recipient_header' style="background-color: #9ecaff;border-bottom: 1px solid black;font-weight: bold;padding: 2px">{{ recipient_block.header.html|safe }}</div>
+            <div class='message_content' style="margin-left: 1px;margin-right: 2px;">
+            {% for sender_block in recipient_block.senders %}
+                {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
+                {% for message_block in sender_block.content %}
+                    <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
+                        {{ message_block.html|safe }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            </div>
+        </div>
+        {% if convo.count > 0 %}<p>+ {{ convo.count }} more message{{ convo.count|pluralize }} by {{ convo.participants|display_list(4) }}.</p>{% endif %}
+    {% endfor %}
+    </div>
+{% endfor %}
+<p><a href="{{ realm_uri }}">Catch up on the rest of these conversations.</a></p>
+
+{% endif %}
+
+{% if new_users and new_streams.html %}
+<br />
+<h2>Group updates</h2>
+{% elif new_users %}
+<br />
+<h2>New users</h2>
+{% elif new_streams.html %}
+<br />
+<h2>New streams</h2>
+{% endif %}
+
+{% if new_streams.html %}
+<p>{% if new_stream_count and new_stream_count > 1 %}A new stream was{% else %}Some new streams were{% endif %} created:</p>
+
+<p>{{ new_streams.html|display_list(4)|safe }}.</p>
+
+<p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#subscriptions">Streams page</a> to subscribe.</p>
+{% endif %}
+
+{% if new_users %}
+<p>{% if new_streams.html or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!</p>
+{% endif %}
+
+<br />
+
+<p><a href="{{ realm_uri }}">Click here to log in to Zulip and catch up.</a></p>
+
+<p>Cheers,
+<br>
+The Zulip Team</p>
+
+<p>
+  <a href="{{ realm_uri }}/#settings">Manage email preferences</a> |
+  <a href="{{ unsubscribe_link }}">Unsubscribe from digest emails</a>
+</p>

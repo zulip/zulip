@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+"""
+Nagios plugin to check the length of the FTS update log.
+"""
+from __future__ import print_function
+
+import sys
+sys.path.append('/home/zulip/deployments/current')
+try:
+    import scripts.lib.setup_path_on_import
+except ImportError:
+    pass
+
+import psycopg2
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+    }
+
+def report(state, num):
+    print("%s: %s rows in fts_update_log table" % (state, num))
+    exit(states[state])
+
+conn = psycopg2.connect(database="zulip")
+cursor = conn.cursor()
+
+cursor.execute("SELECT count(*) FROM fts_update_log")
+num = cursor.fetchall()[0][0]
+
+if num > 5:
+    report('CRITICAL', num)
+
+report('OK', num)

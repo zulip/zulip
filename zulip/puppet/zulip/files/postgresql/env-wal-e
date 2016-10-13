@@ -1,0 +1,14 @@
+#!/bin/sh
+if [ -z "$ZULIP_SECRETS_CONF" ]; then
+    ZULIP_SECRETS_CONF=/etc/zulip/zulip-secrets.conf
+fi
+
+export AWS_ACCESS_KEY_ID=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_key)
+export AWS_SECRET_ACCESS_KEY=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_secret_key)
+s3_backups_bucket=$(crudini --get "$ZULIP_SECRETS_CONF" secrets s3_backups_bucket 2>&1)
+if [ $? -ne 0 ]; then
+    echo "Could not determine which s3 bucket to use:" "$s3_backups_bucket"
+    exit 1
+fi
+export WALE_S3_PREFIX=s3://$s3_backups_bucket
+exec /usr/local/bin/wal-e "$@"

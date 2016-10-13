@@ -1,0 +1,219 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# RSS integration for Zulip
+#
+# Copyright © 2014 Zulip, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+from __future__ import print_function
+import calendar
+import errno
+import hashlib
+from six.moves.html_parser import HTMLParser
+import logging
+import optparse
+import os
+import sys
+import time
+from six.moves import urllib
+
+import feedparser
+import zulip
+VERSION = "0.9"
+RSS_DATA_DIR = os.path.expanduser(os.path.join('~', '.cache', 'zulip-rss'))
+OLDNESS_THRESHOLD = 30 # days
+
+usage = """Usage: Send summaries of RSS entries for your favorite feeds to Zulip.
+
+This bot requires the feedparser module.
+
+To use this script:
+
+1. Create an RSS feed file containing 1 feed URL per line (default feed
+   file location: ~/.cache/zulip-rss/rss-feeds)
+2. Subscribe to the stream that will receive RSS updates (default stream: rss)
+3. create a ~/.zuliprc as described on https://zulip.com/api#api_keys
+4. Test the script by running it manually, like this:
+
+/usr/local/share/zulip/integrations/rss/rss-bot
+
+You can customize the location on the feed file and recipient stream, e.g.:
+
+/usr/local/share/zulip/integrations/rss/rss-bot --feed-file=/path/to/my-feeds --stream=my-rss-stream
+
+4. Configure a crontab entry for this script. A sample crontab entry for
+processing feeds stored in the default location and sending to the default
+stream every 5 minutes is:
+
+*/5 * * * * /usr/local/share/zulip/integrations/rss/rss-bot"""
+
+parser = optparse.OptionParser(usage)
+parser.add_option('--stream',
+                  dest='stream',
+                  help='The stream to which to send RSS messages.',
+                  default="rss",
+                  action='store')
+parser.add_option('--data-dir',
+                  dest='data_dir',
+                  help='The directory where feed metadata is stored',
+                  default=os.path.join(RSS_DATA_DIR),
+                  action='store')
+parser.add_option('--feed-file',
+                  dest='feed_file',
+                  help='The file containing a list of RSS feed URLs to follow, one URL per line',
+                  default=os.path.join(RSS_DATA_DIR, "rss-feeds"),
+                  action='store')
+parser.add_option_group(zulip.generate_option_group(parser))
+(opts, args) = parser.parse_args()
+
+def mkdir_p(path):
+    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if e.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+try:
+    mkdir_p(opts.data_dir)
+except OSError:
+    # We can't write to the logfile, so just print and give up.
+    print("Unable to store RSS data at %s." % (opts.data_dir,), file=sys.stderr)
+    exit(1)
+
+log_file = os.path.join(opts.data_dir, "rss-bot.log")
+log_format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=log_format)
+
+formatter = logging.Formatter(log_format)
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+
+def log_error_and_exit(error):
+    logger.error(error)
+    logger.error(usage)
+    exit(1)
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+
+    def handle_data(self, data):
+        self.fed.append(data)
+
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    stripper = MLStripper()
+    stripper.feed(html)
+    return stripper.get_data()
+
+def compute_entry_hash(entry):
+    entry_time = entry.get("published", entry.get("updated"))
+    entry_id = entry.get("id", entry.get("link"))
+    return hashlib.md5(entry_id + str(entry_time)).hexdigest()
+
+def elide_subject(subject):
+    MAX_TOPIC_LENGTH = 60
+    if len(subject) > MAX_TOPIC_LENGTH:
+        subject = subject[:MAX_TOPIC_LENGTH - 3].rstrip() + '...'
+    return subject
+
+def send_zulip(entry, feed_name):
+    content = "**[%s](%s)**\n%s\n%s" % (entry.title,
+                                  entry.link,
+                                  strip_tags(entry.summary),
+                                  entry.link)
+    message = {"type": "stream",
+               "sender": opts.email,
+               "to": opts.stream,
+               "subject": elide_subject(feed_name),
+               "content": content,
+               }
+    return client.send_message(message)
+
+try:
+    with open(opts.feed_file, "r") as f:
+        feed_urls = [feed.strip() for feed in f.readlines()]
+except IOError:
+    log_error_and_exit("Unable to read feed file at %s." % (opts.feed_file,))
+
+client = zulip.Client(email=opts.email, api_key=opts.api_key,
+                       site=opts.site, client="ZulipRSS/" + VERSION)
+
+first_message = True
+
+for feed_url in feed_urls:
+    feed_file = os.path.join(opts.data_dir, urllib.parse.urlparse(feed_url).netloc)
+
+    try:
+        with open(feed_file, "r") as f:
+            old_feed_hashes = dict((line.strip(), True) for line in f.readlines())
+    except IOError:
+        old_feed_hashes = {}
+
+    new_hashes = []
+    data = feedparser.parse(feed_url)
+
+    for entry in data.entries:
+        entry_hash = compute_entry_hash(entry)
+        # An entry has either been published or updated.
+        entry_time  = entry.get("published_parsed", entry.get("updated_parsed"))
+        if entry_time is not None and (time.time() - calendar.timegm(entry_time)) > OLDNESS_THRESHOLD * 60 * 60 * 24:
+            # As a safeguard against misbehaving feeds, don't try to process
+            # entries older than some threshold.
+            continue
+        if entry_hash in old_feed_hashes:
+            # We've already seen this. No need to process any older entries.
+            break
+        if (not old_feed_hashes) and (len(new_hashes) >= 3):
+            # On a first run, pick up the 3 most recent entries. An RSS feed has
+            # entries in reverse chronological order.
+            break
+
+        feed_name = data.feed.title or feed_url
+
+        response = send_zulip(entry, feed_name)
+        if response["result"] != "success":
+            logger.error("Error processing %s" % (feed_url,))
+            logger.error(response)
+            if first_message:
+                # This is probably some fundamental problem like the stream not
+                # existing or something being misconfigured, so bail instead of
+                # getting the same error for every RSS entry.
+                log_error_and_exit("Failed to process first message")
+        # Go ahead and move on -- perhaps this entry is corrupt.
+        new_hashes.append(entry_hash)
+        first_message = False
+
+    with open(feed_file, "a") as f:
+        for hash in new_hashes:
+            f.write(hash + "\n")
+
+    logger.info("Sent zulips for %d %s entries" % (len(new_hashes), feed_url))

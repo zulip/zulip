@@ -1,0 +1,79 @@
+access_log /var/log/nginx/access.log;
+error_log /var/log/nginx/error.log;
+
+# Enable HSTS: tell browsers to always use HTTPS
+add_header Strict-Transport-Security max-age=15768000;
+
+# Serve a custom error page when the app is down
+error_page 502 503 504 /static/html/5xx.html;
+
+# Serve static files directly
+location /static/ {
+    alias /home/zulip/prod-static/;
+    error_page 404 /static/html/404.html;
+}
+
+# Send longpoll requests to Tornado
+location ~ /json/get_events|/json/events {
+    proxy_pass http://tornado;
+    include /etc/nginx/zulip-include/proxy_longpolling;
+
+    proxy_set_header X-Real-IP       $remote_addr;
+}
+
+# Send longpoll requests to Tornado
+location /api/v1/events {
+
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Headers Authorization;
+    add_header Access-Control-Allow-Methods 'GET, POST';
+
+    if ($request_method = 'OPTIONS') {
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Headers Authorization;
+        add_header Access-Control-Allow-Methods 'GET, POST';
+        add_header 'Content-Type' 'text/plain charset=UTF-8';
+        add_header 'Content-Length' 0;
+        return 204;
+    }
+
+    proxy_pass http://tornado;
+    include /etc/nginx/zulip-include/proxy_longpolling;
+
+    proxy_set_header X-Real-IP       $remote_addr;
+}
+
+
+# Send sockjs requests to Tornado
+location /sockjs {
+    proxy_pass http://tornado;
+    include /etc/nginx/zulip-include/location-sockjs;
+}
+
+# Send everything else to Django via FastCGI
+location / {
+    include fastcgi_params;
+    fastcgi_pass django;
+    fastcgi_split_path_info ^()(.*)$;
+    # Second number set to `getconf PAGESIZE`
+    fastcgi_buffers 1024 4k;
+    fastcgi_max_temp_file_size 0;
+    fastcgi_next_upstream off;
+}
+
+location /api/ {
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Headers Authorization;
+    add_header Access-Control-Allow-Methods 'GET, POST';
+
+    include fastcgi_params;
+    fastcgi_pass django;
+    fastcgi_split_path_info ^()(.*)$;
+    # Second number set to `getconf PAGESIZE`
+    fastcgi_buffers 1024 4k;
+    fastcgi_max_temp_file_size 0;
+    fastcgi_next_upstream off;
+
+}
+
+include /etc/nginx/zulip-include/app.d/*.conf;

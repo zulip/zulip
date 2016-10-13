@@ -1,0 +1,63 @@
+<div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
+  class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.local_id}}local{{/if}} selectable_row">
+  <div class="unread_marker"><div class="unread-marker-fill"></div></div>
+  <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
+       style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
+    <div class="messagebox-border">
+      <div class="messagebox-content">
+        <div class="message_top_line">
+          {{#include_sender}}
+          <span class="message_sender{{^status_message}} sender_info_hover{{/status_message}}">
+            {{! See ../js/notifications.js for another user of avatar_url. }}
+            <div class="u-{{msg/sender_id}} inline_profile_picture{{#status_message}} sender_info_hover{{/status_message}}"
+                 style="background-image: url('{{small_avatar_url}}');"/>
+          <span class="{{^status_message}}sender_name{{/status_message}}{{#status_message}}sender-status{{/status_message}}">
+
+            {{#unless status_message}}
+              {{msg/sender_full_name}}
+            {{else}}
+              <span class="sender_name{{#status_message}}-in-status{{/status_message}} sender_info_hover">{{msg/sender_full_name}}</span>
+                  {{{ status_message }}}
+            {{/unless}}
+            {{#if_and last_edit_timestr include_sender}}
+              {{#if status_message}}
+                <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+              {{/if}}
+            {{/if_and}}
+          </span>
+          </span>
+          {{/include_sender}}
+          <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
+          {{#if_and last_edit_timestr include_sender}}
+            {{#unless status_message}}
+                <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+            {{/unless}}
+          {{/if_and}}
+          <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
+            <div class="star">
+              <span class="message_star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty empty-star{{/if}}"
+                    title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}"></span>
+            </div>
+            <div class="info actions_hover">
+              <i class="icon-vector-chevron-down"></i>
+            </div>
+            <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
+              <span class="failed_text">Not delivered </span><i class="icon-vector-refresh refresh-failed-message"></i><i class="icon-vector-pencil edit-failed-message"></i><i class="icon-vector-remove-sign remove-failed-message"></i>
+            </div>
+          </div>
+        </div>
+        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+        {{#if last_edit_timestr}}
+          {{#unless include_sender}}
+            <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+          {{/unless}}
+        {{/if}}
+        <div class="message_edit">
+          <div class="message_edit_form" id="{{msg/id}}"></div>
+        </div>
+        <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
+        <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
+      </div>
+    </div>
+  </div>
+</div>

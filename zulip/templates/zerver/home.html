@@ -1,0 +1,72 @@
+{# Home tab of the app, containing messages. #}
+    <div class="message_area_padder message_list" id="main_div">
+      <div id="loading_more_messages_indicator"></div>
+      <div id="page_loading_indicator"></div>
+      <div id="first_run_message" class="empty_feed_notice">
+        <h4>{{ _('Welcome to') }} {{product_name}}</h4>
+        <p>{% trans %}See, the thing about it is... there aren't any messages
+        here for you right now. I'm sure someone will eventually send
+        you one.{% endtrans %}</p>
+
+        <p>{{ _('Or') }}, <strong>{{ _('take matters into your own hands') }}</strong>,
+        {{ _('and') }} <a href="#" class="empty_feed_compose_stream">
+        {{ _('compose a new stream message') }}</a>.</p>
+      </div>
+      <div id="empty_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("Nothing's been sent here yet!") }}</h4>
+
+        <p>{{ _('Why not') }} <a href="#" class="empty_feed_compose_stream">
+            {{ _('start the conversation') }}</a>?</p>
+      </div>
+      <div id="empty_narrow_all_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no private messages yet!') }}</h4>
+
+        <p>{{ _('Why not') }} <a href="#" class="empty_feed_compose_private">
+            {{ _('start the conversation') }}</a>?</p>
+      </div>
+      <div id="empty_narrow_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no private messages with this person yet!') }}</h4>
+
+        <p>{{ _('Why not') }} <a href="#" class="empty_feed_compose_private">
+            {{ _('start the conversation') }}</a>?</p>
+      </div>
+      <div id="empty_narrow_multi_private_message" class="empty_feed_notice">
+        <h4>{{ _('You have no private messages with these people yet!') }}</h4>
+
+        <p>{{ _('Why not') }} <a href="#" class="empty_feed_compose_private">
+            {{ _('start the conversation') }}</a>?</p>
+      </div>
+      <div id="silent_user" class="empty_feed_notice">
+        <h4>{{ _("You haven't received any messages sent by this user yet!") }}</h4>
+      </div>
+      <div id="non_existing_user" class="empty_feed_notice">
+        <h4>{{ _("This user does not exist!") }}</h4>
+      </div>
+      <div id="nonsubbed_stream_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("You aren't subscribed to this stream and nobody has talked about that yet!") }}</h4>
+        <div class="sub_button_row">
+          <button class="btn empty_feed_sub_unsub btn-default" type="button" name="subscription">
+            Subscribe
+          </button>
+        </div>
+      </div>
+      <div id="empty_star_narrow_message" class="empty_feed_notice">
+        <h4>{{ _("You haven't starred anything yet!") }}</h4>
+      </div>
+      <div id="empty_narrow_all_mentioned" class="empty_feed_notice">
+        <h4>{{ _("You haven't been mentioned yet") }}.</h4>
+      </div>
+      <div id="empty_search_narrow_message" class="empty_feed_notice">
+        <h4>{{ _('Nobody has talked about that yet!') }}</h4>
+      </div>
+      <div class="message_table focused_table" id="zhome">
+      </div>
+      <div class="message_table" id="zfilt">
+      </div>
+      <div id="bottom_whitespace"></div>
+    </div>
+
+
+{% include "zerver/compose.html" %}
+<div id="notifications-area">
+</div>

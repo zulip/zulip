@@ -1,0 +1,30 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="pitch">
+    <hr/>
+{% if confirmed %}
+    <p>You're confirmed. We're not exactly sure what we confirmed you for, but whatever it is you're totally good.</p>
+{% else %}
+
+    <p class="lead">Whoops, something's not right. We couldn't find your confirmation ID!</p>
+
+    {% if verbose_support_offers %}
+    <p>Make sure you copied the link correctly in to your browser. If you're
+    still encountering this page, its probably our fault. We're sorry.</p>
+
+    <p>Anyway, shoot us a line at <a
+    href="mailto:{{ support_email }}">{{ support_email }}</a> and we'll get
+    this resolved shortly.</p>
+    {% else %}
+    <p>Make sure you copied the link correctly in to your browser.</p>
+
+    <p>If you're still having problems, please contact your Zulip administrator at <a
+    href="mailto:{{ support_email }}">{{ support_email }}</a>.</p>
+    {% endif %}
+
+{% endif %}
+</div>
+
+{% endblock %}

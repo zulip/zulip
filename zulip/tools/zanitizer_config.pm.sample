@@ -1,0 +1,19 @@
+use strict;
+use warnings;
+
+sub scrub_text {
+    return if /^\x89PNG/ || /^PK\x03\x04/;
+
+    s/opensesame/xxxxxxxxxx/g;
+    s/hunter2/xxxxxxx/g;
+}
+
+sub keep_file {
+    if (m%^secret-directory/% || m%settings\.ini$%) {
+        undef $_;
+    } else {
+        s/bruce/batman/g;
+    }
+}
+
+1;

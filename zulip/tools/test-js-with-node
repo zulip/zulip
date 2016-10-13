@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")"/..
+
+export NODE_PATH=static
+export PATH=$PATH:node_modules/.bin
+
+INDEX_JS=frontend_tests/zjsunit/index.js
+ret=0
+
+if [ "$1" = "cover" ]; then
+  # Run a coverage test with Istanbul.
+  istanbul cover "$INDEX_JS" --dir var/node-coverage || ret=1;
+
+elif [ "$1" = "-h" -o "$1" = "--help" ]; then
+  echo "Usage:
+`basename $0`                      - to run all tests
+`basename $0` util.js              - to run tests from util.js
+`basename $0` util.js activity.js  - to run tests from util.js and activity.js
+`basename $0` cover                - to run tests and generate code coverage
+"
+  exit 0
+
+else
+  # Normal testing, no coverage analysis.
+  # Run the index.js test runner, which runs all the other tests.
+  node --stack-trace-limit=100 "$INDEX_JS" $@ || ret=1;
+fi
+
+if [ $ret = '0' ]; then
+    echo "Test(s) passed. SUCCESS!"
+else
+    echo "FAIL - Test(s) failed"
+fi
+
+exit $ret

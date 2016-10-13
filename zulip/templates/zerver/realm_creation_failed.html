@@ -1,0 +1,13 @@
+{% extends "zerver/portico.html" %}
+
+{% block for_you %}{{ _('got a bit lost there.') }}{% endblock %}
+
+{% block portico_content %}
+
+<br/>
+<p class="lead">{{ message }}</p>
+
+<p>{{ _('This server does not allow members of the public to create new organizations.') }}</p>
+<p>{% trans %}Zulip is open source, so you can install your own Zulip server by following the instructions on <a href="https://www.zulip.org/">www.zulip.org</a>{% endtrans %}</p>
+
+{% endblock %}

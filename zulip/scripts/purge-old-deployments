@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+import sys
+import os
+import logging
+import datetime
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, TIMESTAMP_FORMAT
+
+logging.basicConfig(format="%(asctime)s purge-deployments: %(message)s",
+                    level=logging.INFO)
+
+deployments_in_use = set()
+for basename in ['current', 'last', 'next']:
+    # Note which symlinks are current
+    path = os.path.abspath(os.readlink(os.path.join(DEPLOYMENTS_DIR, basename)))
+    deployments_in_use.add(path)
+
+one_week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+to_purge = []
+for filename in os.listdir(DEPLOYMENTS_DIR):
+    try:
+        date = datetime.datetime.strptime(filename, TIMESTAMP_FORMAT)
+        if date < one_week_ago:
+            if os.path.abspath(os.path.join(DEPLOYMENTS_DIR, filename)) in deployments_in_use:
+                # Never purge an in-use deployment
+                continue
+            to_purge.append(filename)
+    except ValueError:
+        pass
+
+if to_purge:
+    to_purge.sort()
+    logging.info("Purging the following old deployments directories: %s" % (", ".join(to_purge),))
+    for filename in to_purge:
+        shutil.rmtree(os.path.join(DEPLOYMENTS_DIR, filename))
+        logging.info("Finished %s" % (filename))
+else:
+    logging.info("No old deployment directories to purge")

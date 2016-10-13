@@ -1,0 +1,329 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Zulip mirror of Codebase HQ activity
+# Copyright © 2014 Zulip, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# The "zulip_codebase_mirror" script is run continuously, possibly on a work
+# computer or preferably on a server.
+#
+# When restarted, it will attempt to pick up where it left off.
+#
+# python-dateutil is a dependency for this script.
+
+from __future__ import print_function
+from __future__ import absolute_import
+import requests
+import logging
+import time
+import sys
+import os
+
+from datetime import datetime, timedelta
+import six
+
+
+try:
+    import dateutil.parser
+except ImportError as e:
+    print(e, file=sys.stderr)
+    print("Please install the python-dateutil package.", file=sys.stderr)
+    exit(1)
+
+sys.path.insert(0, os.path.dirname(__file__))
+import zulip_codebase_config as config
+VERSION = "0.9"
+
+if config.ZULIP_API_PATH is not None:
+    sys.path.append(config.ZULIP_API_PATH)
+import zulip
+
+client = zulip.Client(
+    email=config.ZULIP_USER,
+    site=config.ZULIP_SITE,
+    api_key=config.ZULIP_API_KEY,
+    client="ZulipCodebase/" + VERSION)
+user_agent = "Codebase To Zulip Mirroring script (zulip-devel@googlegroups.com)"
+
+# find some form of JSON loader/dumper, with a preference order for speed.
+json_implementations = ['ujson', 'cjson', 'simplejson', 'json']
+
+while len(json_implementations):
+    try:
+        json = __import__(json_implementations.pop(0))
+        break
+    except ImportError:
+        continue
+
+def make_api_call(path):
+    response = requests.get("https://api3.codebasehq.com/%s" % (path,),
+                             auth=(config.CODEBASE_API_USERNAME, config.CODEBASE_API_KEY),
+                             params={'raw': True},
+                             headers = {"User-Agent": user_agent,
+                                        "Content-Type": "application/json",
+                                        "Accept": "application/json"})
+    if response.status_code == 200:
+        return json.loads(response.text)
+
+    if response.status_code >= 500:
+        logging.error(response.status_code)
+        return None
+    if response.status_code == 403:
+        logging.error("Bad authorization from Codebase. Please check your credentials")
+        sys.exit(-1)
+    else:
+        logging.warn("Found non-success response status code: %s %s" % (response.status_code, response.text))
+        return None
+
+def make_url(path):
+    return "%s/%s" % (config.CODEBASE_ROOT_URL, path)
+
+def handle_event(event):
+    event = event['event']
+    event_type = event['type']
+    actor_name = event['actor_name']
+
+    raw_props = event.get('raw_properties', {})
+
+    project_link = raw_props.get('project_permalink')
+
+    subject = None
+    content = None
+    if event_type == 'repository_creation':
+        stream = config.ZULIP_COMMITS_STREAM_NAME
+
+        project_name = raw_props.get('name')
+        project_repo_type = raw_props.get('scm_type')
+
+        url = make_url("projects/%s" % (project_link,))
+        scm = "of type %s" % (project_repo_type,) if project_repo_type else ""
+
+
+        subject = "Repository %s Created" % (project_name,)
+        content = "%s created a new repository %s [%s](%s)" % (actor_name, scm, project_name, url)
+    elif event_type == 'push':
+        stream = config.ZULIP_COMMITS_STREAM_NAME
+
+        num_commits = raw_props.get('commits_count')
+        branch = raw_props.get('ref_name')
+        project = raw_props.get('project_name')
+        repo_link = raw_props.get('repository_permalink')
+        deleted_ref = raw_props.get('deleted_ref')
+        new_ref = raw_props.get('new_ref')
+
+        subject = "Push to %s on %s" % (branch, project)
+
+        if deleted_ref:
+            content = "%s deleted branch %s from %s" % (actor_name, branch, project)
+        else:
+            if new_ref:
+                branch = "new branch %s" % (branch,)
+            content = "%s pushed %s commit(s) to %s in project %s:\n\n" % \
+                        (actor_name, num_commits, branch, project)
+            for commit in raw_props.get('commits'):
+                ref = commit.get('ref')
+                url = make_url("projects/%s/repositories/%s/commit/%s" % (project_link, repo_link, ref))
+                message = commit.get('message')
+                content += "* [%s](%s): %s\n" % (ref, url, message)
+    elif event_type == 'ticketing_ticket':
+        stream = config.ZULIP_TICKETS_STREAM_NAME
+
+        num = raw_props.get('number')
+        name = raw_props.get('subject')
+        assignee = raw_props.get('assignee')
+        priority = raw_props.get('priority')
+        url = make_url("projects/%s/tickets/%s" % (project_link, num))
+
+        if assignee is None:
+            assignee = "no one"
+        subject = "#%s: %s" % (num, name)
+        content = """%s created a new ticket [#%s](%s) priority **%s** assigned to %s:\n\n~~~ quote\n %s""" % \
+                    (actor_name, num, url, priority, assignee, name)
+    elif event_type == 'ticketing_note':
+        stream = config.ZULIP_TICKETS_STREAM_NAME
+
+        num = raw_props.get('number')
+        name = raw_props.get('subject')
+        body = raw_props.get('content')
+        changes = raw_props.get('changes')
+
+
+        url = make_url("projects/%s/tickets/%s" % (project_link, num))
+        subject = "#%s: %s" % (num, name)
+
+        content = ""
+        if body is not None and len(body) > 0:
+            content = "%s added a comment to ticket [#%s](%s):\n\n~~~ quote\n%s\n\n" % (actor_name, num, url, body)
+
+        if 'status_id' in changes:
+            status_change = changes.get('status_id')
+            content += "Status changed from **%s** to **%s**\n\n" % (status_change[0], status_change[1])
+    elif event_type == 'ticketing_milestone':
+        stream = config.ZULIP_TICKETS_STREAM_NAME
+
+        name = raw_props.get('name')
+        identifier = raw_props.get('identifier')
+        url = make_url("projects/%s/milestone/%s" % (project_link, identifier))
+
+        subject = name
+        content = "%s created a new milestone [%s](%s)" % (actor_name, name, url)
+    elif event_type == 'comment':
+        stream = config.ZULIP_COMMITS_STREAM_NAME
+
+        comment = raw_props.get('content')
+        commit = raw_props.get('commit_ref')
+
+        # If there's a commit id, it's a comment to a commit
+        if commit:
+            repo_link = raw_props.get('repository_permalink')
+
+            url = make_url('projects/%s/repositories/%s/commit/%s' % (project_link, repo_link, commit))
+
+            subject = "%s commented on %s" % (actor_name, commit)
+            content = "%s commented on [%s](%s):\n\n~~~ quote\n%s" % (actor_name, commit, url, comment)
+        else:
+            # Otherwise, this is a Discussion item, and handle it
+            subj = raw_props.get("subject")
+            category = raw_props.get("category")
+            comment_content = raw_props.get("content")
+
+            subject = "Discussion: %s" % (subj,)
+
+            if category:
+                format_str = "%s started a new discussion in %s:\n\n~~~ quote\n%s\n~~~"
+                content = format_str % (actor_name, category, comment_content)
+            else:
+                content = "%s posted:\n\n~~~ quote\n%s\n~~~" % (actor_name, comment_content)
+
+    elif event_type == 'deployment':
+        stream = config.ZULIP_COMMITS_STREAM_NAME
+
+        start_ref = raw_props.get('start_ref')
+        end_ref = raw_props.get('end_ref')
+        environment = raw_props.get('environment')
+        servers = raw_props.get('servers')
+        repo_link = raw_props.get('repository_permalink')
+
+        start_ref_url = make_url("projects/%s/repositories/%s/commit/%s" % (project_link, repo_link, start_ref))
+        end_ref_url = make_url("projects/%s/repositories/%s/commit/%s" % (project_link, repo_link, end_ref))
+        between_url = make_url("projects/%s/repositories/%s/compare/%s...%s" % (
+            project_link, repo_link, start_ref, end_ref))
+
+        subject = "Deployment to %s" % (environment,)
+
+        content = "%s deployed [%s](%s) [through](%s) [%s](%s) to the **%s** environment." % \
+                    (actor_name, start_ref, start_ref_url, between_url, end_ref, end_ref_url, environment)
+        if servers is not None:
+            content += "\n\nServers deployed to: %s" % (", ".join(["`%s`" % (server,) for server in servers]))
+
+    elif event_type == 'named_tree':
+        # Docs say named_tree type used for new/deleting branches and tags,
+        # but experimental testing showed that they were all sent as 'push' events
+        pass
+    elif event_type == 'wiki_page':
+        logging.warn("Wiki page notifications not yet implemented")
+    elif event_type == 'sprint_creation':
+        logging.warn("Sprint notifications not yet implemented")
+    elif event_type == 'sprint_ended':
+        logging.warn("Sprint notifications not yet implemented")
+    else:
+        logging.info("Unknown event type %s, ignoring!" % (event_type,))
+
+    if subject and content:
+        if len(subject) > 60:
+            subject = subject[:57].rstrip() + '...'
+
+        res = client.send_message({"type": "stream",
+                                   "to": stream,
+                                   "subject": subject,
+                                   "content": content})
+        if res['result'] == 'success':
+            logging.info("Successfully sent Zulip with id: %s" % (res['id']))
+        else:
+            logging.warn("Failed to send Zulip: %s %s" % (res['result'], res['msg']))
+
+
+# the main run loop for this mirror script
+def run_mirror():
+    # we should have the right (write) permissions on the resume file, as seen
+    # in check_permissions, but it may still be empty or corrupted
+    def default_since():
+        return datetime.utcnow() - timedelta(hours=config.CODEBASE_INITIAL_HISTORY_HOURS)
+
+    try:
+        with open(config.RESUME_FILE) as f:
+            timestamp = f.read()
+        if timestamp == '':
+            since = default_since()
+        else:
+            timestamp = int(timestamp, 10)
+            since = datetime.fromtimestamp(timestamp)
+    except (ValueError, IOError) as e:
+        logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
+        since = default_since()
+
+    try:
+        sleepInterval = 1
+        while True:
+            events = make_api_call("activity")[::-1]
+            if events is not None:
+                sleepInterval = 1
+                for event in events:
+                    timestamp = event.get('event', {}).get('timestamp', '')
+                    event_date = dateutil.parser.parse(timestamp).replace(tzinfo=None)
+                    if event_date > since:
+                        handle_event(event)
+                        since = event_date
+            else:
+                # back off a bit
+                if sleepInterval < 22:
+                    sleepInterval += 4
+            time.sleep(sleepInterval)
+
+    except KeyboardInterrupt:
+        open(config.RESUME_FILE, 'w').write(since.strftime("%s"));
+        logging.info("Shutting down Codebase mirror")
+
+# void function that checks the permissions of the files this script needs.
+def check_permissions():
+    # check that the log file can be written
+    if config.LOG_FILE:
+        try:
+            open(config.LOG_FILE, "w")
+        except IOError as e:
+            sys.stderr("Could not open up log for writing:")
+            sys.stderr(e)
+    # check that the resume file can be written (this creates if it doesn't exist)
+    try:
+        open(config.RESUME_FILE, "a+")
+    except IOError as e:
+        sys.stderr("Could not open up the file %s for reading and writing" % (config.RESUME_FILE,))
+        sys.stderr(e)
+
+if __name__ == "__main__":
+    if not isinstance(config.RESUME_FILE, six.string_types):
+        sys.stderr("RESUME_FILE path not given; refusing to continue")
+    check_permissions()
+    if config.LOG_FILE:
+        logging.basicConfig(filename=config.LOG_FILE, level=logging.WARNING)
+    else:
+        logging.basicConfig(level=logging.WARNING)
+    run_mirror()

@@ -1,0 +1,182 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Zulip mirror of Basecamp activity
+# Copyright © 2014 Zulip, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# The "basecamp-mirror.py" script is run continuously, possibly on a work computer
+# or preferably on a server.
+# You may need to install the python-requests library.
+
+from __future__ import absolute_import
+import requests
+import logging
+import time
+import re
+import sys
+import os
+from datetime import datetime, timedelta
+from six.moves.html_parser import HTMLParser
+import six
+
+sys.path.insert(0, os.path.dirname(__file__))
+import zulip_basecamp_config as config
+VERSION = "0.9"
+
+if config.ZULIP_API_PATH is not None:
+    sys.path.append(config.ZULIP_API_PATH)
+import zulip
+
+
+client = zulip.Client(
+    email=config.ZULIP_USER,
+    site=config.ZULIP_SITE,
+    api_key=config.ZULIP_API_KEY,
+    client="ZulipBasecamp/" + VERSION)
+user_agent = "Basecamp To Zulip Mirroring script (zulip-devel@googlegroups.com)"
+htmlParser = HTMLParser()
+
+# find some form of JSON loader/dumper, with a preference order for speed.
+json_implementations = ['ujson', 'cjson', 'simplejson', 'json']
+
+while len(json_implementations):
+    try:
+        json = __import__(json_implementations.pop(0))
+        break
+    except ImportError:
+        continue
+
+# void function that checks the permissions of the files this script needs.
+def check_permissions():
+    # check that the log file can be written
+    if config.LOG_FILE:
+        try:
+            open(config.LOG_FILE, "w")
+        except IOError as e:
+            sys.stderr("Could not open up log for writing:")
+            sys.stderr(e)
+    # check that the resume file can be written (this creates if it doesn't exist)
+    try:
+        open(config.RESUME_FILE, "a+")
+    except IOError as e:
+        sys.stderr("Could not open up the file %s for reading and writing" % (config.RESUME_FILE,))
+        sys.stderr(e)
+
+# builds the message dict for sending a message with the Zulip API
+def build_message(event):
+    if not ('bucket' in event and 'creator' in event and 'html_url' in event):
+        logging.error("Perhaps the Basecamp API changed behavior? "
+                      "This event doesn't have the expected format:\n%s" %(event,))
+        return None
+    # adjust the topic length to be bounded to 60 characters
+    topic = event['bucket']['name']
+    if len(topic) > 60:
+        topic = topic[0:57] + "..."
+    # get the action and target values
+    action = htmlParser.unescape(re.sub(r"<[^<>]+>", "", event.get('action', '')))
+    target = htmlParser.unescape(event.get('target', ''))
+    # Some events have "excerpts", which we blockquote
+    excerpt = htmlParser.unescape(event.get('excerpt', ''))
+    if excerpt.strip() == "":
+        message = '**%s** %s [%s](%s).' % (event['creator']['name'], action, target, event['html_url'])
+    else:
+        message = '**%s** %s [%s](%s).\n> %s' % (event['creator']['name'], action, target, event['html_url'], excerpt)
+    # assemble the message data dict
+    message_data = {
+        "type": "stream",
+        "to": config.ZULIP_STREAM_NAME,
+        "subject": topic,
+        "content": message,
+    }
+    return message_data
+
+# the main run loop for this mirror script
+def run_mirror():
+    # we should have the right (write) permissions on the resume file, as seen
+    # in check_permissions, but it may still be empty or corrupted
+    try:
+        with open(config.RESUME_FILE) as f:
+            since = f.read()
+        since = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}-\d{2}:\d{2}", since)
+        assert since, "resume file does not meet expected format"
+        since = since.string
+    except (AssertionError, IOError) as e:
+        logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
+        since = (datetime.utcnow() - timedelta(hours=config.BASECAMP_INITIAL_HISTORY_HOURS)).isoformat() + "-00:00"
+    try:
+        # we use an exponential backoff approach when we get 429 (Too Many Requests).
+        sleepInterval = 1
+        while True:
+            time.sleep(sleepInterval)
+            response = requests.get("https://basecamp.com/%s/api/v1/events.json" % (config.BASECAMP_ACCOUNT_ID),
+                                    params={'since': since},
+                                    auth=(config.BASECAMP_USERNAME, config.BASECAMP_PASSWORD),
+                                    headers = {"User-Agent": user_agent})
+            if response.status_code == 200:
+                sleepInterval = 1
+                events = json.loads(response.text)
+                if len(events):
+                    logging.info("Got event(s): %s" % (response.text,))
+            if response.status_code >= 500:
+                logging.error(response.status_code)
+                continue
+            if response.status_code == 429:
+                # exponential backoff
+                sleepInterval *= 2
+                logging.error(response.status_code)
+                continue
+            if response.status_code == 400:
+                logging.error("Something went wrong. Basecamp must be unhappy for this reason: %s" % (response.text,))
+                sys.exit(-1)
+            if response.status_code == 401:
+                logging.error("Bad authorization from Basecamp. Please check your Basecamp login credentials")
+                sys.exit(-1)
+            if len(events):
+                since = events[0]['created_at']
+            for event in reversed(events):
+                message_data = build_message(event)
+                if not message_data:
+                    continue
+                zulip_api_result = client.send_message(message_data)
+                if zulip_api_result['result'] == "success":
+                    logging.info("sent zulip with id: %s" % (zulip_api_result['id'],))
+                else:
+                    logging.warn("%s %s" % (zulip_api_result['result'], zulip_api_result['msg']))
+                # update 'since' each time in case we get KeyboardInterrupted
+                since = event['created_at']
+                # avoid hitting rate-limit
+                time.sleep(0.2)
+
+    except KeyboardInterrupt:
+        logging.info("Shutting down, please hold")
+        open("events.last", 'w').write(since)
+        logging.info("Done!")
+
+
+if __name__ == "__main__":
+    if not isinstance(config.RESUME_FILE, six.string_types):
+        sys.stderr("RESUME_FILE path not given; refusing to continue")
+    check_permissions()
+    if config.LOG_FILE:
+        logging.basicConfig(filename=config.LOG_FILE, level=logging.INFO)
+    else:
+        logging.basicConfig(level=logging.INFO)
+    run_mirror()

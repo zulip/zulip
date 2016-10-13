@@ -1,0 +1,100 @@
+<div class="modal hide" id="markdown-help" tabindex="-1" role="dialog"
+     aria-labelledby="markdown-help-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="markdown-help-label">{% trans %}Message formatting{% endtrans %}</h3>
+  </div>
+  <div class="modal-body">
+    <div id="markdown-instructions">
+      <table class="table table-striped table-condensed table-rounded table-bordered" id="fmt_help_table">
+        <thead><tr>
+          <th>{% trans %}You type{% endtrans %}</th>
+          <th>{% trans %}You get{% endtrans %}</th>
+        </tr></thead>
+
+        <tbody>
+        <tr>
+          <td>**bold**</td>
+          <td><b>bold</b></td>
+        </tr>
+        <tr>
+          <td>[{{product_name}}](https://zulip.com)</td>
+          <td><a href="https://zulip.com" target="_blank">{{product_name}}</a></td>
+        </tr>
+        <tr>
+          <td>* Archimedes<br/>
+            * Bohr<br/>
+            * Curie
+          </td>
+          <td>
+            <ul>
+              <li>Archimedes</li>
+              <li>Bohr</li>
+              <li>Curie</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>:heart: (and <a href="http://www.emoji-cheat-sheet.com/" target="_blank">many others</a>, from the <a href="https://code.google.com/p/noto/" license="/static/third/gemoji/images/emoji/NOTICE" target="_blank">Noto Project</a>)</td>
+          <td><img alt=":heart:" class="emoji" src="/static/third/gemoji/images/emoji/heart.png" title=":heart:" /></td>
+        </tr>
+        <tr>
+          <td>@**Joe Smith**<br/>
+            (autocompletes from @joe)</td>
+          <td><span class="user-mention">@Joe Smith</span> (notifies Joe Smith)</td>
+        </tr>
+        <tr>
+          <td>@**all**</td>
+          <td><span class="user-mention">@all</span> (notifies all recipients)</td>
+        </tr>
+        <tr>
+          <td>Some inline `code`</td>
+          <td>Some inline <code>code</code></td>
+        </tr>
+        <tr>
+          <td class="preserve_spaces">```
+def zulip():
+    print "{{product_name}}"
+```</td>
+          <td><pre>def zulip():
+    print "{{product_name}}"</pre></td>
+        </tr>
+        <tr>
+          <td class="preserve_spaces">``` .py
+def zulip():
+    print "{{product_name}}"
+```</td>
+          <td>
+            <div class="codehilite"><pre><span class="k">def</span> <span class="nf">zulip</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">"{{product_name}}"</span></pre></div>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">{% trans %}You can also make a code block by indenting each line with 4 spaces.{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td>&gt; Quoted</td>
+          <td><blockquote>Quoted</blockquote></td>
+
+        </tr>
+        <tr>
+          <td class="preserve_spaces">``` quote
+Quoted block
+```</td>
+          <td><blockquote><p>Quoted block</p></blockquote></td>
+        </tr>
+        <tr>
+          <td colspan="2">{% trans %}You can also make <a target="_blank"
+          href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">tables</a>
+          with this <a target="_blank"
+          href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">Markdown-ish
+          table syntax</a>{% endtrans %}.</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{ _("Close") }}</button>
+  </div>
+</div>

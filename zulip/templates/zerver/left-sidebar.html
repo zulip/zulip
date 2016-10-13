@@ -1,0 +1,66 @@
+          <div class="left-sidebar" id="left-sidebar">
+              <div class="bottom_sidebar">
+                      <ul id="global_filters" class="filters">
+                          {# Special-case this link so we don't actually go to page top. #}
+                          <li data-name="home"
+                          class="global-filter active-filter"><span class="filter-icon"><i class="icon-vector-home"></i></span><a href="#">{{ _('Home') }} <span class="count"><span class="value"></span></span></a></li>
+                          <li data-name="private" class="global-filter"><span class="filter-icon"><i class="icon-vector-user"></i></span><a href="#narrow/is/private">{{ _('Private messages') }} <span class="count"><span class="value"></span></span></a></li>
+                          <li data-name="starred" class="global-filter"><span class="filter-icon"><i class="icon-vector-star"></i></span><a href="#narrow/is/starred">{{ _('Starred messages') }}</a></li>
+                          <li data-name="mentioned" class="global-filter"><span class="filter-icon"><i class="icon-vector-tag"></i></span><a href="#narrow/is/mentioned">{{ _('@-mentions') }}<span class="count"><span class="value"></span></span></a></li>
+                      </ul>
+                      <div id="streams_list" class="zoom-out">
+                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="Subscribed streams"><a href="">{{ _('STREAMS') }}</a></h4>
+                          <a href=""><i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="Subscribe, add, or configure streams"></i></a>
+                          <a href=""><i id='streams_filter_icon' class='icon-vector-search' data-toggle="tooltip" title="Filter streams list"></i></a>
+                        </div>
+                        <div id="topics_header">
+                          <div class="all-streams-padding">
+                            <ul class="filters">
+                              <li data-name="all-streams">
+                                <i class="icon-vector-chevron-left"></i> <a href="" class="show-all-streams">{{ _('All streams') }}</a>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div id="stream-filters-container" class="scrolling_list">
+                            <input class="stream-list-filter notdisplayed" type="text" placeholder="{{ _('Search streams') }}" />
+                           <ul id="stream_filters" class="filters"></ul>
+                        </div>
+                      </div>
+                      <div id="share-the-love">
+                        <div id="share-the-love-expand-collapse">
+                          <i class="toggle icon-vector-caret-right"></i><div id="sharethelove-header"><h4 class="share-the-love-title">{{ _('SHARE THE LOVE') }}<span class="still-have-invites"> (<span class="invite-count">0</span>)</span></h4></div>
+                        </div>
+                        <div id="share-the-love-contents">
+                          <div id="tell-a-friend-success" class="alert alert-success">
+                            <strong>{{ _('Thanks!') }}</strong> {{ _('A hand-crafted, artisanal invite is on the way') }}.
+                          </div>
+                          <div class="still-have-invites" id="encouraging-invite-message">
+                            <p>
+                              {{ _("Know someone who would love Zulip for their company or group? Invite 'em!") }}
+                            </p>
+                          </div>
+                          <div class="no-more-invites">
+                            <p>
+                              {% trans %}We'll have more invites for you soon, but
+                              for now, enjoy this <a target="_blank"
+                                                     href="http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s">song
+                                that expresses how we feel when you're
+                                logged out</a>.{% endtrans %}
+                            </p>
+                          </div>
+                          <div class="still-have-invites">
+                            {#  Many of these values are set by the initialization code in referral.js  #}
+                            <form id="referral-form">
+                              <input class="input-block-level required" type="email" name="email" />
+                              <label for="email" generated="true" class="text-error"></label>
+                            </form>
+                          </div>
+                          <div class="invite-count-area">
+                            <span id="invite-hearts"></span>
+                            <small class="pull-right"><span class="invite-count">0</span> {{ _('invite') }}<span class="invite-count-is-plural">s</span> {{ _('remaining') }}</small>
+                          </div>
+                        </div>
+                      </div>
+              </div>
+          </div>

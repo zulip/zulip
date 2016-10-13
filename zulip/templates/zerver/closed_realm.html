@@ -1,0 +1,10 @@
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+
+<h3>{{ _('Closed realm') }}</h3>
+
+<p>{{ _('Hi there! Thank you for your interest in Zulip') }}.</p>
+
+<p>{% trans %}The organization you are trying to join, {{ closed_domain_name }}, only allows users with e-mail addresses within the organization. Please ask for a new invite to an appropriate e-mail address{% endtrans %}.</p>
+
+{% endblock %}

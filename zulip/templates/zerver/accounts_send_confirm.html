@@ -1,0 +1,32 @@
+{% extends "zerver/portico_signup.html" %}
+{# Displayed after a user attempts to sign up. #}
+
+{% block portico_content %}
+<div class="app portico-page">
+  <div class="app-main portico-page-container">
+            <h2>{{ _("Thanks for signing up!") }}</h2>
+            <p class="lead">{{ _("Check your email so we can get started") }}.</p>
+            {% if development_environment %}
+                <div class="alert alert-info" style="display:inline-block;">{{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}</div>
+            {% endif %}
+
+            <p>{% trans %}Still no email? We can <a href="#" id="resend_email_link">resend it</a>{% endtrans %}.<br/>
+            <small>({{ _("Just in case, take a look at your Spam folder") }}.)</small></p>
+            <form id="resend_confirm" action="/accounts/home/" method="post" style="position: absolute;">
+                {{ csrf_input }}
+                <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;
+            </form>
+</div>
+</div>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<script type="text/javascript">
+$(function() {
+    $("#resend_email_link").click(function () {
+        $('#resend_confirm').submit();
+    });
+});
+</script>
+{% endblock %}
