@@ -2,7 +2,6 @@ from django.db import models
 from django.test import TestCase
 from django.utils import timezone
 
-from analytics.lib.interval import TimeInterval
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
@@ -26,7 +25,7 @@ class AnalyticsTestCase(TestCase):
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
     count_stat = CountStat('test stat', ZerverCountQuery(Recipient, UserCount, 'select 0'),
-                           {}, 'hour', 'hour')
+                           {}, CountStat.HOUR, False)
 
     def setUp(self):
         # type: () -> None
@@ -72,7 +71,7 @@ class AnalyticsTestCase(TestCase):
 
     # Note that this doesn't work for InstallationCount, since InstallationCount has no realm_id
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(self, table, property, value, end_time = TIME_ZERO, interval = 'hour',
+    def assertCountEquals(self, table, property, value, end_time = TIME_ZERO, interval = CountStat.HOUR,
                           realm = None, **kwargs):
         # type: (Type[BaseCount], text_type, int, datetime, str, Optional[Realm], **models.Model) -> None
         if realm is None:
@@ -91,7 +90,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
         # might change if we refactor count_query
 
         stat = CountStat('test_stat_write', zerver_count_stream_by_realm,
-                         {'invite_only': False}, 'hour', 'hour')
+                         {'invite_only': False}, CountStat.HOUR, False)
 
         # add some stuff to zerver_*
         self.create_stream(name='stream1')
@@ -106,7 +105,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
 
     def test_update_analytics_tables(self):
         # type: () -> None
-        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')
+        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, CountStat.HOUR, False)
 
         user1 = self.create_user('email1')
         user2 = self.create_user('email2')
@@ -115,7 +114,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
 
         # run command
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        usercount_row = UserCount.objects.filter(realm=self.default_realm, interval='hour',
+        usercount_row = UserCount.objects.filter(realm=self.default_realm, interval=CountStat.HOUR,
                                                  property='test_messages_sent').values_list(
             'value', flat=True)[0]
         assert (usercount_row == 1)
@@ -143,32 +142,32 @@ class TestProcessCountStat(AnalyticsTestCase):
         process_count_stat(self.count_stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property = self.count_stat.property,
-                                                          interval = 'hour').count(), 1)
+                                                          interval = CountStat.HOUR).count(), 1)
 
         # dirty stat
         FillState.objects.filter(property=self.count_stat.property).update(state=FillState.STARTED)
         process_count_stat(self.count_stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property = self.count_stat.property,
-                                                          interval = 'hour').count(), 1)
+                                                          interval = CountStat.HOUR).count(), 1)
 
         # clean stat, no update
         process_count_stat(self.count_stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property = self.count_stat.property,
-                                                          interval = 'hour').count(), 1)
+                                                          interval = CountStat.HOUR).count(), 1)
 
         # clean stat, with update
         current_time = current_time + self.HOUR
         process_count_stat(self.count_stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property = self.count_stat.property,
-                                                          interval = 'hour').count(), 2)
+                                                          interval = CountStat.HOUR).count(), 2)
 
     # test users added in last hour
     def test_add_new_users(self):
         # type: () -> None
-        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, 'hour', 'hour')
+        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, CountStat.HOUR, False)
 
         # add new users to realm in last hour
         self.create_user('email1')
@@ -183,38 +182,10 @@ class TestProcessCountStat(AnalyticsTestCase):
 
         self.assertCountEquals(RealmCount, 'add_new_user_test', 2)
 
-    def test_do_aggregate(self):
-        # type: () -> None
-
-        # write some entries to analytics.usercount with smallest interval as day
-        stat = CountStat('test_messages_aggregate', zerver_count_message_by_user, {}, 'day', 'hour')
-
-        # write some messages
-        user1 = self.create_user('email1')
-        user2 = self.create_user('email2')
-        recipient = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
-
-        self.create_message(user1, recipient)
-        self.create_message(user1, recipient)
-        self.create_message(user1, recipient)
-
-        # run command
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-
-        # check no rows for hour interval on usercount granularity
-        self.assertFalse(UserCount.objects.filter(realm=self.default_realm, interval='hour').exists())
-
-        # see if aggregated correctly to realmcount and installationcount
-        self.assertCountEquals(RealmCount, 'test_messages_aggregate', 3, interval = 'day')
-
-        self.assertEquals(InstallationCount.objects.filter(interval='day',
-                                                           property='test_messages_aggregate') \
-                          .values_list('value', flat=True)[0], 3)
-
     def test_count_before_realm_creation(self):
         # type: () -> None
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
+                         {'is_bot': False, 'is_active': True}, CountStat.HOUR, False)
 
         realm = Realm.objects.create(domain='domain', name='name', date_created=self.TIME_ZERO)
         self.create_user('email', realm=realm)
@@ -227,7 +198,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         # type: () -> None
         # test that rows with empty counts are returned if realm exists
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
+                         {'is_bot': False, 'is_active': True}, CountStat.HOUR, False)
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
         self.assertCountEquals(RealmCount, 'test_active_humans', 0)
 
@@ -245,7 +216,7 @@ class TestAggregates(AnalyticsTestCase):
 class TestXByYQueries(AnalyticsTestCase):
     def test_message_to_stream_aggregation(self):
         # type: () -> None
-        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, 'hour', 'hour')
+        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, CountStat.HOUR, False)
 
         # write some messages
         user = self.create_user('email')
@@ -266,9 +237,9 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stats = [
             CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
-                      'hour', 'hour'),
+                      CountStat.HOUR, False),
             CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
-                      'hour', 'hour')]
+                      CountStat.HOUR, False)]
 
         # TODO these dates should probably be explicit, since the default args for the commands are timezone.now() dependent.
         self.create_user('email1-bot', is_bot=True)

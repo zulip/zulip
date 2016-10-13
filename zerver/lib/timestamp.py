@@ -8,6 +8,17 @@ def is_timezone_aware(datetime_object):
     # type: (datetime.datetime) -> bool
     return datetime_object.tzinfo is not None
 
+def datetime_to_UTC(datetime_object):
+    # type: (datetime.datetime) -> datetime.datetime
+    if is_timezone_aware(datetime_object):
+        return datetime_object.astimezone(utc)
+    return datetime_object.replace(tzinfo=utc)
+
+def floor_to_day(datetime_object):
+    # type: (datetime.datetime) -> datetime.datetime
+    return datetime.datetime(*datetime_object.timetuple()[:3]) \
+                   .replace(tzinfo=datetime_object.tzinfo)
+
 def timestamp_to_datetime(timestamp):
     # type: (float) -> datetime.datetime
     return datetime.datetime.utcfromtimestamp(float(timestamp)).replace(tzinfo=utc)
