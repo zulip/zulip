@@ -261,4 +261,5 @@ COUNT_STATS = {
                                {'is_bot': False, 'is_active': True}, 'gauge', 'day'),
     'active_bots': CountStat('active_bots', zerver_count_user_by_realm,
                              {'is_bot': True, 'is_active': True}, 'gauge', 'day'),
-    'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')}
+    'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour'),
+    'public_streams': CountStat('public_streams', zerver_count_stream_by_realm, {'invite_only': False}, 'hour', 'hour')}
