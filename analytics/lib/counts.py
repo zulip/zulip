@@ -60,11 +60,6 @@ def do_fill_count_stat_at_hour(stat, end_time):
     for time_interval in timeinterval_range(end_time, end_time, stat.smallest_interval, stat.frequency):
         do_pull_from_zerver(stat, time_interval)
 
-    # aggregate hour to day
-    for time_interval in timeinterval_range(end_time, end_time, 'day', stat.frequency):
-        if stat.smallest_interval == 'hour':
-            do_aggregate_hour_to_day(stat, time_interval)
-
     # aggregate to summary tables
     for interval in ['hour', 'day', 'gauge']:
         for time_interval in timeinterval_range(end_time, end_time, interval, stat.frequency):
@@ -123,33 +118,6 @@ def do_aggregate_to_summary_table(stat, time_interval):
            'interval': time_interval.interval}
 
     cursor.execute(installationcount_query, {'end_time': time_interval.end})
-    cursor.close()
-
-def do_aggregate_hour_to_day(stat, time_interval):
-    # type: (CountStat, TimeInterval) -> None
-    table = stat.zerver_count_query.analytics_table
-    id_cols = ''.join([col + ', ' for col in table.extended_id()])
-    group_by = 'GROUP BY %s' % id_cols if id_cols else ''
-
-    query = """
-        INSERT INTO %(table)s (%(id_cols)s value, property, end_time, interval)
-        SELECT %(id_cols)s sum(value), '%(property)s', %%(end_time)s, 'day'
-        FROM %(table)s WHERE
-        (
-            property = '%(property)s' AND
-            end_time > %%(time_start)s AND
-            end_time <= %%(time_end)s AND
-            interval = 'hour'
-        )
-        %(group_by)s property
-    """ % {'table': table._meta.db_table,
-           'id_cols' : id_cols,
-           'group_by' : group_by,
-           'property': stat.property}
-    cursor = connection.cursor()
-    cursor.execute(query, {'end_time': time_interval.end,
-                           'time_start': time_interval.end - timedelta(days=1),
-                           'time_end': time_interval.end})
     cursor.close()
 
 ## methods that hit the prod databases directly
