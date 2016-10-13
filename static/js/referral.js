@@ -34,12 +34,9 @@ exports.update_state = function (granted, used) {
         for (i = 0; i < invites_left; i++) {
             $("#invite-hearts").append($('<i class="icon-vector-heart-empty"> </i>'));
         }
-        $(".invite-count").text(invites_left);
-        if (invites_left === 1) {
-            $(".invite-count-is-plural").hide();
-        } else {
-            $(".invite-count-is-plural").show();
-        }
+
+        var invites_left_text = i18n.t('__count__ invite remaining', {count: invites_left});
+        $(".invite-count").text(invites_left_text);
 
         if (invites_left > 0) {
             ever_had_invites = true;
