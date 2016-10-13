@@ -14,6 +14,7 @@ from zerver.lib.test_helpers import (
     most_recent_message, make_client
 )
 from zerver.lib.test_runner import slow
+from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
@@ -327,6 +328,31 @@ class PermissionTest(ZulipTestCase):
         self.login('othello@zulip.com')
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
+
+    def test_admin_user_can_change_full_name(self):
+        # type: () -> None
+        new_name = 'new name'
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assertTrue(result.status_code == 200)
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(hamlet.full_name, new_name)
+
+    def test_non_admin_cannot_change_full_name(self):
+        # type: () -> None
+        self.login('hamlet@zulip.com')
+        req = dict(full_name=ujson.dumps('new name'))
+        result = self.client_patch('/json/users/othello@zulip.com', req)
+        self.assert_json_error(result, 'Insufficient permission')
+
+    def test_admin_cannot_set_long_full_name(self):
+        # type: () -> None
+        new_name = 'a' * (UserProfile.MAX_NAME_LENGTH + 1)
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Name too long!')
 
 class ZephyrTest(ZulipTestCase):
     def test_webathena_kerberos_login(self):
@@ -2136,3 +2162,9 @@ class TestOpenRealms(ZulipTestCase):
             self.assertEquals(get_unique_open_realm(), mit_realm)
         mit_realm.restricted_to_domain = True
         mit_realm.save()
+
+class TestLoginPage(ZulipTestCase):
+    def test_login_page_with_subdomains(self):
+        # type: () -> None
+        result = self.client_get("/login/?subdomain=1")
+        self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))

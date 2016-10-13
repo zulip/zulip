@@ -22,7 +22,7 @@ from social.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social.exceptions import AuthFailed
 from django.contrib.auth import authenticate
-from zerver.lib.utils import check_subdomain
+from zerver.lib.utils import check_subdomain, get_subdomain
 
 def password_auth_enabled(realm):
     # type: (Realm) -> bool
@@ -127,12 +127,13 @@ class SocialAuthMixin(ZulipAuthMixin):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
         # This function needs to be imported from here due to the cyclic
         # dependency.
-        from zerver.views import login_or_register_remote_user
+        from zerver.views.auth import login_or_register_remote_user
 
         return_data = kwargs.get('return_data', {})
 
         inactive_user = return_data.get('inactive_user')
         inactive_realm = return_data.get('inactive_realm')
+        invalid_subdomain = return_data.get('invalid_subdomain')
 
         if inactive_user or inactive_realm:
             return None
@@ -142,7 +143,8 @@ class SocialAuthMixin(ZulipAuthMixin):
         full_name = self.get_full_name(*args, **kwargs)
 
         return login_or_register_remote_user(request, email_address,
-                                             user_profile, full_name)
+                                             user_profile, full_name,
+                                             bool(invalid_subdomain))
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
@@ -347,6 +349,10 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[UserProfile]
         kwargs['return_data'] = {}
+
+        request = self.strategy.request  # type: ignore # This comes from Python Social Auth.
+        kwargs['realm_subdomain'] = get_subdomain(request)
+
         user_profile = None
 
         team_id = settings.SOCIAL_AUTH_GITHUB_TEAM_ID

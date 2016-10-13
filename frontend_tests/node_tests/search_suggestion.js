@@ -16,9 +16,6 @@ add_dependencies({
 
 var search = require('js/search_suggestion.js');
 
-set_global('feature_flags', {
-    negated_search: true
-});
 set_global('page_params', {
     email: 'bob@zulip.com'
 });

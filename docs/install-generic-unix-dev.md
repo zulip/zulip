@@ -281,7 +281,6 @@ pip install --no-deps -r requirements/py3_dev.txt # install python packages requ
 Now run these commands:
 
 ```
-./tools/setup/install-phantomjs
 ./tools/install-mypy
 ./tools/setup/download-zxcvbn
 ./tools/setup/emoji_dump/build_emoji

@@ -5,6 +5,9 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.decorator import authenticated_api_view, REQ, has_request_variables, to_non_negative_int, flexible_boolean
 from zerver.views.messages import send_message_backend
+from zerver.lib.webhooks.git import get_push_commits_event_message,\
+    SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message, \
+    get_remove_branch_event_message
 import logging
 import re
 import ujson
@@ -221,45 +224,29 @@ def api_github_landing(request, user_profile, event=REQ(),
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
-def build_commit_list_content(commits, branch, compare_url, pusher):
-    # type: (Sequence[Mapping[text_type, Any]], text_type, Optional[text_type], text_type) -> text_type
-    if compare_url is not None:
-        push_text = u'[pushed](%s)' % (compare_url,)
-    else:
-        push_text = u'pushed'
-    content = (u'%s %s to branch %s\n\n'
-               % (pusher,
-                  push_text,
-                  branch))
-    num_commits = len(commits)
-    truncated_commits = commits[:COMMITS_IN_LIST_LIMIT]
-    for commit in truncated_commits:
-        short_id = commit['id'][:7]
-        (short_commit_msg, _, _) = commit['message'].partition('\n')
-        content += u'* [%s](%s): %s\n' % (short_id, commit['url'],
-                                         short_commit_msg)
-    if num_commits > COMMITS_IN_LIST_LIMIT:
-        content += (u'\n[and %d more commits]'
-                    % (num_commits - COMMITS_IN_LIST_LIMIT,))
-
-    return content
-
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
-    # type: (UserProfile, text_type, text_type, Sequence[Mapping[text_type, Any]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
+    # type: (UserProfile, text_type, text_type, List[Dict[str, str]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
     short_ref = re.sub(r'^refs/heads/', '', ref)
-    subject = name
+    subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 
     if re.match(r'^0+$', after):
-        content = u'%s deleted branch %s' % (pusher,
-                                            short_ref)
+        content = get_remove_branch_event_message(pusher, short_ref)
     # 'created' and 'forced' are github flags; the second check is for beanstalk
     elif (forced and not created) or (forced is None and len(commits) == 0):
-        content = (u'%s [force pushed](%s) to branch %s.  Head is now %s'
-                   % (pusher,
-                      url,
-                      short_ref,
-                      after[:7]))
+        content = get_force_push_commits_event_message(pusher, url, short_ref, after[:7])
     else:
-        content = build_commit_list_content(commits, short_ref, url, pusher)
+        commits = _transform_commits_list_to_common_format(commits)
+        content = get_push_commits_event_message(pusher, url, short_ref, commits)
 
     return subject, content
+
+def _transform_commits_list_to_common_format(commits):
+    # type: (List[Dict[str, str]]) -> List[Dict[str, str]]
+    new_commits_list = []
+    for commit in commits:
+        new_commits_list.append({
+            'sha': commit.get('id'),
+            'url': commit.get('url'),
+            'message': commit.get('message'),
+        })
+    return new_commits_list

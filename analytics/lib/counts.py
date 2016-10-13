@@ -40,49 +40,58 @@ def process_count_stat(stat, range_start, range_end):
     # aggregate to summary tables
     for interval in ['hour', 'day', 'gauge']:
         for time_interval in timeinterval_range(range_start, range_end, interval, stat.frequency):
-            analytics_table = stat.zerver_count_query.analytics_table
             if stat.smallest_interval in subintervals(interval):
-                if analytics_table in (UserCount, StreamCount):
-                    do_aggregate_to_summary_table(stat, time_interval, analytics_table, RealmCount)
-                do_aggregate_to_summary_table(stat, time_interval, RealmCount, InstallationCount)
+                do_aggregate_to_summary_table(stat, time_interval)
 
+def do_aggregate_to_summary_table(stat, time_interval):
+    # type: (CountStat, TimeInterval) -> None
+    if InstallationCount.objects.filter(property = stat.property,
+                                        end_time = time_interval.end,
+                                        interval = time_interval.interval).exists():
+        return
+    cursor = connection.cursor()
 
-# There are only two summary tables at the moment: RealmCount and InstallationCount.
-# Will have to generalize this a bit if more are added
-def do_aggregate_to_summary_table(stat, time_interval, from_table, to_table):
-    # type: (CountStat, TimeInterval, Type[BaseCount], Type[BaseCount]) -> None
-    if to_table == RealmCount:
-        id_cols = 'realm_id,'
-        group_by = 'GROUP BY realm_id'
-    elif to_table == InstallationCount:
-        id_cols = ''
-        group_by = ''
-    else:
-        raise ValueError("%s is not a summary table" % (to_table,))
+    # Aggregate into RealmCount
+    analytics_table = stat.zerver_count_query.analytics_table
+    if analytics_table in (UserCount, StreamCount):
+        realmcount_query = """
+            INSERT INTO analytics_realmcount
+                (realm_id, value, property, end_time, interval)
+            SELECT
+                zerver_realm.id, COALESCE(sum(%(analytics_table)s.value), 0), '%(property)s', %%(end_time)s, '%(interval)s'
+            FROM zerver_realm
+            LEFT JOIN %(analytics_table)s
+            ON
+            (
+                %(analytics_table)s.realm_id = zerver_realm.id AND
+                %(analytics_table)s.property = '%(property)s' AND
+                %(analytics_table)s.end_time = %%(end_time)s AND
+                %(analytics_table)s.interval = '%(interval)s'
+            )
+            GROUP BY zerver_realm.id
+        """ % {'analytics_table' : analytics_table._meta.db_table,
+               'property' : stat.property,
+               'interval' : time_interval.interval}
 
-    if to_table.objects.filter(property = stat.property,
-                               end_time = time_interval.end,
-                               interval = time_interval.interval).exists():
-       return
+        cursor.execute(realmcount_query, {'end_time': time_interval.end})
 
-    query = """
-        INSERT INTO %(to_table)s (%(id_cols)s value, property, end_time, interval)
-        SELECT %(id_cols)s COALESCE (sum(value), 0), '%(property)s', %%(end_time)s, '%(interval)s'
-        FROM %(from_table)s WHERE
+    # Aggregate into InstallationCount
+    installationcount_query = """
+        INSERT INTO analytics_installationcount
+            (value, property, end_time, interval)
+        SELECT
+            COALESCE(sum(value), 0), '%(property)s', %%(end_time)s, '%(interval)s'
+        FROM analytics_realmcount
+        WHERE
         (
             property = '%(property)s' AND
             end_time = %%(end_time)s AND
             interval = '%(interval)s'
         )
-        %(group_by)s
-    """ % {'to_table': to_table._meta.db_table,
-           'id_cols' : id_cols,
-           'from_table' : from_table._meta.db_table,
-           'property' : stat.property,
-           'interval' : time_interval.interval,
-           'group_by' : group_by}
-    cursor = connection.cursor()
-    cursor.execute(query, {'end_time': time_interval.end})
+    """ % {'property': stat.property,
+           'interval': time_interval.interval}
+
+    cursor.execute(installationcount_query, {'end_time': time_interval.end})
     cursor.close()
 
 def do_aggregate_hour_to_day(stat, time_interval):

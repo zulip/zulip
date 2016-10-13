@@ -61,6 +61,8 @@ regexes = ['{{#tr .*?}}(.*?){{/tr}}',
            ]
 
 frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
+multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
+singleline_js_comment = re.compile("//.*?\n")
 
 def strip_whitespaces(src):
     # type: (text_type) -> text_type
@@ -125,6 +127,9 @@ class Command(makemessages.Command):
         trans_real.templatize = my_templatize
 
         try:
+            ignore_patterns = options.get('ignore_patterns', [])
+            ignore_patterns.append('docs/*')
+            options['ignore_patterns'] = ignore_patterns
             super(Command, self).handle(*args, **options)
         finally:
             trans_real.endblock_re = old_endblock_re
@@ -134,12 +139,22 @@ class Command(makemessages.Command):
 
     def extract_strings(self, data):
         # type: (str) -> Dict[str, str]
+        data = self.ignore_javascript_comments(data)
         translation_strings = {} # type: Dict[str, str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 translation_strings[match] = ""
 
         return translation_strings
+
+    def ignore_javascript_comments(self, data):
+        # type: (str) -> str
+
+        # Removes multi line comments.
+        data = re.sub(multiline_js_comment, "", data)
+        # Removes single line (//) comments.
+        data = re.sub(singleline_js_comment, "", data)
+        return data
 
     def get_translation_strings(self):
         # type: () -> Dict[str, str]

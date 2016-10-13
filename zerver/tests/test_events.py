@@ -58,7 +58,7 @@ from zerver.lib.validator import (
     equals, check_none_or, Validator
 )
 
-from zerver.views import _default_all_public_streams, _default_narrow
+from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
 from zerver.tornadoviews import get_events_backend
 

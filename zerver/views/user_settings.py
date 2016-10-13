@@ -23,11 +23,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
-from zerver.models import UserProfile, Realm
-
-def name_changes_disabled(realm):
-    # type: (Realm) -> bool
-    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
+from zerver.models import UserProfile, Realm, name_changes_disabled
 
 @authenticated_json_post_view
 @has_request_variables

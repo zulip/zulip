@@ -4,6 +4,7 @@ var exports = {};
 
 exports.emojis = [];
 exports.emojis_by_name = {};
+exports.emojis_name_to_css_class = {};
 exports.emojis_by_unicode = {};
 
 var default_emojis = [];
@@ -30,13 +31,25 @@ exports.update_emojis = function update_emojis(realm_emojis) {
         exports.emojis.push({emoji_name:name, emoji_url: data.display_url});
     });
     exports.emojis_by_name = {};
+    exports.emojis_name_to_css_class = {};
     _.each(exports.emojis, function (emoji) {
         exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
+        exports.emojis_name_to_css_class[emoji.emoji_name] = emoji.emoji_name;
+        if (emoji.emoji_name.indexOf("+") >= 0) {
+            exports.emojis_name_to_css_class[emoji.emoji_name] = emoji.emoji_name.replace("+", "");
+        }
     });
     exports.emojis_by_unicode = {};
     _.each(default_unicode_emojis, function (emoji) {
         exports.emojis_by_unicode[emoji.emoji_name] = emoji.emoji_url;
     });
+};
+
+exports.initialize = function initialize () {
+    // Load the sprite image in the background so that the browser
+    // can cache it for later use.
+    var sprite = new Image();
+    sprite.src = '/static/third/gemoji/sprite.png';
 };
 
 exports.update_emojis(page_params.realm_emoji);

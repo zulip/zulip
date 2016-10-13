@@ -365,13 +365,6 @@ function get_predicate(operators) {
     ];
     _test();
 
-    string = '-stream:exclude';
-    operators = [
-        {operator: '-stream', operand: 'exclude'}
-    ];
-    _test();
-
-    global.feature_flags.negated_search = true;
     string = 'stream:foo -stream:exclude';
     operators = [
         {operator: 'stream', operand: 'foo'},
@@ -384,7 +377,6 @@ function get_predicate(operators) {
     var string;
     var operators;
 
-    global.feature_flags.negated_search = true;
     operators = [
         {operator: 'stream', operand: 'Foo'},
         {operator: 'topic', operand: 'Bar', negated: true},

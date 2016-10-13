@@ -225,11 +225,9 @@ Filter.parse = function (str) {
             // Looks like an operator.
             negated = false;
             operator = parts.shift();
-            if (feature_flags.negated_search) {
-                if (operator[0] === '-') {
-                    negated = true;
-                    operator = operator.slice(1);
-                }
+            if (operator[0] === '-') {
+                negated = true;
+                operator = operator.slice(1);
             }
 
             operand = decodeOperand(parts.join(':'), operator);
@@ -424,6 +422,10 @@ Filter.operator_to_prefix = function (operator, negated) {
 
     case 'in':
         return verb + 'messages in';
+
+    // Note: We hack around using this in "describe" below.
+    case 'is':
+        return verb + 'messages that are';
     }
     return '';
 };

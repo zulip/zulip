@@ -12,6 +12,19 @@ exports.show_or_hide_menu_item = function () {
     }
 };
 
+exports.update_user_full_name = function (email, new_full_name) {
+    var user_row = $("tr[id='user_" + email + "']");
+    var user_name = user_row.find(".user_name");
+    var form_row = $("tr[id='user_form_" + email + "']");
+
+    // Update the full name in the table
+    user_name.text(new_full_name);
+
+    // Hide name change form
+    form_row.hide();
+    user_row.show();
+};
+
 function failed_listing_users(xhr, error) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     ui.report_error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
@@ -23,6 +36,10 @@ function failed_listing_streams(xhr, error) {
 
 function failed_listing_emoji(xhr, error) {
     ui.report_error(i18n.t("Error listing emoji"), xhr, $("#administration-status"));
+}
+
+function failed_changing_name(xhr, error) {
+    ui.report_error(i18n.t("Error changing name"), xhr, $("#administration-status"));
 }
 
 function populate_users (realm_people_data) {
@@ -546,6 +563,44 @@ function _setup_page() {
                 var status = row.find(".admin-user-status");
                 ui.report_error(i18n.t("Failed!"), xhr, status);
             }
+        });
+    });
+
+    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+        var email = $(e.currentTarget).data("email");
+        var user_row = $("tr[id='user_" + email + "']");
+        var form_row = $("tr[id='user_form_" + email + "'");
+        var reset_button = form_row.find(".reset_edit_user");
+        var submit_button = form_row.find(".submit_name_changes");
+        var full_name = form_row.find("input[name='full_name']");
+        var admin_status = $('#administration-status').expectOne();
+
+        // Show user form.
+        user_row.hide();
+        form_row.show();
+
+        reset_button.on("click", function (e) {
+            form_row.hide();
+            user_row.show();
+        });
+
+        submit_button.on("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            var url = "/json/users/" + email;
+            var data = {
+                full_name: JSON.stringify(full_name.val())
+            };
+
+            channel.patch({
+                url: url,
+                data: data,
+                success: function () {
+                    ui.report_success(i18n.t('Name successfully updated!'), admin_status);
+                },
+                error: failed_changing_name
+            });
         });
     });
 

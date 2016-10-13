@@ -21,7 +21,7 @@ casper.waitForText("And reply to this message", function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
-        casper.test.assertVisible('#stream', 'Stream input box visible');
+        casper.test.assertVisible('#stream-message', 'Stream input box visible');
         common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
         casper.click('body');
         casper.page.sendEvent('keypress', "C");
@@ -37,7 +37,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#stream', function () {
+    casper.waitUntilVisible('#stream-message', function () {
         common.check_form('#send_message_form', {stream: '', subject: ''}, "Stream empty on new compose");
 
         // Check that when you reply to a message it pre-populates the stream and subject fields
@@ -46,13 +46,13 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('#stream', function () {
+    casper.waitWhileVisible('#stream-message', function () {
         casper.clickLabel("We reply to this message");
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#stream', function () {
+    casper.waitUntilVisible('#stream-message', function () {
         common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply by click");
         // Or recipient field
         casper.click('body');
@@ -71,7 +71,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#stream', function () {
+    casper.waitUntilVisible('#stream-message', function () {
         common.check_form('#send_message_form', {stream: "Verona", subject: "Reply test"}, "Stream populated after reply with `r`");
 
         // Test "closing" the compose box
@@ -80,8 +80,8 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('#stream', function () {
-        casper.test.assertNotVisible('#stream', 'Close stream compose box');
+    casper.waitWhileVisible('#stream-message', function () {
+        casper.test.assertNotVisible('#stream-message', 'Close stream compose box');
         casper.page.sendEvent('keypress', "C");
         casper.click('body');
     });
@@ -104,7 +104,7 @@ casper.waitUntilVisible('#tab_list li.private_message', function () {
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
         casper.test.assertEval(function () {
-            return document.activeElement === $('#stream')[0];
+            return document.activeElement === $('.compose_table #stream')[0];
         }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
     });
 });

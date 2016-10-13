@@ -78,6 +78,12 @@ autofocus('#id_username');
     </div>
     {% endif %}
 
+    {% if subdomain %}
+    <div class="alert">
+        {{ wrong_subdomain_error }}.
+    </div>
+    {% endif %}
+
         {% if password_auth_enabled or desktop_sso_dispatch %}
         <form name="login_form" id="login_form" method="post" class="login-form"
             {% if desktop_sso_dispatch %}
@@ -124,7 +130,7 @@ autofocus('#id_username');
         {% endif %}
         {% if dev_auth_enabled %}
         <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
-              action="{{ url('zerver.views.dev_direct_login') }}">
+              action="{{ url('zerver.views.auth.dev_direct_login') }}">
             {{ csrf_input }}
             <div class="control-group">
                 {% if password_auth_enabled %}
@@ -146,7 +152,7 @@ autofocus('#id_username');
 
     {% if google_auth_enabled %}
     <div class="login-google">
-    or <a href="{{ url('zerver.views.start_google_oauth2') }}" class="login-google-button zocial google">{{ _('Sign in with Google') }}</a>
+    or <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="login-google-button zocial google">{{ _('Sign in with Google') }}</a>
     </div>
     {% endif %}
 

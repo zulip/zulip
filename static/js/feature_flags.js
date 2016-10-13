@@ -25,7 +25,6 @@ exports.fade_users_when_composing = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;
-exports.negated_search = true;
 exports.collapsible = false;
 exports.dropbox_integration = false;
 

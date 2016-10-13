@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
+from typing import Any, List, Dict, Optional
 
 from django.utils import translation
 from django.utils.translation import ugettext as _
@@ -14,33 +14,28 @@ from django.utils.timezone import now
 from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.contrib.auth.views import login as django_login_page, \
-    logout_then_login as django_logout_then_login
 from django.core.mail import send_mail
-from django.middleware.csrf import get_token
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
-    get_stream, UserPresence, get_recipient, \
+    get_stream, UserPresence, get_recipient, name_changes_disabled, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
-    completely_open, get_unique_open_realm, remote_user_to_email, email_allowed_for_realm, \
+    completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_cross_realm_users, resolve_subdomain_to_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    internal_send_message, update_user_presence, do_events_register, \
-    do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, do_change_tos_version, \
-    get_default_subs, user_email_is_unique, do_invite_users, do_refer_friend, \
-    compute_mit_user_fullname, do_set_muted_topics, clear_followup_emails_queue, \
+    update_user_presence, do_events_register, \
+    do_change_tos_version, \
+    user_email_is_unique, \
+    compute_mit_user_fullname, do_set_muted_topics, \
     do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
-    CreateUserForm, OurAuthenticationForm
+    CreateUserForm
 from zerver.lib.actions import is_inactive
-from django.views.decorators.csrf import csrf_exempt
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib.validator import check_string, check_list, check_bool
+from zerver.lib.validator import check_string, check_list
 from zerver.decorator import require_post, authenticated_json_post_view, \
     has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ, \
@@ -51,7 +46,7 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import statsd, get_subdomain
 from version import ZULIP_VERSION
-from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
+from zproject.backends import password_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
 
@@ -65,18 +60,8 @@ from six import text_type
 from six.moves import urllib, zip_longest, zip, range
 import time
 import logging
-import jwt
-import hashlib
-import hmac
-import os
 
 from zproject.jinja2 import render_to_response
-
-def name_changes_disabled(realm):
-    # type: (Optional[Realm]) -> bool
-    if realm is None:
-        return settings.NAME_CHANGES_DISABLED
-    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 @require_post
 def accounts_register(request):
@@ -246,17 +231,7 @@ def accounts_register(request):
 
         if first_in_realm:
             do_change_is_admin(user_profile, True)
-            invite_url = reverse('zerver.views.initial_invite_page')
-            if (realm_creation and settings.REALMS_HAVE_SUBDOMAINS):
-                invite_url = "%s%s.%s%s" % (
-                    settings.EXTERNAL_URI_SCHEME,
-                    form.cleaned_data['realm_subdomain'],
-                    settings.EXTERNAL_HOST,
-                    reverse('zerver.views.initial_invite_page')
-                )
-            return HttpResponseRedirect(invite_url)
-        else:
-            return HttpResponseRedirect(reverse('zerver.views.home'))
+        return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
 
     return render_to_response('zerver/register.html',
             {'form': form,
@@ -295,50 +270,6 @@ def accounts_accept_terms(request):
           'special_message_template' : special_message_template },
         request=request)
 
-@authenticated_json_post_view
-@has_request_variables
-def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails")):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if not invitee_emails_raw:
-        return json_error(_("You must specify at least one email address."))
-
-    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
-
-    stream_names = request.POST.getlist('stream')
-    if not stream_names:
-        return json_error(_("You must specify at least one stream for invitees to join."))
-
-    # We unconditionally sub you to the notifications stream if it
-    # exists and is public.
-    notifications_stream = user_profile.realm.notifications_stream
-    if notifications_stream and not notifications_stream.invite_only:
-        stream_names.append(notifications_stream.name)
-
-    streams = [] # type: List[Stream]
-    for stream_name in stream_names:
-        stream = get_stream(stream_name, user_profile.realm)
-        if stream is None:
-            return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
-        streams.append(stream)
-
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
-
-    if ret_error is not None:
-        return json_error(data=error_data, msg=ret_error)
-    else:
-        return json_success()
-
-def get_invitee_emails_set(invitee_emails_raw):
-    # type: (str) -> Set[str]
-    invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
-    invitee_emails = set()
-    for email in invitee_emails_list:
-        is_email_with_name = re.search(r'<(?P<email>.*)>', email)
-        if is_email_with_name:
-            email = is_email_with_name.group('email')
-        invitee_emails.add(email.strip())
-    return invitee_emails
-
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
     if user_info:
@@ -347,334 +278,6 @@ def create_homepage_form(request, user_info=None):
     # An empty fields dict is not treated the same way as not
     # providing it.
     return HomepageForm(domain=request.session.get("domain"), subdomain=get_subdomain(request))
-
-def maybe_send_to_registration(request, email, full_name=''):
-    # type: (HttpRequest, text_type, text_type) -> HttpResponse
-    form = create_homepage_form(request, user_info={'email': email})
-    request.verified_email = None
-    if form.is_valid():
-        # Construct a PreregistrationUser object and send the user over to
-        # the confirmation view.
-        prereg_user = None
-        if settings.ONLY_SSO:
-            try:
-                prereg_user = PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
-            except PreregistrationUser.DoesNotExist:
-                prereg_user = create_preregistration_user(email, request)
-        else:
-            prereg_user = create_preregistration_user(email, request)
-
-        return redirect("".join((
-            settings.EXTERNAL_URI_SCHEME,
-            request.get_host(),
-            "/",
-            # Split this so we only get the part after the /
-            Confirmation.objects.get_link_for_object(prereg_user).split("/", 3)[3],
-            '?full_name=',
-            # urllib does not handle Unicode, so coerece to encoded byte string
-            # Explanation: http://stackoverflow.com/a/5605354/90777
-            urllib.parse.quote_plus(full_name.encode('utf8')))))
-    else:
-        url = reverse('register')
-        return render_to_response('zerver/accounts_home.html',
-                                  {'form': form, 'current_url': lambda: url},
-                                  request=request)
-
-def login_or_register_remote_user(request, remote_username, user_profile, full_name=''):
-    # type: (HttpRequest, text_type, UserProfile, text_type) -> HttpResponse
-    if user_profile is None or user_profile.is_mirror_dummy:
-        # Since execution has reached here, the client specified a remote user
-        # but no associated user account exists. Send them over to the
-        # PreregistrationUser flow.
-        return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
-    else:
-        login(request, user_profile)
-        if settings.OPEN_REALM_CREATION and user_profile.realm.subdomain is not None:
-            return HttpResponseRedirect("%s%s.%s" % (settings.EXTERNAL_URI_SCHEME,
-                                                     user_profile.realm.subdomain,
-                                                     settings.EXTERNAL_HOST))
-
-        return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                              request.get_host()))
-
-def remote_user_sso(request):
-    # type: (HttpRequest) -> HttpResponse
-    try:
-        remote_user = request.META["REMOTE_USER"]
-    except KeyError:
-        raise JsonableError(_("No REMOTE_USER set."))
-
-    user_profile = authenticate(remote_user=remote_user, realm_subdomain=get_subdomain(request))
-    return login_or_register_remote_user(request, remote_user, user_profile)
-
-@csrf_exempt
-def remote_user_jwt(request):
-    # type: (HttpRequest) -> HttpResponse
-    try:
-        json_web_token = request.POST["json_web_token"]
-        payload, signing_input, header, signature = jwt.load(json_web_token)
-    except KeyError:
-        raise JsonableError(_("No JSON web token passed in request"))
-    except jwt.DecodeError:
-        raise JsonableError(_("Bad JSON web token"))
-
-    remote_user = payload.get("user", None)
-    if remote_user is None:
-        raise JsonableError(_("No user specified in JSON web token claims"))
-    domain = payload.get('realm', None)
-    if domain is None:
-        raise JsonableError(_("No domain specified in JSON web token claims"))
-
-    email = "%s@%s" % (remote_user, domain)
-
-    try:
-        jwt.verify_signature(payload, signing_input, header, signature,
-                             settings.JWT_AUTH_KEYS[domain])
-        # We do all the authentication we need here (otherwise we'd have to
-        # duplicate work), but we need to call authenticate with some backend so
-        # that the request.backend attribute gets set.
-        return_data = {} # type: Dict[str, bool]
-        user_profile = authenticate(username=email,
-                                    realm_subdomain=get_subdomain(request),
-                                    return_data=return_data,
-                                    use_dummy_backend=True)
-        if return_data.get('invalid_subdomain'):
-            logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (get_subdomain(request), email,))
-            raise JsonableError(_("Wrong subdomain"))
-    except (jwt.DecodeError, jwt.ExpiredSignature):
-        raise JsonableError(_("Bad JSON web token signature"))
-    except KeyError:
-        raise JsonableError(_("Realm not authorized for JWT login"))
-    except UserProfile.DoesNotExist:
-        user_profile = None
-
-    return login_or_register_remote_user(request, email, user_profile, remote_user)
-
-def google_oauth2_csrf(request, value):
-    # type: (HttpRequest, str) -> HttpResponse
-    return hmac.new(get_token(request).encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
-
-def start_google_oauth2(request):
-    # type: (HttpRequest) -> HttpResponse
-    uri = 'https://accounts.google.com/o/oauth2/auth?'
-    cur_time = str(int(time.time()))
-    csrf_state = '{}:{}'.format(
-        cur_time,
-        google_oauth2_csrf(request, cur_time),
-    )
-    prams = {
-        'response_type': 'code',
-        'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-        'redirect_uri': ''.join((
-            settings.EXTERNAL_URI_SCHEME,
-            request.get_host(),
-            reverse('zerver.views.finish_google_oauth2'),
-        )),
-        'scope': 'profile email',
-        'state': csrf_state,
-    }
-    return redirect(uri + urllib.parse.urlencode(prams))
-
-def finish_google_oauth2(request):
-    # type: (HttpRequest) -> HttpResponse
-    error = request.GET.get('error')
-    if error == 'access_denied':
-        return redirect('/')
-    elif error is not None:
-        logging.warning('Error from google oauth2 login: %s' % (request.GET.get("error"),))
-        return HttpResponse(status=400)
-
-    csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 2:
-        logging.warning('Missing Google oauth2 CSRF state')
-        return HttpResponse(status=400)
-
-    value, hmac_value = csrf_state.split(':')
-    if hmac_value != google_oauth2_csrf(request, value):
-        logging.warning('Google oauth2 CSRF error')
-        return HttpResponse(status=400)
-
-    resp = requests.post(
-        'https://www.googleapis.com/oauth2/v3/token',
-        data={
-            'code': request.GET.get('code'),
-            'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
-            'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
-            'redirect_uri': ''.join((
-                settings.EXTERNAL_URI_SCHEME,
-                request.get_host(),
-                reverse('zerver.views.finish_google_oauth2'),
-            )),
-            'grant_type': 'authorization_code',
-        },
-    )
-    if resp.status_code == 400:
-        logging.warning('User error converting Google oauth2 login to token: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    elif resp.status_code != 200:
-        logging.error('Could not convert google oauth2 code to access_token: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    access_token = resp.json()['access_token']
-
-    resp = requests.get(
-        'https://www.googleapis.com/plus/v1/people/me',
-        params={'access_token': access_token}
-    )
-    if resp.status_code == 400:
-        logging.warning('Google login failed making info API call: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    elif resp.status_code != 200:
-        logging.error('Google login failed making API call: %s' % (resp.text,))
-        return HttpResponse(status=400)
-    body = resp.json()
-
-    try:
-        full_name = body['name']['formatted']
-    except KeyError:
-        # Only google+ users have a formated name. I am ignoring i18n here.
-        full_name = u'{} {}'.format(
-            body['name']['givenName'], body['name']['familyName']
-        )
-    for email in body['emails']:
-        if email['type'] == 'account':
-            break
-    else:
-        logging.error('Google oauth2 account email not found: %s' % (body,))
-        return HttpResponse(status=400)
-    email_address = email['value']
-    return_data = {} # type: Dict[str, bool]
-    user_profile = authenticate(username=email_address,
-                                realm_subdomain=get_subdomain(request),
-                                use_dummy_backend=True,
-                                return_data=return_data)
-    if return_data.get('invalid_subdomain'):
-        logging.warning("User attempted to Google login to wrong subdomain %s: %s" % (get_subdomain(request), email_address,))
-        return redirect('/')
-    return login_or_register_remote_user(request, email_address, user_profile, full_name)
-
-def login_page(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
-    extra_context = kwargs.pop('extra_context', {})
-    if dev_auth_enabled():
-        # Development environments usually have only a few users, but
-        # it still makes sense to limit how many users we render to
-        # support performance testing with DevAuthBackend.
-        MAX_DEV_BACKEND_USERS = 100
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-        users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
-        extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
-    template_response = django_login_page(
-        request, authentication_form=OurAuthenticationForm,
-        extra_context=extra_context, **kwargs)
-    try:
-        template_response.context_data['email'] = request.GET['email']
-    except KeyError:
-        pass
-
-    return template_response
-
-def dev_direct_login(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
-    # This function allows logging in without a password and should only be called in development environments.
-    # It may be called if the DevAuthBackend is included in settings.AUTHENTICATION_BACKENDS
-    if (not dev_auth_enabled()) or settings.PRODUCTION:
-        # This check is probably not required, since authenticate would fail without an enabled DevAuthBackend.
-        raise Exception('Direct login not supported.')
-    email = request.POST['direct_email']
-    user_profile = authenticate(username=email, realm_subdomain=get_subdomain(request))
-    if user_profile is None:
-        raise Exception("User cannot login")
-    login(request, user_profile)
-    if settings.OPEN_REALM_CREATION and settings.DEVELOPMENT:
-        if user_profile.realm.subdomain is not None:
-            return HttpResponseRedirect("%s%s.%s" % (settings.EXTERNAL_URI_SCHEME,
-                                                     user_profile.realm.subdomain,
-                                                     settings.EXTERNAL_HOST))
-
-    return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                          request.get_host()))
-
-@csrf_exempt
-@require_post
-@has_request_variables
-def api_dev_fetch_api_key(request, username=REQ()):
-    # type: (HttpRequest, str) -> HttpResponse
-    """This function allows logging in without a password on the Zulip
-    mobile apps when connecting to a Zulip development environment.  It
-    requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
-    """
-    if not dev_auth_enabled() or settings.PRODUCTION:
-        return json_error(_("Dev environment not enabled."))
-    return_data = {} # type: Dict[str, bool]
-    user_profile = authenticate(username=username,
-                                realm_subdomain=get_subdomain(request),
-                                return_data=return_data)
-    if return_data.get("inactive_realm") == True:
-        return json_error(_("Your realm has been deactivated."),
-                          data={"reason": "realm deactivated"}, status=403)
-    if return_data.get("inactive_user") == True:
-        return json_error(_("Your account has been disabled."),
-                          data={"reason": "user disable"}, status=403)
-    login(request, user_profile)
-    return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
-
-@csrf_exempt
-def api_dev_get_emails(request):
-    # type: (HttpRequest) -> HttpResponse
-    if not dev_auth_enabled() or settings.PRODUCTION:
-        return json_error(_("Dev environment not enabled."))
-    MAX_DEV_BACKEND_USERS = 100 # type: int
-    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-    users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
-    return json_success(dict(direct_admins=[u.email for u in users if u.is_realm_admin],
-                             direct_users=[u.email for u in users if not u.is_realm_admin]))
-
-@authenticated_json_post_view
-@has_request_variables
-def json_bulk_invite_users(request, user_profile,
-                           invitee_emails_list=REQ('invitee_emails',
-                                                   validator=check_list(check_string))):
-    # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
-    invitee_emails = set(invitee_emails_list)
-    streams = get_default_subs(user_profile)
-
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
-
-    if ret_error is not None:
-        return json_error(data=error_data, msg=ret_error)
-    else:
-        # Report bulk invites to internal Zulip.
-        invited = PreregistrationUser.objects.filter(referred_by=user_profile)
-        internal_message = "%s <`%s`> invited %d people to Zulip." % (
-            user_profile.full_name, user_profile.email, invited.count())
-        internal_send_message(settings.NEW_USER_BOT, "stream", "signups",
-                              user_profile.realm.domain, internal_message)
-        return json_success()
-
-@zulip_login_required
-def initial_invite_page(request):
-    # type: (HttpRequest) -> HttpResponse
-    user = request.user
-    # Only show the bulk-invite page for the first user in a realm
-    domain_count = len(UserProfile.objects.filter(realm=user.realm))
-    if domain_count > 1:
-        return redirect('zerver.views.home')
-
-    params = {'company_name': user.realm.domain}
-
-    if (user.realm.restricted_to_domain):
-        params['invite_suffix'] = user.realm.domain
-    else:
-        params['invite_suffix'] = ''
-
-    return render_to_response('zerver/initial_invite_page.html', params,
-                              request=request)
-
-@require_post
-def logout_then_login(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
-    return django_logout_then_login(request, kwargs)
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
@@ -1051,119 +654,6 @@ def is_buggy_ua(agent):
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
         "Mac" not in agent
 
-@csrf_exempt
-@require_post
-@has_request_variables
-def api_fetch_api_key(request, username=REQ(), password=REQ()):
-    # type: (HttpRequest, str, str) -> HttpResponse
-    return_data = {} # type: Dict[str, bool]
-    if username == "google-oauth2-token":
-        user_profile = authenticate(google_oauth2_token=password,
-                                    realm_subdomain=get_subdomain(request),
-                                    return_data=return_data)
-    else:
-        user_profile = authenticate(username=username,
-                                    password=password,
-                                    realm_subdomain=get_subdomain(request),
-                                    return_data=return_data)
-    if return_data.get("inactive_user") == True:
-        return json_error(_("Your account has been disabled."),
-                          data={"reason": "user disable"}, status=403)
-    if return_data.get("inactive_realm") == True:
-        return json_error(_("Your realm has been deactivated."),
-                          data={"reason": "realm deactivated"}, status=403)
-    if return_data.get("password_auth_disabled") == True:
-        return json_error(_("Password auth is disabled in your team."),
-                          data={"reason": "password auth disabled"}, status=403)
-    if user_profile is None:
-        if return_data.get("valid_attestation") == True:
-            # We can leak that the user is unregistered iff they present a valid authentication string for the user.
-            return json_error(_("This user is not registered; do so from a browser."),
-                              data={"reason": "unregistered"}, status=403)
-        return json_error(_("Your username or password is incorrect."),
-                          data={"reason": "incorrect_creds"}, status=403)
-    return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
-
-@csrf_exempt
-def api_get_auth_backends(request):
-    # type: (HttpRequest) -> HttpResponse
-    # May return a false positive for password auth if it's been disabled
-    # for a specific realm. Currently only happens for zulip.com on prod
-    return json_success({"password": password_auth_enabled(None),
-                         "dev": dev_auth_enabled(),
-                         "google": google_auth_enabled(),
-                        })
-
-@authenticated_json_post_view
-@has_request_variables
-def json_fetch_api_key(request, user_profile, password=REQ(default='')):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if password_auth_enabled(user_profile.realm):
-        if not authenticate(username=user_profile.email, password=password,
-                            realm_subdomain=get_subdomain(request)):
-            return json_error(_("Your username or password is incorrect."))
-    return json_success({"api_key": user_profile.api_key})
-
-@csrf_exempt
-def api_fetch_google_client_id(request):
-    # type: (HttpRequest) -> HttpResponse
-    if not settings.GOOGLE_CLIENT_ID:
-        return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
-    return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
-
-# Does not need to be authenticated because it's called from rest_dispatch
-@has_request_variables
-def api_events_register(request, user_profile,
-                        apply_markdown=REQ(default=False, validator=check_bool),
-                        all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool]) -> HttpResponse
-    return events_register_backend(request, user_profile,
-                                   apply_markdown=apply_markdown,
-                                   all_public_streams=all_public_streams)
-
-def _default_all_public_streams(user_profile, all_public_streams):
-    # type: (UserProfile, Optional[bool]) -> bool
-    if all_public_streams is not None:
-        return all_public_streams
-    else:
-        return user_profile.default_all_public_streams
-
-def _default_narrow(user_profile, narrow):
-    # type: (UserProfile, Iterable[Sequence[text_type]]) -> Iterable[Sequence[text_type]]
-    default_stream = user_profile.default_events_register_stream
-    if not narrow and user_profile.default_events_register_stream is not None:
-        narrow = [['stream', default_stream.name]]
-    return narrow
-
-@has_request_variables
-def events_register_backend(request, user_profile, apply_markdown=True,
-                            all_public_streams=None,
-                            event_types=REQ(validator=check_list(check_string), default=None),
-                            narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
-                            queue_lifespan_secs=REQ(converter=int, default=0)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[Iterable[str]], Iterable[Sequence[text_type]], int) -> HttpResponse
-    all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
-    narrow = _default_narrow(user_profile, narrow)
-
-    ret = do_events_register(user_profile, request.client, apply_markdown,
-                             event_types, queue_lifespan_secs, all_public_streams,
-                             narrow=narrow)
-    return json_success(ret)
-
-
-@authenticated_json_post_view
-@has_request_variables
-def json_refer_friend(request, user_profile, email=REQ()):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
-    if not email:
-        return json_error(_("No email address specified"))
-    if user_profile.invites_granted - user_profile.invites_used <= 0:
-        return json_error(_("Insufficient invites"))
-
-    do_refer_friend(user_profile, email);
-
-    return json_success()
-
 @authenticated_json_post_view
 @has_request_variables
 def json_set_muted_topics(request, user_profile,
@@ -1175,55 +665,3 @@ def json_set_muted_topics(request, user_profile,
 def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponse(content=None, status=204)
-
-def process_unsubscribe(token, subscription_type, unsubscribe_function):
-    # type: (HttpRequest, str, Callable[[UserProfile], None]) -> HttpResponse
-    try:
-        confirmation = Confirmation.objects.get(confirmation_key=token)
-    except Confirmation.DoesNotExist:
-        return render_to_response('zerver/unsubscribe_link_error.html')
-
-    user_profile = confirmation.content_object
-    unsubscribe_function(user_profile)
-    return render_to_response('zerver/unsubscribe_success.html',
-                              {"subscription_type": subscription_type,
-                               "external_host": settings.EXTERNAL_HOST,
-                               'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-                               'server_uri': settings.SERVER_URI,
-                               'realm_uri': user_profile.realm.uri,
-                              })
-
-# Email unsubscribe functions. All have the function signature
-# processor(user_profile).
-
-def do_missedmessage_unsubscribe(user_profile):
-    # type: (UserProfile) -> None
-    do_change_enable_offline_email_notifications(user_profile, False)
-
-def do_welcome_unsubscribe(user_profile):
-    # type: (UserProfile) -> None
-    clear_followup_emails_queue(user_profile.email)
-
-def do_digest_unsubscribe(user_profile):
-    # type: (UserProfile) -> None
-    do_change_enable_digest_emails(user_profile, False)
-
-# The keys are part of the URL for the unsubscribe link and must be valid
-# without encoding.
-# The values are a tuple of (display name, unsubscribe function), where the
-# display name is what we call this class of email in user-visible text.
-email_unsubscribers = {
-    "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
-    "welcome": ("welcome", do_welcome_unsubscribe),
-    "digest": ("digest", do_digest_unsubscribe)
-    }
-
-# Login NOT required. These are for one-click unsubscribes.
-def email_unsubscribe(request, type, token):
-    # type: (HttpRequest, str, str) -> HttpResponse
-    if type in email_unsubscribers:
-        display_name, unsubscribe_function = email_unsubscribers[type]
-        return process_unsubscribe(token, display_name, unsubscribe_function)
-
-    return render_to_response('zerver/unsubscribe_link_error.html', {},
-                              request=request)

@@ -157,7 +157,7 @@ def send_digest_email(user_profile, html_content, text_content):
                       tags=["digest-emails"])
 
 def handle_digest_email(user_profile_id, cutoff):
-    # type: (int, int) -> None
+    # type: (int, float) -> None
     user_profile=UserProfile.objects.get(id=user_profile_id)
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.utcfromtimestamp(int(cutoff))

@@ -18,10 +18,13 @@ class Anomaly(ModelReprMixin, models.Model):
         return u"<Anomaly: %s... %s>" % (self.info, self.id)
 
 class BaseCount(ModelReprMixin, models.Model):
-    value = models.BigIntegerField() # type: int
+    # Note: When inheriting from BaseCount, you may want to rearrange
+    # the order of the columns in the migration to make sure they
+    # match how you'd like the table to be arranged.
     property = models.CharField(max_length=40) # type: text_type
     end_time = models.DateTimeField() # type: datetime.datetime
     interval = models.CharField(max_length=20) # type: text_type
+    value = models.BigIntegerField() # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
     class Meta(object):
@@ -54,7 +57,7 @@ class InstallationCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> text_type
-        return u"<InstallationCount: %s %s %s>" % (self.property, self.value, self.id)
+        return u"<InstallationCount: %s %s>" % (self.property, self.value)
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
@@ -74,7 +77,7 @@ class RealmCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> text_type
-        return u"<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.value, self.id)
+        return u"<RealmCount: %s %s %s>" % (self.realm, self.property, self.value)
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
@@ -95,7 +98,7 @@ class UserCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> text_type
-        return u"<UserCount: %s %s %s %s>" % (self.user, self.property, self.value, self.id)
+        return u"<UserCount: %s %s %s>" % (self.user, self.property, self.value)
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)

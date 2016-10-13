@@ -64,7 +64,7 @@ gets triggered by an automated code build finishing and then
 writes "build finished" to a Zulip stream.
 
 - A **Zulip Read/Writer** reacts to a stimulus from Zulip by
-responding to Zulip.  An example here would be a math both
+responding to Zulip.  An example here would be a math bot
 that sees a message saying "compute 2+2" and responds with
 "2+2=4" on the same stream or back to the user in a PM.
 
@@ -76,7 +76,7 @@ of somebody "out in the world."
 the outside world and produces a response in Zulip.  (So, a world
 reader is a Zulip writer.)
 
-- A **World Writer** is an app that gets some stumulus from
+- A **World Writer** is an app that gets some stimulus from
 Zulip and produces a response in the outside world.  (So, a world
 writer is a Zulip reader.)
 

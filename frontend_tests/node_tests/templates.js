@@ -1,6 +1,12 @@
+set_global('page_params', {realm_emoji: {
+  burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
+            source_url: '/static/third/gemoji/images/emoji/burrito.png'}
+}});
+
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
+    emoji: 'js/emoji',
     i18n: 'i18next'
 });
 
@@ -160,13 +166,16 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     });
     html += "</table>";
 
-    var button = $(html).find("button:first");
-    assert.equal(button.text().trim(), "Deactivate");
-    assert(button.hasClass("deactivate"));
+    var buttons = $(html).find('.button');
 
-    button = $(html).find("button:last");
-    assert.equal(button.text().trim(), "Make admin");
-    assert(button.hasClass("make-admin"));
+    assert.equal($(buttons[0]).text().trim(), "Deactivate");
+    assert($(buttons[0]).hasClass("deactivate"));
+
+    assert.equal($(buttons[1]).text().trim(), "Make admin");
+    assert($(buttons[1]).hasClass("make-admin"));
+
+    assert.equal($(buttons[2]).attr('title').trim(), "Edit User");
+    assert($(buttons[2]).hasClass("open-user-form"));
 
     global.write_handlebars_output("admin_user_list", html);
 }());
@@ -299,6 +308,20 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     global.write_handlebars_output("email_address_hint", html);
     var li = $(html).find("li:first");
     assert.equal(li.text(), 'The email will be forwarded to this stream');
+}());
+
+(function emoji_popover_content() {
+    var args = {
+        emoji_list: global.emoji.emojis_name_to_css_class
+    };
+
+    var html = '<div style="height: 250px">';
+    html += render('emoji_popover_content', args);
+    html += "</div>";
+    // test to make sure the first emoji is present in the popover
+    var emoji_key = $(html).find(".emoji-100").attr('title');
+    assert.equal(emoji_key, ':100:');
+    global.write_handlebars_output("emoji_popover_content", html);
 }());
 
 (function group_pms() {

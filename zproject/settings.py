@@ -705,13 +705,6 @@ JS_SPECS = {
             ),
         'output_filename':  'min/signup.js'
     },
-    'initial_invite': {
-        'source_filenames': (
-            'node_modules/jquery-validation/dist/jquery.validate.js',
-            'js/initial_invite.js',
-            ),
-        'output_filename':  'min/initial_invite.js'
-    },
     'api': {
         'source_filenames': ('js/api.js',),
         'output_filename':  'min/api.js'

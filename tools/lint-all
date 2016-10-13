@@ -24,7 +24,6 @@ EXCLUDED_FILES = """
 api/integrations/perforce/git_p4.py
 api/setup.py
 docs/html_unescape.py
-frontend_tests/casperjs
 node_modules
 puppet/apt/.forge-release
 puppet/apt/README.md
@@ -268,7 +267,7 @@ def build_custom_checkers(by_lang):
              ('zerver/middleware.py',
               'return json_error(exception.to_json_error_msg(), status=status_code)'),
              ('zerver/tornadoviews.py', 'return json_error(result["message"])'),
-             ('zerver/views/__init__.py',
+             ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
              # We can't do anything about this.

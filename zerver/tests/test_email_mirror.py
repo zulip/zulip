@@ -43,6 +43,7 @@ from six import text_type
 from six.moves import cStringIO as StringIO
 from django.conf import settings
 
+from zerver.lib.str_utils import force_str
 from typing import Any, Callable, Mapping, Union
 
 class TestEmailMirrorLibrary(ZulipTestCase):
@@ -75,6 +76,7 @@ class TestEmailMirrorLibrary(ZulipTestCase):
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
     def test_receive_stream_email_messages_success(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
@@ -85,7 +87,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         stream_to_address = encode_email_address(stream)
 
-        incoming_valid_message = MIMEText('TestStreamEmailMessages Body')
+        incoming_valid_message = MIMEText('TestStreamEmailMessages Body') # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = "hamlet@zulip.com"
@@ -103,6 +105,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
 class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
     def test_receive_stream_email_messages_empty_body(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test message with empty body is not sent
@@ -116,7 +119,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         headers['Reply-To'] = 'othello@zulip.com'
 
         # empty body
-        incoming_valid_message = MIMEText('')
+        incoming_valid_message = MIMEText('') # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = "hamlet@zulip.com"
@@ -124,7 +127,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message['Reply-to'] = "othello@zulip.com"
 
         exception_message = ""
-        debug_info = {}
+        debug_info = {} # type: Dict[str, Any]
 
         # process_message eats the exception & logs an error which can't be parsed here
         # so calling process_stream_message directly
@@ -140,6 +143,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 
 class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self):
+        # type: () -> None
 
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
@@ -158,7 +162,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body')
+        incoming_valid_message = MIMEText('TestMissedMessageEmailMessages Body') # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestMissedMessageEmailMessages Subject'
         incoming_valid_message['From'] = "othello@zulip.com"
@@ -179,6 +183,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
 
 class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_huddle_message_email_messages(self):
+        # type: () -> None
 
         # build dummy messages for missed messages email reply
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
@@ -198,7 +203,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         # token for looking up who did reply.
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
-        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body')
+        incoming_valid_message = MIMEText('TestMissedHuddleMessageEmailMessages Body') # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestMissedHuddleMessageEmailMessages Subject'
         incoming_valid_message['From'] = "cordelia@zulip.com"
@@ -225,6 +230,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
 
 class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
     def test_address_with_empty_gateway(self):
+        # type: () -> None
         self.login("othello@zulip.com")
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "test_receive_missed_message_email_messages",
@@ -244,6 +250,7 @@ class TestDigestEmailMessages(ZulipTestCase):
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
     def test_receive_digest_email_messages(self, mock_send_future_email, mock_enough_traffic):
+        # type: (mock.MagicMock, mock.MagicMock) -> None
 
         # build dummy messages for missed messages email reply
         # have Hamlet send Othello a PM. Othello will reply via email
@@ -256,7 +263,8 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assert_json_success(result)
 
         user_profile = get_user_profile_by_email("othello@zulip.com")
-        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
+        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple()) # type: ignore # https://github.com/python/typeshed/pull/597
+
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)
         self.assertEqual(mock_send_future_email.call_args[0][0][0]['email'],
@@ -264,6 +272,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
 class TestReplyExtraction(ZulipTestCase):
     def test_reply_is_extracted_from_plain(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
@@ -279,7 +288,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         Quote"""
 
-        incoming_valid_message = MIMEText(text)
+        incoming_valid_message = MIMEText(text) # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = "hamlet@zulip.com"
@@ -294,6 +303,7 @@ class TestReplyExtraction(ZulipTestCase):
         self.assertEqual(message.content, "Reply")
 
     def test_reply_is_extracted_from_html(self):
+        # type: () -> None
 
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
@@ -322,7 +332,7 @@ class TestReplyExtraction(ZulipTestCase):
         </html>
         """
 
-        incoming_valid_message = MIMEText(html, 'html')
+        incoming_valid_message = MIMEText(html, 'html') # type: Any # https://github.com/python/typeshed/issues/275
 
         incoming_valid_message['Subject'] = 'TestStreamEmailMessages Subject'
         incoming_valid_message['From'] = "hamlet@zulip.com"
@@ -365,6 +375,6 @@ class TestCommandMTA(TestCase):
 
             from zerver.management.commands import email_mirror
             command = email_mirror.Command()
-            command.handle(recipient=stream_to_address)
+            command.handle(recipient=force_str(stream_to_address))
         finally:
             sys.stdin = original_stdin

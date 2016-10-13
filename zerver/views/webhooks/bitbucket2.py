@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 import re
 from functools import partial
+from six import text_type
 from typing import Any, Callable
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -9,12 +10,13 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
+from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
+    get_force_push_commits_event_message, get_remove_branch_event_message
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
 USER_PART = 'User {display_name}(login: {username})'
 
-BITBUCKET_PUSH_BODY = USER_PART + ' pushed [{number_of_commits} commit{s}]({commits_url}) into {branch} branch.'
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_COMMENT_BODY = USER_PART + ' added [comment]({url_to_comment}) to commit.'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
@@ -45,8 +47,8 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
                            stream=REQ(default='bitbucket')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
     try:
-        subject = get_subject(payload)
         type = get_type(request, payload)
+        subject = get_subject_based_on_type(payload, type)
         body = get_body_based_on_type(type)(payload)
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
@@ -54,9 +56,22 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
     check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
+def get_subject_for_branch_specified_events(payload):
+    # type: (Dict[str, Any]) -> text_type
+    return SUBJECT_WITH_BRANCH_TEMPLATE.format(
+        repo=get_repository_name(payload['repository']),
+        branch=get_branch_name_for_push_event(payload)
+    )
+
 def get_subject(payload):
     # type: (Dict[str, Any]) -> str
-    return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=payload['repository']['name'])
+    return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
+
+def get_subject_based_on_type(payload, type):
+    # type: (Dict[str, Any], str) -> text_type
+    if type == 'push':
+        return get_subject_for_branch_specified_events(payload)
+    return get_subject(payload)
 
 def get_type(request, payload):
     # type: (HttpRequest, Dict[str, Any]) -> str
@@ -89,16 +104,44 @@ def get_body_based_on_type(type):
     return GET_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
 
 def get_push_body(payload):
-    # type: (Dict[str, Any]) -> str
+    # type: (Dict[str, Any]) -> text_type
     change = payload['push']['changes'][-1]
-    number_of_commits = len(change['commits'])
-    return BITBUCKET_PUSH_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
-        number_of_commits=number_of_commits if number_of_commits <= 5 else "more than 5",
-        s='' if number_of_commits == 1 else 's',
-        commits_url=change['links']['html']['href'],
-        branch=change['new']['name']
+    if change.get('closed'):
+        return get_remove_branch_push_body(payload, change)
+    elif change.get('forced'):
+        return get_force_push_body(payload, change)
+    else:
+        return get_normal_push_body(payload, change)
+
+def get_remove_branch_push_body(payload, change):
+    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    return get_remove_branch_event_message(
+        get_user_username(payload),
+        change['old']['name'],
+    )
+
+def get_force_push_body(payload, change):
+    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    return get_force_push_commits_event_message(
+        get_user_username(payload),
+        change['links']['html']['href'],
+        change['new']['name'],
+        change['new']['target']['hash']
+    )
+
+def get_normal_push_body(payload, change):
+    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    commits_data = [{
+        'sha': commit.get('hash'),
+        'url': commit.get('links').get('html').get('href'),
+        'message': commit.get('message'),
+    } for commit in change['commits']]
+
+    return get_push_commits_event_message(
+        get_user_username(payload),
+        change['links']['html']['href'],
+        change['new']['name'],
+        commits_data
     )
 
 def get_fork_body(payload):
@@ -106,7 +149,7 @@ def get_fork_body(payload):
     return BITBUCKET_FORK_BODY.format(
         display_name=get_user_display_name(payload),
         username=get_user_username(payload),
-        fork_name=get_repository_name(payload['fork']),
+        fork_name=get_repository_full_name(payload['fork']),
         fork_url=get_repository_url(payload['fork'])
     )
 
@@ -177,6 +220,10 @@ def get_repository_url(repository_payload):
 
 def get_repository_name(repository_payload):
     # type: (Dict[str, Any]) -> str
+    return repository_payload['name']
+
+def get_repository_full_name(repository_payload):
+    # type: (Dict[str, Any]) -> str
     return repository_payload['full_name']
 
 def get_user_display_name(payload):
@@ -186,6 +233,14 @@ def get_user_display_name(payload):
 def get_user_username(payload):
     # type: (Dict[str, Any]) -> str
     return payload['actor']['username']
+
+def get_branch_name_for_push_event(payload):
+    # type: (Dict[str, Any]) -> str
+    change = payload['push']['changes'][-1]
+    if change.get('new'):
+        return change['new']['name']
+    else:
+        return change['old']['name']
 
 GET_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'push': get_push_body,

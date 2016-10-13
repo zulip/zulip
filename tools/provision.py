@@ -60,7 +60,7 @@ else:
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
 subprocess.check_call(["sudo", "apt-get", "update"])
-subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release", "software-properties-common"])
+subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 vendor = subprocess_text_output(["lsb_release", "-is"])
 codename = subprocess_text_output(["lsb_release", "-cs"])
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
@@ -125,14 +125,6 @@ def main():
     os.chdir(ZULIP_PATH)
 
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-
-    # Add groonga repository to get the pgroonga packages; retry if it fails :/
-    try:
-        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
-    except subprocess.CalledProcessError:
-        print(WARNING + "`Could not add groonga; retrying..." + ENDC)
-        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
-
     run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
@@ -144,9 +136,6 @@ def main():
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
             setup_virtualenv(PY2_VENV_PATH, DEV_REQS_FILE, patch_activate_script=True)
         else:
-            TWISTED_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "twisted.txt")
-            setup_virtualenv("/srv/zulip-py2-twisted-venv", TWISTED_REQS_FILE,
-                             patch_activate_script=True)
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
             setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
                              virtualenv_args=['-p', 'python3'])
@@ -178,13 +167,9 @@ def main():
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    if TRAVIS:
-        run(["tools/setup/install-phantomjs", "--travis"])
-    else:
-        run(["tools/setup/install-phantomjs"])
     run(["tools/setup/download-zxcvbn"])
     run(["tools/setup/emoji_dump/build_emoji"])
-    run(["scripts/setup/generate_secrets.py", "-d"])
+    run(["scripts/setup/generate_secrets.py", "--development"])
     if TRAVIS and not PRODUCTION_TRAVIS:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
