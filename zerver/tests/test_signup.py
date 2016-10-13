@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase
 
-from zilencer.models import Deployment
+# from zilencer.models import Deployment
 
 from zerver.views import do_change_password
 from zerver.views.invite import get_invitee_emails_set
@@ -754,3 +754,16 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, subdomain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+class DeactivateUserTest(ZulipTestCase):
+
+    def test_deactivate_user(self):
+        email = 'hamlet@zulip.com'
+        self.login(email)        
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertTrue(user.is_active)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertFalse(user.is_active)
+        # how to test if user can't log in again?

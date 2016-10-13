@@ -452,6 +452,28 @@ function _setup_page() {
         $('#default_language_modal').modal('show');
     });
 
+    $("#user_deactivate_account_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#deactivation_user_modal").modal("show");
+    });
+
+    $("#do_deactivate_user_button").on('click',function (e) {
+
+        $("#deactivation_user_modal").modal("hide");
+        channel.del({
+            url: '/json/users/me',
+
+            success: function () {
+
+                // not sure what to put here/how to navigate to login pg
+            },
+            error: function (xhr, error_type) {
+                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
+            },
+        });
+    });
+
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
     $("#get_api_key_box form").ajaxForm({
