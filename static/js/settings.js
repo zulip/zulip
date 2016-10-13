@@ -452,6 +452,25 @@ function _setup_page() {
         $('#default_language_modal').modal('show');
     });
 
+    $("#user_deactivate_account_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#deactivate_self_modal").modal("show");
+    });
+
+    $("#do_deactivate_self_button").on('click',function (e) {
+        $("#deactivate_self_modal").modal("hide");
+        channel.del({
+            url: '/json/users/me',
+            success: function () {
+                window.location.href = "/login";
+            },
+            error: function (xhr, error_type) {
+                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
+            }
+        });
+    });
+
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
     $("#get_api_key_box form").ajaxForm({
