@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, BaseCount, FillState, get_fill_state, installation_epoch
-from analytics.lib.interval import TimeInterval, timeinterval_range, subintervals
+from analytics.lib.interval import TimeInterval, floor_to_day
 from zerver.models import Realm, UserProfile, Message, Stream, models
 
 from typing import Any, Optional, Type
@@ -52,19 +52,18 @@ def process_count_stat(stat, fill_to_time):
         FillState.objects.filter(property = stat.property).update(state = FillState.DONE)
         currently_filled = currently_filled + timedelta(hours = 1)
 
-# TODO: simplify implementation now that range_start and range_end are just
-# a single end_time
+# We assume end_time is on an hour boundary. It is the caller's
+# responsibility to enforce this!
+# Note: very soon we are going to disallow CountStats with
+# (smallest_interval, frequency) = (hour, day) or (day, hour). The logic below
+# reflects that assumption.
 def do_fill_count_stat_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
-    # stats that hit the prod database
-    for time_interval in timeinterval_range(end_time, end_time, stat.smallest_interval, stat.frequency):
-        do_pull_from_zerver(stat, time_interval)
-
-    # aggregate to summary tables
-    for interval in ['hour', 'day', 'gauge']:
-        for time_interval in timeinterval_range(end_time, end_time, interval, stat.frequency):
-            if stat.smallest_interval in subintervals(interval):
-                do_aggregate_to_summary_table(stat, time_interval)
+    if stat.frequency == 'day' and (end_time != floor_to_day(end_time)):
+        return
+    time_interval = TimeInterval(stat.smallest_interval, end_time)
+    do_pull_from_zerver(stat, time_interval)
+    do_aggregate_to_summary_table(stat, time_interval)
 
 def do_delete_count_stat_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None

@@ -51,24 +51,3 @@ def subtract_interval(datetime_object, interval):
         return datetime_object - timedelta(seconds = 3600)
     else:
         raise ValueError("Unknown or unarithmetic interval", interval)
-
-def subintervals(interval):
-    # type: (str) -> List[str]
-    if interval == 'day':
-        return ['day', 'hour']
-    elif interval == 'hour':
-        return ['hour',]
-    elif interval == 'gauge':
-        return ['gauge',]
-    else:
-        raise ValueError("Unknown interval", interval)
-
-def timeinterval_range(first, last, interval, step_interval):
-    # type: (datetime, datetime, str, str) -> List[TimeInterval]
-    end = floor_to_interval_boundary(last, step_interval)
-    ans = []
-    while end >= first:
-        ans.append(TimeInterval(interval, end, floor_to_boundary=None))
-        end = subtract_interval(end, step_interval)
-    ans.reverse()
-    return ans
