@@ -110,13 +110,11 @@ exports.then_log_out = function () {
             casper.test.info('Logging out');
             casper.click(logout_selector);
 
-            casper.then(function () {
-                casper.test.assertUrlMatch(/accounts\/login\/$/);
-            });
         });
 
     });
-    casper.waitForSelector(".login-page-header", function () {
+    casper.waitUntilVisible(".login-page-header", function () {
+        casper.test.assertUrlMatch(/accounts\/login\/$/);
         casper.test.info("Logged out");
     });
 };
