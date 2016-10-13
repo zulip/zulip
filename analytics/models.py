@@ -1,9 +1,10 @@
 from django.db import models
 from django.utils import timezone
 
-from analytics.lib.interval import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Recipient
 from zerver.lib.str_utils import ModelReprMixin
+from zerver.lib.timestamp import datetime_to_UTC, floor_to_day
+
 import datetime
 
 from six import text_type
@@ -35,7 +36,8 @@ def get_fill_state(property):
 # We assume there is at least one realm
 def installation_epoch():
     # type: () -> datetime.datetime
-    return floor_to_day(Realm.objects.aggregate(models.Min('date_created'))['date_created__min'])
+    earliest_realm_creation = Realm.objects.aggregate(models.Min('date_created'))['date_created__min']
+    return floor_to_day(datetime_to_UTC(earliest_realm_creation))
 
 # would only ever make entries here by hand
 class Anomaly(ModelReprMixin, models.Model):
