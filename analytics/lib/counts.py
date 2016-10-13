@@ -1,5 +1,6 @@
 from django.db import connection, models
 from django.utils import timezone
+from django.conf import settings
 from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
@@ -9,6 +10,21 @@ from zerver.lib.timestamp import floor_to_day
 
 from typing import Any, Optional, Type
 from six import text_type
+
+import logging
+import time
+
+## Logging setup ##
+log_format = '%(asctime)s %(levelname)-8s %(message)s'
+logging.basicConfig(format=log_format)
+
+formatter = logging.Formatter(log_format)
+file_handler = logging.FileHandler(settings.ANALYTICS_LOG_PATH)
+file_handler.setFormatter(formatter)
+
+logger = logging.getLogger("zulip.management")
+logger.setLevel(logging.INFO)
+logger.addHandler(file_handler)
 
 # First post office in Boston
 MIN_TIME = datetime(1639, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -46,11 +62,14 @@ def process_count_stat(stat, fill_to_time):
         FillState.objects.create(property = stat.property,
                                  end_time = currently_filled,
                                  state = FillState.DONE)
+        logger.info("INITIALIZED %s %s" % (stat.property, currently_filled))
     elif fill_state['state'] == FillState.STARTED:
+        logger.info("UNDO START %s %s" % (stat.property, fill_state['end_time']))
         do_delete_count_stat_at_hour(stat, fill_state['end_time'])
         currently_filled = fill_state['end_time'] - timedelta(hours = 1)
         FillState.objects.filter(property = stat.property). \
             update(end_time = currently_filled, state = FillState.DONE)
+        logger.info("UNDO DONE %s" % (stat.property,))
     elif fill_state['state'] == FillState.DONE:
         currently_filled = fill_state['end_time']
     else:
@@ -58,11 +77,15 @@ def process_count_stat(stat, fill_to_time):
 
     currently_filled = currently_filled + timedelta(hours = 1)
     while currently_filled <= fill_to_time:
+        logger.info("START %s %s %s" % (stat.property, stat.interval, currently_filled))
+        start = time.time()
         FillState.objects.filter(property = stat.property) \
                      .update(end_time = currently_filled, state = FillState.STARTED)
         do_fill_count_stat_at_hour(stat, currently_filled)
         FillState.objects.filter(property = stat.property).update(state = FillState.DONE)
+        end = time.time()
         currently_filled = currently_filled + timedelta(hours = 1)
+        logger.info("DONE %s %s (%dms)" % (stat.property, stat.interval, (end-start)*1000))
 
 # We assume end_time is on an hour boundary, and is timezone aware.
 # It is the caller's responsibility to enforce this!
@@ -114,7 +137,10 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
                'property' : stat.property,
                'interval' : interval}
 
+        start = time.time()
         cursor.execute(realmcount_query, {'end_time': end_time})
+        end = time.time()
+        logger.info("%s RealmCount aggregation (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
 
     # Aggregate into InstallationCount
     installationcount_query = """
@@ -132,7 +158,10 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
     """ % {'property': stat.property,
            'interval': interval}
 
+    start = time.time()
     cursor.execute(installationcount_query, {'end_time': end_time})
+    end = time.time()
+    logger.info("%s InstallationCount aggregation (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
     cursor.close()
 
 ## methods that hit the prod databases directly
@@ -153,7 +182,10 @@ def do_pull_from_zerver(stat, start_time, end_time, interval):
                                               'interval' : interval,
                                               'join_args' : join_args}
     cursor = connection.cursor()
+    start = time.time()
     cursor.execute(query_, {'time_start': start_time, 'time_end': end_time})
+    end = time.time()
+    logger.info("%s do_pull_from_zerver (%dms/%sr)" %(stat.property, (end-start)*1000, cursor.rowcount))
     cursor.close()
 
 count_user_by_realm_query = """

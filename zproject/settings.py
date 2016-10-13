@@ -843,6 +843,7 @@ ZULIP_PATHS = [
     ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
     ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
+    ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
     ]
 
 # The Event log basically logs most significant database changes,
