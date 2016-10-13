@@ -223,7 +223,6 @@ Filter.parse = function (str) {
             search_term.push(token);
         } else {
             // Looks like an operator.
-            // FIXME: Should we skip unknown operator names here?
             negated = false;
             operator = parts.shift();
             if (operator[0] === '-') {
@@ -231,6 +230,15 @@ Filter.parse = function (str) {
                 operator = operator.slice(1);
             }
             operand = decodeOperand(parts.join(':'), operator);
+
+            // We use Filter.operator_to_prefix() checks if the
+            // operator is known.  If it is not known, then we treat
+            // it as a search for the given string (which may contain
+            // a `:`), not as a search operator.
+            if (Filter.operator_to_prefix(operator, negated) === '') {
+                operator = 'search';
+                operand = token;
+            }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }

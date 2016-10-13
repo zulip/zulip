@@ -365,6 +365,12 @@ function get_predicate(operators) {
     ];
     _test();
 
+    string = 'https://www.google.com';
+    operators = [
+        {operator: 'search', operand: 'https://www.google.com'}
+    ];
+    _test();
+
     string = 'stream:foo -stream:exclude';
     operators = [
         {operator: 'stream', operand: 'foo'},
