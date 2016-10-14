@@ -1091,6 +1091,8 @@ $(function () {
 
         var $sub_row = $(e.target).closest('.subscription_row');
         var stream_name = $sub_row.find('.subscription_name').text();
+        // Stream name might contain unsafe characters so we must encode it first.
+        stream_name = encodeURIComponent(stream_name);
         var description = $sub_row.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
