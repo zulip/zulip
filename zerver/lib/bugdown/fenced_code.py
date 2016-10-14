@@ -100,6 +100,7 @@ class FencedCodeExtension(markdown.Extension):
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
 
+
         # Newer versions of Python-Markdown (starting at 2.3?) have
         # a normalize_whitespace preprocessor that needs to go first.
         position = ('>normalize_whitespace'
@@ -112,7 +113,6 @@ class FencedCodeExtension(markdown.Extension):
 
 
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
-
     def __init__(self, md):
         # type: (markdown.Markdown) -> None
         markdown.preprocessors.Preprocessor.__init__(self, md)
@@ -262,12 +262,13 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         # is enabled, so we call it to highlite the code
         if self.codehilite_conf:
             highliter = CodeHilite(text,
-                    force_linenos=self.codehilite_conf['force_linenos'][0],
-                    guess_lang=self.codehilite_conf['guess_lang'][0],
-                    css_class=self.codehilite_conf['css_class'][0],
-                    style=self.codehilite_conf['pygments_style'][0],
-                    lang=(lang or None),
-                    noclasses=self.codehilite_conf['noclasses'][0])
+                       linenums=self.codehilite_conf['linenums'][0],
+                       guess_lang=self.codehilite_conf['guess_lang'][0],
+                       css_class=self.codehilite_conf['css_class'][0],
+                       style=self.codehilite_conf['pygments_style'][0],
+                       use_pygments=self.codehilite_conf['use_pygments'][0],
+                       lang=(lang or None),
+                       noclasses=self.codehilite_conf['noclasses'][0])
 
             code = highliter.hilite()
         else:
@@ -298,10 +299,9 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         return txt
 
 
-def makeExtension(configs=None):
-    # type: (Optional[List[Tuple[str, Union[bool, None, text_type]]]]) -> FencedCodeExtension
-    return FencedCodeExtension(configs=configs)
-
+def makeExtension(*args, **kwargs):
+    # type: (*Any, **Union[bool, None, text_type]) -> FencedCodeExtension
+    return FencedCodeExtension(*args, **kwargs)
 
 if __name__ == "__main__":
     import doctest
