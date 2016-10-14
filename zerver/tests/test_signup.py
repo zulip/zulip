@@ -766,4 +766,4 @@ class DeactivateUserTest(ZulipTestCase):
         self.assert_json_success(result)
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertFalse(user.is_active)
-        # how to test if user can't log in again?
+        self.login(email, fails=True)

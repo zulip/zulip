@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from six import text_type
 
 from zerver.decorator import to_non_negative_int
-from zerver.lib.actions import do_update_pointer
+from zerver.lib.actions import do_update_pointer, do_deactivate_user
 from zerver.lib.request import has_request_variables, JsonableError, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import statsd, generate_random_token
@@ -52,3 +52,12 @@ def get_profile_backend(request, user_profile):
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
+def deactivate_user_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse    
+    return _deactivate_user_profile_backend(request, user_profile)
+
+def _deactivate_user_profile_backend(request, target):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    do_deactivate_user(target)
+    return json_success({})
