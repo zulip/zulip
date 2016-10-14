@@ -465,7 +465,7 @@ class ResponseMock(object):
 class GoogleLoginTest(ZulipTestCase):
     def google_oauth2_test(self, token_response, account_response):
         # type: (ResponseMock, ResponseMock) -> HttpResponse
-        result = self.client_get("/accounts/login/google/")
+        result = self.client_get("/accounts/login/google/send/")
         self.assertEquals(result.status_code, 302)
         # Now extract the CSRF token from the redirect URL
         parsed_url = urllib.parse.urlparse(result.url)
@@ -624,7 +624,7 @@ class GoogleLoginTest(ZulipTestCase):
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate")
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:")
         self.assertEquals(result.status_code, 400)
         self.assertEquals(m.call_args_list[0][0][0],
                           'Google oauth2 CSRF error')

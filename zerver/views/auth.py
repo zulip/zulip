@@ -11,17 +11,19 @@ from django.middleware.csrf import get_token
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
+from django.core import signing
 from six import text_type
 from six.moves import urllib
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from confirmation.models import Confirmation
 from zerver.forms import OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
-from zerver.views import create_homepage_form, create_preregistration_user
+from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
+from zerver.views import create_homepage_form, create_preregistration_user, \
+    redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 from zproject.jinja2 import render_to_response
 
@@ -31,6 +33,7 @@ import jwt
 import logging
 import requests
 import time
+import ujson
 
 def maybe_send_to_registration(request, email, full_name=''):
     # type: (HttpRequest, text_type, text_type) -> HttpResponse
@@ -149,24 +152,41 @@ def google_oauth2_csrf(request, value):
 
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
-    uri = 'https://accounts.google.com/o/oauth2/auth?'
+    main_site_uri = ''.join((
+        settings.EXTERNAL_URI_SCHEME,
+        settings.EXTERNAL_HOST,
+        reverse('zerver.views.auth.send_oauth_request_to_google'),
+    ))
+    params = {'subdomain': get_subdomain(request)}
+    return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
+
+def send_oauth_request_to_google(request):
+    # type: (HttpRequest) -> HttpResponse
+    subdomain = request.GET.get('subdomain', '')
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        if not subdomain or not Realm.objects.filter(subdomain=subdomain).count():
+            return redirect_to_subdomain_login_url()
+
+    google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '{}:{}'.format(
+    csrf_state = '{}:{}:{}'.format(
         cur_time,
-        google_oauth2_csrf(request, cur_time),
+        google_oauth2_csrf(request, cur_time + subdomain),
+        subdomain
     )
+
     prams = {
         'response_type': 'code',
         'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
         'redirect_uri': ''.join((
             settings.EXTERNAL_URI_SCHEME,
-            request.get_host(),
+            settings.EXTERNAL_HOST,
             reverse('zerver.views.auth.finish_google_oauth2'),
         )),
         'scope': 'profile email',
         'state': csrf_state,
     }
-    return redirect(uri + urllib.parse.urlencode(prams))
+    return redirect(google_uri + urllib.parse.urlencode(prams))
 
 def finish_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
@@ -178,12 +198,12 @@ def finish_google_oauth2(request):
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 2:
+    if csrf_state is None or len(csrf_state.split(':')) != 3:
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
-    value, hmac_value = csrf_state.split(':')
-    if hmac_value != google_oauth2_csrf(request, value):
+    value, hmac_value, subdomain = csrf_state.split(':')
+    if hmac_value != google_oauth2_csrf(request, value + subdomain):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
 
@@ -195,7 +215,7 @@ def finish_google_oauth2(request):
             'client_secret': settings.GOOGLE_OAUTH2_CLIENT_SECRET,
             'redirect_uri': ''.join((
                 settings.EXTERNAL_URI_SCHEME,
-                request.get_host(),
+                settings.EXTERNAL_HOST,
                 reverse('zerver.views.auth.finish_google_oauth2'),
             )),
             'grant_type': 'authorization_code',
@@ -234,16 +254,56 @@ def finish_google_oauth2(request):
     else:
         logging.error('Google oauth2 account email not found: %s' % (body,))
         return HttpResponse(status=400)
+
     email_address = email['value']
+    if not subdomain:
+        # When request was not initiated from subdomain.
+        user_profile, return_data = authenticate_remote_user(request, email_address)
+        invalid_subdomain = bool(return_data.get('invalid_subdomain'))
+        return login_or_register_remote_user(request, email_address, user_profile,
+                                             full_name, invalid_subdomain)
+
+    try:
+        realm = Realm.objects.get(subdomain=subdomain)
+    except Realm.DoesNotExist:
+        return redirect_to_subdomain_login_url()
+
+    return redirect_and_log_into_subdomain(realm, full_name, email_address)
+
+def authenticate_remote_user(request, email_address):
+    # type: (HttpRequest, str) -> Tuple[UserProfile, Dict[str, Any]]
     return_data = {} # type: Dict[str, bool]
     user_profile = authenticate(username=email_address,
                                 realm_subdomain=get_subdomain(request),
                                 use_dummy_backend=True,
                                 return_data=return_data)
+    return user_profile, return_data
 
+def log_into_subdomain(request):
+    # type: (HttpRequest) -> HttpResponse
+    try:
+        # Discard state if older than 15 seconds
+        state = request.get_signed_cookie('subdomain.signature',
+                                          salt='zerver.views.auth',
+                                          max_age=15)
+    except KeyError:
+        logging.warning('Missing subdomain signature cookie.')
+        return HttpResponse(status=400)
+    except signing.BadSignature:
+        logging.warning('Subdomain cookie has bad signature.')
+        return HttpResponse(status=400)
+
+    data = ujson.loads(state)
+    if data['subdomain'] != get_subdomain(request):
+        logging.warning('Login attemp on invalid subdomain')
+        return HttpResponse(status=400)
+
+    email_address = data['email']
+    full_name = data['name']
+    user_profile, return_data = authenticate_remote_user(request, email_address)
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
-    return login_or_register_remote_user(request, email_address, user_profile, full_name,
-                                         invalid_subdomain)
+    return login_or_register_remote_user(request, email_address, user_profile,
+                                         full_name, invalid_subdomain)
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
