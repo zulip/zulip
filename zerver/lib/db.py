@@ -4,7 +4,7 @@ import time
 from psycopg2.extensions import cursor, connection
 
 from typing import Callable, Optional, Iterable, Any, Dict, Union, TypeVar, \
-    Mapping, Sequence
+    Mapping, Sequence, Type
 from six import text_type
 from zerver.lib.str_utils import NonBinaryStr
 
@@ -44,12 +44,10 @@ class TimeTrackingConnection(connection):
         self.queries = [] # type: List[Dict[str, str]]
         super(TimeTrackingConnection, self).__init__(*args, **kwargs)
 
-    def cursor(self, name=None):
-        # type: (Optional[text_type]) -> TimeTrackingCursor
-        if name is None:
-            return super(TimeTrackingConnection, self).cursor(cursor_factory=TimeTrackingCursor)
-        else:
-            return super(TimeTrackingConnection, self).cursor(name, cursor_factory=TimeTrackingCursor)
+    def cursor(self, *args, **kwargs):
+        # type: (text_type, Type[TimeTrackingCursor]) -> TimeTrackingCursor
+        kwargs.setdefault('cursor_factory', TimeTrackingCursor)
+        return connection.cursor(self, *args, **kwargs)
 
 def reset_queries():
     # type: () -> None
