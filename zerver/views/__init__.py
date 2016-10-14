@@ -51,6 +51,7 @@ from zproject.backends import password_auth_enabled
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
 
 import requests
+import ujson
 
 import calendar
 import datetime
@@ -62,6 +63,26 @@ import time
 import logging
 
 from zproject.jinja2 import render_to_response
+
+def redirect_and_log_into_subdomain(realm, full_name, email_address):
+    # type: (Realm, text_type, text_type) -> HttpResponse
+    subdomain_login_uri = ''.join([
+        realm.uri,
+        reverse('zerver.views.auth.log_into_subdomain')
+    ])
+
+    domain = '.' + settings.EXTERNAL_HOST.split(':')[0]
+    response = redirect(subdomain_login_uri)
+
+    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain}
+    # Creating a singed cookie so that it cannot be tampered with.
+    # Cookie and the signature expire in 15 seconds.
+    response.set_signed_cookie('subdomain.signature',
+                               ujson.dumps(data),
+                               expires=15,
+                               domain=domain,
+                               salt='zerver.views.auth')
+    return response
 
 @require_post
 def accounts_register(request):
