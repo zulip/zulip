@@ -1067,7 +1067,8 @@ $(function () {
         $("#subscriptions-status").hide();
 
         channel.patch({
-            url: "/json/streams/" + old_name,
+            // Stream names might contain unsafe characters so we must encode it first.
+            url: "/json/streams/" + encodeURIComponent(old_name),
             data: {"new_name": JSON.stringify(new_name)},
             success: function (data) {
                 new_name_box.val('');
