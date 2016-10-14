@@ -468,7 +468,7 @@ function _setup_page() {
             },
             error: function (xhr, error_type) {
                 ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
-            },
+            }
         });
     });
 

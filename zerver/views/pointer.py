@@ -54,7 +54,7 @@ def get_profile_backend(request, user_profile):
     return json_success(result)
 
 def deactivate_user_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse    
+    # type: (HttpRequest, UserProfile) -> HttpResponse
     return _deactivate_user_profile_backend(request, user_profile)
 
 def _deactivate_user_profile_backend(request, target):
