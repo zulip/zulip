@@ -759,7 +759,7 @@ class DeactivateUserTest(ZulipTestCase):
 
     def test_deactivate_user(self):
         email = 'hamlet@zulip.com'
-        self.login(email)        
+        self.login(email)
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
