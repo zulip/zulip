@@ -610,6 +610,44 @@ If this is already enabled in your BIOS, double-check that you are running a
 For further information about troubleshooting vagrant timeout errors [see
 this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
+#### Vagrant up fails with subprocess.CalledProcessError
+
+The `vagrant up` command basically does the following:
+
+* Downloads an Ubuntu image and starts it using a Vagrant provider.
+* Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
+  `tools/provision.py`, which has a lot of subcommands that are
+  executed via Python's `subprocess` module.  These errors mean that
+  one of those subcommands failed.
+
+To debug such errors, you can log in to the Vagrant guest machine by
+running `vagrant ssh`, which should present you with a standard shell
+prompt.  You can debug interactively by using e.g. `cd /srv/zulip &&
+./tools/provision.py`, and then running the individual subcommands
+that failed.  Once you've resolved the problem, you can rerun
+`tools/provision.py` to proceed; the provisioning system is designed
+to recover well from failures.
+
+The zulip provisioning system is generally highly reliable; the most
+common cause of issues here is a poor network connection (or one where
+you need a proxy to access the Internet and haven't
+[configured the development environment to use it](brief-install-vagrant-dev.html#specifying-a-proxy).
+
+Once you've provisioned successfully, you'll get output like this:
+```
+Zulip development environment setup succeeded!
+(zulip-venv) vagrant@vagrant-base-trusty-amd64:/srv/zulip$
+```
+
+If the `(zulip-venv)` part is missing, this is because your
+installation failed the first time before the Zulip virtualenv was
+created.  You can fix this by just closing the shell and running
+`vagrant ssh` again, or using `source /srv/zulip-venv/bin/activate`.
+
+Finally, if you encounter any issues that weren't caused by your
+Internet connection, please report them!  We try hard to keep Zulip
+development environment provisioning free of bugs.
+
 #### npm install error
 
 The `tools/provision.py` script may encounter an error related to `npm install`
