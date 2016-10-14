@@ -464,8 +464,7 @@ function _setup_page() {
             url: '/json/users/me',
 
             success: function () {
-
-                // not sure what to put here/how to navigate to login pg
+                window.location.href = "/login";
             },
             error: function (xhr, error_type) {
                 ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
