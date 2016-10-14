@@ -232,7 +232,7 @@ Nagios is an optional component used for notifications to the system
 administrator, e.g., in case of outages.
 
 `zulip/puppet/zulip/manifests/nagios.pp` installs Nagios plugins from
-puppet/`zulip/files/nagios_plugins/`.
+`puppet/zulip/files/nagios_plugins/`.
 
 This component is intended to install Nagios plugins intended to be run
 on a Nagios server; most of the Zulip Nagios plugins are intended to be
