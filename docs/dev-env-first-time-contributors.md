@@ -610,6 +610,62 @@ If this is already enabled in your BIOS, double-check that you are running a
 For further information about troubleshooting vagrant timeout errors [see
 this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
+Or
+
+If you see this error after running `vagrant up`:
+
+```
+==> default: Cannot add PPA: 'ppa:groonga/ppa'.
+==> default: Please check that the PPA name or format is correct.
+==> default: Traceback (most recent call last):
+==> default:   File "/srv/zulip/tools/provision.py", line 221, in <module>
+==> default: + sudo ./scripts/lib/setup-apt-repo
+==> default: + sudo add-apt-repository -y ppa:groonga/ppa
+==> default:     sys.exit(main())
+==> default:   File "/srv/zulip/tools/provision.py", line 129, in main
+==> default:     run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
+==> default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 93, in run
+==> default:     raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
+==> default: subprocess.CalledProcessError
+==> default: : Command '['sudo', 'add-apt-repository', '-y', 'ppa:groonga/ppa']' returned non-zero exit status 1
+The SSH command responded with a non-zero exit status. Vagrant
+assumes that this means the command failed. The output for this command
+should be in the log above. Please read the output to determine what
+went wrong.
+
+```
+
+This may be an error with the provision.py tool. If such an error, you can log in as guest by running `vagrant ssh`. 
+On doing so you will get :
+
+```
+Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
+ 
+ * Documentation:  https://help.ubuntu.com/
+Last login: Tue Oct  4 23:44:19 2016 from 10.0.3.1
+vagrant@vagrant-base-trusty-amd64:~$
+
+```
+###### Note : "(zulip-venv)" isn't present at the beginning.
+
+Now re-run the provisioning step from inside the guest by `cd`'ing to /srv/zulip and then running `python tools/provision.py`.
+
+if successful, this would be the end line :
+
+```
+Zulip development environment setup succeeded!
+vagrant@vagrant-base-trusty-amd64:/srv/zulip$ 
+
+```
+
+Log out of guest by typing `ctrl + C` followed by `exit` , and then log in again. 
+
+This means you're inside the Zulip dev environment: 
+```
+(zulip-venv)vagrant@vagrant-base-trusty-amd64:~$ 
+
+```
+
 #### npm install error
 
 The `tools/provision.py` script may encounter an error related to `npm install`
