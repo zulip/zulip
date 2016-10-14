@@ -16,7 +16,7 @@ Pillow==3.3.1
 Pygments==2.1.3
 
 # Needed for building complex DB queries
-SQLAlchemy==0.7.8
+SQLAlchemy==1.1.1
 
 # Needed for Tornado >3.2 compatibility
 backports-abc==0.4
