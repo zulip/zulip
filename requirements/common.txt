@@ -6,7 +6,7 @@ git+https://github.com/zulip/truncated-django-1.8.15.git@cbf4fa3aef1b17f37d75a70
 Jinja2==2.8
 
 # Needed for markdown processing
-Markdown==2.1.1
+Markdown==2.6.7
 MarkupSafe==0.23
 
 # Needed for Image Processing

@@ -768,7 +768,7 @@ class AutoLink(markdown.inlinepatterns.Pattern):
         url = match.group('url')
         return url_to_a(url)
 
-class UListProcessor(markdown.blockprocessors.OListProcessor):
+class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
 
         Based on markdown.blockprocessors.UListProcessor, but does not accept
@@ -935,6 +935,16 @@ class AtomicLinkPattern(LinkPattern):
         return ret
 
 class Bugdown(markdown.Extension):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Union[bool, None, text_type]) -> None
+        # define default configs
+        self.config = {
+            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
+             "realm": [kwargs['realm'], "Realm name"]
+        }
+
+        super(Bugdown, self).__init__(*args, **kwargs)
+
     def extendMarkdown(self, md, md_globals):
         # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['reference']
@@ -1059,18 +1069,22 @@ class Bugdown(markdown.Extension):
 md_engines = {}
 realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
 
+
 def make_md_engine(key, opts):
     # type: (text_type, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         safe_mode     = 'escape',
         output_format = 'html',
-        extensions    = ['nl2br',
+        extensions    = [
+                        'nl2br',
                          'tables',
-                         codehilite.makeExtension(configs=[
-                    ('force_linenos', False),
-                    ('guess_lang',    False)]),
+                         codehilite.makeExtension(
+                                linenums=False,
+                                guess_lang=False
+                         ),
                          fenced_code.makeExtension(),
-                         Bugdown(opts)])
+                         Bugdown(realm_filters=opts["realm_filters"][0],
+                                 realm=opts["realm"][0])])
 
 def subject_links(domain, subject):
     # type: (text_type, text_type) -> List[text_type]
