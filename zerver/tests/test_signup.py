@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase
 
-# from zilencer.models import Deployment
+from zilencer.models import Deployment
 
 from zerver.views import do_change_password
 from zerver.views.invite import get_invitee_emails_set
@@ -758,6 +758,7 @@ class UserSignUpTest(ZulipTestCase):
 class DeactivateUserTest(ZulipTestCase):
 
     def test_deactivate_user(self):
+        # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         user = get_user_profile_by_email('hamlet@zulip.com')
