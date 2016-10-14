@@ -57,7 +57,15 @@ exports.toggle_actions_popover = function (element, id) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var message = current_msg_list.get(id);
-        var can_edit = message.sent_by_me && message.local_id === undefined && page_params.realm_allow_message_editing;
+        var now = new XDate();
+        var can_edit_content = page_params.realm_message_content_edit_limit_seconds === 0 ||
+            page_params.realm_message_content_edit_limit_seconds +
+            now.diffSeconds(message.timestamp * 1000) > 0;
+        var can_edit = message.sent_by_me &&
+            message.local_id === undefined &&
+            page_params.realm_allow_message_editing &&
+            // if it's a stream message, we can edit the topic even if we can't edit the content
+            (can_edit_content || message.stream);
         var can_mute_topic =
                 message.stream &&
                 message.subject &&
