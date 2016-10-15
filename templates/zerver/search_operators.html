@@ -30,7 +30,7 @@
       </tr>
       <tr>
         <td class="operator">sender:me</td>
-        <td class="definition">{{ _('Narrow to messages sent by you') }}.</td>
+        <td class="definition">{{ _('Narrow to messages sent by you.') }}</td>
       </tr>
       <tr>
         <td class="operator">near:<span class="operator_value">id</span></td>
@@ -43,49 +43,51 @@
       <tr>
       <tr>
         <td class="operator">is:alerted</td>
-        <td class="definition">{{ _('Narrow to messages with alert words') }}.</td>
+        <td class="definition">{{ _('Narrow to messages with alert words.') }}</td>
       </tr>
         <td class="operator">is:mentioned</td>
-        <td class="definition">{{ _('Narrow to messages that mention you') }}.</td>
+        <td class="definition">{{ _('Narrow to messages that mention you.') }}</td>
       </tr>
       <tr>
         <td class="operator">is:private</td>
-        <td class="definition">{{ _('Narrow to private messages') }}.</td>
+        <td class="definition">{{ _('Narrow to private messages.') }}</td>
       </tr>
       <tr>
         <td class="operator">is:starred</td>
-        <td class="definition">{{ _('Narrow to starred messages') }}.</td>
+        <td class="definition">{{ _('Narrow to starred messages.') }}</td>
       </tr>
       <tr>
         <td class="operator">has:link</td>
-        <td class="definition">{{ _('Narrow to messages containing links') }}.</td>
+        <td class="definition">{{ _('Narrow to messages containing links.') }}</td>
       </tr>
       <tr>
         <td class="operator">has:image</td>
-        <td class="definition">{{ _('Narrow to messages containing images') }}.</td>
+        <td class="definition">{{ _('Narrow to messages containing images.') }}</td>
       </tr>
       <tr>
         <td class="operator">has:attachment</td>
-        <td class="definition">{{ _('Narrow to messages containing uploads') }}.</td>
+        <td class="definition">{{ _('Narrow to messages containing uploads.') }}</td>
       </tr>
       <tr>
         <td class="operator"><span class="operator_value">keyword</span></td>
-        <td class="definition">{{ _('Search for') }} <span class="operator_value">{{ _('keyword') }}</span> {{ _('in the topic or message content') }}</td>
+        <td class="definition">{% trans %}Search for <span class="operator_value"> keyword </span> in the topic or message content {% endtrans %}</td>
       </tr>
       <tr>
         <td class="operator">-topic:<span class="operator_value">topic</span></td>
-        <td class="definition">{{ _('Exclude messages with topic') }} <span class="operator_value">topic</span></td>
+        <td class="definition">{% trans %}Exclude messages with topic <span class="operator_value">topic</span>{% endtrans %}</td>
       </tr>
     </table>
-    <p>{{ _('You can use any combination of these search operators in a single query') }}.  {{ _('For example') }}:</p>
+    {% trans %}
+    <p>You can use any combination of these search operators in a single query. For example:</p>
 
     <p>&nbsp; <span class="operator">stream:<span class="operator_value">streamname</span>
           sender:<span class="operator_value">user@example.com</span>
             <span class="operator_value">keyword</span></span></p>
 
-    <p>{{ _('would search for messages sent by') }} <span class="operator_value">user@example.com</span> {{ _('to stream') }}
+    <p>would search for messages sent by <span class="operator_value">user@example.com</span> to stream
     <span class="operator_value">streamname</span>
-    {{ _('containing the keyword') }} <span class="operator_value">keyword</span>.</p>
+    containing the keyword <span class="operator_value">keyword</span>.</p>
+    {% endtrans %}
   </div>
   <div class="modal-footer">
     <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</button>

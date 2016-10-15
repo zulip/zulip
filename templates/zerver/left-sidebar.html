@@ -33,7 +33,7 @@
                         </div>
                         <div id="share-the-love-contents">
                           <div id="tell-a-friend-success" class="alert alert-success">
-                            <strong>{{ _('Thanks!') }}</strong> {{ _('A hand-crafted, artisanal invite is on the way') }}.
+                            {% trans %}<strong>Thanks!</strong> A hand-crafted, artisanal invite is on the way.{% endtrans %}
                           </div>
                           <div class="still-have-invites" id="encouraging-invite-message">
                             <p>
@@ -58,7 +58,7 @@
                           </div>
                           <div class="invite-count-area">
                             <span id="invite-hearts"></span>
-                            <small class="pull-right"><span class="invite-count">0</span> {{ _('invite') }}<span class="invite-count-is-plural">s</span> {{ _('remaining') }}</small>
+                            <small class="pull-right"><span class="invite-count">0 {{ _('invites remaining') }}</span></small>
                           </div>
                         </div>
                       </div>

@@ -15,9 +15,11 @@
       <span class="tagline os-tagline">
          {{ _('Zulip has been released as open source software!') }}
       </span>
+      {% trans %}
       <span class="footnote os-footnote">
-         {{ _('Read the') }} <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">{{ _('announcement') }}</a> {{ _('or go to') }} <a href="https://www.zulip.org" target="_blank">{{ _('the Zulip open source project website') }}</a>.
+         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
       </span>
+      {% endtrans %}
     </div>
   </div>
   {% endif %}
@@ -44,10 +46,10 @@ autofocus('#id_username');
     {% if dev_auth_enabled %}
     <h3 class="login-page-header">{{ _('Zulip Dev Login') }}</h3>
     {% if not password_auth_enabled %}
-    <h4 class="login-page-subheader">{{ _('Choose a user') }}:</h4>
+    <h4 class="login-page-subheader">{{ _('Choose a user:') }}</h4>
     {% endif %}
     {% else %}
-    <h3 class="login-page-header">{{ _('You look familiar') }}.</h3>
+    <h3 class="login-page-header">{{ _('You look familiar.') }}</h3>
     {% endif %}
 
 {% if only_sso %}
@@ -63,7 +65,7 @@ autofocus('#id_username');
 {% if form.errors or desktop_sso_unknown_email %}
 <div class="alert alert-error">
     {% if desktop_sso_unknown_email %}
-        {{ _('Zulip is not currently available for your domain') }}. <br />
+        {{ _('Zulip is not currently available for your domain.') }} <br />
     {% else %}
         {% for error in form.errors.values() %}
         <div>{{ error | striptags }}</div>
@@ -74,7 +76,7 @@ autofocus('#id_username');
 
     {% if email %}
     <div class="alert">
-        {{ _("You've already registered with this email address. Please log in below") }}.
+        {{ _("You've already registered with this email address. Please log in below.") }}
     </div>
     {% endif %}
 

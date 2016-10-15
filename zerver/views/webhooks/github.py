@@ -7,7 +7,8 @@ from zerver.decorator import authenticated_api_view, REQ, has_request_variables,
 from zerver.views.messages import send_message_backend
 from zerver.lib.webhooks.git import get_push_commits_event_message,\
     SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message, \
-    get_remove_branch_event_message
+    get_remove_branch_event_message, get_pull_request_event_message,\
+    SUBJECT_WITH_PR_INFO_TEMPLATE
 import logging
 import re
 import ujson
@@ -28,6 +29,25 @@ def is_test_repository(repository):
 class UnknownEventType(Exception):
     pass
 
+def github_pull_request_content(payload):
+    # type: (Mapping[text_type, Any]) -> text_type
+    pull_request = payload['pull_request']
+    action = 'synchronized' if payload['action'] == 'synchronize' else payload['action']
+    if action in ('opened', 'edited'):
+        return get_pull_request_event_message(
+            payload['sender']['login'],
+            action,
+            pull_request['html_url'],
+            pull_request['head']['ref'],
+            pull_request['base']['ref'],
+            pull_request['body'],
+            pull_request.get('assignee', {}).get('login')
+        )
+    return get_pull_request_event_message(
+            payload['sender']['login'],
+            action,
+            pull_request['html_url'],
+        )
 
 def github_generic_subject(noun, topic_focus, blob):
     # type: (text_type, text_type, Mapping[text_type, Any]) -> text_type
@@ -80,8 +100,13 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
     # Event Handlers
     if event == 'pull_request':
         pull_req = payload['pull_request']
-        subject = github_generic_subject('pull request', topic_focus, pull_req)
-        content = github_generic_content('pull request', payload, pull_req)
+        subject = SUBJECT_WITH_PR_INFO_TEMPLATE.format(
+            repo=repository['name'],
+            type='PR',
+            id=pull_req['number'],
+            title=pull_req['title']
+        )
+        content = github_pull_request_content(payload)
     elif event == 'issues':
         # in v1, we assume that this stream exists since it is
         # deprecated and the few realms that use it already have the

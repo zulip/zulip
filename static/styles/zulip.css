@@ -3497,7 +3497,7 @@ li.expanded_private_message {
     width: 100%;
     top: 41px;
     left: 0px;
-    z-index: 99;
+    z-index: 101;
 }
 
 #home .alert-bar {

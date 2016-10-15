@@ -1,23 +1,35 @@
 from django.db import connection, models
+from django.utils import timezone
 from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
-    UserCount, StreamCount, HuddleCount, BaseCount
-from analytics.lib.interval import TimeInterval, timeinterval_range, subintervals
+    UserCount, StreamCount, BaseCount, FillState, get_fill_state, installation_epoch
 from zerver.models import Realm, UserProfile, Message, Stream, models
+from zerver.lib.timestamp import floor_to_day
 
 from typing import Any, Optional, Type
 from six import text_type
 
+# First post office in Boston
+MIN_TIME = datetime(1639, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+
 class CountStat(object):
-    def __init__(self, property, zerver_count_query, filter_args, smallest_interval, frequency):
-        # type: (text_type, ZerverCountQuery, Dict[str, bool], str, str) -> None
+    HOUR = 'hour'
+    DAY = 'day'
+    FREQUENCIES = frozenset([HOUR, DAY])
+    # Allowed intervals are HOUR, DAY, and, GAUGE
+    GAUGE = 'gauge'
+
+    def __init__(self, property, zerver_count_query, filter_args, frequency, is_gauge):
+        # type: (text_type, ZerverCountQuery, Dict[str, bool], str, bool) -> None
         self.property = property
         self.zerver_count_query = zerver_count_query
         # might have to do something different for bitfields
         self.filter_args = filter_args
-        self.smallest_interval = smallest_interval
+        if frequency not in self.FREQUENCIES:
+            raise ValueError("Unknown frequency: %s" % (frequency,))
         self.frequency = frequency
+        self.interval = self.GAUGE if is_gauge else frequency
 
 class ZerverCountQuery(object):
     def __init__(self, zerver_table, analytics_table, query):
@@ -26,29 +38,58 @@ class ZerverCountQuery(object):
         self.analytics_table = analytics_table
         self.query = query
 
-def process_count_stat(stat, range_start, range_end):
-    # type: (CountStat, datetime, datetime) -> None
-    # stats that hit the prod database
-    for time_interval in timeinterval_range(range_start, range_end, stat.smallest_interval, stat.frequency):
-        do_pull_from_zerver(stat, time_interval)
+def process_count_stat(stat, fill_to_time):
+    # type: (CountStat, datetime) -> None
+    fill_state = get_fill_state(stat.property)
+    if fill_state is None:
+        currently_filled = installation_epoch()
+        FillState.objects.create(property = stat.property,
+                                 end_time = currently_filled,
+                                 state = FillState.DONE)
+    elif fill_state['state'] == FillState.STARTED:
+        do_delete_count_stat_at_hour(stat, fill_state['end_time'])
+        currently_filled = fill_state['end_time'] - timedelta(hours = 1)
+        FillState.objects.filter(property = stat.property). \
+            update(end_time = currently_filled, state = FillState.DONE)
+    elif fill_state['state'] == FillState.DONE:
+        currently_filled = fill_state['end_time']
+    else:
+        raise ValueError("Unknown value for FillState.state: %s." % fill_state['state'])
 
-    # aggregate hour to day
-    for time_interval in timeinterval_range(range_start, range_end, 'day', stat.frequency):
-        if stat.smallest_interval == 'hour':
-            do_aggregate_hour_to_day(stat, time_interval)
+    currently_filled = currently_filled + timedelta(hours = 1)
+    while currently_filled <= fill_to_time:
+        FillState.objects.filter(property = stat.property) \
+                     .update(end_time = currently_filled, state = FillState.STARTED)
+        do_fill_count_stat_at_hour(stat, currently_filled)
+        FillState.objects.filter(property = stat.property).update(state = FillState.DONE)
+        currently_filled = currently_filled + timedelta(hours = 1)
 
-    # aggregate to summary tables
-    for interval in ['hour', 'day', 'gauge']:
-        for time_interval in timeinterval_range(range_start, range_end, interval, stat.frequency):
-            if stat.smallest_interval in subintervals(interval):
-                do_aggregate_to_summary_table(stat, time_interval)
-
-def do_aggregate_to_summary_table(stat, time_interval):
-    # type: (CountStat, TimeInterval) -> None
-    if InstallationCount.objects.filter(property = stat.property,
-                                        end_time = time_interval.end,
-                                        interval = time_interval.interval).exists():
+# We assume end_time is on an hour boundary, and is timezone aware.
+# It is the caller's responsibility to enforce this!
+def do_fill_count_stat_at_hour(stat, end_time):
+    # type: (CountStat, datetime) -> None
+    if stat.frequency == CountStat.DAY and (end_time != floor_to_day(end_time)):
         return
+
+    if stat.interval == CountStat.HOUR:
+        start_time = end_time - timedelta(hours = 1)
+    elif stat.interval == CountStat.DAY:
+        start_time = end_time - timedelta(days = 1)
+    else: # stat.interval == CountStat.GAUGE
+        start_time = MIN_TIME
+
+    do_pull_from_zerver(stat, start_time, end_time, stat.interval)
+    do_aggregate_to_summary_table(stat, end_time, stat.interval)
+
+def do_delete_count_stat_at_hour(stat, end_time):
+    # type: (CountStat, datetime) -> None
+    UserCount.objects.filter(property = stat.property, end_time = end_time).delete()
+    StreamCount.objects.filter(property = stat.property, end_time = end_time).delete()
+    RealmCount.objects.filter(property = stat.property, end_time = end_time).delete()
+    InstallationCount.objects.filter(property = stat.property, end_time = end_time).delete()
+
+def do_aggregate_to_summary_table(stat, end_time, interval):
+    # type: (CountStat, datetime, str) -> None
     cursor = connection.cursor()
 
     # Aggregate into RealmCount
@@ -71,9 +112,9 @@ def do_aggregate_to_summary_table(stat, time_interval):
             GROUP BY zerver_realm.id
         """ % {'analytics_table' : analytics_table._meta.db_table,
                'property' : stat.property,
-               'interval' : time_interval.interval}
+               'interval' : interval}
 
-        cursor.execute(realmcount_query, {'end_time': time_interval.end})
+        cursor.execute(realmcount_query, {'end_time': end_time})
 
     # Aggregate into InstallationCount
     installationcount_query = """
@@ -89,41 +130,9 @@ def do_aggregate_to_summary_table(stat, time_interval):
             interval = '%(interval)s'
         )
     """ % {'property': stat.property,
-           'interval': time_interval.interval}
+           'interval': interval}
 
-    cursor.execute(installationcount_query, {'end_time': time_interval.end})
-    cursor.close()
-
-def do_aggregate_hour_to_day(stat, time_interval):
-    # type: (CountStat, TimeInterval) -> None
-    table = stat.zerver_count_query.analytics_table
-    id_cols = ''.join([col + ', ' for col in table.extended_id()])
-    group_by = 'GROUP BY %s' % id_cols if id_cols else ''
-
-    if table.objects.filter(property = stat.property,
-                            end_time = time_interval.end,
-                            interval = time_interval.interval).exists():
-       return
-
-    query = """
-        INSERT INTO %(table)s (%(id_cols)s value, property, end_time, interval)
-        SELECT %(id_cols)s sum(value), '%(property)s', %%(end_time)s, 'day'
-        FROM %(table)s WHERE
-        (
-            property = '%(property)s' AND
-            end_time > %%(time_start)s AND
-            end_time <= %%(time_end)s AND
-            interval = 'hour'
-        )
-        %(group_by)s property
-    """ % {'table': table._meta.db_table,
-           'id_cols' : id_cols,
-           'group_by' : group_by,
-           'property': stat.property}
-    cursor = connection.cursor()
-    cursor.execute(query, {'end_time': time_interval.end,
-                           'time_start': time_interval.end - timedelta(days=1),
-                           'time_end': time_interval.end})
+    cursor.execute(installationcount_query, {'end_time': end_time})
     cursor.close()
 
 ## methods that hit the prod databases directly
@@ -131,28 +140,20 @@ def do_aggregate_hour_to_day(stat, time_interval):
 # written in slightly more than needed generality, to reduce copy-paste errors
 # as more of these are made / make it easy to extend to a pull_X_by_realm
 
-def do_pull_from_zerver(stat, time_interval):
-    # type: (CountStat, TimeInterval) -> None
+def do_pull_from_zerver(stat, start_time, end_time, interval):
+    # type: (CountStat, datetime, datetime, str) -> None
     zerver_table = stat.zerver_count_query.zerver_table._meta.db_table # type: ignore
     join_args = ' '.join('AND %s.%s = %s' % (zerver_table, key, value) \
                          for key, value in stat.filter_args.items())
-
-    if stat.zerver_count_query.analytics_table.objects \
-                                              .filter(property = stat.property,
-                                                      end_time = time_interval.end,
-                                                      interval = time_interval.interval) \
-                                              .exists():
-       return
-
     # We do string replacement here because passing join_args as a param
     # may result in problems when running cursor.execute; we do
     # the string formatting prior so that cursor.execute runs it as sql
     query_ = stat.zerver_count_query.query % {'zerver_table' : zerver_table,
                                               'property' : stat.property,
-                                              'interval' : time_interval.interval,
+                                              'interval' : interval,
                                               'join_args' : join_args}
     cursor = connection.cursor()
-    cursor.execute(query_, {'time_start': time_interval.start, 'time_end': time_interval.end})
+    cursor.execute(query_, {'time_start': start_time, 'time_end': end_time})
     cursor.close()
 
 count_user_by_realm_query = """
@@ -237,28 +238,9 @@ count_stream_by_realm_query = """
 """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
 
-count_message_by_huddle_query = """
-    INSERT INTO analytics_huddlecount
-        (huddle_id, user_id, value, property, end_time, interval)
-    SELECT
-        zerver_message.recipient_id, zerver_message.sender_id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
-    FROM zerver_message
-    INNER JOIN zerver_recipient
-    ON
-    (
-        zerver_recipient.type = 3 AND
-        zerver_message.recipient_id = zerver_recipient.id AND
-        zerver_message.pub_date >= %%(time_start)s AND
-        zerver_message.pub_date < %%(time_end)s
-        %(join_args)s
-    )
-    GROUP BY zerver_message.recipient_id, zerver_message.sender_id
-"""
-zerver_count_message_by_huddle = ZerverCountQuery(Message, HuddleCount, count_message_by_huddle_query)
-
 COUNT_STATS = {
     'active_humans': CountStat('active_humans', zerver_count_user_by_realm,
-                               {'is_bot': False, 'is_active': True}, 'gauge', 'day'),
+                               {'is_bot': False, 'is_active': True}, CountStat.DAY, True),
     'active_bots': CountStat('active_bots', zerver_count_user_by_realm,
-                             {'is_bot': True, 'is_active': True}, 'gauge', 'day'),
-    'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')}
+                             {'is_bot': True, 'is_active': True}, CountStat.DAY, True),
+    'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, CountStat.HOUR, False)}

@@ -14,7 +14,7 @@ DELETE FROM ONLY analytics_installationcount;
 DELETE FROM ONLY analytics_realmcount;
 DELETE FROM ONLY analytics_usercount;
 DELETE FROM ONLY analytics_streamcount;
-DELETE FROM ONLY analytics_huddlecount
+DELETE FROM ONLY analytics_fillstate;
 """
 
 class Command(BaseCommand):
@@ -35,4 +35,3 @@ class Command(BaseCommand):
         else:
             print("Would delete all data from analytics tables (!); use --force to do so.")
             sys.exit(1)
-

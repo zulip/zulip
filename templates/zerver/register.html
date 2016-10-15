@@ -16,10 +16,12 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 <div class="center-container">
   <div class="center-block">
     <div class="pitch">
+        {% trans %}
         <h1>You're almost there.</h1>
         <p>
           We just need you to do one last thing.
         </p>
+        {% endtrans %}
     </div>
 
     <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_register') }}">
@@ -93,6 +95,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <div class="m-v-20">
               <div class="help-box">
                 <div id="org_type_blob_1" class="blob display-none">
+                  {% trans %}
                   Create a corporate organization if your users will
                   be members of the same company, where the privacy
                   expectation is that the company's organization
@@ -101,8 +104,10 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                   allow organization administrators to take control of
                   accounts or access private message history for other
                   users are only available to corporate organizations.
+                  {% endtrans %}
                 </div>
                 <div id="org_type_blob_2" class="blob">
+                  {% trans %}
                   Create a community organization for an open source
                   project, social group, or other community where the
                   privacy expectation is that you and other
@@ -112,6 +117,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                   control of accounts or access private message
                   history for other users are disabled in community
                   organizations.
+                  {% endtrans %}
                 </div>
               </div>
             </div>
@@ -125,7 +131,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                            value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
                            maxlength="100" />
                     {% if full_name %}
-                    <span class="help-inline">{{ _('This is used for mobile applications and other tools that require a password') }}.</span>
+                    <span class="help-inline">{{ _('This is used for mobile applications and other tools that require a password.') }}</span>
                     {% endif %}
                     {% if form.password.errors %}
                         {% for error in form.password.errors %}
@@ -157,7 +163,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <input id="id_terms" class="required" type="checkbox" name="terms"
                            {% if form.terms.value() %}checked="checked"{% endif %} />
                     <label for="id_terms" class="inline-block">
-                        {{ _('I agree to the') }} <a href="{{ server_uri }}/terms" target="_blank">{{ _('Terms of Service') }}</a>.
+                      {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
                     </label>
                     {% if form.terms.errors %}
                         {% for error in form.terms.errors %}

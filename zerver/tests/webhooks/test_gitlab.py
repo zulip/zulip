@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.webhooks.git import PUSH_COMMITS_LIMIT
+from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_helpers import WebhookTestCase
 
 class GitlabHookTests(WebhookTestCase):
@@ -18,8 +18,8 @@ class GitlabHookTests(WebhookTestCase):
         expected_subject = u"my-awesome-project / tomek"
         commits_info = u'* [66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7): b\n'
         expected_message = u"Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) to branch tomek\n\n{}[and {} more commit(s)]".format(
-            commits_info * PUSH_COMMITS_LIMIT,
-            50 - PUSH_COMMITS_LIMIT,
+            commits_info * COMMITS_LIMIT,
+            50 - COMMITS_LIMIT,
         )
         self.send_and_test_stream_message('push_commits_more_than_limit', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
 
@@ -164,8 +164,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_merge_request_created_without_assignee_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek created [Merge Request #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
+        expected_subject = u"my-awesome-project / MR #2 NEW MR"
+        expected_message = u"Tomasz Kolek created [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)\nfrom `tomek` to `master`\n\n~~~ quote\ndescription of merge request\n~~~"
 
         self.send_and_test_stream_message(
             'merge_request_created_without_assignee',
@@ -173,12 +173,10 @@ class GitlabHookTests(WebhookTestCase):
             expected_message,
             HTTP_X_GITLAB_EVENT="Merge Request Hook"
         )
-
     def test_merge_request_created_with_assignee_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek created [Merge Request #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek)."
-
+        expected_subject = u"my-awesome-project / MR #3 New Merge Request"
+        expected_message = u"Tomasz Kolek created [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to tomaszkolek0)\nfrom `tomek` to `master`\n\n~~~ quote\ndescription of merge request\n~~~"
         self.send_and_test_stream_message(
             'merge_request_created_with_assignee',
             expected_subject,
@@ -188,8 +186,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_merge_request_closed_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek closed [Merge Request #2](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
+        expected_subject = u"my-awesome-project / MR #2 NEW MR"
+        expected_message = u"Tomasz Kolek closed [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)"
 
         self.send_and_test_stream_message(
             'merge_request_closed',
@@ -200,9 +198,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_merge_request_updated_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek updated [Merge Request #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
-
+        expected_subject = u"my-awesome-project / MR #3 New Merge Request"
+        expected_message = u"Tomasz Kolek updated [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to tomaszkolek0)\nfrom `tomek` to `master`\n\n~~~ quote\nupdated desc\n~~~"
         self.send_and_test_stream_message(
             'merge_request_updated',
             expected_subject,
@@ -212,9 +209,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_merge_request_added_commit_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek added commit to [Merge Request #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
-
+        expected_subject = u"my-awesome-project / MR #3 New Merge Request"
+        expected_message = u"Tomasz Kolek added commit(s) to [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)"
         self.send_and_test_stream_message(
             'merge_request_added_commit',
             expected_subject,
@@ -224,8 +220,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_merge_request_merged_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek merged [Merge Request #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)."
+        expected_subject = u"my-awesome-project / MR #3 New Merge Request"
+        expected_message = u"Tomasz Kolek merged [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)"
 
         self.send_and_test_stream_message(
             'merge_request_merged',
