@@ -35,6 +35,9 @@ usage = """%prog [options]
     test-js-with-casper 01-login.js 03-narrow.js # Run a few test files"""
 parser = optparse.OptionParser(usage)
 
+parser.add_option('--force', dest='force',
+                  action="store_true",
+                  default=False, help='Run tests despite possible problems.')
 parser.add_option('--remote-debug',
                   help='Whether or not to enable remote debugging on port 7777',
                   action="store_true",
@@ -48,10 +51,12 @@ from tools.lib.test_script import (
     get_provisioning_status,
 )
 
-ok, msg = get_provisioning_status()
-if not ok:
-    print(msg)
-    sys.exit(1)
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
 
 from zerver.lib.test_fixtures import is_template_database_current
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
