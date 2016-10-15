@@ -768,3 +768,13 @@ class DeactivateUserTest(ZulipTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertFalse(user.is_active)
         self.login(email, fails=True)
+
+    def test_do_not_deactivate_final_admin(self):
+        # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email('iago@zulip.com')
+        self.assertTrue(user.is_active)
+        self.client_delete('/json/users/me')
+        user = get_user_profile_by_email('iago@zulip.com')
+        self.assertTrue(user.is_active)
