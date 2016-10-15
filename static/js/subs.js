@@ -1016,6 +1016,7 @@ $(function () {
         var old_name = old_name_box.text();
         var new_name_box = sub_row.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());
+        $(sub_row).find(".change-stream-privacy button").attr("data-stream-name", new_name);
 
         $("#subscriptions-status").hide();
 
