@@ -424,7 +424,7 @@ $(function () {
     // MAIN CLICK HANDLER
 
     $(document).on('click', function (e) {
-        if (e.button !== 0) {
+        if (e.button !== 0 || $(e.target).is(".drag")) {
             // Firefox emits right click events on the document, but not on
             // the child nodes, so the #compose stopPropagation doesn't get a
             // chance to capture right clicks.
@@ -438,7 +438,7 @@ $(function () {
 
         // Unfocus our compose area if we click out of it. Don't let exits out
         // of modals or selecting text (for copy+paste) trigger cancelling.
-        if (compose.composing() && !$(e.target).is("a, .drag") &&
+        if (compose.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&
             ($(e.target).closest('#emoji_map').length === 0)) {
