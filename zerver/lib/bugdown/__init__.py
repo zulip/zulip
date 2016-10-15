@@ -958,6 +958,11 @@ class Bugdown(markdown.Extension):
             markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
             '>not_strong')
 
+        # Custom strikethrough syntax: ~~foo~~
+        md.inlinePatterns.add('del',
+            markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2', 'del'),
+            '>strong')
+
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
             del md.parser.blockprocessors[k]
 
