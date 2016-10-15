@@ -109,20 +109,10 @@ exports.set_subscribers = function (sub, emails) {
     sub.subscribers = Dict.from_array(emails || [], {fold_case: true});
 };
 
-// NOTE: If you do anything with the `subscribers` attribute on the stream
-// properties object, first make sure `is_subscribed` is true (i.e., the local
-// user is subscribed). Otherwise we don't and can't update the subscribers
-// list.
-//
-// The accessor functions below know to check for that case.
-
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we're not subscribed, we don't track this, and shouldn't
-        // get these events. Likewise, if we don't know about the stream,
-        // we don't want to track this.
-        blueslip.warn("We got an add_subscriber call for a non-existent or unsubscribed stream.");
+    if (typeof sub === 'undefined') {
+        blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return;
     }
     sub.subscribers.set(user_email, true);
