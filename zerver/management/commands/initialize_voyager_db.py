@@ -11,7 +11,7 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.actions import set_default_streams, do_create_realm
 
-from optparse import make_option
+from argparse import ArgumentParser
 from six import text_type
 
 settings.TORNADO_SERVER = None
@@ -31,13 +31,13 @@ def create_users(name_list, bot_type=None):
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
 
-    option_list = BaseCommand.option_list + (
-        make_option('--extra-users',
-                    dest='extra_users',
-                    type='int',
-                    default=0,
-                    help='The number of extra users to create'),
-        )
+    def parse_arguments(self, parser):
+        # type: (ArgumentParser) -> None
+        parser.add_argument('--extra-users',
+                            dest='extra_users',
+                            type=int,
+                            default=0,
+                            help='The number of extra users to create')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
