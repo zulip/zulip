@@ -271,7 +271,8 @@ def notify_created_user(user_profile):
                  person=dict(email=user_profile.email,
                              is_admin=user_profile.is_realm_admin,
                              full_name=user_profile.full_name,
-                             is_bot=user_profile.is_bot))
+                             is_bot=user_profile.is_bot,
+                             id=user_profile.id))
     send_event(event, active_user_ids(user_profile.realm))
 
 def notify_created_bot(user_profile):
@@ -1289,16 +1290,17 @@ def set_stream_color(user_profile, stream_name, color=None):
     return color
 
 def get_subscribers_to_streams(streams, requesting_user=None):
-    # type: (Iterable[Stream], Optional[UserProfile]) -> Dict[UserProfile, List[Stream]]
-    """ Return a dict where the keys are user profiles, and the values are
+    # type: (Iterable[Stream], Optional[UserProfile]) -> Dict[int, List[Stream]]
+    """ Return a dict where the keys are user profile id, and the values are
     arrays of all the streams within 'streams' to which that user is
     subscribed.
     """
-    # TODO: Modify this function to not use UserProfile objects as dict keys
-    subscribes_to = {} # type: Dict[UserProfile, List[Stream]]
+    subscribes_to = {} # type: Dict[int, List[Stream]]
     for stream in streams:
         try:
-            subscribers = get_subscribers(stream, requesting_user=requesting_user)
+            # Get all active users in realm for updating stats like subscriber count
+            # even if user is not subscribed to stream.
+            subscribers = set(active_user_ids(requesting_user.realm))
         except JsonableError:
             # We can't get a subscriber list for this stream. Probably MIT.
             continue
@@ -1517,14 +1519,14 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
 
     for event_recipient, notifications in six.iteritems(notifications_for):
         # Don't send a peer subscription notice to yourself.
-        if event_recipient == user_profile:
+        if event_recipient == user_profile.id:
             continue
 
         stream_names = [stream.name for stream in notifications]
         event = dict(type="subscription", op="peer_remove",
                      subscriptions=stream_names,
                      user_email=user_profile.email)
-        send_event(event, [event_recipient.id])
+        send_event(event, [event_recipient])
 
 def bulk_remove_subscriptions(users, streams):
     # type: (Iterable[UserProfile], Iterable[Stream]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
@@ -2775,7 +2777,8 @@ def get_realm_user_dicts(user_profile):
     return [{'email'     : userdict['email'],
              'is_admin'  : userdict['is_realm_admin'],
              'is_bot'    : userdict['is_bot'],
-             'full_name' : userdict['full_name']}
+             'full_name' : userdict['full_name'],
+             'id'        : userdict['id']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 # Fetch initial data.  When event_types is not specified, clients want

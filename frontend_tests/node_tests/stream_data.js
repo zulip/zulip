@@ -104,18 +104,22 @@ var stream_data = require('js/stream_data.js');
     // add
     stream_data.add_subscriber('Rome', email);
     assert(stream_data.user_is_subscribed('Rome', email));
+    assert.equal(stream_data.get_subscribers_count(sub.name), 1);
 
     // verify that adding an already-added subscriber is a noop
     stream_data.add_subscriber('Rome', email);
     assert(stream_data.user_is_subscribed('Rome', email));
+    assert.equal(stream_data.get_subscribers_count(sub.name), 1);
 
     // remove
     stream_data.remove_subscriber('Rome', email);
     assert(!stream_data.user_is_subscribed('Rome', email));
+    assert.equal(stream_data.get_subscribers_count(sub.name), 0);
 
     // verify that removing an already-removed subscriber is a noop
     stream_data.remove_subscriber('Rome', email);
     assert(!stream_data.user_is_subscribed('Rome', email));
+    assert.equal(stream_data.get_subscribers_count(sub.name), 0);
 
     // Verify defensive code in set_subscribers, where the second parameter
     // can be undefined.

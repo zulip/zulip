@@ -7,6 +7,7 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
+exports.neversubbed_streams_map = {};
 
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
@@ -44,6 +45,27 @@ exports.subscribed_streams = function () {
 
 exports.get_colors = function () {
     return _.pluck(exports.subscribed_subs(), 'color');
+};
+
+exports.get_subscribers_count = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (typeof sub === 'undefined') {
+        return undefined;
+    }
+    var count = Object.keys(sub.subscribers._items).length;
+
+    if (sub.subscribed === false && sub.subscribers.has(page_params.email) === true) {
+        // If user is not subscribed (i.e. sub.subscribed is false)
+        // and user's email present in subscribers list
+        // Then, substracting count by 1
+        // Else count is correct.
+        count -= 1;
+    }
+    if (exports.neversubbed_streams_map.hasOwnProperty(stream_name)) {
+        count = exports.neversubbed_streams_map[stream_name].subscribers.length;
+    }
+    sub.subscriber_count = count;
+    return count;
 };
 
 exports.all_subscribed_streams_are_in_home_view = function () {
@@ -118,9 +140,8 @@ exports.set_subscribers = function (sub, emails) {
 
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we're not subscribed, we don't track this, and shouldn't
-        // get these events. Likewise, if we don't know about the stream,
+    if (typeof sub === 'undefined') {
+        // If we don't know about the stream(non-existent),
         // we don't want to track this.
         blueslip.warn("We got an add_subscriber call for a non-existent or unsubscribed stream.");
         return;
@@ -130,9 +151,8 @@ exports.add_subscriber = function (stream_name, user_email) {
 
 exports.remove_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we're not subscribed, we don't track this, and shouldn't
-        // get these events. Likewise, if we don't know about the stream,
+    if (typeof sub === 'undefined') {
+        // If we don't know about the stream(non-existent),
         // we don't want to track this.
         blueslip.warn("We got a remove_subscriber call for a non-existent or unsubscribed stream.");
         return;

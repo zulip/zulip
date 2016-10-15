@@ -274,6 +274,12 @@ function settings_for_sub(sub) {
     return $("#subscription_settings_" + id);
 }
 
+exports.rerender_subscribers_count = function (sub) {
+    var id = parseInt(sub.stream_id, 10);
+    var count = stream_data.get_subscribers_count(sub.name);
+    $("#subscription_" + id + " .subscriber_count").text(count);
+};
+
 exports.show_settings_for = function (stream_name) {
     settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
 };
@@ -336,6 +342,12 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
+            if (stream_data.neversubbed_streams_map[stream_name]) {
+                delete stream_data.neversubbed_streams_map[stream_name];
+            }
+            // Update subscribers count
+            exports.rerender_subscribers_count(sub);
+
             button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
             button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
@@ -392,6 +404,9 @@ exports.mark_sub_unsubscribed = function (sub) {
         if (settings.hasClass('in')) {
             settings.collapse('hide');
         }
+
+        // Update subscribers count
+        exports.rerender_subscribers_count(sub);
 
         // Hide the swatch and subscription settings
         var sub_row = settings.closest('.subscription_row');
@@ -471,6 +486,12 @@ function populate_subscriptions(subs, subscribed) {
     return sub_rows;
 }
 
+function populate_neversubbed_info(subs) {
+    stream_data.neversubbed_streams_map = _.object(_.map(subs, function (stream) {
+       return [stream.name, stream];
+    }));
+}
+
 exports.setup_page = function () {
     loading.make_indicator($('#subs_page_loading_indicator'));
 
@@ -513,6 +534,8 @@ exports.setup_page = function () {
         var sub_rows = [];
         _.each(all_subs, function (sub) {
             sub = add_admin_options(sub);
+            var subscriber_count = stream_data.get_subscribers_count(sub.name);
+            sub.subscriber_count = subscriber_count;
             sub_rows.push(sub);
         });
 
@@ -739,6 +762,9 @@ $(function () {
     // Populate stream_info with data handed over to client-side template.
     populate_subscriptions(page_params.subbed_info, true);
     populate_subscriptions(page_params.unsubbed_info, false);
+
+    // Populate neversubbed_streams_map with data
+    populate_neversubbed_info(page_params.neversubbed_info);
 
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subbed_info;
