@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from optparse import make_option
+from argparse import ArgumentParser
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
@@ -29,18 +29,17 @@ import a database dump from one or more JSON files.
 
 Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
 
-    option_list = BaseCommand.option_list + (
-        make_option('--destroy-rebuild-database',
+    def add_arguments(self, parser):
+        parser.add_argument('--destroy-rebuild-database',
                     dest='destroy_rebuild_database',
                     default=False,
                     action="store_true",
-                    help='Destroys and rebuilds the databases prior to import.'),
-        make_option('--import-into-nonempty',
+                    help='Destroys and rebuilds the databases prior to import.')
+        parser.add_argument('--import-into-nonempty',
                     dest='import_into_nonempty',
                     default=False,
                     action="store_true",
-                    help='Import into an existing nonempty database.'),
-    )
+                    help='Import into an existing nonempty database.')
 
     def new_instance_check(self, model):
         # type: (Model) -> None
