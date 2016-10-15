@@ -52,8 +52,3 @@ def get_profile_backend(request, user_profile):
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
-
-def deactivate_user_backend(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    do_deactivate_user(user_profile)
-    return json_success({})
