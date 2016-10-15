@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-set -x
 
 vergte() {
     [ "$1" = "`echo -e "$1\n$2" | sort -V | tail -n1`" ]
