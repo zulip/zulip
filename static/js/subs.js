@@ -224,42 +224,8 @@ exports.set_color = function (stream_name, color) {
 };
 
 function create_sub(stream_name, attrs) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub !== undefined) {
-        // We've already created this subscription, no need to continue.
-        return sub;
-    }
+    var sub = stream_data.create_sub_from_server_data(stream_name, attrs);
 
-    if (!attrs.stream_id) {
-        // fail fast (blueslip.fatal will throw an error on our behalf)
-        blueslip.fatal("We cannot create a sub without a stream_id");
-        return; // this line is never actually reached
-    }
-
-    // Our internal data structure for subscriptions is mostly plain dictionaries,
-    // so we just reuse the attrs that are passed in to us, but we encapsulate how
-    // we handle subscribers.
-    var subscriber_emails = attrs.subscribers;
-    var raw_attrs = _.omit(attrs, 'subscribers');
-
-    sub = _.defaults(raw_attrs, {
-        name: stream_name,
-        render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
-        subscribed: true,
-        in_home_view: true,
-        invite_only: false,
-        desktop_notifications: page_params.stream_desktop_notifications_enabled,
-        audible_notifications: page_params.stream_sounds_enabled,
-        description: ''
-    });
-
-    stream_data.set_subscribers(sub, subscriber_emails);
-
-    if (!sub.color) {
-        sub.color = get_color();
-    }
-
-    stream_data.add_sub(stream_name, sub);
     $(document).trigger($.Event('sub_obj_created.zulip', {sub: sub}));
     return sub;
 }
