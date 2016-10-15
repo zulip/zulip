@@ -127,7 +127,7 @@ Most API views will have some arguments that are passed as part of the
 request to control the behavior of the view.  In any well-engineered
 view, you need to write code to parse and validate that the arguments
 exist and have the correct form.  For many applications, this leads to
-one of serveral bad outcomes:
+one of several bad outcomes:
 
 * The code isn't written, so arguments aren't validated, leading to
   bugs and confusing error messages for users of the API.
