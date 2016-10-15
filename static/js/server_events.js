@@ -111,6 +111,8 @@ function dispatch_normal_event(event) {
             // Legacy: Stream properties are still managed by subs.js on the client side.
             subs.update_subscription_properties(event.name, event.property, event.value);
             admin.update_default_streams_table();
+        } else if (event.op === 'create') {
+            stream_data.create_streams(event.streams);
         }
         break;
 
