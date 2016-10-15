@@ -16,7 +16,7 @@ from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile, Stream, Realm, get_user_profile_by_email, \
     get_stream, email_allowed_for_realm
 
@@ -77,8 +77,9 @@ def reactivate_user_backend(request, user_profile, email):
 
 @has_request_variables
 def update_user_backend(request, user_profile, email,
+                        full_name=REQ(default="", validator=check_string),
                         is_admin=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, text_type, Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[bool]) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -89,6 +90,16 @@ def update_user_backend(request, user_profile, email,
 
     if is_admin is not None:
         do_change_is_admin(target, is_admin)
+
+    if (full_name is not None and target.full_name != full_name and
+            full_name.strip() != ""):
+        # We don't respect `name_changes_disabled` here because the request
+        # is on behalf of the administrator.
+        new_full_name = full_name.strip()
+        if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
+            return json_error(_("Name too long!"))
+        do_change_full_name(target, new_full_name)
+
     return json_success({})
 
 def avatar(request, email):
