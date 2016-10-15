@@ -43,6 +43,16 @@ parser.add_option('--remote-debug',
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+from tools.lib.test_script import (
+    get_provisioning_status,
+)
+
+ok, msg = get_provisioning_status()
+if not ok:
+    print(msg)
+    sys.exit(1)
+
 from zerver.lib.test_fixtures import is_template_database_current
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
