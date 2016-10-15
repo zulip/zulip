@@ -17,6 +17,7 @@ from zerver.lib.actions import (
     create_stream_if_needed,
     do_add_subscription,
     set_default_streams,
+    do_change_is_admin
 )
 
 from zerver.lib.initial_password import initial_password
@@ -778,3 +779,10 @@ class DeactivateUserTest(ZulipTestCase):
         self.client_delete('/json/users/me')
         user = get_user_profile_by_email('iago@zulip.com')
         self.assertTrue(user.is_active)
+        self.assertTrue(user.is_realm_admin)
+        email = 'hamlet@zulip.com'
+        user_2 = get_user_profile_by_email('hamlet@zulip.com')
+        do_change_is_admin(user_2, True)
+        self.assertTrue(user_2.is_realm_admin)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
