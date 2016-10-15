@@ -679,14 +679,24 @@ function update_announce_stream_state() {
     } else {
         disable_it = $('#user-checkboxes input').length
                     === $('#user-checkboxes input:checked').length;
+
+        // Don't disable "Announce stream" if filter is active
+        disable_it = disable_it && ($(".add-user-list-filter").expectOne().val().trim() === '');
     }
 
     announce_stream_checkbox.prop('disabled', disable_it);
 }
 
 function show_new_stream_modal() {
+    var users = people.get_rest_of_realm();
+    _.each(users, function (user) {
+        user.filtered = true;
+        user.checked = false;
+    });
+
     $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people.get_rest_of_realm()
+        users: users,
+        filtered_text: ''
     }));
 
     // Make the options default to the same each time:
@@ -782,6 +792,8 @@ $(function () {
         update_announce_stream_state();
     });
 
+    var filtered_users = {};
+
     // Search People
     $(document).on('input', '.add-user-list-filter', function (e) {
         var users = people.get_rest_of_realm();
@@ -793,8 +805,18 @@ $(function () {
         var search_term = user_list.expectOne().val().trim();
         var search_terms = search_term.toLowerCase().split(",");
 
-        var filtered_users = {};
         _.each(users, function (user) {
+            // Add user to filtered_users in user doesn't exist in filtered_users.
+            if (!filtered_users.hasOwnProperty(user.email)) {
+                filtered_users[user.email] = {'email' : user.email, 'full_name': user.full_name};
+            }
+
+            // Mark user as unchecked if checked key doesn't exist in user object.
+            if (!filtered_users[user.email].hasOwnProperty('checked')) {
+                filtered_users[user.email].checked = false;
+            }
+
+            filtered_users[user.email].filtered = false;
             var person = people.get_by_email(user.email);
             if (!person || !person.full_name) {
                 return;
@@ -806,17 +828,27 @@ $(function () {
             return _.any(search_terms, function (search_term) {
                 return _.any(names, function (name) {
                     if (name.indexOf(search_term.trim()) === 0) {
-                        filtered_users[user.email] = true;
+                        filtered_users[user.email].filtered = true;
                     }
                 });
             });
         });
 
-        // Hide users which aren't in filtered users
-        _.each(users, function (user) {
-            var display_type = filtered_users.hasOwnProperty(user.email)? "block" : "none";
-            $("label[data-name='" + user.email + "']").css({"display":display_type});
-        });
+        // Add/Update "checked" status if user is checked.
+        _.each($("#stream_creation_form input:checkbox[name=user]"),
+            function (elem) {
+                filtered_users[$(elem).val()].checked = $(elem).is(":checked");
+            }
+        );
+
+        $('#people_to_add').html(templates.render('new_stream_users', {
+            users: filtered_users,
+            filtered_text : search_term
+        }));
+
+        // Refocus cursor to search box.
+        $(".add-user-list-filter").focus();
+        $(".add-user-list-filter").val($(".add-user-list-filter").val());
 
         update_announce_stream_state();
         e.preventDefault();
@@ -845,6 +877,15 @@ $(function () {
                 return $(elem).val();
             }
         );
+
+        _.each(filtered_users, function (user) {
+            if (user.checked) {
+                principals.push(user.email);
+            }
+        });
+
+        principals = _.uniq(principals);
+
         // You are always subscribed to streams you create.
         principals.push(page_params.email);
         ajaxSubscribeForCreation(stream,

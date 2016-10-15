@@ -495,11 +495,15 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
         users: [
             {
                 email: 'lear@zulip.com',
-                full_name: 'King Lear'
+                full_name: 'King Lear',
+                filtered: true,
+                checked: false
             },
             {
                 email: 'othello@zulip.com',
-                full_name: 'Othello the Moor'
+                full_name: 'Othello the Moor',
+                filtered: true,
+                checked: false
             }
         ]
     };
