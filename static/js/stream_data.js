@@ -152,6 +152,15 @@ exports.user_is_subscribed = function (stream_name, user_email) {
     return sub.subscribers.has(user_email);
 };
 
+exports.create_streams = function (streams) {
+    _.each(streams, function (stream) {
+        var attrs = _.defaults(stream, {
+            subscribed: false
+        });
+        exports.create_sub_from_server_data(stream.name, attrs);
+    });
+};
+
 exports.create_sub_from_server_data = function (stream_name, attrs) {
     var sub = exports.get_sub(stream_name);
     if (sub !== undefined) {
