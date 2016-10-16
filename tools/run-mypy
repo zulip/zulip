@@ -61,6 +61,7 @@ api/integrations/twitter/twitter-search-bot
 bots/gcal-bot
 bots/githook-post-receive
 tools/deprecated/inject-messages/inject-messages
+puppet/zulip_internal
 """.split()
 
 exclude_scripts_py2 = [] # type: List[str]
