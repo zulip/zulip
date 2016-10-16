@@ -390,9 +390,11 @@ Filter.operator_to_prefix = function (operator, negated) {
     case 'id':
         return verb + 'message ID';
 
+    case 'subject':
     case 'topic':
         return verb + 'topic';
 
+    case 'from':
     case 'sender':
         return verb + 'messages sent by';
 
