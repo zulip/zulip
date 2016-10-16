@@ -65,7 +65,7 @@ Dependencies:
 
 import re
 import markdown
-from zerver.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
+from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
 from six import text_type
 from typing import Any, Dict, Iterable, List, MutableSequence, Optional, Tuple, Union
 
