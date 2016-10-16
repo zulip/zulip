@@ -712,7 +712,7 @@ class BugdownApiTests(ZulipTestCase):
         self.assertEqual(data['rendered'],
             u'<p>That is a <del>strikethrough</del> statement</p>')
 
-        #only work if exactly 2 tildes in front of it 
+        # only work if exactly 2 tildes in front of it
         content = 'That is not a ~~~strikethrough~~~ statement'
         result = self.client_get(
             '/api/v1/messages/render',
@@ -723,7 +723,6 @@ class BugdownApiTests(ZulipTestCase):
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
             u'<p>That is not a ~~~strikethrough~~~ statement</p>')
-        
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
