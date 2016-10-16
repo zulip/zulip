@@ -27,6 +27,7 @@ lock_path = "/var/tmp/log2zulip.lock"
 control_path = "/etc/log2zulip.conf"
 
 def mkdir_p(path):
+    # type: (str) -> None
     # Python doesn't have an analog to `mkdir -p` < Python 3.2.
     try:
         os.makedirs(path)
@@ -37,6 +38,7 @@ def mkdir_p(path):
             raise
 
 def send_log_zulip(file_name, count, lines, extra=""):
+    # type: (str, int, List[str], str) -> None
     content = "%s new errors%s:\n```\n%s\n```" % (count, extra, "\n".join(lines))
     zulip_client.send_message({
         "type": "stream",
@@ -46,6 +48,7 @@ def send_log_zulip(file_name, count, lines, extra=""):
         })
 
 def process_lines(raw_lines, file_name):
+    # type: (List[str], str) -> None
     lines = []
     for line in raw_lines:
         # Add any filtering or modification code here
@@ -61,6 +64,7 @@ def process_lines(raw_lines, file_name):
         send_log_zulip(file_name, len(lines), lines)
 
 def process_logs():
+    # type: () -> None
     for filename in log_files:
         data_file_path = "/var/tmp/log2zulip.state"
     mkdir_p(os.path.dirname(data_file_path))
