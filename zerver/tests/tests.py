@@ -619,6 +619,7 @@ class DocPageTest(ZulipTestCase):
             # type: () -> None
             self._test('/api/', 'We hear you like APIs')
             self._test('/api/endpoints/', 'pre-built API bindings for Python')
+            self._test('/about/', 'Cambridge, Massachusetts')
             self._test('/apps/', 'Appsolutely')
             self._test('/features/', 'Talk about multiple topics at once')
             self._test('/hello/', 'workplace chat that actually improves your productivity')
