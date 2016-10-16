@@ -330,7 +330,9 @@ def build_custom_checkers(by_lang):
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
         ] # type: RuleList
-    json_rules = [] # type: RuleList # just fix newlines at ends of files
+    json_rules = [] # type: RuleList # fix newlines at ends of files
+    # It is okay that json_rules is empty, because the empty list
+    # ensures we'll still check JSON files for whitespace.
     markdown_rules = markdown_whitespace_rules + prose_style_rules
     txt_rules = whitespace_rules
 
