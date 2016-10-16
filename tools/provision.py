@@ -123,8 +123,8 @@ def main():
     # project.
     os.chdir(ZULIP_PATH)
 
+    # setup-apt-repo does an `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-    run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
     if TRAVIS:

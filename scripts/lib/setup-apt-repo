@@ -20,3 +20,5 @@ else
     echo "Unsupported release $release."
     exit 1
 fi
+
+apt-get update
