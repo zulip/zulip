@@ -17,10 +17,12 @@ states = {
     }
 
 def report(state, msg):
+    # type: (str, str) -> None
     print("%s: %s" % (state, msg))
     exit(states[state])
 
 def get_loc_over_ssh(host, func):
+    # type: (str, str) -> str
     try:
         return subprocess.check_output(['ssh', host,
                                         'psql zulip -t -c "SELECT %s()"' % (func,)],
@@ -30,6 +32,7 @@ def get_loc_over_ssh(host, func):
         report('CRITICAL', 'ssh failed: %s: %s' % (str(e), e.output))
 
 def loc_to_abs_offset(loc_str):
+    # type: (str) -> int
     m = re.match(r'^\s*([0-9a-fA-F]+)/([0-9a-fA-F]+)\s*$', loc_str)
     if not m:
         raise ValueError("Unknown xlog location format: " + loc_str)
