@@ -223,14 +223,38 @@ Filter.parse = function (str) {
             search_term.push(token);
         } else {
             // Looks like an operator.
-            // FIXME: Should we skip unknown operator names here?
             negated = false;
             operator = parts.shift();
             if (operator[0] === '-') {
                 negated = true;
                 operator = operator.slice(1);
             }
+
             operand = decodeOperand(parts.join(':'), operator);
+
+            // If operator is not known use 'search' as operator name and the
+            // rest as operand to 'search' operator
+            // I will use Filter.operator_to_prefix to check if the operator is
+            // known or not this function returns '' for uknown operators.
+            // Hint: when using Filter.operator_to_prefix we must not pass
+            // operators that start with '-' we must strip it first
+            var _operator = operator;
+            if (operator[0] === '-') {
+              _operator = operator.slice(1);
+            }
+
+            // If operator is 'is' keep it
+
+            if (operator !== "is" && operator !== "subject") {
+              if (Filter.operator_to_prefix(_operator, negated) === '') {
+                // Unkonwn operator
+                operator = 'search';
+                operand = token;
+              }
+            }
+            if (operator === "subject") {
+              operator = "topic";
+            }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
         }
