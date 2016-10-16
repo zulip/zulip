@@ -80,6 +80,7 @@ if __name__ == "__main__":
         args[args.index(suite)] = suite.rstrip('/').replace("/", ".")
 
     def rewrite_arguments(search_key):
+        # type: (str) -> None
         for file_name in os.listdir(zerver_test_dir):
             if file_name.endswith(".py"):
                 filepath = zerver_test_dir + file_name
