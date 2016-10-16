@@ -1073,11 +1073,11 @@ realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]
 def make_md_engine(key, opts):
     # type: (text_type, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
-        safe_mode     = 'escape',
+        # safe_mode     = 'escape',
         output_format = 'html',
         extensions    = [
-                        'nl2br',
-                         'tables',
+                        'markdown.extensions.nl2br',
+                         'markdown.extensions.tables',
                          codehilite.makeExtension(
                                 linenums=False,
                                 guess_lang=False

@@ -53,7 +53,7 @@ def render_markdown_path(markdown_file_path):
     def path_to_html(path):
         # type: (str) -> str
         markdown_string = open(path).read()
-        return markdown.markdown(markdown_string, safe_mode='escape')
+        return markdown.markdown(markdown_string)
 
     html = memoize(path_to_html, memoize_cache, 1)(markdown_file_path)
     return mark_safe(html)
