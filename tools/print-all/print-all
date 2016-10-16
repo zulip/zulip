@@ -5,6 +5,8 @@ import os
 import re
 import sys
 
+from typing import Iterable
+
 # Prepare a PDF of the entire codebase, ready for printing.
 #
 # Depends on:
@@ -131,6 +133,7 @@ doc.close()
 
 with open('tools/print-all/tex/epilogue.tex', 'w') as f:
     def print_list(title, xs):
+        # type: (str, Iterable[str]) -> None
         f.write('\\section*{%s}\n\n' % (title,))
         for x in xs:
             f.write('%s\n\n' % (x.replace('_', r'\_'),))

@@ -2,9 +2,11 @@
 from __future__ import print_function
 
 from collections import defaultdict
+from typing import Any, Dict, Iterable
 import ujson
 
 def analyze_url_coverage():
+    # type: () -> None
     fn = 'var/url_coverage.txt' # TODO: make path more robust, maybe use json suffix
     calls = []
     for line in open(fn):
@@ -15,6 +17,7 @@ def analyze_url_coverage():
     show_which_tests_ran_endpoints(calls)
 
 def show_slow_endpoints(calls):
+    # type: (Iterable[Dict[str, Any]]) -> None
     tups = []
     for call in calls:
         tups.append((call['delay'], call['url'], call['method']))
@@ -30,6 +33,7 @@ def show_slow_endpoints(calls):
     print()
 
 def show_best_coverage(calls):
+    # type: (Iterable[Dict[str, Any]]) -> None
     count = defaultdict(int) # type: Dict[str, int]
 
     for call in calls:
@@ -46,6 +50,7 @@ def show_best_coverage(calls):
     print()
 
 def show_which_tests_ran_endpoints(calls):
+    # type: (Iterable[Dict[str, Any]]) -> None
     test_name_dct = defaultdict(list) # type: Dict[str, List[str]]
 
     for call in calls:
