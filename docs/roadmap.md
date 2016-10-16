@@ -99,7 +99,7 @@ teams.
 * [Make the buddy list work better for large teams](https://github.com/zulip/zulip/issues/236)
 * [Improve @-mentioning syntax based on stronger unique identifiers](https://github.com/zulip/zulip/issues/374)
 * [Show subscriber counts on streams](https://github.com/zulip/zulip/pull/525)
-* [Make the streams page easier to navigate with 100s of streams](https://github.com/zulip/zulip/issues/563)
+* <strike>[Make the streams page easier to navigate with 100s of streams](https://github.com/zulip/zulip/issues/563)</strike>
 * <strike>[Add support for filtering long lists of streams](https://github.com/zulip/zulip/issues/565)</strike>
 
 ## Administration and management
@@ -155,9 +155,9 @@ of its size, it takes work to keep it that way.
 
 * [Migrate most web routes to REST API](https://github.com/zulip/zulip/issues/611)
 * [Finish purging global variables from the Zulip JavaScript](https://github.com/zulip/zulip/issues/610)
-* [Finish deprecating and remove the pre-REST Zulip /send_message API](https://github.com/zulip/zulip/issues/730)
+* <strike>[Finish deprecating and remove the pre-REST Zulip /send_message API](https://github.com/zulip/zulip/issues/730)</strike>
 * [Split Tornado subsystem into a separate Django app](https://github.com/zulip/zulip/issues/729)
-* [Clean up clutter in the root of the zulip.git repository](https://github.com/zulip/zulip/issues/707)
+* <strike>[Clean up clutter in the root of the zulip.git repository](https://github.com/zulip/zulip/issues/707)</strike>
 * [Refactor zulip.css to be broken into components](https://github.com/zulip/zulip/issues/731)
 
 ## Deployment and upgrade process
@@ -269,6 +269,6 @@ These don't get GitHub issues since they're not technical projects,
 but they are important goals for the project.
 
 * <strike>Setup a Zulip server for the Zulip development community</strike>
-* Expand the number of core developers able to do code reviews
+* <strike>Expand the number of core developers able to do code reviews</strike>
 * <strike>Expand the number of contributors regularly adding features to Zulip</strike>
 * <strike>Have a successful summer with Zulip's 3 GSOC students</strike>
