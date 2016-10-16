@@ -619,6 +619,9 @@ class DocPageTest(ZulipTestCase):
             # type: () -> None
             self._test('/api/', 'We hear you like APIs')
             self._test('/api/endpoints/', 'pre-built API bindings for Python')
+            self._test('/about/', 'Cambridge, Massachusetts')
+            # Test the i18n version of one of these pages.
+            self._test('/en/about/', 'Cambridge, Massachusetts')
             self._test('/apps/', 'Appsolutely')
             self._test('/features/', 'Talk about multiple topics at once')
             self._test('/hello/', 'workplace chat that actually improves your productivity')
@@ -1996,6 +1999,17 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         html = result.content.decode('utf-8')
         self.assertIn('Invite more users', html)
+
+    def test_desktop_home(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self.client_get("/desktop_home")
+        self.assertEquals(result.status_code, 301)
+        self.assertTrue(result["Location"].endswith("/desktop_home/"))
+        result = self.client_get("/desktop_home/")
+        self.assertEquals(result.status_code, 302)
+        self.assertEquals(result["Location"], "http://testserver/")
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):

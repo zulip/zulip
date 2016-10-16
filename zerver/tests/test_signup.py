@@ -57,8 +57,10 @@ class PublicURLTest(ZulipTestCase):
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
         # through Tornado.
-        get_urls = {200: ["/accounts/home/", "/accounts/login/"],
-                    302: ["/"],
+        get_urls = {200: ["/accounts/home/", "/accounts/login/"
+                          "/en/accounts/home/", "/ru/accounts/home/",
+                          "/en/accounts/login/", "/ru/accounts/login/"],
+                    302: ["/", "/en/", "/ru/"],
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
