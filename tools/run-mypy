@@ -99,7 +99,7 @@ else:
 # find all non-excluded files in current directory
 files_dict = cast(Dict[str, List[str]],
                   lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
-                                    use_shebang=args.scripts_only, modified_only=args.modified,
+                                    use_shebang=True, modified_only=args.modified,
                                     exclude = exclude + ['stubs'], group_by_ftype=True,
                                     extless_only=args.scripts_only))
 pyi_files = set(files_dict['pyi'])
@@ -127,17 +127,14 @@ if args.disallow_untyped_defs:
 
 # run mypy
 if python_files:
-    if args.scripts_only:
-        rc = subprocess.call([mypy_command] + extra_args + python_files)
-    else:
-        rc = subprocess.call([mypy_command] + extra_args + python_files)
-        if args.linecoverage_report:
-            # Move the coverage report to where coveralls will look for it.
-            try:
-                os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
-            except OSError:
-                # maybe mypy crashed; exit with its error code
-                pass
+    rc = subprocess.call([mypy_command] + extra_args + python_files)
+    if args.linecoverage_report:
+        # Move the coverage report to where coveralls will look for it.
+        try:
+            os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
+        except OSError:
+            # maybe mypy crashed; exit with its error code
+            pass
     sys.exit(rc)
 else:
     print("There are no files to run mypy on.")
