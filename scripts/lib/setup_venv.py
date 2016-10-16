@@ -45,6 +45,13 @@ def get_package_names(requirements_file):
     cleaned = []
     operators = ['~=', '==', '!=', '<', '>']
     for package in packages:
+        if package.startswith("git+https://") and '#egg=' in package:
+            split_package = package.split("#egg=")
+            if len(split_package) != 2:
+                raise Exception("Unexpected duplicate #egg in package %s" % (package,))
+            # Extract the package name from Git requirements entries
+            package = split_package[1]
+
         for operator in operators:
             if operator in package:
                 package = package.split(operator)[0]

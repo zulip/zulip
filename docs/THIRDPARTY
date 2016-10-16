@@ -226,7 +226,7 @@ Files: tools/review
 Copyright: 2010 Ksplice, Inc.
 License: Apache-2.0
 
-Files: zerver/lib/bugdown/codehilite.py zerver/lib/bugdown/fenced_code.py
+Files: zerver/lib/bugdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg
 License: BSD-3-Clause
 Comment: https://pypi.python.org/pypi/Markdown

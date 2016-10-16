@@ -27,10 +27,23 @@ api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
 api/integrations/trac/zulip_trac.py
+api/integrations/asana/zulip_asana_mirror
+api/integrations/basecamp/zulip_basecamp_mirror
+api/integrations/codebase/zulip_codebase_mirror
+api/integrations/git/post-receive
+api/integrations/nagios/nagios-notify-zulip
+api/integrations/rss/rss-bot
+api/integrations/svn/post-commit
+api/integrations/twitter/twitter-bot
+api/integrations/twitter/twitter-search-bot
 api/zulip/__init__.py
+bots/gcal-bot
+bots/githook-post-receive
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
+puppet/zulip_internal
 tools/deprecated/generate-activity-metrics.py
+tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
 zproject/test_settings.py
 zerver/tests/test_decorators.py
@@ -45,28 +58,8 @@ exclude_common  += ['contrib_bots']
 exclude_py2 = [] # type: List[str]
 
 exclude_py3 = """
-zerver/lib/ccache.py
-""".split()
-
-exclude_scripts_common = """
-api/integrations/asana/zulip_asana_mirror
-api/integrations/basecamp/zulip_basecamp_mirror
-api/integrations/codebase/zulip_codebase_mirror
-api/integrations/git/post-receive
-api/integrations/nagios/nagios-notify-zulip
-api/integrations/rss/rss-bot
-api/integrations/svn/post-commit
-api/integrations/twitter/twitter-bot
-api/integrations/twitter/twitter-search-bot
-bots/gcal-bot
-bots/githook-post-receive
-tools/deprecated/inject-messages/inject-messages
-""".split()
-
-exclude_scripts_py2 = [] # type: List[str]
-
-exclude_scripts_py3 = """
 bots/process_ccache
+zerver/lib/ccache.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
@@ -98,21 +91,15 @@ else:
 
 if args.all:
     exclude = [] # type: List[str]
-elif args.scripts_only:
-    if py_version == 2:
-        exclude = exclude_scripts_common + exclude_scripts_py2
-    else:
-        exclude = exclude_scripts_common + exclude_scripts_py3
+if py_version == 2:
+    exclude = exclude_common + exclude_py2
 else:
-    if py_version == 2:
-        exclude = exclude_common + exclude_py2
-    else:
-        exclude = exclude_common + exclude_py3
+    exclude = exclude_common + exclude_py3
 
 # find all non-excluded files in current directory
 files_dict = cast(Dict[str, List[str]],
                   lister.list_files(targets=args.targets, ftypes=['py', 'pyi'],
-                                    use_shebang=args.scripts_only, modified_only=args.modified,
+                                    use_shebang=True, modified_only=args.modified,
                                     exclude = exclude + ['stubs'], group_by_ftype=True,
                                     extless_only=args.scripts_only))
 pyi_files = set(files_dict['pyi'])
@@ -128,7 +115,7 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs"]
+extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs", "--scripts-are-modules", "-i", "--cache-dir=var/mypy-cache"]
 if py_version == 2:
     extra_args.append("--py2")
 if args.linecoverage_report:
@@ -140,20 +127,14 @@ if args.disallow_untyped_defs:
 
 # run mypy
 if python_files:
-    if args.scripts_only:
-        rc = 0
-        for fpath in python_files:
-            print("Checking", fpath)
-            rc = subprocess.call([mypy_command] + extra_args + [fpath]) or rc
-    else:
-        rc = subprocess.call([mypy_command] + extra_args + python_files)
-        if args.linecoverage_report:
-            # Move the coverage report to where coveralls will look for it.
-            try:
-                os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
-            except OSError:
-                # maybe mypy crashed; exit with its error code
-                pass
+    rc = subprocess.call([mypy_command] + extra_args + python_files)
+    if args.linecoverage_report:
+        # Move the coverage report to where coveralls will look for it.
+        try:
+            os.rename('var/linecoverage-report/coverage.txt', 'var/.coverage')
+        except OSError:
+            # maybe mypy crashed; exit with its error code
+            pass
     sys.exit(rc)
 else:
     print("There are no files to run mypy on.")

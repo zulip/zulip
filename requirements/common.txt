@@ -6,7 +6,7 @@ git+https://github.com/zulip/truncated-django-1.8.15.git@cbf4fa3aef1b17f37d75a70
 Jinja2==2.8
 
 # Needed for markdown processing
-Markdown==2.1.1
+Markdown==2.6.7
 MarkupSafe==0.23
 
 # Needed for Image Processing
@@ -24,7 +24,7 @@ backports-abc==0.4
 # Needed for S3 file uploads
 boto==2.42.0
 
-certifi==2016.8.31
+certifi==2016.9.26
 chardet==2.3.0
 
 # Needed for integrations
@@ -47,7 +47,7 @@ git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042
 django-statsd-mozilla==0.3.16
 
 docopt==0.6.2
-fonttools==3.0
+fonttools==3.1.2
 
 # Needed for mock 2.0.0
 funcsigs==1.0.2
@@ -61,7 +61,7 @@ gitdb==0.6.4
 google-api-python-client==1.5.3
 
 # Needed for the email mirror
-html2text==2016.5.29
+html2text==2016.9.19
 httplib2==0.9.2
 
 # Needed for JWT-based auth
@@ -96,7 +96,7 @@ pycrypto==2.6.1
 pylibmc==1.5.1
 
 # Needed for timezone work
-pytz==2016.6.1
+pytz==2016.7
 
 # Needed for redis
 redis==2.10.5

@@ -109,20 +109,10 @@ exports.set_subscribers = function (sub, emails) {
     sub.subscribers = Dict.from_array(emails || [], {fold_case: true});
 };
 
-// NOTE: If you do anything with the `subscribers` attribute on the stream
-// properties object, first make sure `is_subscribed` is true (i.e., the local
-// user is subscribed). Otherwise we don't and can't update the subscribers
-// list.
-//
-// The accessor functions below know to check for that case.
-
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we're not subscribed, we don't track this, and shouldn't
-        // get these events. Likewise, if we don't know about the stream,
-        // we don't want to track this.
-        blueslip.warn("We got an add_subscriber call for a non-existent or unsubscribed stream.");
+    if (typeof sub === 'undefined') {
+        blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return;
     }
     sub.subscribers.set(user_email, true);
@@ -150,6 +140,57 @@ exports.user_is_subscribed = function (stream_name, user_email) {
         return undefined;
     }
     return sub.subscribers.has(user_email);
+};
+
+exports.create_streams = function (streams) {
+    _.each(streams, function (stream) {
+        var attrs = _.defaults(stream, {
+            subscribed: false
+        });
+        exports.create_sub_from_server_data(stream.name, attrs);
+    });
+};
+
+exports.create_sub_from_server_data = function (stream_name, attrs) {
+    var sub = exports.get_sub(stream_name);
+    if (sub !== undefined) {
+        // We've already created this subscription, no need to continue.
+        return sub;
+    }
+
+    if (!attrs.stream_id) {
+        // fail fast (blueslip.fatal will throw an error on our behalf)
+        blueslip.fatal("We cannot create a sub without a stream_id");
+        return; // this line is never actually reached
+    }
+
+    // Our internal data structure for subscriptions is mostly plain dictionaries,
+    // so we just reuse the attrs that are passed in to us, but we encapsulate how
+    // we handle subscribers.
+    var subscriber_emails = attrs.subscribers;
+    var raw_attrs = _.omit(attrs, 'subscribers');
+
+    sub = _.defaults(raw_attrs, {
+        name: stream_name,
+        render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
+        subscribed: true,
+        in_home_view: true,
+        invite_only: false,
+        desktop_notifications: page_params.stream_desktop_notifications_enabled,
+        audible_notifications: page_params.stream_sounds_enabled,
+        description: ''
+    });
+
+    exports.set_subscribers(sub, subscriber_emails);
+
+    if (!sub.color) {
+        var used_colors = exports.get_colors();
+        sub.color = stream_color.pick_color(used_colors);
+    }
+
+    exports.add_sub(stream_name, sub);
+
+    return sub;
 };
 
 return exports;
