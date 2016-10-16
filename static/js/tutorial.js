@@ -537,6 +537,7 @@ exports.start = function () {
 };
 
 exports.initialize = function () {
+    alert("tutorial");
     if (page_params.needs_tutorial) {
         exports.start();
     }
