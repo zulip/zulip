@@ -733,7 +733,8 @@ a.bottom-signup-button {
 }
 
 .login-google, .register-google, .login-sso, .login-github {
-    width: 300px;
+    max-width: 100%;
+    min-width: 300px;
     margin: auto;
     text-align: center;
     margin-top: 30px;
