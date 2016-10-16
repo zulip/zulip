@@ -59,7 +59,6 @@ else:
 
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
-subprocess.check_call(["sudo", "apt-get", "update"])
 subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 vendor = subprocess_text_output(["lsb_release", "-is"])
 codename = subprocess_text_output(["lsb_release", "-cs"])
