@@ -2000,6 +2000,17 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('Invite more users', html)
 
+    def test_desktop_home(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self.client_get("/desktop_home")
+        self.assertEquals(result.status_code, 301)
+        self.assertTrue(result["Location"].endswith("/desktop_home/"))
+        result = self.client_get("/desktop_home/")
+        self.assertEquals(result.status_code, 302)
+        self.assertEquals(result["Location"], "http://testserver/")
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
