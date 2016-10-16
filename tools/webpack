@@ -14,12 +14,14 @@ os.chdir(settings.DEPLOY_ROOT)
 STATIC_PATH = 'static/'
 
 def run():
-    # write the file to disk
+    # type: () -> None
+    """Builds for production, writing the output to disk"""
     subprocess.check_call(['tools/node', 'node_modules/.bin/webpack'] +
         ['--config', 'tools/webpack.production.config.js'])
 
 def run_watch(port):
-    # watch and rebuild on changes, serve file from memory via webpack-dev-server
+    # type: (str) -> None
+    """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
     subprocess.Popen(['tools/node', 'node_modules/.bin/webpack-dev-server'] +
         ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
 

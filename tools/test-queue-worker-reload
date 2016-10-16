@@ -11,6 +11,7 @@ import subprocess
 import re
 
 from six.moves import range
+from typing import IO, Text
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 succesful_worker_launches = [
@@ -31,7 +32,9 @@ succesful_worker_launches = [
 ]
 
 def check_worker_launch(logfile):
+    # type: (IO) -> Text
     def check(content):
+        # type: (str) -> bool
         flag = True
         for entry in succesful_worker_launches:
             flag = flag and entry in content

@@ -5,7 +5,7 @@ import hashlib
 from os.path import dirname, abspath
 
 if False:
-    from typing import Optional, List, Tuple
+    from typing import Optional, List, IO, Tuple
 
 from scripts.lib.zulip_tools import subprocess_text_output, run
 
@@ -17,7 +17,7 @@ if 'TRAVIS' in os.environ:
     NPM_CACHE_PATH = "/home/travis/zulip-npm-cache"
 
 def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=False):
-    # type: (Optional[List[str]], Optional[str], Optional[str], Optional[bool]) -> None
+    # type: (Optional[List[str]], Optional[IO], Optional[IO], Optional[bool]) -> None
     sha1sum = hashlib.sha1()
     sha1sum.update(subprocess_text_output(['cat', 'package.json']).encode('utf8'))
     sha1sum.update(subprocess_text_output(['npm', '--version']).encode('utf8'))
@@ -42,7 +42,7 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
         run(cmd, stdout=stdout, stderr=stderr)
 
 def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules=False):
-    # type: (str, List[str], Optional[str], Optional[str], Optional[bool]) -> None
+    # type: (str, List[str], Optional[IO], Optional[IO], Optional[bool]) -> None
     cmds = [
         ["sudo", "rm", "-rf", target_path],
         ['sudo', 'mkdir', '-p', target_path],

@@ -26,6 +26,8 @@ import sys
 import os
 import optparse
 
+from typing import Any, Dict
+
 usage = """print-events --user=<bot's email address> --api-key=<bot's api key> [options]
 
 Prints out certain events received by the indicated bot or user matching the filter below.
@@ -44,6 +46,7 @@ parser.add_option_group(zulip.generate_option_group(parser))
 client = zulip.init_from_options(options)
 
 def print_event(event):
+    # type: (Dict[str, Any]) -> None
     print(event)
 
 # This is a blocking call, and will continuously poll for new events

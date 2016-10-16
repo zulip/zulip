@@ -27,12 +27,18 @@ import os
 import optparse
 import logging
 
+from typing import Any, Dict, List, Optional
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+import zulip
 
 logging.basicConfig()
 
 log = logging.getLogger('zulip-send')
 
 def do_send_message(client, message_data ):
+    # type: (zulip.Client, Dict[str, Any]) -> bool
     '''Sends a message and optionally prints status about the same.'''
 
     if message_data['type'] == 'stream':
@@ -49,6 +55,7 @@ def do_send_message(client, message_data ):
         return False
 
 def main(argv=None):
+    # type: (Optional[List[str]]) -> int
     if argv is None:
         argv = sys.argv
 
@@ -62,10 +69,6 @@ def main(argv=None):
     These examples assume you have a proper '~/.zuliprc'. You may also set your credentials with the
     '--user' and '--api-key' arguments.
     """
-
-    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-    import zulip
 
     parser = optparse.OptionParser(usage=usage)
 
