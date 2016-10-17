@@ -14,7 +14,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
     get_remote_cache_time, get_remote_cache_requests, cache_set_many, \
     to_dict_cache_key_id
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
 from django.db.models import Q
@@ -58,7 +58,7 @@ def recipient_cache_items(items_for_remote_cache, recipient):
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_remote_cache, session):
     # type: (Dict[text_type, text_type], Session) -> None
-    store = session_engine.SessionStore(session_key=session.session_key)
+    store = session_engine.SessionStore(session_key=session.session_key) # type: ignore # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
 # Format is (objects query, items filler function, timeout, batch size)

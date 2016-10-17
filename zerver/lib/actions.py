@@ -44,7 +44,7 @@ from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.core.mail import EmailMessage
 from django.utils.timezone import now
 
@@ -339,7 +339,7 @@ def user_sessions(user_profile):
 
 def delete_session(session):
     # type: (Session) -> None
-    session_engine.SessionStore(session.session_key).delete()
+    session_engine.SessionStore(session.session_key).delete() # type: ignore # import_module
 
 def delete_user_sessions(user_profile):
     # type: (UserProfile) -> None
