@@ -449,45 +449,7 @@ exports.setup_page = function () {
 
     function _populate_and_fill(public_streams) {
 
-        // Build up our list of subscribed streams from the data we already have.
-        var subscribed_rows = stream_data.subscribed_subs();
-
-        // To avoid dups, build a set of names we already subscribed to.
-        var subscribed_set = new Dict({fold_case: true});
-        _.each(subscribed_rows, function (sub) {
-            subscribed_set.set(sub.name, true);
-        });
-
-        // Right now the back end gives us all public streams; we really only
-        // need to add the ones we haven't already subscribed to.
-        var unsubscribed_streams = _.reject(public_streams.streams, function (stream) {
-            return subscribed_set.has(stream.name);
-        });
-
-        // Build up our list of unsubscribed rows.
-        var unsubscribed_rows = [];
-        _.each(unsubscribed_streams, function (stream) {
-            var sub = stream_data.get_sub(stream.name);
-            if (!sub) {
-                sub = create_sub(stream.name, _.extend({subscribed: false}, stream));
-            }
-            unsubscribed_rows.push(sub);
-        });
-
-        // Sort and combine all our streams.
-        function by_name(a,b) {
-            return util.strcmp(a.name, b.name);
-        }
-        subscribed_rows.sort(by_name);
-        unsubscribed_rows.sort(by_name);
-        var all_subs = subscribed_rows.concat(unsubscribed_rows);
-
-        // Add in admin options.
-        var sub_rows = [];
-        _.each(all_subs, function (sub) {
-            sub = stream_data.add_admin_options(sub);
-            sub_rows.push(sub);
-        });
+        var sub_rows = stream_data.get_streams_for_settings_page(public_streams);
 
         $('#subscriptions_table').empty();
 

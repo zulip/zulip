@@ -1,7 +1,8 @@
 global.stub_out_jquery();
 
 add_dependencies({
-    stream_color: 'js/stream_color.js'
+    stream_color: 'js/stream_color.js',
+    util: 'js/util.js'
 });
 
 set_global('blueslip', {});
@@ -186,4 +187,38 @@ var stream_data = require('js/stream_data.js');
     assert(sub.is_admin);
     assert(sub.can_make_public);
     assert(!sub.can_make_private);
+}());
+
+(function test_stream_settings() {
+    var cinnamon = {
+        stream_id: 1,
+        name: 'c',
+        color: 'cinnamon',
+        subscribed: true
+    };
+
+    var blue = {
+        stream_id: 2,
+        name: 'b',
+        color: 'blue',
+        subscribed: false
+    };
+
+    var amber = {
+        stream_id: 3,
+        name: 'a',
+        color: 'amber',
+        subscribed: true
+    };
+    var public_streams = {streams: [cinnamon, blue, amber]};
+    stream_data.clear_subscriptions();
+    stream_data.add_sub(cinnamon.name, cinnamon);
+    stream_data.add_sub(amber.name, amber);
+    // we don't know about "blue"
+
+    var sub_rows = stream_data.get_streams_for_settings_page(public_streams);
+    assert.equal(sub_rows[0].color, 'amber');
+    assert.equal(sub_rows[1].color, 'cinnamon');
+    assert.equal(sub_rows[2].color, 'blue');
+
 }());

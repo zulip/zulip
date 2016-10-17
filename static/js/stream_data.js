@@ -217,6 +217,51 @@ exports.add_admin_options = function (sub) {
     });
 };
 
+exports.get_streams_for_settings_page = function (public_streams) {
+    // Build up our list of subscribed streams from the data we already have.
+    var subscribed_rows = exports.subscribed_subs();
+
+    // To avoid dups, build a set of names we already subscribed to.
+    var subscribed_set = new Dict({fold_case: true});
+    _.each(subscribed_rows, function (sub) {
+        subscribed_set.set(sub.name, true);
+    });
+
+    // Right now the back end gives us all public streams; we really only
+    // need to add the ones we haven't already subscribed to.
+    var unsubscribed_streams = _.reject(public_streams.streams, function (stream) {
+        return subscribed_set.has(stream.name);
+    });
+
+    // Build up our list of unsubscribed rows.
+    var unsubscribed_rows = [];
+    _.each(unsubscribed_streams, function (stream) {
+        var sub = exports.get_sub(stream.name);
+        if (!sub) {
+            sub = exports.create_sub_from_server_data(
+                    stream.name,
+                    _.extend({subscribed: false}, stream));
+        }
+        unsubscribed_rows.push(sub);
+    });
+
+    // Sort and combine all our streams.
+    function by_name(a,b) {
+        return util.strcmp(a.name, b.name);
+    }
+    subscribed_rows.sort(by_name);
+    unsubscribed_rows.sort(by_name);
+    var all_subs = subscribed_rows.concat(unsubscribed_rows);
+
+    // Add in admin options.
+    var sub_rows = [];
+    _.each(all_subs, function (sub) {
+        sub = exports.add_admin_options(sub);
+        sub_rows.push(sub);
+    });
+
+    return sub_rows;
+};
 
 return exports;
 
