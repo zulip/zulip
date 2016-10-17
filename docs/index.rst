@@ -87,6 +87,7 @@ Contents:
    :maxdepth: 2
    :caption: Code contribution guide
 
+   git-guide
    version-control
    code-style
    testing
