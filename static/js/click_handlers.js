@@ -387,14 +387,26 @@ $(function () {
         $("#main_div").on("click", ".message_inline_image a", function (e) {
             var img = e.target,
                 row = rows.id($(img).closest(".message_row")),
-                user = current_msg_list.get(row).sender_full_name;
+                user = current_msg_list.get(row).sender_full_name,
+                $target = $(this);
 
             // prevent the link from opening in a new page.
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
 
-            ui.lightbox_photo(img, user);
+            if ($target.parent().hasClass("youtube-video")) {
+                ui.lightbox({
+                    type: "youtube",
+                    id: $target.data("id")
+                });
+            } else {
+                ui.lightbox({
+                    type: "photo",
+                    image: img,
+                    user: user
+                });
+            }
         });
 
         $("#overlay .exit").click(function (e) {
