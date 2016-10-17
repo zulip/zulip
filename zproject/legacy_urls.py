@@ -13,7 +13,14 @@ legacy_urls = [
     url(r'^json/notify_settings/change$',   'zerver.views.user_settings.json_change_notify_settings'),
     url(r'^json/ui_settings/change$',       'zerver.views.user_settings.json_change_ui_settings'),
     url(r'^json/subscriptions/remove$',     'zerver.views.streams.json_remove_subscriptions'),
+
+    # We should remove this endpoint and all code related to it.
+    # It returns a 404 if the stream doesn't exist, which is confusing
+    # for devs, and I don't think we need to go to the server
+    # any more to find out about subscriptions, since they are already
+    # pushed to us via the event system.
     url(r'^json/subscriptions/exists$',     'zerver.views.streams.json_stream_exists'),
+
     url(r'^json/subscriptions/property$',   'zerver.views.streams.json_subscription_property'),
     url(r'^json/get_subscribers$',          'zerver.views.streams.json_get_subscribers'),
     url(r'^json/fetch_api_key$',            'zerver.views.auth.json_fetch_api_key'),
