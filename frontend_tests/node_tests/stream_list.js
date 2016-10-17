@@ -76,8 +76,8 @@ global.use_template('stream_privacy');
 }());
 
 
-(function test_add_stream_to_sidebar() {
-    // Make a couple calls to add_stream_to_sidebar() and make sure they
+(function test_create_sidebar_row() {
+    // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
 
     var stream_filters = $('<ul id="stream_filters">');
@@ -85,27 +85,27 @@ global.use_template('stream_privacy');
 
     var stream = "devel";
 
-    var sub = {
+    var devel = {
         name: 'devel',
         stream_id: 1000,
         color: 'blue',
         id: 5
     };
-    global.stream_data.add_sub('devel', sub);
+    global.stream_data.add_sub('devel', devel);
 
-    sub = {
+    var social = {
         name: 'social',
         stream_id: 2000,
         color: 'green',
         id: 6
     };
-    global.stream_data.add_sub('social', sub);
+    global.stream_data.add_sub('social', social);
 
-    stream_list.add_stream_to_sidebar('devel');
-    stream_list.add_stream_to_sidebar('social');
+    stream_list.create_sidebar_row(devel);
+    stream_list.create_sidebar_row(social);
 
     var html = $("body").html();
-    global.write_test_output("test_add_stream_to_sidebar", html);
+    global.write_test_output("test_create_sidebar_row", html);
 
     var li = stream_list.get_stream_li('social');
     assert.equal(li.attr('data-name'), 'social');
@@ -138,9 +138,9 @@ global.use_template('stream_privacy');
         color: 'blue',
         id: 5,
         pin_to_top: false,
-        subscribed: true,
-        sidebar_li: stream_list.add_stream_to_sidebar('devel')
+        subscribed: true
     };
+    stream_list.create_sidebar_row(develSub);
     global.stream_data.add_sub('devel', develSub);
 
     var socialSub = {
@@ -149,9 +149,9 @@ global.use_template('stream_privacy');
         color: 'green',
         id: 6,
         pin_to_top: true,
-        subscribed: true,
-        sidebar_li: stream_list.add_stream_to_sidebar('social')
+        subscribed: true
     };
+    stream_list.create_sidebar_row(socialSub);
     global.stream_data.add_sub('social', socialSub);
     stream_list.build_stream_list();
     assert.equal(socialSub.sidebar_li.nextAll().find('[ data-name="devel"]').length, 1);
