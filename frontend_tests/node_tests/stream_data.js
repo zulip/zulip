@@ -5,6 +5,7 @@ add_dependencies({
 });
 
 set_global('blueslip', {});
+set_global('page_params', {is_admin: false});
 
 var stream_data = require('js/stream_data.js');
 
@@ -133,4 +134,56 @@ var stream_data = require('js/stream_data.js');
     stream_data.remove_subscriber('Rome', email);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
 
+}());
+
+(function test_admin_options() {
+    function make_sub() {
+        return {
+            subscribed: false,
+            color: 'blue',
+            name: 'stream_to_admin',
+            stream_id: 1,
+            in_home_view: false,
+            invite_only: false
+        };
+    }
+
+    // non-admins can't do anything
+    global.page_params.is_admin = false;
+    var sub = make_sub();
+    stream_data.add_admin_options(sub);
+    assert(!sub.is_admin);
+    assert(!sub.can_make_public);
+    assert(!sub.can_make_private);
+
+    // just a sanity check that we leave "normal" fields alone
+    assert.equal(sub.color, 'blue');
+
+    // the remaining cases are for admin users
+    global.page_params.is_admin = true;
+
+    // admins can make public streams become private
+    sub = make_sub();
+    stream_data.add_admin_options(sub);
+    assert(sub.is_admin);
+    assert(!sub.can_make_public);
+    assert(sub.can_make_private);
+
+    // admins can only make private streams become public
+    // if they are subscribed
+    sub = make_sub();
+    sub.invite_only = true;
+    sub.subscribed = false;
+    stream_data.add_admin_options(sub);
+    assert(sub.is_admin);
+    assert(!sub.can_make_public);
+    assert(!sub.can_make_private);
+
+    sub = make_sub();
+    sub.invite_only = true;
+    sub.subscribed = true;
+    stream_data.add_admin_options(sub);
+    assert(sub.is_admin);
+    assert(sub.can_make_public);
+    assert(!sub.can_make_private);
 }());

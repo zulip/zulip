@@ -2,14 +2,6 @@ var subs = (function () {
 
 var exports = {};
 
-function add_admin_options(sub) {
-    return _.extend(sub, {
-        'is_admin': page_params.is_admin,
-        'can_make_public': page_params.is_admin && sub.invite_only && stream_data.is_subscribed(sub.name),
-        'can_make_private': page_params.is_admin && !sub.invite_only
-    });
-}
-
 function get_color() {
     var used_colors = stream_data.get_colors();
     var color = stream_color.pick_color(used_colors);
@@ -255,7 +247,7 @@ function add_email_hint(row, email_address_hint_content) {
 }
 
 function add_sub_to_table(sub) {
-    sub = add_admin_options(sub);
+    sub = stream_data.add_admin_options(sub);
     var html = templates.render('subscription', sub);
     $('#create_or_filter_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
@@ -493,7 +485,7 @@ exports.setup_page = function () {
         // Add in admin options.
         var sub_rows = [];
         _.each(all_subs, function (sub) {
-            sub = add_admin_options(sub);
+            sub = stream_data.add_admin_options(sub);
             sub_rows.push(sub);
         });
 
@@ -1125,7 +1117,7 @@ $(function () {
     function redraw_privacy_related_stuff(sub_row, sub) {
         var html;
 
-        sub = add_admin_options(sub);
+        sub = stream_data.add_admin_options(sub);
 
         html = templates.render('subscription_setting_icon', sub);
         sub_row.find('.subscription-setting-icon').expectOne().html(html);

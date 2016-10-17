@@ -209,6 +209,15 @@ exports.receives_audible_notifications = function (stream_name) {
     return sub.audible_notifications;
 };
 
+exports.add_admin_options = function (sub) {
+    return _.extend(sub, {
+        'is_admin': page_params.is_admin,
+        'can_make_public': page_params.is_admin && sub.invite_only && sub.subscribed,
+        'can_make_private': page_params.is_admin && !sub.invite_only
+    });
+};
+
+
 return exports;
 
 }());
