@@ -381,14 +381,6 @@ exports.pin_or_unpin_stream = function (stream_name) {
     }
 };
 
-exports.sub_pinned_or_unpinned = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (stream_name === undefined) {
-        return;
-    }
-    return sub.pin_to_top;
-};
-
 exports.receives_desktop_notifications = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
