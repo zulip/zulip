@@ -162,7 +162,7 @@ alert people of world events.  Here are some example stimuli:
 - A Travis build finishes.
 - Somebody tweets on Twitter.
 - A hardware sensor notices a temperature increase.
-- A pull request is submitted to Github.
+- A pull request is submitted to GitHub.
 - A cron job gets started on your laptop to send a reminder.
 - Nagios detects a system anomaly.
 
