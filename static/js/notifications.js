@@ -400,7 +400,7 @@ function should_send_desktop_notification(message) {
     // For streams, send if desktop notifications are enabled for this
     // stream.
     if ((message.type === "stream") &&
-        subs.receives_desktop_notifications(message.stream)) {
+        stream_data.receives_desktop_notifications(message.stream)) {
         return true;
     }
 
@@ -429,7 +429,7 @@ function should_send_desktop_notification(message) {
 function should_send_audible_notification(message) {
     // For streams, ding if sounds are enabled for this stream.
     if ((message.type === "stream") &&
-        subs.receives_audible_notifications(message.stream)) {
+        stream_data.receives_audible_notifications(message.stream)) {
         return true;
     }
 

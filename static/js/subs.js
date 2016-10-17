@@ -381,22 +381,6 @@ exports.pin_or_unpin_stream = function (stream_name) {
     }
 };
 
-exports.receives_desktop_notifications = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    return sub.desktop_notifications;
-};
-
-exports.receives_audible_notifications = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    return sub.audible_notifications;
-};
-
 function populate_subscriptions(subs, subscribed) {
     var sub_rows = [];
     subs.sort(function (a, b) {

@@ -193,6 +193,22 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     return sub;
 };
 
+exports.receives_desktop_notifications = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.desktop_notifications;
+};
+
+exports.receives_audible_notifications = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.audible_notifications;
+};
+
 return exports;
 
 }());
