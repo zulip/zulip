@@ -178,6 +178,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'SYSTEM_ONLY_REALMS': {"zulip.com"},
                     'FIRST_TIME_TOS_TEMPLATE': None,
                     'USING_PGROONGA': False,
+                    'POST_MIGRATION_CACHE_FLUSHING': False,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
