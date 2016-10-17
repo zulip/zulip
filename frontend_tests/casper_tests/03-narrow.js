@@ -266,6 +266,9 @@ search_and_check('stream:Verona', 'Narrow', expect_stream,
 search_and_check('stream:Verona subject:frontend+test', 'Narrow', expect_stream_subject,
                  'frontend test - Zulip Dev - Zulip');
 
+search_and_check('stream:Verona topic:frontend+test', 'Narrow', expect_stream_subject,
+                 'frontend test - Zulip Dev - Zulip');
+
 search_and_check('subject:frontend+test', 'Narrow', expect_subject,
                  'home - Zulip Dev - Zulip');
 

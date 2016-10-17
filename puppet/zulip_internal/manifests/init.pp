@@ -1,2 +1,0 @@
-class zulip_internal {
-}

@@ -1,0 +1,4 @@
+MAILTO=root
+SHELL=/bin/bash
+
+0 3 * * * zulip /home/zulip/zulip/puppet/zulip_ops/files/graphite/daily_rsync_backup.sh

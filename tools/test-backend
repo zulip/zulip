@@ -24,6 +24,11 @@ if __name__ == "__main__":
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
     from zerver.lib.test_fixtures import is_template_database_current
+
+    from tools.lib.test_script import (
+        get_provisioning_status,
+    )
+
     os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
     # "-u" uses unbuffered IO, which is important when wrapping it in subprocess
     os.environ['PYTHONUNBUFFERED'] = 'y'
@@ -54,6 +59,9 @@ if __name__ == "__main__":
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
+    parser.add_option('--force', dest='force',
+                      action="store_true",
+                      default=False, help='Run tests despite possible problems.')
     parser.add_option('--no-shallow', dest='no_shallow',
                       action="store_true",
                       default=False,
@@ -118,6 +126,13 @@ if __name__ == "__main__":
                   "analytics.tests"]
     else:
         suites = args
+
+    if not options.force:
+        ok, msg = get_provisioning_status()
+        if not ok:
+            print(msg)
+            print('If you really know what you are doing, use --force to run anyway.')
+            sys.exit(1)
 
     if options.coverage:
         import coverage

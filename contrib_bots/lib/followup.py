@@ -37,7 +37,7 @@ class FollowupHandler(object):
 
         return is_follow_up
 
-    def handle_message(self, message, client):
+    def handle_message(self, message, client, state_handler):
         original_content = message['content']
         original_sender = message['sender_email']
         new_content = original_content.replace('@followup',
