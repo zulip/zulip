@@ -1,3 +1,13 @@
+*   text=auto eol=lf
+*.gif binary
+*.jpg binary
+*.eot binary
+*.woff binary
+*.svg binary
+*.ttf binary
+*.png binary
+*.otf binary
+*.tif binary
 .gitignore export-ignore
 .gitattributes export-ignore
 /analytics export-ignore
