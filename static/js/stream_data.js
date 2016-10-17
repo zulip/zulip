@@ -263,6 +263,34 @@ exports.get_streams_for_settings_page = function (public_streams) {
     return sub_rows;
 };
 
+exports.initialize_from_page_params = function () {
+    function populate_subscriptions(subs, subscribed) {
+        subs.forEach(function (sub) {
+            var stream_name = sub.name;
+            sub.subscribed = subscribed;
+
+            // When we get subscriber lists from the back end,
+            // they are sent as user ids to save bandwidth,
+            // but the legacy JS code wants emails.
+            if (sub.subscribers) {
+                sub.subscribers = _.map(sub.subscribers, function (subscription) {
+                    return page_params.email_dict[subscription];
+                });
+            }
+            exports.create_sub_from_server_data(stream_name, sub);
+        });
+    }
+
+    populate_subscriptions(page_params.subbed_info, true);
+    populate_subscriptions(page_params.unsubbed_info, false);
+
+    // Garbage collect data structures that were only used for initialization.
+    delete page_params.subbed_info;
+    delete page_params.unsubbed_info;
+    delete page_params.email_dict;
+};
+
+
 return exports;
 
 }());
