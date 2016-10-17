@@ -373,29 +373,6 @@ exports.pin_or_unpin_stream = function (stream_name) {
     }
 };
 
-function populate_subscriptions(subs, subscribed) {
-    var sub_rows = [];
-    subs.sort(function (a, b) {
-        return util.strcmp(a.name, b.name);
-    });
-    subs.forEach(function (elem) {
-        var stream_name = elem.name;
-        var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
-                                           invite_only: elem.invite_only,
-                                           desktop_notifications: elem.desktop_notifications,
-                                           audible_notifications: elem.audible_notifications,
-                                           pin_to_top: elem.pin_to_top,
-                                           subscribed: subscribed,
-                                           email_address: elem.email_address,
-                                           stream_id: elem.stream_id,
-                                           subscribers: elem.subscribers,
-                                           description: elem.description});
-        sub_rows.push(sub);
-    });
-
-    return sub_rows;
-}
-
 exports.filter_table = function (query) {
     var sub_name_elements = $('#subscriptions_table .subscription_name');
 
@@ -663,31 +640,11 @@ exports.remove_user_from_stream = function (user_email, stream_name, success, fa
     });
 };
 
-function inline_emails_into_subscriber_list(subs, email_dict) {
-    // When we get subscriber lists from the back end, they are sent as user ids to
-    // save bandwidth, but the legacy JS code wants emails.
-    _.each(subs, function (sub) {
-        if (sub.subscribers) {
-            sub.subscribers = _.map(sub.subscribers, function (subscription) {
-                return email_dict[subscription];
-            });
-        }
-    });
-}
-
 $(function () {
     var i;
 
-    inline_emails_into_subscriber_list(page_params.subbed_info, page_params.email_dict);
-    inline_emails_into_subscriber_list(page_params.unsubbed_info, page_params.email_dict);
-
-    // Populate stream_info with data handed over to client-side template.
-    populate_subscriptions(page_params.subbed_info, true);
-    populate_subscriptions(page_params.unsubbed_info, false);
-
-    // Garbage collect data structures that were only used for initialization.
-    delete page_params.subbed_info;
-    delete page_params.unsubbed_info;
+    stream_data.initialize_from_page_params();
+    stream_list.create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.

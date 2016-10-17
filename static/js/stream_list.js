@@ -46,7 +46,22 @@ function filter_streams_by_search(streams) {
     return filtered_streams;
 }
 
+exports.create_initial_sidebar_rows = function () {
+    // This code is slightly opaque, but it ends up building
+    // up list items and attaching them to the "sub" data
+    // structures that are kept in stream_data.js.
+    var subs = stream_data.subscribed_subs();
+
+    _.each(subs, function (sub) {
+        exports.create_sidebar_row(sub);
+    });
+};
+
 exports.build_stream_list = function () {
+    // This function assumes we have already created the individual
+    // sidebar rows.  Our job here is to build the bigger widget,
+    // which largely is a matter of arranging the individual rows in
+    // the right order.
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
