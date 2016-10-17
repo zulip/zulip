@@ -1,5 +1,6 @@
 class zulip_ops::base {
   include zulip::base
+  include zulip::apt_repository
 
   $org_base_packages = [# Management for our systems
                         "openssh-server",
