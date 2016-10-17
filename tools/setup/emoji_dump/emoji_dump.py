@@ -77,7 +77,7 @@ def code_point_to_file_name_map(ttx):
     """
     result = {}  # type: Dict[int, Union[text_type, bytes]]
     xml = ET.parse(ttx)
-    for elem in xml.find("*cmap_format_12"): # type: ignore # https://github.com/python/typeshed/pull/254
+    for elem in xml.find("*cmap_format_12"):
         code_point = int(elem.attrib["code"], 16)
         fname = elem.attrib["name"]
         result[code_point] = fname

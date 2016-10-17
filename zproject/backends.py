@@ -350,7 +350,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         # type: (*Any, **Any) -> Optional[UserProfile]
         kwargs['return_data'] = {}
 
-        request = self.strategy.request  # type: ignore # This comes from Python Social Auth.
+        request = self.strategy.request
         kwargs['realm_subdomain'] = get_subdomain(request)
 
         user_profile = None

@@ -323,7 +323,7 @@ def process_missed_message(to, message, pre_checked):
 def process_message(message, rcpt_to=None, pre_checked=False):
     # type: (message.Message, Optional[text_type], bool) -> None
     subject_header = message.get("Subject", "(no subject)")
-    encoded_subject, encoding = decode_header(subject_header)[0] # type: ignore # https://github.com/python/typeshed/pull/333
+    encoded_subject, encoding = decode_header(subject_header)[0]
     if encoding is None:
         subject = force_text(encoded_subject) # encoded_subject has type str when encoding is None
     else:

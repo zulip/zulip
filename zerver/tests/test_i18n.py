@@ -50,7 +50,7 @@ class TranslationTestCase(ZulipTestCase):
                      ]
 
         for lang, word in languages:
-            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang}) # type: ignore # SimpleCookie has incomplete stubs in python 3
+            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang})
 
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)

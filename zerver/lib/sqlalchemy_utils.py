@@ -16,7 +16,7 @@ class NonClosingPool(sqlalchemy.pool.NullPool):
 
     def recreate(self):
         # type: () -> NonClosingPool
-        return self.__class__(creator=self._creator, # type: ignore # __class__
+        return self.__class__(creator=self._creator,
                               recycle=self._recycle,
                               use_threadlocal=self._use_threadlocal,
                               reset_on_return=self._reset_on_return,
