@@ -36,15 +36,6 @@ function should_list_all_streams() {
     return !page_params.is_zephyr_mirror_realm;
 }
 
-exports.stream_id = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        blueslip.error("Tried to get subs.stream_id for a stream user is not subscribed to!");
-        return 0;
-    }
-    return parseInt(sub.stream_id, 10);
-};
-
 function set_stream_property(stream_name, property, value) {
     var sub_data = {stream: stream_name, property: property, value: value};
     return channel.post({
