@@ -223,6 +223,42 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "safe_html_with_simple_script_tag",
+      "input": "<script>alert(1)</script>",
+      "expected_output": "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "safe_html_nested_script_tag",
+      "input": "<<script>script>evil()<</script>/script>",
+      "expected_output": "<p>&lt;&lt;script&gt;script&gt;evil()&lt;&lt;/script&gt;/script&gt;</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "safe_html_nested_script_tag_with_parse_error",
+      "input": "<<x>script>evil()<</x>/script>",
+      "expected_output": "<p>&lt;&lt;x&gt;script&gt;evil()&lt;&lt;/x&gt;/script&gt;</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "safe_html_messed_up_complexly_nested_script_tags",
+      "input": "<scr<script></script>ipt type=\"text/javascript\">alert(\"foo\");</<script></script>script<del></del>>",
+      "expected_output": "<p>&lt;scr&lt;script&gt;&lt;/script&gt;ipt type=\"text/javascript\"&gt;alert(\"foo\");&lt;/&lt;script&gt;&lt;/script&gt;script&lt;del&gt;&lt;/del&gt;&gt;</p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "safe_html_unclosed_tag",
+      "input": "<script src=http://xx.com/xss.js<b>",
+      "expected_output": "<p>&lt;script src=http://xx.com/xss.js&lt;b&gt;</p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "safe_html_unclosed_tag_and_quotes",
+      "input": "<script src=\"http://xx.com/xss.js\"<b>",
+      "expected_output": "<p>&lt;script src=\"http://xx.com/xss.js\"&lt;b&gt;</p>",
+      "bugdown_matches_marked": false
+    },
+    {
       "name": "safe_html_in_code",
       "input": "~~~\n<h1>stay normal</h1>",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>&lt;h1&gt;stay normal&lt;/h1&gt;\n</pre></div>",
