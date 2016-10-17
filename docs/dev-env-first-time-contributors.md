@@ -186,12 +186,12 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 ### Step 2: Get Zulip Code
 
-If you haven't already created an ssh key and added it to your Github account,
+If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
 instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 1. In your browser, visit https://github.com/zulip/zulip and click the
-   `fork` button. You will need to be logged in to Github to do this.
+   `fork` button. You will need to be logged in to GitHub to do this.
 2. Open Terminal (OS X/Ubuntu) or Cygwin (Windows; must run as an Administrator)
 3. In Terminal/Cygwin, clone your fork:
 ```
@@ -398,7 +398,7 @@ When you're ready to commit or push changes via git, you will do this by
 running git commands in Terminal (OS X/Ubuntu) or Cygwin (Windows) in the directory
 where you cloned Zulip on your main machine.
 
-If you're new to working with Git/Github, check out [this
+If you're new to working with Git/GitHub, check out [this
 guide](https://help.github.com/articles/create-a-repo/#commit-your-first-change).
 
 #### Maintaining the dev environment

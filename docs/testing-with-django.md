@@ -153,7 +153,7 @@ Particularly for testing Zulip's integrations with third party systems,
 we strive to have a highly data-driven approach to testing.  To give a
 specific example, when we test our GitHub integration, the test code
 reads a bunch of sample inputs from a JSON fixture file, feeds them
-to our Github integration code, and then verifies the output against
+to our GitHub integration code, and then verifies the output against
 expected values from the same JSON fixture file.
 
 Our fixtures live in `zerver/fixtures`.

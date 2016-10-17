@@ -1,13 +1,13 @@
 # Git & GitHub Guide
 
-## Quick start: How Zulip uses Git and Github
+## Quick start: How Zulip uses Git and GitHub
 
-This quick start provides a brief overview of how Zulip uses Git and Github.
+This quick start provides a brief overview of how Zulip uses Git and GitHub.
 
 Those who are familiar with Git and GitHub should be able to start contributing
 with these details in mind:
 
-- We use **Github for source control and code review.** To contribute, fork
+- We use **GitHub for source control and code review.** To contribute, fork
   [zulip/zulip][github-zulip-zulip] (or the appropriate
   [repository][github-zulip], if you are working on something else besides
   Zulip server) to your own account and then create feature/issue branches.
@@ -37,7 +37,7 @@ install the [Zulip developer environment][zulip-rtd-dev-overview], and then
 
 ***
 
-The following sections will help you be awesome with Zulip and Git/Github in a
+The following sections will help you be awesome with Zulip and Git/GitHub in a
 rebased-based workflow. Read through it if you're new to git, to a rebase-based
 git workflow, or if you'd like a git refresher.
 
@@ -325,7 +325,7 @@ This step is optional, but recommended.
 Zulip Server is configured to use [Travis CI][travis-ci] to test and create
 builds upon each new commit and pull request. Travis CI is free for open source
 projects and it's easy to configure for your own fork of Zulip. After doing so,
-TravisCI will run tests for new refs you push to Github and email you the
+TravisCI will run tests for new refs you push to GitHub and email you the
 outcome (you can also view the results in the web interface).
 
 First, sign in to [Travis CI][travis-ci] with your GitHub account and authorize
@@ -651,14 +651,14 @@ made. It explains what testing was done and asks specifically for further
 testing in a more production-like environment.
 
 The final paragraph indicates that this commit addresses and fixes issue #1755.
-When you submit your pull request, Github will detect and link this reference
-to the appropriate issue. Once your commit is merged into zulip/master, Github
+When you submit your pull request, GitHub will detect and link this reference
+to the appropriate issue. Once your commit is merged into zulip/master, GitHub
 will automatically close the referenced issue. See [Closing issues via commit
 messages][github-help-closing-issues] for details.
 
 Make as many commits as you need to to address the issue or implement your feature.
 
-### Push your commits to Github
+### Push your commits to GitHub
 
 As you're working, it's a good idea to frequently push your changes to GitHub.
 This ensures your work is backed up should something happen to your local
@@ -1223,7 +1223,7 @@ until you *push* the commits to GitHub, they are only available on the computer
 where you committed them.
 
 So, before you stop working for the day, or before you switch computers, push
-all of your commits to Github with `git push`:
+all of your commits to GitHub with `git push`:
 
 ```
 $ git push origin <branchname>
@@ -1232,11 +1232,11 @@ $ git push origin <branchname>
 When you first start working on a new computer, you'll [clone the Zulip
 repository][self-clone-to-your-machine] and [connect it to Zulip
 upstream][self-connect-upstream]. A clone retrieves all current commits,
-including the ones you pushed to Github from your other computer.
+including the ones you pushed to GitHub from your other computer.
 
 But if you're switching to another computer on which you have already cloned
 Zulip, you need to update your local Git database with new refs from your
-Github fork. You do this with `git fetch`:
+GitHub fork. You do this with `git fetch`:
 
 ```
 $ git fetch <usermame>
