@@ -100,8 +100,8 @@ def walk_tree(root, processor, stop_after_first=False):
 
 # height is not actually used
 def add_a(root, url, link, height="", title=None, desc=None,
-          class_attr="message_inline_image"):
-    # type: (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type) -> None
+          class_attr="message_inline_image", data_id=None):
+    # type: (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type, Optional[text_type]) -> None
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -111,7 +111,9 @@ def add_a(root, url, link, height="", title=None, desc=None,
     a = markdown.util.etree.SubElement(div, "a")
     a.set("href", link)
     a.set("target", "_blank")
-    a.set("title", title )
+    a.set("title", title)
+    if data_id is not None:
+        a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
     if class_attr == "message_inline_ref":
@@ -343,7 +345,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return image_info
         return None
 
-    def youtube_image(self, url):
+    def youtube_id(self, url):
         # type: (text_type) -> Optional[text_type]
         if not settings.INLINE_IMAGE_PREVIEW:
             return None
@@ -355,7 +357,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         match = re.match(youtube_re, url)
         if match is None:
             return None
-        return "https://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
+        return match.group(2)
+
+    def youtube_image(self, url):
+        # type: (text_type) -> Optional[text_type]
+        yt_id = self.youtube_id(url)
+
+        if yt_id is not None:
+            return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
 
     def twitter_text(self, text, urls, user_mentions, media):
         # type: (text_type, List[Dict[text_type, text_type]], List[Dict[text_type, Any]], List[Dict[text_type, Any]]) -> Element
@@ -564,7 +573,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             youtube = self.youtube_image(url)
             if youtube is not None:
-                add_a(root, youtube, url)
+                yt_id = self.youtube_id(url)
+                add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
 class Avatar(markdown.inlinepatterns.Pattern):
