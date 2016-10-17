@@ -12,7 +12,7 @@ from zerver.models import get_realm
 class Command(BaseCommand):
     help = "Log out all users."
 
-    def parse_arguments(self, parser):
+    def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('--realm',
                             dest='realm',

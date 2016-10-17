@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from zerver.lib.cache_helpers import fill_remote_cache, cache_fillers
 
 class Command(BaseCommand):
-    def parse_arguments(self, parser):
+    def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('--cache', dest="cache", default=None,
                             help="Populate the memcached cache of messages.")

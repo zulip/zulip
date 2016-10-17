@@ -31,7 +31,7 @@ def create_users(name_list, bot_type=None):
 class Command(BaseCommand):
     help = "Populate an initial database for Zulip Voyager"
 
-    def parse_arguments(self, parser):
+    def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('--extra-users',
                             dest='extra_users',
