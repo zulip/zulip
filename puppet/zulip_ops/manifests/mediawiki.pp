@@ -1,5 +1,5 @@
-class zulip_internal::mediawiki {
-  include zulip_internal::postgres_common
+class zulip_ops::mediawiki {
+  include zulip_ops::postgres_common
 
 
   $mediawiki_packages = [# Packages needed for mediawiki
@@ -20,7 +20,7 @@ class zulip_internal::mediawiki {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/mediawiki/LocalSettings.php",
+    source => "puppet:///modules/zulip_ops/mediawiki/LocalSettings.php",
   }
 
   file { '/usr/local/share/mediawiki/extensions/Auth_remoteuser.php':
@@ -28,7 +28,7 @@ class zulip_internal::mediawiki {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/mediawiki/Auth_remoteuser.php",
+    source => "puppet:///modules/zulip_ops/mediawiki/Auth_remoteuser.php",
   }
 
   file { '/etc/mediawiki-extensions/extensions-available/Auth_remoteuser.php':

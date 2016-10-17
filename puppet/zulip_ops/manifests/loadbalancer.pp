@@ -1,5 +1,5 @@
-class zulip_internal::loadbalancer {
-  include zulip_internal::base
+class zulip_ops::loadbalancer {
+  include zulip_ops::base
   include zulip::nginx
   include zulip::camo
 
@@ -9,7 +9,7 @@ class zulip_internal::loadbalancer {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/nginx/sites-available/loadbalancer",
+    source => "puppet:///modules/zulip_ops/nginx/sites-available/loadbalancer",
     notify => Service["nginx"],
   }
 
@@ -18,7 +18,7 @@ class zulip_internal::loadbalancer {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/motd.lb0",
+    source => "puppet:///modules/zulip_ops/motd.lb0",
   }
 
   file { '/etc/nginx/sites-enabled/loadbalancer':
@@ -33,7 +33,7 @@ class zulip_internal::loadbalancer {
     owner      => "zulip",
     group      => "zulip",
     mode       => 644,
-    source     => 'puppet:///modules/zulip_internal/log2zulip.conf',
+    source     => 'puppet:///modules/zulip_ops/log2zulip.conf',
   }
 
   file { '/etc/cron.d/log2zulip':
@@ -41,7 +41,7 @@ class zulip_internal::loadbalancer {
     owner      => "root",
     group      => "root",
     mode       => 644,
-    source     => 'puppet:///modules/zulip_internal/cron.d/log2zulip',
+    source     => 'puppet:///modules/zulip_ops/cron.d/log2zulip',
   }
 
   file { '/etc/log2zulip.zuliprc':
@@ -49,6 +49,6 @@ class zulip_internal::loadbalancer {
     owner      => "zulip",
     group      => "zulip",
     mode       => 600,
-    source     => 'puppet:///modules/zulip_internal/log2zulip.zuliprc',
+    source     => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
 }

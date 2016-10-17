@@ -1,4 +1,4 @@
-class zulip_internal::apache {
+class zulip_ops::apache {
   $apache_packages = [# Needed to run Apache with WSGI
                       "apache2",
                       "libapache2-mod-wsgi",
@@ -24,7 +24,7 @@ class zulip_internal::apache {
     owner  => "www-data",
     group  => "www-data",
     mode => 600,
-    source => "puppet:///modules/zulip_internal/apache/users",
+    source => "puppet:///modules/zulip_ops/apache/users",
   }
 
   file { "/etc/apache2/certs/":
@@ -41,7 +41,7 @@ class zulip_internal::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/zulip_internal/apache/ports.conf",
+    source => "puppet:///modules/zulip_ops/apache/ports.conf",
   }
 
   file { "/etc/apache2/sites-available/":
@@ -50,6 +50,6 @@ class zulip_internal::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/zulip_internal/apache/sites/",
+    source => "puppet:///modules/zulip_ops/apache/sites/",
   }
 }

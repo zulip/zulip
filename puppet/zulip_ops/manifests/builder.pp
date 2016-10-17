@@ -1,5 +1,5 @@
-class zulip_internal::builder {
-  include zulip_internal::base
+class zulip_ops::builder {
+  include zulip_ops::base
 
   $buildd_packages = [
     # Useful tools for packaging
@@ -18,13 +18,13 @@ class zulip_internal::builder {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/builder/sbuildrc",
+    source => "puppet:///modules/zulip_ops/builder/sbuildrc",
   }
 
   file { "/usr/share/keyrings/ubuntu-archive-keyring.gpg":
     ensure => file,
     mode => 644,
-    source => "puppet:///modules/zulip_internal/builder/ubuntu-archive-keyring.gpg",
+    source => "puppet:///modules/zulip_ops/builder/ubuntu-archive-keyring.gpg",
   }
 
 

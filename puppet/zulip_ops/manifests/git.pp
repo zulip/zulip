@@ -1,5 +1,5 @@
-class zulip_internal::git {
-  include zulip_internal::base
+class zulip_ops::git {
+  include zulip_ops::base
 
   $git_packages = [ ]
   package { $git_packages: ensure => "installed" }

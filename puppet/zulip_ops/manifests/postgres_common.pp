@@ -1,4 +1,4 @@
-class zulip_internal::postgres_common {
+class zulip_ops::postgres_common {
   include zulip::postgres_common
 
   $internal_postgres_packages = [# dependencies for our wal-e backup system

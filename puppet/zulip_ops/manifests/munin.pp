@@ -1,4 +1,4 @@
-class zulip_internal::munin {
+class zulip_ops::munin {
   include zulip::supervisor
 
   $munin_packages = [# Packages needed for munin
@@ -28,7 +28,7 @@ class zulip_internal::munin {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/munin"
+    source => "puppet:///modules/zulip_ops/munin"
   }
 
   file { "/etc/munin/munin.conf":
@@ -37,7 +37,7 @@ class zulip_internal::munin {
     owner => "root",
     group => "root",
     mode => 644,
-    content => template("zulip_internal/munin/munin.conf.erb")
+    content => template("zulip_ops/munin/munin.conf.erb")
   }
 
   file { "/etc/supervisor/conf.d/munin_tunnels.conf":
@@ -46,7 +46,7 @@ class zulip_internal::munin {
     mode   => 644,
     owner  => "root",
     group  => "root",
-    content => template("zulip_internal/supervisor/conf.d/munin_tunnels.conf.erb"),
+    content => template("zulip_ops/supervisor/conf.d/munin_tunnels.conf.erb"),
     notify => Service["supervisor"]
   }
 }

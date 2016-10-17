@@ -1,4 +1,4 @@
-class zulip_internal::app_frontend {
+class zulip_ops::app_frontend {
   include zulip::app_frontend_base
   include zulip::memcached
   include zulip::rabbit
@@ -14,7 +14,7 @@ class zulip_internal::app_frontend {
     owner      => "zulip",
     group      => "zulip",
     mode       => 644,
-    source     => 'puppet:///modules/zulip_internal/log2zulip.conf',
+    source     => 'puppet:///modules/zulip_ops/log2zulip.conf',
   }
 
   file { '/etc/cron.d/log2zulip':
@@ -22,7 +22,7 @@ class zulip_internal::app_frontend {
     owner      => "root",
     group      => "root",
     mode       => 644,
-    source     => 'puppet:///modules/zulip_internal/cron.d/log2zulip',
+    source     => 'puppet:///modules/zulip_ops/cron.d/log2zulip',
   }
 
   file { '/etc/log2zulip.zuliprc':
@@ -30,13 +30,13 @@ class zulip_internal::app_frontend {
     owner      => "zulip",
     group      => "zulip",
     mode       => 600,
-    source     => 'puppet:///modules/zulip_internal/log2zulip.zuliprc',
+    source     => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
   file { "/etc/cron.d/check-apns-tokens":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/cron.d/check-apns-tokens",
+    source => "puppet:///modules/zulip_ops/cron.d/check-apns-tokens",
   }
 }

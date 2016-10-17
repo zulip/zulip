@@ -1,4 +1,4 @@
-class zulip_internal::base {
+class zulip_ops::base {
   include zulip::base
 
   $org_base_packages = [# Management for our systems
@@ -40,7 +40,7 @@ class zulip_internal::base {
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
-    source     => 'puppet:///modules/zulip_internal/apt/apt.conf.d/02periodic',
+    source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/02periodic',
   }
 
   file { '/home/zulip/.ssh/authorized_keys':
@@ -49,7 +49,7 @@ class zulip_internal::base {
     mode       => 600,
     owner      => "zulip",
     group      => "zulip",
-    source     => 'puppet:///modules/zulip_internal/authorized_keys',
+    source     => 'puppet:///modules/zulip_ops/authorized_keys',
   }
   file { '/home/zulip/.ssh':
     ensure     => directory,
@@ -62,7 +62,7 @@ class zulip_internal::base {
   file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     ensure     => file,
-    source     => 'puppet:///modules/zulip_internal/sshd_config',
+    source     => 'puppet:///modules/zulip_ops/sshd_config',
     owner      => 'root',
     group      => 'root',
     mode       => 644,
@@ -78,19 +78,19 @@ class zulip_internal::base {
     mode       => 600,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/zulip_internal/root_authorized_keys',
+    source     => 'puppet:///modules/zulip_ops/root_authorized_keys',
   }
 
   file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
     ensure     => file,
     mode       => 755,
-    source     => 'puppet:///modules/zulip_internal/zulip-ec2-configure-interfaces',
+    source     => 'puppet:///modules/zulip_ops/zulip-ec2-configure-interfaces',
   }
 
   file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
     ensure     => file,
     mode       => 755,
-    source     => 'puppet:///modules/zulip_internal/zulip-ec2-configure-interfaces_if-up.d.sh',
+    source     => 'puppet:///modules/zulip_ops/zulip-ec2-configure-interfaces_if-up.d.sh',
   }
 
   group { 'nagios':
@@ -125,7 +125,7 @@ class zulip_internal::base {
     mode       => 600,
     owner      => "nagios",
     group      => "nagios",
-    source     => 'puppet:///modules/zulip_internal/nagios_authorized_keys',
+    source     => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
   }
   file { '/home/nagios':
     ensure => absent,
@@ -135,7 +135,7 @@ class zulip_internal::base {
   file { '/etc/iptables/rules.v4':
     ensure     => file,
     mode       => 600,
-    content    => template('zulip_internal/iptables/rules.v4.erb'),
+    content    => template('zulip_ops/iptables/rules.v4.erb'),
     require    => Package['iptables-persistent'],
   }
   service { 'iptables-persistent':

@@ -1,6 +1,6 @@
-class zulip_internal::staging_app_frontend {
-  include zulip_internal::base
-  include zulip_internal::app_frontend
+class zulip_ops::staging_app_frontend {
+  include zulip_ops::base
+  include zulip_ops::app_frontend
 
   file { "/etc/nginx/sites-available/zulip-staging":
     require => Package["nginx-full"],
@@ -8,7 +8,7 @@ class zulip_internal::staging_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/nginx/sites-available/zulip-staging",
+    source => "puppet:///modules/zulip_ops/nginx/sites-available/zulip-staging",
     notify => Service["nginx"],
   }
   file { '/etc/nginx/sites-enabled/zulip-staging':
@@ -22,14 +22,14 @@ class zulip_internal::staging_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/cron.d/active-user-stats",
+    source => "puppet:///modules/zulip_ops/cron.d/active-user-stats",
   }
   file { "/etc/cron.d/clearsessions":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/cron.d/clearsessions",
+    source => "puppet:///modules/zulip_ops/cron.d/clearsessions",
   }
 
   # Staging has our Apple Push Notifications Service private key at

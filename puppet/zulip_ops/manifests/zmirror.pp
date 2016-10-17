@@ -1,5 +1,5 @@
-class zulip_internal::zmirror_personals {
-  include zulip_internal::base
+class zulip_ops::zmirror {
+  include zulip_ops::base
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror
@@ -26,20 +26,31 @@ class zulip_internal::zmirror_personals {
     key_source  => 'https://debathena.mit.edu/apt/debathena-archive.asc',
     include_src => true,
   }
-  file { ['/home/zulip/api-keys', '/home/zulip/zephyr_sessions', '/home/zulip/ccache',
-          '/home/zulip/mirror_status']:
-    ensure     => directory,
-    mode       => 644,
-    owner      => "zulip",
-    group      => "zulip",
+
+  file { "/etc/supervisor/conf.d/zmirror.conf":
+    require => Package[supervisor],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip_ops/supervisor/conf.d/zmirror.conf",
+    notify => Service["supervisor"],
   }
 
-  file { "/etc/cron.d/test_zephyr_personal_mirrors":
+  file { "/etc/cron.d/zephyr-mirror":
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/cron.d/test_zephyr_personal_mirrors",
+    source => "puppet:///modules/zulip_ops/cron.d/zephyr-mirror",
+  }
+
+  file { "/etc/default/zephyr-clients.debathena":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip_ops/zephyr-clients.debathena",
   }
 
   file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
@@ -49,12 +60,10 @@ class zulip_internal::zmirror_personals {
     owner => "root",
     group => "root",
     mode => 755,
-    source => "puppet:///modules/zulip_internal/nagios_plugins/zulip_zephyr_mirror",
+    source => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
   }
 
   # TODO: Do the rest of our setup, which includes at least:
-  # Building patched libzephyr4-krb5 from davidben's roost branch and installing that
-  #  (to add ZLoadSession/ZDumpSession).
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
-  #  (patched with tabbott's branch to add dump_session and load_session using the above)
+  # Putting tabbott/extra's keytab on the system at /home/zulip/tabbott.extra.keytab
 }

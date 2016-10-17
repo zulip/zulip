@@ -1,5 +1,5 @@
-class zulip_internal::bots {
-  include zulip_internal::base
+class zulip_ops::bots {
+  include zulip_ops::base
   include zulip::supervisor
 
   file { '/etc/supervisor/conf.d/feedback-bot.conf':

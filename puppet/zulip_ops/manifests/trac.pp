@@ -1,7 +1,7 @@
-class zulip_internal::trac {
-  include zulip_internal::base
-  include zulip_internal::apache
-  include zulip_internal::mediawiki
+class zulip_ops::trac {
+  include zulip_ops::base
+  include zulip_ops::apache
+  include zulip_ops::mediawiki
 
   $trac_packages = [# Packages needed to run trac
                     "trac",
@@ -18,7 +18,7 @@ class zulip_internal::trac {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/trac.ini",
+    source => "puppet:///modules/zulip_ops/trac.ini",
     require => User['zulip'],
   }
   file { "/home/zulip/trac/cgi-bin/":
@@ -26,7 +26,7 @@ class zulip_internal::trac {
     owner => "zulip",
     group => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/trac/cgi-bin/",
+    source => "puppet:///modules/zulip_ops/trac/cgi-bin/",
   }
   file { '/home/zulip/trac/plugins/zulip_trac.py':
     ensure => 'link',
@@ -43,7 +43,7 @@ class zulip_internal::trac {
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/zulip_internal/postgresql/40-postgresql.conf.trac',
+    source   => 'puppet:///modules/zulip_ops/postgresql/40-postgresql.conf.trac',
   }
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
@@ -52,6 +52,6 @@ class zulip_internal::trac {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/postgresql/postgresql.conf.trac",
+    source => "puppet:///modules/zulip_ops/postgresql/postgresql.conf.trac",
   }
 }

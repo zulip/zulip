@@ -1,6 +1,6 @@
-class zulip_internal::postgres_master {
-  include zulip_internal::base
-  include zulip_internal::postgres_appdb
+class zulip_ops::postgres_master {
+  include zulip_ops::base
+  include zulip_ops::postgres_appdb
 
   $master_packages = [# Packages needed for disk + RAID configuration
                       "xfsprogs",
@@ -13,7 +13,7 @@ class zulip_internal::postgres_master {
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/zulip_internal/postgresql/40-postgresql.conf.master',
+    source   => 'puppet:///modules/zulip_ops/postgresql/40-postgresql.conf.master',
   }
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
@@ -22,7 +22,7 @@ class zulip_internal::postgres_master {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/postgresql/postgresql.conf.master",
+    source => "puppet:///modules/zulip_ops/postgresql/postgresql.conf.master",
   }
 
   file { "/root/setup_disks.sh":
@@ -30,7 +30,7 @@ class zulip_internal::postgres_master {
     owner  => 'root',
     group  => 'root',
     mode   => 744,
-    source => 'puppet:///modules/zulip_internal/postgresql/setup_disks.sh',
+    source => 'puppet:///modules/zulip_ops/postgresql/setup_disks.sh',
   }
 
   exec { "setup_disks":

@@ -1,6 +1,6 @@
-class zulip_internal::prod_app_frontend {
-  include zulip_internal::base
-  include zulip_internal::app_frontend
+class zulip_ops::prod_app_frontend {
+  include zulip_ops::base
+  include zulip_ops::app_frontend
 
   file { "/etc/nginx/sites-available/zulip":
     require => Package["nginx-full"],
@@ -8,7 +8,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/nginx/sites-available/zulip",
+    source => "puppet:///modules/zulip_ops/nginx/sites-available/zulip",
     notify => Service["nginx"],
   }
   file { '/etc/nginx/sites-enabled/zulip':
@@ -35,7 +35,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/mac/sparkle.xml",
+    source => "puppet:///modules/zulip_ops/sparkle/mac/sparkle.xml",
   }
   file { "/srv/www/dist/apps/mac/sparkle-changelog.html":
     ensure => file,
@@ -43,7 +43,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/mac/sparkle-changelog.html",
+    source => "puppet:///modules/zulip_ops/sparkle/mac/sparkle-changelog.html",
   }
   file { "/srv/www/dist/apps/win/sparkle.xml":
     ensure => file,
@@ -51,7 +51,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/win/sparkle.xml",
+    source => "puppet:///modules/zulip_ops/sparkle/win/sparkle.xml",
   }
   file { "/srv/www/dist/apps/win/sparkle-changelog.html":
     ensure => file,
@@ -59,7 +59,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/win/sparkle-changelog.html",
+    source => "puppet:///modules/zulip_ops/sparkle/win/sparkle-changelog.html",
   }
 
   file { "/srv/www/dist/apps/sso/mac/sparkle.xml":
@@ -68,7 +68,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/sso/mac/sparkle.xml",
+    source => "puppet:///modules/zulip_ops/sparkle/sso/mac/sparkle.xml",
   }
   file { "/srv/www/dist/apps/sso/mac/sparkle-changelog.html":
     ensure => file,
@@ -76,7 +76,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/sso/mac/sparkle-changelog.html",
+    source => "puppet:///modules/zulip_ops/sparkle/sso/mac/sparkle-changelog.html",
   }
   file { "/srv/www/dist/apps/sso/win/sparkle.xml":
     ensure => file,
@@ -84,7 +84,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/sso/win/sparkle.xml",
+    source => "puppet:///modules/zulip_ops/sparkle/sso/win/sparkle.xml",
   }
   file { "/srv/www/dist/apps/sso/win/sparkle-changelog.html":
     ensure => file,
@@ -92,7 +92,7 @@ class zulip_internal::prod_app_frontend {
     owner  => "zulip",
     group  => "zulip",
     mode => 644,
-    source => "puppet:///modules/zulip_internal/sparkle/sso/win/sparkle-changelog.html",
+    source => "puppet:///modules/zulip_ops/sparkle/sso/win/sparkle-changelog.html",
   }
 
   # Prod has our Apple Push Notifications Service private key at
