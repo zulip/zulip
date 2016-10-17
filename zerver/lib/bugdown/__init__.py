@@ -1076,8 +1076,8 @@ def make_md_engine(key, opts):
         safe_mode     = 'escape',
         output_format = 'html',
         extensions    = [
-                        'nl2br',
-                         'tables',
+                        'markdown.extensions.nl2br',
+                         'markdown.extensions.tables',
                          codehilite.makeExtension(
                                 linenums=False,
                                 guess_lang=False
