@@ -219,9 +219,9 @@ class Client(object):
             site = site.rstrip("/")
             self.base_url = site
         else:
-            self.base_url = "https://api.zulip.com"
+           raise RuntimeError("Missing Zulip server URL; specify via --site or ~/.zuliprc.")
 
-        if self.base_url != "https://api.zulip.com" and not self.base_url.endswith("/api"):
+        if not self.base_url.endswith("/api"):
             self.base_url += "/api"
         self.base_url += "/"
         self.retry_on_errors = retry_on_errors
