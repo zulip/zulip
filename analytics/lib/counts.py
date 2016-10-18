@@ -255,18 +255,22 @@ count_message_by_stream_query = """
 zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
 
 count_stream_by_realm_query = """
-        INSERT INTO analytics_realmcount
+    INSERT INTO analytics_realmcount
             (realm_id, value, property, end_time, interval)
     SELECT
-        zerver_stream.realm_id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
-    FROM zerver_stream
-    LEFT JOIN zerver_recipient
+        zerver_realm.id, count(*), '%(property)s', %%(time_end)s, '%(interval)s'
+    FROM zerver_realm
+    LEFT JOIN zerver_stream
     ON
     (
-        zerver_recipient.type = 2 AND
-        zerver_stream.id = zerver_recipient.type_id
+        zerver_stream.realm_id = zerver_realm.id AND
+        zerver_stream.date_created >= %%(time_start)s AND
+        zerver_stream.date_created < %%(time_end)s
+        %(join_args)s
     )
-    GROUP BY zerver_stream.realm_id
+    WHERE
+        zerver_realm.date_created < %%(time_end)s
+    GROUP BY zerver_realm.id
 """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
 
