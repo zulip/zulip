@@ -4,7 +4,6 @@ from six import text_type
 from typing import Any, Union, Mapping, Optional
 
 from django.conf import settings
-from importlib import import_module
 from django.utils import timezone
 from django.contrib.sessions.models import Session as djSession
 
@@ -28,7 +27,6 @@ from zerver.lib.session_user import get_session_user
 
 logger = logging.getLogger('zulip.socket')
 
-djsession_engine = import_module(settings.SESSION_ENGINE)
 def get_user_profile(session_id):
     # type: (Optional[text_type]) -> Optional[UserProfile]
     if session_id is None:
