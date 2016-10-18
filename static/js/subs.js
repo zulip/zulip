@@ -2,14 +2,6 @@ var subs = (function () {
 
 var exports = {};
 
-function add_admin_options(sub) {
-    return _.extend(sub, {
-        'is_admin': page_params.is_admin,
-        'can_make_public': page_params.is_admin && sub.invite_only && stream_data.is_subscribed(sub.name),
-        'can_make_private': page_params.is_admin && !sub.invite_only
-    });
-}
-
 function get_color() {
     var used_colors = stream_data.get_colors();
     var color = stream_color.pick_color(used_colors);
@@ -35,15 +27,6 @@ function selectText(element) {
 function should_list_all_streams() {
     return !page_params.is_zephyr_mirror_realm;
 }
-
-exports.stream_id = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        blueslip.error("Tried to get subs.stream_id for a stream user is not subscribed to!");
-        return 0;
-    }
-    return parseInt(sub.stream_id, 10);
-};
 
 function set_stream_property(stream_name, property, value) {
     var sub_data = {stream: stream_name, property: property, value: value};
@@ -264,7 +247,7 @@ function add_email_hint(row, email_address_hint_content) {
 }
 
 function add_sub_to_table(sub) {
-    sub = add_admin_options(sub);
+    sub = stream_data.add_admin_options(sub);
     var html = templates.render('subscription', sub);
     $('#create_or_filter_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
@@ -390,53 +373,6 @@ exports.pin_or_unpin_stream = function (stream_name) {
     }
 };
 
-exports.sub_pinned_or_unpinned = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (stream_name === undefined) {
-        return;
-    }
-    return sub.pin_to_top;
-};
-
-exports.receives_desktop_notifications = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    return sub.desktop_notifications;
-};
-
-exports.receives_audible_notifications = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    return sub.audible_notifications;
-};
-
-function populate_subscriptions(subs, subscribed) {
-    var sub_rows = [];
-    subs.sort(function (a, b) {
-        return util.strcmp(a.name, b.name);
-    });
-    subs.forEach(function (elem) {
-        var stream_name = elem.name;
-        var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
-                                           invite_only: elem.invite_only,
-                                           desktop_notifications: elem.desktop_notifications,
-                                           audible_notifications: elem.audible_notifications,
-                                           pin_to_top: elem.pin_to_top,
-                                           subscribed: subscribed,
-                                           email_address: elem.email_address,
-                                           stream_id: elem.stream_id,
-                                           subscribers: elem.subscribers,
-                                           description: elem.description});
-        sub_rows.push(sub);
-    });
-
-    return sub_rows;
-}
-
 exports.filter_table = function (query) {
     var sub_name_elements = $('#subscriptions_table .subscription_name');
 
@@ -490,45 +426,7 @@ exports.setup_page = function () {
 
     function _populate_and_fill(public_streams) {
 
-        // Build up our list of subscribed streams from the data we already have.
-        var subscribed_rows = stream_data.subscribed_subs();
-
-        // To avoid dups, build a set of names we already subscribed to.
-        var subscribed_set = new Dict({fold_case: true});
-        _.each(subscribed_rows, function (sub) {
-            subscribed_set.set(sub.name, true);
-        });
-
-        // Right now the back end gives us all public streams; we really only
-        // need to add the ones we haven't already subscribed to.
-        var unsubscribed_streams = _.reject(public_streams.streams, function (stream) {
-            return subscribed_set.has(stream.name);
-        });
-
-        // Build up our list of unsubscribed rows.
-        var unsubscribed_rows = [];
-        _.each(unsubscribed_streams, function (stream) {
-            var sub = stream_data.get_sub(stream.name);
-            if (!sub) {
-                sub = create_sub(stream.name, _.extend({subscribed: false}, stream));
-            }
-            unsubscribed_rows.push(sub);
-        });
-
-        // Sort and combine all our streams.
-        function by_name(a,b) {
-            return util.strcmp(a.name, b.name);
-        }
-        subscribed_rows.sort(by_name);
-        unsubscribed_rows.sort(by_name);
-        var all_subs = subscribed_rows.concat(unsubscribed_rows);
-
-        // Add in admin options.
-        var sub_rows = [];
-        _.each(all_subs, function (sub) {
-            sub = add_admin_options(sub);
-            sub_rows.push(sub);
-        });
+        var sub_rows = stream_data.get_streams_for_settings_page(public_streams);
 
         $('#subscriptions_table').empty();
 
@@ -742,31 +640,11 @@ exports.remove_user_from_stream = function (user_email, stream_name, success, fa
     });
 };
 
-function inline_emails_into_subscriber_list(subs, email_dict) {
-    // When we get subscriber lists from the back end, they are sent as user ids to
-    // save bandwidth, but the legacy JS code wants emails.
-    _.each(subs, function (sub) {
-        if (sub.subscribers) {
-            sub.subscribers = _.map(sub.subscribers, function (subscription) {
-                return email_dict[subscription];
-            });
-        }
-    });
-}
-
 $(function () {
     var i;
 
-    inline_emails_into_subscriber_list(page_params.subbed_info, page_params.email_dict);
-    inline_emails_into_subscriber_list(page_params.unsubbed_info, page_params.email_dict);
-
-    // Populate stream_info with data handed over to client-side template.
-    populate_subscriptions(page_params.subbed_info, true);
-    populate_subscriptions(page_params.unsubbed_info, false);
-
-    // Garbage collect data structures that were only used for initialization.
-    delete page_params.subbed_info;
-    delete page_params.unsubbed_info;
+    stream_data.initialize_from_page_params();
+    stream_list.create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
@@ -1158,7 +1036,7 @@ $(function () {
     function redraw_privacy_related_stuff(sub_row, sub) {
         var html;
 
-        sub = add_admin_options(sub);
+        sub = stream_data.add_admin_options(sub);
 
         html = templates.render('subscription_setting_icon', sub);
         sub_row.find('.subscription-setting-icon').expectOne().html(html);

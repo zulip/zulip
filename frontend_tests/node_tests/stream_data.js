@@ -1,10 +1,12 @@
 global.stub_out_jquery();
 
 add_dependencies({
-    stream_color: 'js/stream_color.js'
+    stream_color: 'js/stream_color.js',
+    util: 'js/util.js'
 });
 
 set_global('blueslip', {});
+set_global('page_params', {is_admin: false});
 
 var stream_data = require('js/stream_data.js');
 
@@ -132,5 +134,91 @@ var stream_data = require('js/stream_data.js');
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
     stream_data.remove_subscriber('Rome', email);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
+
+}());
+
+(function test_admin_options() {
+    function make_sub() {
+        return {
+            subscribed: false,
+            color: 'blue',
+            name: 'stream_to_admin',
+            stream_id: 1,
+            in_home_view: false,
+            invite_only: false
+        };
+    }
+
+    // non-admins can't do anything
+    global.page_params.is_admin = false;
+    var sub = make_sub();
+    stream_data.add_admin_options(sub);
+    assert(!sub.is_admin);
+    assert(!sub.can_make_public);
+    assert(!sub.can_make_private);
+
+    // just a sanity check that we leave "normal" fields alone
+    assert.equal(sub.color, 'blue');
+
+    // the remaining cases are for admin users
+    global.page_params.is_admin = true;
+
+    // admins can make public streams become private
+    sub = make_sub();
+    stream_data.add_admin_options(sub);
+    assert(sub.is_admin);
+    assert(!sub.can_make_public);
+    assert(sub.can_make_private);
+
+    // admins can only make private streams become public
+    // if they are subscribed
+    sub = make_sub();
+    sub.invite_only = true;
+    sub.subscribed = false;
+    stream_data.add_admin_options(sub);
+    assert(sub.is_admin);
+    assert(!sub.can_make_public);
+    assert(!sub.can_make_private);
+
+    sub = make_sub();
+    sub.invite_only = true;
+    sub.subscribed = true;
+    stream_data.add_admin_options(sub);
+    assert(sub.is_admin);
+    assert(sub.can_make_public);
+    assert(!sub.can_make_private);
+}());
+
+(function test_stream_settings() {
+    var cinnamon = {
+        stream_id: 1,
+        name: 'c',
+        color: 'cinnamon',
+        subscribed: true
+    };
+
+    var blue = {
+        stream_id: 2,
+        name: 'b',
+        color: 'blue',
+        subscribed: false
+    };
+
+    var amber = {
+        stream_id: 3,
+        name: 'a',
+        color: 'amber',
+        subscribed: true
+    };
+    var public_streams = {streams: [cinnamon, blue, amber]};
+    stream_data.clear_subscriptions();
+    stream_data.add_sub(cinnamon.name, cinnamon);
+    stream_data.add_sub(amber.name, amber);
+    // we don't know about "blue"
+
+    var sub_rows = stream_data.get_streams_for_settings_page(public_streams);
+    assert.equal(sub_rows[0].color, 'amber');
+    assert.equal(sub_rows[1].color, 'cinnamon');
+    assert.equal(sub_rows[2].color, 'blue');
 
 }());

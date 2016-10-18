@@ -46,7 +46,22 @@ function filter_streams_by_search(streams) {
     return filtered_streams;
 }
 
+exports.create_initial_sidebar_rows = function () {
+    // This code is slightly opaque, but it ends up building
+    // up list items and attaching them to the "sub" data
+    // structures that are kept in stream_data.js.
+    var subs = stream_data.subscribed_subs();
+
+    _.each(subs, function (sub) {
+        exports.create_sidebar_row(sub);
+    });
+};
+
 exports.build_stream_list = function () {
+    // This function assumes we have already created the individual
+    // sidebar rows.  Our job here is to build the bigger widget,
+    // which largely is a matter of arranging the individual rows in
+    // the right order.
     var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
@@ -247,12 +262,17 @@ function build_stream_sidebar_row(name) {
     return list_item;
 }
 
-exports.add_stream_to_sidebar = function (stream_name) {
+exports.create_sidebar_row = function (sub) {
+    var stream_name = sub.name;
+
     if (exports.get_stream_li(stream_name).length) {
         // already exists
-        return false;
+        return;
     }
-    return build_stream_sidebar_row(stream_name);
+    var li = build_stream_sidebar_row(stream_name);
+    if (li) {
+        sub.sidebar_li = li;
+    }
 };
 
 exports.redraw_stream_privacy = function (stream_name) {
@@ -645,20 +665,12 @@ $(function () {
 
     $(document).on('sub_obj_created.zulip', function (event) {
         if (event.sub.subscribed) {
-            var stream_name = event.sub.name;
-            var li = exports.add_stream_to_sidebar(stream_name);
-            if (li) {
-                event.sub.sidebar_li = li;
-            }
+            exports.create_sidebar_row(event.sub);
         }
     });
 
     $(document).on('subscription_add_done.zulip', function (event) {
-        var stream_name = event.sub.name;
-        var li = exports.add_stream_to_sidebar(stream_name);
-        if (li) {
-            event.sub.sidebar_li = li;
-        }
+        exports.create_sidebar_row(event.sub);
         exports.build_stream_list();
     });
 
