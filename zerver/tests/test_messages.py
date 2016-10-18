@@ -26,7 +26,7 @@ from zerver.lib.test_helpers import (
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
+    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
     get_realm, get_stream, get_user_profile_by_email,
 )
 
@@ -51,6 +51,12 @@ from six.moves import range
 from typing import Any, Optional
 
 class TestCrossRealmPMs(ZulipTestCase):
+    def make_realm(self, domain):
+        # type: (text_type) -> Realm
+        realm = Realm.objects.create(domain=domain)
+        RealmAlias.objects.create(realm=realm, domain=domain)
+        return realm
+
     def setUp(self):
         # type: () -> None
         settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
@@ -72,7 +78,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def test_same_realm(self):
         # type: () -> None
         """Users on the same realm can PM each other"""
-        r1 = Realm.objects.create(domain='1.example.com')
+        r1 = self.make_realm('1.example.com')
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
@@ -90,8 +96,8 @@ class TestCrossRealmPMs(ZulipTestCase):
     def test_different_realms(self):
         # type: () -> None
         """Users on the different realms can not PM each other"""
-        r1 = Realm.objects.create(domain='1.example.com')
-        r2 = Realm.objects.create(domain='2.example.com')
+        r1 = self.make_realm('1.example.com')
+        r2 = self.make_realm('2.example.com')
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
         deployment.realms.add(r2)
@@ -108,9 +114,9 @@ class TestCrossRealmPMs(ZulipTestCase):
     def test_three_different_realms(self):
         # type: () -> None
         """Users on three different realms can not PM each other"""
-        r1 = Realm.objects.create(domain='1.example.com')
-        r2 = Realm.objects.create(domain='2.example.com')
-        r3 = Realm.objects.create(domain='3.example.com')
+        r1 = self.make_realm('1.example.com')
+        r2 = self.make_realm('2.example.com')
+        r3 = self.make_realm('3.example.com')
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
         deployment.realms.add(r2)
@@ -130,7 +136,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def test_from_zulip_realm(self):
         # type: () -> None
         """OG Users in the zulip.com realm can PM any realm"""
-        r1 = Realm.objects.create(domain='1.example.com')
+        r1 = self.make_realm('1.example.com')
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
@@ -148,7 +154,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def test_to_zulip_realm(self):
         # type: () -> None
         """All users can PM users in the zulip.com realm"""
-        r1 = Realm.objects.create(domain='1.example.com')
+        r1 = self.make_realm('1.example.com')
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
 
@@ -166,8 +172,8 @@ class TestCrossRealmPMs(ZulipTestCase):
     def test_zulip_realm_can_not_join_realms(self):
         # type: () -> None
         """Adding a zulip.com user to a PM will not let you cross realms"""
-        r1 = Realm.objects.create(domain='1.example.com')
-        r2 = Realm.objects.create(domain='2.example.com')
+        r1 = self.make_realm('1.example.com')
+        r2 = self.make_realm('2.example.com')
         deployment = Deployment.objects.filter()[0]
         deployment.realms.add(r1)
         deployment.realms.add(r2)

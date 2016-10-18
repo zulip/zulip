@@ -22,7 +22,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_cross_realm_users, resolve_subdomain_to_realm
+    get_cross_realm_users, resolve_subdomain_to_realm, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -532,6 +532,7 @@ def home(request):
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
+        domains               = list_of_domains_for_realm(user_profile.realm),
         realm_name            = register_ret['realm_name'],
         realm_invite_required = register_ret['realm_invite_required'],
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],

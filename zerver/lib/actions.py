@@ -24,7 +24,7 @@ from zerver.lib.message import (
     message_to_dict,
     render_markdown,
 )
-from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
+from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
     Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
@@ -1961,6 +1961,7 @@ def get_realm_creation_defaults(org_type=None, restricted_to_domain=None, invite
 def do_create_realm(domain, name, subdomain=None, restricted_to_domain=None,
                     invite_required=None, org_type=None):
     # type: (text_type, text_type, Optional[text_type], Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
+    domain = domain.lower()
     realm = get_realm(domain)
     created = not realm
     if created:
@@ -1973,6 +1974,9 @@ def do_create_realm(domain, name, subdomain=None, restricted_to_domain=None,
         realm = Realm(domain=domain, name=name, org_type=org_type, subdomain=subdomain,
                       restricted_to_domain=restricted_to_domain, invite_required=invite_required)
         realm.save()
+
+        realmalias = RealmAlias(realm=realm, domain=domain)
+        realmalias.save()
 
         # Create stream once Realm object has been saved
         notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
