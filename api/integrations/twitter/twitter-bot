@@ -69,7 +69,8 @@ parser = optparse.OptionParser(r"""
     Make sure to go the application you created and click "create my
     access token" as well.  Fill in the values displayed.
 
-    Depends on: twitter-python
+    Depends on: https://github.com/bear/python-twitter version 3.1
+    (`pip install python-twitter`)
 """)
 
 parser.add_option('--twitter-id',
@@ -115,7 +116,7 @@ api = twitter.Api(consumer_key=consumer_key,
 
 user = api.VerifyCredentials()
 
-if not user.GetId():
+if not user.id:
     print("Unable to log in to twitter with supplied credentials. Please double-check and try again")
     sys.exit()
 
@@ -146,12 +147,12 @@ else:
     statuses = api.GetFriendsTimeline(user=options.twitter_id, since_id=since_id)
 
 for status in statuses[::-1][:options.limit_tweets]:
-    composed = "%s (%s)" % (status.GetUser().GetName(), status.GetUser().GetScreenName())
+    composed = "%s (%s)" % (status.user.name, status.user.screen_name)
     message = {
       "type": "stream",
       "to": [options.stream],
       "subject": composed,
-      "content": status.GetText(),
+      "content": status.text,
     }
 
     ret = client.send_message(message)
@@ -161,6 +162,6 @@ for status in statuses[::-1][:options.limit_tweets]:
         print("Error sending message to zulip: %s" % ret['msg'])
         break
     else:
-        since_id = status.GetId()
+        since_id = status.id
 
 write_config(config, since_id, user_id)
