@@ -17,6 +17,8 @@ set_global('admin', {
     show_or_hide_menu_item: function () {}
 });
 
+var _ = global._;
+
 (function test_basics() {
     var orig_person = {
         email: 'orig@example.com',
@@ -123,4 +125,46 @@ set_global('admin', {
         { email: 'bob@example.com', full_name: 'Bob van Roberts' }
     ];
     assert.deepEqual(others, expected);
+
+    people.remove(alice1);
+    people.remove(alice2);
+    people.remove(bob);
+}());
+
+(function test_filtered_users() {
+     var charles = {
+        email: 'charles@example.com',
+        full_name: 'Charles Dickens'
+    };
+    var maria = {
+        email: 'athens@example.com',
+        full_name: 'Maria Athens'
+    };
+    var ashton = {
+        email: 'ashton@example.com',
+        full_name: 'Ashton Smith'
+    };
+
+    people.add_in_realm(charles);
+    people.add_in_realm(maria);
+    people.add_in_realm(ashton);
+    var search_term = 'a';
+    var users = people.get_rest_of_realm();
+    var filtered_people = people.filter_people_by_search_terms(users, search_term);
+    var expected = [
+        { email: 'athens@example.com', full_name: 'Maria Athens' },
+        { email: 'ashton@example.com', full_name: 'Ashton Smith' }
+    ];
+    assert.equal(filtered_people["ashton@example.com"], true);
+    assert.equal(filtered_people["athens@example.com"], true);
+    assert.equal(_.keys(filtered_people).length, 2);
+    assert(!_.has(filtered_people, 'charles@example.com'));
+
+    search_term = '';
+    filtered_people = people.filter_people_by_search_terms(users, search_term);
+    assert(_.isEmpty(filtered_people));
+
+    people.remove(charles);
+    people.remove(maria);
+    people.remove(ashton);
 }());

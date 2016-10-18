@@ -695,25 +695,7 @@ $(function () {
         }
         var search_term = user_list.expectOne().val().trim();
         var search_terms = search_term.toLowerCase().split(",");
-
-        var filtered_users = {};
-        _.each(users, function (user) {
-            var person = people.get_by_email(user.email);
-            if (!person || !person.full_name) {
-                return;
-            }
-            var names = person.full_name.toLowerCase().split(/\s+/);
-            names = _.map(names, function (s) {
-                return s.trim();
-            });
-            return _.any(search_terms, function (search_term) {
-                return _.any(names, function (name) {
-                    if (name.indexOf(search_term.trim()) === 0) {
-                        filtered_users[user.email] = true;
-                    }
-                });
-            });
-        });
+        var filtered_users = people.filter_people_by_search_terms(users, search_terms);
 
         // Hide users which aren't in filtered users
         _.each(users, function (user) {
