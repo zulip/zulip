@@ -73,21 +73,8 @@
                     </a>
                   </li>
                   <li title="Tutorial">
-
-                  <script>
-                    function go(){ 
-                    alert("hello");
-                    $.getScript("js/tutorial.js", function(){
-                      alert("Script loaded but not necessarily executed.");
-
-                    });
-                    page_params.needs_tutorial=true;
-                    }
-
-                  </script>
-                    <a role="button" data-toggle="modal" onclick="go()">
+                    <a class="go" role="button" data-toggle="modal" >
                       <i class="icon-vector-search"></i> {{ _('Tutorial') }}
-
                     </a>
                     
                   </li>

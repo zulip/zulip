@@ -319,17 +319,22 @@ exports.MessageList.prototype = {
     _add_to_hash: function MessageList__add_to_hash(messages) {
         var self = this;
         messages.forEach(function (elem) {
+            
             var id = parseFloat(elem.id);
             if (isNaN(id)) {
                 blueslip.fatal("Bad message id");
+                alert("inside rerender1");
             }
             if (self._is_localonly_id(id)) {
                 self._local_only[id] = elem;
+                alert("inside rerender2");
             }
             if (self._hash[id] !== undefined) {
                 blueslip.error("Duplicate message added to MessageList");
+                alert("inside rerender3");
                 return;
             }
+            alert(elem);
             self._hash[id] = elem;
         });
     },
@@ -422,7 +427,7 @@ exports.MessageList.prototype = {
         // To add messages that might be in the interior of our
         // existing messages list, we just add the new messages and
         // then rerender the whole thing.
-
+        
         var viewable_messages;
         if (this.muting_enabled) {
             this._all_items = messages.concat(this._all_items);
@@ -430,15 +435,19 @@ exports.MessageList.prototype = {
 
             viewable_messages = this.unmuted_messages(messages);
             this._items = viewable_messages.concat(this._items);
+alert("inside rerender");
 
         } else {
             this._items = messages.concat(this._items);
+            
         }
-
+        alert("inside rerender work");
         this._items.sort(function (a, b) {return a.id - b.id;});
+        alert("inside rerender work1");
         this._add_to_hash(messages);
-
+alert("inside rerender work2");
         this.view.rerender_the_whole_thing();
+        alert("inside rerender work3");
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {
