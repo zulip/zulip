@@ -41,7 +41,7 @@ The following sections will help you be awesome with Zulip and Git/GitHub in a
 rebased-based workflow. Read through it if you're new to git, to a rebase-based
 git workflow, or if you'd like a git refresher.
 
-## Setup Git
+## Set up Git
 
 If you're already using Git, have a client you like, and a GitHub account, you
 can skip this section. Otherwise, read on!
@@ -311,7 +311,7 @@ upstream https://github.com/zulip/zulip.git (fetch)
 upstream https://github.com/zulip/zulip.git (push)
 ```
 
-### Step 2: Setup the Zulip dev environment
+### Step 2: Set up the Zulip dev environment
 
 If you haven't already, now is a good time to install the Zulip dev environment
 ([overview][zulip-rtd-dev-overview]). If you're new to working on Zulip or open
@@ -1262,7 +1262,7 @@ whichever branch you need to update.
 
 This section will document the zulip-specific git tools contributors will find helpful.
 
-### Setup git repo script
+### Set up git repo script
 
 In the `tools` directory of [zulip/zulip][github-zulip-zulip] you'll find a
 bash script `setup-git-repo`. This script installs the Zulip pre-commit hook.
