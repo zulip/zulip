@@ -1,39 +1,39 @@
-# Web frontend unit tests
+# JavaScript unit tests
 
 As an alternative to the black-box whole-app testing, you can unit test
-individual JavaScript files that use the module pattern. For example, to
-test the `foobar.js` file, you would first add the following to the
-bottom of `foobar.js`:
+individual JavaScript files.
 
->     if (typeof module !== 'undefined') {
->         module.exports = foobar;
->     }
+If you are writing JavaScript code that manipulates data (as opposed
+to coordinating UI changes), then you probably modify existing unit test
+modules to ensure the quality of your code and prevent regressions.
 
-This makes `foobar.js` follow the CommonJS module pattern, so it can be
-required in Node.js, which runs our tests.
+The JS unit tests are written to work with node.  You can find them
+in `frontend_tests/node_tests`.  Here is an example test from
+`frontend_tests/node_tests/stream_data.js`:
 
-Now create `frontend_tests/node_tests/foobar.js`. At the top, require
-the [Node.js assert module](http://nodejs.org/api/assert.html), and the
-module you're testing, like so:
+```
+(function test_get_by_id() {
+    stream_data.clear_subscriptions();
+    var id = 42;
+    var sub = {
+        name: 'Denmark',
+        subscribed: true,
+        color: 'red',
+        stream_id: id
+    };
+    stream_data.add_sub('Denmark', sub);
+    sub = stream_data.get_sub('Denmark');
+    assert.equal(sub.color, 'red');
+    sub = stream_data.get_sub_by_id(id);
+    assert.equal(sub.color, 'red');
+}());
+```
 
->     var assert = require('assert');
->     var foobar = require('js/foobar.js');
-
-(If the module you're testing depends on other modules, or modifies
-global state, you need to also read [the next
-section](handling-dependencies_).)
-
-Define and call some tests using the [assert
-module](http://nodejs.org/api/assert.html). Note that for "equal"
-asserts, the *actual* value comes first, the *expected* value second.
-
->     (function test_somefeature() {
->         assert.strictEqual(foobar.somefeature('baz'), 'quux');
->         assert.throws(foobar.somefeature('Invalid Input'));
->     }());
-
-The test runner (`index.js`) automatically runs all .js files in the
-frontend\_tests/node directory.
+The names of the node tests generally align with the names of the
+modules they test.  If you modify a JS module in `static/js` you should
+see if there are corresponding test in `frontend_tests/node_tests`.  If
+there are, you should strive to follow the patterns of the existing tests
+and add your own tests.
 
 ## HTML output
 
@@ -129,3 +129,40 @@ here is this:
 >     global.narrow.stream = function () {
 >         return 'office';
 >     };
+
+## Creating new test modules
+
+The nodes tests rely on JS files that use the module pattern. For example, to
+test the `foobar.js` file, you would first add the following to the
+bottom of `foobar.js`:
+
+>     if (typeof module !== 'undefined') {
+>         module.exports = foobar;
+>     }
+
+This makes `foobar.js` follow the CommonJS module pattern, so it can be
+required in Node.js, which runs our tests.
+
+Now create `frontend_tests/node_tests/foobar.js`. At the top, require
+the [Node.js assert module](http://nodejs.org/api/assert.html), and the
+module you're testing, like so:
+
+>     var assert = require('assert');
+>     var foobar = require('js/foobar.js');
+
+(If the module you're testing depends on other modules, or modifies
+global state, you need to also read [the next
+section](handling-dependencies_).)
+
+Define and call some tests using the [assert
+module](http://nodejs.org/api/assert.html). Note that for "equal"
+asserts, the *actual* value comes first, the *expected* value second.
+
+>     (function test_somefeature() {
+>         assert.strictEqual(foobar.somefeature('baz'), 'quux');
+>         assert.throws(foobar.somefeature('Invalid Input'));
+>     }());
+
+The test runner (`index.js`) automatically runs all .js files in the
+frontend\_tests/node directory.
+
