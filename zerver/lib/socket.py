@@ -4,7 +4,7 @@ from six import text_type
 from typing import Any, Union, Mapping, Optional
 
 from django.conf import settings
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.utils import timezone
 from django.contrib.sessions.models import Session as djSession
 

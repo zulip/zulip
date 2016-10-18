@@ -14,7 +14,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
     get_remote_cache_time, get_remote_cache_requests, cache_set_many, \
     to_dict_cache_key_id
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
 from django.db.models import Q

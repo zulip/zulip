@@ -229,8 +229,8 @@ Filter.parse = function (str) {
                 negated = true;
                 operator = operator.slice(1);
             }
-            operand = decodeOperand(parts.join(':'), operator);
 
+            operand = decodeOperand(parts.join(':'), operator);
             // We use Filter.operator_to_prefix() checks if the
             // operator is known.  If it is not known, then we treat
             // it as a search for the given string (which may contain
