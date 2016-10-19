@@ -20,7 +20,6 @@ var bugdown_re = [
                     // Twitter and youtube links are given previews
                     /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
                     // Gravatars are inlined as well
-                    /!avatar\([^)]+\)/,
                     /!gravatar\([^)]+\)/
                   ];
 
@@ -324,6 +323,12 @@ function handleEmoji(emoji_name) {
     }
 }
 
+function handleAvatar(email) {
+    return '<img alt="' + email + '"' +
+           ' class="message_body_gravatar" src="/avatar/' + email + '?s=30"' +
+           ' title="' + email + '">';
+}
+
 function handleUserMentions(username) {
     var person = people.get_by_name(username);
     if (person !== undefined) {
@@ -482,6 +487,7 @@ $(function () {
         smartypants: false,
         zulip: true,
         emojiHandler: handleEmoji,
+        avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
         userMentionHandler: handleUserMentions,
         realmFilterHandler: handleRealmFilter,
