@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
+zulip_source_hash=`shasum $SOURCES_FILE`
+
 apt-get install -y lsb-release
 
 SCRIPTS_PATH="$(dirname $(dirname $0))"
@@ -21,4 +24,8 @@ else
     exit 1
 fi
 
-apt-get update
+if [ "$zulip_source_hash" = "`shasum $SOURCES_FILE`" ]; then
+    echo "zulip.list file did not change; skipping apt-get update"
+else
+    apt-get update
+fi
