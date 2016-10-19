@@ -54,10 +54,10 @@ The end-to-end process to get the translations working is as follows:
    [frontend](#frontend-translations) translations for details on
    this).
 
-2. Create translations [resource][] files using the `python manage
+2. Create translation [resource][] files using the `python manage
    makemessages` command. This command will create, for each language,
-   a resource file called `translations.json` for frontend strings and
-   `django.po` for backend strings.
+   a resource file called `translations.json` for the frontend strings
+   and `django.po` for the backend strings.
 
    The `makemessages` command is idempotent in that:
 
@@ -69,12 +69,20 @@ The end-to-end process to get the translations working is as follows:
    - It will not override the value of a singular key if that value
      contains a translated text.
 
-3. Upload the resource files to Transifex using the `tx push -s -a`
-   command.
+3. A Zulip maintainer uploads the resource files to Transifex using the
+   `tx push -s -a` command.
 
-4. Download the updated resource files from Transifex using the
-   `tx pull -a` command. This command will download the resource files
-   from Transifex and replace your local resource files with them.
+4. Translators translate the strings in Transifex.
+
+5. With some setup, anyone can download the updated resource files
+   from Transifex using the `tx pull -a` command. This command will
+   download the resource files from Transifex and replace your local
+   resource files with them.
+
+6. One runs `python manage.py compilemessages` to compile the
+   translation strings so that they are will be used in the Zulip
+   development environment.  This is run automatically during Zulip
+   development environment provisioning.
 
 ## Backend Translations
 
