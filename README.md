@@ -143,7 +143,7 @@ have your own project idea in mind or want to get some experience with
 working on Zulip before embarking on a larger project you have in
 mind:
 
-* [Integrations](https://github.com/zulip/zulip/labels/integrations).
+* [Integrations](https://github.com/zulip/zulip/labels/area%3A%20integrations).
   Integrate Zulip with another piece of software and contribute it
   back to the community!  Writing an integration can be a great first
   contribution.  There's detailed documentation on how to write
@@ -153,7 +153,7 @@ mind:
 * [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
   Smaller projects that might be a great first contribution.
 
-* [Documentation](https://github.com/zulip/zulip/labels/documentation):
+* [Documentation](https://github.com/zulip/zulip/labels/area%3A%20documentation):
   The Zulip project loves contributions of new documentation.
 
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
