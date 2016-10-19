@@ -93,7 +93,6 @@ Here are some example action methods that tests may use for data setup:
 
 - check_send_message
 - create_stream_if_needed
-- do_add_subscription
 - do_change_is_admin
 - do_create_user
 - do_make_stream_private
