@@ -11,7 +11,6 @@ secure Zulip installation, including:
 - [Security Model](#security-model)
 - [Management commands](#management-commands)
 
-
 ## Upgrading
 
 **We recommend reading this entire section before doing your first
@@ -190,6 +189,16 @@ email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
+If you are interested in backups because you are moving from one Zulip
+server to another server and can't transfer a full postgres dump
+(which is definitely the simplest approach), our draft
+[conversion and export design document](conversion.html) may help.
+The tool is well designed and was tested carefully with dozens of
+realms as of mid-2016 but is not integrated into Zulip's regular
+testing process, and thus it is worth asking on the Zulip developers
+mailing list whether it needs any minor updates to do things like
+export newly added tables.
+
 ### Restore from backups
 
 To restore from backups, the process is basically the reverse of the above:
@@ -236,7 +245,6 @@ replication; you can see the configuration in these files:
 Contribution of a step-by-step guide for setting this up (and moving
 this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
-
 
 ## Monitoring
 
@@ -570,6 +578,22 @@ with the `--permission=api_super_user` argument.  See
 `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
 these.
 
+#### Exporting users and realms with manage.py export
+
+If you need to do an export of a single user or of an entire realm, we
+have tools in `management/` that essentially export Zulip data to the
+file system.
+
+`export_single_user.py` exports the message history and realm-public
+metadata for a single Zulip user.
+
+A good overview of the process for exporting a single realm when
+moving a realm to a new server (without moving a full database dump)
+is in
+[management/export.py](https://github.com/zulip/zulip/blob/master/zerver/management/commands/export.py). We
+recommend you read the comment there for words of wisdom on speed,
+what is and is not exported, what will break upon a move to a new
+server, and suggested procedure.
 
 ### Other useful manage.py commands
 
