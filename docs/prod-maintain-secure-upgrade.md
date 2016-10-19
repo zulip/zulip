@@ -22,9 +22,10 @@ release tarball from
 [https://www.zulip.com/dist/releases/](https://www.zulip.com/dist/releases/)
 
 You also have the option of creating your own release tarballs from a
-copy of zulip.git repository using `tools/build-release-tarball`. And,
-starting with Zulip version 1.4, you can upgrade Zulip [to a version
-in a Git repository directly](#upgrade-from-a-git-repository).
+copy of the zulip.git repository using
+`tools/build-release-tarball`. And, starting with Zulip version 1.4,
+you can upgrade Zulip [to a version in a Git repository
+directly](#upgrade-from-a-git-repository).
 
 Next, run as root:
 
@@ -167,22 +168,25 @@ into S3 using [wal-e](https://github.com/wal-e/wal-e) in
 `puppet/zulip_internal/manifests/postgres_common.pp` (that's what we
 use for zulip.com's database backups).  Note that this module isn't
 part of the Zulip server releases since it's part of the zulip.com
-configuration (see https://github.com/zulip/zulip/issues/293 for a
-ticket about fixing this to make life easier for running backups).
+configuration (see
+[https://github.com/zulip/zulip/issues/293](https://github.com/zulip/zulip/issues/293)
+for a ticket about fixing this to make life easier for running
+backups).
 
 * Any user-uploaded files.  If you're using S3 as storage for file
 uploads, this is backed up in S3, but if you have instead set
-LOCAL_UPLOADS_DIR, any files uploaded by users (including avatars)
+`LOCAL_UPLOADS_DIR`, any files uploaded by users (including avatars)
 will be stored in that directory and you'll want to back it up.
 
-* Your Zulip configuration including secrets from /etc/zulip/.
-E.g. if you lose the value of secret_key, all users will need to login
-again when you setup a replacement server since you won't be able to
-verify their cookies; if you lose avatar_salt, any user-uploaded
-avatars will need to be re-uploaded (since avatar filenames are
-computed using a hash of avatar_salt and user's email), etc.
+* Your Zulip configuration including secrets from `/etc/zulip/`.
+E.g. if you lose the value of `secret_key`, all users will need to
+login again when you setup a replacement server since you won't be
+able to verify their cookies; if you lose `avatar_salt`, any
+user-uploaded avatars will need to be re-uploaded (since avatar
+filenames are computed using a hash of `avatar_salt` and user's
+email), etc.
 
-* The logs under /var/log/zulip can be handy to have backed up, but
+* The logs under `/var/log/zulip` can be handy to have backed up, but
 they do get large on a busy server, and it's definitely
 lower-priority.
 
@@ -195,9 +199,10 @@ To restore from backups, the process is basically the reverse of the above:
   to run the `initialize-database` second stage which puts default
   data into the database.
 
-* Unpack to /etc/zulip the settings.py and secrets.conf files from your backups.
+* Unpack to `/etc/zulip` the `settings.py` and `secrets.conf` files
+  from your backups.
 
-* Restore your database from the backup using wal-e; if you ran
+* Restore your database from the backup using `wal-e`; if you ran
   `initialize-database` anyway above, you'll want to first
   `scripts/setup/postgres-init-db` to drop the initial database first.
 
@@ -205,7 +210,7 @@ To restore from backups, the process is basically the reverse of the above:
   specified by `settings.LOCAL_UPLOADS_DIR` and (if appropriate) any
   logs.
 
-* Start the server using scripts/restart-server
+* Start the server using `scripts/restart-server`.
 
 This restoration process can also be used to migrate a Zulip
 installation from one server to another.
@@ -224,9 +229,9 @@ of the guide much more explicit and detailed are very welcome!
 Zulip has database configuration for using Postgres streaming
 replication; you can see the configuration in these files:
 
-* puppet/zulip_internal/manifests/postgres_slave.pp
-* puppet/zulip_internal/manifests/postgres_master.pp
-* puppet/zulip_internal/files/postgresql/*
+* `puppet/zulip_internal/manifests/postgres_slave.pp`
+* `puppet/zulip_internal/manifests/postgres_master.pp`
+* `puppet/zulip_internal/files/postgresql/*`
 
 Contribution of a step-by-step guide for setting this up (and moving
 this configuration to be available in the main `puppet/zulip/` tree)
@@ -247,36 +252,37 @@ various Nagios plugins included with Zulip and what they check:
 
 Application server and queue worker monitoring:
 
-* check_send_receive_time (sends a test message through the system
+* `check_send_receive_time` (sends a test message through the system
   between two bot users to check that end-to-end message sending works)
 
-* check_rabbitmq_consumers and check_rabbitmq_queues (checks for
+* `check_rabbitmq_consumers` and `check_rabbitmq_queues` (checks for
   rabbitmq being down or the queue workers being behind)
 
-* check_queue_worker_errors (checks for errors reported by the queue workers)
+* `check_queue_worker_errors` (checks for errors reported by the queue
+  workers)
 
-* check_worker_memory (monitors for memory leaks in queue workers)
+* `check_worker_memory` (monitors for memory leaks in queue workers)
 
-* check_email_deliverer_backlog and check_email_deliverer_process
+* `check_email_deliverer_backlog` and `check_email_deliverer_process`
   (monitors for whether outgoing emails are being sent)
 
 Database monitoring:
 
-* check_postgres_replication_lag (checks streaming replication is up
+* `check_postgres_replication_lag` (checks streaming replication is up
   to date).
 
-* check_postgres (checks the health of the postgres database)
+* `check_postgres` (checks the health of the postgres database)
 
-* check_postgres_backup (checks backups are up to date; see above)
+* `check_postgres_backup` (checks backups are up to date; see above)
 
-* check_fts_update_log (monitors for whether full-text search updates
+* `check_fts_update_log` (monitors for whether full-text search updates
   are being processed)
 
 Standard server monitoring:
 
-* check_website_response.sh (standard HTTP check)
+* `check_website_response.sh` (standard HTTP check)
 
-* check_debian_packages (checks apt repository is up to date)
+* `check_debian_packages` (checks apt repository is up to date)
 
 If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
@@ -325,7 +331,7 @@ running Zulip with a large team (>1000 users).
 
 * Zulip does not support dividing traffic for a given Zulip realm
   between multiple application servers.  There are two issues: you
-  need to share the memcached/redis/rabbitmq instance (these should
+  need to share the memcached/Redis/RabbitMQ instance (these should
   can be moved to a network service shared by multiple servers with a
   bit of configuration) and the Tornado event system for pushing to
   browsers currently has no mechanism for multiple frontend servers
@@ -375,7 +381,7 @@ announcement).
 * The preferred way to login to Zulip is using an SSO solution like
   Google Auth, LDAP, or similar.  Zulip stores user passwords using
   the standard PBKDF2 algorithm.  Password strength is checked and
-  weak passwords are visually discouraged using the zxcvbn library,
+  weak passwords are visually discouraged using the `zxcvbn` library,
   but Zulip does not by default have strong requirements on user
   password strength.  Modify `static/js/common.js` to adjust the
   password strength requirements (Patches welcome to make controlled
@@ -452,7 +458,7 @@ announcement).
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
   should deactivate the user's account in the Zulip administration
-  interface (/#administration); this will automatically also
+  interface (`/#administration`); this will automatically also
   deactivate any bots the user had created.
 
 * The Zulip mobile apps authenticate to the server by sending the
@@ -487,7 +493,8 @@ announcement).
   is vulnerable to a subtle attack where if a user clicks on a link in
   a secret .PDF or .HTML file that had been uploaded to Zulip, access
   to the file might be leaked to the other server via the Referrer
-  header (see https://github.com/zulip/zulip/issues/320).
+  header (see [the "Uploads world readable" issue on
+  GitHub](https://github.com/zulip/zulip/issues/320)).
 
   The Zulip S3 file upload integration is relatively safe against that
   attack, because the URLs of files presented to users don't host the
@@ -508,8 +515,9 @@ announcement).
 ### Final notes and security response
 
 If you find some aspect of Zulip that seems inconsistent with this
-security model, please report it to zulip-security@googlegroups.com so that we can
-investigate and coordinate an appropriate security release if needed.
+security model, please report it to zulip-security@googlegroups.com so
+that we can investigate and coordinate an appropriate security release
+if needed.
 
 Zulip security announcements will be sent to
 zulip-announce@googlegroups.com, so you should subscribe if you are
@@ -532,7 +540,7 @@ of the Zulip system.
 ### manage.py shell
 
 You can get an iPython shell with full access to code within the Zulip
-project using `manage.py shell`, e.g. you can do the following to
+project using `manage.py shell`, e.g., you can do the following to
 change an email address:
 
 ```
@@ -554,10 +562,10 @@ the `knight` management command:
 ./manage.py knight username@example.com -f
 ```
 
-#### Creating api super users with manage.py
+#### Creating API super users with manage.py
 
 If you need to manage the IRC, Jabber, or Zephyr mirrors, you will
-need to create api super users.  To do this, use `./manage.py knight`
+need to create API super users.  To do this, use `./manage.py knight`
 with the `--permission=api_super_user` argument.  See
 `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
 these.
