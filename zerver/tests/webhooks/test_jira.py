@@ -27,14 +27,14 @@ class JiraHookTests(WebhookTestCase):
                                      stream_name="jira_custom",
                                      content_type="application/json")
         self.assertEqual(msg.topic_name(), "BUG-15: New bug with hook")
-        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to @**no one**:
+        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
 
 > New bug with hook""")
 
     def test_created(self):
         # type: () -> None
         expected_subject = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to @**no one**:
+        expected_message = """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
 
 > New bug with hook"""
         self.send_and_test_stream_message('created', expected_subject, expected_message)
@@ -42,7 +42,7 @@ class JiraHookTests(WebhookTestCase):
     def test_created_assignee(self):
         # type: () -> None
         expected_subject = "TEST-4: Test Created Assignee"
-        expected_message = """Leonardo Franchi [Administrator] **created** [TEST-4](https://zulipp.atlassian.net/browse/TEST-4) priority Major, assigned to @**Leonardo Franchi [Administrator]**:
+        expected_message = """Leonardo Franchi [Administrator] **created** [TEST-4](https://zulipp.atlassian.net/browse/TEST-4) priority Major, assigned to **Leonardo Franchi [Administrator]**:
 
 > Test Created Assignee"""
         self.send_and_test_stream_message('created_assignee', expected_subject, expected_message)
@@ -50,7 +50,7 @@ class JiraHookTests(WebhookTestCase):
     def test_commented(self):
         # type: () -> None
         expected_subject = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to @**Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 
 Adding a comment. Oh, what a comment it is!
@@ -72,16 +72,16 @@ Adding a comment. Oh, what a comment it is!
     def test_reassigned(self):
         # type: () -> None
         expected_subject = "BUG-15: New bug with hook"
-        expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to @**Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
-* Changed assignee from **None** to @**Othello, the Moor of Venice**
+* Changed assignee from **None** to **Othello, the Moor of Venice**
 """
         self.send_and_test_stream_message('reassigned', expected_subject, expected_message)
 
     def test_reopened(self):
         # type: () -> None
         expected_subject = "BUG-7: More cowbell polease"
-        expected_message = """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7) (assigned to @**Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7) (assigned to **Othello, the Moor of Venice**):
 
 * Changed resolution from **Fixed** to **None**
 * Changed status from **Resolved** to **Reopened**
@@ -93,10 +93,10 @@ Re-opened yeah!
     def test_resolved(self):
         # type: () -> None
         expected_subject = "BUG-13: Refreshing the page loses the user's current posi..."
-        expected_message = """Leo Franchi **updated** [BUG-13](http://lfranchi.com:8080/browse/BUG-13) (assigned to @**Othello, the Moor of Venice**):
+        expected_message = """Leo Franchi **updated** [BUG-13](http://lfranchi.com:8080/browse/BUG-13) (assigned to **Othello, the Moor of Venice**):
 
 * Changed status from **Open** to **Resolved**
-* Changed assignee from **None** to @**Othello, the Moor of Venice**
+* Changed assignee from **None** to **Othello, the Moor of Venice**
 * Changed resolution from **None** to **Fixed**
 
 Fixed it, finally!
@@ -130,10 +130,10 @@ Fixed it, finally!
     def test_mention(self):
         # type: () -> None
         expected_subject = "TEST-5: Lunch Decision Needed"
-        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-5](https://zulipp.atlassian.net/browse/TEST-5) (assigned to @**Othello, the Moor of Venice**):
+        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-5](https://zulipp.atlassian.net/browse/TEST-5) (assigned to **Othello, the Moor of Venice**):
 
 
-Making a comment, @**Othello, the Moor of Venice** is watching this issue
+Making a comment, **Othello, the Moor of Venice** is watching this issue
 """
         self.send_and_test_stream_message('watch_mention_updated', expected_subject, expected_message)
 
