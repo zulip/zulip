@@ -174,6 +174,35 @@ $(function () {
     }
 });
 
+exports.filter_people_by_search_terms = function (users, search_terms) {
+    // Loop through users and populate filtered_users only
+    // if they include search_terms
+    var filtered_users = {};
+    _.each(users, function (user) {
+        var person = exports.get_by_email(user.email);
+        // Get person object(and ignore errors)
+        if (!person || !person.full_name) {
+            return;
+        }
+
+        // Remove extra whitespace
+        var names = person.full_name.toLowerCase().split(/\s+/);
+        names = _.map(names, function (name) {
+            return name.trim();
+        });
+
+        // Return user emails that include search term
+        return _.any(search_terms, function (search_term) {
+            return _.any(names, function (name) {
+                if (name.indexOf(search_term.trim()) === 0) {
+                    filtered_users[user.email] = true;
+                }
+             });
+         });
+    });
+    return filtered_users;
+};
+
 return exports;
 
 }());
