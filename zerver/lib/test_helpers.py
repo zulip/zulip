@@ -22,7 +22,7 @@ from zerver.lib import event_queue
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
-    check_send_message, create_stream_if_needed, do_add_subscription,
+    check_send_message, create_stream_if_needed, bulk_add_subscriptions,
     get_display_recipient,
 )
 
@@ -543,7 +543,7 @@ class ZulipTestCase(TestCase):
         if stream is None:
             stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
-        do_add_subscription(user_profile, stream, no_log=True)
+        bulk_add_subscriptions([stream], [user_profile])
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):
