@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import re
+import hashlib
 from typing import Any, Optional
 from importlib import import_module
 from six import text_type
@@ -58,12 +59,49 @@ def are_migrations_the_same(migration_file, **options):
         migration_content = f.read()
     return migration_content == get_migration_status(**options)
 
+def _check_hash(source_hash_file, target_hash_file, **options):
+    # type: (text_type, text_type, **Any) -> bool
+    """
+    This function has a side effect of creating a new hash file or
+    updating the old hash file.
+    """
+    with open(target_hash_file) as f:
+        target_hash_content = hashlib.sha1(f.read().encode('utf8')).hexdigest()
+
+    with open(source_hash_file) as f:
+        source_hash_content = f.read().strip()
+
+    with open(source_hash_file, 'a+') as f:
+        f.truncate(0)
+        f.write(target_hash_content)
+        return source_hash_content == target_hash_content
+
+def populate_db_hash_is_same(hash_file, **options):
+    # type: (text_type, **Any) -> bool
+    populate_db = 'zilencer/management/commands/populate_db.py'
+    return _check_hash(hash_file, populate_db, **options)
+
+def postgres_init_test_db_hash_is_same(hash_file, **options):
+    # type: (text_type, **Any) -> bool
+    postgres_init_test_db = 'tools/setup/postgres-init-test-db'
+    return _check_hash(hash_file, postgres_init_test_db, **options)
+
 def is_template_database_current(
         database_name='zulip_test_template',
         migration_status='var/migration-status',
-        settings='zproject.test_settings'
+        settings='zproject.test_settings',
+        populate_db_hash='var/populate_db_hash',
+        postgres_init_test_db_hash='var/postgres_init_test_db_hash'
     ):
-    # type: (Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
+    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
     if database_exists(database_name):
-        return are_migrations_the_same(migration_status, settings=settings)
+        # To ensure Python evaluates all 3 tests (and thus creates the
+        # hash files about the current state), we evaluate them in a
+        # list and then compare, rather than just returning the
+        # boolean `and` of the 3 values.
+        results = [are_migrations_the_same(migration_status, settings=settings),
+                   populate_db_hash_is_same(populate_db_hash),
+                   postgres_init_test_db_hash_is_same(postgres_init_test_db_hash)]
+        return False not in results
+
     return False
