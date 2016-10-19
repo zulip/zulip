@@ -132,6 +132,14 @@ contributing!
 [transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
 
+## Google Summer of Code
+
+We participated in GSoC last year and hope to do so again in 2017; for
+guidance, please email [our GSoC mailing
+list](https://groups.google.com/forum/#!forum/zulip-gsoc) and read
+[our GSoC instructions and ideas
+page](https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md).
+
 ## How to get involved with contributing to Zulip
 
 First, subscribe to the Zulip [development discussion mailing
