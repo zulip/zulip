@@ -69,7 +69,7 @@ var setup = function (results) {
     setup(results);
 
     var data = {events: [{type: 'stream', op: 'update', id: 1, other: 'thing'}]};
-    global.channel.post = function (options) {
+    global.channel.get = function (options) {
         options.success(data);
     };
 
@@ -89,7 +89,7 @@ var setup = function (results) {
     setup(results);
 
     var data = {events: [{type: 'message', id: 1, other: 'thing', message: {}}]};
-    global.channel.post = function (options) {
+    global.channel.get = function (options) {
         options.success(data);
     };
 
@@ -105,7 +105,7 @@ var setup = function (results) {
     setup(results);
 
     var data = {events: [{type: 'update_message', id: 1, other: 'thing'}]};
-    global.channel.post = function (options) {
+    global.channel.get = function (options) {
         options.success(data);
     };
 

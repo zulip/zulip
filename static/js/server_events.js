@@ -324,8 +324,8 @@ function get_events(options) {
         clearTimeout(get_events_timeout);
     }
     get_events_timeout = undefined;
-    get_events_xhr = channel.post({
-        url:      '/json/get_events',
+    get_events_xhr = channel.get({
+        url:      '/json/events',
         data:     get_events_params,
         idempotent: true,
         timeout:  page_params.poll_timeout,

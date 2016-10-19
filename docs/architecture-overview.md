@@ -131,7 +131,7 @@ from outside.
     compiles, minifies, and installs the static assets into the
     `prod-static/` tree form. In development, files are served directly
     from `/static/` in the git repository.
--   Requests to `/json/get_events`, `/api/v1/events`, and `/sockjs` are
+-   Requests to `/json/events`, `/api/v1/events`, and `/sockjs` are
     sent to the Tornado server. These are requests to the real-time push
     system, because the user's web browser sets up a long-lived TCP
     connection with Tornado to serve as [a channel for push
