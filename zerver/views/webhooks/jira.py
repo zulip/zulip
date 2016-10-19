@@ -79,7 +79,7 @@ def convert_jira_markup(content, realm):
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
             if user_profile:
-                replacement = "@**%s**" % (user_profile.full_name,)
+                replacement = "**%s**" % (user_profile.full_name,)
             else:
                 replacement = "**%s**" % (username,)
 
@@ -121,14 +121,14 @@ def api_jira_webhook(request, user_profile, client,
     if assignee_email != '':
         try:
             assignee_profile = get_user_profile_by_email(assignee_email)
-            assignee_mention = "@**%s**" % (assignee_profile.full_name,)
+            assignee_mention = "**%s**" % (assignee_profile.full_name,)
         except UserProfile.DoesNotExist:
             assignee_mention = "**%s**" % (assignee_email,)
 
     subject = "%s: %s" % (issueId, title)
 
     if event == 'jira:issue_created':
-        content = "%s **created** %s priority %s, assigned to @**%s**:\n\n> %s" % \
+        content = "%s **created** %s priority %s, assigned to **%s**:\n\n> %s" % \
                   (author, issue, priority, assignee, title)
     elif event == 'jira:issue_deleted':
         content = "%s **deleted** %s!" % \
