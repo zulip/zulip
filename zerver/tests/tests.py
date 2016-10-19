@@ -1842,6 +1842,7 @@ class HomeTest(ZulipTestCase):
             "share_the_love",
             "show_digest_email",
             "sounds_enabled",
+            "starred_users",
             "stream_desktop_notifications_enabled",
             "stream_sounds_enabled",
             "subbed_info",

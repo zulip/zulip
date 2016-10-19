@@ -728,5 +728,25 @@ exports.setup_page = function () {
     i18n.ensure_i18n(_setup_page);
 };
 
+exports.star_unstar_user = function (email, status) {
+    return channel.put({
+        url: "/json/users/me/starred_users",
+        data: {
+            "mark_star_email": JSON.stringify(email),
+            "status": status
+        },
+        success: function (result) {
+            var user_index = page_params.starred_users.hasOwnProperty(email);
+            if (user_index === true && !result.starred) {
+                delete page_params.starred_users[email];
+            }
+            if (user_index === false && result.starred) {
+                page_params.starred_users[email] = true;
+            }
+            activity.update_users();
+        }
+    });
+};
+
 return exports;
 }());

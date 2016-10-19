@@ -416,6 +416,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     is_mirror_dummy = models.BooleanField(default=False) # type: bool
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL) # type: Optional[UserProfile]
+    starred_users = models.ManyToManyField("self", symmetrical=False, related_name='buddies')
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100

@@ -1,4 +1,8 @@
 {{! User Presence rows }}
-{{#each users}}
+{{#each starred_users}}
+{{partial "user_presence_row"}}
+{{/each}}
+<hr/>
+{{#each unstarred_users}}
 {{partial "user_presence_row"}}
 {{/each}}

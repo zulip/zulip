@@ -16,7 +16,7 @@ from zerver.lib.actions import do_change_password, \
     do_change_default_desktop_notifications, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
-    do_change_left_side_userlist, do_change_default_language
+    do_change_left_side_userlist, do_change_default_language, do_update_user_star_status
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
@@ -106,6 +106,21 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
     result['left_side_userlist'] = left_side_userlist
 
     return json_success(result)
+
+
+@has_request_variables
+def update_user_star(request, user_profile,
+                           mark_star_email = REQ(validator=check_string),
+                           status = REQ(validator=check_bool)):
+    # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
+    result = do_update_user_star_status(user_profile, mark_star_email, status)
+    return json_success(result)
+
+@has_request_variables
+def list_starred_users(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    emails = [user.email for user in user_profile.starred_users.all()]
+    return json_success({'starred_users': emails})
 
 @authenticated_json_post_view
 @has_request_variables

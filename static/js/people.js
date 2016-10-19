@@ -13,6 +13,13 @@ exports.get_by_email = function get_by_email(email) {
     return people_dict.get(email);
 };
 
+exports.get_star_status = function get_star_status(email) {
+    if (page_params.starred_users === undefined) {
+        return false;
+    }
+    return page_params.starred_users.hasOwnProperty(email);
+};
+
 exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(email);
 };

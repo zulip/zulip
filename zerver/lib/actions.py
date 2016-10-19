@@ -36,6 +36,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_users
+from zerver.lib.response import json_error
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
@@ -2159,6 +2160,22 @@ def do_change_default_language(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_update_user_star_status(user_profile, email, status):
+    # type: (UserProfile, text_type, bool) -> Dict[str, bool]
+    user = get_user_profile_by_email(email)
+    if user is None:
+        json_error(_("Selected user not found!"))
+    result = {}
+
+    if status:
+        user_profile.starred_users.add(user)
+    else:
+        user_profile.starred_users.remove(user)
+    result['starred'] = status
+    user_profile.save()
+    result['starring_successful'] = True
+    return result
+
 def set_default_streams(realm, stream_names):
     # type: (Realm, Iterable[text_type]) -> None
     DefaultStream.objects.filter(realm=realm).delete()
@@ -2778,6 +2795,10 @@ def get_realm_user_dicts(user_profile):
              'full_name' : userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
+def get_starred_users(user_profile):
+    # type: (UserProfile) -> Dict[text_type, bool]
+    return {user.email:True for user in user_profile.starred_users.all()}
+
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
@@ -2841,6 +2862,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
     if want('referral'):
         state['referrals'] = {'granted': user_profile.invites_granted,
                               'used': user_profile.invites_used}
+
+    if want('starred_users'):
+        state['starred_users'] = get_starred_users(user_profile)
 
     if want('subscription'):
         subscriptions, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(user_profile)
