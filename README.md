@@ -29,13 +29,16 @@ One of those places is our [public Zulip instance](https://zulip.tabbott.net/).
 You can go through the simple signup process at that link, and then you
 will soon be talking to core Zulip developers and other users.  To get
 help in real time, you will have the best luck finding core developers
-roughly between 16:00 UTC and 23:59 UTC.  Most questions get answered
-within a day.
+roughly between 16:00 UTC and 23:59 UTC.  Most questions get a reply
+within minutes to a few hours, depending on time of day.
 
-We have a [Google mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
-that is currently pretty low traffic.  It is where we do things like
-announce public meetings or major releases.  You can also use it to
-ask questions about features or possible bugs.
+We have a
+[Google mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+that is currently pretty low traffic because a lot of discussions
+happen in our public Zulip instance.  We use it to announce Zulip
+developer community gatherings and ask for feedback on technical or
+design decisions.  You can use it to ask questions about features or
+possible bugs.  Zulip also has a [blog](https://blog.zulip.org/).
 
 Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
 track Zulip-related issues (and store our code, of course).
