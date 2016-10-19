@@ -749,3 +749,15 @@ patching file bundler.rb
 #### Permissions errors when running the test suite in LXC
 
 See ["Possible testing issues"](testing.html#possible-testing-issues).
+
+
+### `pip install` fails during `vagrant up` on Ubuntu
+
+Likely causes are:
+
+1. Networking issues
+2. Insufficient RAM. Check whether you've allotted at least two
+gigabytes of RAM, which is the minimum Zulip
+[requires](dev-env-first-time-contributors.html#requirements). If
+not, go to your VM settings and increase the RAM, then restart
+the VM.
