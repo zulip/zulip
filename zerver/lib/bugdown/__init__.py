@@ -999,7 +999,8 @@ class Bugdown(markdown.Extension):
             u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
             '_end')
 
-        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
+        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE[len(markdown.inlinepatterns.NOIMG):],
+            md), '>backtick')
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
