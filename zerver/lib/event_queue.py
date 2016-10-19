@@ -139,7 +139,7 @@ class ClientDescriptor(object):
         self.event_queue.push(event)
         self.finish_current_handler()
 
-    def finish_current_handler(self, need_timeout=False):
+    def finish_current_handler(self):
         # type: (bool) -> bool
         if self.current_handler_id is not None:
             err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
@@ -149,7 +149,7 @@ class ClientDescriptor(object):
             except Exception:
                 logging.exception(err_msg)
             finally:
-                self.disconnect_handler(need_timeout=need_timeout)
+                self.disconnect_handler()
                 return True
         return False
 
@@ -190,7 +190,7 @@ class ClientDescriptor(object):
         if self.client_type_name != 'API: heartbeat test':
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
-    def disconnect_handler(self, client_closed=False, need_timeout=True):
+    def disconnect_handler(self, client_closed=False):
         # type: (bool, bool) -> None
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id, None)
@@ -201,7 +201,7 @@ class ClientDescriptor(object):
                               self.current_client_name))
         self.current_handler_id = None
         self.current_client_name = None
-        if need_timeout and self._timeout_handle is not None:
+        if self._timeout_handle is not None:
             ioloop = tornado.ioloop.IOLoop.instance()
             ioloop.remove_timeout(self._timeout_handle)
             self._timeout_handle = None
@@ -214,7 +214,7 @@ class ClientDescriptor(object):
         # queue.  Finishing the handler before we GC ensures the
         # invariant that event queues are idle when passed to
         # `do_gc_event_queues` is preserved.
-        self.finish_current_handler(need_timeout=False)
+        self.finish_current_handler()
         do_gc_event_queues({self.event_queue.id}, {self.user_profile_id},
                            {self.realm_id})
 
