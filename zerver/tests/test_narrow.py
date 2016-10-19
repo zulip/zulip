@@ -12,7 +12,7 @@ from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
-from zerver.lib.actions import create_stream_if_needed, do_add_subscription
+from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.message import (
     MessageDict,
 )
@@ -403,10 +403,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = get_realm("zulip.com")
-        stream, _ = create_stream_if_needed(realm, "Scotland")
-        do_add_subscription(get_user_profile_by_email("hamlet@zulip.com"),
-                            stream, no_log=True)
+        self.subscribe_to_stream("hamlet@zulip.com", 'Scotland')
         self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
         messages = get_user_messages(get_user_profile_by_email("hamlet@zulip.com"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -431,12 +428,10 @@ class GetOldMessagesTest(ZulipTestCase):
         # narrow view.
         realm = get_realm("mit.edu")
         lambda_stream, _ = create_stream_if_needed(realm, u"\u03bb-stream")
-        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
-                            lambda_stream, no_log=True)
+        self.subscribe_to_stream("starnine@mit.edu", lambda_stream.name)
 
         lambda_stream_d, _ = create_stream_if_needed(realm, u"\u03bb-stream.d")
-        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
-                            lambda_stream_d, no_log=True)
+        self.subscribe_to_stream("starnine@mit.edu", lambda_stream_d.name)
 
         self.send_message("starnine@mit.edu", u"\u03bb-stream", Recipient.STREAM)
         self.send_message("starnine@mit.edu", u"\u03bb-stream.d", Recipient.STREAM)
@@ -463,10 +458,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = get_realm("mit.edu")
-        stream, _ = create_stream_if_needed(realm, "Scotland")
-        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
-                            stream, no_log=True)
+        self.subscribe_to_stream("starnine@mit.edu", "Scotland")
 
         self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic")
