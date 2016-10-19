@@ -35,7 +35,11 @@ def finish_handler(handler_id, event_queue_id, contents, apply_markdown):
         handler = get_handler_by_id(handler_id)
         request = handler._request
         async_request_restart(request)
-        request._log_data['extra'] = "[%s/1]" % (event_queue_id,)
+        if len(contents) != 1:
+            request._log_data['extra'] = "[%s/1]" % (event_queue_id,)
+        else:
+            request._log_data['extra'] = "[%s/1/%s]" % (event_queue_id, contents[0]["type"])
+
         handler.zulip_finish(dict(result='success', msg='',
                                   events=contents,
                                   queue_id=event_queue_id),

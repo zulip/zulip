@@ -536,7 +536,11 @@ def fetch_events(query):
                             handler_id=handler_id) # type: Dict[str, Any]
             if orig_queue_id is None:
                 response['queue_id'] = queue_id
-            extra_log_data = "[%s/%s]" % (queue_id, len(response["events"]))
+            if len(response["events"]) == 1:
+                extra_log_data = "[%s/%s/%s]" % (queue_id, len(response["events"]),
+                                                 response["events"][0]["type"])
+            else:
+                extra_log_data = "[%s/%s]" % (queue_id, len(response["events"]))
             if was_connected:
                 extra_log_data += " [was connected]"
             return dict(type="response", response=response, extra_log_data=extra_log_data)
