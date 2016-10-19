@@ -12,7 +12,7 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import Client, UserProfile
 from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
     get_force_push_commits_event_message, get_remove_branch_event_message, get_pull_request_event_message,\
-    SUBJECT_WITH_PR_INFO_TEMPLATE
+    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
@@ -73,7 +73,7 @@ def get_subject_based_on_type(payload, type):
     if type == 'push':
         return get_subject_for_branch_specified_events(payload)
     if type.startswith('pull_request'):
-        return SUBJECT_WITH_PR_INFO_TEMPLATE.format(
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload.get('repository')),
             type='PR',
             id=payload['pullrequest']['id'],

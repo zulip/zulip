@@ -2,7 +2,7 @@ from six import text_type
 from typing import Optional, Any
 
 SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
-SUBJECT_WITH_PR_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
+SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 

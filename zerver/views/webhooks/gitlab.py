@@ -5,7 +5,7 @@ from zerver.lib.response import json_success
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
     get_remove_branch_event_message, get_pull_request_event_message,\
-    SUBJECT_WITH_PR_INFO_TEMPLATE
+    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -266,7 +266,7 @@ def get_subject_based_on_event(event, payload):
             get_repo_name(payload),
             payload.get('object_attributes').get('ref').replace('refs/heads/', ''))
     elif event.startswith('Merge Request Hook'):
-        return SUBJECT_WITH_PR_INFO_TEMPLATE.format(
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
             id=payload.get('object_attributes').get('iid'),

@@ -8,7 +8,7 @@ from zerver.views.messages import send_message_backend
 from zerver.lib.webhooks.git import get_push_commits_event_message,\
     SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message, \
     get_remove_branch_event_message, get_pull_request_event_message,\
-    SUBJECT_WITH_PR_INFO_TEMPLATE
+    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
 import logging
 import re
 import ujson
@@ -100,7 +100,7 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
     # Event Handlers
     if event == 'pull_request':
         pull_req = payload['pull_request']
-        subject = SUBJECT_WITH_PR_INFO_TEMPLATE.format(
+        subject = SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repository['name'],
             type='PR',
             id=pull_req['number'],
