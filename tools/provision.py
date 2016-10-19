@@ -40,6 +40,12 @@ COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
+# TODO: De-duplicate this with emoji_dump.py
+EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
+if 'TRAVIS' in os.environ:
+    # In Travis CI, we don't have root access
+    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
+
 if PY2:
     VENV_PATH = PY2_VENV_PATH
 else:
@@ -169,6 +175,8 @@ def main(options):
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
     run(["tools/setup/download-zxcvbn"])
+    if os.path.isdir(EMOJI_CACHE_PATH):
+        run(["sudo", "chown", "zulip:zulip", EMOJI_CACHE_PATH])
     run(["python", "tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:

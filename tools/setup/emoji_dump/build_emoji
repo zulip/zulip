@@ -181,9 +181,8 @@ def dump_emojis(cache_path):
                     shell=True)
 
     cache_emoji = os.path.join(cache_path, 'images', 'emoji')
-    run(['sudo', 'rm', '-rf', cache_path])
-    run(['sudo', 'mkdir', '-p', cache_emoji])
-    run(["sudo", "chown", "-R", "{}:{}".format(os.getuid(), os.getgid()), cache_path])
+    run(['rm', '-rf', cache_path])
+    run(['mkdir', '-p', cache_emoji])
     run(['mv', 'out/*', cache_emoji], shell=True)
     run(['mv', 'sprite*', cache_path], shell=True)
     assets = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)

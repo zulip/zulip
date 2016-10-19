@@ -94,6 +94,12 @@ class zulip::app_frontend_base {
     group => "zulip",
     mode => 755,
   }
+  file { "/srv/zulip-emoji-cache":
+    ensure => directory,
+    owner => "zulip",
+    group => "zulip",
+    mode => 755,
+  }
   file { "/etc/cron.d/email-mirror":
     ensure => absent,
   }
