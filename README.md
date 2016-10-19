@@ -143,7 +143,7 @@ have your own project idea in mind or want to get some experience with
 working on Zulip before embarking on a larger project you have in
 mind:
 
-* [Integrations](https://github.com/zulip/zulip/labels/integrations).
+* [Integrations](https://github.com/zulip/zulip/labels/area%3A%20integrations).
   Integrate Zulip with another piece of software and contribute it
   back to the community!  Writing an integration can be a great first
   contribution.  There's detailed documentation on how to write
@@ -153,7 +153,7 @@ mind:
 * [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
   Smaller projects that might be a great first contribution.
 
-* [Documentation](https://github.com/zulip/zulip/labels/documentation):
+* [Documentation](https://github.com/zulip/zulip/labels/area%3A%20documentation):
   The Zulip project loves contributions of new documentation.
 
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
@@ -171,6 +171,16 @@ mind:
 
 * [2016 roadmap milestone](http://zulip.readthedocs.io/en/latest/roadmap.html): The
   projects that are [priorities for the Zulip project](https://zulip.readthedocs.io/en/latest/roadmap.html).  These are great projects if you're looking to make an impact.
+
+Another way to find issues in Zulip is to take advantage of our
+"area:<foo>" convention in separating out issues.  We partition all of
+our issues into areas like admin, compose, emoji, hotkeys, i18n,
+onboarding, search, etc.  You can see this here:
+
+[https://github.com/zulip/zulip/labels]
+
+Click on any of the "area:" labels and you will see all the tickets
+related to your area of interest.
 
 If you're excited about helping with an open issue, just post on the
 conversation thread that you're working on it.  You're encouraged to
