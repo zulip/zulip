@@ -15,7 +15,6 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     create_stream_if_needed,
-    do_add_subscription,
     set_default_streams,
 )
 
@@ -336,7 +335,7 @@ class InviteUserTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         private_stream_name = "Secret"
         (stream, _) = create_stream_if_needed(user_profile.realm, private_stream_name, invite_only=True)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, private_stream_name)
         public_msg_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                                           "Public topic", "Public message")
         secret_msg_id = self.send_message("hamlet@zulip.com", private_stream_name, Recipient.STREAM,
@@ -485,13 +484,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         invitee = "alice-test@zulip.com"
 
         stream_name = u"hÃ¼mbÃ¼Çµ"
-        realm = get_realm("zulip.com")
-        stream, _ = create_stream_if_needed(realm, stream_name)
 
         # Make sure we're subscribed before inviting someone.
-        do_add_subscription(
-            get_user_profile_by_email("hamlet@zulip.com"),
-            stream, no_log=True)
+        self.subscribe_to_stream("hamlet@zulip.com", stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
