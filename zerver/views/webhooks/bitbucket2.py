@@ -215,7 +215,7 @@ def get_pull_request_created_or_updated_body(payload, action):
         get_pull_request_url(pull_request),
         target_branch=pull_request['source']['branch']['name'],
         base_branch=pull_request['destination']['branch']['name'],
-        pr_message=pull_request['description'],
+        message=pull_request['description'],
         assignee=assignee
     )
 
