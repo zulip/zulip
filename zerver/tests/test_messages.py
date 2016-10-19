@@ -33,7 +33,7 @@ from zerver.models import (
 from zerver.lib.actions import (
     check_message, check_send_message,
     create_stream_if_needed,
-    do_add_subscription, do_create_user,
+    do_create_user,
     get_client,
 )
 
@@ -429,7 +429,7 @@ class StreamMessagesTest(ZulipTestCase):
         realm = get_realm("zulip.com")
         stream, _ = create_stream_if_needed(realm, non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
-            do_add_subscription(user_profile, stream, no_log=True)
+            self.subscribe_to_stream(user_profile.email, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
