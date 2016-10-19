@@ -11,7 +11,6 @@ secure Zulip installation, including:
 - [Security Model](#security-model)
 - [Management commands](#management-commands)
 
-
 ## Upgrading
 
 **We recommend reading this entire section before doing your first
@@ -186,6 +185,13 @@ computed using a hash of avatar_salt and user's email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
+If you are interested in backups because you are moving to another
+server, see the `export` section of the [management
+commands](#management-commands). If you need to move a large
+multi-realm Zulip installation from one server to another, the road
+will be a little rockier; our draft [conversion and export design
+document](conversion.html) may help.
+
 ### Restore from backups
 
 To restore from backups, the process is basically the reverse of the above:
@@ -231,7 +237,6 @@ replication; you can see the configuration in these files:
 Contribution of a step-by-step guide for setting this up (and moving
 this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
-
 
 ## Monitoring
 
@@ -562,6 +567,21 @@ with the `--permission=api_super_user` argument.  See
 `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
 these.
 
+#### Exporting users and realms with manage.py export
+
+If you need to do an export of a single user or of an entire realm, we
+have tools in `management/` that essentially export Zulip data to the
+file system.
+
+`export_single_user.py` exports the message history and realm-public
+metadata for a single Zulip user.
+
+A good overview of the process for exporting a single realm when
+moving to a new server is in
+[management/export.py](https://github.com/zulip/zulip/blob/master/zerver/management/commands/export.py). We
+recommend you read the comment there for words of wisdom on speed,
+what is and is not exported, what will break upon a move to a new
+server, and suggested procedure.
 
 ### Other useful manage.py commands
 
