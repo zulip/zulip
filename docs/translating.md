@@ -54,15 +54,10 @@ The end-to-end process to get the translations working is as follows:
    [frontend](#frontend-translations) translations for details on
    this).
 
-2. Create JSON formatted [resource][] files using the `python manage
-   makemessages` command. This command will create a resource file
-   called `translations.json` for frontend and `django.po` for backend
-   for every language under `static/locale`. The location for frontend
-   resource file can be changed by passing an argument to the command
-   (see the help for the command for further details). However, make
-   sure that the location is publicly accessible since frontend files
-   are loaded through XHR in the frontend which will only work with
-   publicly accessible resources.
+2. Create translations [resource][] files using the `python manage
+   makemessages` command. This command will create, for each language,
+   a resource file called `translations.json` for frontend strings and
+   `django.po` for backend strings.
 
    The `makemessages` command is idempotent in that:
 
