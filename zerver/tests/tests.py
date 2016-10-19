@@ -29,7 +29,7 @@ from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
-    do_add_subscription, do_remove_subscription, do_make_stream_private
+    do_remove_subscription, do_make_stream_private
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
@@ -912,7 +912,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, stream.name)
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
@@ -975,8 +975,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, 'Denmark')
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
@@ -1250,8 +1249,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
@@ -1334,8 +1332,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
