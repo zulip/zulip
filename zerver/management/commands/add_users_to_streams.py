@@ -7,7 +7,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import create_stream_if_needed, do_add_subscription
+from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
 from zerver.models import UserProfile, get_realm, get_user_profile_by_email
 
 class Command(BaseCommand):
@@ -54,7 +54,8 @@ class Command(BaseCommand):
         for stream_name in set(stream_names):
             for user_profile in user_profiles:
                 stream, _ = create_stream_if_needed(user_profile.realm, stream_name)
-                did_subscribe = do_add_subscription(user_profile, stream)
+                _ignore, already_subscribed = bulk_add_subscriptions([stream], [user_profile])
+                was_there_already = user_profile.id in {tup[0].id for tup in already_subscribed}
                 print("%s %s to %s" % (
-                    "Subscribed" if did_subscribe else "Already subscribed",
+                    "Already subscribed" if was_there_already else "Subscribed",
                     user_profile.email, stream_name))
