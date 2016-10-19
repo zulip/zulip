@@ -203,44 +203,66 @@ exports.compose_content_begins_typeahead = function (query) {
         return emoji.emojis;
     }
 
-    if (!this.options.completions.mention) {
-        return false;
+    if (this.options.completions.mention && current_token[0] === '@') {
+        // Don't autocomplete more than this many characters.
+        var max_chars = 30;
+        var last_at = q.lastIndexOf('@');
+        if (last_at === -1 || last_at < q.length - 1 - max_chars) {
+            return false;  // No '@', or too far back
+        }
+
+        // Only match if the @ follows a space, various punctuation,
+        // or is at the beginning of the string.
+        if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
+            return false;
+        }
+
+        current_token = q.substring(last_at + 1);
+        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+            return false;
+        }
+
+        this.completing = 'mention';
+        this.token = current_token.substring(current_token.indexOf("@") + 1);
+        var all_item = {
+            special_item_text: "all (Notify everyone)",
+            email: "all",
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: "all"
+        };
+        var everyone_item = {
+            special_item_text: "everyone (Notify everyone)",
+            email: "everyone",
+            full_name: "everyone"
+        };
+        return page_params.people_list.concat([all_item, everyone_item]);
     }
 
-    // Don't autocomplete more than this many characters.
-    var max_chars = 30;
-    var last_at = q.lastIndexOf('@');
-    if (last_at === -1 || last_at < q.length-1 - max_chars) {
-        return false;  // No '@', or too far back
-    }
+    if (this.options.completions.stream && current_token[0] === '#') {
+        // Don't autocomplete more than this many characters.
+        var max_chars = 30;
+        var last_at = q.lastIndexOf('#');
+        if (last_at === -1 || last_at < q.length-1 - max_chars) {
+            return false;  // No '#', or too far back
+        }
 
-    // Only match if the @ follows a space, various punctuation,
-    // or is at the beginning of the string.
-    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at-1]) === -1) {
-        return false;
-    }
+        // Only match if the @ follows a space, various punctuation,
+        // or is at the beginning of the string.
+        if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at-1]) === -1) {
+            return false;
+        }
 
-    current_token = q.substring(last_at + 1);
-    if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
-        return false;
-    }
+        current_token = q.substring(last_at + 1);
+        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+            return false;
+        }
 
-    this.completing = 'mention';
-    this.token = current_token.substring(current_token.indexOf("@")+1);
-    var all_item = {
-        special_item_text: "all (Notify everyone)",
-        email: "all",
-        // Always sort above, under the assumption that names will
-        // be longer and only contain "all" as a substring.
-        pm_recipient_count: Infinity,
-        full_name: "all"
-    };
-    var everyone_item = {
-        special_item_text: "everyone (Notify everyone)",
-        email: "everyone",
-        full_name: "everyone"
-    };
-    return page_params.people_list.concat([all_item, everyone_item]);
+        this.completing = 'stream';
+        this.token = current_token.substring(current_token.indexOf("#")+1);
+        return page_params.stream_data;   //fixme
+    }
 };
 
 exports.content_highlighter = function (item) {
@@ -248,6 +270,9 @@ exports.content_highlighter = function (item) {
         return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
     } else if (this.completing === 'mention') {
         var item_formatted = typeahead_helper.render_person(item);
+        return typeahead_helper.highlight_with_escaping(this.token, item_formatted);
+    } else if (this.completing === 'stream') {
+        var item_formatted = typeahead_helper.render_stream(item);
         return typeahead_helper.highlight_with_escaping(this.token, item_formatted);
     }
 };
@@ -268,6 +293,10 @@ exports.content_typeahead_selected = function (item) {
         beginning = (beginning.substring(0, beginning.length - this.token.length-1)
                 + '@**' + item.full_name + '** ');
         $(document).trigger('usermention_completed.zulip', {mentioned: item});
+    } else if (this.completing === 'stream') {
+        beginning = (beginning.substring(0, beginning.length - this.token.length-1)
+                + '#**' + item.full_name + '** ');
+        $(document).trigger('streamname_completed.zulip', {stream: item});
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
@@ -279,7 +308,7 @@ exports.content_typeahead_selected = function (item) {
 };
 
 exports.initialize_compose_typeahead = function (selector, completions) {
-    completions = $.extend({mention: false, emoji: false}, completions);
+    completions = $.extend({mention: false, emoji: false, stream: false}, completions);
 
     $(selector).typeahead({
         items: 5,
@@ -292,6 +321,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                 return query_matches_emoji(this.token, item);
             } else if (this.completing === 'mention') {
                 return query_matches_person(this.token, item);
+            } else if (this.completing === 'stream') {
+                return query_matches_stream(this.token, item);
             }
         },
         sorter: function (matches) {
@@ -299,6 +330,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                 return typeahead_helper.sort_emojis(matches, this.token);
             } else if (this.completing === 'mention') {
                 return typeahead_helper.sort_recipients(matches, this.token);
+            } else if (this.completing === 'stream') {
+                return typeahead_helper.sort_streams(matches, this.token);
             }
         },
         updater: exports.content_typeahead_selected,
@@ -409,7 +442,7 @@ exports.initialize = function () {
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
 
-    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true});
+    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true});
 
     $( "#private_message_recipient" ).blur(function (event) {
         var val = $(this).val();

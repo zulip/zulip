@@ -66,6 +66,10 @@ exports.render_person = function (person) {
     return person.full_name + " <" + person.email + ">";
 };
 
+exports.render_stream = function (stream) {
+    return stream.name
+};
+
 function prefix_sort(query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"
