@@ -54,7 +54,7 @@ class ZulipSession extends Session
             @on_app_load(cb)
 
     get_events: ->
-        @post '/json/get_events', {
+        @get '/json/events', {
             @pointer
             last: @max_message_id
             dont_block: false

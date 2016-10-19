@@ -291,7 +291,6 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 
 # Tornado views
 urls += [
-    url(r'^json/get_events$',               'zerver.tornadoviews.json_get_events'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'zerver.tornadoviews.notify'),
 ]

@@ -133,8 +133,7 @@ class Resource(resource.Resource):
         # Assume an HTTP 1.1 request
         proxy_host = request.requestHeaders.getRawHeaders('Host')
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', proxy_host)
-        if (request.uri in [b'/json/get_events'] or
-            request.uri.startswith(b'/json/events') or
+        if (request.uri.startswith(b'/json/events') or
             request.uri.startswith(b'/api/v1/events') or
             request.uri.startswith(b'/sockjs')):
             return proxy.ReverseProxyResource('127.0.0.1', tornado_port, b'/' + name)

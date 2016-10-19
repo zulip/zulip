@@ -103,7 +103,6 @@ class Command(BaseCommand):
 
             try:
                 urls = (r"/notify_tornado",
-                        r"/json/get_events",
                         r"/json/events",
                         r"/api/v1/events",
                         )

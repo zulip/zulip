@@ -14,7 +14,7 @@ location /static/ {
 }
 
 # Send longpoll requests to Tornado
-location ~ /json/get_events|/json/events {
+location ~ /json/events {
     proxy_pass http://tornado;
     include /etc/nginx/zulip-include/proxy_longpolling;
 

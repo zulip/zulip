@@ -39,11 +39,6 @@ def cleanup_event_queue(request, user_profile, queue_id=REQ()):
     client.cleanup()
     return json_success()
 
-@authenticated_json_post_view
-def json_get_events(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> Union[HttpResponse, _RespondAsynchronously]
-    return get_events_backend(request, user_profile, apply_markdown=True)
-
 @asynchronous
 @has_request_variables
 def get_events_backend(request, user_profile, handler,
