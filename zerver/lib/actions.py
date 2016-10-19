@@ -258,9 +258,9 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                 'EMAIL': user_profile.email,
                 'merge_vars': {
                     'NAME': user_profile.full_name,
-                    'REALM': user_profile.realm.domain,
+                    'REALM_ID': user_profile.realm.id,
                     'OPTIN_IP': newsletter_data["IP"],
-                    'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
+                    'OPTIN_TIME': datetime.datetime.isoformat(now().replace(microsecond=0)),
                 },
             },
         lambda event: None)
