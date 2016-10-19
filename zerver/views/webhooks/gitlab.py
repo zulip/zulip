@@ -5,7 +5,7 @@ from zerver.lib.response import json_success
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
     get_remove_branch_event_message, get_pull_request_event_message,\
-    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
+    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -64,19 +64,20 @@ def get_tag_push_event_body(payload):
 
 def get_issue_created_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    body = get_issue_event_body(payload, "created")
-    assignee_name = payload.get('assignee', {}).get('name')
-    if assignee_name:
-        body = u"{} (assigned to {}).".format(body[:-1], assignee_name)
-    return body
+    return get_issue_event_message(
+        get_issue_user_name(payload),
+        'created',
+        get_object_url(payload),
+        payload.get('object_attributes').get('description'),
+        get_objects_assignee(payload)
+    )
 
 def get_issue_event_body(payload, action):
     # type: (Dict[str, Any], text_type) -> text_type
-    return "{} {} [Issue #{}]({}).".format(
+    return get_issue_event_message(
         get_issue_user_name(payload),
         action,
-        get_object_iid(payload),
-        get_object_url(payload)
+        get_object_url(payload),
     )
 
 def get_merge_request_updated_event_body(payload):
@@ -105,9 +106,15 @@ def get_merge_request_open_or_updated_body(payload, action):
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
         pull_request.get('description'),
-        payload.get('assignee', {}).get('username'),
+        get_objects_assignee(payload),
         type='MR',
     )
+
+def get_objects_assignee(payload):
+    # type: (Dict[str, Any]) -> text_type
+    assignee_object = payload.get('assignee')
+    if assignee_object:
+        return assignee_object.get('name')
 
 def get_commented_commit_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
@@ -269,6 +276,13 @@ def get_subject_based_on_event(event, payload):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
             type='MR',
+            id=payload.get('object_attributes').get('iid'),
+            title=payload.get('object_attributes').get('title')
+        )
+    elif event.startswith('Issue Hook'):
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='Issue',
             id=payload.get('object_attributes').get('iid'),
             title=payload.get('object_attributes').get('title')
         )
