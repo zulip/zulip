@@ -1459,42 +1459,6 @@ def bulk_add_subscriptions(streams, users):
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
             already_subscribed)
 
-# When changing this, also change bulk_add_subscriptions
-def do_add_subscription(user_profile, stream, no_log=False):
-    # type: (UserProfile, Stream, bool) -> bool
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    color = pick_color(user_profile)
-    # TODO: XXX: This transaction really needs to be done at the serializeable
-    # transaction isolation level.
-    with transaction.atomic():
-        vacant_before = stream.num_subscribers() == 0
-        (subscription, created) = Subscription.objects.get_or_create(
-            user_profile=user_profile, recipient=recipient,
-            defaults={'active': True, 'color': color,
-                      'notifications': user_profile.default_desktop_notifications})
-        did_subscribe = created
-        if not subscription.active:
-            did_subscribe = True
-            subscription.active = True
-            subscription.save(update_fields=["active"])
-
-    if vacant_before and did_subscribe and not stream.invite_only:
-        event = dict(type="stream", op="occupy",
-                     streams=[stream.to_dict()])
-        send_event(event, active_user_ids(user_profile.realm))
-
-    if did_subscribe:
-        emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream, user_profile)}
-        notify_subscriptions_added(user_profile, [(subscription, stream)],
-                                   lambda stream: emails_by_stream[stream.id], no_log)
-
-        event = dict(type="subscription", op="peer_add",
-                     subscriptions=[stream.name],
-                     user_email=user_profile.email)
-        send_event(event, active_user_ids(user_profile.realm))
-
-    return did_subscribe
-
 def notify_subscriptions_removed(user_profile, streams, no_log=False):
     # type: (UserProfile, Iterable[Stream], bool) -> None
     if not no_log:
