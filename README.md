@@ -42,7 +42,7 @@ possible bugs.  Zulip also has a [blog](https://blog.zulip.org/).
 
 Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
 track Zulip-related issues (and store our code, of course).
-Anybody with a Github account should be able to create Issues there
+Anybody with a GitHub account should be able to create Issues there
 pertaining to bugs or enhancement requests.  We also use Pull
 Requests as our primary mechanism to receive code contributions.
 
