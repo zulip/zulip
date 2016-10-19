@@ -88,8 +88,8 @@ class GithubV1HookTests(WebhookTestCase):
     def test_issues_opened(self):
         # type: () -> None
         self.basic_test('issues_opened', 'issues',
-                        "zulip-test: issue 5: The frobnicator doesn't work",
-                        "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+                        "zulip-test / Issue #5 The frobnicator doesn't work",
+                        "zbenjamin opened [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
 
     def test_issue_comment(self):
         # type: () -> None
@@ -100,8 +100,8 @@ class GithubV1HookTests(WebhookTestCase):
     def test_issues_closed(self):
         # type: () -> None
         self.basic_test('issues_closed', 'issues',
-                        "zulip-test: issue 5: The frobnicator doesn't work",
-                        "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)")
+                        "zulip-test / Issue #5 The frobnicator doesn't work",
+                        "zbenjamin closed [Issue](https://github.com/zbenjamin/zulip-test/issues/5)")
 
     def test_pull_request_opened(self):
         # type: () -> None
@@ -229,8 +229,8 @@ class GithubV2HookTests(WebhookTestCase):
     def test_issues_opened(self):
         # type: () -> None
         self.basic_test('issues_opened', 'issues',
-                        "zulip-test: issue 5: The frobnicator doesn't work",
-                        "zbenjamin opened [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+                        "zulip-test / Issue #5 The frobnicator doesn't work",
+                        "zbenjamin opened [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
 
     def test_issue_comment(self):
         # type: () -> None
@@ -241,8 +241,8 @@ class GithubV2HookTests(WebhookTestCase):
     def test_issues_closed(self):
         # type: () -> None
         self.basic_test('issues_closed', 'issues',
-                        "zulip-test: issue 5: The frobnicator doesn't work",
-                        "zbenjamin closed [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)")
+                        "zulip-test / Issue #5 The frobnicator doesn't work",
+                        "zbenjamin closed [Issue](https://github.com/zbenjamin/zulip-test/issues/5)")
 
     def test_pull_request_opened(self):
         # type: () -> None
