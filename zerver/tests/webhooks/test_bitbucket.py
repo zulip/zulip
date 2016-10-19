@@ -10,6 +10,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'bitbucket'
     EXPECTED_SUBJECT = u"Repository name"
     EXPECTED_SUBJECT_PR_EVENTS = u"Repository name / PR #1 new commit"
+    EXPECTED_SUBJECT_ISSUE_EVENTS = u"Repository name / Issue #1 Bug"
     EXPECTED_SUBJECT_BRANCH_EVENTS = u"Repository name / master"
 
     def test_bitbucket2_on_push_event(self):
@@ -55,18 +56,18 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_issue_created_event(self):
         # type: () -> None
-        expected_message = u"User Tomasz(login: kolaszek) created [an issue](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)"
-        self.send_and_test_stream_message('v2_issue_created', self.EXPECTED_SUBJECT, expected_message)
+        expected_message = u"kolaszek created [Issue](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)(assigned to kolaszek)\n\n~~~ quote\nSuch a bug\n~~~"
+        self.send_and_test_stream_message('v2_issue_created', self.EXPECTED_SUBJECT_ISSUE_EVENTS, expected_message)
 
     def test_bitbucket2_on_issue_updated_event(self):
         # type: () -> None
-        expected_message = u"User Tomasz(login: kolaszek) updated [an issue](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)"
-        self.send_and_test_stream_message('v2_issue_updated', self.EXPECTED_SUBJECT, expected_message)
+        expected_message = u"kolaszek updated [Issue](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)"
+        self.send_and_test_stream_message('v2_issue_updated', self.EXPECTED_SUBJECT_ISSUE_EVENTS, expected_message)
 
     def test_bitbucket2_on_issue_commented_event(self):
         # type: () -> None
-        expected_message = u"User Tomasz(login: kolaszek) commented [an issue](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)"
-        self.send_and_test_stream_message('v2_issue_commented', self.EXPECTED_SUBJECT, expected_message)
+        expected_message = u"kolaszek commented [Issue](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)"
+        self.send_and_test_stream_message('v2_issue_commented', self.EXPECTED_SUBJECT_ISSUE_EVENTS, expected_message)
 
     def test_bitbucket2_on_pull_request_created_event(self):
         # type: () -> None
