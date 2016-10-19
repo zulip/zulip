@@ -346,7 +346,7 @@ this is new documentation, it likely does not cover every issue; if
 there are details you're curious about, please feel free to ask
 questions on the Zulip development mailing list (or if you think
 you've found a security bug, please report it to
-security@googlegroups.com so we can do a responsible security
+zulip-security@googlegroups.com so we can do a responsible security
 announcement).
 
 ### Secure your Zulip server like your email server
