@@ -1335,6 +1335,31 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
+def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users):
+    # type: (Stream, Iterable[UserProfile], Iterable[UserProfile]) -> Set[int]
+
+    '''
+    altered_users is a list of users that we are adding/removing
+    subscribed_users is the list of already subscribed users
+
+    Based on stream policy, we notify the correct bystanders, while
+    not notifying altered_users (who get subscribers via another event)
+    '''
+
+    altered_user_ids = [user.id for user in altered_users]
+
+    if stream.invite_only:
+        # PRIVATE STREAMS
+        all_subscribed_ids = [user.id for user in subscribed_users]
+        return set(all_subscribed_ids) - set(altered_user_ids)
+
+    else:
+        # PUBLIC STREAMS
+        # We now do "peer_add" or "peer_remove" events even for streams
+        # users were never subscribed to, in order for the neversubscribed
+        # structure to stay up-to-date.
+        return set(active_user_ids(stream.realm)) - set(altered_user_ids)
+
 def bulk_add_subscriptions(streams, users):
     # type: (Iterable[Stream], Iterable[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams]) # type: Mapping[int, Recipient]
@@ -1435,25 +1460,20 @@ def bulk_add_subscriptions(streams, users):
             continue
 
         new_users = [user for user in users if (user.id, stream.id) in new_streams]
-        new_user_ids = [user.id for user in new_users]
-        non_new_user_ids = set(active_user_ids(user_profile.realm)) - set(new_user_ids)
-        all_subscribed_ids = [user.id for user in all_subs_by_stream[stream.id]]
-        other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
-        if not stream.invite_only:
-            # We now do "peer_add" events even for streams users were
-            # never subscribed to, in order for the neversubscribed
-            # structure to stay up-to-date.
-            for user_profile in new_users:
+
+        peer_user_ids = get_peer_user_ids_for_stream_change(
+            stream=stream,
+            altered_users=new_users,
+            subscribed_users=all_subs_by_stream[stream.id]
+        )
+
+        if peer_user_ids:
+            for added_user in new_users:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
-                             user_email=user_profile.email)
-                send_event(event, non_new_user_ids)
-        elif other_user_ids:
-            for user_profile in new_users:
-                event = dict(type="subscription", op="peer_add",
-                             subscriptions=[stream.name],
-                             user_email=user_profile.email)
-                send_event(event, other_user_ids)
+                             user_email=added_user.email)
+                send_event(event, peer_user_ids)
+
 
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
