@@ -56,8 +56,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_without_assignee_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek created [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_subject = u"my-awesome-project / Issue #1 Issue title"
+        expected_message = u"Tomasz Kolek created [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)\n\n~~~ quote\nIssue description\n~~~"
 
         self.send_and_test_stream_message(
             'issue_created_without_assignee',
@@ -68,8 +68,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_with_assignee_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek created [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1) (assigned to Tomasz Kolek)."
+        expected_subject = u"my-awesome-project / Issue #1 Issue title"
+        expected_message = u"Tomasz Kolek created [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)(assigned to Tomasz Kolek)\n\n~~~ quote\nIssue description\n~~~"
 
         self.send_and_test_stream_message(
             'issue_created_with_assignee',
@@ -80,8 +80,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_update_issue_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek updated [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
+        expected_message = u"Tomasz Kolek updated [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
 
         self.send_and_test_stream_message(
             'issue_updated',
@@ -92,8 +92,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_close_issue_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek closed [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
+        expected_message = u"Tomasz Kolek closed [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
 
         self.send_and_test_stream_message(
             'issue_closed',
@@ -104,8 +104,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_reopen_issue_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek reopened [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
+        expected_message = u"Tomasz Kolek reopened [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
 
         self.send_and_test_stream_message(
             'issue_reopened',
@@ -176,7 +176,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_merge_request_created_with_assignee_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / MR #3 New Merge Request"
-        expected_message = u"Tomasz Kolek created [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to tomaszkolek0)\nfrom `tomek` to `master`\n\n~~~ quote\ndescription of merge request\n~~~"
+        expected_message = u"Tomasz Kolek created [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to Tomasz Kolek)\nfrom `tomek` to `master`\n\n~~~ quote\ndescription of merge request\n~~~"
         self.send_and_test_stream_message(
             'merge_request_created_with_assignee',
             expected_subject,
@@ -199,7 +199,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_merge_request_updated_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / MR #3 New Merge Request"
-        expected_message = u"Tomasz Kolek updated [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to tomaszkolek0)\nfrom `tomek` to `master`\n\n~~~ quote\nupdated desc\n~~~"
+        expected_message = u"Tomasz Kolek updated [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3)(assigned to Tomasz Kolek)\nfrom `tomek` to `master`\n\n~~~ quote\nupdated desc\n~~~"
         self.send_and_test_stream_message(
             'merge_request_updated',
             expected_subject,
