@@ -423,10 +423,11 @@ function _setup_page() {
         $('#default_language_modal').modal('hide');
 
         var data = {};
-        var setting_value = $(e.target).attr('data-code');
+        var $link = $(e.target).closest("a[data-code]");
+        var setting_value = $link.attr('data-code');
         data.default_language = JSON.stringify(setting_value);
 
-        var new_language = $(e.target).attr('data-name');
+        var new_language = $link.attr('data-name');
         $('#default_language_name').text(new_language);
 
         var context = {};
