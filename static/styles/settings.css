@@ -35,6 +35,10 @@ label {
     padding: 0px 20px;
 }
 
+.table.table-condensed.table-striped {
+    margin: 0px;
+}
+
 .table tbody {
     border-bottom: 1px solid #ddd;
 }
@@ -75,6 +79,10 @@ td .button {
 
 .settings-section .no-padding {
     padding: 0;
+}
+
+.settings-section .table.table-condensed.table-striped tbody {
+    border-bottom: none;
 }
 
 .dynamic-input {
