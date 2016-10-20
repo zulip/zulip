@@ -530,7 +530,7 @@ def do_deactivate_stream(stream, log=True):
     # type: (Stream, bool) -> None
     user_profiles = UserProfile.objects.filter(realm=stream.realm)
     for user_profile in user_profiles:
-        do_remove_subscription(user_profile, stream)
+        bulk_remove_subscriptions([user_profile], [stream])
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
