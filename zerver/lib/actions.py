@@ -1288,28 +1288,6 @@ def set_stream_color(user_profile, stream_name, color=None):
     subscription.save(update_fields=["color"])
     return color
 
-def get_subscribers_to_streams(streams, requesting_user=None):
-    # type: (Iterable[Stream], Optional[UserProfile]) -> Dict[UserProfile, List[Stream]]
-    """ Return a dict where the keys are user profiles, and the values are
-    arrays of all the streams within 'streams' to which that user is
-    subscribed.
-    """
-    # TODO: Modify this function to not use UserProfile objects as dict keys
-    subscribes_to = {} # type: Dict[UserProfile, List[Stream]]
-    for stream in streams:
-        try:
-            subscribers = get_subscribers(stream, requesting_user=requesting_user)
-        except JsonableError:
-            # We can't get a subscriber list for this stream. Probably MIT.
-            continue
-
-        for subscriber in subscribers:
-            if subscriber not in subscribes_to:
-                subscribes_to[subscriber] = []
-            subscribes_to[subscriber].append(stream)
-
-    return subscribes_to
-
 def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
     # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[text_type]], bool) -> None
     if not no_log:
@@ -1498,6 +1476,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
 
 def bulk_remove_subscriptions(users, streams):
     # type: (Iterable[UserProfile], Iterable[Stream]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+
     recipients_map = bulk_get_recipients(Recipient.STREAM,
                                          [stream.id for stream in streams]) # type: Mapping[int, Recipient]
     stream_map = {} # type: Dict[int, Stream]
@@ -1537,29 +1516,38 @@ def bulk_remove_subscriptions(users, streams):
                               for stream in new_vacant_streams])
         send_event(event, active_user_ids(user_profile.realm))
 
+    altered_user_dict = defaultdict(list) # type: Dict[int, List[UserProfile]]
     streams_by_user = defaultdict(list) # type: Dict[int, List[Stream]]
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
+        altered_user_dict[stream.id].append(sub.user_profile)
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
             continue
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
-        notifications_for = get_subscribers_to_streams(streams, requesting_user=user_profile)
+    all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
-        for event_recipient, notifications in six.iteritems(notifications_for):
-            # Don't send a peer subscription notice to yourself.
-            if event_recipient == user_profile:
-                continue
+    for stream in streams:
+        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+            continue
 
-            stream_names = [stream.name for stream in notifications]
-            peer_event = dict(
-                type="subscription",
-                op="peer_remove",
-                subscriptions=stream_names,
-                user_email=user_profile.email)
-            send_event(peer_event, [event_recipient.id])
+        altered_users = altered_user_dict[stream.id]
+
+        peer_user_ids = get_peer_user_ids_for_stream_change(
+            stream=stream,
+            altered_users=altered_users,
+            subscribed_users=all_subs_by_stream[stream.id]
+        )
+
+        if peer_user_ids:
+            for removed_user in altered_users:
+                event = dict(type="subscription",
+                             op="peer_remove",
+                             subscriptions=[stream.name],
+                             user_email=removed_user.email)
+                send_event(event, peer_user_ids)
 
     return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
             not_subscribed)
