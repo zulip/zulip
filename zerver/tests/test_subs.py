@@ -33,7 +33,7 @@ from zerver.models import (
 from zerver.lib.actions import (
     create_stream_if_needed, do_add_default_stream, do_change_is_admin,
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
-    gather_subscriptions_helper, bulk_add_subscriptions,
+    gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
     create_streams_if_needed
@@ -1431,6 +1431,82 @@ class SubscriptionAPITest(ZulipTestCase):
             for old_user in users_to_subscribe:
                 # Check non new users are in peer_add event recipient list.
                 self.assertIn(old_user, user_dict)
+
+    def test_users_getting_remove__peer_event(self):
+        # type: () -> None
+        """
+        Check users getting add_peer_event is correct
+        """
+        email1 = 'othello@zulip.com'
+        email2 = 'cordelia@zulip.com'
+        email3 = 'hamlet@zulip.com'
+        email4 = 'iago@zulip.com'
+
+        realm = get_realm('zulip.com')
+        stream1, _ = create_stream_if_needed(realm, 'stream1')
+        stream2, _ = create_stream_if_needed(realm, 'stream2')
+        private, _ = create_stream_if_needed(realm, 'private_stream', invite_only=True)
+
+        self.subscribe_to_stream(email1, 'stream1')
+        self.subscribe_to_stream(email2, 'stream1')
+        self.subscribe_to_stream(email3, 'stream1')
+
+        self.subscribe_to_stream(email2, 'stream2')
+
+        self.subscribe_to_stream(email1, 'private_stream')
+        self.subscribe_to_stream(email2, 'private_stream')
+        self.subscribe_to_stream(email3, 'private_stream')
+
+        user1 = get_user_profile_by_email(email1)
+        user2 = get_user_profile_by_email(email2)
+        user3 = get_user_profile_by_email(email3)
+        user4 = get_user_profile_by_email(email4)
+
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            bulk_remove_subscriptions(
+                users=[user1, user2],
+                streams=[stream1, stream2, private]
+            )
+
+        peer_events = [e for e in events
+            if e['event'].get('op') == 'peer_remove']
+
+        notifications = set()
+        for event in peer_events:
+            for user_id in event['users']:
+                for stream_name in event['event']['subscriptions']:
+                    email = event['event']['user_email']
+                    notifications.add((user_id, email, stream_name))
+
+        # POSITIVE CASES FIRST
+        self.assertIn((user3.id, email1, 'stream1'), notifications)
+        self.assertIn((user4.id, email1, 'stream1'), notifications)
+
+        self.assertIn((user3.id, email2, 'stream1'), notifications)
+        self.assertIn((user4.id, email2, 'stream1'), notifications)
+
+        self.assertIn((user1.id, email2, 'stream2'), notifications)
+        self.assertIn((user3.id, email2, 'stream2'), notifications)
+        self.assertIn((user4.id, email2, 'stream2'), notifications)
+
+        self.assertIn((user3.id, email1, 'private_stream'), notifications)
+        self.assertIn((user3.id, email2, 'private_stream'), notifications)
+
+        # NEGATIVE
+
+        # don't be notified if you are being removed yourself
+        self.assertNotIn((user1.id, email1, 'stream1'), notifications)
+
+        # don't send false notifications for folks that weren't actually
+        # subscribed int he first place
+        self.assertNotIn((user3.id, email1, 'stream2'), notifications)
+
+        # don't send notifications for random people
+        self.assertNotIn((user3.id, email4, 'stream2'), notifications)
+
+        # don't send notifications to unsubscribed people for private streams
+        self.assertNotIn((user4.id, email1, 'private_stream'), notifications)
 
     def test_bulk_subscribe_MIT(self):
         # type: () -> None
