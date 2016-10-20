@@ -94,8 +94,8 @@ class GithubV1HookTests(WebhookTestCase):
     def test_issue_comment(self):
         # type: () -> None
         self.basic_test('issue_comment', 'issues',
-                        "zulip-test: issue 5: The frobnicator doesn't work",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+                        "zulip-test / Issue #5 The frobnicator doesn't work",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
 
     def test_issues_closed(self):
         # type: () -> None
@@ -124,14 +124,14 @@ class GithubV1HookTests(WebhookTestCase):
     def test_pull_request_comment(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'commits',
-                        "zulip-test: pull request 9: Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
+                        "zulip-test / PR #9 Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
 
     def test_pull_request_comment_user_specified_stream(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'my_commits',
-                        "zulip-test: pull request 9: Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
+                        "zulip-test / PR #9 Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
                         send_stream=True)
 
     def test_commit_comment(self):
@@ -235,8 +235,8 @@ class GithubV2HookTests(WebhookTestCase):
     def test_issue_comment(self):
         # type: () -> None
         self.basic_test('issue_comment', 'issues',
-                        "zulip-test: issue 5: The frobnicator doesn't work",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [issue 5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+                        "zulip-test / Issue #5 The frobnicator doesn't work",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
 
     def test_issues_closed(self):
         # type: () -> None
@@ -266,14 +266,14 @@ class GithubV2HookTests(WebhookTestCase):
     def test_pull_request_comment(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'commits',
-                        "zulip-test: pull request 9: Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
+                        "zulip-test / PR #9 Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
 
     def test_pull_request_comment_user_specified_stream(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'my_commits',
-                        "zulip-test: pull request 9: Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [pull request 9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
+                        "zulip-test / PR #9 Less cowbell.",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
                         send_stream=True)
 
     def test_commit_comment(self):

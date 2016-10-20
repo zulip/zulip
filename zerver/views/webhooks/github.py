@@ -18,7 +18,6 @@ from typing import Any, Mapping, Optional, Sequence, Tuple
 from zerver.lib.str_utils import force_str
 from django.http import HttpRequest, HttpResponse
 
-COMMITS_IN_LIST_LIMIT = 10
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
@@ -33,6 +32,7 @@ def github_pull_request_content(payload):
     # type: (Mapping[text_type, Any]) -> text_type
     pull_request = payload['pull_request']
     action = get_pull_request_or_issue_action(payload)
+
     if action in ('opened', 'edited'):
         return get_pull_request_event_message(
             payload['sender']['login'],
@@ -53,6 +53,7 @@ def github_issues_content(payload):
     # type: (Mapping[text_type, Any]) -> text_type
     issue = payload['issue']
     action = get_pull_request_or_issue_action(payload)
+
     if action in ('opened', 'edited'):
         return get_issue_event_message(
             payload['sender']['login'],
@@ -66,6 +67,20 @@ def github_issues_content(payload):
             action,
             issue['html_url'],
         )
+
+def github_object_commented_content(payload, type):
+    # type: (Mapping[text_type, Any], text_type) -> text_type
+    comment = payload['comment']
+    issue = payload['issue']
+    action = u'[commented]({})'.format(comment['html_url'])
+
+    return get_pull_request_event_message(
+        comment['user']['login'],
+        action,
+        issue['html_url'],
+        message=comment['body'],
+        type=type
+    )
 
 def get_pull_request_or_issue_action(payload):
     # type: (Mapping[text_type, Any]) -> text_type
@@ -135,20 +150,15 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
         if 'pull_request' not in issue or issue['pull_request']['diff_url'] is None:
             # It's an issues comment
             target_stream = issue_stream
-            noun = 'issue'
+            type = 'Issue'
+            subject = get_pull_request_or_issue_subject(repository, payload['issue'], type)
         else:
             # It's a pull request comment
-            noun = 'pull request'
+            type = 'PR'
+            subject = get_pull_request_or_issue_subject(repository, payload['issue'], type)
 
-        subject = github_generic_subject(noun, topic_focus, issue)
-        comment = payload['comment']
-        content = (u'%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~'
-                   % (comment['user']['login'],
-                      comment['html_url'],
-                      noun,
-                      issue['number'],
-                      issue['html_url'],
-                      comment['body']))
+        content = github_object_commented_content(payload, type)
+
     elif event == 'push':
         subject, content = build_message_from_gitlog(user_profile, topic_focus,
                                                      payload['ref'], payload['commits'],
