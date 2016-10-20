@@ -471,6 +471,7 @@ var inline = {
   unicodeemoji: noop,
   usermention: noop,
   avatar: noop,
+  gravatar: noop,
   realm_filters: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
 };
@@ -530,6 +531,7 @@ inline.zulip = merge({}, inline.breaks, {
   unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
   usermention: /^(@\*\*([^\*]+)?\*\*)/m,
   avatar: /^!avatar\(([^)]+)\)/,
+  gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])|')
@@ -761,6 +763,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // user gravatar
+    if (cap = this.rules.gravatar.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.userGravatar(cap[1]);
+      continue;
+    }
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
@@ -808,6 +817,12 @@ InlineLexer.prototype.unicodeEmoji = function (name) {
 InlineLexer.prototype.userAvatar = function (email) {
   if (typeof this.options.avatarHandler !== 'function')
     return '!avatar(' + email + ')';
+  return this.options.avatarHandler(email);
+};
+
+InlineLexer.prototype.userGravatar = function (email) {
+  if (typeof this.options.avatarHandler !== 'function')
+    return '!gravatar(' + email + ')';
   return this.options.avatarHandler(email);
 };
 
@@ -1386,6 +1401,7 @@ marked.defaults = {
   emoji: false,
   unicodeemoji: false,
   avatar: false,
+  gravatar: false,
   tables: true,
   breaks: false,
   pedantic: false,
