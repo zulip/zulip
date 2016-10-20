@@ -1492,24 +1492,6 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-    # As with a subscription add, send a 'peer subscription' notice to other
-    # subscribers so they know the user unsubscribed.
-    # FIXME: This code was mostly a copy-paste from notify_subscriptions_added.
-    #        We have since streamlined how we do notifications for adds, and
-    #        we should do the same for removes.
-    notifications_for = get_subscribers_to_streams(streams, requesting_user=user_profile)
-
-    for event_recipient, notifications in six.iteritems(notifications_for):
-        # Don't send a peer subscription notice to yourself.
-        if event_recipient == user_profile:
-            continue
-
-        stream_names = [stream.name for stream in notifications]
-        event = dict(type="subscription", op="peer_remove",
-                     subscriptions=stream_names,
-                     user_email=user_profile.email)
-        send_event(event, [event_recipient.id])
-
 def bulk_remove_subscriptions(users, streams):
     # type: (Iterable[UserProfile], Iterable[Stream]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM,
@@ -1559,6 +1541,21 @@ def bulk_remove_subscriptions(users, streams):
         if len(streams_by_user[user_profile.id]) == 0:
             continue
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
+
+        notifications_for = get_subscribers_to_streams(streams, requesting_user=user_profile)
+
+        for event_recipient, notifications in six.iteritems(notifications_for):
+            # Don't send a peer subscription notice to yourself.
+            if event_recipient == user_profile:
+                continue
+
+            stream_names = [stream.name for stream in notifications]
+            peer_event = dict(
+                type="subscription",
+                op="peer_remove",
+                subscriptions=stream_names,
+                user_email=user_profile.email)
+            send_event(peer_event, [event_recipient.id])
 
     return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
             not_subscribed)
