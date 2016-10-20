@@ -62,7 +62,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                      "This is an :emoji: message",
                      "User Mention @**leo**",
                      "User Mention @**leo f**",
-                     "User Mention @**leo with some name**"
+                     "User Mention @**leo with some name**",
+                     "This contains !gravatar(leo@zulip.com)",
+                     "And an avatar !avatar(leo@zulip.com) is here"
                     ];
 
     var markup = [
@@ -77,9 +79,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                    "https://twitter.com/jacobian/status/407886996565016579",
                    "then https://twitter.com/jacobian/status/407886996565016579",
                    "twitter url http://twitter.com/jacobian/status/407886996565016579",
-                   "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
-                   "This contains !gravatar(leo@zulip.com)",
-                   "And an avatar !avatar(leo@zulip.com) is here"
+                   "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a"
                  ];
 
     no_markup.forEach(function (content) {
@@ -131,7 +131,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: 'This is a realm filter #1234 with text after it',
      expected: '<p>This is a realm filter <a href="https://trac.zulip.net/ticket/1234" target="_blank" title="https://trac.zulip.net/ticket/1234">#1234</a> with text after it</p>'},
     {input: 'This is a realm filter with ZGROUP_123:45 groups',
-     expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'}
+     expected: '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" target="_blank" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>'},
+    {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
+     expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+    {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
+     expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'}
   ];
 
   test_cases.forEach(function (test_case) {

@@ -250,13 +250,13 @@
       "name": "avatar",
       "input": "!avatar(username@example.com)",
       "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",
-      "bugdown_matches_marked": false
+      "bugdown_matches_marked": true
     },
     {
       "name": "gravatar",
       "input": "!gravatar(username@example.com)",
       "expected_output": "<p><img alt=\"username@example.com\" class=\"message_body_gravatar\" src=\"/avatar/username@example.com?s=30\" title=\"username@example.com\"></p>",
-      "bugdown_matches_marked": false
+      "bugdown_matches_marked": true
     },
     {
       "name": "avatar_escaped",

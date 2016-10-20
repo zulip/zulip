@@ -470,6 +470,8 @@ var inline = {
   emoji: noop,
   unicodeemoji: noop,
   usermention: noop,
+  avatar: noop,
+  gravatar: noop,
   realm_filters: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
 };
@@ -528,6 +530,8 @@ inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
   usermention: /^(@\*\*([^\*]+)?\*\*)/m,
+  avatar: /^!avatar\(([^)]+)\)/,
+  gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])|')
@@ -752,6 +756,20 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // user avatar 
+    if (cap = this.rules.avatar.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.userAvatar(cap[1]);
+      continue;
+    }
+
+    // user gravatar 
+    if (cap = this.rules.gravatar.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.userGravatar(cap[1]);
+      continue;
+    }
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
@@ -795,6 +813,19 @@ InlineLexer.prototype.unicodeEmoji = function (name) {
     return name;
   return this.options.unicodeEmojiHandler(name);
 };
+
+InlineLexer.prototype.userAvatar = function (email) {
+  if (typeof this.options.avatarHandler !== 'function')
+    return '!avatar(' + email + ')';
+  return this.options.avatarHandler(email);
+};
+
+InlineLexer.prototype.userGravatar = function (email) {
+  if (typeof this.options.avatarHandler !== 'function')
+    return '!gravatar(' + email + ')';
+  return this.options.avatarHandler(email);
+};
+
 
 InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
   if (typeof this.options.realmFilterHandler !== 'function')
@@ -1369,6 +1400,8 @@ marked.defaults = {
   gfm: true,
   emoji: false,
   unicodeemoji: false,
+  avatar: false,
+  gravatar: false,
   tables: true,
   breaks: false,
   pedantic: false,
