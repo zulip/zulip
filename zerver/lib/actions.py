@@ -1563,30 +1563,6 @@ def bulk_remove_subscriptions(users, streams):
     return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
             not_subscribed)
 
-def do_remove_subscription(user_profile, stream, no_log=False):
-    # type: (UserProfile, Stream, bool) -> bool
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    maybe_sub = Subscription.objects.filter(user_profile=user_profile,
-                                            recipient=recipient)
-    if len(maybe_sub) == 0:
-        return False
-    subscription = maybe_sub[0]
-    did_remove = subscription.active
-    subscription.active = False
-    with transaction.atomic():
-        subscription.save(update_fields=["active"])
-        vacant_after = stream.num_subscribers() == 0
-
-    if vacant_after and did_remove and not stream.invite_only:
-        event = dict(type="stream", op="vacate",
-                     streams=[stream.to_dict()])
-        send_event(event, active_user_ids(user_profile.realm))
-
-    if did_remove:
-        notify_subscriptions_removed(user_profile, [stream], no_log)
-
-    return did_remove
-
 def log_subscription_property_change(user_email, stream_name, property, value):
     # type: (text_type, text_type, text_type, Any) -> None
     event = {'type': 'subscription_property',
