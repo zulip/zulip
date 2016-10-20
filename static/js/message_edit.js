@@ -104,7 +104,7 @@ function edit_message (row, raw_content) {
     var message = current_msg_list.get(rows.id(row));
     var edit_row = row.find(".message_edit");
     var form = $(templates.render('message_edit_form',
-                                  {is_stream: message.is_stream,
+                                  {is_stream: (message.type === 'stream'),
                                    topic: message.subject,
                                    content: raw_content,
                                    minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
@@ -152,7 +152,7 @@ function edit_message (row, raw_content) {
             // can change out from under us
             var message_content_row = row.find('textarea.message_edit_content');
             var message_topic_row, message_topic_propagate_row;
-            if (message.is_stream) {
+            if (message.type === 'stream') {
                 message_topic_row = row.find('input.message_edit_topic');
                 message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
             }
@@ -164,7 +164,7 @@ function edit_message (row, raw_content) {
                 if (--seconds_left <= 0) {
                     clearInterval(countdown_timer);
                     message_content_row.attr("disabled","disabled");
-                    if (message.is_stream) {
+                    if (message.type === 'stream') {
                         message_topic_row.attr("disabled","disabled");
                         message_topic_propagate_row.hide();
                     }
