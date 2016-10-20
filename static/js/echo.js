@@ -18,9 +18,7 @@ var bugdown_re = [
                     /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\s+/m,
                     /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)$/m,
                     // Twitter and youtube links are given previews
-                    /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
-                    // Gravatars are inlined as well
-                    /!gravatar\([^)]+\)/
+                    /[^\s]*(?:twitter|youtube).com\/[^\s]*/
                   ];
 
 exports.contains_bugdown = function contains_bugdown(content) {
