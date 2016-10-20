@@ -1432,16 +1432,15 @@ def bulk_add_subscriptions(streams, users):
                                            active=True).select_related('recipient', 'user_profile')
 
     all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
-    emails_by_stream = defaultdict(list) # type: Dict[int, List[text_type]]
     for sub in all_subs:
         all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
-        emails_by_stream[sub.recipient.type_id].append(sub.user_profile.email)
 
     def fetch_stream_subscriber_emails(stream):
         # type: (Stream) -> List[text_type]
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             return []
-        return emails_by_stream[stream.id]
+        users = all_subs_by_stream[stream.id]
+        return [u.email for u in users]
 
     sub_tuples_by_user = defaultdict(list) # type: Dict[int, List[Tuple[Subscription, Stream]]]
     new_streams = set() # type: Set[Tuple[int, int]]
