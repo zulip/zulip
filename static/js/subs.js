@@ -542,7 +542,16 @@ function ajaxSubscribe(stream) {
     });
 }
 
-function ajaxUnsubscribe(stream) {
+function show_unsubscribe_confirmation_modal(stream_name) {
+    $("#unsub_stream_name").text(stream_name);
+    $('#unsubscribe-confirmation').modal("show").data('stream-name', stream_name);
+}
+
+function ajaxUnsubscribe(stream, need_confirmation) {
+    if (need_confirmation) {
+        show_unsubscribe_confirmation_modal(stream);
+        return;
+    }
     return channel.post({
         url: "/json/subscriptions/remove",
         data: {"subscriptions": JSON.stringify([stream]) },
@@ -791,7 +800,7 @@ $(function () {
         var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
+            ajaxUnsubscribe(stream_name, sub.invite_only);
         } else {
             ajaxSubscribe(stream_name);
         }
@@ -825,7 +834,7 @@ $(function () {
         var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
+            ajaxUnsubscribe(stream_name, sub.invite_only);
         } else {
             ajaxSubscribe(stream_name);
         }
@@ -842,7 +851,7 @@ $(function () {
         var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
+            ajaxUnsubscribe(stream_name, sub.invite_only);
         } else {
             ajaxSubscribe(stream_name);
         }
@@ -1182,6 +1191,11 @@ $(function () {
         var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
+    });
+    $("#unsubscribe_confirmation_form").on("submit", function (e) {
+        e.preventDefault();
+        $("#unsubscribe-confirmation").modal("hide");
+        ajaxUnsubscribe($("#unsubscribe-confirmation").data('stream-name'));
     });
 });
 
