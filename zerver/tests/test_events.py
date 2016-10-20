@@ -12,6 +12,7 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     apply_events,
+    bulk_remove_subscriptions,
     create_stream_if_needed,
     do_add_alert_words,
     check_add_realm_emoji,
@@ -31,7 +32,6 @@ from zerver.lib.actions import (
     do_remove_alert_words,
     do_remove_realm_emoji,
     do_remove_realm_filter,
-    do_remove_subscription,
     do_rename_stream,
     do_add_default_stream,
     do_set_muted_topics,
@@ -820,12 +820,16 @@ class EventsRegisterTest(ZulipTestCase):
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
-        action = lambda: do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream)
+        action = lambda: bulk_remove_subscriptions(
+            [get_user_profile_by_email("othello@zulip.com")],
+            [stream])
         events = self.do_test(action)
         error = peer_remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        action = lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream)
+        action = lambda: bulk_remove_subscriptions(
+            [get_user_profile_by_email("hamlet@zulip.com")],
+            [stream])
         events = self.do_test(action)
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
