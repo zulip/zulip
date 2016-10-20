@@ -23,7 +23,7 @@ from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient,
+    get_display_recipient, bulk_remove_subscriptions
 )
 
 from zerver.models import (
@@ -544,6 +544,12 @@ class ZulipTestCase(TestCase):
             stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         bulk_add_subscriptions([stream], [user_profile])
+
+    def unsubscribe_from_stream(self, email, stream_name):
+        # type: (text_type, text_type) -> None
+        user_profile = get_user_profile_by_email(email)
+        stream = get_stream(stream_name, user_profile.realm)
+        bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):
