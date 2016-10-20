@@ -1360,6 +1360,18 @@ def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users)
         # structure to stay up-to-date.
         return set(active_user_ids(stream.realm)) - set(altered_user_ids)
 
+def query_all_subs_by_stream(streams):
+    # type: (Iterable[Stream]) -> Dict[int, List[UserProfile]]
+    all_subs = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                           recipient__type_id__in=[stream.id for stream in streams],
+                                           user_profile__is_active=True,
+                                           active=True).select_related('recipient', 'user_profile')
+
+    all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
+    for sub in all_subs:
+        all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
+    return all_subs_by_stream
+
 def bulk_add_subscriptions(streams, users):
     # type: (Iterable[Stream], Iterable[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams]) # type: Mapping[int, Recipient]
@@ -1426,14 +1438,7 @@ def bulk_add_subscriptions(streams, users):
     # First, get all users subscribed to the streams that we care about
     # We fetch all subscription information upfront, as it's used throughout
     # the following code and we want to minize DB queries
-    all_subs = Subscription.objects.filter(recipient__type=Recipient.STREAM,
-                                           recipient__type_id__in=[stream.id for stream in streams],
-                                           user_profile__is_active=True,
-                                           active=True).select_related('recipient', 'user_profile')
-
-    all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
-    for sub in all_subs:
-        all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
+    all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
     def fetch_stream_subscriber_emails(stream):
         # type: (Stream) -> List[text_type]
