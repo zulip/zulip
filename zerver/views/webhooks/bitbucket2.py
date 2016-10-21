@@ -21,8 +21,7 @@ USER_PART = 'User {display_name}(login: {username})'
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_COMMENT_BODY = USER_PART + ' added [comment]({url_to_comment}) to commit.'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
-BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY = USER_PART + ' {action} [comment]({comment_url} ' + \
-                                             'in ["{title}" pull request]({pull_request_url})'
+
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [
     'approved',
@@ -167,11 +166,15 @@ def get_fork_body(payload):
     )
 
 def get_commit_comment_body(payload):
-    # type: (Dict[str, Any]) -> str
-    return BITBUCKET_COMMIT_COMMENT_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
-        url_to_comment=payload['comment']['links']['html']['href']
+    # type: (Dict[str, Any]) -> text_type
+    comment = payload.get('comment')
+    action = u'[commented]({})'.format(comment['links']['html']['href'])
+    return get_pull_request_event_message(
+        get_user_username(payload),
+        action,
+        comment['commit']['links']['html']['href'],
+        message=comment['content']['raw'],
+        type='Commit'
     )
 
 def get_commit_status_changed_body(payload):
@@ -188,6 +191,11 @@ def get_commit_status_changed_body(payload):
         commit_info=commit_info,
         status=payload['commit_status']['state']
     )
+
+def get_issue_commented_body(payload):
+    # type: (Dict[str, Any]) -> text_type
+    action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
+    return get_issue_action_body(payload, action)
 
 def get_issue_action_body(payload, action):
     # type: (Dict[str, Any], str) -> text_type
@@ -233,15 +241,23 @@ def get_pull_request_created_or_updated_body(payload, action):
         assignee=assignee
     )
 
+def get_pull_request_comment_created_action_body(payload):
+    # type: (Dict[str, Any]) -> text_type
+    action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
+    return get_pull_request_comment_action_body(payload, action)
+
+def get_pull_request_deleted_or_updated_comment_action_body(payload, action):
+    # type: (Dict[str, Any], text_type) -> text_type
+    action = "{} [comment]({})".format(action, payload['comment']['links']['html']['href'])
+    return get_pull_request_comment_action_body(payload, action)
+
 def get_pull_request_comment_action_body(payload, action):
-    # type: (Dict[str, Any], str) -> str
-    return BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
-        action=action,
-        comment_url=payload['comment']['links']['html']['href'],
-        title=get_pull_request_title(payload['pullrequest']),
-        pull_request_url=get_pull_request_url(payload['pullrequest'])
+    # type: (Dict[str, Any], str) -> text_type
+    return get_pull_request_event_message(
+        get_user_username(payload),
+        action,
+        payload['pullrequest']['links']['html']['href'],
+        message=payload['comment']['content']['raw']
     )
 
 def get_pull_request_title(pullrequest_payload):
@@ -287,14 +303,14 @@ GET_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'change_commit_status': get_commit_status_changed_body,
     'issue_updated': partial(get_issue_action_body, action='updated'),
     'issue_created': partial(get_issue_action_body, action='created'),
-    'issue_commented': partial(get_issue_action_body, action='commented'),
+    'issue_commented': get_issue_commented_body,
     'pull_request_created': partial(get_pull_request_created_or_updated_body, action='created'),
     'pull_request_updated': partial(get_pull_request_created_or_updated_body, action='updated'),
     'pull_request_approved': partial(get_pull_request_action_body, action='approved'),
     'pull_request_unapproved': partial(get_pull_request_action_body, action='unapproved'),
     'pull_request_merged': partial(get_pull_request_action_body, action='merged'),
     'pull_request_rejected': partial(get_pull_request_action_body, action='rejected'),
-    'pull_request_comment_created': partial(get_pull_request_comment_action_body, action='created'),
-    'pull_request_comment_updated': partial(get_pull_request_comment_action_body, action='updated'),
-    'pull_request_comment_deleted': partial(get_pull_request_comment_action_body, action='deleted')
+    'pull_request_comment_created': get_pull_request_comment_created_action_body,
+    'pull_request_comment_updated': partial(get_pull_request_deleted_or_updated_comment_action_body, action='updated'),
+    'pull_request_comment_deleted': partial(get_pull_request_deleted_or_updated_comment_action_body, action='deleted')
 }
