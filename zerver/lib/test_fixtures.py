@@ -85,10 +85,10 @@ def _check_hash(target_hash_file, **options):
     else:
         source_hash_content = None
 
-    with open(source_hash_file, 'a+') as f:
-        f.truncate(0)
+    with open(source_hash_file, 'w') as f:
         f.write(target_hash_content)
-        return source_hash_content == target_hash_content
+
+    return source_hash_content == target_hash_content
 
 def is_template_database_current(
         database_name='zulip_test_template',
