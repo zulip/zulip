@@ -33,6 +33,15 @@ def deactivate_user_backend(request, user_profile, email):
         return json_error(_('No such user'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
+def deactivate_user_own_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    admins = set(user_profile.realm.get_admin_users())
+
+    if user_profile.is_realm_admin and len(admins) == 1:
+        return json_error(_('Cannot deactivate the only admin'))
+    do_deactivate_user(user_profile)
+    return json_success({})
+
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:

@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from six import text_type
 
 from zerver.decorator import to_non_negative_int
-from zerver.lib.actions import do_update_pointer
+from zerver.lib.actions import do_update_pointer, do_deactivate_user
 from zerver.lib.request import has_request_variables, JsonableError, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import statsd, generate_random_token

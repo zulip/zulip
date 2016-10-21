@@ -16,6 +16,7 @@ from zerver.models import (
 from zerver.lib.actions import (
     create_stream_if_needed,
     set_default_streams,
+    do_change_is_admin
 )
 
 from zerver.lib.initial_password import initial_password
@@ -749,3 +750,35 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, subdomain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+class DeactivateUserTest(ZulipTestCase):
+
+    def test_deactivate_user(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertTrue(user.is_active)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertFalse(user.is_active)
+        self.login(email, fails=True)
+
+    def test_do_not_deactivate_final_admin(self):
+        # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email('iago@zulip.com')
+        self.assertTrue(user.is_active)
+        self.client_delete('/json/users/me')
+        user = get_user_profile_by_email('iago@zulip.com')
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.is_realm_admin)
+        email = 'hamlet@zulip.com'
+        user_2 = get_user_profile_by_email('hamlet@zulip.com')
+        do_change_is_admin(user_2, True)
+        self.assertTrue(user_2.is_realm_admin)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        do_change_is_admin(user, True)
