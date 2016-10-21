@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -e
+
+
+case $1 in
+    -h|--help)
+    echo "--help, -h                   show this help message and exit"
+    echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
+    exit 0
+    ;;
+    -L|--loglevel)
+    loglevel="$1 $2"
+    ;;
+esac
+
+cd "$(dirname "$0")"/../docs
+make html
+cd ../tools/documentation_crawler
+
+scrapy crawl_with_status documentation_crawler $loglevel
