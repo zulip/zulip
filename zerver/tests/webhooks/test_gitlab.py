@@ -117,7 +117,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_commit_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek added [comment](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211) to [Commit](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7)."
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211) [Commit](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7)\n\n~~~ quote\nnice commit\n~~~"
 
         self.send_and_test_stream_message(
             'commit_note',
@@ -152,8 +152,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_note_snippet_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek added [comment](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) to [Snippet #2](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2)."
+        expected_subject = u"my-awesome-project / Snippet #2 test"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) [Snippet](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2)\n\n~~~ quote\nNice snippet\n~~~"
 
         self.send_and_test_stream_message(
             'snippet_note',

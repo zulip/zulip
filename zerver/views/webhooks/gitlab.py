@@ -118,10 +118,14 @@ def get_objects_assignee(payload):
 
 def get_commented_commit_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    return u"{} added [comment]({}) to [Commit]({}).".format(
+    comment = payload.get('object_attributes')
+    action = u'[commented]({})'.format(comment['url'])
+    return get_pull_request_event_message(
         get_issue_user_name(payload),
-        payload.get('object_attributes').get('url'),
-        payload.get('commit').get('url')
+        action,
+        payload.get('commit').get('url'),
+        message=comment['note'],
+        type='Commit'
     )
 
 def get_commented_merge_request_event_body(payload):
@@ -158,12 +162,18 @@ def get_commented_issue_event_body(payload):
 
 def get_commented_snippet_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    return u"{} added [comment]({}) to [Snippet #{}]({}/snippets/{}).".format(
-        get_issue_user_name(payload),
-        payload.get('object_attributes').get('url'),
-        payload.get('snippet').get('id'),
+    comment = payload.get('object_attributes')
+    action = u'[commented]({})'.format(comment['url'])
+    url = u'{}/snippets/{}'.format(
         payload.get('project').get('web_url'),
-        payload.get('snippet').get('id'),
+        payload.get('snippet').get('id')
+    )
+    return get_pull_request_event_message(
+        get_issue_user_name(payload),
+        action,
+        url,
+        message=comment['note'],
+        type='Snippet'
     )
 
 def get_wiki_page_event_body(payload, action):
@@ -311,6 +321,14 @@ def get_subject_based_on_event(event, payload):
             type='MR',
             id=payload.get('merge_request').get('iid'),
             title=payload.get('merge_request').get('title')
+        )
+
+    elif event == 'Note Hook Snippet':
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='Snippet',
+            id=payload.get('snippet').get('id'),
+            title=payload.get('snippet').get('title')
         )
     return get_repo_name(payload)
 
