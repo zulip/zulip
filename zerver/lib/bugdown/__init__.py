@@ -1079,11 +1079,15 @@ class Bugdown(markdown.Extension):
 md_engines = {}
 realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
 
+class EscapeHtml(markdown.Extension):
+    def extendMarkdown(self, md, md_globals):
+    # type: (markdown.Markdown, Dict[str, Any]) -> None
+        del md.preprocessors['html_block']
+        del md.inlinePatterns['html']
 
 def make_md_engine(key, opts):
     # type: (text_type, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
-        safe_mode     = 'escape',
         output_format = 'html',
         extensions    = [
                          'markdown.extensions.nl2br',
@@ -1093,6 +1097,7 @@ def make_md_engine(key, opts):
                                 guess_lang=False
                          ),
                          fenced_code.makeExtension(),
+                         EscapeHtml(),
                          Bugdown(realm_filters=opts["realm_filters"][0],
                                  realm=opts["realm"][0])])
 
