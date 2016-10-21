@@ -102,6 +102,7 @@ def is_template_database_current(
         check_files = [
             'zilencer/management/commands/populate_db.py',
             'tools/setup/postgres-init-test-db',
+            'tools/setup/postgres-init-dev-db',
         ]
 
     if not os.path.exists(TEST_DB_STATUS_DIR):
