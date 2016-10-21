@@ -5,7 +5,7 @@ from typing import Any
 
 import os
 import ujson
-from optparse import make_option
+from argparse import ArgumentParser
 
 from django.test import Client
 from django.conf import settings
@@ -21,17 +21,16 @@ Example:
     '--url=/api/v1/external/integration?stream=stream_name&api_key=api_key'
 
 """
-
-    option_list = BaseCommand.option_list + (
-        make_option('-f', '--fixture',
+    def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
+        parser.add_argument('-f', '--fixture',
                     dest='fixture',
-                    type='str',
-                    help='The path to the fixture you\'d like to send into Zulip'),
-        make_option('-u', '--url',
+                    type=str,
+                    help='The path to the fixture you\'d like to send into Zulip')
+        parser.add_argument('-u', '--url',
                     dest='url',
-                    type='str',
-                    help='The url on your Zulip server that you want to post the fixture to'),
-        )
+                    type=str,
+                    help='The url on your Zulip server that you want to post the fixture to')
 
     def handle(self, **options):
         # type: (*Any, **str) -> None
