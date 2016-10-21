@@ -455,12 +455,12 @@ function _setup_page() {
     $("#user_deactivate_account_button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $("#deactivation_user_modal").modal("show");
+        $("#deactivate_self_modal").modal("show");
     });
 
-    $("#do_deactivate_user_button").on('click',function (e) {
+    $("#do_deactivate_self_button").on('click',function (e) {
 
-        $("#deactivation_user_modal").modal("hide");
+        $("#deactivate_self_modal").modal("hide");
         channel.del({
             url: '/json/users/me',
 
