@@ -455,12 +455,21 @@ function _setup_page() {
     $("#user_deactivate_account_button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
+<<<<<<< HEAD
         $("#deactivate_self_modal").modal("show");
     });
 
     $("#do_deactivate_self_button").on('click',function (e) {
 
         $("#deactivate_self_modal").modal("hide");
+=======
+        $("#deactivation_user_modal").modal("show");
+    });
+
+    $("#do_deactivate_user_button").on('click',function (e) {
+
+        $("#deactivation_user_modal").modal("hide");
+>>>>>>> d952358ecd5ec494bb33ac7fc58f532f7aa31eff
         channel.del({
             url: '/json/users/me',
 
