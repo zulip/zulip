@@ -68,8 +68,11 @@ def _check_hash(source_hash_file, target_hash_file, **options):
     with open(target_hash_file) as f:
         target_hash_content = hashlib.sha1(f.read().encode('utf8')).hexdigest()
 
-    with open(source_hash_file) as f:
-        source_hash_content = f.read().strip()
+    if os.path.exists(source_hash_file):
+        with open(source_hash_file) as f:
+            source_hash_content = f.read().strip()
+    else:
+        source_hash_content = None
 
     with open(source_hash_file, 'a+') as f:
         f.truncate(0)
