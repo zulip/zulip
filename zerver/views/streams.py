@@ -132,7 +132,7 @@ def deactivate_stream_backend(request, user_profile, stream_name):
         return json_error(_('Cannot administer invite-only streams this way'))
 
     do_deactivate_stream(target)
-    return json_success({})
+    return json_success()
 
 @require_realm_admin
 @has_request_variables
@@ -174,7 +174,7 @@ def update_stream_backend(request, user_profile, stream_name,
         do_change_stream_description(user_profile.realm, stream_name, description)
     if stream_name is not None and new_name is not None:
         do_rename_stream(user_profile.realm, stream_name, new_name)
-    return json_success({})
+    return json_success()
 
 def list_subscriptions_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse

@@ -979,7 +979,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             # type: (HttpRequest, UserProfile) -> HttpResponse
             user_profile.full_name = 'Should not be committed'
             user_profile.save()
-            return json_success({})
+            return json_success()
 
         def method2(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse

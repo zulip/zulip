@@ -253,6 +253,8 @@ def build_custom_checkers(by_lang):
              ('tools/tests/test_template_parser.py', '{% foo'),
          ]),
          'description': 'Used % comprehension without a tuple'},
+        {'pattern': 'json_success\({}\)',
+         'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',
          'exclude': set(['tools/lint-all']),

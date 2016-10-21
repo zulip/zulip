@@ -40,7 +40,7 @@ def deactivate_user_own_backend(request, user_profile):
     if user_profile.is_realm_admin and len(admins) == 1:
         return json_error(_('Cannot deactivate the only admin'))
     do_deactivate_user(user_profile)
-    return json_success({})
+    return json_success()
 
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -58,7 +58,7 @@ def _deactivate_user_profile_backend(request, user_profile, target):
         return json_error(_('Insufficient permission'))
 
     do_deactivate_user(target)
-    return json_success({})
+    return json_success()
 
 def reactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -71,7 +71,7 @@ def reactivate_user_backend(request, user_profile, email):
         return json_error(_('Insufficient permission'))
 
     do_reactivate_user(target)
-    return json_success({})
+    return json_success()
 
 @has_request_variables
 def update_user_backend(request, user_profile, email,
@@ -98,7 +98,7 @@ def update_user_backend(request, user_profile, email,
             return json_error(_("Name too long!"))
         do_change_full_name(target, new_full_name)
 
-    return json_success({})
+    return json_success()
 
 def avatar(request, email):
     # type: (HttpRequest, str) -> HttpResponse
