@@ -11,6 +11,7 @@ from django.test.client import (
 )
 from django.template import loader
 from django.http import HttpResponse
+from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
@@ -307,6 +308,8 @@ class ZulipTestCase(TestCase):
     django_client to fool the regext.
     '''
 
+    DEFAULT_REALM_NAME = 'zulip.com'
+
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
@@ -533,6 +536,27 @@ class ZulipTestCase(TestCase):
         # type: (text_type, text_type, text_type) -> text_type
         return force_text(open(os.path.join(os.path.dirname(__file__),
                                             "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read())
+
+    def make_stream(self, stream_name, realm=None, invite_only=False):
+        # type: (text_type, Optional[Realm], Optional[bool]) -> Stream
+        if realm is None:
+            realm = get_realm(self.DEFAULT_REALM_NAME)
+
+        try:
+            stream = Stream.objects.create(
+                realm=realm,
+                name=stream_name,
+                invite_only=invite_only,
+            )
+        except IntegrityError:
+            raise Exception('''
+                %s already exists
+
+                Please call make_stream with a stream name
+                that is not already in use.''' % (stream_name,))
+
+        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        return stream
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
