@@ -128,8 +128,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_note_merge_request_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek added [comment](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) to [Merge Request #1](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1)."
+        expected_subject = u"my-awesome-project / MR #1 Tomek"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1)\n\n~~~ quote\nNice merge request!\n~~~"
 
         self.send_and_test_stream_message(
             'merge_request_note',
@@ -140,8 +140,8 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_note_issue_event_message(self):
         # type: () -> None
-        expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek added [comment](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) to [Issue #2](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2)."
+        expected_subject = u"my-awesome-project / Issue #2 abc"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2)\n\n~~~ quote\nNice issue\n~~~"
 
         self.send_and_test_stream_message(
             'issue_note',

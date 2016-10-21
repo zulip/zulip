@@ -126,22 +126,34 @@ def get_commented_commit_event_body(payload):
 
 def get_commented_merge_request_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    return u"{} added [comment]({}) to [Merge Request #{}]({}/merge_requests/{}).".format(
-        get_issue_user_name(payload),
-        payload.get('object_attributes').get('url'),
-        payload.get('merge_request').get('iid'),
+    comment = payload.get('object_attributes')
+    action = u'[commented]({})'.format(comment['url'])
+    url = u'{}/merge_requests/{}'.format(
         payload.get('project').get('web_url'),
-        payload.get('merge_request').get('iid'),
+        payload.get('merge_request').get('iid')
+    )
+    return get_pull_request_event_message(
+        get_issue_user_name(payload),
+        action,
+        url,
+        message=comment['note'],
+        type='MR'
     )
 
 def get_commented_issue_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    return u"{} added [comment]({}) to [Issue #{}]({}/issues/{}).".format(
-        get_issue_user_name(payload),
-        payload.get('object_attributes').get('url'),
-        payload.get('issue').get('iid'),
+    comment = payload.get('object_attributes')
+    action = u'[commented]({})'.format(comment['url'])
+    url = u'{}/issues/{}'.format(
         payload.get('project').get('web_url'),
-        payload.get('issue').get('iid'),
+        payload.get('issue').get('iid')
+    )
+    return get_pull_request_event_message(
+        get_issue_user_name(payload),
+        action,
+        url,
+        message=comment['note'],
+        type='Issue'
     )
 
 def get_commented_snippet_event_body(payload):
@@ -285,6 +297,20 @@ def get_subject_based_on_event(event, payload):
             type='Issue',
             id=payload.get('object_attributes').get('iid'),
             title=payload.get('object_attributes').get('title')
+        )
+    elif event == 'Note Hook Issue':
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='Issue',
+            id=payload.get('issue').get('iid'),
+            title=payload.get('issue').get('title')
+        )
+    elif event == 'Note Hook MergeRequest':
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repo_name(payload),
+            type='MR',
+            id=payload.get('merge_request').get('iid'),
+            title=payload.get('merge_request').get('title')
         )
     return get_repo_name(payload)
 
