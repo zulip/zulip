@@ -68,8 +68,8 @@ def _get_hash_file_path(source_file_path):
     filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
     return os.path.join(TEST_DB_STATUS_DIR, filename)
 
-def _check_hash(source_hash_file, target_hash_file, **options):
-    # type: (str, str, **Any) -> bool
+def _check_hash(target_hash_file, **options):
+    # type: (str, **Any) -> bool
     """
     This function has a side effect of creating a new hash file or
     updating the old hash file.
@@ -90,36 +90,28 @@ def _check_hash(source_hash_file, target_hash_file, **options):
         f.write(target_hash_content)
         return source_hash_content == target_hash_content
 
-def populate_db_hash_is_same(hash_file, **options):
-    # type: (text_type, **Any) -> bool
-    populate_db = 'zilencer/management/commands/populate_db.py'
-    return _check_hash(hash_file, populate_db, **options)
-
-def postgres_init_test_db_hash_is_same(hash_file, **options):
-    # type: (text_type, **Any) -> bool
-    postgres_init_test_db = 'tools/setup/postgres-init-test-db'
-    return _check_hash(hash_file, postgres_init_test_db, **options)
-
 def is_template_database_current(
         database_name='zulip_test_template',
         migration_status='var/migration-status',
         settings='zproject.test_settings',
-        populate_db_hash='var/populate_db_hash',
-        postgres_init_test_db_hash='var/postgres_init_test_db_hash'
+        check_files=None
     ):
-    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[str], Optional[str]) -> bool
+    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[List[str]]) -> bool
+    # Using str type for check_files because re.split doesn't accept unicode
+    if check_files is None:
+        check_files = [
+            'zilencer/management/commands/populate_db.py',
+            'tools/setup/postgres-init-test-db',
+        ]
 
     if not os.path.exists(TEST_DB_STATUS_DIR):
         os.mkdir(TEST_DB_STATUS_DIR)
 
     if database_exists(database_name):
-        # To ensure Python evaluates all 3 tests (and thus creates the
+        # To ensure Python evaluates all the hash tests (and thus creates the
         # hash files about the current state), we evaluate them in a
-        # list and then compare, rather than just returning the
-        # boolean `and` of the 3 values.
-        results = [are_migrations_the_same(migration_status, settings=settings),
-                   populate_db_hash_is_same(populate_db_hash),
-                   postgres_init_test_db_hash_is_same(postgres_init_test_db_hash)]
-        return False not in results
+        # list and then process the result
+        hash_status = all([_check_hash(fn) for fn in check_files])
+        return are_migrations_the_same(migration_status, settings=settings) and hash_status
 
     return False
