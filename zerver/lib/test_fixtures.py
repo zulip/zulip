@@ -12,6 +12,9 @@ from django.apps import apps
 from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
+FILENAME_SPLITTER = re.compile('[\W\-_]')
+TEST_DB_STATUS_DIR = 'var/test_db_status'
+
 def database_exists(database_name, **options):
     # type: (text_type, **Any) -> bool
     db = options.get('database', DEFAULT_DB_ALIAS)
@@ -59,12 +62,20 @@ def are_migrations_the_same(migration_file, **options):
         migration_content = f.read()
     return migration_content == get_migration_status(**options)
 
+def _get_hash_file_path(source_file_path):
+    # type: (str) -> str
+    basename = os.path.basename(source_file_path)
+    filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
+    return os.path.join(TEST_DB_STATUS_DIR, filename)
+
 def _check_hash(source_hash_file, target_hash_file, **options):
-    # type: (text_type, text_type, **Any) -> bool
+    # type: (str, str, **Any) -> bool
     """
     This function has a side effect of creating a new hash file or
     updating the old hash file.
     """
+    source_hash_file = _get_hash_file_path(target_hash_file)
+
     with open(target_hash_file) as f:
         target_hash_content = hashlib.sha1(f.read().encode('utf8')).hexdigest()
 
@@ -96,7 +107,11 @@ def is_template_database_current(
         populate_db_hash='var/populate_db_hash',
         postgres_init_test_db_hash='var/postgres_init_test_db_hash'
     ):
-    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> bool
+    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[str], Optional[str]) -> bool
+
+    if not os.path.exists(TEST_DB_STATUS_DIR):
+        os.mkdir(TEST_DB_STATUS_DIR)
+
     if database_exists(database_name):
         # To ensure Python evaluates all 3 tests (and thus creates the
         # hash files about the current state), we evaluate them in a
