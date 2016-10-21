@@ -32,7 +32,6 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     check_message, check_send_message,
-    create_stream_if_needed,
     do_create_user,
     get_client,
 )
@@ -427,7 +426,7 @@ class StreamMessagesTest(ZulipTestCase):
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
         realm = get_realm("zulip.com")
-        stream, _ = create_stream_if_needed(realm, non_ascii_stream_name)
+        stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
             self.subscribe_to_stream(user_profile.email, stream.name)
 
@@ -438,11 +437,11 @@ class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self):
         # type: () -> None
-        realm = get_realm("zulip.com")
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream, _ = create_stream_if_needed(realm, 'devel')
+        stream_name = u'Çiğdem'
+        stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
 
@@ -850,7 +849,7 @@ class EditMessageTest(ZulipTestCase):
         # type: () -> None
         email = "hamlet@zulip.com"
         self.login(email)
-        stream, _ = create_stream_if_needed(get_realm("zulip.com"), 'public_stream')
+        stream = self.make_stream('public_stream')
         self.subscribe_to_stream(email, stream.name)
         msg_id = self.send_message(email, stream.name, Recipient.STREAM,
                                    subject="test", content="test")
@@ -865,7 +864,7 @@ class EditMessageTest(ZulipTestCase):
         # type: () -> None
         email = "hamlet@zulip.com"
         self.login(email)
-        stream, _ = create_stream_if_needed(get_realm("zulip.com"), 'private_stream', invite_only=True)
+        stream = self.make_stream('private_stream', invite_only=True)
         self.subscribe_to_stream(email, stream.name)
         msg_id = self.send_message(email, stream.name, Recipient.STREAM,
                                    subject="test", content="test")
@@ -1310,7 +1309,7 @@ class StarTests(ZulipTestCase):
     def test_change_star_private_stream_security(self):
         # type: () -> None
         stream_name = "private_stream"
-        create_stream_if_needed(get_realm("zulip.com"), stream_name, invite_only=True)
+        self.make_stream(stream_name, invite_only=True)
         self.subscribe_to_stream("hamlet@zulip.com", stream_name)
         self.login("hamlet@zulip.com")
         message_ids = [self.send_message("hamlet@zulip.com", stream_name,
@@ -1424,8 +1423,8 @@ class CheckMessageTest(ZulipTestCase):
         # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
         client = make_client(name="test suite")
-        stream_name = 'integration'
-        stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
+        stream_name = u'España y Francia'
+        self.make_stream(stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]
@@ -1454,8 +1453,8 @@ class CheckMessageTest(ZulipTestCase):
 
         sender = bot
         client = make_client(name="test suite")
-        stream_name = 'integration'
-        stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
+        stream_name = u'Россия'
+        self.make_stream(stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]
