@@ -82,6 +82,7 @@ are a couple useful methods in ZulipTestCase:
 
 - common_subscribe_to_streams
 - send_message
+- make_stream
 - subscribe_to_stream
 
 More typically, you will use methods directly from the backend code.
@@ -92,7 +93,6 @@ influence tests results.)
 Here are some example action methods that tests may use for data setup:
 
 - check_send_message
-- create_stream_if_needed
 - do_change_is_admin
 - do_create_user
 - do_make_stream_private
