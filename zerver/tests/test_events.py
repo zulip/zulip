@@ -13,7 +13,6 @@ from zerver.models import (
 from zerver.lib.actions import (
     apply_events,
     bulk_remove_subscriptions,
-    create_stream_if_needed,
     do_add_alert_words,
     check_add_realm_emoji,
     do_add_realm_filter,
@@ -701,7 +700,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_rename_stream(self):
         # type: () -> None
         realm = get_realm('zulip.com')
-        stream, _ = create_stream_if_needed(realm, 'old_name')
+        stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
 
@@ -730,8 +729,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_deactivate_stream_neversubscribed(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
-        stream, _ = create_stream_if_needed(realm, 'old_name')
+        stream = self.make_stream('old_name')
 
         action = lambda: do_deactivate_stream(stream)
         events = self.do_test(action)
