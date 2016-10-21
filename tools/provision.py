@@ -170,7 +170,7 @@ def main():
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
     run(["tools/setup/download-zxcvbn"])
-    run(["tools/setup/emoji_dump/build_emoji"])
+    run(["python", "tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if TRAVIS and not PRODUCTION_TRAVIS:
         run(["sudo", "service", "rabbitmq-server", "restart"])
