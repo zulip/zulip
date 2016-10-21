@@ -621,6 +621,38 @@ class BugdownTest(TestCase):
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_stream_single(self):
+        # type: () -> None
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><a class="stream" href="/#narrow/stream/Denmark">#Denmark</a></p>')
+
+    def test_stream_multiple(self):
+        # type: () -> None
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "Look to #**Denmark** and #**Scotland**, there something"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>Look to '
+                         '<a class="stream" '
+                         'href="/#narrow/stream/Denmark">#Denmark</a> and '
+                         '<a class="stream" '
+                         'href="/#narrow/stream/Scotland">#Scotland</a>, '
+                         'there something</p>')
+
+    def test_stream_invalid(self):
+        # type: () -> None
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "There #**Nonexistentstream**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>There #<strong>Nonexistentstream</strong></p>')
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_stream_subscribe_button_simple(self):
         # type: () -> None
         msg = '!_stream_subscribe_button(simple)'

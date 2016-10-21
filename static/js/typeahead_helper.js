@@ -67,7 +67,7 @@ exports.render_person = function (person) {
 };
 
 exports.render_stream = function (stream) {
-    return stream.name
+    return stream
 };
 
 function prefix_sort(query, objs, get_item) {
@@ -148,6 +148,11 @@ exports.sort_recipients = function (matches, query) {
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
     var results = prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    return results.matches.concat(results.rest);
+};
+
+exports.sort_streams = function (matches, query) {
+    var results = prefix_sort(query, matches, function (x) { return x });
     return results.matches.concat(results.rest);
 };
 

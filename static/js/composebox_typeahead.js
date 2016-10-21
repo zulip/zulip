@@ -64,7 +64,10 @@ function query_matches_person(query, person) {
 
     return ( person.email    .toLowerCase().indexOf(query) !== -1
          ||  person.full_name.toLowerCase().indexOf(query) !== -1);
+}
 
+function query_matches_stream(query, stream) {
+    return ( stream.toLowerCase().indexOf(query.toLowerCase()) !== -1);
 }
 
 // Case-insensitive
@@ -174,6 +177,23 @@ function select_on_focus(field_id) {
     });
 }
 
+function autocomplete_checks(q, char) {
+    // Don't autocomplete more than this many characters.
+    var max_chars = 30;
+    var last_at = q.lastIndexOf(char);
+    if (last_at === -1 || last_at < q.length - 1 - max_chars) {
+        return false;  // No special character, or too far back
+    }
+
+    // Only match if the special character follows a space,
+    // various punctuation, or is at the beginning of the string.
+    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
+        return false;
+    }
+
+    return true;
+}
+
 exports.split_at_cursor = function (query, input) {
     var cursor = input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
@@ -204,20 +224,11 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     if (this.options.completions.mention && current_token[0] === '@') {
-        // Don't autocomplete more than this many characters.
-        var max_chars = 30;
-        var last_at = q.lastIndexOf('@');
-        if (last_at === -1 || last_at < q.length - 1 - max_chars) {
-            return false;  // No '@', or too far back
-        }
-
-        // Only match if the @ follows a space, various punctuation,
-        // or is at the beginning of the string.
-        if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
+        if (!autocomplete_checks(q, '@')) {
             return false;
         }
 
-        current_token = q.substring(last_at + 1);
+        current_token = q.substring(q.lastIndexOf('@') + 1);
         if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
             return false;
         }
@@ -241,27 +252,19 @@ exports.compose_content_begins_typeahead = function (query) {
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {
-        // Don't autocomplete more than this many characters.
-        var max_chars = 30;
-        var last_at = q.lastIndexOf('#');
-        if (last_at === -1 || last_at < q.length-1 - max_chars) {
-            return false;  // No '#', or too far back
-        }
-
-        // Only match if the @ follows a space, various punctuation,
-        // or is at the beginning of the string.
-        if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at-1]) === -1) {
+        if (!autocomplete_checks(q, '#')) {
             return false;
         }
 
-        current_token = q.substring(last_at + 1);
-        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+        current_token = q.substring(q.lastIndexOf('#') + 1);
+        if (current_token.length < 1) {
             return false;
         }
 
         this.completing = 'stream';
         this.token = current_token.substring(current_token.indexOf("#")+1);
-        return page_params.stream_data;   //fixme
+
+        return stream_data.subscribed_streams();
     }
 };
 
@@ -295,8 +298,8 @@ exports.content_typeahead_selected = function (item) {
         $(document).trigger('usermention_completed.zulip', {mentioned: item});
     } else if (this.completing === 'stream') {
         beginning = (beginning.substring(0, beginning.length - this.token.length-1)
-                + '#**' + item.full_name + '** ');
-        $(document).trigger('streamname_completed.zulip', {stream: item});
+                + '#**' + item + '** ');
+        $(document).trigger('streamname_completed.zulip', {stream: item});  // todo: not handling now
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text

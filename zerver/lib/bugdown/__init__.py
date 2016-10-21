@@ -902,6 +902,31 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             el.text = "@%s" % (name,)
             return el
 
+
+class StreamPattern(markdown.inlinepatterns.Pattern):
+
+    def check_stream(self, name):
+        # type: (Match[text_type]) -> bool
+        if db_data is None:
+            return
+        return name in db_data['stream_names']
+
+    def handleMatch(self, m):
+        # type: (Match[text_type]) -> Optional[Element]
+
+        name = m.group(2)
+
+        if current_message:
+            if not self.check_stream(name):
+                return
+            el = markdown.util.etree.Element('a')
+            el.set('class', 'stream')
+            # fixme: maybe there should be a better way to get link
+            el.set('href', '/#narrow/stream/{stream_name}'.format(stream_name=name))
+            el.text = '#{stream_name}'.format(stream_name=name)
+            return el
+
+
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
         # type: (Iterable[text_type]) -> Iterable[text_type]
@@ -994,6 +1019,7 @@ class Bugdown(markdown.Extension):
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
             '>avatar')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
+        md.inlinePatterns.add('stream', StreamPattern(r'(?<![^\s\'\"\(,:<])#(?:\*\*([^\s]+)\*\*|(\w+))'), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
             u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
@@ -1173,7 +1199,7 @@ def log_bugdown_error(msg):
 def do_convert(content, realm_domain=None, message=None, possible_words=None):
     # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
-    from zerver.models import get_active_user_dicts_in_realm, UserProfile
+    from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
     if message:
         maybe_update_realm_filters(message.get_realm().domain)
@@ -1199,7 +1225,8 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
         db_data = {'possible_words':    possible_words,
                    'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
-                   'emoji':             message.get_realm().get_emoji()}
+                   'emoji':             message.get_realm().get_emoji(),
+                   'stream_names':      get_active_streams(message.get_realm()).values_list('name', flat=True)}
 
     try:
         # Spend at most 5 seconds rendering.
