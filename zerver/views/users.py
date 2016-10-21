@@ -35,23 +35,12 @@ def deactivate_user_backend(request, user_profile, email):
 
 def deactivate_user_own_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-<<<<<<< HEAD
     admins = set(user_profile.realm.get_admin_users())
 
     if user_profile.is_realm_admin and len(admins) == 1:
         return json_error(_('Cannot deactivate the only admin'))
     do_deactivate_user(user_profile)
     return json_success({})
-=======
-    # print(get_admin_users)
-    admins = set(user_profile.realm.get_admin_users())
-
-    if user_profile.can_admin_user(user_profile) and len(admins) == 1:
-        return json_error(_('Cannot deactivate the only admin'))
-    else:
-        do_deactivate_user(user_profile)
-        return json_success({})
->>>>>>> d952358ecd5ec494bb33ac7fc58f532f7aa31eff
 
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
