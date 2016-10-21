@@ -15,7 +15,7 @@ instrument_tornado_ioloop()
 
 from django.core.management.base import BaseCommand, CommandError
 from django.http import HttpRequest, HttpResponse
-from optparse import make_option
+from argparse import ArgumentParser
 import os
 import sys
 import tornado.web
@@ -46,14 +46,15 @@ if settings.USING_RABBITMQ:
     from zerver.lib.queue import get_queue_client
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--nokeepalive', action='store_true',
+    def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
+        parser.add_argument('--nokeepalive', action='store_true',
             dest='no_keep_alive', default=False,
-            help="Tells Tornado to NOT keep alive http connections."),
-        make_option('--noxheaders', action='store_false',
+            help="Tells Tornado to NOT keep alive http connections.")
+        parser.add_argument('--noxheaders', action='store_false',
             dest='xheaders', default=True,
-            help="Tells Tornado to NOT override remote IP with X-Real-IP."),
-    )
+            help="Tells Tornado to NOT override remote IP with X-Real-IP.")
+
     help = "Starts a Tornado Web server wrapping Django."
     args = '[optional port number or ipaddr:port]\n  (use multiple ports to start multiple servers)'
 

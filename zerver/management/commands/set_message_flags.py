@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from typing import Any, Iterable
 
-from optparse import make_option
+from argparse import ArgumentParser
 import logging
 import sys
 
@@ -18,29 +18,29 @@ class Command(BaseCommand):
     help = """Sets user message flags. Used internally by actions.py. Marks all
     Expects a comma-delimited list of user message ids via stdin, and an EOF to terminate."""
 
-    option_list = BaseCommand.option_list + (
-        make_option('-r', '--for-real',
+    def add_arguments(self, parser):
+        # type: (ArgumentParser) -> None
+        parser.add_argument('-r', '--for-real',
                     dest='for_real',
                     action='store_true',
                     default=False,
-                    help="Actually change message flags. Default is a dry run."),
-        make_option('-f', '--flag',
+                    help="Actually change message flags. Default is a dry run.")
+        parser.add_argument('-f', '--flag',
                     dest='flag',
-                    type='string',
-                    help="The flag to add of remove"),
-        make_option('-o', '--op',
+                    type=str,
+                    help="The flag to add of remove")
+        parser.add_argument('-o', '--op',
                     dest='op',
-                    type='string',
-                    help="The operation to do: 'add' or 'remove'"),
-        make_option('-u', '--until',
+                    type=str,
+                    help="The operation to do: 'add' or 'remove'")
+        parser.add_argument('-u', '--until',
                     dest='all_until',
-                    type='string',
-                    help="Mark all messages <= specific usermessage id"),
-        make_option('-m', '--email',
+                    type=str,
+                    help="Mark all messages <= specific usermessage id")
+        parser.add_argument('-m', '--email',
                     dest='email',
-                    type='string',
-                    help="Email to set messages for"),
-        )
+                    type=str,
+                    help="Email to set messages for")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
