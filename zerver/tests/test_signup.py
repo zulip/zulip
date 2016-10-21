@@ -14,7 +14,6 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    create_stream_if_needed,
     set_default_streams,
     do_change_is_admin
 )
@@ -184,11 +183,11 @@ class LoginTest(ZulipTestCase):
     def test_register(self):
         # type: () -> None
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in range(40)]
-        for stream in streams:
-            create_stream_if_needed(realm, stream)
+        stream_names = ["stream_%s" % i for i in range(40)]
+        for stream_name in stream_names:
+            self.make_stream(stream_name, realm=realm)
 
-        set_default_streams(realm, streams)
+        set_default_streams(realm, stream_names)
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
@@ -335,7 +334,7 @@ class InviteUserTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         private_stream_name = "Secret"
-        (stream, _) = create_stream_if_needed(user_profile.realm, private_stream_name, invite_only=True)
+        self.make_stream(private_stream_name, invite_only=True)
         self.subscribe_to_stream(user_profile.email, private_stream_name)
         public_msg_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                                           "Public topic", "Public message")
