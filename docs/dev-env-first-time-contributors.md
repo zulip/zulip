@@ -129,7 +129,7 @@ Installed the plugin 'vagrant-lxc (1.2.1)'!
 ```
 
 If you encounter an error when trying to install the vagrant-lxc plugin, [see
-this](#nomethoderror-when-installing-vagrant-lxc-plugin-ubuntu-1604).
+this](#nomethoderror-when-installing-vagrant-lxc-plugin-ubuntu-16-04).
 
 ##### 4. Configure sudo to be passwordless
 

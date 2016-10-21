@@ -110,7 +110,7 @@ contributing!
 [cla]: https://opensource.dropbox.com/cla/
 [dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
 [doc]: https://zulip.readthedocs.io/
-[doc-commit-style]: http://zulip.readthedocs.io/en/latest/code-style.html#commit-messages
+[doc-commit-style]: http://zulip.readthedocs.io/en/latest/version-control.html#commit-messages
 [doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
 [doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [doc-test]: http://zulip.readthedocs.io/en/latest/testing.html

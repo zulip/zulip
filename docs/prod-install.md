@@ -74,7 +74,7 @@ These settings include:
   mechanism by uncommenting its corresponding line, and then also do
   any additional configuration required for that backend as documented
   in the `settings.py` file.  See the [section on
-  Authentication](prod-auth-first-login.html) for more detail on the
+  Authentication](prod-authentication-methods.html) for more detail on the
   available authentication backends and how to configure them.
 
 - `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:

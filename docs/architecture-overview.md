@@ -135,7 +135,7 @@ from outside.
     sent to the Tornado server. These are requests to the real-time push
     system, because the user's web browser sets up a long-lived TCP
     connection with Tornado to serve as [a channel for push
-    notifications](https://en.wikipedia.org/wiki/Push_technology#Long_Polling).
+    notifications](https://en.wikipedia.org/wiki/Push_technology#Long_polling).
     nginx gets the hostname for the Tornado server via
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`.
 -   Requests to all other paths are sent to the Django app via the UNIX

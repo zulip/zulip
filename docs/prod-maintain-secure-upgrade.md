@@ -24,7 +24,7 @@ You also have the option of creating your own release tarballs from a
 copy of the zulip.git repository using
 `tools/build-release-tarball`. And, starting with Zulip version 1.4,
 you can upgrade Zulip [to a version in a Git repository
-directly](#upgrade-from-a-git-repository).
+directly](#upgrading-from-a-git-repository).
 
 Next, run as root:
 
