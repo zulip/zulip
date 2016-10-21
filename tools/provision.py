@@ -44,6 +44,7 @@ else:
 
 TRAVIS = "--travis" in sys.argv
 PRODUCTION_TRAVIS = "--production-travis" in sys.argv
+FORCE = "--force" in sys.argv
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
@@ -186,8 +187,16 @@ def main():
         run(["scripts/setup/configure-rabbitmq"])
         run(["tools/setup/postgres-init-dev-db"])
         run(["tools/do-destroy-rebuild-database"])
-        run(["tools/setup/postgres-init-test-db"])
-        run(["tools/do-destroy-rebuild-test-database"])
+        # Need to set up Django before using is_template_database_current.
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+        import django
+        django.setup()
+        from zerver.lib.test_fixtures import is_template_database_current
+        if FORCE or not is_template_database_current():
+            run(["tools/setup/postgres-init-test-db"])
+            run(["tools/do-destroy-rebuild-test-database"])
+        else:
+            print("No need to regenerate the test DB.")
         run(["python", "./manage.py", "compilemessages"])
 
     # Here we install nvm, node, and npm.
