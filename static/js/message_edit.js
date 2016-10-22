@@ -140,12 +140,6 @@ function edit_message (row, raw_content) {
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
     }
 
-    // If we allow editing at all, give them at least 10 seconds to do it.
-    // If you change this number also change edit_limit_buffer in
-    // zerver.views.messages.update_message_backend
-    var min_seconds_to_edit = 10;
-    seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
-
     // Add tooltip
     if (page_params.realm_message_content_edit_limit_seconds > 0) {
         row.find('.message-edit-timer-control-group').show();
@@ -160,11 +154,16 @@ function edit_message (row, raw_content) {
     // add timer
     if (can_edit_content &&
         page_params.realm_message_content_edit_limit_seconds > 0) {
-        var timer_row = row.find('.message_edit_countdown_timer');
+        // Give them at least 10 seconds.
+        // If you change this number also change edit_limit_buffer in
+        // zerver.views.messages.update_message_backend
+        var min_seconds_to_edit = 10;
+        seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
         // I believe these need to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
         // can change out from under us
+        var timer_row = row.find('.message_edit_countdown_timer');
         var message_content_row = row.find('textarea.message_edit_content');
         var message_topic_row, message_topic_propagate_row;
         if (message.type === 'stream') {
@@ -206,7 +205,6 @@ function edit_message (row, raw_content) {
     // Scroll to keep the message content in the same place
     var edit_top = edit_row.find('.message_edit_content')[0]
         .getBoundingClientRect().top;
-
     var scroll_by = edit_top - content_top + 5 /* border and padding */;
     edit_obj.scrolled_by = scroll_by;
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
