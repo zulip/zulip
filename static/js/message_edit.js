@@ -149,10 +149,14 @@ function edit_message (row, raw_content) {
     // zerver.views.messages.update_message_backend
     var seconds_left_buffer = 5;
     var editability = get_editability(message, seconds_left_buffer);
+    var is_editable = (editability === message_edit.editability_types.TOPIC_ONLY ||
+                       editability === message_edit.editability_types.FULL);
 
     var form = $(templates.render(
         'message_edit_form',
         {is_stream: (message.type === 'stream'),
+         is_editable: is_editable,
+         has_been_editable: (editability !== editability_types.NO),
          topic: message.subject,
          content: raw_content,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
@@ -163,8 +167,18 @@ function edit_message (row, raw_content) {
 
     form.keydown(_.partial(handle_edit_keydown, false));
 
-    if (editability === editability_types.TOPIC_ONLY) {
-        row.find('textarea.message_edit_content').attr("disabled","disabled");
+    if (editability === editability_types.NO) {
+        row.find('textarea.message_edit_content').attr("disabled", "disabled");
+        row.find('input.message_edit_topic').attr("disabled", "disabled");
+    } else if (editability === editability_types.NO_LONGER) {
+        // You can currently only reach this state in non-streams. If that
+        // changes (e.g. if we stop allowing topics to be modified forever
+        // in streams), then we'll need to disable
+        // row.find('input.message_edit_topic') as well.
+        row.find('textarea.message_edit_content').attr("disabled", "disabled");
+        row.find('.message_edit_countdown_timer').text(i18n.t("View source"));
+    } else if (editability === editability_types.TOPIC_ONLY) {
+        row.find('textarea.message_edit_content').attr("disabled", "disabled");
         // Hint why you can edit the topic but not the message content
         row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
@@ -172,7 +186,8 @@ function edit_message (row, raw_content) {
     }
 
     // Add tooltip
-    if (page_params.realm_message_content_edit_limit_seconds > 0) {
+    if (editability !== editability_types.NO &&
+        page_params.realm_message_content_edit_limit_seconds > 0) {
         row.find('.message-edit-timer-control-group').show();
         row.find('#message_edit_tooltip').tooltip({
             animation: false,
@@ -229,7 +244,9 @@ function edit_message (row, raw_content) {
     }
 
     var edit_row = row.find(".message_edit");
-    if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
+    if (!is_editable) {
+        edit_row.find(".message_edit_close").focus();
+    } else if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
         editability === editability_types.TOPIC_ONLY) {
         edit_row.find(".message_edit_topic").focus();
     } else {
