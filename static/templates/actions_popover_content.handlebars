@@ -1,6 +1,6 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover pull-right">
-  {{#if can_edit_message}}
+  {{#if is_editable}}
   <li>
     <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
       <i class="icon-vector-pencil"></i> {{t "Edit" }}

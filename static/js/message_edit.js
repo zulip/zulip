@@ -2,6 +2,42 @@ var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};
 
+var editability_types = {
+    NO: 1,
+    NO_LONGER: 2,
+    // Note: TOPIC_ONLY does not include stream messages with no topic sent
+    // by someone else. You can edit the topic of such a message by editing
+    // the topic of the whole recipient_row it appears in, but you can't
+    // directly edit the topic of such a message.
+    // Similar story for messages whose topic you can change only because
+    // you are an admin.
+    TOPIC_ONLY: 3,
+    FULL: 4
+};
+exports.editability_types = editability_types;
+
+function get_editability (message, edit_limit_seconds_buffer) {
+    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
+    if (!message || !message.sent_by_me || message.local_id !== undefined ||
+        !page_params.realm_allow_message_editing) {
+        return editability_types.NO;
+    }
+    if (page_params.realm_message_content_edit_limit_seconds === 0) {
+        return editability_types.FULL;
+    }
+
+    var now = new XDate();
+    if (page_params.realm_message_content_edit_limit_seconds + edit_limit_seconds_buffer +
+        now.diffSeconds(message.timestamp * 1000) > 0) {
+        return editability_types.FULL;
+    }
+    // time's up!
+    if (message.type === 'stream') {
+        return editability_types.TOPIC_ONLY;
+    }
+    return editability_types.NO_LONGER;
+}
+exports.get_editability = get_editability;
 
 // Returns true if the edit task should end.
 exports.save = function (row, from_topic_edited_only) {
@@ -112,11 +148,7 @@ function edit_message (row, raw_content) {
     // If you change this number also change edit_limit_buffer in
     // zerver.views.messages.update_message_backend
     var seconds_left_buffer = 5;
-    var now = new XDate();
-    var seconds_left = page_params.realm_message_content_edit_limit_seconds +
-        now.diffSeconds(message.timestamp * 1000);
-    var can_edit_content = (page_params.realm_message_content_edit_limit_seconds === 0) ||
-        (seconds_left + seconds_left_buffer > 0);
+    var editability = get_editability(message, seconds_left_buffer);
 
     var form = $(templates.render(
         'message_edit_form',
@@ -131,10 +163,10 @@ function edit_message (row, raw_content) {
 
     form.keydown(_.partial(handle_edit_keydown, false));
 
-    if (!can_edit_content) {
+    if (editability === editability_types.TOPIC_ONLY) {
         row.find('textarea.message_edit_content').attr("disabled","disabled");
         row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
-    } else {
+    } else if (editability === editability_types.FULL) {
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
     }
 
@@ -149,12 +181,15 @@ function edit_message (row, raw_content) {
     }
 
     // add timer
-    if (can_edit_content &&
+    if (editability === editability_types.FULL &&
         page_params.realm_message_content_edit_limit_seconds > 0) {
         // Give them at least 10 seconds.
         // If you change this number also change edit_limit_buffer in
         // zerver.views.messages.update_message_backend
         var min_seconds_to_edit = 10;
+        var now = new XDate();
+        var seconds_left = page_params.realm_message_content_edit_limit_seconds +
+            now.diffSeconds(message.timestamp * 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
         // I believe these need to be defined outside the countdown_timer, since
@@ -180,7 +215,7 @@ function edit_message (row, raw_content) {
                     message_topic_row.attr("disabled","disabled");
                     message_topic_propagate_row.hide();
                 }
-                // We don't go directly to "Topic editing only" state (with an active Save button),
+                // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
@@ -194,7 +229,7 @@ function edit_message (row, raw_content) {
 
     var edit_row = row.find(".message_edit");
     if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
-        !can_edit_content) {
+        editability === editability_types.TOPIC_ONLY) {
         edit_row.find(".message_edit_topic").focus();
     } else {
         edit_row.find(".message_edit_content").focus();
