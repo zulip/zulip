@@ -60,6 +60,14 @@ exports.toggle_actions_popover = function (element, id) {
         var editability = message_edit.get_editability(message);
         var is_editable = (editability === message_edit.editability_types.TOPIC_ONLY ||
                            editability === message_edit.editability_types.FULL);
+        var editability_menu_item;
+        if (editability === message_edit.editability_types.FULL) {
+            editability_menu_item = i18n.t("Edit");
+        } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
+            editability_menu_item = i18n.t("Edit Topic");
+        } else {
+            editability_menu_item = i18n.t("View Source");
+        }
         var can_mute_topic =
                 message.stream &&
                 message.subject &&
@@ -72,6 +80,7 @@ exports.toggle_actions_popover = function (element, id) {
         var args = {
             message: message,
             is_editable: is_editable,
+            editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),

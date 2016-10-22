@@ -125,6 +125,12 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+    $("body").on("click", ".message_edit_close", function (e) {
+        var row = $(this).closest(".message_row");
+        message_edit.end(row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
 
     // RECIPIENT BARS
 

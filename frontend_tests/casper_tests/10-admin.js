@@ -351,7 +351,7 @@ casper.then(function () {
 //     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 // });
 
-// Check that edit link no longer appears in the popover menu
+// Check that edit link has changed to "View Source" in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
 casper.then(function () {
     casper.waitForSelector('.message_row');
@@ -361,7 +361,9 @@ casper.then(function () {
         var msg = $('#zhome .message_row:last');
         msg.find('.info').click();
     });
-    casper.test.assertDoesntExist('.popover_edit_message');
+    casper.waitUntilVisible('.popover_edit_message', function () {
+        casper.test.assertSelectorHasText('.popover_edit_message', 'View Source');
+    });
     casper.evaluate(function () {
         var msg = $('#zhome .message_row:last');
         msg.find('.info').click();
