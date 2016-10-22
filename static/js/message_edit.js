@@ -2,6 +2,42 @@ var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};
 
+var editability_types = {
+    NO: 1,
+    NO_LONGER: 2,
+    // Note: TOPIC_ONLY does not include stream messages with no topic sent
+    // by someone else. You can edit the topic of such a message by editing
+    // the topic of the whole recipient_row it appears in, but you can't
+    // directly edit the topic of such a message.
+    // Similar story for messages whose topic you can change only because
+    // you are an admin.
+    TOPIC_ONLY: 3,
+    FULL: 4
+};
+exports.editability_types = editability_types;
+
+function get_editability (message, edit_limit_seconds_buffer) {
+    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
+    if (!message || !message.sent_by_me || message.local_id !== undefined ||
+        !page_params.realm_allow_message_editing) {
+        return editability_types.NO;
+    }
+    if (page_params.realm_message_content_edit_limit_seconds === 0) {
+        return editability_types.FULL;
+    }
+
+    var now = new XDate();
+    if (page_params.realm_message_content_edit_limit_seconds + edit_limit_seconds_buffer +
+        now.diffSeconds(message.timestamp * 1000) > 0) {
+        return editability_types.FULL;
+    }
+    // time's up!
+    if (message.type === 'stream') {
+        return editability_types.TOPIC_ONLY;
+    }
+    return editability_types.NO_LONGER;
+}
+exports.get_editability = get_editability;
 
 // Returns true if the edit task should end.
 exports.save = function (row, from_topic_edited_only) {
@@ -102,19 +138,6 @@ function edit_message (row, raw_content) {
         .getBoundingClientRect().top;
 
     var message = current_msg_list.get(rows.id(row));
-    var edit_row = row.find(".message_edit");
-    var form = $(templates.render('message_edit_form',
-                                  {is_stream: message.is_stream,
-                                   topic: message.subject,
-                                   content: raw_content,
-                                   minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
-
-    var edit_obj = {form: form, raw_content: raw_content};
-    var original_topic = message.subject;
-
-    current_msg_list.show_edit_message(row, edit_obj);
-
-    form.keydown(_.partial(handle_edit_keydown, false));
 
     // We potentially got to this function by clicking a button that implied the
     // user would be able to edit their message.  Give a little bit of buffer in
@@ -125,67 +148,105 @@ function edit_message (row, raw_content) {
     // If you change this number also change edit_limit_buffer in
     // zerver.views.messages.update_message_backend
     var seconds_left_buffer = 5;
+    var editability = get_editability(message, seconds_left_buffer);
+    var is_editable = (editability === message_edit.editability_types.TOPIC_ONLY ||
+                       editability === message_edit.editability_types.FULL);
 
-    var now = new XDate();
-    var seconds_left = page_params.realm_message_content_edit_limit_seconds +
-        now.diffSeconds(message.timestamp * 1000);
-    var can_edit_content = (page_params.realm_message_content_edit_limit_seconds === 0) ||
-        (seconds_left + seconds_left_buffer > 0);
-    if (!can_edit_content) {
-        row.find('textarea.message_edit_content').attr("disabled","disabled");
-    }
+    var form = $(templates.render(
+        'message_edit_form',
+        {is_stream: (message.type === 'stream'),
+         is_editable: is_editable,
+         has_been_editable: (editability !== editability_types.NO),
+         topic: message.subject,
+         content: raw_content,
+         minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
-    // If we allow editing at all, give them at least 10 seconds to do it.
-    // If you change this number also change edit_limit_buffer in
-    // zerver.views.messages.update_message_backend
-    var min_seconds_to_edit = 10;
-    seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
-
-    if (page_params.realm_message_content_edit_limit_seconds > 0) {
-        row.find('.message-edit-timer-control-group').show();
-        $('#message_edit_tooltip').tooltip({ animation: false, placement: 'left',
-                                             template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner message-edit-tooltip-inner"></div></div>'});
-        var timer_row = row.find('.message_edit_countdown_timer');
-        if (can_edit_content) {  // Add a visual timer
-            // I believe these need to be defined outside the countdown_timer, since
-            // row just refers to something like the currently selected message, and
-            // can change out from under us
-            var message_content_row = row.find('textarea.message_edit_content');
-            var message_topic_row, message_topic_propagate_row;
-            if (message.is_stream) {
-                message_topic_row = row.find('input.message_edit_topic');
-                message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
-            }
-            var message_save_row = row.find('button.message_edit_save');
-            // Do this right away, rather than waiting for the timer to do its first update,
-            // since otherwise there is a noticeable lag
-            timer_row.text(timer_text(seconds_left));
-            var countdown_timer = setInterval(function () {
-                if (--seconds_left <= 0) {
-                    clearInterval(countdown_timer);
-                    message_content_row.attr("disabled","disabled");
-                    if (message.is_stream) {
-                        message_topic_row.attr("disabled","disabled");
-                        message_topic_propagate_row.hide();
-                    }
-                    // We don't go directly to "Topic editing only" state (with an active Save button),
-                    // since it isn't clear what to do with the half-finished edit. It's nice to keep
-                    // the half-finished edit around so that they can copy-paste it, but we don't want
-                    // people to think "Save" will save the half-finished edit.
-                    message_save_row.addClass("disabled");
-                    timer_row.text(i18n.t("Time's up!"));
-                } else {
-                    timer_row.text(timer_text(seconds_left));
-                }
-            }, 1000);
-        } else { // otherwise, give a hint as to why you can edit the topic but not the message content
-            timer_row.text(i18n.t("Topic editing only"));
-        }
-    }
-
+    var edit_obj = {form: form, raw_content: raw_content};
+    current_msg_list.show_edit_message(row, edit_obj);
     currently_editing_messages[message.id] = edit_obj;
-    if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
-        !can_edit_content) {
+
+    form.keydown(_.partial(handle_edit_keydown, false));
+
+    if (editability === editability_types.NO) {
+        row.find('textarea.message_edit_content').attr("disabled","disabled");
+        row.find('input.message_edit_topic').attr("disabled","disabled");
+    } else if (editability === editability_types.NO_LONGER) {
+        // You can currently only reach this state in non-streams. If that
+        // changes (e.g. if we stop allowing topics to be modified forever
+        // in streams), then we'll need to disable
+        // row.find('input.message_edit_topic') as well.
+        row.find('textarea.message_edit_content').attr("disabled","disabled");
+        row.find('.message_edit_countdown_timer').text(i18n.t("View source"));
+    } else if (editability === editability_types.TOPIC_ONLY) {
+        row.find('textarea.message_edit_content').attr("disabled","disabled");
+        row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
+    } else if (editability === editability_types.FULL) {
+        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
+    }
+
+    // add tooltip
+    if (editability !== editability_types.NO &&
+        page_params.realm_message_content_edit_limit_seconds > 0) {
+        row.find('.message-edit-timer-control-group').show();
+        row.find('#message_edit_tooltip').tooltip({
+            animation: false, placement: 'left',
+            template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
+                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>'
+        });
+    }
+
+    // add timer
+    if (editability === editability_types.FULL &&
+        page_params.realm_message_content_edit_limit_seconds > 0) {
+        // Give them at least 10 seconds.
+        // If you change this number also change edit_limit_buffer in
+        // zerver.views.messages.update_message_backend
+        var min_seconds_to_edit = 10;
+        var now = new XDate();
+        var seconds_left = page_params.realm_message_content_edit_limit_seconds +
+            now.diffSeconds(message.timestamp * 1000);
+        seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
+
+        // I believe these need to be defined outside the countdown_timer, since
+        // row just refers to something like the currently selected message, and
+        // can change out from under us
+        var timer_row = row.find('.message_edit_countdown_timer');
+        var message_content_row = row.find('textarea.message_edit_content');
+        var message_topic_row, message_topic_propagate_row;
+        if (message.type === 'stream') {
+            message_topic_row = row.find('input.message_edit_topic');
+            message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
+        }
+        var message_save_row = row.find('button.message_edit_save');
+
+        // Do this right away, rather than waiting for the timer to do its first update,
+        // since otherwise there is a noticeable lag
+        timer_row.text(timer_text(seconds_left));
+        var countdown_timer = setInterval(function () {
+            if (--seconds_left <= 0) {
+                clearInterval(countdown_timer);
+                message_content_row.attr("disabled","disabled");
+                if (message.type === 'stream') {
+                    message_topic_row.attr("disabled","disabled");
+                    message_topic_propagate_row.hide();
+                }
+                // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
+                // since it isn't clear what to do with the half-finished edit. It's nice to keep
+                // the half-finished edit around so that they can copy-paste it, but we don't want
+                // people to think "Save" will save the half-finished edit.
+                message_save_row.addClass("disabled");
+                timer_row.text(i18n.t("Time's up!"));
+            } else {
+                timer_row.text(timer_text(seconds_left));
+            }
+        }, 1000);
+    }
+
+    var edit_row = row.find(".message_edit");
+    if (!is_editable) {
+        edit_row.find(".message_edit_close").focus();
+    } else if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
+        editability === editability_types.TOPIC_ONLY) {
         edit_row.find(".message_edit_topic").focus();
     } else {
         edit_row.find(".message_edit_content").focus();
@@ -194,21 +255,18 @@ function edit_message (row, raw_content) {
     // Scroll to keep the message content in the same place
     var edit_top = edit_row.find('.message_edit_content')[0]
         .getBoundingClientRect().top;
-
     var scroll_by = edit_top - content_top + 5 /* border and padding */;
     edit_obj.scrolled_by = scroll_by;
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
+        var original_topic = message.subject;
         var topic_input = edit_row.find(".message_edit_topic");
         topic_input.keyup( function () {
             var new_topic = topic_input.val();
             row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
         });
     }
-
-    composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
-
 }
 
 function start_edit_maintaining_scroll(row, content) {

@@ -22,14 +22,20 @@
     </div>
     <div class="control-group">
         <div class="controls edit-controls">
+            {{#if is_editable}}
             <button type="button" class="message_edit_save btn btn-primary btn-small">{{t "Save" }}</button>
             <button type="button" class="message_edit_cancel btn btn-default btn-small">{{t "Cancel" }}</button>
+            {{else}}
+            <button type="button" class="message_edit_close btn btn-primary btn-small">{{t "Close" }}</button>
+            {{/if}}
+            {{#if has_been_editable}}
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
                 <span><i id="message_edit_tooltip" class="message_edit_tooltip icon-vector-question-sign" data-toggle="tooltip"
                          title="This organization is configured to restrict editing of message content to {{minutes_to_edit}} minutes after it is sent."></i>
                 </span>
             </div>
+            {{/if}}
         </div>
     </div>
     <div class="alert alert-error edit_error hide"></div>
