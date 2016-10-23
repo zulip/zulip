@@ -585,7 +585,8 @@ have tools in `management/` that essentially export Zulip data to the
 file system.
 
 `export_single_user.py` exports the message history and realm-public
-metadata for a single Zulip user.
+metadata for a single Zulip user (including that user's *received*
+messages as well as their sent messages).
 
 A good overview of the process for exporting a single realm when
 moving a realm to a new server (without moving a full database dump)
