@@ -606,6 +606,3 @@ with no UI in the Administration page is `./manage.py realm_filters`,
 which allows you to configure certain patterns in messages to be
 automatically linkified, e.g., whenever someone mentions "T1234", it
 could be auto-linkified to ticket 1234 in your team's Trac instance.
-
-
-Next: [Remote User SSO Authentication.](prod-remote-user-sso-auth.html)
