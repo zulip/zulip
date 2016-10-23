@@ -150,9 +150,9 @@ module you're testing, like so:
 >     var assert = require('assert');
 >     var foobar = require('js/foobar.js');
 
-(If the module you're testing depends on other modules, or modifies
-global state, you need to also read [the next
-section](handling-dependencies_).)
+And of course, if the module you're testing depends on other modules,
+or modifies global state, you may need to review the
+[section on handling dependencies](#handling-dependencies-in-unit-tests) above.
 
 Define and call some tests using the [assert
 module](http://nodejs.org/api/assert.html). Note that for "equal"
