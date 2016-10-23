@@ -127,8 +127,6 @@ function edit_message (row, raw_content) {
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
     var edit_obj = {form: form, raw_content: raw_content};
-    var original_topic = message.subject;
-
     currently_editing_messages[message.id] = edit_obj;
     current_msg_list.show_edit_message(row, edit_obj);
 
@@ -204,6 +202,7 @@ function edit_message (row, raw_content) {
 
     if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
         var topic_input = edit_row.find(".message_edit_topic");
+        var original_topic = message.subject;
         topic_input.keyup( function () {
             var new_topic = topic_input.val();
             row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
