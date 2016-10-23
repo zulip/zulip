@@ -134,6 +134,8 @@ function edit_message (row, raw_content) {
 
     if (!can_edit_content) {
         row.find('textarea.message_edit_content').attr("disabled","disabled");
+        // Hint why you can edit the topic but not the message content
+        row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
     } else {
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
     }
@@ -181,8 +183,6 @@ function edit_message (row, raw_content) {
                     timer_row.text(timer_text(seconds_left));
                 }
             }, 1000);
-        } else { // otherwise, give a hint as to why you can edit the topic but not the message content
-            timer_row.text(i18n.t("Topic editing only"));
         }
     }
 
