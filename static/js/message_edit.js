@@ -157,41 +157,42 @@ function edit_message (row, raw_content) {
         });
     }
 
-    if (page_params.realm_message_content_edit_limit_seconds > 0) {
+    // add timer
+    if (can_edit_content &&
+        page_params.realm_message_content_edit_limit_seconds > 0) {
         var timer_row = row.find('.message_edit_countdown_timer');
-        if (can_edit_content) {  // Add a visual timer
-            // I believe these need to be defined outside the countdown_timer, since
-            // row just refers to something like the currently selected message, and
-            // can change out from under us
-            var message_content_row = row.find('textarea.message_edit_content');
-            var message_topic_row, message_topic_propagate_row;
-            if (message.type === 'stream') {
-                message_topic_row = row.find('input.message_edit_topic');
-                message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
-            }
-            var message_save_row = row.find('button.message_edit_save');
-            // Do this right away, rather than waiting for the timer to do its first update,
-            // since otherwise there is a noticeable lag
-            timer_row.text(timer_text(seconds_left));
-            var countdown_timer = setInterval(function () {
-                if (--seconds_left <= 0) {
-                    clearInterval(countdown_timer);
-                    message_content_row.attr("disabled","disabled");
-                    if (message.type === 'stream') {
-                        message_topic_row.attr("disabled","disabled");
-                        message_topic_propagate_row.hide();
-                    }
-                    // We don't go directly to "Topic editing only" state (with an active Save button),
-                    // since it isn't clear what to do with the half-finished edit. It's nice to keep
-                    // the half-finished edit around so that they can copy-paste it, but we don't want
-                    // people to think "Save" will save the half-finished edit.
-                    message_save_row.addClass("disabled");
-                    timer_row.text(i18n.t("Time's up!"));
-                } else {
-                    timer_row.text(timer_text(seconds_left));
-                }
-            }, 1000);
+
+        // I believe these need to be defined outside the countdown_timer, since
+        // row just refers to something like the currently selected message, and
+        // can change out from under us
+        var message_content_row = row.find('textarea.message_edit_content');
+        var message_topic_row, message_topic_propagate_row;
+        if (message.type === 'stream') {
+            message_topic_row = row.find('input.message_edit_topic');
+            message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
         }
+        var message_save_row = row.find('button.message_edit_save');
+        // Do this right away, rather than waiting for the timer to do its first update,
+        // since otherwise there is a noticeable lag
+        timer_row.text(timer_text(seconds_left));
+        var countdown_timer = setInterval(function () {
+            if (--seconds_left <= 0) {
+                clearInterval(countdown_timer);
+                message_content_row.attr("disabled","disabled");
+                if (message.type === 'stream') {
+                    message_topic_row.attr("disabled","disabled");
+                    message_topic_propagate_row.hide();
+                }
+                // We don't go directly to "Topic editing only" state (with an active Save button),
+                // since it isn't clear what to do with the half-finished edit. It's nice to keep
+                // the half-finished edit around so that they can copy-paste it, but we don't want
+                // people to think "Save" will save the half-finished edit.
+                message_save_row.addClass("disabled");
+                timer_row.text(i18n.t("Time's up!"));
+            } else {
+                timer_row.text(timer_text(seconds_left));
+            }
+        }, 1000);
     }
 
     var edit_row = row.find(".message_edit");
