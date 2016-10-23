@@ -146,10 +146,18 @@ function edit_message (row, raw_content) {
     var min_seconds_to_edit = 10;
     seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
+    // Add tooltip
     if (page_params.realm_message_content_edit_limit_seconds > 0) {
         row.find('.message-edit-timer-control-group').show();
-        $('#message_edit_tooltip').tooltip({ animation: false, placement: 'left',
-                                             template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner message-edit-tooltip-inner"></div></div>'});
+        $('#message_edit_tooltip').tooltip({
+            animation: false,
+            placement: 'left',
+            template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
+                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>'
+        });
+    }
+
+    if (page_params.realm_message_content_edit_limit_seconds > 0) {
         var timer_row = row.find('.message_edit_countdown_timer');
         if (can_edit_content) {  // Add a visual timer
             // I believe these need to be defined outside the countdown_timer, since
