@@ -149,7 +149,7 @@ function edit_message (row, raw_content) {
     // Add tooltip
     if (page_params.realm_message_content_edit_limit_seconds > 0) {
         row.find('.message-edit-timer-control-group').show();
-        $('#message_edit_tooltip').tooltip({
+        row.find('#message_edit_tooltip').tooltip({
             animation: false,
             placement: 'left',
             template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
