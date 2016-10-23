@@ -2739,7 +2739,11 @@ def gather_subscriptions_helper(user_profile):
             unsubscribed.append(stream_dict)
 
     all_streams_id_set = set(all_streams_id)
-    never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
+    # Listing public streams are disabled for Zephyr mirroring realms.
+    if user_profile.realm.is_zephyr_mirror_realm:
+        never_subscribed_stream_ids = []
+    else:
+        never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
     never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
                                 if ns_stream_dict['id'] in never_subscribed_stream_ids]
 
