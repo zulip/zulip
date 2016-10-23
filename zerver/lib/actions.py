@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, Mapping, MutableMapping,
-    Optional, Sequence, Tuple, TypeVar, Union
+    Optional, Sequence, Set, Tuple, TypeVar, Union
 )
 
 from django.utils.translation import ugettext as _
@@ -2741,7 +2741,7 @@ def gather_subscriptions_helper(user_profile):
     all_streams_id_set = set(all_streams_id)
     # Listing public streams are disabled for Zephyr mirroring realms.
     if user_profile.realm.is_zephyr_mirror_realm:
-        never_subscribed_stream_ids = []
+        never_subscribed_stream_ids = set() # type: Set[int]
     else:
         never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
     never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
