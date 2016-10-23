@@ -134,6 +134,8 @@ function edit_message (row, raw_content) {
 
     if (!can_edit_content) {
         row.find('textarea.message_edit_content').attr("disabled","disabled");
+    } else {
+        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
     }
 
     // If we allow editing at all, give them at least 10 seconds to do it.
@@ -208,9 +210,6 @@ function edit_message (row, raw_content) {
             row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
         });
     }
-
-    composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
-
 }
 
 function start_edit_maintaining_scroll(row, content) {
