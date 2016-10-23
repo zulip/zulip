@@ -894,40 +894,43 @@ td.pointer {
     content: ")";
 }
 
-.include-sender .message_time {
-    top: -4px;
-}
-
-.message_time {
-    display: block;
-    font-size: 11px;
-    color: #a1a1a1;
-    vertical-align: middle;
-    padding: 1px;
-    font-weight: 300;
-    position: absolute;
-    right: -80px;
-    line-height: 20px;
-    text-align: right;
-    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    transition: background-color 2.7s ease-in, color 2.7s ease-in;
-}
-
 .status-time {
     top: 8px !important;
 }
 
-.message_controls {
-    display: inline-block;
-    position: absolute;
-    top: 2px;
-    right: -38px;
+.message_hovered .info,
+.message_hovered .empty-star {
+    visibility: visible;
 }
 
-.include-sender .message_controls {
-    top: -3px;
+.upper-info-box {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 2px 10px;
+}
+
+.message_time {
+    display: inline-block;
+    font-size: 11px;
+    color: #a1a1a1;
+}
+
+.message_controls {
+    display: none;
+}
+
+.message_controls div {
+    margin: 0px 2px;
+    color: #888;
+}
+
+.message_hovered .message_controls {
+    display: inline-block;
+}
+
+.message_hovered .message_time {
+    display: none;
 }
 
 .message_data {
@@ -1476,11 +1479,6 @@ a.dark_background:hover,
 .actions_hovered .info {
     color: #0088CC;
     cursor: pointer;
-}
-
-.message_hovered .info,
-.message_hovered .empty-star {
-    visibility: visible;
 }
 
 .actions_hovered .actions_link {
@@ -3206,7 +3204,7 @@ li.expanded_private_message {
     display: inline-block;
     opacity: 1;
     font-size: 14px;
-    color: #2c8211;
+    color: #888;
 }
 
 .empty-star {
@@ -3228,7 +3226,7 @@ li.expanded_private_message {
 
 .star:hover {
     cursor:  pointer;
-    color: #0d7245;
+    color: #666;
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
