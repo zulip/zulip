@@ -102,19 +102,6 @@ function edit_message (row, raw_content) {
         .getBoundingClientRect().top;
 
     var message = current_msg_list.get(rows.id(row));
-    var edit_row = row.find(".message_edit");
-    var form = $(templates.render('message_edit_form',
-                                  {is_stream: (message.type === 'stream'),
-                                   topic: message.subject,
-                                   content: raw_content,
-                                   minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
-
-    var edit_obj = {form: form, raw_content: raw_content};
-    var original_topic = message.subject;
-
-    current_msg_list.show_edit_message(row, edit_obj);
-
-    form.keydown(_.partial(handle_edit_keydown, false));
 
     // We potentially got to this function by clicking a button that implied the
     // user would be able to edit their message.  Give a little bit of buffer in
@@ -131,6 +118,20 @@ function edit_message (row, raw_content) {
         now.diffSeconds(message.timestamp * 1000);
     var can_edit_content = (page_params.realm_message_content_edit_limit_seconds === 0) ||
         (seconds_left + seconds_left_buffer > 0);
+
+    var form = $(templates.render('message_edit_form',
+                                  {is_stream: (message.type === 'stream'),
+                                   topic: message.subject,
+                                   content: raw_content,
+                                   minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
+
+    var edit_obj = {form: form, raw_content: raw_content};
+    var original_topic = message.subject;
+
+    current_msg_list.show_edit_message(row, edit_obj);
+
+    form.keydown(_.partial(handle_edit_keydown, false));
+
     if (!can_edit_content) {
         row.find('textarea.message_edit_content').attr("disabled","disabled");
     }
@@ -183,6 +184,7 @@ function edit_message (row, raw_content) {
         }
     }
 
+    var edit_row = row.find(".message_edit");
     currently_editing_messages[message.id] = edit_obj;
     if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
         !can_edit_content) {
