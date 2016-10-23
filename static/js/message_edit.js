@@ -119,11 +119,12 @@ function edit_message (row, raw_content) {
     var can_edit_content = (page_params.realm_message_content_edit_limit_seconds === 0) ||
         (seconds_left + seconds_left_buffer > 0);
 
-    var form = $(templates.render('message_edit_form',
-                                  {is_stream: (message.type === 'stream'),
-                                   topic: message.subject,
-                                   content: raw_content,
-                                   minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
+    var form = $(templates.render(
+        'message_edit_form',
+        {is_stream: (message.type === 'stream'),
+         topic: message.subject,
+         content: raw_content,
+         minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
     var edit_obj = {form: form, raw_content: raw_content};
     var original_topic = message.subject;
