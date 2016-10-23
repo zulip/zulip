@@ -15,6 +15,9 @@ While developing, it's helpful to watch the `run-dev.py` console
 output, which will show any errors your Zulip development server
 encounters.
 
+To manually query the Postgres database, run `psql zulip` for an
+interactive console.
+
 When you make a change, here's a guide for what you need to do in
 order to see your change take effect in Development:
 
