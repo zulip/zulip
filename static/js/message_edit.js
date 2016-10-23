@@ -129,6 +129,7 @@ function edit_message (row, raw_content) {
     var edit_obj = {form: form, raw_content: raw_content};
     var original_topic = message.subject;
 
+    currently_editing_messages[message.id] = edit_obj;
     current_msg_list.show_edit_message(row, edit_obj);
 
     form.keydown(_.partial(handle_edit_keydown, false));
@@ -186,7 +187,6 @@ function edit_message (row, raw_content) {
     }
 
     var edit_row = row.find(".message_edit");
-    currently_editing_messages[message.id] = edit_obj;
     if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
         !can_edit_content) {
         edit_row.find(".message_edit_topic").focus();
