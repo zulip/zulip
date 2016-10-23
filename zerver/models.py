@@ -475,11 +475,9 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     AVATAR_FROM_GRAVATAR = u'G'
     AVATAR_FROM_USER = u'U'
-    AVATAR_FROM_SYSTEM = u'S'
     AVATAR_SOURCES = (
             (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
             (AVATAR_FROM_USER, 'Uploaded by user'),
-            (AVATAR_FROM_SYSTEM, 'System generated'),
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1) # type: text_type
 

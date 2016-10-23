@@ -384,17 +384,6 @@ class AvatarTest(ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
-    def test_get_system_generated_avatar(self):
-        # type: () -> None
-        self.login("hamlet@zulip.com")
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
-
-        cordelia.avatar_source = UserProfile.AVATAR_FROM_SYSTEM
-        cordelia.save()
-        response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
-        redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
-
     def test_non_valid_user_avatar(self):
         # type: () -> None
 
