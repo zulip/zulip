@@ -2759,7 +2759,7 @@ def gather_subscriptions_helper(user_profile):
             never_subscribed.append(stream_dict)
 
     user_ids = set()
-    for subs in [subscribed, unsubscribed]:
+    for subs in [subscribed, unsubscribed, never_subscribed]:
         for sub in subs:
             if 'subscribers' in sub:
                 for subscriber in sub['subscribers']:
