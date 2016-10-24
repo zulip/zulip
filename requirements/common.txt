@@ -35,6 +35,7 @@ diff-match-patch==20121119
 
 # Needed for LDAP support
 django-auth-ldap==1.2.8
+git+https://github.com/umairwaheed/fakeldap.git@7e824313d98a96e52119c359a9b0233fe0b8e585#egg=fakeldap==0.5.1
 
 # Django extension providing bitfield support
 django-bitfield==1.8.0

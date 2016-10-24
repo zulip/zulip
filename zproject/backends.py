@@ -281,7 +281,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
-        # type: (text_type, str, Optional[text_type], Optional[Dict[str, Any]]) -> Optional[str]
+        # type: (text_type, str, Optional[text_type], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)

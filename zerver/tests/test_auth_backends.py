@@ -5,6 +5,7 @@ from django.test import TestCase
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
 from typing import Any, Callable, Dict
+from builtins import object
 
 import jwt
 import mock
@@ -33,6 +34,7 @@ from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
 from six import text_type
 from six.moves import urllib
 import ujson
+from fakeldap import MockLDAP
 
 class AuthBackendTest(TestCase):
     def verify_backend(self, backend, good_args=None,
@@ -962,3 +964,206 @@ class TestJWTLogin(ZulipTestCase):
                 self.assertEqual(result.status_code, 302)
                 user_profile = get_user_profile_by_email(email)
                 self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+class TestLDAP(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        self.setup_subdomain(user_profile)
+
+        ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+        self.mock_initialize = ldap_patcher.start()
+        self.mock_ldap = MockLDAP()
+        self.mock_initialize.return_value = self.mock_ldap
+        self.backend = ZulipLDAPAuthBackend()
+
+    def tearUp(self):
+        # type: () -> None
+        self.mock_ldap.reset()
+        self.mock_initialize.stop()
+
+    def setup_subdomain(self, user_profile):
+        # type: (UserProfile) -> None
+        realm = user_profile.realm
+        realm.subdomain = 'zulip'
+        realm.save()
+
+    def test_login_success(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing')
+            self.assertEqual(user_profile.email, 'hamlet@zulip.com')
+
+    def test_login_failure_due_to_wrong_password(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            with self.assertRaisesRegexp(self.mock_ldap.INVALID_CREDENTIALS,
+                                         'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
+                self.backend.authenticate('hamlet@zulip.com', 'wrong')
+
+    def test_login_failure_due_to_nonexistent_user(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=nonexitent,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            with self.assertRaisesRegexp(self.mock_ldap.INVALID_CREDENTIALS,
+                                         'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
+                self.backend.authenticate('nonexistent@zulip.com', 'testing')
+
+    def test_ldap_permissions(self):
+        # type: () -> None
+        backend = self.backend
+        self.assertFalse(backend.has_perm(None, None))
+        self.assertFalse(backend.has_module_perms(None, None))
+        self.assertTrue(backend.get_all_permissions(None, None) == set())
+        self.assertTrue(backend.get_group_permissions(None, None) == set())
+
+    def test_django_to_ldap_username(self):
+        # type: () -> None
+        backend = self.backend
+        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
+            username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
+            self.assertEqual(username, '"hamlet@test"')
+
+    def test_ldap_to_django_username(self):
+        # type: () -> None
+        backend = self.backend
+        with self.settings(LDAP_APPEND_DOMAIN='zulip.com'):
+            username = backend.ldap_to_django_username('"hamlet@test"')
+            self.assertEqual(username, '"hamlet@test"@zulip.com')
+
+    def test_get_or_create_user_when_user_exists(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        backend = self.backend
+        email = 'hamlet@zulip.com'
+        user_profile, created = backend.get_or_create_user(email, _LDAPUser())
+        self.assertFalse(created)
+        self.assertEqual(user_profile.email, email)
+
+    def test_get_or_create_user_when_user_does_not_exist(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            user_profile, created = backend.get_or_create_user(email, _LDAPUser())
+            self.assertFalse(created)
+            self.assertEqual(user_profile.email, email)
+            self.assertEqual(user_profile.full_name, 'Full Name')
+
+    def test_get_or_create_user_when_realm_is_deactivated(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['Full Name'], 'sn': ['Short Name']}
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            realm = get_realm('zulip.com')
+            do_deactivate_realm(realm)
+            with self.assertRaisesRegexp(Exception, 'Realm has been deactivated'):
+                backend.get_or_create_user(email, _LDAPUser())
+
+    def test_django_to_ldap_username_when_domain_does_not_match(self):
+        # type: () -> None
+        backend = self.backend
+        email = 'hamlet@zulip.com'
+        with self.assertRaisesRegexp(Exception, 'Username does not match LDAP domain.'):
+            with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
+                backend.django_to_ldap_username(email)
+
+    def test_login_failure_due_to_wrong_subdomain(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
+                                                     realm_subdomain='acme')
+            self.assertIs(user_profile, None)
+
+    def test_login_failure_due_to_empty_subdomain(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
+                                                     realm_subdomain='')
+            self.assertIs(user_profile, None)
+
+    def test_login_success_when_subdomain_is_none(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
+                                                     realm_subdomain=None)
+            self.assertEqual(user_profile.email, 'hamlet@zulip.com')
+
+    def test_login_success_with_valid_subdomain(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
+                                                     realm_subdomain='zulip')
+            self.assertEqual(user_profile.email, 'hamlet@zulip.com')
