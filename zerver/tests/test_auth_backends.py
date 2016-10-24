@@ -6,6 +6,7 @@ from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
 from typing import Any, Callable, Dict
 
+import jwt
 import mock
 import re
 
@@ -850,3 +851,114 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                 result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
                 self.assertEqual(result.status_code, 302)
                 self.assertIs(get_session_dict_user(self.client.session), user_profile.id)
+
+class TestJWTLogin(ZulipTestCase):
+    """
+    JWT uses ZulipDummyBackend.
+    """
+    def test_login_success(self):
+        # type: () -> None
+        payload = {'user': 'hamlet', 'realm': 'zulip.com'}
+        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+            email = 'hamlet@zulip.com'
+            auth_key = settings.JWT_AUTH_KEYS['']
+            web_token = jwt.encode(payload, auth_key).decode('utf8')
+
+            user_profile = get_user_profile_by_email(email)
+            data = {'json_web_token': web_token}
+            result = self.client_post('/accounts/login/jwt/', data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_login_failure_when_user_is_missing(self):
+        # type: () -> None
+        payload = {'realm': 'zulip.com'}
+        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+            auth_key = settings.JWT_AUTH_KEYS['']
+            web_token = jwt.encode(payload, auth_key).decode('utf8')
+            data = {'json_web_token': web_token}
+            result = self.client_post('/accounts/login/jwt/', data)
+            self.assert_json_error_contains(result, "No user specified in JSON web token claims", 400)
+
+    def test_login_failure_when_realm_is_missing(self):
+        # type: () -> None
+        payload = {'user': 'hamlet'}
+        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+            auth_key = settings.JWT_AUTH_KEYS['']
+            web_token = jwt.encode(payload, auth_key).decode('utf8')
+            data = {'json_web_token': web_token}
+            result = self.client_post('/accounts/login/jwt/', data)
+            self.assert_json_error_contains(result, "No realm specified in JSON web token claims", 400)
+
+    def test_login_failure_when_key_does_not_exist(self):
+        # type: () -> None
+        data = {'json_web_token': 'not relevant'}
+        result = self.client_post('/accounts/login/jwt/', data)
+        self.assert_json_error_contains(result, "Auth key for this subdomain not found.", 400)
+
+    def test_login_failure_when_key_is_missing(self):
+        # type: () -> None
+        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+            result = self.client_post('/accounts/login/jwt/')
+            self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
+
+    def test_login_failure_when_bad_token_is_passed(self):
+        # type: () -> None
+        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+            result = self.client_post('/accounts/login/jwt/')
+            self.assert_json_error_contains(result, "No JSON web token passed in request", 400)
+            data = {'json_web_token': 'bad token'}
+            result = self.client_post('/accounts/login/jwt/', data)
+            self.assert_json_error_contains(result, "Bad JSON web token", 400)
+
+    def test_login_failure_when_user_does_not_exist(self):
+        # type: () -> None
+        payload = {'user': 'nonexisting', 'realm': 'zulip.com'}
+        with self.settings(JWT_AUTH_KEYS={'': 'key'}):
+            auth_key = settings.JWT_AUTH_KEYS['']
+            web_token = jwt.encode(payload, auth_key).decode('utf8')
+            data = {'json_web_token': web_token}
+            result = self.client_post('/accounts/login/jwt/', data)
+            self.assertEqual(result.status_code, 302) # This should ideally be not 200.
+            self.assertIs(get_session_dict_user(self.client.session), None)
+
+    def test_login_failure_due_to_wrong_subdomain(self):
+        # type: () -> None
+        payload = {'user': 'hamlet', 'realm': 'zulip.com'}
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True, JWT_AUTH_KEYS={'acme': 'key'}):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
+                auth_key = settings.JWT_AUTH_KEYS['acme']
+                web_token = jwt.encode(payload, auth_key).decode('utf8')
+
+                data = {'json_web_token': web_token}
+                result = self.client_post('/accounts/login/jwt/', data)
+                self.assert_json_error_contains(result, "Wrong subdomain", 400)
+                self.assertEqual(get_session_dict_user(self.client.session), None)
+
+    def test_login_failure_due_to_empty_subdomain(self):
+        # type: () -> None
+        payload = {'user': 'hamlet', 'realm': 'zulip.com'}
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True, JWT_AUTH_KEYS={'': 'key'}):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
+                auth_key = settings.JWT_AUTH_KEYS['']
+                web_token = jwt.encode(payload, auth_key).decode('utf8')
+
+                data = {'json_web_token': web_token}
+                result = self.client_post('/accounts/login/jwt/', data)
+                self.assert_json_error_contains(result, "Wrong subdomain", 400)
+                self.assertEqual(get_session_dict_user(self.client.session), None)
+
+    def test_login_success_under_subdomains(self):
+        # type: () -> None
+        payload = {'user': 'hamlet', 'realm': 'zulip.com'}
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True, JWT_AUTH_KEYS={'zulip': 'key'}):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
+                email = 'hamlet@zulip.com'
+                auth_key = settings.JWT_AUTH_KEYS['zulip']
+                web_token = jwt.encode(payload, auth_key).decode('utf8')
+
+                data = {'json_web_token': web_token}
+                result = self.client_post('/accounts/login/jwt/', data)
+                self.assertEqual(result.status_code, 302)
+                user_profile = get_user_profile_by_email(email)
+                self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
