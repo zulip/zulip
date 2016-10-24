@@ -9,6 +9,18 @@ from zerver.models import get_user_profile_by_email
 
 from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list, get_display_recipient
 
+class TypingNotificationEndToEndTest(ZulipTestCase):
+    def test_post_result(self):
+        # type: () -> None
+        """
+        Sending typing notification results in success response
+        """
+        sender = 'hamlet@zulip.com'
+        recipient = 'othello@zulip.com'
+        result = self.client_post('/api/v1/typing', {'to': recipient},
+                                  **self.api_auth(sender))
+        self.assert_json_success(result)
+
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self):
         # type: () -> None
