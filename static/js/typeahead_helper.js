@@ -66,6 +66,10 @@ exports.render_person = function (person) {
     return person.full_name + " <" + person.email + ">";
 };
 
+exports.render_stream = function (stream) {
+    return stream
+};
+
 function prefix_sort(query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"
@@ -144,6 +148,11 @@ exports.sort_recipients = function (matches, query) {
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
     var results = prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    return results.matches.concat(results.rest);
+};
+
+exports.sort_streams = function (matches, query) {
+    var results = prefix_sort(query, matches, function (x) { return x });
     return results.matches.concat(results.rest);
 };
 
