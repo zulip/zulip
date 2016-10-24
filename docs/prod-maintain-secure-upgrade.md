@@ -392,22 +392,22 @@ announcement).
   weak passwords are visually discouraged using the `zxcvbn` library,
   but Zulip does not by default have strong requirements on user
   password strength.  Modify `static/js/common.js` to adjust the
-  password strength requirements (Patches welcome to make controlled
-  by an easy setting!).
+  password strength requirements (patches welcome to make this
+  controllable by an easy setting!).
 
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
 ### Messages and History
 
-* Zulip message content is rendering using a specialized Markdown
+* Zulip message content is rendered using a specialized Markdown
   parser which escapes content to protect against cross-site scripting
   attacks.
 
 * Zulip supports both public streams and private ("invite-only")
-  streams.  Any Zulip user can join any public stream in the realm
-  (and can view the complete message of any public stream history
-  without joining the stream).
+  streams.  Any Zulip user can join any public stream in the realm,
+  and can view the complete message history of any public stream
+  without joining the stream.
 
 * A private ("invite-only") stream is hidden from users who are not
   subscribed to the stream.  Users who are not members of a private
@@ -419,21 +419,40 @@ announcement).
   can see future messages sent to the stream, but they do not receive
   access to the stream's message history.
 
-* Zulip supports editing the content or topics of messages that have
-  already been sent (and even updating the topic of messages sent by
-  other users when editing the topic of the overall thread).
+* Zulip supports editing the content and topics of messages that have
+  already been sent. As a general philosophy, our policies provide
+  hard limits on the ways in which message content can be changed or
+  undone. In contrast, our policies around message topics favor
+  usefulness (e.g. for conversational organization) over faithfulness
+  to the original.
 
-  While edited messages are synced immediately to open browser
-  windows, editing messages is not a safe way to redact secret content
-  (e.g. a password) unintentionally shared via Zulip, because other
-  users may have seen and saved the content of the original message
-  (for example, they could have taken a screenshot immediately after
-  you sent the message, or have an API tool recording all messages
-  they receive).
+  The message editing policy can be configured on the realm
+  administration page. There are three configurations provided out of
+  the box: (i) users cannot edit messages at all, (ii) users can edit
+  any message they have sent, and (iii) users can edit the content of
+  any message they have sent in the last N minutes, and the topic of
+  any message they have sent. In (ii) and (iii), topic edits can also
+  be propogated to other messages with the same original topic, even
+  if those messages were sent by other users. The default setting is
+  (iii), with N = 10.
 
-  Zulip stores and sends to clients the content of every historical
-  version of a message, so that future versions of Zulip could support
-  displaying the diffs between previous versions.
+  In addition, and regardless of the configuration above, some topic
+  edits are always allowed. Messages with no topic can always be
+  edited to have a topic, by anyone in the organization. The topic of
+  any message can also always be edited by a realm administrator.
+
+  Note that the Zulip frontend will sometimes restrict the type of
+  topic edits that can be made, to streamline the user experience. A
+  topic edit not being possible on the frontend does not always mean
+  that restriction is enforced on the backend.
+
+  Also note that while edited messages are synced immediately to open
+  browser windows, editing messages is not a safe way to redact secret
+  content (e.g. a password) shared unintentionally. Other users may
+  have seen and saved the content of the original message, or have an
+  integration (e.g. push notifications) forwarding all messages they
+  receive to another service. Zulip also stores and sends to clients
+  the content of every historical version of a message.
 
 ### Users and Bots
 
