@@ -165,6 +165,7 @@ function edit_message (row, raw_content) {
          is_editable: is_editable,
          has_been_editable: (editability !== editability_types.NO),
          topic: message.subject,
+         empty_topic_placeholder: compose.empty_topic_placeholder(),
          content: raw_content,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
@@ -254,6 +255,7 @@ function edit_message (row, raw_content) {
     if (!is_editable) {
         edit_row.find(".message_edit_close").focus();
     } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
+        edit_row.find(".message_edit_topic").val('');
         edit_row.find(".message_edit_topic").focus();
     } else if (editability === editability_types.TOPIC_ONLY) {
         edit_row.find(".message_edit_cancel").focus();
@@ -273,7 +275,7 @@ function edit_message (row, raw_content) {
         var original_topic = message.subject;
         topic_input.keyup( function () {
             var new_topic = topic_input.val();
-            row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic);
+            row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic && new_topic !== "" );
         });
     }
 }
