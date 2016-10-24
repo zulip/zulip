@@ -626,8 +626,9 @@ class BugdownTest(TestCase):
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**Denmark**"
-        self.assertEqual(render_markdown(msg, content),
-                         '<p><a class="stream" href="/#narrow/stream/Denmark">#Denmark</a></p>')
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream" data-stream-id="3" href="/#narrow/stream/Denmark">#Denmark</a></p>')
 
     def test_stream_multiple(self):
         # type: () -> None
@@ -638,8 +639,10 @@ class BugdownTest(TestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>Look to '
                          '<a class="stream" '
+                         'data-stream-id="3" '
                          'href="/#narrow/stream/Denmark">#Denmark</a> and '
                          '<a class="stream" '
+                         'data-stream-id="2" '
                          'href="/#narrow/stream/Scotland">#Scotland</a>, '
                          'there something</p>')
 

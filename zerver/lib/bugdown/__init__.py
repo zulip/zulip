@@ -905,11 +905,12 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class StreamPattern(markdown.inlinepatterns.Pattern):
 
-    def check_stream(self, name):
-        # type: (Match[text_type]) -> bool
+    def find_stream_by_name(self, name):
+        # type: (Match[text_type]) -> Dict[str, Any]
         if db_data is None:
             return
-        return name in db_data['stream_names']
+        stream = db_data['stream_names'].get(name)
+        return stream
 
     def handleMatch(self, m):
         # type: (Match[text_type]) -> Optional[Element]
@@ -917,13 +918,15 @@ class StreamPattern(markdown.inlinepatterns.Pattern):
         name = m.group(2)
 
         if current_message:
-            if not self.check_stream(name):
+            stream = self.find_stream_by_name(name)
+            if stream is None:
                 return
             el = markdown.util.etree.Element('a')
             el.set('class', 'stream')
-            # fixme: maybe there should be a better way to get link
-            el.set('href', '/#narrow/stream/{stream_name}'.format(stream_name=name))
-            el.text = '#{stream_name}'.format(stream_name=name)
+            el.set('data-stream-id', str(stream['id']))
+            el.set('href', '/#narrow/stream/{stream_name}'.format(
+                stream_name=urllib.parse.quote(force_str(name))))
+            el.text = u'#{stream_name}'.format(stream_name=name)
             return el
 
 
@@ -1218,6 +1221,7 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
     global db_data
     if message:
         realm_users = get_active_user_dicts_in_realm(message.get_realm())
+        realm_streams = get_active_streams(message.get_realm()).values('id', 'name')
 
         if possible_words is None:
             possible_words = set() # Set[text_type]
@@ -1226,7 +1230,7 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
                    'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
                    'emoji':             message.get_realm().get_emoji(),
-                   'stream_names':      get_active_streams(message.get_realm()).values_list('name', flat=True)}
+                   'stream_names':      dict((stream['name'], stream) for stream in realm_streams)}
 
     try:
         # Spend at most 5 seconds rendering.
