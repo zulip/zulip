@@ -5,7 +5,7 @@
     <div class="control-group no-margin">
         <label class="control-label edit-control-label" for="message_edit_topic">{{t "Topic" }}</label>
         <div class="controls edit-controls">
-          <input type="text" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
+          <input type="text" placeholder="{{empty_topic_placeholder}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
           <select class='message_edit_topic_propagate' style='display:none;'>
             <option selected="selected" value="change_one"> {{t "Change only this message topic" }}</option>
             <option value="change_later"> {{t "Change later messages to this topic" }}</option>
