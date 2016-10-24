@@ -129,7 +129,7 @@ Installed the plugin 'vagrant-lxc (1.2.1)'!
 ```
 
 If you encounter an error when trying to install the vagrant-lxc plugin, [see
-this](#nomethoderror-when-installing-vagrant-lxc-plugin-ubuntu-1604).
+this](#nomethoderror-when-installing-vagrant-lxc-plugin-ubuntu-16-04).
 
 ##### 4. Configure sudo to be passwordless
 
@@ -186,12 +186,12 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 ### Step 2: Get Zulip Code
 
-If you haven't already created an ssh key and added it to your Github account,
+If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
 instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 1. In your browser, visit https://github.com/zulip/zulip and click the
-   `fork` button. You will need to be logged in to Github to do this.
+   `fork` button. You will need to be logged in to GitHub to do this.
 2. Open Terminal (OS X/Ubuntu) or Cygwin (Windows; must run as an Administrator)
 3. In Terminal/Cygwin, clone your fork:
 ```
@@ -398,7 +398,7 @@ When you're ready to commit or push changes via git, you will do this by
 running git commands in Terminal (OS X/Ubuntu) or Cygwin (Windows) in the directory
 where you cloned Zulip on your main machine.
 
-If you're new to working with Git/Github, check out [this
+If you're new to working with Git/GitHub, check out [this
 guide](https://help.github.com/articles/create-a-repo/#commit-your-first-change).
 
 #### Maintaining the dev environment
@@ -610,7 +610,56 @@ If this is already enabled in your BIOS, double-check that you are running a
 For further information about troubleshooting vagrant timeout errors [see
 this post](http://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
-#### npm install error
+#### Vagrant up fails with subprocess.CalledProcessError
+
+The `vagrant up` command basically does the following:
+
+* Downloads an Ubuntu image and starts it using a Vagrant provider.
+* Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
+  `tools/provision.py`, which has a lot of subcommands that are
+  executed via Python's `subprocess` module.  These errors mean that
+  one of those subcommands failed.
+
+To debug such errors, you can log in to the Vagrant guest machine by
+running `vagrant ssh`, which should present you with a standard shell
+prompt.  You can debug interactively by using e.g. `cd /srv/zulip &&
+./tools/provision.py`, and then running the individual subcommands
+that failed.  Once you've resolved the problem, you can rerun
+`tools/provision.py` to proceed; the provisioning system is designed
+to recover well from failures.
+
+The zulip provisioning system is generally highly reliable; the most
+common cause of issues here is a poor network connection (or one where
+you need a proxy to access the Internet and haven't
+[configured the development environment to use it](brief-install-vagrant-dev.html#specifying-a-proxy).
+
+Once you've provisioned successfully, you'll get output like this:
+```
+Zulip development environment setup succeeded!
+(zulip-venv) vagrant@vagrant-base-trusty-amd64:/srv/zulip$
+```
+
+If the `(zulip-venv)` part is missing, this is because your
+installation failed the first time before the Zulip virtualenv was
+created.  You can fix this by just closing the shell and running
+`vagrant ssh` again, or using `source /srv/zulip-venv/bin/activate`.
+
+Finally, if you encounter any issues that weren't caused by your
+Internet connection, please report them!  We try hard to keep Zulip
+development environment provisioning free of bugs.
+
+##### `pip install` fails during `vagrant up` on Ubuntu
+
+Likely causes are:
+
+1. Networking issues
+2. Insufficient RAM. Check whether you've allotted at least two
+gigabytes of RAM, which is the minimum Zulip
+[requires](dev-env-first-time-contributors.html#requirements). If
+not, go to your VM settings and increase the RAM, then restart
+the VM.
+
+##### npm install errors
 
 The `tools/provision.py` script may encounter an error related to `npm install`
 that looks something like:

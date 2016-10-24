@@ -181,7 +181,9 @@ function hashchanged(from_reload) {
 exports.initialize = function () {
     // jQuery doesn't have a hashchange event, so we manually wrap
     // our event handler
-    window.onhashchange = blueslip.wrap_function(hashchanged);
+    window.onhashchange = blueslip.wrap_function(function () {
+        hashchanged(false);
+    });
     hashchanged(true);
 };
 

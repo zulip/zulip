@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from six import text_type
-from zerver.lib.webhooks.git import PUSH_COMMITS_LIMIT
+from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_helpers import WebhookTestCase
 
 class BeanstalkHookTests(WebhookTestCase):
@@ -35,7 +35,7 @@ class BeanstalkHookTests(WebhookTestCase):
         expected_subject = "work-test / master"
         expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
 
-{}[and {} more commit(s)]""".format((commits_info * PUSH_COMMITS_LIMIT), 50 - PUSH_COMMITS_LIMIT)
+{}[and {} more commit(s)]""".format((commits_info * COMMITS_LIMIT), 50 - COMMITS_LIMIT)
         self.send_and_test_stream_message('git_morethanlimitcommits', expected_subject, expected_message,
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))

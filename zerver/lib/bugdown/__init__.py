@@ -28,7 +28,7 @@ from django.core import mail
 from django.conf import settings
 
 from zerver.lib.avatar_hash import gravatar_hash
-from zerver.lib.bugdown import codehilite
+from markdown.extensions import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
@@ -100,8 +100,8 @@ def walk_tree(root, processor, stop_after_first=False):
 
 # height is not actually used
 def add_a(root, url, link, height="", title=None, desc=None,
-          class_attr="message_inline_image"):
-    # type: (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type) -> None
+          class_attr="message_inline_image", data_id=None):
+    # type: (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type, Optional[text_type]) -> None
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -111,7 +111,9 @@ def add_a(root, url, link, height="", title=None, desc=None,
     a = markdown.util.etree.SubElement(div, "a")
     a.set("href", link)
     a.set("target", "_blank")
-    a.set("title", title )
+    a.set("title", title)
+    if data_id is not None:
+        a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
     if class_attr == "message_inline_ref":
@@ -343,7 +345,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return image_info
         return None
 
-    def youtube_image(self, url):
+    def youtube_id(self, url):
         # type: (text_type) -> Optional[text_type]
         if not settings.INLINE_IMAGE_PREVIEW:
             return None
@@ -355,7 +357,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         match = re.match(youtube_re, url)
         if match is None:
             return None
-        return "https://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
+        return match.group(2)
+
+    def youtube_image(self, url):
+        # type: (text_type) -> Optional[text_type]
+        yt_id = self.youtube_id(url)
+
+        if yt_id is not None:
+            return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
 
     def twitter_text(self, text, urls, user_mentions, media):
         # type: (text_type, List[Dict[text_type, text_type]], List[Dict[text_type, Any]], List[Dict[text_type, Any]]) -> Element
@@ -564,7 +573,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             youtube = self.youtube_image(url)
             if youtube is not None:
-                add_a(root, youtube, url)
+                yt_id = self.youtube_id(url)
+                add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
 class Avatar(markdown.inlinepatterns.Pattern):
@@ -768,7 +778,7 @@ class AutoLink(markdown.inlinepatterns.Pattern):
         url = match.group('url')
         return url_to_a(url)
 
-class UListProcessor(markdown.blockprocessors.OListProcessor):
+class UListProcessor(markdown.blockprocessors.UListProcessor):
     """ Process unordered list blocks.
 
         Based on markdown.blockprocessors.UListProcessor, but does not accept
@@ -935,6 +945,16 @@ class AtomicLinkPattern(LinkPattern):
         return ret
 
 class Bugdown(markdown.Extension):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Union[bool, None, text_type]) -> None
+        # define default configs
+        self.config = {
+            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
+             "realm": [kwargs['realm'], "Realm name"]
+        }
+
+        super(Bugdown, self).__init__(*args, **kwargs)
+
     def extendMarkdown(self, md, md_globals):
         # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['reference']
@@ -972,14 +992,14 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
-            '>backtick')
+            '>avatar')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
             u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
             '_end')
 
-        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
+        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
@@ -1059,18 +1079,22 @@ class Bugdown(markdown.Extension):
 md_engines = {}
 realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
 
+
 def make_md_engine(key, opts):
     # type: (text_type, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         safe_mode     = 'escape',
         output_format = 'html',
-        extensions    = ['nl2br',
-                         'tables',
-                         codehilite.makeExtension(configs=[
-                    ('force_linenos', False),
-                    ('guess_lang',    False)]),
+        extensions    = [
+                         'markdown.extensions.nl2br',
+                         'markdown.extensions.tables',
+                         codehilite.makeExtension(
+                                linenums=False,
+                                guess_lang=False
+                         ),
                          fenced_code.makeExtension(),
-                         Bugdown(opts)])
+                         Bugdown(realm_filters=opts["realm_filters"][0],
+                                 realm=opts["realm"][0])])
 
 def subject_links(domain, subject):
     # type: (text_type, text_type) -> List[text_type]
@@ -1124,9 +1148,9 @@ maybe_update_realm_filters(domain=None)
 # We also use repr() to improve reproducibility, and to escape terminal control
 # codes, which can do surprisingly nasty things.
 _privacy_re = re.compile(u'\\w', flags=re.UNICODE)
-def _sanitize_for_log(md):
-    # type: (markdown.Markdown) -> text_type
-    return repr(_privacy_re.sub('x', md))
+def _sanitize_for_log(content):
+    # type: (text_type) -> text_type
+    return repr(_privacy_re.sub('x', content))
 
 
 # Filters such as UserMentionPattern need a message, but python-markdown
@@ -1146,8 +1170,8 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(md, realm_domain=None, message=None, possible_words=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
+def do_convert(content, realm_domain=None, message=None, possible_words=None):
+    # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, UserProfile
 
@@ -1181,11 +1205,11 @@ def do_convert(md, realm_domain=None, message=None, possible_words=None):
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
         # https://trac.zulip.net/ticket/345
-        return timeout(5, _md_engine.convert, md)
+        return timeout(5, _md_engine.convert, content)
     except:
         from zerver.lib.actions import internal_send_message
 
-        cleaned = _sanitize_for_log(md)
+        cleaned = _sanitize_for_log(content)
 
         # Output error to log as well as sending a zulip and email
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
@@ -1227,9 +1251,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(md, realm_domain=None, message=None, possible_words=None):
-    # type: (markdown.Markdown, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
+def convert(content, realm_domain=None, message=None, possible_words=None):
+    # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
     bugdown_stats_start()
-    ret = do_convert(md, realm_domain, message, possible_words)
+    ret = do_convert(content, realm_domain, message, possible_words)
     bugdown_stats_finish()
     return ret

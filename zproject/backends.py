@@ -127,7 +127,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
         # This function needs to be imported from here due to the cyclic
         # dependency.
-        from zerver.views import login_or_register_remote_user
+        from zerver.views.auth import login_or_register_remote_user
 
         return_data = kwargs.get('return_data', {})
 
@@ -350,7 +350,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         # type: (*Any, **Any) -> Optional[UserProfile]
         kwargs['return_data'] = {}
 
-        request = self.strategy.request  # type: ignore # This comes from Python Social Auth.
+        request = self.strategy.request
         kwargs['realm_subdomain'] = get_subdomain(request)
 
         user_profile = None

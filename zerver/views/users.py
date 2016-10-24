@@ -16,7 +16,7 @@ from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool
+from zerver.lib.validator import check_bool, check_string
 from zerver.models import UserProfile, Stream, Realm, get_user_profile_by_email, \
     get_stream, email_allowed_for_realm
 
@@ -32,6 +32,15 @@ def deactivate_user_backend(request, user_profile, email):
     if target.is_bot:
         return json_error(_('No such user'))
     return _deactivate_user_profile_backend(request, user_profile, target)
+
+def deactivate_user_own_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    admins = set(user_profile.realm.get_admin_users())
+
+    if user_profile.is_realm_admin and len(admins) == 1:
+        return json_error(_('Cannot deactivate the only admin'))
+    do_deactivate_user(user_profile)
+    return json_success()
 
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -49,7 +58,7 @@ def _deactivate_user_profile_backend(request, user_profile, target):
         return json_error(_('Insufficient permission'))
 
     do_deactivate_user(target)
-    return json_success({})
+    return json_success()
 
 def reactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -62,12 +71,13 @@ def reactivate_user_backend(request, user_profile, email):
         return json_error(_('Insufficient permission'))
 
     do_reactivate_user(target)
-    return json_success({})
+    return json_success()
 
 @has_request_variables
 def update_user_backend(request, user_profile, email,
+                        full_name=REQ(default="", validator=check_string),
                         is_admin=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, text_type, Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[bool]) -> HttpResponse
     try:
         target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -78,7 +88,17 @@ def update_user_backend(request, user_profile, email,
 
     if is_admin is not None:
         do_change_is_admin(target, is_admin)
-    return json_success({})
+
+    if (full_name is not None and target.full_name != full_name and
+            full_name.strip() != ""):
+        # We don't respect `name_changes_disabled` here because the request
+        # is on behalf of the administrator.
+        new_full_name = full_name.strip()
+        if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
+            return json_error(_("Name too long!"))
+        do_change_full_name(target, new_full_name)
+
+    return json_success()
 
 def avatar(request, email):
     # type: (HttpRequest, str) -> HttpResponse

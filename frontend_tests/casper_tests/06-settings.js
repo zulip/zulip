@@ -178,7 +178,7 @@ var settings_url = "";
 if (REALMS_HAVE_SUBDOMAINS) {
     settings_url = 'http://zulip.zulipdev.com:9981/de/#settings';
 } else {
-    settings_url = 'http://localhost:9981/de/#settings';
+    settings_url = 'http://zulipdev.com:9981/de/#settings';
 }
 
 casper.thenOpen(settings_url);

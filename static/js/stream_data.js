@@ -109,20 +109,10 @@ exports.set_subscribers = function (sub, emails) {
     sub.subscribers = Dict.from_array(emails || [], {fold_case: true});
 };
 
-// NOTE: If you do anything with the `subscribers` attribute on the stream
-// properties object, first make sure `is_subscribed` is true (i.e., the local
-// user is subscribed). Otherwise we don't and can't update the subscribers
-// list.
-//
-// The accessor functions below know to check for that case.
-
 exports.add_subscriber = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we're not subscribed, we don't track this, and shouldn't
-        // get these events. Likewise, if we don't know about the stream,
-        // we don't want to track this.
-        blueslip.warn("We got an add_subscriber call for a non-existent or unsubscribed stream.");
+    if (typeof sub === 'undefined') {
+        blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return;
     }
     sub.subscribers.set(user_email, true);
@@ -151,6 +141,157 @@ exports.user_is_subscribed = function (stream_name, user_email) {
     }
     return sub.subscribers.has(user_email);
 };
+
+exports.create_streams = function (streams) {
+    _.each(streams, function (stream) {
+        var attrs = _.defaults(stream, {
+            subscribed: false
+        });
+        exports.create_sub_from_server_data(stream.name, attrs);
+    });
+};
+
+exports.create_sub_from_server_data = function (stream_name, attrs) {
+    var sub = exports.get_sub(stream_name);
+    if (sub !== undefined) {
+        // We've already created this subscription, no need to continue.
+        return sub;
+    }
+
+    if (!attrs.stream_id) {
+        // fail fast (blueslip.fatal will throw an error on our behalf)
+        blueslip.fatal("We cannot create a sub without a stream_id");
+        return; // this line is never actually reached
+    }
+
+    // Our internal data structure for subscriptions is mostly plain dictionaries,
+    // so we just reuse the attrs that are passed in to us, but we encapsulate how
+    // we handle subscribers.
+    var subscriber_emails = attrs.subscribers;
+    var raw_attrs = _.omit(attrs, 'subscribers');
+
+    sub = _.defaults(raw_attrs, {
+        name: stream_name,
+        render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
+        subscribed: true,
+        in_home_view: true,
+        invite_only: false,
+        desktop_notifications: page_params.stream_desktop_notifications_enabled,
+        audible_notifications: page_params.stream_sounds_enabled,
+        description: ''
+    });
+
+    exports.set_subscribers(sub, subscriber_emails);
+
+    if (!sub.color) {
+        var used_colors = exports.get_colors();
+        sub.color = stream_color.pick_color(used_colors);
+    }
+
+    exports.add_sub(stream_name, sub);
+
+    return sub;
+};
+
+exports.receives_desktop_notifications = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.desktop_notifications;
+};
+
+exports.receives_audible_notifications = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.audible_notifications;
+};
+
+exports.add_admin_options = function (sub) {
+    return _.extend(sub, {
+        'is_admin': page_params.is_admin,
+        'can_make_public': page_params.is_admin && sub.invite_only && sub.subscribed,
+        'can_make_private': page_params.is_admin && !sub.invite_only
+    });
+};
+
+exports.get_streams_for_settings_page = function (public_streams) {
+    // Build up our list of subscribed streams from the data we already have.
+    var subscribed_rows = exports.subscribed_subs();
+
+    // To avoid dups, build a set of names we already subscribed to.
+    var subscribed_set = new Dict({fold_case: true});
+    _.each(subscribed_rows, function (sub) {
+        subscribed_set.set(sub.name, true);
+    });
+
+    // Right now the back end gives us all public streams; we really only
+    // need to add the ones we haven't already subscribed to.
+    var unsubscribed_streams = _.reject(public_streams.streams, function (stream) {
+        return subscribed_set.has(stream.name);
+    });
+
+    // Build up our list of unsubscribed rows.
+    var unsubscribed_rows = [];
+    _.each(unsubscribed_streams, function (stream) {
+        var sub = exports.get_sub(stream.name);
+        if (!sub) {
+            sub = exports.create_sub_from_server_data(
+                    stream.name,
+                    _.extend({subscribed: false}, stream));
+        }
+        unsubscribed_rows.push(sub);
+    });
+
+    // Sort and combine all our streams.
+    function by_name(a,b) {
+        return util.strcmp(a.name, b.name);
+    }
+    subscribed_rows.sort(by_name);
+    unsubscribed_rows.sort(by_name);
+    var all_subs = subscribed_rows.concat(unsubscribed_rows);
+
+    // Add in admin options.
+    var sub_rows = [];
+    _.each(all_subs, function (sub) {
+        sub = exports.add_admin_options(sub);
+        sub_rows.push(sub);
+    });
+
+    return sub_rows;
+};
+
+exports.initialize_from_page_params = function () {
+    function populate_subscriptions(subs, subscribed) {
+        subs.forEach(function (sub) {
+            var stream_name = sub.name;
+            sub.subscribed = subscribed;
+
+            // When we get subscriber lists from the back end,
+            // they are sent as user ids to save bandwidth,
+            // but the legacy JS code wants emails.
+            if (sub.subscribers) {
+                sub.subscribers = _.map(sub.subscribers, function (subscription) {
+                    return page_params.email_dict[subscription];
+                });
+            }
+            exports.create_sub_from_server_data(stream_name, sub);
+        });
+    }
+
+    populate_subscriptions(page_params.subbed_info, true);
+    populate_subscriptions(page_params.unsubbed_info, false);
+    populate_subscriptions(page_params.neversubbed_info, false);
+
+    // Garbage collect data structures that were only used for initialization.
+    delete page_params.subbed_info;
+    delete page_params.unsubbed_info;
+    delete page_params.neversubbed_info;
+    delete page_params.email_dict;
+};
+
 
 return exports;
 

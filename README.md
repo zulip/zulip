@@ -29,17 +29,20 @@ One of those places is our [public Zulip instance](https://zulip.tabbott.net/).
 You can go through the simple signup process at that link, and then you
 will soon be talking to core Zulip developers and other users.  To get
 help in real time, you will have the best luck finding core developers
-roughly between 16:00 UTC and 23:59 UTC.  Most questions get answered
-within a day.
+roughly between 16:00 UTC and 23:59 UTC.  Most questions get a reply
+within minutes to a few hours, depending on time of day.
 
-We have a [Google mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
-that is currently pretty low traffic.  It is where we do things like
-announce public meetings or major releases.  You can also use it to
-ask questions about features or possible bugs.
+We have a
+[Google mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+that is currently pretty low traffic because a lot of discussions
+happen in our public Zulip instance.  We use it to announce Zulip
+developer community gatherings and ask for feedback on technical or
+design decisions.  You can use it to ask questions about features or
+possible bugs.  Zulip also has a [blog](https://blog.zulip.org/).
 
 Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
 track Zulip-related issues (and store our code, of course).
-Anybody with a Github account should be able to create Issues there
+Anybody with a GitHub account should be able to create Issues there
 pertaining to bugs or enhancement requests.  We also use Pull
 Requests as our primary mechanism to receive code contributions.
 
@@ -107,7 +110,7 @@ contributing!
 [cla]: https://opensource.dropbox.com/cla/
 [dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
 [doc]: https://zulip.readthedocs.io/
-[doc-commit-style]: http://zulip.readthedocs.io/en/latest/code-style.html#commit-messages
+[doc-commit-style]: http://zulip.readthedocs.io/en/latest/version-control.html#commit-messages
 [doc-dirstruct]: http://zulip.readthedocs.io/en/latest/directory-structure.html
 [doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [doc-test]: http://zulip.readthedocs.io/en/latest/testing.html
@@ -132,6 +135,15 @@ contributing!
 [transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
 
+## Google Summer of Code
+
+We participated in
+[GSoC](https://developers.google.com/open-source/gsoc/) last year and
+hope to do so again in 2017.  For guidance, please read
+[our GSoC instructions and ideas page](https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md)
+and feel free to email
+[our GSoC mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc).
+
 ## How to get involved with contributing to Zulip
 
 First, subscribe to the Zulip [development discussion mailing
@@ -143,7 +155,7 @@ have your own project idea in mind or want to get some experience with
 working on Zulip before embarking on a larger project you have in
 mind:
 
-* [Integrations](https://github.com/zulip/zulip/labels/integrations).
+* [Integrations](https://github.com/zulip/zulip/labels/area%3A%20integrations).
   Integrate Zulip with another piece of software and contribute it
   back to the community!  Writing an integration can be a great first
   contribution.  There's detailed documentation on how to write
@@ -153,7 +165,7 @@ mind:
 * [Bite Size](https://github.com/zulip/zulip/labels/bite%20size):
   Smaller projects that might be a great first contribution.
 
-* [Documentation](https://github.com/zulip/zulip/labels/documentation):
+* [Documentation](https://github.com/zulip/zulip/labels/area%3A%20documentation):
   The Zulip project loves contributions of new documentation.
 
 * [Help Wanted](https://github.com/zulip/zulip/labels/help%20wanted):
@@ -171,6 +183,16 @@ mind:
 
 * [2016 roadmap milestone](http://zulip.readthedocs.io/en/latest/roadmap.html): The
   projects that are [priorities for the Zulip project](https://zulip.readthedocs.io/en/latest/roadmap.html).  These are great projects if you're looking to make an impact.
+
+Another way to find issues in Zulip is to take advantage of our
+"area:<foo>" convention in separating out issues.  We partition all of
+our issues into areas like admin, compose, emoji, hotkeys, i18n,
+onboarding, search, etc.  You can see this here:
+
+[https://github.com/zulip/zulip/labels]
+
+Click on any of the "area:" labels and you will see all the tickets
+related to your area of interest.
 
 If you're excited about helping with an open issue, just post on the
 conversation thread that you're working on it.  You're encouraged to

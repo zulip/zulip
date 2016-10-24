@@ -23,7 +23,7 @@ class HelpHandler(object):
 
         return True
 
-    def handle_message(self, message, client):
+    def handle_message(self, message, client, state_handler):
         help_content = '''
             Info on Zulip can be found here:
             https://github.com/zulip/zulip

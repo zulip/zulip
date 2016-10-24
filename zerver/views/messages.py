@@ -26,6 +26,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.message import (
+    access_message,
     MessageDict,
     extract_message_dict,
     stringify_message_dict,
@@ -933,14 +934,7 @@ def update_message_backend(request, user_profile,
 def json_fetch_raw_message(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    try:
-        message = Message.objects.get(id=message_id)
-    except Message.DoesNotExist:
-        return json_error(_("No such message"))
-
-    if message.sender != user_profile:
-        return json_error(_("Message was not sent by you"))
-
+    (message, user_message) = access_message(user_profile, message_id)
     return json_success({"raw_content": message.content})
 
 @has_request_variables

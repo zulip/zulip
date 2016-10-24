@@ -166,13 +166,16 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     });
     html += "</table>";
 
-    var button = $(html).find("button:first");
-    assert.equal(button.text().trim(), "Deactivate");
-    assert(button.hasClass("deactivate"));
+    var buttons = $(html).find('.button');
 
-    button = $(html).find("button:last");
-    assert.equal(button.text().trim(), "Make admin");
-    assert(button.hasClass("make-admin"));
+    assert.equal($(buttons[0]).text().trim(), "Deactivate");
+    assert($(buttons[0]).hasClass("deactivate"));
+
+    assert.equal($(buttons[1]).text().trim(), "Make admin");
+    assert($(buttons[1]).hasClass("make-admin"));
+
+    assert.equal($(buttons[2]).attr('title').trim(), "Edit User");
+    assert($(buttons[2]).hasClass("open-user-form"));
 
     global.write_handlebars_output("admin_user_list", html);
 }());

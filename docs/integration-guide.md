@@ -559,7 +559,7 @@ The second part is a `div` with the webhook's usage instructions:
 These documentation blocks should fall alphabetically. For the
 `integration-lozenge` div this happens automatically when the html is
 generated. For the `integration-instructions` div, we have added the div
-between the blocks for Github and Hubot, respectively.
+between the blocks for GitHub and Hubot, respectively.
 
 See [Documenting your integration](#documenting-your-integration) for further
 details, including how to easily create the message screenshot.

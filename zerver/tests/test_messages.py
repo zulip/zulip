@@ -32,8 +32,7 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     check_message, check_send_message,
-    create_stream_if_needed,
-    do_add_subscription, do_create_user,
+    do_create_user,
     get_client,
 )
 
@@ -427,9 +426,9 @@ class StreamMessagesTest(ZulipTestCase):
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
         realm = get_realm("zulip.com")
-        stream, _ = create_stream_if_needed(realm, non_ascii_stream_name)
+        stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
-            do_add_subscription(user_profile, stream, no_log=True)
+            self.subscribe_to_stream(user_profile.email, stream.name)
 
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
@@ -438,11 +437,11 @@ class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self):
         # type: () -> None
-        realm = get_realm("zulip.com")
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        stream, _ = create_stream_if_needed(realm, 'devel')
+        stream_name = u'Çiğdem'
+        stream = self.make_stream(stream_name)
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
 
@@ -827,7 +826,7 @@ class EditMessageTest(ZulipTestCase):
     def test_fetch_raw_message(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+        msg_id = self.send_message("hamlet@zulip.com", "cordelia@zulip.com", Recipient.PERSONAL,
                                    subject="editing", content="**before** edit")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
         self.assert_json_success(result)
@@ -836,11 +835,44 @@ class EditMessageTest(ZulipTestCase):
 
         # Test error cases
         result = self.client_post('/json/fetch_raw_message', dict(message_id=999999))
-        self.assert_json_error(result, 'No such message')
+        self.assert_json_error(result, 'Invalid message(s)')
 
         self.login("cordelia@zulip.com")
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
-        self.assert_json_error(result, 'Message was not sent by you')
+        self.assert_json_success(result)
+
+        self.login("othello@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_fetch_raw_message_stream_wrong_realm(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        stream = self.make_stream('public_stream')
+        self.subscribe_to_stream(email, stream.name)
+        msg_id = self.send_message(email, stream.name, Recipient.STREAM,
+                                   subject="test", content="test")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+
+        self.login("sipbtest@mit.edu")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_fetch_raw_message_private_stream(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        stream = self.make_stream('private_stream', invite_only=True)
+        self.subscribe_to_stream(email, stream.name)
+        msg_id = self.send_message(email, stream.name, Recipient.STREAM,
+                                   subject="test", content="test")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_success(result)
+        self.login("othello@zulip.com")
+        result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
+        self.assert_json_error(result, 'Invalid message(s)')
 
     def test_edit_message_no_changes(self):
         # type: () -> None
@@ -1215,6 +1247,83 @@ class StarTests(ZulipTestCase):
             if msg['id'] in message_ids:
                 self.assertEqual(msg['flags'], [])
 
+    def test_change_star_public_stream_historical(self):
+        # type: () -> None
+        """
+        You can set a message as starred/un-starred through
+        POST /json/messages/flags.
+        """
+        stream_name = "new_stream"
+        self.subscribe_to_stream("hamlet@zulip.com", stream_name)
+        self.login("hamlet@zulip.com")
+        message_ids = [self.send_message("hamlet@zulip.com", stream_name,
+                                         Recipient.STREAM, "test")]
+
+        # Now login as another user who wasn't on that stream
+        self.login("cordelia@zulip.com")
+
+        # We can't change flags other than "starred" on historical messages:
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps(message_ids),
+                                   "op": "add",
+                                   "flag": "read"})
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Trying to change a list of more than one historical message fails
+        result = self.change_star(message_ids * 2)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Confirm that one can change the historical flag now
+        result = self.change_star(message_ids)
+        self.assert_json_success(result)
+
+        for msg in self.get_old_messages():
+            if msg['id'] in message_ids:
+                self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
+            else:
+                self.assertEqual(msg['flags'], ['read'])
+
+        result = self.change_star(message_ids, False)
+        self.assert_json_success(result)
+
+        # But it still doesn't work if you're in another realm
+        self.login("sipbtest@mit.edu")
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_change_star_private_message_security(self):
+        # type: () -> None
+        """
+        You can set a message as starred/un-starred through
+        POST /json/messages/flags.
+        """
+        self.login("hamlet@zulip.com")
+        message_ids = [self.send_message("hamlet@zulip.com", "hamlet@zulip.com",
+                                         Recipient.PERSONAL, "test")]
+
+        # Starring private messages you didn't receive fails.
+        self.login("cordelia@zulip.com")
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_change_star_private_stream_security(self):
+        # type: () -> None
+        stream_name = "private_stream"
+        self.make_stream(stream_name, invite_only=True)
+        self.subscribe_to_stream("hamlet@zulip.com", stream_name)
+        self.login("hamlet@zulip.com")
+        message_ids = [self.send_message("hamlet@zulip.com", stream_name,
+                                         Recipient.STREAM, "test")]
+
+        # Starring private stream messages you received works
+        result = self.change_star(message_ids)
+        self.assert_json_success(result)
+
+        # Starring private stream messages you didn't receive fails.
+        self.login("cordelia@zulip.com")
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
     def test_new_message(self):
         # type: () -> None
         """
@@ -1314,8 +1423,8 @@ class CheckMessageTest(ZulipTestCase):
         # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
         client = make_client(name="test suite")
-        stream_name = 'integration'
-        stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
+        stream_name = u'España y Francia'
+        self.make_stream(stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]
@@ -1344,8 +1453,8 @@ class CheckMessageTest(ZulipTestCase):
 
         sender = bot
         client = make_client(name="test suite")
-        stream_name = 'integration'
-        stream, _ = create_stream_if_needed(get_realm("zulip.com"), stream_name)
+        stream_name = u'Россия'
+        self.make_stream(stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]

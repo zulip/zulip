@@ -11,7 +11,8 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
 from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
-    get_force_push_commits_event_message, get_remove_branch_event_message
+    get_force_push_commits_event_message, get_remove_branch_event_message, get_pull_request_event_message,\
+    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_issue_event_message
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
@@ -20,8 +21,6 @@ USER_PART = 'User {display_name}(login: {username})'
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_COMMENT_BODY = USER_PART + ' added [comment]({url_to_comment}) to commit.'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
-BITBUCKET_ISSUE_ACTION_BODY = USER_PART + ' {action} [an issue]({issue_url})'
-BITBUCKET_PULL_REQUEST_ACTION_BODY = USER_PART + ' {action} ["{title}" pull request]({pull_request_url})'
 BITBUCKET_PULL_REQUEST_COMMENT_ACTION_BODY = USER_PART + ' {action} [comment]({comment_url} ' + \
                                              'in ["{title}" pull request]({pull_request_url})'
 
@@ -71,6 +70,20 @@ def get_subject_based_on_type(payload, type):
     # type: (Dict[str, Any], str) -> text_type
     if type == 'push':
         return get_subject_for_branch_specified_events(payload)
+    if type.startswith('pull_request'):
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repository_name(payload.get('repository')),
+            type='PR',
+            id=payload['pullrequest']['id'],
+            title=payload['pullrequest']['title']
+        )
+    if type.startswith('issue'):
+        return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=get_repository_name(payload.get('repository')),
+            type='Issue',
+            id=payload['issue']['id'],
+            title=payload['issue']['title']
+        )
     return get_subject(payload)
 
 def get_type(request, payload):
@@ -177,22 +190,47 @@ def get_commit_status_changed_body(payload):
     )
 
 def get_issue_action_body(payload, action):
-    # type: (Dict[str, Any], str) -> str
-    return BITBUCKET_ISSUE_ACTION_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
-        action=action,
-        issue_url=payload['issue']['links']['html']['href']
+    # type: (Dict[str, Any], str) -> text_type
+    issue = payload['issue']
+    assignee = None
+    message = None
+    if action == 'created':
+        if issue['assignee']:
+            assignee = issue['assignee'].get('username')
+        message = issue['content']['raw']
+
+    return get_issue_event_message(
+        get_user_username(payload),
+        action,
+        issue['links']['html']['href'],
+        message,
+        assignee
     )
 
 def get_pull_request_action_body(payload, action):
-    # type: (Dict[str, Any], str) -> str
-    return BITBUCKET_PULL_REQUEST_ACTION_BODY.format(
-        display_name=get_user_display_name(payload),
-        username=get_user_username(payload),
-        action=action,
-        title=get_pull_request_title(payload['pullrequest']),
-        pull_request_url=get_pull_request_url(payload['pullrequest'])
+    # type: (Dict[str, Any], str) -> text_type
+    pull_request = payload['pullrequest']
+    return get_pull_request_event_message(
+        get_user_username(payload),
+        action,
+        get_pull_request_url(pull_request),
+    )
+
+def get_pull_request_created_or_updated_body(payload, action):
+    # type: (Dict[str, Any], str) -> text_type
+    pull_request = payload['pullrequest']
+    assignee = None
+    if pull_request.get('reviewers'):
+        assignee = pull_request.get('reviewers')[0]['username']
+
+    return get_pull_request_event_message(
+        get_user_username(payload),
+        action,
+        get_pull_request_url(pull_request),
+        target_branch=pull_request['source']['branch']['name'],
+        base_branch=pull_request['destination']['branch']['name'],
+        message=pull_request['description'],
+        assignee=assignee
     )
 
 def get_pull_request_comment_action_body(payload, action):
@@ -250,8 +288,8 @@ GET_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'issue_updated': partial(get_issue_action_body, action='updated'),
     'issue_created': partial(get_issue_action_body, action='created'),
     'issue_commented': partial(get_issue_action_body, action='commented'),
-    'pull_request_created': partial(get_pull_request_action_body, action='created'),
-    'pull_request_updated': partial(get_pull_request_action_body, action='updated'),
+    'pull_request_created': partial(get_pull_request_created_or_updated_body, action='created'),
+    'pull_request_updated': partial(get_pull_request_created_or_updated_body, action='updated'),
     'pull_request_approved': partial(get_pull_request_action_body, action='approved'),
     'pull_request_unapproved': partial(get_pull_request_action_body, action='unapproved'),
     'pull_request_merged': partial(get_pull_request_action_body, action='merged'),

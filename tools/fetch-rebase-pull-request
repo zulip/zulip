@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 set -x
 
 request_id="$1"
-git fetch upstream "pull/$request_id/head"
-git checkout upstream/master -b "review-${request_id}"
+remote=${2:-"upstream"}
+git fetch "$remote" "pull/$request_id/head"
+git checkout -B "review-${request_id}" $remote/master
 git reset --hard FETCH_HEAD
 git pull --rebase

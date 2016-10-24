@@ -1,6 +1,6 @@
 # Translating Zulip
 
-Zulip has full support for unicode, so you can already use your
+Zulip has full support for Unicode, so you can already use your
 preferred language everywhere in Zulip.
 
 To make Zulip even better for users around the world, the Zulip UI is
@@ -9,19 +9,23 @@ German, French, Chinese, Russian, and Japanese, with varying levels of
 progress.  If you speak a language other than English, your help with
 translating Zulip would be greatly appreciated!
 
-If you're interested in contributing translations to Zulip, join the
-[Zulip project on Transifex](https://www.transifex.com/zulip/zulip/)
-and ask to join any languages you'd like to contribute to (or add new
-ones).  Transifex's notification system sometimes fails to notify the
-maintainers when you ask to join a project, so please send a quick
-email to zulip-core@googlegroups.com when you request to join the
-project or add a language so that we can be sure to accept your
-request to contribute.
+If you're interested in contributing translations to Zulip, please
+[join the "translation" stream in our developers' Zulip
+chat](https://zulip.tabbott.net/#narrow/stream/translation), and say
+hello. And please join the [Zulip project on
+Transifex](https://www.transifex.com/zulip/zulip/) and ask to join any
+languages you'd like to contribute to (or add new ones).  Transifex's
+notification system sometimes fails to notify the maintainers when you
+ask to join a project, so please send a quick email to
+zulip-core@googlegroups.com when you request to join the project or
+add a language so that we can be sure to accept your request to
+contribute.
 
 ## Setting Default Language in Zulip
 
 Zulip allows you to set the default language through the settings
-page under 'Display Settings' section.
+page, in the 'Display Settings' section. The URL will be
+`/#settings/display-settings` on your realm.
 
 ## Translation Resource Files
 
@@ -45,17 +49,15 @@ idiosyncrasy is also handled in the Transifex config file.
 
 The end-to-end process to get the translations working is as follows:
 
-1. Mark the strings for translations (see sections for backend and
-   frontend translations for details on this).
+1. Mark the strings for translations (see sections for
+   [backend](#backend-translations) and
+   [frontend](#frontend-translations) translations for details on
+   this).
 
-2. Create JSON formatted [resource][] files using the `python manage makemessages`
-   command. This command will create a resource file called `translations.json`
-   for frontend and `django.po` for backend for every language under
-   `static/locale`. The location for frontend resource file can be
-   changed by passing an argument to the command (see the help for the
-   command for further details). However, make sure that the location
-   is publicly accessible since frontend files are loaded through XHR
-   in the frontend which will only work with publicly accessible resources.
+2. Create translation [resource][] files using the `python manage
+   makemessages` command. This command will create, for each language,
+   a resource file called `translations.json` for the frontend strings
+   and `django.po` for the backend strings.
 
    The `makemessages` command is idempotent in that:
 
@@ -67,12 +69,20 @@ The end-to-end process to get the translations working is as follows:
    - It will not override the value of a singular key if that value
      contains a translated text.
 
-3. Upload the resource files to Transifex using the `tx push -s -a`
-   command.
+3. A Zulip maintainer uploads the resource files to Transifex using the
+   `tx push -s -a` command.
 
-4. Download the updated resource files from Transifex using the
-   `tx pull -a` command. This command will download the resource files
-   from Transifex and replace your local resource files with them.
+4. Translators translate the strings in Transifex.
+
+5. With some setup, anyone can download the updated resource files
+   from Transifex using the `tx pull -a` command. This command will
+   download the resource files from Transifex and replace your local
+   resource files with them.
+
+6. One runs `python manage.py compilemessages` to compile the
+   translation strings so that they are will be used in the Zulip
+   development environment.  This is run automatically during Zulip
+   development environment provisioning.
 
 ## Backend Translations
 
@@ -113,8 +123,9 @@ You can instead use:
 ```
 
 Zulip expects all the error messages to be translatable as well.  To
-ensure this, the error message passed to `json_error` and `JsonableError`
-should always be a literal string enclosed by `_()` function, e.g:
+ensure this, the error message passed to `json_error` and
+`JsonableError` should always be a literal string enclosed by `_()`
+function, e.g.:
 
 ```
 json_error(_('English Text'))
@@ -128,18 +139,20 @@ Zulip linter (`tools/lint-all`) checks for correct usage.
 
 Zulip uses the [i18next][] library for frontend translations. There
 are two types of files in Zulip frontend which can hold translatable
-strings, JavaScript code files and Handlebar templates. To mark a
-string translatable in JavaScript files pass it to the `i18n.t` function.
+strings: JavaScript code files and Handlebar templates. To mark a
+string translatable in JavaScript files, pass it to the `i18n.t`
+function.
 
 ```
 i18n.t('English Text', context);
 i18n.t('English text with a __variable__', {'variable': 'Variable value'});
 ```
 
-Note: In the second example above, instead of enclosing the variable with
-handlebars, `{{ }}`, we enclose it with `__` because we need to
-differentiate the variable from the Handlebar tags. The symbol which is
-used to enclose the variables can be changed in `/static/js/src/main.js`.
+Note: In the second example above, instead of enclosing the variable
+with handlebars, `{{ }}`, we enclose it with `__` because we need to
+differentiate the variable from the Handlebar tags. The symbol which
+is used to enclose the variables can be changed in
+`/static/js/src/main.js`.
 
 `i18next` also supports plural translations. To support plurals make
 sure your resource file contatins the related keys:
@@ -193,8 +206,8 @@ var context = {'variable': 'variable value'};
 ```
 
 The rules for plurals are same as for JavaScript files. You just have
-to declare the appropriate keys in the resource file and then include the
-`count` in the context.
+to declare the appropriate keys in the resource file and then include
+the `count` in the context.
 
 
 [Django]: https://docs.djangoproject.com/en/1.9/topics/templates/#the-django-template-language
@@ -216,20 +229,20 @@ Django figures out the effective language by going through the
 following steps:
 
 1. It looks for the language code in the url.
-2. It looks for the LANGUGE_SESSION_KEY key in the current user's
+2. It looks for the `LANGUAGE_SESSION_KEY` key in the current user's
 session.
 3. It looks for the cookie named 'django_language'. You can set a
-different name through LANGUAGE_COOKIE_NAME setting.
+different name through the `LANGUAGE_COOKIE_NAME` setting.
 4. It looks for the `Accept-Language` HTTP header in the HTTP request.
 Normally your browser will take care of this.
 
-The easiest way to test translations is through the i18n urls e.g. if
-you have German translations available you can access the German
-version of a page by going to `/de/path_to_page`.
+The easiest way to test translations is through the i18n URLs, e.g.,
+if you have German translations available, you can access the German
+version of a page by going to `/de/path_to_page` in your browser.
 
 To test translations using other methods you will need an HTTP client
-library like `requests`, `cURL` or `urllib`. Here is a sample code to
-test `Accept-Language` header using requests:
+library like `requests`, `cURL` or `urllib`. Here is some sample code
+to test `Accept-Language` header using Python and `requests`:
 
 ```
 import requests

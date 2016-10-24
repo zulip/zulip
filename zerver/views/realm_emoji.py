@@ -25,4 +25,4 @@ def upload_emoji(request, user_profile):
 def delete_emoji(request, user_profile, emoji_name):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     do_remove_realm_emoji(user_profile.realm, emoji_name)
-    return json_success({})
+    return json_success()

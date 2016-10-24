@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, Mapping, MutableMapping,
-    Optional, Sequence, Tuple, TypeVar, Union
+    Optional, Sequence, Set, Tuple, TypeVar, Union
 )
 
 from django.utils.translation import ugettext as _
@@ -19,6 +19,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.context_managers import lockfile
 from zerver.lib.message import (
+    access_message,
     MessageDict,
     message_to_dict,
     render_markdown,
@@ -43,7 +44,7 @@ from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
-from django.utils.importlib import import_module
+from importlib import import_module
 from django.core.mail import EmailMessage
 from django.utils.timezone import now
 
@@ -257,9 +258,9 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                 'EMAIL': user_profile.email,
                 'merge_vars': {
                     'NAME': user_profile.full_name,
-                    'REALM': user_profile.realm.domain,
+                    'REALM_ID': user_profile.realm.id,
                     'OPTIN_IP': newsletter_data["IP"],
-                    'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
+                    'OPTIN_TIME': datetime.datetime.isoformat(now().replace(microsecond=0)),
                 },
             },
         lambda event: None)
@@ -338,7 +339,7 @@ def user_sessions(user_profile):
 
 def delete_session(session):
     # type: (Session) -> None
-    session_engine.SessionStore(session.session_key).delete()
+    session_engine.SessionStore(session.session_key).delete() # type: ignore # import_module
 
 def delete_user_sessions(user_profile):
     # type: (UserProfile) -> None
@@ -529,7 +530,7 @@ def do_deactivate_stream(stream, log=True):
     # type: (Stream, bool) -> None
     user_profiles = UserProfile.objects.filter(realm=stream.realm)
     for user_profile in user_profiles:
-        do_remove_subscription(user_profile, stream)
+        bulk_remove_subscriptions([user_profile], [stream])
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
@@ -816,6 +817,72 @@ def do_send_messages(messages):
     # mirror single zephyr messages at a time and don't otherwise
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
+
+def get_typing_notification_recipients(notification):
+    # type: (Dict[str, Any]) -> Dict[str, Any]
+    if notification['recipient'].type == Recipient.PERSONAL:
+        recipients = [notification['sender'],
+                      get_user_profile_by_id(notification['recipient'].type_id)]
+    elif notification['recipient'].type == Recipient.HUDDLE:
+        # We use select_related()/only() here, while the PERSONAL case above uses
+        # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
+        # typically have more recipients than PMs, so get_user_profile_by_id() would be
+        # a bit more expensive here, given that we need to hit the DB anyway and only
+        # care about the email from the user profile.
+        fields = [
+            'user_profile__id',
+            'user_profile__email',
+            'user_profile__is_active',
+            'user_profile__realm__domain'
+        ]
+        query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
+                recipient=notification['recipient'], active=True)
+        recipients = [s.user_profile for s in query]
+    elif notification['recipient'].type == Recipient.STREAM:
+        raise ValueError('Forbidden recipient type')
+    else:
+        raise ValueError('Bad recipient type')
+    notification['recipients'] = [{'id': profile.id, 'email': profile.email} for profile in recipients]
+    notification['active_recipients'] = [profile for profile in recipients if profile.is_active]
+    return notification
+
+def do_send_typing_notification(notification):
+    # type: (Dict[str, Any]) -> None
+    notification = get_typing_notification_recipients(notification)
+    event = dict(
+            type            = 'typing',
+            op              = notification['op'],
+            sender          = notification['sender'],
+            recipients      = notification['recipients'])
+
+    # Only deliver the message to active user recipients
+    send_event(event, notification['active_recipients'])
+
+# check_send_typing_notification:
+# Checks the typing notification and sends it
+def check_send_typing_notification(sender, notification_to, operator):
+    # type: (UserProfile, Sequence[text_type], text_type) -> None
+    typing_notification = check_typing_notification(sender, notification_to, operator)
+    do_send_typing_notification(typing_notification)
+
+# check_typing_notification:
+# Returns typing notification ready for sending with do_send_typing_notification on success
+# or the error message (string) on error.
+def check_typing_notification(sender, notification_to, operator):
+    # type: (UserProfile, Sequence[text_type], text_type) -> Dict[str, Any]
+    if len(notification_to) == 0:
+        raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
+    elif operator not in ('start', 'stop'):
+        raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
+    else:
+        try:
+            recipient = recipient_for_emails(notification_to, False,
+                                             sender, sender)
+        except ValidationError as e:
+            assert isinstance(e.messages[0], six.string_types)
+            raise JsonableError(e.messages[0])
+    typing_notification = {'sender': sender, 'recipient': recipient, 'op': operator}
+    return typing_notification
 
 def do_create_stream(realm, stream_name):
     # type: (Realm, text_type) -> None
@@ -1287,28 +1354,6 @@ def set_stream_color(user_profile, stream_name, color=None):
     subscription.save(update_fields=["color"])
     return color
 
-def get_subscribers_to_streams(streams, requesting_user=None):
-    # type: (Iterable[Stream], Optional[UserProfile]) -> Dict[UserProfile, List[Stream]]
-    """ Return a dict where the keys are user profiles, and the values are
-    arrays of all the streams within 'streams' to which that user is
-    subscribed.
-    """
-    # TODO: Modify this function to not use UserProfile objects as dict keys
-    subscribes_to = {} # type: Dict[UserProfile, List[Stream]]
-    for stream in streams:
-        try:
-            subscribers = get_subscribers(stream, requesting_user=requesting_user)
-        except JsonableError:
-            # We can't get a subscriber list for this stream. Probably MIT.
-            continue
-
-        for subscriber in subscribers:
-            if subscriber not in subscribes_to:
-                subscribes_to[subscriber] = []
-            subscribes_to[subscriber].append(stream)
-
-    return subscribes_to
-
 def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
     # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[text_type]], bool) -> None
     if not no_log:
@@ -1333,6 +1378,43 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
     event = dict(type="subscription", op="add",
                  subscriptions=payload)
     send_event(event, [user_profile.id])
+
+def get_peer_user_ids_for_stream_change(stream, altered_users, subscribed_users):
+    # type: (Stream, Iterable[UserProfile], Iterable[UserProfile]) -> Set[int]
+
+    '''
+    altered_users is a list of users that we are adding/removing
+    subscribed_users is the list of already subscribed users
+
+    Based on stream policy, we notify the correct bystanders, while
+    not notifying altered_users (who get subscribers via another event)
+    '''
+
+    altered_user_ids = [user.id for user in altered_users]
+
+    if stream.invite_only:
+        # PRIVATE STREAMS
+        all_subscribed_ids = [user.id for user in subscribed_users]
+        return set(all_subscribed_ids) - set(altered_user_ids)
+
+    else:
+        # PUBLIC STREAMS
+        # We now do "peer_add" or "peer_remove" events even for streams
+        # users were never subscribed to, in order for the neversubscribed
+        # structure to stay up-to-date.
+        return set(active_user_ids(stream.realm)) - set(altered_user_ids)
+
+def query_all_subs_by_stream(streams):
+    # type: (Iterable[Stream]) -> Dict[int, List[UserProfile]]
+    all_subs = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                           recipient__type_id__in=[stream.id for stream in streams],
+                                           user_profile__is_active=True,
+                                           active=True).select_related('recipient', 'user_profile')
+
+    all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
+    for sub in all_subs:
+        all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
+    return all_subs_by_stream
 
 def bulk_add_subscriptions(streams, users):
     # type: (Iterable[Stream], Iterable[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
@@ -1400,22 +1482,14 @@ def bulk_add_subscriptions(streams, users):
     # First, get all users subscribed to the streams that we care about
     # We fetch all subscription information upfront, as it's used throughout
     # the following code and we want to minize DB queries
-    all_subs = Subscription.objects.filter(recipient__type=Recipient.STREAM,
-                                           recipient__type_id__in=[stream.id for stream in streams],
-                                           user_profile__is_active=True,
-                                           active=True).select_related('recipient', 'user_profile')
-
-    all_subs_by_stream = defaultdict(list) # type: Dict[int, List[UserProfile]]
-    emails_by_stream = defaultdict(list) # type: Dict[int, List[text_type]]
-    for sub in all_subs:
-        all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
-        emails_by_stream[sub.recipient.type_id].append(sub.user_profile.email)
+    all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
     def fetch_stream_subscriber_emails(stream):
         # type: (Stream) -> List[text_type]
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             return []
-        return emails_by_stream[stream.id]
+        users = all_subs_by_stream[stream.id]
+        return [u.email for u in users]
 
     sub_tuples_by_user = defaultdict(list) # type: Dict[int, List[Tuple[Subscription, Stream]]]
     new_streams = set() # type: Set[Tuple[int, int]]
@@ -1434,65 +1508,24 @@ def bulk_add_subscriptions(streams, users):
             continue
 
         new_users = [user for user in users if (user.id, stream.id) in new_streams]
-        new_user_ids = [user.id for user in new_users]
-        non_new_user_ids = set(active_user_ids(user_profile.realm)) - set(new_user_ids)
-        all_subscribed_ids = [user.id for user in all_subs_by_stream[stream.id]]
-        other_user_ids = set(all_subscribed_ids) - set(new_user_ids)
-        if not stream.invite_only:
-            # We now do "peer_add" events even for streams users were
-            # never subscribed to, in order for the neversubscribed
-            # structure to stay up-to-date.
-            for user_profile in new_users:
+
+        peer_user_ids = get_peer_user_ids_for_stream_change(
+            stream=stream,
+            altered_users=new_users,
+            subscribed_users=all_subs_by_stream[stream.id]
+        )
+
+        if peer_user_ids:
+            for added_user in new_users:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
-                             user_email=user_profile.email)
-                send_event(event, non_new_user_ids)
-        elif other_user_ids:
-            for user_profile in new_users:
-                event = dict(type="subscription", op="peer_add",
-                             subscriptions=[stream.name],
-                             user_email=user_profile.email)
-                send_event(event, other_user_ids)
+                             user_email=added_user.email)
+                send_event(event, peer_user_ids)
+
 
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
             already_subscribed)
-
-# When changing this, also change bulk_add_subscriptions
-def do_add_subscription(user_profile, stream, no_log=False):
-    # type: (UserProfile, Stream, bool) -> bool
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    color = pick_color(user_profile)
-    # TODO: XXX: This transaction really needs to be done at the serializeable
-    # transaction isolation level.
-    with transaction.atomic():
-        vacant_before = stream.num_subscribers() == 0
-        (subscription, created) = Subscription.objects.get_or_create(
-            user_profile=user_profile, recipient=recipient,
-            defaults={'active': True, 'color': color,
-                      'notifications': user_profile.default_desktop_notifications})
-        did_subscribe = created
-        if not subscription.active:
-            did_subscribe = True
-            subscription.active = True
-            subscription.save(update_fields=["active"])
-
-    if vacant_before and did_subscribe and not stream.invite_only:
-        event = dict(type="stream", op="occupy",
-                     streams=[stream.to_dict()])
-        send_event(event, active_user_ids(user_profile.realm))
-
-    if did_subscribe:
-        emails_by_stream = {stream.id: maybe_get_subscriber_emails(stream, user_profile)}
-        notify_subscriptions_added(user_profile, [(subscription, stream)],
-                                   lambda stream: emails_by_stream[stream.id], no_log)
-
-        event = dict(type="subscription", op="peer_add",
-                     subscriptions=[stream.name],
-                     user_email=user_profile.email)
-        send_event(event, active_user_ids(user_profile.realm))
-
-    return did_subscribe
 
 def notify_subscriptions_removed(user_profile, streams, no_log=False):
     # type: (UserProfile, Iterable[Stream], bool) -> None
@@ -1507,26 +1540,9 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
                  subscriptions=payload)
     send_event(event, [user_profile.id])
 
-    # As with a subscription add, send a 'peer subscription' notice to other
-    # subscribers so they know the user unsubscribed.
-    # FIXME: This code was mostly a copy-paste from notify_subscriptions_added.
-    #        We have since streamlined how we do notifications for adds, and
-    #        we should do the same for removes.
-    notifications_for = get_subscribers_to_streams(streams, requesting_user=user_profile)
-
-    for event_recipient, notifications in six.iteritems(notifications_for):
-        # Don't send a peer subscription notice to yourself.
-        if event_recipient == user_profile:
-            continue
-
-        stream_names = [stream.name for stream in notifications]
-        event = dict(type="subscription", op="peer_remove",
-                     subscriptions=stream_names,
-                     user_email=user_profile.email)
-        send_event(event, [event_recipient.id])
-
 def bulk_remove_subscriptions(users, streams):
     # type: (Iterable[UserProfile], Iterable[Stream]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+
     recipients_map = bulk_get_recipients(Recipient.STREAM,
                                          [stream.id for stream in streams]) # type: Mapping[int, Recipient]
     stream_map = {} # type: Dict[int, Stream]
@@ -1566,41 +1582,41 @@ def bulk_remove_subscriptions(users, streams):
                               for stream in new_vacant_streams])
         send_event(event, active_user_ids(user_profile.realm))
 
+    altered_user_dict = defaultdict(list) # type: Dict[int, List[UserProfile]]
     streams_by_user = defaultdict(list) # type: Dict[int, List[Stream]]
     for (sub, stream) in subs_to_deactivate:
         streams_by_user[sub.user_profile_id].append(stream)
+        altered_user_dict[stream.id].append(sub.user_profile)
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:
             continue
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
+    all_subs_by_stream = query_all_subs_by_stream(streams=streams)
+
+    for stream in streams:
+        if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
+            continue
+
+        altered_users = altered_user_dict[stream.id]
+
+        peer_user_ids = get_peer_user_ids_for_stream_change(
+            stream=stream,
+            altered_users=altered_users,
+            subscribed_users=all_subs_by_stream[stream.id]
+        )
+
+        if peer_user_ids:
+            for removed_user in altered_users:
+                event = dict(type="subscription",
+                             op="peer_remove",
+                             subscriptions=[stream.name],
+                             user_email=removed_user.email)
+                send_event(event, peer_user_ids)
+
     return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
             not_subscribed)
-
-def do_remove_subscription(user_profile, stream, no_log=False):
-    # type: (UserProfile, Stream, bool) -> bool
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    maybe_sub = Subscription.objects.filter(user_profile=user_profile,
-                                            recipient=recipient)
-    if len(maybe_sub) == 0:
-        return False
-    subscription = maybe_sub[0]
-    did_remove = subscription.active
-    subscription.active = False
-    with transaction.atomic():
-        subscription.save(update_fields=["active"])
-        vacant_after = stream.num_subscribers() == 0
-
-    if vacant_after and did_remove and not stream.invite_only:
-        event = dict(type="stream", op="vacate",
-                     streams=[stream.to_dict()])
-        send_event(event, active_user_ids(user_profile.realm))
-
-    if did_remove:
-        notify_subscriptions_removed(user_profile, [stream], no_log)
-
-    return did_remove
 
 def log_subscription_property_change(user_email, stream_name, property, value):
     # type: (text_type, text_type, text_type, Any) -> None
@@ -2383,17 +2399,8 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
                 raise JsonableError(_("Invalid message(s)"))
             if flag != "starred":
                 raise JsonableError(_("Invalid message(s)"))
-            # Check that the user could have read the relevant message
-            try:
-                message = Message.objects.get(id=messages[0])
-            except Message.DoesNotExist:
-                raise JsonableError(_("Invalid message(s)"))
-            recipient = Recipient.objects.get(id=message.recipient_id)
-            if recipient.type != Recipient.STREAM:
-                raise JsonableError(_("Invalid message(s)"))
-            stream = Stream.objects.select_related("realm").get(id=recipient.type_id)
-            if not stream.is_public():
-                raise JsonableError(_("Invalid message(s)"))
+            # Validate that the user could have read the relevant message
+            message = access_message(user_profile, messages[0])[0]
 
             # OK, this is a message that you legitimately have access
             # to via narrowing to the stream it is on, even though you
@@ -2732,7 +2739,11 @@ def gather_subscriptions_helper(user_profile):
             unsubscribed.append(stream_dict)
 
     all_streams_id_set = set(all_streams_id)
-    never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
+    # Listing public streams are disabled for Zephyr mirroring realms.
+    if user_profile.realm.is_zephyr_mirror_realm:
+        never_subscribed_stream_ids = set() # type: Set[int]
+    else:
+        never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
     never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
                                 if ns_stream_dict['id'] in never_subscribed_stream_ids]
 
@@ -2748,7 +2759,7 @@ def gather_subscriptions_helper(user_profile):
             never_subscribed.append(stream_dict)
 
     user_ids = set()
-    for subs in [subscribed, unsubscribed]:
+    for subs in [subscribed, unsubscribed, never_subscribed]:
         for sub in subs:
             if 'subscribers' in sub:
                 for subscriber in sub['subscribers']:

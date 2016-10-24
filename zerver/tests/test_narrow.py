@@ -12,7 +12,6 @@ from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
 )
-from zerver.lib.actions import create_stream_if_needed, do_add_subscription
 from zerver.lib.message import (
     MessageDict,
 )
@@ -276,7 +275,7 @@ class BuildNarrowFilterTest(TestCase):
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
         realm = get_realm('zulip.com')
-        create_stream_if_needed(realm, 'public_stream')
+        self.make_stream('public_stream', realm=realm)
 
         # Negated stream searches should not include history.
         narrow = [
@@ -403,10 +402,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = get_realm("zulip.com")
-        stream, _ = create_stream_if_needed(realm, "Scotland")
-        do_add_subscription(get_user_profile_by_email("hamlet@zulip.com"),
-                            stream, no_log=True)
+        self.subscribe_to_stream("hamlet@zulip.com", 'Scotland')
         self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
         messages = get_user_messages(get_user_profile_by_email("hamlet@zulip.com"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
@@ -429,14 +425,11 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = get_realm("mit.edu")
-        lambda_stream, _ = create_stream_if_needed(realm, u"\u03bb-stream")
-        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
-                            lambda_stream, no_log=True)
+        lambda_stream_name = u"\u03bb-stream"
+        self.subscribe_to_stream("starnine@mit.edu", lambda_stream_name)
 
-        lambda_stream_d, _ = create_stream_if_needed(realm, u"\u03bb-stream.d")
-        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
-                            lambda_stream_d, no_log=True)
+        lambda_stream_d_name = u"\u03bb-stream.d"
+        self.subscribe_to_stream("starnine@mit.edu", lambda_stream_d_name)
 
         self.send_message("starnine@mit.edu", u"\u03bb-stream", Recipient.STREAM)
         self.send_message("starnine@mit.edu", u"\u03bb-stream.d", Recipient.STREAM)
@@ -463,10 +456,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = get_realm("mit.edu")
-        stream, _ = create_stream_if_needed(realm, "Scotland")
-        do_add_subscription(get_user_profile_by_email("starnine@mit.edu"),
-                            stream, no_log=True)
+        self.subscribe_to_stream("starnine@mit.edu", "Scotland")
 
         self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic")
@@ -836,8 +826,6 @@ class GetOldMessagesTest(ZulipTestCase):
         self.fail("get_old_messages query not found")
 
     def test_use_first_unread_anchor_with_some_unread_messages(self):
-        realm = get_realm('zulip.com')
-        create_stream_if_needed(realm, 'devel')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
         # Have Othello send messages to Hamlet that he hasn't read.
@@ -872,8 +860,6 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn(cond, sql)
 
     def test_use_first_unread_anchor_with_no_unread_messages(self):
-        realm = get_realm('zulip.com')
-        create_stream_if_needed(realm, 'devel')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
         query_params = dict(
@@ -908,9 +894,9 @@ class GetOldMessagesTest(ZulipTestCase):
         """
 
         realm = get_realm('zulip.com')
-        create_stream_if_needed(realm, 'devel')
+        self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css'], ['bogus', 'bogus']])
+        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
         user_profile.save()
 
         query_params = dict(
@@ -943,7 +929,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_exclude_muting_conditions(self):
         realm = get_realm('zulip.com')
-        create_stream_if_needed(realm, 'devel')
+        self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
         # Test the do-nothing case first.
@@ -959,7 +945,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(muting_conditions, [])
 
         # Ok, now set up our muted topics to include a topic relevant to our narrow.
-        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['devel', 'css'], ['bogus', 'bogus']])
+        user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
         user_profile.save()
 
         # And verify that our query will exclude them.
@@ -999,7 +985,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(params['recipient_id_1'], get_recipient_id_for_stream_name(realm, 'Verona'))
         self.assertEqual(params['recipient_id_2'], get_recipient_id_for_stream_name(realm, 'Scotland'))
         self.assertEqual(params['upper_1'], 'golf')
-        self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'devel'))
+        self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'web stuff'))
         self.assertEqual(params['upper_2'], 'css')
 
     def test_get_old_messages_queries(self):

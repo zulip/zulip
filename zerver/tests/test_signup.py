@@ -6,16 +6,16 @@ from django.test import TestCase
 
 from zilencer.models import Deployment
 
-from zerver.views import get_invitee_emails_set, do_change_password
+from zerver.views import do_change_password
+from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
 from zerver.lib.actions import (
-    create_stream_if_needed,
-    do_add_subscription,
     set_default_streams,
+    do_change_is_admin
 )
 
 from zerver.lib.initial_password import initial_password
@@ -56,8 +56,10 @@ class PublicURLTest(ZulipTestCase):
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
         # through Tornado.
-        get_urls = {200: ["/accounts/home/", "/accounts/login/"],
-                    302: ["/"],
+        get_urls = {200: ["/accounts/home/", "/accounts/login/"
+                          "/en/accounts/home/", "/ru/accounts/home/",
+                          "/en/accounts/login/", "/ru/accounts/login/"],
+                    302: ["/", "/en/", "/ru/"],
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
@@ -181,11 +183,11 @@ class LoginTest(ZulipTestCase):
     def test_register(self):
         # type: () -> None
         realm = get_realm("zulip.com")
-        streams = ["stream_%s" % i for i in range(40)]
-        for stream in streams:
-            create_stream_if_needed(realm, stream)
+        stream_names = ["stream_%s" % i for i in range(40)]
+        for stream_name in stream_names:
+            self.make_stream(stream_name, realm=realm)
 
-        set_default_streams(realm, streams)
+        set_default_streams(realm, stream_names)
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
@@ -246,69 +248,6 @@ class LoginTest(ZulipTestCase):
         self.client_post('/accounts/logout/')
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
-    def test_register_first_user_with_invites(self):
-        # type: () -> None
-        """
-        The first user in a realm has a special step in their signup workflow
-        for inviting other users. Do as realistic an end-to-end test as we can
-        without Tornado running.
-        """
-        username = "user1"
-        password = "test"
-        domain = "test.com"
-        email = "user1@test.com"
-
-        # Create a new realm to ensure that we're the first user in it.
-        Realm.objects.create(domain=domain, name="Test Inc.")
-
-        # Start the signup process by supplying an email address.
-        result = self.client_post('/accounts/home/', {'email': email})
-
-        # Check the redirect telling you to check your mail for a confirmation
-        # link.
-        self.assertEquals(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s@%s" % (username, domain)))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEquals(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(username, password, domain)
-        self.assertEquals(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith("/invite/"))
-
-        # Invite other users to join you.
-        result = self.client_get(result["Location"])
-        self.assert_in_response("You're the first one here!", result)
-
-        # Reset the outbox for our invites.
-        from django.core.mail import outbox
-        outbox.pop()
-
-        invitees = ['alice@' + domain, 'bob@' + domain]
-        params = {
-            'invitee_emails': ujson.dumps(invitees)
-        }
-        result = self.client_post('/json/bulk_invite_users', params)
-        self.assert_json_success(result)
-
-        # We really did email these users, and they have PreregistrationUser
-        # objects.
-        email_recipients = [message.recipients()[0] for message in outbox]
-        self.assertEqual(len(outbox), len(invitees))
-        self.assertEqual(sorted(email_recipients), sorted(invitees))
-
-        user_profile = get_user_profile_by_email(email)
-        self.assertEqual(len(invitees), PreregistrationUser.objects.filter(
-                referred_by=user_profile).count())
-
-        # After this we start manipulating browser information, so stop here.
 
 class InviteUserTest(ZulipTestCase):
 
@@ -395,8 +334,8 @@ class InviteUserTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         private_stream_name = "Secret"
-        (stream, _) = create_stream_if_needed(user_profile.realm, private_stream_name, invite_only=True)
-        do_add_subscription(user_profile, stream)
+        self.make_stream(private_stream_name, invite_only=True)
+        self.subscribe_to_stream(user_profile.email, private_stream_name)
         public_msg_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                                           "Public topic", "Public message")
         secret_msg_id = self.send_message("hamlet@zulip.com", private_stream_name, Recipient.STREAM,
@@ -545,13 +484,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         invitee = "alice-test@zulip.com"
 
         stream_name = u"hÃ¼mbÃ¼Çµ"
-        realm = get_realm("zulip.com")
-        stream, _ = create_stream_if_needed(realm, stream_name)
 
         # Make sure we're subscribed before inviting someone.
-        do_add_subscription(
-            get_user_profile_by_email("hamlet@zulip.com"),
-            stream, no_log=True)
+        self.subscribe_to_stream("hamlet@zulip.com", stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
@@ -702,10 +637,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEquals(realm.restricted_to_domain, False)
             self.assertEquals(realm.invite_required, True)
 
-            self.assertTrue(result["Location"].endswith("/invite/"))
-
-            result = self.client_get(result["Location"])
-            self.assert_in_response("You're the first one here!", result)
+            self.assertTrue(result["Location"].endswith("/"))
 
     def test_realm_corporate_defaults(self):
         # type: () -> None
@@ -817,3 +749,35 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, subdomain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+class DeactivateUserTest(ZulipTestCase):
+
+    def test_deactivate_user(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertTrue(user.is_active)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertFalse(user.is_active)
+        self.login(email, fails=True)
+
+    def test_do_not_deactivate_final_admin(self):
+        # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
+        user = get_user_profile_by_email('iago@zulip.com')
+        self.assertTrue(user.is_active)
+        self.client_delete('/json/users/me')
+        user = get_user_profile_by_email('iago@zulip.com')
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.is_realm_admin)
+        email = 'hamlet@zulip.com'
+        user_2 = get_user_profile_by_email('hamlet@zulip.com')
+        do_change_is_admin(user_2, True)
+        self.assertTrue(user_2.is_realm_admin)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_success(result)
+        do_change_is_admin(user, True)

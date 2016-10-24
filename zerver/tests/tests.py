@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
@@ -29,7 +29,7 @@ from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
-    do_add_subscription, do_remove_subscription, do_make_stream_private
+    do_make_stream_private
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
@@ -329,6 +329,31 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
 
+    def test_admin_user_can_change_full_name(self):
+        # type: () -> None
+        new_name = 'new name'
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assertTrue(result.status_code == 200)
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(hamlet.full_name, new_name)
+
+    def test_non_admin_cannot_change_full_name(self):
+        # type: () -> None
+        self.login('hamlet@zulip.com')
+        req = dict(full_name=ujson.dumps('new name'))
+        result = self.client_patch('/json/users/othello@zulip.com', req)
+        self.assert_json_error(result, 'Insufficient permission')
+
+    def test_admin_cannot_set_long_full_name(self):
+        # type: () -> None
+        new_name = 'a' * (UserProfile.MAX_NAME_LENGTH + 1)
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Name too long!')
+
 class ZephyrTest(ZulipTestCase):
     def test_webathena_kerberos_login(self):
         # type: () -> None
@@ -594,6 +619,9 @@ class DocPageTest(ZulipTestCase):
             # type: () -> None
             self._test('/api/', 'We hear you like APIs')
             self._test('/api/endpoints/', 'pre-built API bindings for Python')
+            self._test('/about/', 'Cambridge, Massachusetts')
+            # Test the i18n version of one of these pages.
+            self._test('/en/about/', 'Cambridge, Massachusetts')
             self._test('/apps/', 'Appsolutely')
             self._test('/features/', 'Talk about multiple topics at once')
             self._test('/hello/', 'workplace chat that actually improves your productivity')
@@ -884,7 +912,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, stream.name)
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
@@ -920,8 +948,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_remove_subscription(user_profile, stream)
+        self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
@@ -947,8 +974,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, 'Denmark')
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
@@ -984,8 +1010,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_remove_subscription(user_profile, stream)
+        self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         self.assert_num_bots_equal(0)
@@ -1222,8 +1247,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
@@ -1249,8 +1273,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_remove_subscription(user_profile, stream)
+        self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
@@ -1306,8 +1329,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(user_profile.email, "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
@@ -1332,8 +1354,7 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        stream = get_stream("Denmark", user_profile.realm)
-        do_remove_subscription(user_profile, stream)
+        self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
@@ -1972,6 +1993,17 @@ class HomeTest(ZulipTestCase):
         html = result.content.decode('utf-8')
         self.assertIn('Invite more users', html)
 
+    def test_desktop_home(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self.client_get("/desktop_home")
+        self.assertEquals(result.status_code, 301)
+        self.assertTrue(result["Location"].endswith("/desktop_home/"))
+        result = self.client_get("/desktop_home/")
+        self.assertEquals(result.status_code, 302)
+        self.assertEquals(result["Location"], "http://testserver/")
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
@@ -2019,86 +2051,65 @@ class ExtractedRecipientsTest(TestCase):
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
 
-# TODO: This class currently only tests the default-off
-# SEND_MISSED_MESSAGE_EMAILS_AS_USER=True case.  We should refactor it
-# to test both cases (the False case being the most important).
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
         # type: (text_type) -> text_type
         s = s.strip()
         return re.sub(r'\s+', ' ', s)
 
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_extra_context_in_missed_stream_messages(self, mock_random_token):
-        # type: (MagicMock) -> None
-        tokens = [str(random.getrandbits(32)) for _ in range(30)]
-        mock_random_token.side_effect = tokens
+    def _get_tokens(self):
+        # type: () -> List[str]
+        return [str(random.getrandbits(32)) for _ in range(30)]
 
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '0')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '1')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '2')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '3')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '4')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '5')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '6')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '7')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '8')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '9')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '10')
-        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
-        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
-
+    def _test_cases(self, tokens, msg_id, body, send_as_user):
+        # type: (List[str], int, str, bool) -> None
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
 
         msg = mail.outbox[0]
-        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t)
-                              for t in tokens]
+        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
-
+        from_email = sender
         self.assertEquals(len(mail.outbox), 1)
-        self.assertEqual(msg.from_email, '"%s" <%s>' % (othello.full_name, othello.email))
+        if send_as_user:
+            from_email = '"%s" <%s>' % (othello.full_name, othello.email)
+            self.assertEqual(msg.extra_headers['Sender'], sender)
+        else:
+            self.assertNotIn("Sender", msg.extra_headers)
+        self.assertEqual(msg.from_email, from_email)
         self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
-        self.assertEqual(msg.extra_headers['Sender'], sender)
-        self.assertIn(
-            'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**',
-            self.normalize_string(mail.outbox[0].body),
-        )
+        self.assertIn(body, self.normalize_string(msg.body))
 
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_extra_context_in_personal_missed_stream_messages(self, mock_random_token):
-        # type: (MagicMock) -> None
-        tokens = [str(random.getrandbits(32)) for _ in range(30)]
+    def _extra_context_in_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        for i in range(0, 11):
+            self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, str(i))
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
+        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
+        body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**'
+        self._test_cases(tokens, msg_id, body, send_as_user)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _extra_context_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
+        body = 'You and Othello, the Moor of Venice Extremely personal message!'
+        self._test_cases(tokens, msg_id, body, send_as_user)
 
-        othello = get_user_profile_by_email('othello@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
-        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
-
-        msg = mail.outbox[0]
-        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t)
-                              for t in tokens]
-        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
-
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEqual(msg.from_email, '"%s" <%s>' % (othello.full_name, othello.email))
-        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
-        self.assertEqual(msg.extra_headers['Sender'], sender)
-        self.assertIn('You and Othello, the Moor of Venice Extremely personal message!',
-                      self.normalize_string(msg.body))
-
-    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def test_extra_context_in_huddle_missed_stream_messages(self, mock_random_token):
-        # type: (MagicMock) -> None
-        tokens = [str(random.getrandbits(32)) for _ in range(30)]
+    def _extra_context_in_huddle_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message("othello@zulip.com",
@@ -2106,23 +2117,37 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Group personal message!')
 
-        othello = get_user_profile_by_email('othello@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
-        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
-
-        msg = mail.outbox[0]
-        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t)
-                              for t in tokens]
-        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
-
-        self.assertEquals(len(mail.outbox), 1)
-        self.assertEqual(msg.from_email, '"%s" <%s>' % (othello.full_name, othello.email))
-        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
-        self.assertEqual(msg.extra_headers['Sender'], sender)
         body = ('You and Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
+        self._test_cases(tokens, msg_id, body, send_as_user)
 
-        self.assertIn(body, self.normalize_string(msg.body))
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_stream_messages_as_user(self):
+        # type: () -> None
+        self._extra_context_in_missed_stream_messages(True)
+
+    def test_extra_context_in_missed_stream_messages(self):
+        # type: () -> None
+        self._extra_context_in_missed_stream_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_personal_missed_stream_messages_as_user(self):
+        # type: () -> None
+        self._extra_context_in_personal_missed_stream_messages(True)
+
+    def test_extra_context_in_personal_missed_stream_messages(self):
+        # type: () -> None
+        self._extra_context_in_personal_missed_stream_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_huddle_missed_stream_messages_as_user(self):
+        # type: () -> None
+        self._extra_context_in_huddle_missed_stream_messages(True)
+
+    def test_extra_context_in_huddle_missed_stream_messages(self):
+        # type: () -> None
+        self._extra_context_in_huddle_missed_stream_messages(False)
+
 
 class TestOpenRealms(ZulipTestCase):
     def test_open_realm_logic(self):

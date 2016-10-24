@@ -73,12 +73,16 @@ the most recent messages in all the streams a user has joined (except
 for the streams they've muted), as well as private messages from other
 users, in strict chronological order. A user can *narrow* to view only
 the messages in a single stream, and can further narrow to focus on a
-*topic* (thread) within that stream. Each narrow has its own URL.
+*topic* (thread) within that stream. Each narrow has its own URL. The
+user can quickly see what conversation they're in -- the stream and
+topic, or the names of the the user(s) they're private messaging with
+-- using *the recipient bar* displayed atop each conversation.
 
 Zulip's philosophy is to provide sensible defaults but give the user
 fine-grained control over their incoming information flow; a user can
 mute topics and streams, and can make fine-grained choices to reduce
 real-time notifications they find irrelevant.
+
 
 Components
 ----------
@@ -131,7 +135,7 @@ from outside.
     sent to the Tornado server. These are requests to the real-time push
     system, because the user's web browser sets up a long-lived TCP
     connection with Tornado to serve as [a channel for push
-    notifications](https://en.wikipedia.org/wiki/Push_technology#Long_Polling).
+    notifications](https://en.wikipedia.org/wiki/Push_technology#Long_polling).
     nginx gets the hostname for the Tornado server via
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`.
 -   Requests to all other paths are sent to the Django app via the UNIX
@@ -228,7 +232,7 @@ Nagios is an optional component used for notifications to the system
 administrator, e.g., in case of outages.
 
 `zulip/puppet/zulip/manifests/nagios.pp` installs Nagios plugins from
-puppet/`zulip/files/nagios_plugins/`.
+`puppet/zulip/files/nagios_plugins/`.
 
 This component is intended to install Nagios plugins intended to be run
 on a Nagios server; most of the Zulip Nagios plugins are intended to be
@@ -236,3 +240,37 @@ run on the Zulip servers themselves, and are included with the relevant
 component of the Zulip server (e.g.
 `puppet/zulip/manifests/postgres_common.pp` installs a few under
 `/usr/lib/nagios/plugins/zulip_postgres_common`).
+
+## Glossary
+
+This section gives names for some of the elements in the Zulip UI used
+in Zulip development conversations.  Contributions to extend this list
+are welcome!
+
+* **chevron**: A small downward-facing arrow next to a message's
+    timestamp, offering contextual options, e.g., "Reply", "Mute [this
+    topic]", or "Link to this conversation". To avoid visual clutter,
+    the chevron only appears in the web UI upon hover.
+
+* **message editing**: If the realm admin allows it, then after a user
+    posts a message, the user has a few minutes to click "Edit" and
+    change the content of their message. If they do, Zulip adds a
+    marker such as "(EDITED)" at the top of the message, visible to
+    anyone who can see the message.
+
+* **recipient bar**: A visual indication of the context of a message
+    or group of messages, displaying the stream and topic or private
+    message recipient list, at the top of a group of messages. A
+    typical 1-line message to a new recipient shows to the user as
+    three lines of content: first the recipient bar, second the
+    sender's name and avatar alongside the timestamp (and, on hover,
+    the star and the chevron), and third the message content. The
+    recipient bar is or contains hyperlinks to help the user narrow.
+
+* **star**: Zulip allows a user to mark any message they can see,
+    public or private, as "starred". A user can easily access messages
+    they've starred through the "Starred messages" link in the menu
+    near "Home", or use "is:starred" as a narrow or a search
+    constraint. Whether a user has or has not starred a particular
+    message is private; other users and realm admins don't know
+    whether a message has been starred, or by whom.

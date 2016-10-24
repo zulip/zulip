@@ -423,10 +423,11 @@ function _setup_page() {
         $('#default_language_modal').modal('hide');
 
         var data = {};
-        var setting_value = $(e.target).attr('data-code');
+        var $link = $(e.target).closest("a[data-code]");
+        var setting_value = $link.attr('data-code');
         data.default_language = JSON.stringify(setting_value);
 
-        var new_language = $(e.target).attr('data-name');
+        var new_language = $link.attr('data-name');
         $('#default_language_name').text(new_language);
 
         var context = {};
@@ -449,6 +450,25 @@ function _setup_page() {
         e.preventDefault();
         e.stopPropagation();
         $('#default_language_modal').modal('show');
+    });
+
+    $("#user_deactivate_account_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#deactivate_self_modal").modal("show");
+    });
+
+    $("#do_deactivate_self_button").on('click',function (e) {
+        $("#deactivate_self_modal").modal("hide");
+        channel.del({
+            url: '/json/users/me',
+            success: function () {
+                window.location.href = "/login";
+            },
+            error: function (xhr, error_type) {
+                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
+            }
+        });
     });
 
     $("#get_api_key_box").hide();

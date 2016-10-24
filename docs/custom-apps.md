@@ -64,7 +64,7 @@ gets triggered by an automated code build finishing and then
 writes "build finished" to a Zulip stream.
 
 - A **Zulip Read/Writer** reacts to a stimulus from Zulip by
-responding to Zulip.  An example here would be a math both
+responding to Zulip.  An example here would be a math bot
 that sees a message saying "compute 2+2" and responds with
 "2+2=4" on the same stream or back to the user in a PM.
 
@@ -162,7 +162,7 @@ alert people of world events.  Here are some example stimuli:
 - A Travis build finishes.
 - Somebody tweets on Twitter.
 - A hardware sensor notices a temperature increase.
-- A pull request is submitted to Github.
+- A pull request is submitted to GitHub.
 - A cron job gets started on your laptop to send a reminder.
 - Nagios detects a system anomaly.
 

@@ -10,7 +10,7 @@ Zulip supports several different authentications methods:
   Single-Sign-On (SSO) system that can set REMOTE_USER in Apache.
 * `DevAuthBackend` - Only for development, passwordless login as any user.
 
-It's easy to add more, see the docs on python-social-auth below.
+It's easy to add more; see the docs on `python-social-auth` below.
 
 The setup documentation for most of these is simple enough that we've
 included it inline in `/etc/zulip/settings.py`, right above to the
@@ -87,48 +87,49 @@ login via the SSO solution.
 ### Troubleshooting Remote User SSO
 
 This system is a little finicky to networking setup (e.g. common
-issues have to do with /etc/hosts not mapping settings.EXTERNAL_HOST
-to the Apache listening on 127.0.0.1/localhost, for example).  It can
-often help while debugging to temporarily change the Apache config in
-/etc/apache2/sites-available/zulip-sso to listen on all interfaces
-rather than just 127.0.0.1 as you debug this.  It can also be helpful
-to change /etc/nginx/zulip-include/app.d/external-sso.conf to
-proxy_pass to a more explicit URL possibly not over HTTPS when
+issues have to do with `/etc/hosts` not mapping
+`settings.EXTERNAL_HOST` to the Apache listening on
+`127.0.0.1/localhost`, for example).  It can often help while debugging
+to temporarily change the Apache config in
+`/etc/apache2/sites-available/zulip-sso` to listen on all interfaces
+rather than just `127.0.0.1` as you debug this.  It can also be helpful
+to change `/etc/nginx/zulip-include/app.d/external-sso.conf` to
+`proxy_pass` to a more explicit URL possibly not over HTTPS when
 debugging.  The following log files can be helpful when debugging this
 setup:
 
-* /var/log/zulip/{errors.log,server.log} (the usual places)
-* /var/log/nginx/access.log (nginx access logs)
-* /var/log/apache2/zulip_auth_access.log (you may want to change
-  LogLevel to "debug" in the apache config file to make this more
+* `/var/log/zulip/{errors.log,server.log}` (the usual places)
+* `/var/log/nginx/access.log` (nginx access logs)
+* `/var/log/apache2/zulip_auth_access.log` (you may want to change
+  `LogLevel` to "debug" in the Apache config file to make this more
   verbose)
 
 Here's a summary of how the remote user SSO system works assuming
 you're using HTTP basic auth; this summary should help with
 understanding what's going on as you try to debug:
 
-* Since you've configured /etc/zulip/settings.py to only define the
-  zproject.backends.ZulipRemoteUserBackend, zproject/settings.py
-  configures /accounts/login/sso as HOME_NOT_LOGGED_IN, which makes
-  `https://zulip.example.com/` aka the homepage for the main Zulip
-  Django app running behind nginx redirect to /accounts/login/sso if
-  you're not logged in.
+* Since you've configured `/etc/zulip/settings.py` to only define the
+  `zproject.backends.ZulipRemoteUserBackend`, `zproject/settings.py`
+  configures `/accounts/login/sso` as `HOME_NOT_LOGGED_IN`, which
+  makes `https://zulip.example.com/` (a.k.a. the homepage for the main
+  Zulip Django app running behind nginx) redirect to
+  `/accounts/login/sso` if you're not logged in.
 
-* nginx proxies requests to /accounts/login/sso/ to an Apache instance
-  listening on localhost:8888 apache via the config in
-  /etc/nginx/zulip-include/app.d/external-sso.conf (using the upstream
-  localhost:8888 defined in /etc/nginx/zulip-include/upstreams).
+* nginx proxies requests to `/accounts/login/sso/` to an Apache instance
+  listening on `localhost:8888` apache via the config in
+  `/etc/nginx/zulip-include/app.d/external-sso.conf` (using the upstream
+  `localhost:8888` defined in `/etc/nginx/zulip-include/upstreams`).
 
-* The Apache zulip-sso site which you've enabled listens on
-  localhost:8888 and presents the htpasswd dialogue; you provide
+* The Apache `zulip-sso` site which you've enabled listens on
+  `localhost:8888` and presents the `htpasswd` dialogue; you provide
   correct login information and the request reaches a second Zulip
   Django app instance that is running behind Apache with with
-  REMOTE_USER set.  That request is served by
-  `zerver.views.remote_user_sso`, which just checks the REMOTE_USER
+  `REMOTE_USER` set.  That request is served by
+  `zerver.views.remote_user_sso`, which just checks the `REMOTE_USER`
   variable and either logs in (sets a cookie) or registers the new
   user (depending whether they have an account).
 
-* After succeeding, that redirects the user back to / on port 443
+* After succeeding, that redirects the user back to `/` on port 443
   (hosted by nginx); the main Zulip Django app sees the cookie and
   proceeds to load the site homepage with them logged in (just as if
   they'd logged in normally via username/password).

@@ -31,9 +31,9 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    create_stream_if_needed, do_add_default_stream, do_add_subscription, do_change_is_admin,
+    do_add_default_stream, do_change_is_admin,
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
-    gather_subscriptions_helper,
+    gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
     create_streams_if_needed
@@ -95,8 +95,7 @@ class StreamAdminTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'private_stream', invite_only=True)
+        self.make_stream('private_stream', invite_only=True)
 
         do_change_is_admin(user_profile, True)
         params = {
@@ -105,7 +104,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_post("/json/make_stream_public", params)
         self.assert_json_error(result, 'You are not invited to this stream.')
 
-        do_add_subscription(user_profile, stream)
+        self.subscribe_to_stream(email, 'private_stream')
 
         do_change_is_admin(user_profile, True)
         params = {
@@ -113,6 +112,8 @@ class StreamAdminTest(ZulipTestCase):
         }
         result = self.client_post("/json/make_stream_public", params)
         self.assert_json_success(result)
+
+        realm = user_profile.realm
         stream = Stream.objects.get(name='private_stream', realm=realm)
         self.assertFalse(stream.invite_only)
 
@@ -122,7 +123,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         user_profile = get_user_profile_by_email(email)
         realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'public_stream')
+        self.make_stream('public_stream', realm=realm)
 
         do_change_is_admin(user_profile, True)
         params = {
@@ -138,9 +139,8 @@ class StreamAdminTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'new_stream')
-        do_add_subscription(user_profile, stream, no_log=True)
+        stream = self.make_stream('new_stream')
+        self.subscribe_to_stream(user_profile.email, stream.name)
         do_change_is_admin(user_profile, True)
 
         result = self.client_delete('/json/streams/new_stream')
@@ -158,8 +158,7 @@ class StreamAdminTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'new_stream')
+        self.make_stream('new_stream')
         do_change_is_admin(user_profile, True)
 
         result = self.client_delete('/json/streams/unknown_stream')
@@ -169,10 +168,7 @@ class StreamAdminTest(ZulipTestCase):
         # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
-        realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'new_stream')
-        do_add_subscription(user_profile, stream, no_log=True)
+        self.subscribe_to_stream(email, 'new_stream')
 
         result = self.client_delete('/json/streams/new_stream')
         self.assert_json_error(result, 'Must be a realm administrator')
@@ -183,8 +179,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         user_profile = get_user_profile_by_email(email)
         realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'stream_name1')
-        do_add_subscription(user_profile, stream, no_log=True)
+        self.subscribe_to_stream(email, 'stream_name1')
         do_change_is_admin(user_profile, True)
 
         events = [] # type: List[Dict[str, Any]]
@@ -252,9 +247,7 @@ class StreamAdminTest(ZulipTestCase):
         # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
-        realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'stream_name1')
+        self.make_stream('stream_name1')
 
         result = self.client_patch('/json/streams/stream_name1',
                                    {'new_name': ujson.dumps('stream_name2')})
@@ -266,8 +259,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         user_profile = get_user_profile_by_email(email)
         realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'stream_name1')
-        do_add_subscription(user_profile, stream, no_log=True)
+        self.subscribe_to_stream(email, 'stream_name1')
         do_change_is_admin(user_profile, True)
 
         events = [] # type: List[Dict[str, Any]]
@@ -299,9 +291,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         user_profile = get_user_profile_by_email(email)
 
-        realm = user_profile.realm
-        stream, _ = create_stream_if_needed(realm, 'stream_name1')
-        do_add_subscription(user_profile, stream, no_log=True)
+        self.subscribe_to_stream(email, 'stream_name1')
         do_change_is_admin(user_profile, False)
 
         result = self.client_patch('/json/streams/stream_name1',
@@ -317,12 +307,11 @@ class StreamAdminTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        stream, _ = create_stream_if_needed(user_profile.realm, stream_name,
-                                            invite_only=invite_only)
+        stream = self.make_stream(stream_name, invite_only=invite_only)
 
         # For testing deleting streams you aren't on.
         if subscribed:
-            do_add_subscription(user_profile, stream, no_log=True)
+            self.subscribe_to_stream(email, stream_name)
 
         do_change_is_admin(user_profile, True)
 
@@ -421,14 +410,12 @@ class StreamAdminTest(ZulipTestCase):
         email = "hamlet@zulip.com"
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        realm = user_profile.realm
         if is_admin:
             do_change_is_admin(user_profile, True)
 
         # Set up the stream.
         stream_name = u"hümbüǵ"
-        stream, _ = create_stream_if_needed(realm, stream_name,
-                                            invite_only=invite_only)
+        self.make_stream(stream_name, invite_only=invite_only)
 
         # Set up the principal to be unsubscribed.
         other_email = "cordelia@zulip.com"
@@ -436,13 +423,13 @@ class StreamAdminTest(ZulipTestCase):
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
-            do_add_subscription(user_profile, stream, no_log=True)
+            self.subscribe_to_stream(user_profile.email, stream_name)
         if other_user_subbed:
-            do_add_subscription(other_user_profile, stream, no_log=True)
+            self.subscribe_to_stream(other_user_profile.email, stream_name)
 
         result = self.client_post(
             "/json/subscriptions/remove",
-            {"subscriptions": ujson.dumps([stream.name]),
+            {"subscriptions": ujson.dumps([stream_name]),
              "principals": ujson.dumps([other_email])})
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
@@ -545,13 +532,12 @@ class StreamAdminTest(ZulipTestCase):
         self.login(admin_email)
         user_profile = get_user_profile_by_email(admin_email)
         do_change_is_admin(user_profile, True)
-        realm = user_profile.realm
 
         stream_name = u"hümbüǵ"
-        stream, _ = create_stream_if_needed(realm, stream_name)
+        self.make_stream(stream_name)
 
         result = self.client_post("/json/subscriptions/remove",
-                                  {"subscriptions": ujson.dumps([stream.name]),
+                                  {"subscriptions": ujson.dumps([stream_name]),
                                    "principals": ujson.dumps(["baduser@zulip.com"])})
         self.assert_json_error(
             result,
@@ -984,7 +970,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             # type: (HttpRequest, UserProfile) -> HttpResponse
             user_profile.full_name = 'Should not be committed'
             user_profile.save()
-            return json_success({})
+            return json_success()
 
         def method2(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -1374,13 +1360,13 @@ class SubscriptionAPITest(ZulipTestCase):
         stream = get_stream('multi_user_stream', realm)
         self.assertEqual(stream.num_subscribers(), 3)
 
-        # Finally, add othello, exercising the do_add_subscription() code path.
+        # Finally, add othello.
         events = []
         email3 = 'othello@zulip.com'
         user_profile = get_user_profile_by_email(email3)
         stream = get_stream('multi_user_stream', realm)
         with tornado_redirected_to_list(events):
-            do_add_subscription(user_profile, stream)
+            bulk_add_subscriptions([stream], [user_profile])
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -1393,7 +1379,9 @@ class SubscriptionAPITest(ZulipTestCase):
                 set([email1, email2, email3, self.test_email])
         )
 
-        self.assertEqual(len(add_peer_event['users']), 14)
+        # We don't send a peer_add event to othello
+        self.assertNotIn(user_profile.id, add_peer_event['users'])
+        self.assertEqual(len(add_peer_event['users']), 13)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_email'], email3)
@@ -1435,12 +1423,87 @@ class SubscriptionAPITest(ZulipTestCase):
                 # Check non new users are in peer_add event recipient list.
                 self.assertIn(old_user, user_dict)
 
+    def test_users_getting_remove_peer_event(self):
+        # type: () -> None
+        """
+        Check users getting add_peer_event is correct
+        """
+        email1 = 'othello@zulip.com'
+        email2 = 'cordelia@zulip.com'
+        email3 = 'hamlet@zulip.com'
+        email4 = 'iago@zulip.com'
+
+        stream1 = self.make_stream('stream1')
+        stream2 = self.make_stream('stream2')
+        private = self.make_stream('private_stream', invite_only=True)
+
+        self.subscribe_to_stream(email1, 'stream1')
+        self.subscribe_to_stream(email2, 'stream1')
+        self.subscribe_to_stream(email3, 'stream1')
+
+        self.subscribe_to_stream(email2, 'stream2')
+
+        self.subscribe_to_stream(email1, 'private_stream')
+        self.subscribe_to_stream(email2, 'private_stream')
+        self.subscribe_to_stream(email3, 'private_stream')
+
+        user1 = get_user_profile_by_email(email1)
+        user2 = get_user_profile_by_email(email2)
+        user3 = get_user_profile_by_email(email3)
+        user4 = get_user_profile_by_email(email4)
+
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            bulk_remove_subscriptions(
+                users=[user1, user2],
+                streams=[stream1, stream2, private]
+            )
+
+        peer_events = [e for e in events
+            if e['event'].get('op') == 'peer_remove']
+
+        notifications = set()
+        for event in peer_events:
+            for user_id in event['users']:
+                for stream_name in event['event']['subscriptions']:
+                    email = event['event']['user_email']
+                    notifications.add((user_id, email, stream_name))
+
+        # POSITIVE CASES FIRST
+        self.assertIn((user3.id, email1, 'stream1'), notifications)
+        self.assertIn((user4.id, email1, 'stream1'), notifications)
+
+        self.assertIn((user3.id, email2, 'stream1'), notifications)
+        self.assertIn((user4.id, email2, 'stream1'), notifications)
+
+        self.assertIn((user1.id, email2, 'stream2'), notifications)
+        self.assertIn((user3.id, email2, 'stream2'), notifications)
+        self.assertIn((user4.id, email2, 'stream2'), notifications)
+
+        self.assertIn((user3.id, email1, 'private_stream'), notifications)
+        self.assertIn((user3.id, email2, 'private_stream'), notifications)
+
+        # NEGATIVE
+
+        # don't be notified if you are being removed yourself
+        self.assertNotIn((user1.id, email1, 'stream1'), notifications)
+
+        # don't send false notifications for folks that weren't actually
+        # subscribed int he first place
+        self.assertNotIn((user3.id, email1, 'stream2'), notifications)
+
+        # don't send notifications for random people
+        self.assertNotIn((user3.id, email4, 'stream2'), notifications)
+
+        # don't send notifications to unsubscribed people for private streams
+        self.assertNotIn((user4.id, email1, 'private_stream'), notifications)
+
     def test_bulk_subscribe_MIT(self):
         # type: () -> None
         realm = get_realm("mit.edu")
         streams = ["stream_%s" % i for i in range(40)]
-        for stream in streams:
-            create_stream_if_needed(realm, stream)
+        for stream_name in streams:
+            self.make_stream(stream_name, realm=realm)
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -1459,10 +1522,9 @@ class SubscriptionAPITest(ZulipTestCase):
         # type: () -> None
 
         # Create a whole bunch of streams
-        realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in range(20)]
-        for stream in streams:
-            create_stream_if_needed(realm, stream)
+        for stream_name in streams:
+            self.make_stream(stream_name)
 
         with queries_captured() as queries:
                 self.common_subscribe_to_streams(
@@ -1471,7 +1533,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_max_length(queries, 9)
+        self.assert_max_length(queries, 10)
 
     @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
@@ -1928,10 +1990,10 @@ class GetSubscribersTest(ZulipTestCase):
         """
         gather_subscriptions returns correct results with only 3 queries
         """
-        realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in range(10)]
-        for stream in streams:
-            create_stream_if_needed(realm, stream)
+        for stream_name in streams:
+            self.make_stream(stream_name)
+
         users_to_subscribe = [self.email, "othello@zulip.com", "cordelia@zulip.com"]
         ret = self.common_subscribe_to_streams(
             self.email,
@@ -1962,8 +2024,8 @@ class GetSubscribersTest(ZulipTestCase):
         """
         realm = get_realm("zulip.com")
         streams = ["stream_%s" % i for i in range(10)]
-        for stream in streams:
-            create_stream_if_needed(realm, stream)
+        for stream_name in streams:
+            self.make_stream(stream_name, realm=realm)
         users_to_subscribe = ["othello@zulip.com", "cordelia@zulip.com"]
         ret = self.common_subscribe_to_streams(
             self.email,

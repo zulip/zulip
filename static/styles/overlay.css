@@ -14,6 +14,7 @@
     z-index: 101;
 
     transition: all 0.2s ease;
+    overflow: auto;
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -26,7 +27,7 @@
 
 #overlay .image-preview {
     position: relative;
-    width: calc(100% - 20px);
+    width: 100%;
     height: calc(100% - 65px - 30px);
     margin: 0px;
 
@@ -43,7 +44,7 @@
     color: rgba(255,255,255,0.8);
     font-size: 2rem;
     font-weight: 200;
-    margin: 22px 20px;
+    margin: 24px 20px 0px 0px;
 
     transform: scaleY(0.75);
     font-weight: 300;
@@ -115,6 +116,20 @@
     text-overflow: ellipsis;
 }
 
+#overlay .player-container {
+    height: calc(100vh - 71px);
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+#overlay .player-container iframe {
+    width: 80vw;
+    height: 45vw;
+    margin: auto;
+}
+
 #overlay .image-description .user {
     font-weight: 300;
 }
@@ -144,4 +159,14 @@
 
 #overlay .clear-float {
     clear: both;
+}
+
+@media (max-width: 450px) {
+    #overlay .image-actions {
+        display: none;
+    }
+
+    #overlay .image-description {
+        width: calc(100% - 100px);
+    }
 }

@@ -25,7 +25,10 @@ import scripts.lib.setup_path_on_import
 
 import django
 
+from typing import Any, Dict, List, Optional
+
 def total_seconds(timedelta):
+    # type: (datetime.timedelta) -> float
     return (timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10**6) / 10.**6
 
 usage = """Usage: send-receive.py [options] [config]
@@ -90,6 +93,7 @@ states = {
     }
 
 def report(state, timestamp, msg=None):
+    # type: (str, Any, Optional[str]) -> None
     now = int(time.time())
     if msg is None:
         msg = "send time was %s" % (timestamp,)
@@ -101,11 +105,13 @@ def report(state, timestamp, msg=None):
     exit(states[state])
 
 def send_zulip(sender, message):
+    # type: (zulip.Client, Dict[str, Any]) -> None
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
         report("CRITICAL", "Error sending Zulip, args were: %s, %s" % (message, result))
 
 def get_zulips():
+    # type: () -> List[Dict[str, Any]]
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if 'error' in res.get('result'):

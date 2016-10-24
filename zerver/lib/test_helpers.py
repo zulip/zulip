@@ -11,6 +11,7 @@ from django.test.client import (
 )
 from django.template import loader
 from django.http import HttpResponse
+from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
@@ -22,8 +23,8 @@ from zerver.lib import event_queue
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
-    check_send_message, create_stream_if_needed, do_add_subscription,
-    get_display_recipient,
+    check_send_message, create_stream_if_needed, bulk_add_subscriptions,
+    get_display_recipient, bulk_remove_subscriptions
 )
 
 from zerver.models import (
@@ -307,6 +308,8 @@ class ZulipTestCase(TestCase):
     django_client to fool the regext.
     '''
 
+    DEFAULT_REALM_NAME = 'zulip.com'
+
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
@@ -534,6 +537,27 @@ class ZulipTestCase(TestCase):
         return force_text(open(os.path.join(os.path.dirname(__file__),
                                             "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read())
 
+    def make_stream(self, stream_name, realm=None, invite_only=False):
+        # type: (text_type, Optional[Realm], Optional[bool]) -> Stream
+        if realm is None:
+            realm = get_realm(self.DEFAULT_REALM_NAME)
+
+        try:
+            stream = Stream.objects.create(
+                realm=realm,
+                name=stream_name,
+                invite_only=invite_only,
+            )
+        except IntegrityError:
+            raise Exception('''
+                %s already exists
+
+                Please call make_stream with a stream name
+                that is not already in use.''' % (stream_name,))
+
+        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        return stream
+
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
         # type: (text_type, text_type, Optional[Realm]) -> None
@@ -543,7 +567,13 @@ class ZulipTestCase(TestCase):
         if stream is None:
             stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
-        do_add_subscription(user_profile, stream, no_log=True)
+        bulk_add_subscriptions([stream], [user_profile])
+
+    def unsubscribe_from_stream(self, email, stream_name):
+        # type: (text_type, text_type) -> None
+        user_profile = get_user_profile_by_email(email)
+        stream = get_stream(stream_name, user_profile.realm)
+        bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):

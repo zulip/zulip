@@ -50,7 +50,7 @@ class TranslationTestCase(ZulipTestCase):
                      ]
 
         for lang, word in languages:
-            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang}) # type: ignore # SimpleCookie has incomplete stubs in python 3
+            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang})
 
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
@@ -83,7 +83,7 @@ class JsonTranslationTestCase(ZulipTestCase):
                                         dummy_value % 'email',
                                         status_code=400)
 
-    @mock.patch('zerver.views._')
+    @mock.patch('zerver.views.auth._')
     def test_jsonable_error(self, mock_gettext):
         # type: (Any) -> None
         dummy_value = "Some other language"

@@ -1,0 +1,23 @@
+include /etc/nginx/zulip-include/upstreams;
+
+server {
+    listen 443;
+
+    ssl on;
+
+    ssl_certificate /etc/ssl/certs/wildcard-zulipchat.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/wildcard-zulipchat.com.key;
+
+    # We don't actually have an SSL cert for zulipchat.com on this
+    # machine, but that's okay since clients will never be accessing
+    # this host directly.
+    server_name zulipchat.com;
+
+    # Downloadable software
+    location /dist/ {
+        autoindex on;
+        alias /srv/www/dist/;
+    }
+
+    include /etc/nginx/zulip-include/app;
+}

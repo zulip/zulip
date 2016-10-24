@@ -705,13 +705,6 @@ JS_SPECS = {
             ),
         'output_filename':  'min/signup.js'
     },
-    'initial_invite': {
-        'source_filenames': (
-            'node_modules/jquery-validation/dist/jquery.validate.js',
-            'js/initial_invite.js',
-            ),
-        'output_filename':  'min/initial_invite.js'
-    },
     'api': {
         'source_filenames': ('js/api.js',),
         'output_filename':  'min/api.js'
@@ -850,6 +843,7 @@ ZULIP_PATHS = [
     ("QUEUE_ERROR_DIR", "/var/log/zulip/queue_error"),
     ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
+    ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
     ]
 
 # The Event log basically logs most significant database changes,

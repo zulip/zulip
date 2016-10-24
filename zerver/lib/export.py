@@ -947,15 +947,6 @@ def export_avatars_from_local(realm, local_dir, output_dir):
     for user in users:
         if user.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
             continue
-        # NOTE: There is an avatar source called AVATAR_FROM_SYSTEM,
-        #       but I'm not sure we support it any more.  If we
-        #       have system-generated avatars, then arguably we
-        #       don't need to export them, but it's probably
-        #       expedient to just copy them over.  The more
-        #       common case is AVATAR_FROM_USER, which is handled
-        #       here as well.  AVATAR_FROM_GRAVATAR refers to
-        #       avatars hosted by gravatar.com, and for them,
-        #       we have no files to worry about exporting
 
         avatar_hash = user_avatar_hash(user.email)
         wildcard = os.path.join(local_dir, avatar_hash + '.*')

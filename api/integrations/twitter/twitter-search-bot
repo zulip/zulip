@@ -46,10 +46,11 @@ parser = optparse.OptionParser(r"""
 
 Send Twitter search results to a Zulip stream.
 
-Depends on: twitter-python version 1.0 or later
+Depends on: https://github.com/bear/python-twitter version 3.1
 
 To use this script:
 
+0. Use `pip install python-twitter` to install `python-twitter`.
 1. Set up Twitter authentication, as described below
 2. Subscribe to the stream that will receive Twitter updates (default stream: twitter)
 3. Test the script by running it manually, like this:
@@ -138,15 +139,14 @@ api = twitter.Api(consumer_key=consumer_key,
 
 user = api.VerifyCredentials()
 
-if not user.GetId():
-    print("Unable to log in to Twitter with supplied credentials.\
-Please double-check and try again.")
+if not user.id:
+    print("Unable to log in to twitter with supplied credentials. Please double-check and try again")
     sys.exit()
 
 client = zulip.Client(
-    email=opts.email,
-    api_key=opts.api_key,
-    site=opts.site,
+    email=opts.zulip_email,
+    api_key=opts.zulip_api_key,
+    site=opts.zulip_site,
     client="ZulipTwitterSearch/" + VERSION,
     verbose=True)
 
@@ -155,11 +155,11 @@ statuses = api.GetSearch(search_query, since_id=since_id)
 
 for status in statuses[::-1][:opts.limit_tweets]:
     # https://twitter.com/eatevilpenguins/status/309995853408530432
-    composed = "%s (%s)" % (status.GetUser().GetName(),
-                            status.GetUser().GetScreenName())
-    url = "https://twitter.com/%s/status/%s" % (status.GetUser().GetScreenName(),
-                                                status.GetId())
-    content = status.GetText()
+    composed = "%s (%s)" % (status.user.name,
+                            status.user.screen_name)
+    url = "https://twitter.com/%s/status/%s" % (status.user.screen_name,
+                                                status.id)
+    content = status.text
 
     search_term_used = None
     for term in opts.search_terms.split(","):
@@ -186,6 +186,6 @@ for status in statuses[::-1][:opts.limit_tweets]:
         print("Error sending message to zulip: %s" % ret['msg'])
         break
     else:
-        since_id = status.GetId()
+        since_id = status.id
 
 write_config(config, since_id)

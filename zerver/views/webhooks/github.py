@@ -7,7 +7,8 @@ from zerver.decorator import authenticated_api_view, REQ, has_request_variables,
 from zerver.views.messages import send_message_backend
 from zerver.lib.webhooks.git import get_push_commits_event_message,\
     SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message, \
-    get_remove_branch_event_message
+    get_remove_branch_event_message, get_pull_request_event_message,\
+    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
 import logging
 import re
 import ujson
@@ -17,7 +18,6 @@ from typing import Any, Mapping, Optional, Sequence, Tuple
 from zerver.lib.str_utils import force_str
 from django.http import HttpRequest, HttpResponse
 
-COMMITS_IN_LIST_LIMIT = 10
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
@@ -28,27 +28,83 @@ def is_test_repository(repository):
 class UnknownEventType(Exception):
     pass
 
+def github_pull_request_content(payload):
+    # type: (Mapping[text_type, Any]) -> text_type
+    pull_request = payload['pull_request']
+    action = get_pull_request_or_issue_action(payload)
+
+    if action in ('opened', 'edited'):
+        return get_pull_request_event_message(
+            payload['sender']['login'],
+            action,
+            pull_request['html_url'],
+            pull_request['head']['ref'],
+            pull_request['base']['ref'],
+            pull_request['body'],
+            get_pull_request_or_issue_assignee(pull_request)
+        )
+    return get_pull_request_event_message(
+            payload['sender']['login'],
+            action,
+            pull_request['html_url'],
+        )
+
+def github_issues_content(payload):
+    # type: (Mapping[text_type, Any]) -> text_type
+    issue = payload['issue']
+    action = get_pull_request_or_issue_action(payload)
+
+    if action in ('opened', 'edited'):
+        return get_issue_event_message(
+            payload['sender']['login'],
+            action,
+            issue['html_url'],
+            issue['body'],
+            get_pull_request_or_issue_assignee(issue)
+        )
+    return get_issue_event_message(
+            payload['sender']['login'],
+            action,
+            issue['html_url'],
+        )
+
+def github_object_commented_content(payload, type):
+    # type: (Mapping[text_type, Any], text_type) -> text_type
+    comment = payload['comment']
+    issue = payload['issue']
+    action = u'[commented]({})'.format(comment['html_url'])
+
+    return get_pull_request_event_message(
+        comment['user']['login'],
+        action,
+        issue['html_url'],
+        message=comment['body'],
+        type=type
+    )
+
+def get_pull_request_or_issue_action(payload):
+    # type: (Mapping[text_type, Any]) -> text_type
+    return 'synchronized' if payload['action'] == 'synchronize' else payload['action']
+
+def get_pull_request_or_issue_assignee(object_payload):
+    # type: (Mapping[text_type, Any]) -> text_type
+    assignee_dict = object_payload.get('assignee')
+    if assignee_dict:
+        return assignee_dict.get('login')
+
+def get_pull_request_or_issue_subject(repository, payload_object, type):
+    # type: (Mapping[text_type, Any], Mapping[text_type, Any], text_type) -> text_type
+    return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+            repo=repository['name'],
+            type=type,
+            id=payload_object['number'],
+            title=payload_object['title']
+        )
 
 def github_generic_subject(noun, topic_focus, blob):
     # type: (text_type, text_type, Mapping[text_type, Any]) -> text_type
     # issue and pull_request objects have the same fields we're interested in
     return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
-
-def github_generic_content(noun, payload, blob):
-    # type: (text_type, Mapping[text_type, Any], Mapping[text_type, Any]) -> text_type
-    action = 'synchronized' if payload['action'] == 'synchronize' else payload['action']
-
-    # issue and pull_request objects have the same fields we're interested in
-    content = (u'%s %s [%s %s](%s)'
-               % (payload['sender']['login'],
-                  action,
-                  noun,
-                  blob['number'],
-                  blob['html_url']))
-    if payload['action'] in ('opened', 'reopened'):
-        content += u'\n\n~~~ quote\n%s\n~~~' % (blob['body'],)
-    return content
-
 
 def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
     # type: (UserProfile, text_type, Mapping[text_type, Any], text_type, text_type, **Any) -> Tuple[text_type, text_type, text_type]
@@ -79,37 +135,30 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
 
     # Event Handlers
     if event == 'pull_request':
-        pull_req = payload['pull_request']
-        subject = github_generic_subject('pull request', topic_focus, pull_req)
-        content = github_generic_content('pull request', payload, pull_req)
+        subject = get_pull_request_or_issue_subject(repository, payload['pull_request'], 'PR')
+        content = github_pull_request_content(payload)
     elif event == 'issues':
         # in v1, we assume that this stream exists since it is
         # deprecated and the few realms that use it already have the
         # stream
         target_stream = issue_stream
-        issue = payload['issue']
-        subject = github_generic_subject('issue', topic_focus, issue)
-        content = github_generic_content('issue', payload, issue)
+        subject = get_pull_request_or_issue_subject(repository, payload['issue'], 'Issue')
+        content = github_issues_content(payload)
     elif event == 'issue_comment':
         # Comments on both issues and pull requests come in as issue_comment events
         issue = payload['issue']
         if 'pull_request' not in issue or issue['pull_request']['diff_url'] is None:
             # It's an issues comment
             target_stream = issue_stream
-            noun = 'issue'
+            type = 'Issue'
+            subject = get_pull_request_or_issue_subject(repository, payload['issue'], type)
         else:
             # It's a pull request comment
-            noun = 'pull request'
+            type = 'PR'
+            subject = get_pull_request_or_issue_subject(repository, payload['issue'], type)
 
-        subject = github_generic_subject(noun, topic_focus, issue)
-        comment = payload['comment']
-        content = (u'%s [commented](%s) on [%s %d](%s)\n\n~~~ quote\n%s\n~~~'
-                   % (comment['user']['login'],
-                      comment['html_url'],
-                      noun,
-                      issue['number'],
-                      issue['html_url'],
-                      comment['body']))
+        content = github_object_commented_content(payload, type)
+
     elif event == 'push':
         subject, content = build_message_from_gitlog(user_profile, topic_focus,
                                                      payload['ref'], payload['commits'],

@@ -77,6 +77,7 @@ function dispatch_normal_event(event) {
             bot_data.remove(event.bot.email);
         } else if (event.op === 'update') {
             bot_data.update(event.bot.email, event.bot);
+            admin.update_user_full_name(event.bot.email, event.bot.full_name);
         }
         break;
 
@@ -97,6 +98,7 @@ function dispatch_normal_event(event) {
             people.remove(event.person);
         } else if (event.op === 'update') {
             people.update(event.person);
+            admin.update_user_full_name(event.person.email, event.person.full_name);
         }
         break;
 
@@ -109,6 +111,8 @@ function dispatch_normal_event(event) {
             // Legacy: Stream properties are still managed by subs.js on the client side.
             subs.update_subscription_properties(event.name, event.property, event.value);
             admin.update_default_streams_table();
+        } else if (event.op === 'create') {
+            stream_data.create_streams(event.streams);
         }
         break;
 

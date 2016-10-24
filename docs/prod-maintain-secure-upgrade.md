@@ -11,7 +11,6 @@ secure Zulip installation, including:
 - [Security Model](#security-model)
 - [Management commands](#management-commands)
 
-
 ## Upgrading
 
 **We recommend reading this entire section before doing your first
@@ -22,9 +21,10 @@ release tarball from
 [https://www.zulip.com/dist/releases/](https://www.zulip.com/dist/releases/)
 
 You also have the option of creating your own release tarballs from a
-copy of zulip.git repository using `tools/build-release-tarball`. And,
-starting with Zulip version 1.4, you can upgrade Zulip [to a version
-in a Git repository directly](#upgrade-from-a-git-repository).
+copy of the zulip.git repository using
+`tools/build-release-tarball`. And, starting with Zulip version 1.4,
+you can upgrade Zulip [to a version in a Git repository
+directly](#upgrading-from-a-git-repository).
 
 Next, run as root:
 
@@ -167,24 +167,37 @@ into S3 using [wal-e](https://github.com/wal-e/wal-e) in
 `puppet/zulip_internal/manifests/postgres_common.pp` (that's what we
 use for zulip.com's database backups).  Note that this module isn't
 part of the Zulip server releases since it's part of the zulip.com
-configuration (see https://github.com/zulip/zulip/issues/293 for a
-ticket about fixing this to make life easier for running backups).
+configuration (see
+[https://github.com/zulip/zulip/issues/293](https://github.com/zulip/zulip/issues/293)
+for a ticket about fixing this to make life easier for running
+backups).
 
 * Any user-uploaded files.  If you're using S3 as storage for file
 uploads, this is backed up in S3, but if you have instead set
-LOCAL_UPLOADS_DIR, any files uploaded by users (including avatars)
+`LOCAL_UPLOADS_DIR`, any files uploaded by users (including avatars)
 will be stored in that directory and you'll want to back it up.
 
-* Your Zulip configuration including secrets from /etc/zulip/.
-E.g. if you lose the value of secret_key, all users will need to login
-again when you setup a replacement server since you won't be able to
-verify their cookies; if you lose avatar_salt, any user-uploaded
-avatars will need to be re-uploaded (since avatar filenames are
-computed using a hash of avatar_salt and user's email), etc.
+* Your Zulip configuration including secrets from `/etc/zulip/`.
+E.g. if you lose the value of `secret_key`, all users will need to
+login again when you setup a replacement server since you won't be
+able to verify their cookies; if you lose `avatar_salt`, any
+user-uploaded avatars will need to be re-uploaded (since avatar
+filenames are computed using a hash of `avatar_salt` and user's
+email), etc.
 
-* The logs under /var/log/zulip can be handy to have backed up, but
+* The logs under `/var/log/zulip` can be handy to have backed up, but
 they do get large on a busy server, and it's definitely
 lower-priority.
+
+If you are interested in backups because you are moving from one Zulip
+server to another server and can't transfer a full postgres dump
+(which is definitely the simplest approach), our draft
+[conversion and export design document](conversion.html) may help.
+The tool is well designed and was tested carefully with dozens of
+realms as of mid-2016 but is not integrated into Zulip's regular
+testing process, and thus it is worth asking on the Zulip developers
+mailing list whether it needs any minor updates to do things like
+export newly added tables.
 
 ### Restore from backups
 
@@ -195,9 +208,10 @@ To restore from backups, the process is basically the reverse of the above:
   to run the `initialize-database` second stage which puts default
   data into the database.
 
-* Unpack to /etc/zulip the settings.py and secrets.conf files from your backups.
+* Unpack to `/etc/zulip` the `settings.py` and `secrets.conf` files
+  from your backups.
 
-* Restore your database from the backup using wal-e; if you ran
+* Restore your database from the backup using `wal-e`; if you ran
   `initialize-database` anyway above, you'll want to first
   `scripts/setup/postgres-init-db` to drop the initial database first.
 
@@ -205,7 +219,7 @@ To restore from backups, the process is basically the reverse of the above:
   specified by `settings.LOCAL_UPLOADS_DIR` and (if appropriate) any
   logs.
 
-* Start the server using scripts/restart-server
+* Start the server using `scripts/restart-server`.
 
 This restoration process can also be used to migrate a Zulip
 installation from one server to another.
@@ -224,14 +238,13 @@ of the guide much more explicit and detailed are very welcome!
 Zulip has database configuration for using Postgres streaming
 replication; you can see the configuration in these files:
 
-* puppet/zulip_internal/manifests/postgres_slave.pp
-* puppet/zulip_internal/manifests/postgres_master.pp
-* puppet/zulip_internal/files/postgresql/*
+* `puppet/zulip_internal/manifests/postgres_slave.pp`
+* `puppet/zulip_internal/manifests/postgres_master.pp`
+* `puppet/zulip_internal/files/postgresql/*`
 
 Contribution of a step-by-step guide for setting this up (and moving
 this configuration to be available in the main `puppet/zulip/` tree)
 would be very welcome!
-
 
 ## Monitoring
 
@@ -247,36 +260,37 @@ various Nagios plugins included with Zulip and what they check:
 
 Application server and queue worker monitoring:
 
-* check_send_receive_time (sends a test message through the system
+* `check_send_receive_time` (sends a test message through the system
   between two bot users to check that end-to-end message sending works)
 
-* check_rabbitmq_consumers and check_rabbitmq_queues (checks for
+* `check_rabbitmq_consumers` and `check_rabbitmq_queues` (checks for
   rabbitmq being down or the queue workers being behind)
 
-* check_queue_worker_errors (checks for errors reported by the queue workers)
+* `check_queue_worker_errors` (checks for errors reported by the queue
+  workers)
 
-* check_worker_memory (monitors for memory leaks in queue workers)
+* `check_worker_memory` (monitors for memory leaks in queue workers)
 
-* check_email_deliverer_backlog and check_email_deliverer_process
+* `check_email_deliverer_backlog` and `check_email_deliverer_process`
   (monitors for whether outgoing emails are being sent)
 
 Database monitoring:
 
-* check_postgres_replication_lag (checks streaming replication is up
+* `check_postgres_replication_lag` (checks streaming replication is up
   to date).
 
-* check_postgres (checks the health of the postgres database)
+* `check_postgres` (checks the health of the postgres database)
 
-* check_postgres_backup (checks backups are up to date; see above)
+* `check_postgres_backup` (checks backups are up to date; see above)
 
-* check_fts_update_log (monitors for whether full-text search updates
+* `check_fts_update_log` (monitors for whether full-text search updates
   are being processed)
 
 Standard server monitoring:
 
-* check_website_response.sh (standard HTTP check)
+* `check_website_response.sh` (standard HTTP check)
 
-* check_debian_packages (checks apt repository is up to date)
+* `check_debian_packages` (checks apt repository is up to date)
 
 If you're using these plugins, bug reports and pull requests to make
 it easier to monitor Zulip and maintain it in production are
@@ -325,7 +339,7 @@ running Zulip with a large team (>1000 users).
 
 * Zulip does not support dividing traffic for a given Zulip realm
   between multiple application servers.  There are two issues: you
-  need to share the memcached/redis/rabbitmq instance (these should
+  need to share the memcached/Redis/RabbitMQ instance (these should
   can be moved to a network service shared by multiple servers with a
   bit of configuration) and the Tornado event system for pushing to
   browsers currently has no mechanism for multiple frontend servers
@@ -346,7 +360,7 @@ this is new documentation, it likely does not cover every issue; if
 there are details you're curious about, please feel free to ask
 questions on the Zulip development mailing list (or if you think
 you've found a security bug, please report it to
-security@googlegroups.com so we can do a responsible security
+zulip-security@googlegroups.com so we can do a responsible security
 announcement).
 
 ### Secure your Zulip server like your email server
@@ -375,25 +389,25 @@ announcement).
 * The preferred way to login to Zulip is using an SSO solution like
   Google Auth, LDAP, or similar.  Zulip stores user passwords using
   the standard PBKDF2 algorithm.  Password strength is checked and
-  weak passwords are visually discouraged using the zxcvbn library,
+  weak passwords are visually discouraged using the `zxcvbn` library,
   but Zulip does not by default have strong requirements on user
   password strength.  Modify `static/js/common.js` to adjust the
-  password strength requirements (Patches welcome to make controlled
-  by an easy setting!).
+  password strength requirements (patches welcome to make this
+  controllable by an easy setting!).
 
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
 ### Messages and History
 
-* Zulip message content is rendering using a specialized Markdown
+* Zulip message content is rendered using a specialized Markdown
   parser which escapes content to protect against cross-site scripting
   attacks.
 
 * Zulip supports both public streams and private ("invite-only")
-  streams.  Any Zulip user can join any public stream in the realm
-  (and can view the complete message of any public stream history
-  without joining the stream).
+  streams.  Any Zulip user can join any public stream in the realm,
+  and can view the complete message history of any public stream
+  without joining the stream.
 
 * A private ("invite-only") stream is hidden from users who are not
   subscribed to the stream.  Users who are not members of a private
@@ -405,21 +419,35 @@ announcement).
   can see future messages sent to the stream, but they do not receive
   access to the stream's message history.
 
-* Zulip supports editing the content or topics of messages that have
-  already been sent (and even updating the topic of messages sent by
-  other users when editing the topic of the overall thread).
+* Zulip supports editing the content and topics of messages that have
+  already been sent. As a general philosophy, our policies provide
+  hard limits on the ways in which message content can be changed or
+  undone. In contrast, our policies around message topics favor
+  usefulness (e.g. for conversational organization) over faithfulness
+  to the original.
 
-  While edited messages are synced immediately to open browser
-  windows, editing messages is not a safe way to redact secret content
-  (e.g. a password) unintentionally shared via Zulip, because other
-  users may have seen and saved the content of the original message
-  (for example, they could have taken a screenshot immediately after
-  you sent the message, or have an API tool recording all messages
-  they receive).
+  The message editing policy can be configured on the realm
+  administration page. There are three configurations provided out of
+  the box: (i) users cannot edit messages at all, (ii) users can edit
+  any message they have sent, and (iii) users can edit the content of
+  any message they have sent in the last N minutes, and the topic of
+  any message they have sent. In (ii) and (iii), topic edits can also
+  be propagated to other messages with the same original topic, even
+  if those messages were sent by other users. The default setting is
+  (iii), with N = 10.
 
-  Zulip stores and sends to clients the content of every historical
-  version of a message, so that future versions of Zulip could support
-  displaying the diffs between previous versions.
+  In addition, and regardless of the configuration above, messages
+  with no topic can always be edited to have a topic, by anyone in the
+  organization, and the topic of any message can also always be edited
+  by a realm administrator.
+
+  Also note that while edited messages are synced immediately to open
+  browser windows, editing messages is not a safe way to redact secret
+  content (e.g. a password) shared unintentionally. Other users may
+  have seen and saved the content of the original message, or have an
+  integration (e.g. push notifications) forwarding all messages they
+  receive to another service. Zulip also stores and sends to clients
+  the content of every historical version of a message.
 
 ### Users and Bots
 
@@ -452,7 +480,7 @@ announcement).
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
   should deactivate the user's account in the Zulip administration
-  interface (/#administration); this will automatically also
+  interface (`/#administration`); this will automatically also
   deactivate any bots the user had created.
 
 * The Zulip mobile apps authenticate to the server by sending the
@@ -487,7 +515,8 @@ announcement).
   is vulnerable to a subtle attack where if a user clicks on a link in
   a secret .PDF or .HTML file that had been uploaded to Zulip, access
   to the file might be leaked to the other server via the Referrer
-  header (see https://github.com/zulip/zulip/issues/320).
+  header (see [the "Uploads world readable" issue on
+  GitHub](https://github.com/zulip/zulip/issues/320)).
 
   The Zulip S3 file upload integration is relatively safe against that
   attack, because the URLs of files presented to users don't host the
@@ -508,8 +537,9 @@ announcement).
 ### Final notes and security response
 
 If you find some aspect of Zulip that seems inconsistent with this
-security model, please report it to zulip-security@googlegroups.com so that we can
-investigate and coordinate an appropriate security release if needed.
+security model, please report it to zulip-security@googlegroups.com so
+that we can investigate and coordinate an appropriate security release
+if needed.
 
 Zulip security announcements will be sent to
 zulip-announce@googlegroups.com, so you should subscribe if you are
@@ -532,7 +562,7 @@ of the Zulip system.
 ### manage.py shell
 
 You can get an iPython shell with full access to code within the Zulip
-project using `manage.py shell`, e.g. you can do the following to
+project using `manage.py shell`, e.g., you can do the following to
 change an email address:
 
 ```
@@ -554,14 +584,31 @@ the `knight` management command:
 ./manage.py knight username@example.com -f
 ```
 
-#### Creating api super users with manage.py
+#### Creating API super users with manage.py
 
 If you need to manage the IRC, Jabber, or Zephyr mirrors, you will
-need to create api super users.  To do this, use `./manage.py knight`
+need to create API super users.  To do this, use `./manage.py knight`
 with the `--permission=api_super_user` argument.  See
 `bots/irc-mirror.py` and `bots/jabber_mirror.py` for further detail on
 these.
 
+#### Exporting users and realms with manage.py export
+
+If you need to do an export of a single user or of an entire realm, we
+have tools in `management/` that essentially export Zulip data to the
+file system.
+
+`export_single_user.py` exports the message history and realm-public
+metadata for a single Zulip user (including that user's *received*
+messages as well as their sent messages).
+
+A good overview of the process for exporting a single realm when
+moving a realm to a new server (without moving a full database dump)
+is in
+[management/export.py](https://github.com/zulip/zulip/blob/master/zerver/management/commands/export.py). We
+recommend you read the comment there for words of wisdom on speed,
+what is and is not exported, what will break upon a move to a new
+server, and suggested procedure.
 
 ### Other useful manage.py commands
 
@@ -574,6 +621,3 @@ with no UI in the Administration page is `./manage.py realm_filters`,
 which allows you to configure certain patterns in messages to be
 automatically linkified, e.g., whenever someone mentions "T1234", it
 could be auto-linkified to ticket 1234 in your team's Trac instance.
-
-
-Next: [Remote User SSO Authentication.](prod-remote-user-sso-auth.html)

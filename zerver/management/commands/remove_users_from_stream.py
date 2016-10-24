@@ -8,7 +8,7 @@ from optparse import make_option
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import do_remove_subscription
+from zerver.lib.actions import bulk_remove_subscriptions
 from zerver.models import Realm, UserProfile, get_realm, get_stream, \
     get_user_profile_by_email
 
@@ -54,8 +54,12 @@ class Command(BaseCommand):
             for email in emails:
                 user_profiles.append(get_user_profile_by_email(email))
 
+        result = bulk_remove_subscriptions(user_profiles, [stream])
+        not_subscribed = result[1]
+        not_subscribed_users = {tup[0] for tup in not_subscribed}
+
         for user_profile in user_profiles:
-            did_remove = do_remove_subscription(user_profile, stream)
-            print("%s %s from %s" % (
-                "Removed" if did_remove else "Couldn't remove",
-                user_profile.email, stream_name))
+            if user_profile in not_subscribed_users:
+                print("%s was not subscribed" % (user_profile.email,))
+            else:
+                print("Removed %s from %s" % (user_profile.email, stream_name))

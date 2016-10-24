@@ -127,7 +127,7 @@ Most API views will have some arguments that are passed as part of the
 request to control the behavior of the view.  In any well-engineered
 view, you need to write code to parse and validate that the arguments
 exist and have the correct form.  For many applications, this leads to
-one of serveral bad outcomes:
+one of several bad outcomes:
 
 * The code isn't written, so arguments aren't validated, leading to
   bugs and confusing error messages for users of the API.
@@ -252,7 +252,7 @@ database) and lead to a 500 error.  If an actions function is
 responsible for validation as well, it should have a name starting
 with `check_`.
 
-For example, in [zerver/views/__init__.py](https://github.com/zulip/zulip/blob/master/zerver/views/__init__.py):
+For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/master/zerver/views/realm.py):
 
 ```py
 @require_realm_admin

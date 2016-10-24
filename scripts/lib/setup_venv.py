@@ -45,6 +45,13 @@ def get_package_names(requirements_file):
     cleaned = []
     operators = ['~=', '==', '!=', '<', '>']
     for package in packages:
+        if package.startswith("git+https://") and '#egg=' in package:
+            split_package = package.split("#egg=")
+            if len(split_package) != 2:
+                raise Exception("Unexpected duplicate #egg in package %s" % (package,))
+            # Extract the package name from Git requirements entries
+            package = split_package[1]
+
         for operator in operators:
             if operator in package:
                 package = package.split(operator)[0]
@@ -210,7 +217,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
         if patch_activate_script:
             do_patch_activate_script(target_venv_path)
     activate_this = os.path.join(cached_venv_path, "bin", "activate_this.py")
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
     return cached_venv_path
 
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
@@ -231,7 +238,7 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     create_requirements_index_file(venv_path, requirements_file)
     # Switch current Python context to the virtualenv.
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 
     run(["pip", "install", "-U", "setuptools"])
     run(["pip", "install", "--upgrade", "pip", "wheel"])

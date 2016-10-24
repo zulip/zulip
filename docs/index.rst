@@ -87,10 +87,12 @@ Contents:
    :maxdepth: 2
    :caption: Code contribution guide
 
+   git-guide
    version-control
    code-style
    testing
    mypy
+   code-reviewing
 
 .. _system-docs:
 
@@ -110,10 +112,3 @@ Contents:
    translating
    logging
    README
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

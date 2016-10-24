@@ -11,5 +11,5 @@ BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
 activate_this = os.path.join(BASE_DIR, "zulip-venv", "bin", "activate_this.py")
 if os.path.exists(activate_this):
     # this file will exist in production
-    exec(open(activate_this).read(), {}, dict(__file__=activate_this)) # type: ignore # https://github.com/python/mypy/issues/1577
+    exec(open(activate_this).read(), {}, dict(__file__=activate_this))
 sys.path.append(BASE_DIR)

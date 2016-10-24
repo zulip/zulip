@@ -118,12 +118,8 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    var now = new XDate();
-    if (message && message.sent_by_me && !message.status_message &&
-        page_params.realm_allow_message_editing &&
-        (page_params.realm_message_content_edit_limit_seconds === 0 ||
-         page_params.realm_message_content_edit_limit_seconds + now.diffSeconds(message.timestamp * 1000) > 0))
-    {
+    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
+        !message.status_message) {
         message_row.find('.message_content').find('p:last').append(edit_content_button);
     }
     current_message_hover = message_row;
@@ -281,25 +277,58 @@ exports.small_avatar_url = function (message) {
     }
 };
 
+exports.lightbox = function (data) {
+    switch (data.type) {
+        case "photo":
+            exports.lightbox_photo(data.image, data.user);
+            break;
+        case "youtube":
+            exports.youtube_video(data.id);
+            break;
+        default:
+            break;
+    }
+
+    $("#overlay").addClass("show");
+};
+
 exports.lightbox_photo = function (image, user) {
     // image should be an Image Object in JavaScript.
     var url = $(image).attr("src"),
         title = $(image).parent().attr("title");
 
+    $("#overlay .player-container").hide();
+    $("#overlay .image-actions, .image-description, .download").show();
+
     $("#overlay .image-preview")
+        .show()
         .css("background-image", "url(" + url + ")");
 
-    $("#overlay").addClass("show");
-
-    $(".title").text(title || "N/A");
-    $(".user").text(user);
+    $(".image-description .title").text(title || "N/A");
+    $(".image-description .user").text(user);
 
     $(".image-actions .open, .image-actions .download").attr("href", url);
 };
 
 exports.exit_lightbox_photo = function (image) {
     $("#overlay").removeClass("show");
+    $(".player-container iframe").remove();
 };
+
+exports.youtube_video = function (id) {
+    $("#overlay .image-preview, .image-description, .download").hide();
+
+    var iframe = document.createElement("iframe");
+    iframe.width = window.innerWidth;
+    iframe.height = window.innerWidth * 0.5625;
+    iframe.src = "https://www.youtube.com/embed/" + id;
+    iframe.setAttribute("frameborder", 0);
+    iframe.setAttribute("allowfullscreen", true);
+
+    $("#overlay .player-container").html("").show().append(iframe);
+    $(".image-actions .open").attr("href", "https://youtu.be/" + id);
+};
+// k3O01EfM5fU
 
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_more_messages_indicator = function () {

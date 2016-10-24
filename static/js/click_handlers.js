@@ -125,6 +125,12 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+    $("body").on("click", ".message_edit_close", function (e) {
+        var row = $(this).closest(".message_row");
+        message_edit.end(row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
 
     // RECIPIENT BARS
 
@@ -387,14 +393,26 @@ $(function () {
         $("#main_div").on("click", ".message_inline_image a", function (e) {
             var img = e.target,
                 row = rows.id($(img).closest(".message_row")),
-                user = current_msg_list.get(row).sender_full_name;
+                user = current_msg_list.get(row).sender_full_name,
+                $target = $(this);
 
             // prevent the link from opening in a new page.
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
 
-            ui.lightbox_photo(img, user);
+            if ($target.parent().hasClass("youtube-video")) {
+                ui.lightbox({
+                    type: "youtube",
+                    id: $target.data("id")
+                });
+            } else {
+                ui.lightbox({
+                    type: "photo",
+                    image: img,
+                    user: user
+                });
+            }
         });
 
         $("#overlay .exit").click(function (e) {
@@ -423,7 +441,7 @@ $(function () {
 
         // Unfocus our compose area if we click out of it. Don't let exits out
         // of modals or selecting text (for copy+paste) trigger cancelling.
-        if (compose.composing() && !$(e.target).is("a") &&
+        if (compose.composing() && !$(e.target).is("a, .drag") &&
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&
             ($(e.target).closest('#emoji_map').length === 0)) {

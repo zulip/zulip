@@ -57,7 +57,17 @@ exports.toggle_actions_popover = function (element, id) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var message = current_msg_list.get(id);
-        var can_edit = message.sent_by_me && message.local_id === undefined && page_params.realm_allow_message_editing;
+        var editability = message_edit.get_editability(message);
+        var is_editable = (editability === message_edit.editability_types.TOPIC_ONLY ||
+                           editability === message_edit.editability_types.FULL);
+        var editability_menu_item;
+        if (editability === message_edit.editability_types.FULL) {
+            editability_menu_item = i18n.t("Edit");
+        } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
+            editability_menu_item = i18n.t("Edit Topic");
+        } else {
+            editability_menu_item = i18n.t("View Source");
+        }
         var can_mute_topic =
                 message.stream &&
                 message.subject &&
@@ -67,10 +77,10 @@ exports.toggle_actions_popover = function (element, id) {
                 message.subject &&
                 muting.is_topic_muted(message.stream, message.subject);
 
-
         var args = {
-            message:  message,
-            can_edit_message: can_edit,
+            message: message,
+            is_editable: is_editable,
+            editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
@@ -274,54 +284,43 @@ exports.register_click_handlers = function () {
         show_message_info_popover(this, rows.id(row));
     });
 
-    var isDragging=false;
-    var top_border = $('#floating_recipient_bar').position().top + $('#floating_recipient_bar').height();
-    var total_height;
-    var emoji_popover_height;
-    var emoji_popover_elem;
-    var previous_mouse_position;
-    var compose_box_padding;
-    var emoji_height = 25;
-    $("body").on("mouseover", ".emoji_popover", function (e) {
-        total_height = $('body > .app').outerHeight() - top_border - 70;
-        if (total_height <= 300) {
-            // don't allow dragging if the viewport is small enough that it
-            // would obscure everything to drag the emojis
-            $('.drag').hide();
-        } else {
-            $('.drag').show();
-        }
-    });
+    (function () {
+        // create locally scoped variables for drag tracking.
+        var meta = {
+          drag: false,
+          c: {
+            y: null
+          },
+          $popover: $(".emoji_popover"),
+          MIN_HEIGHT: 25,
+          MAX_HEIGHT: 300
+        };
 
-    $("body").on("mousedown", ".drag", function (e) {
-        // leave a little extra padding for the message box so that it doesn't get too big
-        total_height = $('body > .app').outerHeight() - top_border - 70;
-        isDragging = true;
-        previous_mouse_position = e.pageY;
-        emoji_popover_elem = $(".emoji_popover");
-        emoji_popover_height =  emoji_popover_elem.height();
-        compose_box_padding = $('#compose').height() - emoji_popover_height;
-    });
+        // drag must start within the .drag zone.
+        $(".drag").on("mousedown", function (e) {
+            meta.drag = true;
+            meta.c.y = e.screenY;
+        });
 
-    $("body").on("mousemove", function (e) {
-        e.preventDefault();
-        if (isDragging) {
-            var new_height = emoji_popover_height + (previous_mouse_position - e.pageY);
-            if (new_height + compose_box_padding > total_height) {
-                emoji_popover_elem.height(total_height - compose_box_padding);
-            } else if (new_height < emoji_height) {
-                emoji_popover_elem.height(emoji_height);
-            } else {
-                emoji_popover_elem.height(new_height);
+        // mouse move that originated in .drag zone can go anywhere.
+        $("body").on("mousemove", function (e) {
+            if (meta.drag) {
+                var diff = e.screenY - meta.c.y;
+                var resolved_height = meta.$popover.height() - diff;
+
+                if (resolved_height > meta.MIN_HEIGHT && resolved_height < meta.MAX_HEIGHT) {
+                  meta.$popover.height(resolved_height);
+                }
+                meta.c.y = e.screenY;
             }
-        }
-    });
+        });
 
-    $("body").on("mouseup", function (e) {
-        isDragging = false;
-        emoji_popover_height = null;
-    });
-
+        // drag ends on mouseup. This cancels all drag events without interfering
+        // with any other events.
+        $("body").on("mouseup", function () {
+            meta.drag = false;
+        });
+    }());
 
     $("body").on("click", ".emoji_popover", function (e) {
         e.stopPropagation();

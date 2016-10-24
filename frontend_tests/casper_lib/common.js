@@ -90,7 +90,7 @@ exports.start_and_log_in = function (credentials, viewport) {
     if (REALMS_HAVE_SUBDOMAINS) {
         log_in_url = "http://zulip.zulipdev.com:9981/accounts/login";
     } else {
-        log_in_url = "http://localhost:9981/accounts/login";
+        log_in_url = "http://zulipdev.com:9981/accounts/login";
     }
     exports.init_viewport();
     casper.start(log_in_url, function () {
@@ -110,13 +110,11 @@ exports.then_log_out = function () {
             casper.test.info('Logging out');
             casper.click(logout_selector);
 
-            casper.then(function () {
-                casper.test.assertUrlMatch(/accounts\/login\/$/);
-            });
         });
 
     });
-    casper.waitForSelector(".login-page-header", function () {
+    casper.waitUntilVisible(".login-page-header", function () {
+        casper.test.assertUrlMatch(/accounts\/login\/$/);
         casper.test.info("Logged out");
     });
 };

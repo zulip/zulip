@@ -20,10 +20,10 @@ version control, issue tracker, CI system, and monitoring tools.
 
 Spend time configuring these integrations to be how you like them --
 if an integration is spammy, you may want to change it to not send
-messages that nobody cares about (E.g. for the zulip.com trac
-integration, some teams find they only want notifications when new
-tickets are opened, commented on, or closed, and not every time
-someone edits the metadata).
+messages that nobody cares about (e.g., for the Trac integration, some
+teams find they only want notifications when new tickets are opened,
+commented on, or closed, and not every time someone edits the
+metadata).
 
 If Zulip doesn't have an integration you want, you can add your own!
 Most integrations are very easy to write, and even more complex
@@ -84,10 +84,9 @@ only supports talking to servers with a properly signed SSL
 certificate, so you may find that you get a blank screen when you
 connect to a Zulip server using a self-signed certificate.
 
-The Zulip Android app in the Google Play store doesn't yet support
-talking to non-zulip.com servers (and the iOS one doesn't support
+The iOS app currently available in the App Store doesn't support
 Google auth SSO against non-zulip.com servers; there's a design for
-how to fix that which wouldn't be a ton of work to implement).  If you
+how to fix that which wouldn't be a ton of work to implement.  If you
 are interested in helping out with the Zulip mobile apps, shoot an
 email to zulip-devel@googlegroups.com and the maintainers can guide
 you on how to help.
@@ -98,9 +97,9 @@ announcements when these become available.
 
 ## All other features
 
-Hotkeys, emoji, search filters,
-@-mentions, etc.  Zulip has lots of great features, make sure your
-team knows they exist and how to use them effectively.
+Hotkeys, emoji, search filters, @-mentions, etc.  Zulip has lots of
+great features; make sure your team knows they exist and how to use
+them effectively.
 
 ## Enjoy your Zulip installation!  
 

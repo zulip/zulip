@@ -253,6 +253,8 @@ def build_custom_checkers(by_lang):
              ('tools/tests/test_template_parser.py', '{% foo'),
          ]),
          'description': 'Used % comprehension without a tuple'},
+        {'pattern': 'json_success\({}\)',
+         'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',
          'exclude': set(['tools/lint-all']),
@@ -267,7 +269,7 @@ def build_custom_checkers(by_lang):
              ('zerver/middleware.py',
               'return json_error(exception.to_json_error_msg(), status=status_code)'),
              ('zerver/tornadoviews.py', 'return json_error(result["message"])'),
-             ('zerver/views/__init__.py',
+             ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
              # We can't do anything about this.
@@ -319,19 +321,24 @@ def build_custom_checkers(by_lang):
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
         ]) + whitespace_rules # type: RuleList
-    handlebars_rules = whitespace_rules
-    html_rules = whitespace_rules + [
+    prose_style_rules = [
+        {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs
+         'description': "javascript should be spelled JavaScript"},
+         {'pattern': '[^\/\-\.\"\']([gG]ithub)[^\.\-\_\"]', # exclude usage in hrefs/divs
+         'description': "github should be spelled GitHub"},
+    ] # type: RuleList
+    html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
-         'description': "`placeholder` value should be translatable."},
+         'description': "`placeholder` value should be translatable.",
+         'exclude': "static/templates/settings/emoji-settings-admin.handlebars"},
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
         ] # type: RuleList
-    json_rules = [] # type: RuleList # just fix newlines at ends of files
-    markdown_rules = markdown_whitespace_rules + [
-        {'pattern': ' [jJ]avascript',
-         'exclude': set(['README.dev.md']), # temporary exclusion to avoid merge conflicts
-         'description': "javascript should be spelled JavaScript"},
-    ] # type: RuleList
+    handlebars_rules = html_rules
+    json_rules = [] # type: RuleList # fix newlines at ends of files
+    # It is okay that json_rules is empty, because the empty list
+    # ensures we'll still check JSON files for whitespace.
+    markdown_rules = markdown_whitespace_rules + prose_style_rules
     txt_rules = whitespace_rules
 
     def check_custom_checks_py():

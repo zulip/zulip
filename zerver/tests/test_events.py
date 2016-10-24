@@ -12,7 +12,7 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     apply_events,
-    create_stream_if_needed,
+    bulk_remove_subscriptions,
     do_add_alert_words,
     check_add_realm_emoji,
     do_add_realm_filter,
@@ -31,7 +31,6 @@ from zerver.lib.actions import (
     do_remove_alert_words,
     do_remove_realm_emoji,
     do_remove_realm_filter,
-    do_remove_subscription,
     do_rename_stream,
     do_add_default_stream,
     do_set_muted_topics,
@@ -58,7 +57,7 @@ from zerver.lib.validator import (
     equals, check_none_or, Validator
 )
 
-from zerver.views import _default_all_public_streams, _default_narrow
+from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
 from zerver.tornadoviews import get_events_backend
 
@@ -701,7 +700,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_rename_stream(self):
         # type: () -> None
         realm = get_realm('zulip.com')
-        stream, _ = create_stream_if_needed(realm, 'old_name')
+        stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
 
@@ -730,8 +729,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_deactivate_stream_neversubscribed(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
-        stream, _ = create_stream_if_needed(realm, 'old_name')
+        stream = self.make_stream('old_name')
 
         action = lambda: do_deactivate_stream(stream)
         events = self.do_test(action)
@@ -820,12 +818,16 @@ class EventsRegisterTest(ZulipTestCase):
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
-        action = lambda: do_remove_subscription(get_user_profile_by_email("othello@zulip.com"), stream)
+        action = lambda: bulk_remove_subscriptions(
+            [get_user_profile_by_email("othello@zulip.com")],
+            [stream])
         events = self.do_test(action)
         error = peer_remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        action = lambda: do_remove_subscription(get_user_profile_by_email("hamlet@zulip.com"), stream)
+        action = lambda: bulk_remove_subscriptions(
+            [get_user_profile_by_email("hamlet@zulip.com")],
+            [stream])
         events = self.do_test(action)
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)

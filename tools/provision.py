@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import sys
 import logging
+import argparse
 import platform
 import subprocess
 
@@ -16,6 +17,10 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
 from scripts.lib.node_cache import setup_node_modules
+
+from version import PROVISION_VERSION
+if False:
+    from typing import Any
 
 
 SUPPORTED_PLATFORMS = {
@@ -40,9 +45,6 @@ if PY2:
 else:
     VENV_PATH = PY3_VENV_PATH
 
-TRAVIS = "--travis" in sys.argv
-PRODUCTION_TRAVIS = "--production-travis" in sys.argv
-
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("Error: No Zulip git repository present!")
     print("To setup the Zulip development environment, you should clone the code")
@@ -59,8 +61,7 @@ else:
 
 # Ideally we wouldn't need to install a dependency here, before we
 # know the codename.
-subprocess.check_call(["sudo", "apt-get", "update"])
-subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release", "software-properties-common"])
+subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 vendor = subprocess_text_output(["lsb_release", "-is"])
 codename = subprocess_text_output(["lsb_release", "-cs"])
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
@@ -117,26 +118,18 @@ REPO_STOPWORDS_PATH = os.path.join(
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 
-def main():
-    # type: () -> int
+def main(options):
+    # type: (Any) -> int
 
     # npm install and management commands expect to be run from the root of the
     # project.
     os.chdir(ZULIP_PATH)
 
+    # setup-apt-repo does an `apt-get update`
     run(["sudo", "./scripts/lib/setup-apt-repo"])
-
-    # Add groonga repository to get the pgroonga packages; retry if it fails :/
-    try:
-        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
-    except subprocess.CalledProcessError:
-        print(WARNING + "`Could not add groonga; retrying..." + ENDC)
-        run(["sudo", "add-apt-repository", "-y", "ppa:groonga/ppa"])
-
-    run(["sudo", "apt-get", "update"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
-    if TRAVIS:
+    if options.is_travis:
         if PY2:
             MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
             setup_virtualenv(PY3_VENV_PATH, MYPY_REQS_FILE, patch_activate_script=True,
@@ -176,25 +169,33 @@ def main():
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
     run(["tools/setup/download-zxcvbn"])
-    run(["tools/setup/emoji_dump/build_emoji"])
+    run(["python", "tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
-    if TRAVIS and not PRODUCTION_TRAVIS:
+    if options.is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
-    elif "--docker" in sys.argv:
+    elif options.is_docker:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "pg_dropcluster", "--stop", POSTGRES_VERSION, "main"])
         run(["sudo", "pg_createcluster", "-e", "utf8", "--start", POSTGRES_VERSION, "main"])
         run(["sudo", "service", "redis-server", "restart"])
         run(["sudo", "service", "memcached", "restart"])
-    if not PRODUCTION_TRAVIS:
+    if not options.is_production_travis:
         # These won't be used anyway
         run(["scripts/setup/configure-rabbitmq"])
         run(["tools/setup/postgres-init-dev-db"])
         run(["tools/do-destroy-rebuild-database"])
-        run(["tools/setup/postgres-init-test-db"])
-        run(["tools/do-destroy-rebuild-test-database"])
+        # Need to set up Django before using is_template_database_current.
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+        import django
+        django.setup()
+        from zerver.lib.test_fixtures import is_template_database_current
+        if options.is_force or not is_template_database_current():
+            run(["tools/setup/postgres-init-test-db"])
+            run(["tools/do-destroy-rebuild-test-database"])
+        else:
+            print("No need to regenerate the test DB.")
         run(["python", "./manage.py", "compilemessages"])
 
     # Here we install nvm, node, and npm.
@@ -212,9 +213,34 @@ def main():
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
         setup_node_modules()
 
+    version_file = os.path.join(ZULIP_PATH, 'var/provision_version')
+    print('writing to %s\n' % (version_file,))
+    open(version_file, 'w').write(PROVISION_VERSION + '\n')
+
     print()
     print(OKBLUE + "Zulip development environment setup succeeded!" + ENDC)
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    description = ("Provision script to install Zulip")
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('--force', action='store_true', dest='is_force',
+                        default=False,
+                        help="Ignore all provisioning optimizations.")
+
+    parser.add_argument('--travis', action='store_true', dest='is_travis',
+                        default=False,
+                        help="Provision for Travis but without production settings.")
+
+    parser.add_argument('--production-travis', action='store_true',
+                        dest='is_production_travis',
+                        default=False,
+                        help="Provision for Travis but with production settings.")
+
+    parser.add_argument('--docker', action='store_true',
+                        dest='is_docker',
+                        default=False,
+                        help="Provision for Docker.")
+
+    options = parser.parse_args()
+    sys.exit(main(options))
