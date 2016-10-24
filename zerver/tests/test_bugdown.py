@@ -879,3 +879,24 @@ class BugdownErrorTests(ZulipTestCase):
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
                 self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
+
+
+class BugdownAvatarTestCase(ZulipTestCase):
+    def test_avatar_with_id(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        msg = '!avatar({0})'.format(user_profile.email)
+        converted = bugdown.convert(msg)
+        values = {'email': user_profile.email, 'id': user_profile.id}
+        self.assertEqual(
+            converted,
+            '<p><img alt="{email}" class="message_body_gravatar" src="/avatar/{id}?s=30" title="{email}"></p>'.format(**values))
+
+    def test_avatar_of_unregistered_user(self):
+        # type: () -> None
+        email = 'fakeuser@gmail.com'
+        msg = '!avatar({0})'.format(email)
+        converted = bugdown.convert(msg)
+        self.assertEqual(
+            converted,
+            '<p><img alt="{0}" class="message_body_gravatar" src="/avatar/{0}?s=30" title="{0}"></p>'.format(email))
