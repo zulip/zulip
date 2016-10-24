@@ -747,3 +747,30 @@ class FetchAuthBackends(ZulipTestCase):
                 'dev': True,
                 'result': 'success',
             })
+
+class TestDevAuthBackend(ZulipTestCase):
+    def test_login_success(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        data = {'direct_email': email}
+        result = self.client_post('/accounts/login/local/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_login_failure(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        data = {'direct_email': email}
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
+            with self.assertRaisesRegexp(Exception, 'Direct login not supported.'):
+                with mock.patch('django.core.handlers.base.logger'):
+                    self.client_post('/accounts/login/local/', data)
+
+    def test_login_failure_due_to_nonexistent_user(self):
+        # type: () -> None
+        email = 'nonexisting@zulip.com'
+        data = {'direct_email': email}
+        with self.assertRaisesRegexp(Exception, 'User cannot login'):
+            with mock.patch('django.core.handlers.base.logger'):
+                self.client_post('/accounts/login/local/', data)
