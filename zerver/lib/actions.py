@@ -711,7 +711,7 @@ def do_send_messages(messages):
             log_message(message['message'])
 
     for message in messages:
-        message['recipients'] = get_recipient_user_profiles(message['message'].recipient.type_id,
+        message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
                                                             message['message'].sender_id)
         # Only deliver the message to active user recipients
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
