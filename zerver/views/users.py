@@ -26,7 +26,7 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    email_allowed_for_realm
+    email_allowed_for_realm, get_user_profile_by_id
 from zproject.jinja2 import render_to_response
 
 
@@ -112,12 +112,26 @@ def update_user_backend(request, user_profile, email,
 
     return json_success()
 
-def avatar(request, email):
+# TODO: Since eventually we want to support using the same email with
+# different organizations, we'll eventually want this to be a
+# logged-in endpoint so that we can access the realm_id.
+def avatar(request, email_or_id):
     # type: (HttpRequest, str) -> HttpResponse
+    """Accepts an email address or user ID and returns the avatar"""
     try:
-        user_profile = get_user_profile_by_email(email)
+        int(email_or_id)
+    except ValueError:
+        get_user_func = get_user_profile_by_email
+    else:
+        get_user_func = get_user_profile_by_id
+
+    try:
+        # If there is a valid user account passed in, use its avatar
+        user_profile = get_user_func(email_or_id)
         url = avatar_url(user_profile)
     except UserProfile.DoesNotExist:
+        # If there is no such user, treat it as a new gravatar
+        email = email_or_id
         avatar_source = 'G'
         avatar_version = 1
         url = get_avatar_url(avatar_source, email, avatar_version)
