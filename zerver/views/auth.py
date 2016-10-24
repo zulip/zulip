@@ -102,41 +102,42 @@ def remote_user_sso(request):
 @csrf_exempt
 def remote_user_jwt(request):
     # type: (HttpRequest) -> HttpResponse
+    subdomain = get_subdomain(request)
+    try:
+        auth_key = settings.JWT_AUTH_KEYS[subdomain]
+    except KeyError:
+        raise JsonableError(_("Auth key for this subdomain not found."))
+
     try:
         json_web_token = request.POST["json_web_token"]
-        payload, signing_input, header, signature = jwt.load(json_web_token)
+        options = {'verify_signature': True}
+        payload = jwt.decode(json_web_token, auth_key, options=options)
     except KeyError:
         raise JsonableError(_("No JSON web token passed in request"))
-    except jwt.DecodeError:
+    except jwt.InvalidTokenError:
         raise JsonableError(_("Bad JSON web token"))
 
     remote_user = payload.get("user", None)
     if remote_user is None:
         raise JsonableError(_("No user specified in JSON web token claims"))
-    domain = payload.get('realm', None)
-    if domain is None:
-        raise JsonableError(_("No domain specified in JSON web token claims"))
+    realm = payload.get('realm', None)
+    if realm is None:
+        raise JsonableError(_("No realm specified in JSON web token claims"))
 
-    email = "%s@%s" % (remote_user, domain)
+    email = "%s@%s" % (remote_user, realm)
 
     try:
-        jwt.verify_signature(payload, signing_input, header, signature,
-                             settings.JWT_AUTH_KEYS[domain])
         # We do all the authentication we need here (otherwise we'd have to
         # duplicate work), but we need to call authenticate with some backend so
         # that the request.backend attribute gets set.
         return_data = {} # type: Dict[str, bool]
         user_profile = authenticate(username=email,
-                                    realm_subdomain=get_subdomain(request),
+                                    realm_subdomain=subdomain,
                                     return_data=return_data,
                                     use_dummy_backend=True)
         if return_data.get('invalid_subdomain'):
-            logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (get_subdomain(request), email,))
+            logging.warning("User attempted to JWT login to wrong subdomain %s: %s" % (subdomain, email,))
             raise JsonableError(_("Wrong subdomain"))
-    except (jwt.DecodeError, jwt.ExpiredSignature):
-        raise JsonableError(_("Bad JSON web token signature"))
-    except KeyError:
-        raise JsonableError(_("Realm not authorized for JWT login"))
     except UserProfile.DoesNotExist:
         user_profile = None
 
