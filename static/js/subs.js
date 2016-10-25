@@ -268,10 +268,6 @@ function format_member_list_elem(name, email) {
                              displaying_for_admin: page_params.is_admin});
 }
 
-function add_element_to_member_list (tb, elem) {
-    tb.prepend(elem);
-}
-
 function get_subscriber_list(sub_row) {
     return sub_row.find('.subscriber_list_container .subscriber-list');
 }
@@ -1135,11 +1131,8 @@ $(function () {
                     }
                     return format_member_list_elem(people.get_by_email(elem).full_name, elem);
                 });
-                _.each(subscribers.sort().reverse(), function (elem) {
-                    // add_element_to_member_list *prepends* the element,
-                    // so we need to sort in reverse order for it to
-                    // appear in alphabetical order.
-                    add_element_to_member_list(list, elem);
+                _.each(subscribers.sort(), function (elem) {
+                    list.append(elem);
                 });
             },
             error: function (xhr) {
