@@ -721,6 +721,7 @@ function _setup_page() {
             success: function () {
                 $('#admin-emoji-status').hide();
                 ui.report_success(i18n.t("Custom emoji added!"), emoji_status);
+                $("form.admin-emoji-form input[type='text']").val("");
             },
             error: function (xhr, error) {
                 $('#admin-emoji-status').hide();
