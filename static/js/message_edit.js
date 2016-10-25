@@ -66,12 +66,11 @@ exports.save = function (row, from_topic_edited_only) {
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.local_id !== undefined) {
-        // No changes
-        if (new_content === message.raw_content && !topic_changed) {
-            return true;
+        if (new_content !== message.raw_content || topic_changed) {
+            echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
         }
-        echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
-        return true;
+        message_edit.end(row);
+        return;
     }
 
     var request = {message_id: message.id};
@@ -91,7 +90,8 @@ exports.save = function (row, from_topic_edited_only) {
     }
     if (!changed) {
         // If they didn't change anything, just cancel it.
-        return true;
+        message_edit.end(row);
+        return;
     }
     channel.post({
         url: '/json/update_message',
@@ -108,7 +108,7 @@ exports.save = function (row, from_topic_edited_only) {
             }
         }
     });
-    // The message will automatically get replaced when it arrives.
+    // The message will automatically get replaced via message_list.update_message.
 };
 
 function handle_edit_keydown(from_topic_edited_only, e) {
@@ -126,11 +126,7 @@ function handle_edit_keydown(from_topic_edited_only, e) {
     }
     e.stopPropagation();
     e.preventDefault();
-    // If no changes were made, cancel the edit (if changes were made,
-    // the edit window will get cleaned up by the rerendering process)
-    if (message_edit.save(row, from_topic_edited_only)) {
-        message_edit.end(row);
-    }
+    message_edit.save(row, from_topic_edited_only);
 }
 
 function timer_text(seconds_left) {
@@ -336,6 +332,9 @@ exports.end = function (row) {
         viewport.scrollTop(viewport.scrollTop() - scroll_by);
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
+    }
+    if (row !== undefined) {
+        current_msg_list.hide_edit_topic(row);
     }
 };
 
