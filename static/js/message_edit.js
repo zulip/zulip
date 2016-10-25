@@ -117,17 +117,19 @@ function handle_edit_keydown(from_topic_edited_only, e) {
     if (e.target.id === "message_edit_content" && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
-        if (message_edit.save(row, from_topic_edited_only) === true) {
-            message_edit.end(row);
-        }
     } else if (e.target.id === "message_edit_topic" && code === 13) {
-        // Hitting enter in topic field isn't so great.
-        e.stopPropagation();
-        e.preventDefault();
+        row = $(e.target).closest(".message_row");
     } else if (e.target.id === "inline_topic_edit" && code === 13) {
-        // Hitting enter in topic field isn't so great.
-        e.stopPropagation();
-        e.preventDefault();
+        row = $(e.target).closest(".recipient_row");
+    } else {
+        return;
+    }
+    e.stopPropagation();
+    e.preventDefault();
+    // If no changes were made, cancel the edit (if changes were made,
+    // the edit window will get cleaned up by the rerendering process)
+    if (message_edit.save(row, from_topic_edited_only)) {
+        message_edit.end(row);
     }
 }
 
