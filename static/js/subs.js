@@ -914,8 +914,6 @@ $(function () {
                     exports.mark_subscribed(stream);
                 } else {
                     add_to_member_list(list, people.get_by_email(principal).full_name, principal);
-                    var sub = stream_data.get_sub(stream);
-                    exports.rerender_subscribers_count(sub);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -953,9 +951,6 @@ $(function () {
                     // If you're unsubscribing yourself, mark whole
                     // stream entry as you being unsubscribed.
                     exports.mark_unsubscribed(stream_name);
-                } else {
-                    var sub = stream_data.get_sub(stream_name);
-                    exports.rerender_subscribers_count(sub);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -1181,6 +1176,16 @@ $(function () {
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
+
+    $(document).on('peer_subscribe.zulip', function (e, data) {
+        var sub = stream_data.get_sub(data.stream_name);
+        exports.rerender_subscribers_count(sub);
+    });
+    $(document).on('peer_unsubscribe.zulip', function (e, data) {
+        var sub = stream_data.get_sub(data.stream_name);
+        exports.rerender_subscribers_count(sub);
+    });
+
 });
 
 function focus_on_narrowed_stream() {
