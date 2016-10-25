@@ -1789,22 +1789,6 @@ class SubscriptionAPITest(ZulipTestCase):
 
 class GetPublicStreamsTest(ZulipTestCase):
 
-    def test_public_streams(self):
-        # type: () -> None
-        """
-        Ensure that streams successfully returns a list of streams
-        """
-        email = 'hamlet@zulip.com'
-        self.login(email)
-
-        result = self.client_get("/json/streams?include_subscribed=false")
-
-        self.assert_json_success(result)
-        json = ujson.loads(result.content)
-
-        self.assertIn("streams", json)
-        self.assertIsInstance(json["streams"], list)
-
     def test_public_streams_api(self):
         # type: () -> None
         """

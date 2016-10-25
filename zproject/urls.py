@@ -212,8 +212,10 @@ v1_api_and_json_patterns = [
          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
 
     # streams -> zerver.views.streams
+    # (this API is only used externally)
     url(r'^streams$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.streams.get_streams_backend'}),
+
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
     url(r'^streams/(?P<stream_name>.*)/members$', 'zerver.lib.rest.rest_dispatch',
         {'GET': 'zerver.views.streams.get_subscribers_backend'}),
