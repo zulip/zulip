@@ -654,6 +654,33 @@ def render_incoming_message(message, content, message_users):
         raise JsonableError(_('Unable to render message'))
     return rendered_content
 
+def get_recipient_user_profiles(recipient, sender_id):
+    # type: (Recipient, text_type) -> List[UserProfile]
+    if recipient.type == Recipient.PERSONAL:
+        recipients = list(set([get_user_profile_by_id(recipient.type_id),
+                               get_user_profile_by_id(sender_id)]))
+        # For personals, you send out either 1 or 2 copies, for
+        # personals to yourself or to someone else, respectively.
+        assert((len(recipients) == 1) or (len(recipients) == 2))
+    elif (recipient.type == Recipient.STREAM or recipient.type == Recipient.HUDDLE):
+        # We use select_related()/only() here, while the PERSONAL case above uses
+        # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
+        # typically have more recipients than PMs, so get_user_profile_by_id() would be
+        # a bit more expensive here, given that we need to hit the DB anyway and only
+        # care about the email from the user profile.
+        fields = [
+            'user_profile__id',
+            'user_profile__email',
+            'user_profile__is_active',
+            'user_profile__realm__domain'
+        ]
+        query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
+                recipient=recipient, active=True)
+        recipients = [s.user_profile for s in query]
+    else:
+        raise ValueError('Bad recipient type')
+    return recipients
+
 def do_send_messages(messages):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
@@ -684,31 +711,8 @@ def do_send_messages(messages):
             log_message(message['message'])
 
     for message in messages:
-        if message['message'].recipient.type == Recipient.PERSONAL:
-            message['recipients'] = list(set([get_user_profile_by_id(message['message'].recipient.type_id),
-                                              get_user_profile_by_id(message['message'].sender_id)]))
-            # For personals, you send out either 1 or 2 copies of the message, for
-            # personals to yourself or to someone else, respectively.
-            assert((len(message['recipients']) == 1) or (len(message['recipients']) == 2))
-        elif (message['message'].recipient.type == Recipient.STREAM or
-              message['message'].recipient.type == Recipient.HUDDLE):
-            # We use select_related()/only() here, while the PERSONAL case above uses
-            # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
-            # typically have more recipients than PMs, so get_user_profile_by_id() would be
-            # a bit more expensive here, given that we need to hit the DB anyway and only
-            # care about the email from the user profile.
-            fields = [
-                'user_profile__id',
-                'user_profile__email',
-                'user_profile__is_active',
-                'user_profile__realm__domain'
-            ]
-            query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
-                recipient=message['message'].recipient, active=True)
-            message['recipients'] = [s.user_profile for s in query]
-        else:
-            raise ValueError('Bad recipient type')
-
+        message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
+                                                            message['message'].sender_id)
         # Only deliver the message to active user recipients
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
@@ -818,45 +822,20 @@ def do_send_messages(messages):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
-def get_typing_notification_recipients(notification):
-    # type: (Dict[str, Any]) -> Dict[str, Any]
-    if notification['recipient'].type == Recipient.PERSONAL:
-        recipients = [notification['sender'],
-                      get_user_profile_by_id(notification['recipient'].type_id)]
-    elif notification['recipient'].type == Recipient.HUDDLE:
-        # We use select_related()/only() here, while the PERSONAL case above uses
-        # get_user_profile_by_id() to get UserProfile objects from cache.  Streams will
-        # typically have more recipients than PMs, so get_user_profile_by_id() would be
-        # a bit more expensive here, given that we need to hit the DB anyway and only
-        # care about the email from the user profile.
-        fields = [
-            'user_profile__id',
-            'user_profile__email',
-            'user_profile__is_active',
-            'user_profile__realm__domain'
-        ]
-        query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
-                recipient=notification['recipient'], active=True)
-        recipients = [s.user_profile for s in query]
-    elif notification['recipient'].type == Recipient.STREAM:
-        raise ValueError('Forbidden recipient type')
-    else:
-        raise ValueError('Bad recipient type')
-    notification['recipients'] = [{'id': profile.id, 'email': profile.email} for profile in recipients]
-    notification['active_recipients'] = [profile for profile in recipients if profile.is_active]
-    return notification
-
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
-    notification = get_typing_notification_recipients(notification)
+    recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],
+                                                          notification['sender'].id)
+    recipients = [{'id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
+    active_recipients = [profile for profile in recipient_user_profiles if profile.is_active]
     event = dict(
             type            = 'typing',
             op              = notification['op'],
             sender          = notification['sender'],
-            recipients      = notification['recipients'])
+            recipients      = recipients)
 
-    # Only deliver the message to active user recipients
-    send_event(event, notification['active_recipients'])
+    # Only deliver the notification to active user recipients
+    send_event(event, active_recipients)
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it
@@ -881,8 +860,11 @@ def check_typing_notification(sender, notification_to, operator):
         except ValidationError as e:
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
-    typing_notification = {'sender': sender, 'recipient': recipient, 'op': operator}
-    return typing_notification
+    if recipient.type == Recipient.STREAM:
+        raise ValueError('Forbidden recipient type')
+    else:
+        typing_notification = {'sender': sender, 'recipient': recipient, 'op': operator}
+        return typing_notification
 
 def do_create_stream(realm, stream_name):
     # type: (Realm, text_type) -> None
