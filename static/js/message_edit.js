@@ -102,8 +102,10 @@ exports.save = function (row, from_topic_edited_only) {
             }
         },
         error: function (xhr, error_type, xhn) {
-            var message = channel.xhr_error_message("Error saving edit", xhr);
-            row.find(".edit_error").text(message).show();
+            if (msg_list === current_msg_list) {
+                var message = channel.xhr_error_message("Error saving edit", xhr);
+                row.find(".edit_error").text(message).show();
+            }
         }
     });
     // The message will automatically get replaced when it arrives.
