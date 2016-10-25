@@ -849,10 +849,11 @@ def get_typing_notification_recipients(notification):
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     notification = get_typing_notification_recipients(notification)
+    sender = {'id': notification['sender'].id, 'email': notification['sender'].email}
     event = dict(
             type            = 'typing',
             op              = notification['op'],
-            sender          = notification['sender'],
+            sender          = sender,
             recipients      = notification['recipients'])
 
     # Only deliver the message to active user recipients
@@ -881,8 +882,7 @@ def check_typing_notification(sender, notification_to, operator):
         except ValidationError as e:
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
-    sender_dict = {'id': sender.id, 'email': sender.email}
-    typing_notification = {'sender': sender_dict, 'recipient': recipient, 'op': operator}
+    typing_notification = {'sender': sender, 'recipient': recipient, 'op': operator}
     return typing_notification
 
 def do_create_stream(realm, stream_name):
