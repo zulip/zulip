@@ -146,11 +146,12 @@ Oops, the frontend tests failed. Tips for debugging:
 
         sys.exit(ret)
 
-os.environ["EXTERNAL_HOST"] = "zulipdev.com:9981"
+os.environ["EXTERNAL_HOST"] = "localhost:9981"
 # First, run all tests with REALMS_HAVE_SUBDOMAINS set to False
 run_tests(False, args)
 # Now run a subset of the tests with REALMS_HAVE_SUBDOMAINS set to True
 os.environ["REALMS_HAVE_SUBDOMAINS"] = "True"
+os.environ["EXTERNAL_HOST"] = "zulipdev.com:9981"
 if len(args) == 0:
     run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"])
 else:
