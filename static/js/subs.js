@@ -272,8 +272,13 @@ function add_element_to_member_list (tb, elem) {
     tb.prepend(elem);
 }
 
-function add_to_member_list(tb, name, email) {
-    tb.prepend(format_member_list_elem(name, email));
+function get_subscriber_list(sub_row) {
+    return sub_row.find('.subscriber_list_container .subscriber-list');
+}
+
+function prepend_subscriber(sub_row, name, email) {
+    var list = get_subscriber_list(sub_row);
+    list.prepend(format_member_list_elem(name, email));
 }
 
 exports.mark_subscribed = function (stream_name, attrs) {
@@ -299,8 +304,9 @@ exports.mark_subscribed = function (stream_name, attrs) {
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
-                var members = settings.find(".subscriber_list_container .subscriber-list");
-                add_to_member_list(members, page_params.fullname, page_params.email);
+                prepend_subscriber(settings,
+                                   page_params.fullname,
+                                   page_params.email);
             }
         } else {
             add_sub_to_table(sub);
@@ -901,7 +907,6 @@ $(function () {
         // TODO: clean up this error handling
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
-        var list = sub_row.find('.subscriber_list_container .subscriber-list');
 
         function invite_success(data) {
             text_box.val('');
@@ -913,7 +918,10 @@ $(function () {
                     // mark_subscribed adds the user to the member list
                     exports.mark_subscribed(stream);
                 } else {
-                    add_to_member_list(list, people.get_by_email(principal).full_name, principal);
+                    var person = people.get_by_email(principal);
+                    prepend_subscriber(sub_row,
+                                       person.full_name,
+                                       principal);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -1101,7 +1109,7 @@ $(function () {
         var stream = sub_row.find('.subscription_name').text();
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-        var list = sub_row.find('.subscriber_list_container .subscriber-list');
+        var list = get_subscriber_list(sub_row);
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
         if (!stream_data.get_sub(stream).render_subscribers) {
