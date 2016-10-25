@@ -25,7 +25,7 @@ class AnalyticsTestCase(TestCase):
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
     count_stat = CountStat('test stat', ZerverCountQuery(Recipient, UserCount, 'select 0'),
-                           {}, CountStat.HOUR, False)
+                           {}, None, CountStat.HOUR, False)
 
     def setUp(self):
         # type: () -> None
@@ -90,7 +90,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
         # might change if we refactor count_query
 
         stat = CountStat('test_stat_write', zerver_count_stream_by_realm,
-                         {'invite_only': False}, CountStat.HOUR, False)
+                         {'invite_only': False}, None, CountStat.HOUR, False)
 
         # add some stuff to zerver_*
         self.create_stream(name='stream1')
@@ -105,7 +105,7 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
 
     def test_update_analytics_tables(self):
         # type: () -> None
-        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, CountStat.HOUR, False)
+        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, None, CountStat.HOUR, False)
 
         user1 = self.create_user('email1')
         user2 = self.create_user('email2')
@@ -167,7 +167,7 @@ class TestProcessCountStat(AnalyticsTestCase):
     # test users added in last hour
     def test_add_new_users(self):
         # type: () -> None
-        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, CountStat.HOUR, False)
+        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, None, CountStat.HOUR, False)
 
         # add new users to realm in last hour
         self.create_user('email1')
@@ -185,7 +185,7 @@ class TestProcessCountStat(AnalyticsTestCase):
     def test_count_before_realm_creation(self):
         # type: () -> None
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, CountStat.HOUR, False)
+                         {'is_bot': False, 'is_active': True}, None, CountStat.HOUR, False)
 
         realm = Realm.objects.create(domain='domain', name='name', date_created=self.TIME_ZERO)
         self.create_user('email', realm=realm)
@@ -198,7 +198,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         # type: () -> None
         # test that rows with empty counts are returned if realm exists
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, CountStat.HOUR, False)
+                         {'is_bot': False, 'is_active': True}, None, CountStat.HOUR, False)
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
         self.assertCountEquals(RealmCount, 'test_active_humans', 0)
 
@@ -216,7 +216,7 @@ class TestAggregates(AnalyticsTestCase):
 class TestXByYQueries(AnalyticsTestCase):
     def test_message_to_stream_aggregation(self):
         # type: () -> None
-        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, CountStat.HOUR, False)
+        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, None, CountStat.HOUR, False)
 
         # write some messages
         user = self.create_user('email')
@@ -236,12 +236,11 @@ class TestCountStats(AnalyticsTestCase):
     def test_human_and_bot_count_by_realm(self):
         # type: () -> None
         stats = [
-            CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+            CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True}, None,
                       CountStat.HOUR, False),
-            CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
+            CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True}, None,
                       CountStat.HOUR, False)]
 
-        # TODO these dates should probably be explicit, since the default args for the commands are timezone.now() dependent.
         self.create_user('email1-bot', is_bot=True)
         self.create_user('email2-bot', is_bot=True)
         self.create_user('email3-human', is_bot=False)

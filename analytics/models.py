@@ -52,6 +52,7 @@ class BaseCount(ModelReprMixin, models.Model):
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
     property = models.CharField(max_length=40) # type: text_type
+    subgroup = models.CharField(max_length=16, null=True) # type: text_type
     end_time = models.DateTimeField() # type: datetime.datetime
     interval = models.CharField(max_length=20) # type: text_type
     value = models.BigIntegerField() # type: int
