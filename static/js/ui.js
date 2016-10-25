@@ -313,6 +313,7 @@ exports.lightbox_photo = function (image, user) {
 exports.exit_lightbox_photo = function (image) {
     $("#overlay").removeClass("show");
     $(".player-container iframe").remove();
+    document.activeElement.blur();
 };
 
 exports.youtube_video = function (id) {
