@@ -1179,10 +1179,18 @@ $(function () {
     $(document).on('peer_subscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
         exports.rerender_subscribers_count(sub);
+        var sub_row = settings_for_sub(sub);
+        prepend_subscriber(sub_row, data.user_email);
     });
     $(document).on('peer_unsubscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
         exports.rerender_subscribers_count(sub);
+
+        var sub_row = settings_for_sub(sub);
+        var tr = sub_row.find("tr[data-subscriber-email='" +
+                              data.user_email +
+                              "']");
+        tr.remove();
     });
 
 });
