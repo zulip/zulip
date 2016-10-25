@@ -21,6 +21,64 @@ class TypingNotificationEndToEndTest(ZulipTestCase):
                                   **self.api_auth(sender))
         self.assert_json_success(result)
 
+    def test_single_recipient(self):
+        # type: () -> None
+        """
+        Single recipient can retrieve typing event from queue
+        """
+        sender = 'hamlet@zulip.com'
+        recipient = 'othello@zulip.com'
+        register_result = self.client_post('/api/v1/register', {'event_types': ['typing']},
+                                           **self.api_auth(recipient))
+        self.assert_json_success(register_result)
+
+        typing_result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'start'},
+                                         **self.api_auth(sender))
+        self.assert_json_success(typing_result)
+
+        event = self.client_post('/api/v1/events', {'queue_id': register_result.queue_id},
+                                  **self.api_auth(sender))
+        self.assert_json_success(event)
+
+        event_recipient_emails = set(user['email'] for user in event['recipients'])
+
+        self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+        self.assertTrue(event_recipient_emails == expected_recipients)
+        self.assertTrue(event['type'] == 'typing')
+        self.assertTrue(event['op'] == 'start')
+
+    def test_multiple_recipients(self):
+        # type: () -> None
+        """
+        All recipients can retrieve typing event
+        """
+        sender = 'hamlet@zulip.com'
+        recipient = ['othello@zulip.com', 'cordelia@zulip.com']
+        expected_recipients = set(recipient) | set([sender])
+
+        recipient_queues = []
+        for user in recipient:
+            result = self.client_post('/api/v1/register', {'event_types': ['typing']},
+                                      **self.api_auth(user))
+            self.assert_json_success(result)
+            recipient_queues.push((user, result.queue_id))
+
+        typing_result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'start'},
+                                         **self.api_auth(sender))
+        self.assert_json_success(typing_result)
+
+        for user, queue_id in recipient_queues:
+            event = self.client_post('/api/v1/events', {'queue_id': queue_id},
+                                     **self.api_auth(user))
+            self.assert_json_success(event)
+
+            event_recipient_emails = set(user['email'] for user in event['recipients'])
+
+            self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+            self.assertTrue(event_recipient_emails == expected_recipients)
+            self.assertTrue(event['type'] == 'typing')
+            self.assertTrue(event['op'] == 'start')
+
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self):
         # type: () -> None
