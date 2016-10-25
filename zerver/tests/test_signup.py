@@ -64,7 +64,7 @@ class PublicURLTest(ZulipTestCase):
                           "/api/v1/users/me/subscriptions",
                           "/api/v1/messages",
                           "/json/messages",
-                          "/json/streams",
+                          "/api/v1/streams",
                           ],
                 }
         post_urls = {200: ["/accounts/login/"],
