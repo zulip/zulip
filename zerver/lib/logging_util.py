@@ -29,8 +29,8 @@ class _RateLimitFilter(object):
                 use_cache = False
 
             if use_cache:
-                tb = force_bytes('\n'.join(traceback.format_exception(*record.exc_info)))
-                key = self.__class__.__name__.upper() + hashlib.sha1(tb).hexdigest()
+                tb = u'\n'.join(traceback.format_exception(*record.exc_info))
+                key = self.__class__.__name__.upper() + hashlib.sha1(tb.encode('utf8')).hexdigest()
                 duplicate = cache.get(key) == 1
                 if not duplicate:
                     cache.set(key, 1, rate)

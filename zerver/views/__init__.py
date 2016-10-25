@@ -15,6 +15,7 @@ from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
 from django.core import validators
 from django.core.mail import send_mail
+from django_otp.decorators import otp_required
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
@@ -250,6 +251,7 @@ def accounts_register(request):
         request=request)
 
 @zulip_login_required
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def accounts_accept_terms(request):
     # type: (HttpRequest) -> HttpResponse
     if request.method == "POST":
@@ -415,6 +417,7 @@ def sent_time_in_epoch_seconds(user_message):
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
 @zulip_login_required
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def home(request):
     # type: (HttpRequest) -> HttpResponse
     # We need to modify the session object every two weeks or it will expire.
@@ -639,6 +642,7 @@ def home(request):
     return response
 
 @zulip_login_required
+@otp_required(login_url = settings.HOME_NOT_LOGGED_IN, if_configured=True)
 def desktop_home(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponseRedirect(reverse('zerver.views.home'))

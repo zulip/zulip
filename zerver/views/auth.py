@@ -15,6 +15,10 @@ from six import text_type
 from six.moves import urllib
 from typing import Any, Dict, Optional
 
+from two_factor.views import LoginView as TwoFactorLoginView
+from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
+from two_factor.views.utils import ExtraSessionStorage
+
 from confirmation.models import Confirmation
 from zerver.forms import OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.request import REQ, has_request_variables, JsonableError
@@ -247,33 +251,51 @@ def finish_google_oauth2(request):
     return login_or_register_remote_user(request, email_address, user_profile, full_name,
                                          invalid_subdomain)
 
-def login_page(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
-    extra_context = kwargs.pop('extra_context', {})
-    if dev_auth_enabled():
-        # Development environments usually have only a few users, but
-        # it still makes sense to limit how many users we render to
-        # support performance testing with DevAuthBackend.
-        MAX_DEV_BACKEND_USERS = 100
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-        users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
-        extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
-    template_response = django_login_page(
-        request, authentication_form=OurAuthenticationForm,
-        extra_context=extra_context, **kwargs)
-    try:
-        template_response.context_data['email'] = request.GET['email']
-    except KeyError:
-        pass
+class PatchedExtraSessionStorage(ExtraSessionStorage):
+    def reset(self):
+        # type: () -> None
+        if self.prefix in self.request.session:
+            super(ExtraSessionStorage, self).reset()
+        else:
+            self.init_data()
 
-    try:
-        template_response.context_data['subdomain'] = request.GET['subdomain']
-        template_response.context_data['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
-    except KeyError:
-        pass
+class LoginView(TwoFactorLoginView):
+    storage_name = 'zerver.views.auth.PatchedExtraSessionStorage'
+    form_list = (
+        ('auth', OurAuthenticationForm),
+        ('token', AuthenticationTokenForm),
+        ('backup', BackupTokenForm),
+    )
 
-    return template_response
+    def get_form_kwargs(self, step):
+        # type: (str) -> Dict[str, Any]
+        return {'request': self.request}
+
+    def get_context_data(self, **kwargs):
+        # type: (**Any) -> Dict[str, Any]
+        context = super(LoginView, self).get_context_data(**kwargs)
+        if dev_auth_enabled():
+            # Development environments usually have only a few users, but
+            # it still makes sense to limit how many users we render to
+            # support performance testing with DevAuthBackend.
+            MAX_DEV_BACKEND_USERS = 100
+            users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+            users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+            context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
+            context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+
+        try:
+            context['email'] = self.request.GET['email']
+        except KeyError:
+            pass
+
+        try:
+            context['subdomain'] = self.request.GET['subdomain']
+            context['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
+        except KeyError:
+            pass
+
+        return context
 
 def dev_direct_login(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse

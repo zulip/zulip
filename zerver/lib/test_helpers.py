@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
@@ -369,8 +370,10 @@ class ZulipTestCase(TestCase):
         # type: (text_type, Optional[text_type]) -> HttpResponse
         if password is None:
             password = initial_password(email)
-        return self.client_post('/accounts/login/',
-                                {'username': email, 'password': password})
+        return self.client_post(reverse('django.contrib.auth.views.login'),
+                                {'auth-username': email,
+                                 'auth-password': password,
+                                 'login_view-current_step': 'auth'})
 
     def login(self, email, password=None, fails=False):
         # type: (text_type, Optional[text_type], bool) -> HttpResponse

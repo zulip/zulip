@@ -18,9 +18,9 @@ function log_in(credentials) {
     }
 
     casper.test.info('Logging in');
-    casper.fill('form[action^="/accounts/login"]', {
-        username: credentials.username,
-        password: credentials.password
+    casper.fill('form#login_form', {
+        'auth-username': credentials.username,
+        'auth-password': credentials.password
     }, true /* submit form */);
 }
 
@@ -114,7 +114,7 @@ exports.then_log_out = function () {
 
     });
     casper.waitUntilVisible(".login-page-header", function () {
-        casper.test.assertUrlMatch(/accounts\/login\/$/);
+        casper.test.assertUrlMatch(/\/login\/$/);
         casper.test.info("Logged out");
     });
 };

@@ -1,0 +1,51 @@
+{% load pipeline %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.3.0/respond.js"></script>
+  <![endif]-->
+  {% stylesheet 'common' %}
+  {% stylesheet 'portico' %}
+</head>
+<body>
+  {% block content_wrapper %}
+  <div class="header">
+    <div class="header-main" id="top_navbar">
+      <div class="column-left">
+        <div>
+            {% if custom_logo_url %}
+            <a class="brand logo" href="{{ server_uri }}/"><img src="{{ custom_logo_url }}" class="portico-logo" alt="Zulip" content="Zulip" /></a>
+            {% else %}
+            <a class="brand logo" href="{{ server_uri }}/"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="portico-simple-logo" alt="Zulip" content="Zulip" /></a>
+            {% endif %}
+        </div>
+      </div>
+
+      <div class="column-right top-links">
+        <a href='/#settings'>Back to Settings</a>
+      </div>
+    </div>
+  </div>
+    <div class="app portico-page">
+      <div class="portico-os-announcement">
+        {% block os_announcement %}
+        {% endblock %}
+      </div>
+      <div class="app-main portico-page-container{% block hello_page_container %}{% endblock %}">
+      {% block content %}{% endblock %}
+      </div>
+      <div class="footer-padder{% block hello_page_footer %}{% endblock %}"></div>
+    </div>
+
+  {% endblock %}
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
+
