@@ -150,6 +150,7 @@ class Realm(ModelReprMixin, models.Model):
     allow_message_editing = models.BooleanField(default=True) # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS) # type: int
+    message_retention_days = models.IntegerField(null=True) # type: Optional[int]
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
