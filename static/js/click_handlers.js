@@ -415,8 +415,10 @@ $(function () {
             }
         });
 
-        $("#overlay .exit").click(function (e) {
-            ui.exit_lightbox_photo();
+        $("#overlay .exit, #overlay .image-preview").click(function (e) {
+            if ($(e.target).is(".exit, .image-preview")) {
+                ui.exit_lightbox_photo();
+            }
         });
 
         $("#overlay .download").click(function (e) {
