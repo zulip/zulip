@@ -435,11 +435,8 @@ function actually_filter_streams() {
 var filter_streams = _.throttle(actually_filter_streams, 50);
 
 exports.setup_page = function () {
-    loading.make_indicator($('#subs_page_loading_indicator'));
 
-    function _populate_and_fill(public_streams) {
-        // TODO: stop fetching public_streams
-
+    function _populate_and_fill() {
         var sub_rows = stream_data.get_streams_for_settings_page();
 
         $('#subscriptions_table').empty();
@@ -457,34 +454,19 @@ exports.setup_page = function () {
             add_email_hint(row, email_address_hint_content);
         });
 
-        loading.destroy_indicator($('#subs_page_loading_indicator'));
         $("#create_or_filter_stream_row input[type='text']").on("input", filter_streams);
         $(document).trigger($.Event('subs_page_loaded.zulip'));
     }
 
-    function populate_and_fill(public_streams) {
+    function populate_and_fill() {
         i18n.ensure_i18n(function () {
-            _populate_and_fill(public_streams);
+            _populate_and_fill();
         });
     }
 
-    function failed_listing(xhr, error) {
-        loading.destroy_indicator($('#subs_page_loading_indicator'));
-        ui.report_error(i18n.t("Error listing streams or subscriptions"), xhr,
-                        $("#subscriptions-status"), 'subscriptions-status');
-    }
+    populate_and_fill();
 
-    if (should_list_all_streams()) {
-        var req = channel.get({
-            url: '/json/streams',
-            data: {"include_subscribed": false},
-            idempotent: true,
-            timeout:  10*1000,
-            success: populate_and_fill,
-            error: failed_listing
-        });
-    } else {
-        populate_and_fill({streams: []});
+    if (!should_list_all_streams()) {
         $('#create_stream_button').val(i18n.t("Subscribe"));
     }
 };
