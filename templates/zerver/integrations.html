@@ -864,6 +864,10 @@
     </div>
 
     <div id="github" class="integration-instructions">
+      <p>
+        This webhook bases on deprecated concept that is
+        <a href="https://github.com/github/github-services">GitHub Services</a>
+      </p>
 
       <p>First, create the stream you'd like to use for GitHub notifications,
       and subscribe all interested parties to this stream. The integration will
@@ -903,6 +907,40 @@
       your repository, you'll get a Zulip notification that looks like this:</p>
 
       <p><img class="screenshot" src="/static/images/integrations/github/005.png" /></p>
+
+    </div>
+
+    <div id="github_webhook" class="integration-instructions">
+
+      <p>First, create the stream you'd like to use for GitHub Webhook notifications,
+      and subscribe all interested parties to this stream. The integration will
+      use the default stream <code>github</code> if no stream is supplied in
+      the hook; you still need to create the stream even if you are using this
+      default.</p>
+
+      <p>Next, go to your repository page and click <b>"Settings"</b>:</p>
+      <p><img src="/static/images/integrations/github_webhook/001.png" /></p>
+
+      <p>From there, select <b>"Webhooks"</b>:</p>
+      <p><img src="/static/images/integrations/github_webhook/002.png" /></p>
+
+      <p>Click <b>"Add webhook"</b>.</p>
+      <p><img class="screenshot" src="/static/images/integrations/github_webhook/003.png" /></p>
+
+      <p>Authorize yourself and configure your webhook.</p>
+
+      <p>In the <b>"Payload URL"</b> field, enter a URL constructed like this:</p>
+
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/webhook_github?api_key=abcdefgh&amp;stream=github</code></p>
+
+      <p>where <code>api_key</code> is the API key of your Zulip
+        bot. Select the actions that you want to result in a
+        Zulip notification and click <b>Add Webhook</b>.</p>
+
+      <p><b>Congratulations! You're done!</b><br />
+      Your messages will look like this:</p>
+
+      <p><img class="screenshot" src="/static/images/integrations/github_webhook/004.png" /></p>
 
     </div>
 
