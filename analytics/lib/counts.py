@@ -135,11 +135,7 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
     cursor.execute(installationcount_query, {'end_time': end_time})
     cursor.close()
 
-## methods that hit the prod databases directly
-# No left joins in Django ORM yet, so have to use raw SQL :(
-# written in slightly more than needed generality, to reduce copy-paste errors
-# as more of these are made / make it easy to extend to a pull_X_by_realm
-
+# only method that hits the prod databases directly
 def do_pull_from_zerver(stat, start_time, end_time, interval):
     # type: (CountStat, datetime, datetime, str) -> None
     zerver_table = stat.zerver_count_query.zerver_table._meta.db_table # type: ignore
