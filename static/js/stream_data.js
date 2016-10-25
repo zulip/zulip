@@ -42,6 +42,10 @@ exports.subscribed_subs = function () {
     return _.where(stream_info.values(), {subscribed: true});
 };
 
+exports.unsubscribed_subs = function () {
+    return _.where(stream_info.values(), {subscribed: false});
+};
+
 exports.subscribed_streams = function () {
     return _.pluck(exports.subscribed_subs(), 'name');
 };
@@ -223,33 +227,10 @@ exports.add_admin_options = function (sub) {
     });
 };
 
-exports.get_streams_for_settings_page = function (public_streams) {
+exports.get_streams_for_settings_page = function () {
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
-
-    // To avoid dups, build a set of names we already subscribed to.
-    var subscribed_set = new Dict({fold_case: true});
-    _.each(subscribed_rows, function (sub) {
-        subscribed_set.set(sub.name, true);
-    });
-
-    // Right now the back end gives us all public streams; we really only
-    // need to add the ones we haven't already subscribed to.
-    var unsubscribed_streams = _.reject(public_streams.streams, function (stream) {
-        return subscribed_set.has(stream.name);
-    });
-
-    // Build up our list of unsubscribed rows.
-    var unsubscribed_rows = [];
-    _.each(unsubscribed_streams, function (stream) {
-        var sub = exports.get_sub(stream.name);
-        if (!sub) {
-            sub = exports.create_sub_from_server_data(
-                    stream.name,
-                    _.extend({subscribed: false}, stream));
-        }
-        unsubscribed_rows.push(sub);
-    });
+    var unsubscribed_rows = exports.unsubscribed_subs();
 
     // Sort and combine all our streams.
     function by_name(a,b) {

@@ -519,8 +519,9 @@ exports.setup_page = function () {
     loading.make_indicator($('#subs_page_loading_indicator'));
 
     function _populate_and_fill(public_streams) {
+        // TODO: stop fetching public_streams
 
-        var sub_rows = stream_data.get_streams_for_settings_page(public_streams);
+        var sub_rows = stream_data.get_streams_for_settings_page();
 
         $('#subscriptions_table').empty();
 
