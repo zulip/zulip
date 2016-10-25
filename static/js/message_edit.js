@@ -98,7 +98,7 @@ exports.save = function (row, from_topic_edited_only) {
         data: request,
         success: function (data) {
             if (msg_list === current_msg_list) {
-                return true;
+                row.find(".edit_error").text("Message successfully edited!").removeClass("alert-error").addClass("alert-success").show();
             }
         },
         error: function (xhr, error_type, xhn) {
