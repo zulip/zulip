@@ -223,6 +223,12 @@ function settings_for_sub(sub) {
     return $("#subscription_settings_" + id);
 }
 
+exports.rerender_subscribers_count = function (sub) {
+    var id = parseInt(sub.stream_id, 10);
+    stream_data.update_subscribers_count(sub);
+    $("#subscription_" + id + " .subscriber_count").text(sub.subscriber_count);
+};
+
 exports.show_settings_for = function (stream_name) {
     settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
 };
@@ -248,6 +254,7 @@ function add_email_hint(row, email_address_hint_content) {
 
 function add_sub_to_table(sub) {
     sub = stream_data.add_admin_options(sub);
+    stream_data.update_subscribers_count(sub);
     var html = templates.render('subscription', sub);
     $('#create_or_filter_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
@@ -285,6 +292,8 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
+            exports.rerender_subscribers_count(sub);
+
             button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
             button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
@@ -341,6 +350,8 @@ exports.mark_sub_unsubscribed = function (sub) {
         if (settings.hasClass('in')) {
             settings.collapse('hide');
         }
+
+        exports.rerender_subscribers_count(sub);
 
         // Hide the swatch and subscription settings
         var sub_row = settings.closest('.subscription_row');
@@ -903,6 +914,8 @@ $(function () {
                     exports.mark_subscribed(stream);
                 } else {
                     add_to_member_list(list, people.get_by_email(principal).full_name, principal);
+                    var sub = stream_data.get_sub(stream);
+                    exports.rerender_subscribers_count(sub);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -940,6 +953,9 @@ $(function () {
                     // If you're unsubscribing yourself, mark whole
                     // stream entry as you being unsubscribed.
                     exports.mark_unsubscribed(stream_name);
+                } else {
+                    var sub = stream_data.get_sub(stream_name);
+                    exports.rerender_subscribers_count(sub);
                 }
             } else {
                 error_elem.addClass("hide");
