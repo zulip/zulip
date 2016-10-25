@@ -17,7 +17,7 @@ class TypingNotificationEndToEndTest(ZulipTestCase):
         """
         sender = 'hamlet@zulip.com'
         recipient = 'othello@zulip.com'
-        result = self.client_post('/api/v1/typing', {'to': recipient},
+        result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'start'},
                                   **self.api_auth(sender))
         self.assert_json_success(result)
 
