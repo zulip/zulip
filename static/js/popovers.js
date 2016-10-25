@@ -58,14 +58,16 @@ exports.toggle_actions_popover = function (element, id) {
     if (elt.data('popover') === undefined) {
         var message = current_msg_list.get(id);
         var editability = message_edit.get_editability(message);
-        var is_editable = (editability === message_edit.editability_types.TOPIC_ONLY ||
-                           editability === message_edit.editability_types.FULL);
+        var use_edit_icon;
         var editability_menu_item;
         if (editability === message_edit.editability_types.FULL) {
+            use_edit_icon = true;
             editability_menu_item = i18n.t("Edit");
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
-            editability_menu_item = i18n.t("Edit Topic");
+            use_edit_icon = false;
+            editability_menu_item = i18n.t("View Source / Edit Topic");
         } else {
+            use_edit_icon = false;
             editability_menu_item = i18n.t("View Source");
         }
         var can_mute_topic =
@@ -79,7 +81,7 @@ exports.toggle_actions_popover = function (element, id) {
 
         var args = {
             message: message,
-            is_editable: is_editable,
+            use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
