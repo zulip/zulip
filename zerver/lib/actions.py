@@ -881,7 +881,8 @@ def check_typing_notification(sender, notification_to, operator):
         except ValidationError as e:
             assert isinstance(e.messages[0], six.string_types)
             raise JsonableError(e.messages[0])
-    typing_notification = {'sender': sender, 'recipient': recipient, 'op': operator}
+    sender_dict = {'id': sender.id, 'email': sender.email}
+    typing_notification = {'sender': sender_dict, 'recipient': recipient, 'op': operator}
     return typing_notification
 
 def do_create_stream(realm, stream_name):
