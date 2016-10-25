@@ -262,9 +262,10 @@ function add_sub_to_table(sub) {
     add_email_hint(sub, email_address_hint_content);
 }
 
-function format_member_list_elem(name, email) {
+function format_member_list_elem(email) {
+    var person = people.get_by_email(email);
     return templates.render('stream_member_list_entry',
-                            {name: name, email: email,
+                            {name: person.full_name, email: email,
                              displaying_for_admin: page_params.is_admin});
 }
 
@@ -272,9 +273,9 @@ function get_subscriber_list(sub_row) {
     return sub_row.find('.subscriber_list_container .subscriber-list');
 }
 
-function prepend_subscriber(sub_row, name, email) {
+function prepend_subscriber(sub_row, email) {
     var list = get_subscriber_list(sub_row);
-    list.prepend(format_member_list_elem(name, email));
+    list.prepend(format_member_list_elem(email));
 }
 
 exports.mark_subscribed = function (stream_name, attrs) {
@@ -301,7 +302,6 @@ exports.mark_subscribed = function (stream_name, attrs) {
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
                 prepend_subscriber(settings,
-                                   page_params.fullname,
                                    page_params.email);
             }
         } else {
@@ -914,9 +914,7 @@ $(function () {
                     // mark_subscribed adds the user to the member list
                     exports.mark_subscribed(stream);
                 } else {
-                    var person = people.get_by_email(principal);
                     prepend_subscriber(sub_row,
-                                       person.full_name,
                                        principal);
                 }
             } else {
@@ -1129,7 +1127,7 @@ $(function () {
                     if (person === undefined) {
                         return elem;
                     }
-                    return format_member_list_elem(people.get_by_email(elem).full_name, elem);
+                    return format_member_list_elem(elem);
                 });
                 _.each(subscribers.sort(), function (elem) {
                     list.append(elem);
