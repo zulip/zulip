@@ -1551,11 +1551,12 @@ div.focused_table {
     line-height: 22px;
 }
 
+#inline_topic_edit,
 #message_edit_topic {
     margin-bottom: 5px;
 }
 
-#message_edit_topic.header-v {
+#inline_topic_edit.header-v {
     height: 18px;
     display: inline-block;
     margin: -2px 0 0 0;
@@ -1569,6 +1570,7 @@ div.focused_table {
     box-shadow: none;
 }
 
+#inline_topic_edit:focus,
 #message_edit_topic:focus {
     outline: none;
 }

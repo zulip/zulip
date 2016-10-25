@@ -56,10 +56,13 @@ exports.save = function (row, from_topic_edited_only) {
     var topic_changed = false;
     var new_topic;
     if (message.type === "stream") {
-        new_topic = row.find(".message_edit_topic").val();
+        if (from_topic_edited_only) {
+            new_topic = row.find(".inline_topic_edit").val();
+        } else {
+            new_topic = row.find(".message_edit_topic").val();
+        }
         topic_changed = (new_topic !== message.subject && new_topic.trim() !== "");
     }
-
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.local_id !== undefined) {
@@ -309,7 +312,7 @@ exports.start_topic_edit = function (recipient_row) {
     if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
-    form.find(".message_edit_topic").val(topic).select().focus();
+    form.find(".inline_topic_edit").val(topic).select().focus();
 };
 
 exports.is_editing = function (id) {
