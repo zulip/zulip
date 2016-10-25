@@ -246,9 +246,10 @@ function edit_message (row, raw_content) {
     var edit_row = row.find(".message_edit");
     if (!is_editable) {
         edit_row.find(".message_edit_close").focus();
-    } else if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
-        editability === editability_types.TOPIC_ONLY) {
+    } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
         edit_row.find(".message_edit_topic").focus();
+    } else if (editability === editability_types.TOPIC_ONLY) {
+        edit_row.find(".message_edit_cancel").focus();
     } else {
         edit_row.find(".message_edit_content").focus();
     }
