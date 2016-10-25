@@ -5,8 +5,6 @@ import ujson
 from typing import Any, Dict, List
 from six import string_types
 
-from zerver.models import get_user_profile_by_email
-
 from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list, get_display_recipient
 
 class TypingNotificationEndToEndTest(ZulipTestCase):
@@ -42,7 +40,7 @@ class TypingNotificationEndToEndTest(ZulipTestCase):
 
         event_recipient_emails = set(user['email'] for user in event['recipients'])
 
-        self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+        self.assertTrue(event['sender']['email'] == sender)
         self.assertTrue(event_recipient_emails == expected_recipients)
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'start')
@@ -74,7 +72,7 @@ class TypingNotificationEndToEndTest(ZulipTestCase):
 
             event_recipient_emails = set(user['email'] for user in event['recipients'])
 
-            self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+            self.assertTrue(event['sender']['email'] == sender)
             self.assertTrue(event_recipient_emails == expected_recipients)
             self.assertTrue(event['type'] == 'typing')
             self.assertTrue(event['op'] == 'start')
@@ -144,7 +142,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
 
-        self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+        self.assertTrue(event['sender']['email'] == sender)
         self.assertTrue(event_recipient_emails == expected_recipients)
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'start')
@@ -169,7 +167,7 @@ class TypingNotificationRecipientsTest(ZulipTestCase):
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
 
-        self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+        self.assertTrue(event['sender']['email'] == sender)
         self.assertTrue(event_recipient_emails == expected_recipients)
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'start')
@@ -194,7 +192,7 @@ class TypingStartedNotificationTest(ZulipTestCase):
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
 
-        self.assertTrue(event['sender'] == get_user_profile_by_email(email))
+        self.assertTrue(event['sender']['email'] == email)
         self.assertTrue(event_recipient_emails == set([email]))
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'start')
@@ -218,7 +216,7 @@ class TypingStartedNotificationTest(ZulipTestCase):
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
-        self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+        self.assertTrue(event['sender']['email'] == sender)
         self.assertTrue(event_recipient_emails == expected_recipients)
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'start')
@@ -242,11 +240,10 @@ class StoppedTypingNotificationTest(ZulipTestCase):
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
-        self.assertTrue(event['sender'] == get_user_profile_by_email(email))
+        self.assertTrue(event['sender']['email'] == email)
         self.assertTrue(event_recipient_emails == set([email]))
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'stop')
-
 
     def test_send_notification_to_another_user_event(self):
         # type: () -> None
@@ -267,7 +264,7 @@ class StoppedTypingNotificationTest(ZulipTestCase):
 
         event = events[0]['event']
         event_recipient_emails = set(user['email'] for user in event['recipients'])
-        self.assertTrue(event['sender'] == get_user_profile_by_email(sender))
+        self.assertTrue(event['sender']['email'] == sender)
         self.assertTrue(event_recipient_emails == expected_recipients)
         self.assertTrue(event['type'] == 'typing')
         self.assertTrue(event['op'] == 'stop')
