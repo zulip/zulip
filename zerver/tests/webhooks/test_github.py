@@ -137,14 +137,14 @@ class GithubV1HookTests(WebhookTestCase):
     def test_commit_comment(self):
         # type: () -> None
         self.basic_test('commit_comment', 'commits',
-                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252302)\n\n~~~ quote\nAre we sure this is enough cowbell?\n~~~")
+                        "zulip-test",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252302) on [Commit](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n\n~~~ quote\nAre we sure this is enough cowbell?\n~~~")
 
     def test_commit_comment_line(self):
         # type: () -> None
         self.basic_test('commit_comment_line', 'commits',
-                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on `cowbell`, line 13\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
+                        "zulip-test",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on [Commit](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
 
 class GithubV2HookTests(WebhookTestCase):
     STREAM_NAME = None # type: Optional[text_type]
@@ -279,11 +279,11 @@ class GithubV2HookTests(WebhookTestCase):
     def test_commit_comment(self):
         # type: () -> None
         self.basic_test('commit_comment', 'commits',
-                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252302)\n\n~~~ quote\nAre we sure this is enough cowbell?\n~~~")
+                        "zulip-test",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252302) on [Commit](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n\n~~~ quote\nAre we sure this is enough cowbell?\n~~~")
 
     def test_commit_comment_line(self):
         # type: () -> None
         self.basic_test('commit_comment_line', 'commits',
-                        "zulip-test: commit 7c994678d2f98797d299abed852d3ff9d0834533",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on `cowbell`, line 13\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
+                        "zulip-test",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on [Commit](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
