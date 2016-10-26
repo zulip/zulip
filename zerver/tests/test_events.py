@@ -222,6 +222,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('bot', check_dict([
                 ('email', check_string),
+                ('user_id', check_int),
                 (field_name, check),
             ])),
         ])
