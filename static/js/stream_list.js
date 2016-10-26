@@ -362,8 +362,7 @@ exports.set_subject_count = function (stream, subject, count) {
         return;
     }
 
-    count_span.removeClass("zero_count");
-    update_count_in_dom(count_span, value_span, count);
+    topic_list.update_count_in_dom(count_span, value_span, count);
 };
 
 

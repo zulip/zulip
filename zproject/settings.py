@@ -760,6 +760,7 @@ JS_SPECS = {
             'js/viewport.js',
             'js/rows.js',
             'js/unread.js',
+            'js/topic_list.js',
             'js/stream_list.js',
             'js/filter.js',
             'js/message_list_view.js',
