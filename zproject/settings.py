@@ -528,15 +528,19 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
                  {'var_name': 'NAGIOS_RECEIVE_BOT',
                   'email_template': 'nagios-receive-bot@%s',
                   'name': 'Nagios Receive Bot'},
+                 {'var_name': 'WELCOME_BOT',
+                  'email_template': 'welcome-bot@%s',
+                  'name': 'Welcome Bot'}]
+
+if PRODUCTION:
+    INTERNAL_BOTS += [
                  {'var_name': 'NAGIOS_STAGING_SEND_BOT',
                   'email_template': 'nagios-staging-send-bot@%s',
                   'name': 'Nagios Staging Send Bot'},
                  {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
                   'email_template': 'nagios-staging-receive-bot@%s',
                   'name': 'Nagios Staging Receive Bot'},
-                 {'var_name': 'WELCOME_BOT',
-                  'email_template': 'welcome-bot@%s',
-                  'name': 'Welcome Bot'}]
+        ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
