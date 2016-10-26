@@ -761,7 +761,7 @@ def url_to_a(url, text = None):
     fixup_link(a, 'mailto:' not in href[:7])
     return a
 
-class AutoLink(markdown.inlinepatterns.Pattern):
+class VerbosePattern(markdown.inlinepatterns.Pattern):
     def __init__(self, pattern):
         # type: (text_type) -> None
         markdown.inlinepatterns.Pattern.__init__(self, ' ')
@@ -772,6 +772,8 @@ class AutoLink(markdown.inlinepatterns.Pattern):
         self.pattern = pattern
         self.compiled_re = re.compile(u"^(.*?)%s(.*?)$" % pattern,
                                       re.DOTALL | re.UNICODE | re.VERBOSE)
+
+class AutoLink(VerbosePattern):
 
     def handleMatch(self, match):
         # type: (Match[text_type]) -> ElementStringNone
