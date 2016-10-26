@@ -128,9 +128,6 @@ function dispatch_normal_event(event) {
             });
         } else if (event.op === 'update') {
             subs.update_subscription_properties(event.name, event.property, event.value);
-            if (event.property === 'pin_to_top') {
-                subs.pin_or_unpin_stream(event.name);
-            }
         } else if (event.op === 'peer_add' || event.op === 'peer_remove') {
             _.each(event.subscriptions, function (sub) {
                 var js_event_type;
@@ -324,8 +321,8 @@ function get_events(options) {
         clearTimeout(get_events_timeout);
     }
     get_events_timeout = undefined;
-    get_events_xhr = channel.post({
-        url:      '/json/get_events',
+    get_events_xhr = channel.get({
+        url:      '/json/events',
         data:     get_events_params,
         idempotent: true,
         timeout:  page_params.poll_timeout,

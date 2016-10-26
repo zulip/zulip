@@ -11,3 +11,4 @@ set -x
 ./tools/test-migrations
 ./tools/test-run-dev
 #./tools/test-queue-worker-reload
+./tools/test-documentation

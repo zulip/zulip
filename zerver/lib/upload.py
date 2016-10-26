@@ -18,7 +18,7 @@ from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
-from zerver.models import get_user_profile_by_id
+from zerver.models import get_user_profile_by_email, get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, UserProfile, Message
 
@@ -33,6 +33,7 @@ import random
 import logging
 
 DEFAULT_AVATAR_SIZE = 100
+MEDIUM_AVATAR_SIZE = 500
 
 # Performance Note:
 #
@@ -108,8 +109,12 @@ class ZulipUploadBackend(object):
         # type: (text_type) -> bool
         raise NotImplementedError()
 
-    def get_avatar_url(self, hash_key):
-        # type: (text_type) -> text_type
+    def get_avatar_url(self, hash_key, medium=False):
+        # type: (text_type, bool) -> text_type
+        raise NotImplementedError()
+
+    def ensure_medium_avatar_image(self, email):
+        # type: (text_type) -> None
         raise NotImplementedError()
 
 ### S3
@@ -234,6 +239,16 @@ class S3UploadBackend(ZulipUploadBackend):
             image_data,
         )
 
+        # custom 500px wide version
+        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name + "-medium.png",
+            "image/png",
+            user_profile,
+            resized_medium
+        )
+
         resized_data = resize_avatar(image_data)
         upload_image_to_s3(
             bucket_name,
@@ -245,11 +260,33 @@ class S3UploadBackend(ZulipUploadBackend):
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
 
-    def get_avatar_url(self, hash_key):
-        # type: (text_type) -> text_type
+    def get_avatar_url(self, hash_key, medium=False):
+        # type: (text_type, bool) -> text_type
         bucket = settings.S3_AVATAR_BUCKET
+        medium_suffix = "-medium" if medium else ""
         # ?x=x allows templates to append additional parameters with &s
-        return u"https://%s.s3.amazonaws.com/%s?x=x" % (bucket, hash_key)
+        return u"https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, medium_suffix, hash_key)
+
+    def ensure_medium_avatar_image(self, email):
+        # type: (text_type) -> None
+        user_profile = get_user_profile_by_email(email)
+        email_hash = user_avatar_hash(email)
+        s3_file_name = email_hash
+
+        bucket_name = settings.S3_AVATAR_BUCKET
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = get_bucket(conn, force_str(bucket_name))
+        key = bucket.get_key(email_hash)
+        image_data = key.get_contents_as_string()
+
+        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name + "-medium.png",
+            "image/png",
+            user_profile,
+            resized_medium
+        )
 
 ### Local
 
@@ -311,10 +348,27 @@ class LocalUploadBackend(ZulipUploadBackend):
         resized_data = resize_avatar(image_data)
         write_local_file('avatars', email_hash+'.png', resized_data)
 
-    def get_avatar_url(self, hash_key):
-        # type: (text_type) -> text_type
+        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        write_local_file('avatars', email_hash+'-medium.png', resized_medium)
+
+    def get_avatar_url(self, hash_key, medium=False):
+        # type: (text_type, bool) -> text_type
         # ?x=x allows templates to append additional parameters with &s
-        return u"/user_avatars/%s.png?x=x" % (hash_key)
+        medium_suffix = "-medium" if medium else ""
+        return u"/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
+
+    def ensure_medium_avatar_image(self, email):
+        # type: (text_type) -> None
+        email_hash = user_avatar_hash(email)
+
+        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", email_hash + "-medium.png")
+        if os.path.isfile(output_path):
+            return
+
+        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", email_hash + ".original")
+        image_data = open(image_path, "rb").read()
+        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        write_local_file('avatars', email_hash + '-medium.png', resized_medium)
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:

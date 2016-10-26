@@ -8,7 +8,7 @@ end
 
 Puppet::Type.type(:apache2site).provide(:apache2site) do
   def exists?
-    File.exists?("/etc/apache2/sites-enabled/" + resource[:name])
+    File.exists?("/etc/apache2/sites-enabled/" + resource[:name] + ".conf")
   end
 
   def create

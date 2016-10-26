@@ -12,8 +12,8 @@ from zerver.lib.actions import do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_change_enter_sends, do_change_enable_sounds, \
     do_change_enable_offline_email_notifications, do_change_enable_digest_emails, \
-    do_change_enable_offline_push_notifications, do_change_autoscroll_forever, \
-    do_change_default_desktop_notifications, \
+    do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
+    do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
     do_change_left_side_userlist, do_change_default_language
@@ -138,9 +138,11 @@ def json_change_notify_settings(request, user_profile,
                                                                        default=None),
                                 enable_offline_push_notifications=REQ(validator=check_bool,
                                                                       default=None),
+                                enable_online_push_notifications=REQ(validator=check_bool,
+                                                                     default=None),
                                 enable_digest_emails=REQ(validator=check_bool,
                                                          default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     result = {}
 
     # Stream notification settings.
@@ -177,6 +179,11 @@ def json_change_notify_settings(request, user_profile,
             user_profile.enable_offline_push_notifications != enable_offline_push_notifications:
         do_change_enable_offline_push_notifications(user_profile, enable_offline_push_notifications)
         result['enable_offline_push_notifications'] = enable_offline_push_notifications
+
+    if enable_online_push_notifications is not None and \
+            user_profile.enable_online_push_notifications != enable_online_push_notifications:
+        do_change_enable_online_push_notifications(user_profile, enable_online_push_notifications)
+        result['enable_online_push_notifications'] = enable_online_push_notifications
 
     if enable_digest_emails is not None and \
             user_profile.enable_digest_emails != enable_digest_emails:

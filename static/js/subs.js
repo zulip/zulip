@@ -223,6 +223,12 @@ function settings_for_sub(sub) {
     return $("#subscription_settings_" + id);
 }
 
+exports.rerender_subscribers_count = function (sub) {
+    var id = parseInt(sub.stream_id, 10);
+    stream_data.update_subscribers_count(sub);
+    $("#subscription_" + id + " .subscriber_count").text(sub.subscriber_count);
+};
+
 exports.show_settings_for = function (stream_name) {
     settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
 };
@@ -248,6 +254,7 @@ function add_email_hint(row, email_address_hint_content) {
 
 function add_sub_to_table(sub) {
     sub = stream_data.add_admin_options(sub);
+    stream_data.update_subscribers_count(sub);
     var html = templates.render('subscription', sub);
     $('#create_or_filter_stream_row').after(html);
     settings_for_sub(sub).collapse('show');
@@ -255,18 +262,20 @@ function add_sub_to_table(sub) {
     add_email_hint(sub, email_address_hint_content);
 }
 
-function format_member_list_elem(name, email) {
+function format_member_list_elem(email) {
+    var person = people.get_by_email(email);
     return templates.render('stream_member_list_entry',
-                            {name: name, email: email,
+                            {name: person.full_name, email: email,
                              displaying_for_admin: page_params.is_admin});
 }
 
-function add_element_to_member_list (tb, elem) {
-    tb.prepend(elem);
+function get_subscriber_list(sub_row) {
+    return sub_row.find('.subscriber_list_container .subscriber-list');
 }
 
-function add_to_member_list(tb, name, email) {
-    tb.prepend(format_member_list_elem(name, email));
+function prepend_subscriber(sub_row, email) {
+    var list = get_subscriber_list(sub_row);
+    list.prepend(format_member_list_elem(email));
 }
 
 exports.mark_subscribed = function (stream_name, attrs) {
@@ -285,13 +294,15 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
+            exports.rerender_subscribers_count(sub);
+
             button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
             button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
-                var members = settings.find(".subscriber_list_container .subscriber-list");
-                add_to_member_list(members, page_params.fullname, page_params.email);
+                prepend_subscriber(settings,
+                                   page_params.email);
             }
         } else {
             add_sub_to_table(sub);
@@ -342,6 +353,8 @@ exports.mark_sub_unsubscribed = function (sub) {
             settings.collapse('hide');
         }
 
+        exports.rerender_subscribers_count(sub);
+
         // Hide the swatch and subscription settings
         var sub_row = settings.closest('.subscription_row');
         sub_row.find(".color_swatch").removeClass('in');
@@ -362,15 +375,6 @@ exports.mark_sub_unsubscribed = function (sub) {
     }
 
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
-};
-
-exports.pin_or_unpin_stream = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (stream_name === undefined) {
-        return;
-    } else {
-        stream_list.refresh_stream_in_sidebar(sub);
-    }
 };
 
 exports.filter_table = function (query) {
@@ -508,6 +512,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'pin_to_top':
         update_stream_pin(sub, value);
+        stream_list.refresh_pinned_or_unpinned_stream(sub);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
@@ -890,7 +895,6 @@ $(function () {
         // TODO: clean up this error handling
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
-        var list = sub_row.find('.subscriber_list_container .subscriber-list');
 
         function invite_success(data) {
             text_box.val('');
@@ -902,7 +906,8 @@ $(function () {
                     // mark_subscribed adds the user to the member list
                     exports.mark_subscribed(stream);
                 } else {
-                    add_to_member_list(list, people.get_by_email(principal).full_name, principal);
+                    prepend_subscriber(sub_row,
+                                       principal);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -1090,7 +1095,7 @@ $(function () {
         var stream = sub_row.find('.subscription_name').text();
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-        var list = sub_row.find('.subscriber_list_container .subscriber-list');
+        var list = get_subscriber_list(sub_row);
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
         if (!stream_data.get_sub(stream).render_subscribers) {
@@ -1114,13 +1119,10 @@ $(function () {
                     if (person === undefined) {
                         return elem;
                     }
-                    return format_member_list_elem(people.get_by_email(elem).full_name, elem);
+                    return format_member_list_elem(elem);
                 });
-                _.each(subscribers.sort().reverse(), function (elem) {
-                    // add_element_to_member_list *prepends* the element,
-                    // so we need to sort in reverse order for it to
-                    // appear in alphabetical order.
-                    add_element_to_member_list(list, elem);
+                _.each(subscribers.sort(), function (elem) {
+                    list.append(elem);
                 });
             },
             error: function (xhr) {
@@ -1165,6 +1167,16 @@ $(function () {
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
+
+    $(document).on('peer_subscribe.zulip', function (e, data) {
+        var sub = stream_data.get_sub(data.stream_name);
+        exports.rerender_subscribers_count(sub);
+    });
+    $(document).on('peer_unsubscribe.zulip', function (e, data) {
+        var sub = stream_data.get_sub(data.stream_name);
+        exports.rerender_subscribers_count(sub);
+    });
+
 });
 
 function focus_on_narrowed_stream() {

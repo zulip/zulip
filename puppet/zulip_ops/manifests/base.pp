@@ -12,11 +12,14 @@ class zulip_ops::base {
                         "iptables-persistent",
                         # For managing our current Debian packages
                         "debian-goodies",
-                        # For our EC2 network setup script
+                        # Needed for zulip-ec2-configure-network-interfaces
+                        "python-six",
+                          # This one is needed for postgres as well
+                        "python-boto",
                         "python-netifaces",
                         # Popular editors
                         "vim",
-                        "emacs23-nox",
+                        "emacs-nox",
                         "puppet-el",
                         # Prevent accidental reboots
                         "molly-guard",
@@ -27,6 +30,12 @@ class zulip_ops::base {
                         "git",
                          ]
   package { $org_base_packages: ensure => "installed" }
+
+  # Add system users here
+  $users = []
+
+  # Add hosts to monitor here
+  $hosts = []
 
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
@@ -129,7 +138,7 @@ class zulip_ops::base {
     content    => template('zulip_ops/iptables/rules.v4.erb'),
     require    => Package['iptables-persistent'],
   }
-  service { 'iptables-persistent':
+  service { 'netfilter-persistent':
     ensure     => running,
 
     # Because there is no running process for this service, the normal status
@@ -144,6 +153,7 @@ class zulip_ops::base {
     # Puppet to fall back to stop/start, which does work.
     hasrestart => false,
 
+    require    => Package['iptables-persistent'],
     subscribe  => File['/etc/iptables/rules.v4'],
   }
 }

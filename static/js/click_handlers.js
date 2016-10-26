@@ -98,9 +98,7 @@ $(function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         var recipient_row = $(this).closest(".recipient_row");
-        if (message_edit.save(recipient_row, true) === true) {
-            current_msg_list.hide_edit_topic(recipient_row);
-        }
+        message_edit.save(recipient_row, true);
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -112,10 +110,7 @@ $(function () {
     });
     $("body").on("click", ".message_edit_save", function (e) {
         var row = $(this).closest(".message_row");
-        if (message_edit.save(row, false) === true) {
-            // Re-fetch the message row in case .save() re-rendered the message list
-            message_edit.end($(this).closest(".message_row"));
-        }
+        message_edit.save(row, false);
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -415,8 +410,10 @@ $(function () {
             }
         });
 
-        $("#overlay .exit").click(function (e) {
-            ui.exit_lightbox_photo();
+        $("#overlay .exit, #overlay .image-preview").click(function (e) {
+            if ($(e.target).is(".exit, .image-preview")) {
+                ui.exit_lightbox_photo();
+            }
         });
 
         $("#overlay .download").click(function (e) {

@@ -7,20 +7,7 @@ class zulip_ops::munin {
                      ]
   package { $munin_packages: ensure => "installed" }
 
-  # If you add a new Munin node, change the number of autossh processes that we
-  # check for with Nagios.
-
-  $hosts = ["trac",
-            "zmirror",
-            "staging",
-            "git",
-            "bots",
-            "prod0",
-            "stats",
-            "postgres1",
-            "postgres3",
-            "redis0",
-            ]
+  $hosts = $zulip_ops::base::hosts
 
   file { "/etc/munin":
     require => Package["munin"],

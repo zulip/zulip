@@ -144,6 +144,18 @@ function make_stream_default(stream_name) {
     });
 }
 
+function stringify_list_with_conjunction(lst, conjunction) {
+    if (lst.length === 0) {
+        return '';
+    } else if (lst.length === 1) {
+        return lst.toString();
+    } else if (lst.length === 2) {
+        return lst.join(" " + conjunction + " ");
+    } else {
+        return lst.slice(0, lst.length-1).join(", ") + ", " + conjunction + " " + lst[lst.length-1].toString();
+    }
+}
+
 exports.populate_emoji = function (emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
@@ -163,9 +175,17 @@ exports.reset_realm_default_language = function () {
 };
 
 function _setup_page() {
+    var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
+    var atdomains = page_params.domains.slice();
+    var i;
+    for (i = 0; i < atdomains.length; i++) {
+        atdomains[i] = '@' + atdomains[i];
+    }
+    var atdomains_string = stringify_list_with_conjunction(atdomains, "or");
     var options = {
         realm_name: page_params.realm_name,
-        domain: page_params.domain,
+        domains_string: domains_string,
+        atdomains_string: atdomains_string,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required: page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
@@ -443,7 +463,7 @@ function _setup_page() {
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
-                        ui.report_success(i18n.t("New users must have @__domain__ e-mails!", page_params), restricted_to_domain_status);
+                        ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {'atdomains_string': atdomains_string}), restricted_to_domain_status);
                     } else {
                         ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
                     }
@@ -701,6 +721,7 @@ function _setup_page() {
             success: function () {
                 $('#admin-emoji-status').hide();
                 ui.report_success(i18n.t("Custom emoji added!"), emoji_status);
+                $("form.admin-emoji-form input[type='text']").val("");
             },
             error: function (xhr, error) {
                 $('#admin-emoji-status').hide();

@@ -84,11 +84,8 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
     else:
         login(request, user_profile)
-        if settings.OPEN_REALM_CREATION and user_profile.realm.subdomain is not None:
-            return HttpResponseRedirect("%s%s.%s" % (settings.EXTERNAL_URI_SCHEME,
-                                                     user_profile.realm.subdomain,
-                                                     settings.EXTERNAL_HOST))
-
+        if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
+            return HttpResponseRedirect(user_profile.realm.uri)
         return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                               request.get_host()))
 
@@ -287,12 +284,8 @@ def dev_direct_login(request, **kwargs):
     if user_profile is None:
         raise Exception("User cannot login")
     login(request, user_profile)
-    if settings.OPEN_REALM_CREATION and settings.DEVELOPMENT:
-        if user_profile.realm.subdomain is not None:
-            return HttpResponseRedirect("%s%s.%s" % (settings.EXTERNAL_URI_SCHEME,
-                                                     user_profile.realm.subdomain,
-                                                     settings.EXTERNAL_HOST))
-
+    if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
+        return HttpResponseRedirect(user_profile.realm.uri)
     return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                           request.get_host()))
 

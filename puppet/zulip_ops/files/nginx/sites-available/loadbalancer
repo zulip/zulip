@@ -4,20 +4,8 @@ upstream staging {
     keepalive 10000;
 }
 
-upstream alpha {
-    server alpha0.zulip.net:443;
-
-    keepalive 10000;
-}
-
 upstream prod {
     server prod0.zulip.net:443;
-
-    keepalive 10000;
-}
-
-upstream dbx {
-    server dbx.zulip.net:443;
 
     keepalive 10000;
 }
@@ -75,54 +63,6 @@ server {
 }
 
 server {
-    listen api.zulip.com:443;
-
-    ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
-
-    location / {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
-    # On api.zulip.com, there's an automatic leading /api
-    location ~ /v1/events {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy_longpolling;
-    }
-}
-
-
-server {
-    listen zephyr.zulip.com:443;
-
-    ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-all.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/wildcard-all.key;
-
-    location / {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
-    location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy_longpolling;
-    }
-}
-
-server {
     listen www.zulip.com:443;
     server_name external-content.zulipcdn.net;
 
@@ -134,36 +74,5 @@ server {
     location / {
         proxy_pass http://127.0.0.1:9292;
         include /etc/nginx/zulip-include/proxy;
-    }
-}
-
-server {
-    listen chat.dropboxer.net:443;
-
-    ssl on;
-    ssl_certificate /etc/ssl/certs/chat.dropboxer.net.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/chat.dropboxer.net.key;
-
-    location / {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy;
-    }
-
-    location /sockjs {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/location-sockjs;
-    }
-
-    location ~ /json/get_events|/json/events|/api/v1/events {
-        proxy_pass https://prod;
-        include /etc/nginx/zulip-include/proxy_longpolling;
-    }
-
-    location = /accounts/login/ {
-        return 302 /accounts/login/google/;
-    }
-
-    location /login/ {
-        return 302 /accounts/login/google/;
     }
 }

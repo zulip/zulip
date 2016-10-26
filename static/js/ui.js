@@ -300,9 +300,10 @@ exports.lightbox_photo = function (image, user) {
     $("#overlay .player-container").hide();
     $("#overlay .image-actions, .image-description, .download").show();
 
-    $("#overlay .image-preview")
-        .show()
-        .css("background-image", "url(" + url + ")");
+    var img = new Image();
+    img.src = url;
+    $("#overlay .image-preview").html("").show()
+        .append(img);
 
     $(".image-description .title").text(title || "N/A");
     $(".image-description .user").text(user);
@@ -313,6 +314,7 @@ exports.lightbox_photo = function (image, user) {
 exports.exit_lightbox_photo = function (image) {
     $("#overlay").removeClass("show");
     $(".player-container iframe").remove();
+    document.activeElement.blur();
 };
 
 exports.youtube_video = function (id) {

@@ -138,8 +138,8 @@ confusion, declare all variables at the top of a function.
 
 Don't use it:
 [[1]](http://stackoverflow.com/questions/500504/javascript-for-in-with-arrays),
-[[2]](http://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml#for-in_loop),
-[[3]](http://www.jslint.com/lint.html#forin)
+[[2]](https://google.github.io/styleguide/javascriptguide.xml#for-in_loop),
+[[3]](http://www.jslint.com/help.html#forin)
 
 ### jQuery global state
 

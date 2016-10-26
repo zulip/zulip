@@ -7,7 +7,7 @@ from django.utils.timezone import now
 
 from django.contrib.sites.models import Site
 from zerver.models import Message, UserProfile, Stream, Recipient, Client, \
-    Subscription, Huddle, get_huddle, Realm, UserMessage, \
+    Subscription, Huddle, get_huddle, Realm, UserMessage, RealmAlias, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id, \
     split_email_to_domain, email_to_username
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_message, set_default_streams, \
@@ -123,9 +123,13 @@ class Command(BaseCommand):
             clear_database()
 
             # Create our two default realms
+            # Could in theory be done via zerver.lib.actions.do_create_realm, but
+            # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(domain="zulip.com", name="Zulip Dev", subdomain="zulip")
+            RealmAlias.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
-                Realm.objects.create(domain="mit.edu")
+                mit_realm = Realm.objects.create(domain="mit.edu", name="MIT", subdomain="mit")
+                RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
             realms = {} # type: Dict[text_type, Realm]
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
@@ -613,6 +617,12 @@ def restore_saved_messages():
             user_profile.enable_offline_push_notifications = (
                 old_message["enable_offline_push_notifications"] != "false")
             user_profile.save(update_fields=["enable_offline_push_notifications"])
+            continue
+        elif message_type == "enable_online_push_notifications_changed":
+            user_profile = users[old_message["user"]]
+            user_profile.enable_online_push_notifications_changed = (
+                old_message["enable_online_push_notifications_changed"] != "false")
+            user_profile.save(update_fields=["enable_online_push_notifications_changed"])
             continue
         elif message_type == "default_streams":
             set_default_streams(get_realm(old_message["domain"]),

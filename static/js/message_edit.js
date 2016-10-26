@@ -56,19 +56,21 @@ exports.save = function (row, from_topic_edited_only) {
     var topic_changed = false;
     var new_topic;
     if (message.type === "stream") {
-        new_topic = row.find(".message_edit_topic").val();
+        if (from_topic_edited_only) {
+            new_topic = row.find(".inline_topic_edit").val();
+        } else {
+            new_topic = row.find(".message_edit_topic").val();
+        }
         topic_changed = (new_topic !== message.subject && new_topic.trim() !== "");
     }
-
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
     if (message.local_id !== undefined) {
-        // No changes
-        if (new_content === message.raw_content && !topic_changed) {
-            return true;
+        if (new_content !== message.raw_content || topic_changed) {
+            echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
         }
-        echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
-        return true;
+        message_edit.end(row);
+        return;
     }
 
     var request = {message_id: message.id};
@@ -88,22 +90,25 @@ exports.save = function (row, from_topic_edited_only) {
     }
     if (!changed) {
         // If they didn't change anything, just cancel it.
-        return true;
+        message_edit.end(row);
+        return;
     }
     channel.post({
         url: '/json/update_message',
         data: request,
         success: function (data) {
             if (msg_list === current_msg_list) {
-                return true;
+                row.find(".edit_error").text("Message successfully edited!").removeClass("alert-error").addClass("alert-success").show();
             }
         },
         error: function (xhr, error_type, xhn) {
-            var message = channel.xhr_error_message("Error saving edit", xhr);
-            row.find(".edit_error").text(message).show();
+            if (msg_list === current_msg_list) {
+                var message = channel.xhr_error_message("Error saving edit", xhr);
+                row.find(".edit_error").text(message).show();
+            }
         }
     });
-    // The message will automatically get replaced when it arrives.
+    // The message will automatically get replaced via message_list.update_message.
 };
 
 function handle_edit_keydown(from_topic_edited_only, e) {
@@ -112,14 +117,16 @@ function handle_edit_keydown(from_topic_edited_only, e) {
     if (e.target.id === "message_edit_content" && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
-        if (message_edit.save(row, from_topic_edited_only) === true) {
-            message_edit.end(row);
-        }
     } else if (e.target.id === "message_edit_topic" && code === 13) {
-        // Hitting enter in topic field isn't so great.
-        e.stopPropagation();
-        e.preventDefault();
+        row = $(e.target).closest(".message_row");
+    } else if (e.target.id === "inline_topic_edit" && code === 13) {
+        row = $(e.target).closest(".recipient_row");
+    } else {
+        return;
     }
+    e.stopPropagation();
+    e.preventDefault();
+    message_edit.save(row, from_topic_edited_only);
 }
 
 function timer_text(seconds_left) {
@@ -246,9 +253,10 @@ function edit_message (row, raw_content) {
     var edit_row = row.find(".message_edit");
     if (!is_editable) {
         edit_row.find(".message_edit_close").focus();
-    } else if ((message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) ||
-        editability === editability_types.TOPIC_ONLY) {
+    } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
         edit_row.find(".message_edit_topic").focus();
+    } else if (editability === editability_types.TOPIC_ONLY) {
+        edit_row.find(".message_edit_cancel").focus();
     } else {
         edit_row.find(".message_edit_content").focus();
     }
@@ -309,7 +317,7 @@ exports.start_topic_edit = function (recipient_row) {
     if (topic === compose.empty_topic_placeholder()) {
         topic = '';
     }
-    form.find(".message_edit_topic").val(topic).select().focus();
+    form.find(".inline_topic_edit").val(topic).select().focus();
 };
 
 exports.is_editing = function (id) {
@@ -324,6 +332,9 @@ exports.end = function (row) {
         viewport.scrollTop(viewport.scrollTop() - scroll_by);
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
+    }
+    if (row !== undefined) {
+        current_msg_list.hide_edit_topic(row);
     }
 };
 

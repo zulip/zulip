@@ -747,3 +747,106 @@ class FetchAuthBackends(ZulipTestCase):
                 'dev': True,
                 'result': 'success',
             })
+
+class TestDevAuthBackend(ZulipTestCase):
+    def test_login_success(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        data = {'direct_email': email}
+        result = self.client_post('/accounts/login/local/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_login_failure(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        data = {'direct_email': email}
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
+            with self.assertRaisesRegexp(Exception, 'Direct login not supported.'):
+                with mock.patch('django.core.handlers.base.logger'):
+                    self.client_post('/accounts/login/local/', data)
+
+    def test_login_failure_due_to_nonexistent_user(self):
+        # type: () -> None
+        email = 'nonexisting@zulip.com'
+        data = {'direct_email': email}
+        with self.assertRaisesRegexp(Exception, 'User cannot login'):
+            with mock.patch('django.core.handlers.base.logger'):
+                self.client_post('/accounts/login/local/', data)
+
+class TestZulipRemoteUserBackend(ZulipTestCase):
+    def test_login_success(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_login_success_with_sso_append_domain(self):
+        # type: () -> None
+        username = 'hamlet'
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',),
+                           SSO_APPEND_DOMAIN='zulip.com'):
+            result = self.client_post('/accounts/login/sso/', REMOTE_USER=username)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+    def test_login_failure(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+        self.assertEqual(result.status_code, 200) # This should ideally be not 200.
+        self.assertIs(get_session_dict_user(self.client.session), None)
+
+    def test_login_failure_due_to_nonexisting_user(self):
+        # type: () -> None
+        email = 'nonexisting@zulip.com'
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+            self.assertEqual(result.status_code, 302)
+            self.assertIs(get_session_dict_user(self.client.session), None)
+
+    def test_login_failure_due_to_missing_field(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/')
+            self.assert_json_error_contains(result, "No REMOTE_USER set.", 400)
+
+    def test_login_failure_due_to_wrong_subdomain(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
+                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                self.assertEqual(result.status_code, 200)
+                self.assertIs(get_session_dict_user(self.client.session), None)
+                self.assertIn(b"Let's get started", result.content)
+
+    def test_login_failure_due_to_empty_subdomain(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
+                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                self.assertEqual(result.status_code, 200)
+                self.assertIs(get_session_dict_user(self.client.session), None)
+                self.assertIn(b"Let's get started", result.content)
+
+    def test_login_success_under_subdomains(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
+            with self.settings(
+                    REALMS_HAVE_SUBDOMAINS=True,
+                    AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+                result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+                self.assertEqual(result.status_code, 302)
+                self.assertIs(get_session_dict_user(self.client.session), user_profile.id)

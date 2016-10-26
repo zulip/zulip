@@ -1551,11 +1551,12 @@ div.focused_table {
     line-height: 22px;
 }
 
+#inline_topic_edit,
 #message_edit_topic {
     margin-bottom: 5px;
 }
 
-#message_edit_topic.header-v {
+#inline_topic_edit.header-v {
     height: 18px;
     display: inline-block;
     margin: -2px 0 0 0;
@@ -1569,6 +1570,7 @@ div.focused_table {
     box-shadow: none;
 }
 
+#inline_topic_edit:focus,
 #message_edit_topic:focus {
     outline: none;
 }
@@ -2550,14 +2552,6 @@ div.floating_recipient {
     margin: 10px auto;
 }
 
-#subs_page_loading_indicator {
-    margin: 10px auto;
-}
-
-.subscriber_list_loading_indicator {
-    margin: 10px auto;
-}
-
 .table-striped thead th {
     background-color: #444;
     color: white;
@@ -2568,40 +2562,9 @@ div.floating_recipient {
     table-layout: fixed;
 }
 
-.subscription-email-hint-image {
-    float: right;
-    width: 80px;
-    padding-right: 60px;
-}
-
-.subscription_header.collapsed {
-    background-color: inherit;
-}
-
-.subscription_settings,
-.subscription_header,
-.subscription_header.active {
-    background-color: #fefefe;
-}
-
-.color_swatch {
-    display: inline-block;
-    height: 18px;
-    width: 18px;
-    padding: 0;
-    margin: 0 0 0 10px;
-    vertical-align: middle;
-}
-
-.administration,
-.subscriptions {
+.administration {
     margin-top: 55px;
     padding-left: 15px;
-}
-
-#subscriptions_table .subscription_block {
-    padding-left: 0.5em;
-    vertical-align: middle;
 }
 
 #stream_filters .subscription_block {
@@ -2614,62 +2577,6 @@ div.floating_recipient {
 
 #stream_filters .subscription_block.stream-with-count {
     margin-right: 38px;
-}
-
-.subscription-info-container {
-    display: inline-block;
-    /* subtract out the width of the subscribe button and arrow. */
-    width: calc(100% - 260px);
-    /* to center the container vertically. */
-    margin-top: 13px;
-}
-
-.subscription-setting-icon {
-    vertical-align: top;
-    display: inline-block;
-}
-
-.subscription-info {
-    display: inline-block;
-    /* to provide space for the setting-icon. */
-    max-width: calc(100% - 31px);
-    margin-top: 1px;
-    overflow: hidden;
-    word-wrap: normal;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.subscription-info .light {
-    font-weight: 300;
-}
-
-#add_new_subscription {
-    text-align: left;
-}
-
-#create_or_filter_stream_row > .subscription_table_elem {
-    text-align: left;
-}
-
-#subscriptions-status {
-    position: fixed;
-    z-index: 999;
-    display: block;
-    left: 300px;
-    right: 300px;
-    margin: 0px auto;
-    opacity: 0.9 !important;
-    top: 55px;
-    max-width: 800px;
-}
-
-#close-subscriptions-status {
-    position: absolute;
-    top: 8px;
-    cursor: pointer;
-    font-size: 17px;
-    right: 8px;
 }
 
 .subject-name {
@@ -2688,112 +2595,6 @@ div.floating_recipient {
     overflow: hidden;
 }
 
-.subscription_header {
-    min-height: 47px;
-}
-
-.subscription-name-row {
-    display: inline-block;
-}
-
-.subscription-name-row,
-.subscription-description-row {
-    vertical-align: top;
-}
-
-.subscription_header .subscription_lock {
-    font-size: 23px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 12px;
-    margin-right: 1px;
-}
-
-.subscription_settings {
-    width: 100%;
-    position: relative;
-    top: -1px;
-}
-
-.subscription_settings form {
-    text-align: center;
-}
-
-.subscription_settings ul {
-    list-style-type: none;
-}
-
-.subscription-type {
-    text-align: center;
-    padding: 5px;
-    width: 80%;
-    margin: auto;
-    font-weight: 300;
-}
-
-.stream-email {
-    width: 80%;
-    margin: auto;
-    margin-top: 5px;
-    text-align: center;
-    padding: 5px;
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
-}
-
-
-.subscription-control-label {
-    display: inline-block;
-    vertical-align: middle;
-    line-height: 18px;
-    padding: 5px;
-}
-
-.sp-preview {
-    width: 20px;
-    border: none;
-    box-shadow: 0px 0px 1px rgba(0,0,0,1);
-}
-
-.sp-replacer {
-    margin-right: 12px;
-    border: none;
-    box-shadow: 0px 0px 2px rgba(0,0,0,0.8);
-}
-
-.subscription-config {
-    width: 270px;
-    margin: auto;
-    margin-top: 25px;
-}
-
-.stream-email-box,
-.subscriber_list_settings,
-.rename-stream {
-    margin: 20px 15px 20px 15px;
-}
-
-.subscription_row {
-    position: relative;
-    border-top: 1px solid #ddd;
-}
-
-.stream-email .email-address {
-    width: 90%;
-    display: block;
-    margin: auto;
-    white-space: -moz-pre-wrap !important;
-    white-space: -pre-wrap;
-    white-space: -o-pre-wrap;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    word-break: break-all;
-    white-space: normal;
-}
-
-.sub_setting_control[type="checkbox"] {
-    margin: 0 30px 5px 20px;
-}
-
 #user-checkboxes {
     margin-top: 10px;
 }
@@ -2805,19 +2606,6 @@ div.floating_recipient {
 #user-checkboxes .checkbox input[type=checkbox] {
     margin: 5px 0px;
     float: none;
-}
-
-.muted-sub {
-    color: #A3A3A3;
-}
-
-.mute-note {
-    font-size: 90%;
-    font-color: #525252;
-}
-
-.hide-mute-note {
-    display: none;
 }
 
 .streams_popover .sp-container {
@@ -2836,39 +2624,6 @@ div.floating_recipient {
 
 .streams_popover .colorpicker-container {
     display: inline-block;
-    margin-right: 10px;
-}
-
-.sub_setting_control {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.subscription_row:hover .preview-stream {
-    display: inline-block;
-}
-
-.preview-stream {
-    display: none;
-    float: right;
-    padding: 3px 10px;
-    border: 1px solid #ccc;
-    margin: 9px 10px 0px 0px;
-    color: #333;
-}
-
-.preview-stream:hover {
-    color: #333;
-    text-decoration: none;
-    background-color: #ebebeb;
-    border: 1px solid #adadad;
-}
-
-.sub_unsub_button {
-    display: inline-block;
-    min-width: 140px;
-    float: right;
-    margin-top: 9px;
     margin-right: 10px;
 }
 
@@ -2913,112 +2668,6 @@ button.topic_edit_cancel {
     width: 18px;
     height: 18px;
     margin-top: -1px;
-}
-
-.sub_arrow {
-    float: right;
-    line-height: 47px;
-    padding: 0 15px 0 0;
-}
-
-#create_or_filter_stream_row td {
-    background-color: #f3f3f3;
-    border-color: #BBB;
-    border-bottom: 1px solid #BBB;
-}
-
-#create_or_filter_stream_row input[type="text"] {
-    width: 220px;
-    margin: 5px 0 20px 38px;
-}
-
-form#add_new_subscription {
-    display: inline;
-}
-
-#create_stream_button {
-    min-width: 140px;
-    float: right;
-    margin-top: 9px;
-    /* margin-right: 38px will align with .sub_unsub_button
-       10px will align with the right edge of #subscriptions_table */
-    margin-right: 38px;
-}
-
-#stream_name_error {
-    display: none;
-    margin-left: 2px;
-    color: #FF0000;
-}
-
-.sub_settings_title {
-    line-height: 30px;
-    margin: 10px 0;
-    font-weight: 300;
-    font-size: 16px;
-}
-
-.new-stream-name,
-.stream-rename-button {
-    margin-top: 10px;
-}
-
-.settings_committed {
-    margin: 10px;
-}
-
-.subscriber-list-box {
-    text-align: center;
-}
-
-.subscriber_list_container {
-    margin-top: 10px;
-    display: inline-block;
-    margin: auto;
-    max-height: 300px;
-    overflow: auto;
-    text-align: left;
-}
-
-.subscriber-list {
-    width: auto;
-    margin: auto;
-    margin-bottom: 20px;
-    background: #efefef;
-    border-radius: 6px;
-}
-
-.subscriber-list tr:nth-child(even) {
-   background: #fafafa;
-}
-
-
-.subscriber-name,
-.subscriber-email {
-    padding: 5px;
-}
-
-.subscriber-name {
-    padding-left: 8px;
-}
-
-.subscriber-email {
-    margin-left: 20px;
-    padding-right: 8px;
-}
-
-.subscriber_list_add {
-    margin: auto;
-    text-align: center;
-}
-
-.add-subscriber-button,
-.stream-rename-button {
-    margin-left: 5px;
-}
-
-.remove-subscriber-form {
-    margin: 0px 0px 0px 0px;
 }
 
 .modal {
@@ -3075,16 +2724,6 @@ form#add_new_subscription {
 
 .empty_feed_notice h4 {
     text-align: center;
-}
-
-#subscription-status {
-    width: 200px;
-    position: absolute;
-    left: 50%;
-    margin-left: -100px;
-    bottom: 30px;
-    text-align: center;
-    border-radius: 2px;
 }
 
 #empty_narrow_private_message p,
@@ -3488,19 +3127,13 @@ li.expanded_private_message {
 }
 
 #administration h1,
-#settings h1,
-#subscriptions h1 {
+#settings h1 {
     font-size: 25px;
     font-weight: 300;
 }
 
-#subscriptions h1 {
-    padding-top: 40px;
-}
-
 #administration .administration-icon,
-#settings .settings-icon,
-#subscriptions .streams-icon {
+#settings .settings-icon {
     margin-right: 10px;
     font-size: 20px;
 }
@@ -3691,15 +3324,6 @@ li.show-more-private-messages a {
 }
 
 .zoom-in .zoom-in-hide {
-    display: none;
-}
-
-.change-stream-privacy {
-    width: 100%;
-    text-align: center;
-}
-
-.change-stream-privacy-feedback {
     display: none;
 }
 

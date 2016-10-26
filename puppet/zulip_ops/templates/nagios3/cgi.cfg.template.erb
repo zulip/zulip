@@ -129,7 +129,7 @@ use_ssl_authentication=0
 # not use authorization.  You may use an asterisk (*) to
 # authorize any user who has authenticated to the web server.
 
-authorized_for_system_information=nagiosadmin
+authorized_for_system_information=nagiosadmin,<%= @nagios_format_users %>
 
 
 
@@ -141,7 +141,7 @@ authorized_for_system_information=nagiosadmin
 # an asterisk (*) to authorize any user who has authenticated
 # to the web server.
 
-authorized_for_configuration_information=nagiosadmin
+authorized_for_configuration_information=nagiosadmin,<%= @nagios_format_users %>
 
 
 
@@ -154,7 +154,7 @@ authorized_for_configuration_information=nagiosadmin
 # You may use an asterisk (*) to authorize any user who has
 # authenticated to the web server.
 
-authorized_for_system_commands=nagiosadmin
+authorized_for_system_commands=nagiosadmin,<%= @nagios_format_users %>
 
 
 
@@ -167,8 +167,8 @@ authorized_for_system_commands=nagiosadmin
 # to authorize any user who has authenticated to the web server.
 
 
-authorized_for_all_services=nagiosadmin
-authorized_for_all_hosts=nagiosadmin
+authorized_for_all_services=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_all_hosts=nagiosadmin,<%= @nagios_format_users %>
 
 
 
@@ -181,8 +181,8 @@ authorized_for_all_hosts=nagiosadmin
 # authorization).  You may use an asterisk (*) to authorize any
 # user who has authenticated to the web server.
 
-authorized_for_all_service_commands=nagiosadmin
-authorized_for_all_host_commands=nagiosadmin
+authorized_for_all_service_commands=nagiosadmin,<%= @nagios_format_users %>
+authorized_for_all_host_commands=nagiosadmin,<%= @nagios_format_users %>
 
 
 
@@ -287,6 +287,14 @@ ping_syntax=/bin/ping -n -U -c 5 $HOSTADDRESS$
 
 refresh_rate=90
 
+# DEFAULT PAGE LIMIT
+# This option allows you to specify the default number of results
+# displayed on the status.cgi.  This number can be adjusted from
+# within the UI after the initial page load. Setting this to 0
+# will show all results.
+
+# Zulip config: Show all results on the same page
+result_limit=0
 
 
 # ESCAPE HTML TAGS
@@ -365,9 +373,3 @@ lock_author_names=1
 # This option should be the URL used to access your instance of Splunk
 
 #splunk_url=http://127.0.0.1:8000/
-
-
-
-
-# Show all results on the same page
-result_limit=0

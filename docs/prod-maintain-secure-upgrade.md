@@ -302,7 +302,7 @@ This section attempts to address the considerations involved with
 running Zulip with a large team (>1000 users).
 
 * We recommend using a [remote postgres
-  database](#postgres-database-details) for isolation, though it is
+  database](prod-postgres.html) for isolation, though it is
   not required.  In the following, we discuss a relatively simple
   configuration with two types of servers: application servers
   (running Django, Tornado, RabbitMQ, Redis, Memcached, etc.) and

@@ -16,7 +16,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
 from scripts.lib.setup_venv import setup_virtualenv, VENV_DEPENDENCIES
-from scripts.lib.node_cache import setup_node_modules
+from scripts.lib.node_cache import setup_node_modules, NPM_CACHE_PATH
 
 from version import PROVISION_VERSION
 if False:
@@ -39,6 +39,12 @@ TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
+
+# TODO: De-duplicate this with emoji_dump.py
+EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
+if 'TRAVIS' in os.environ:
+    # In Travis CI, we don't have root access
+    EMOJI_CACHE_PATH = "/home/travis/zulip-emoji-cache"
 
 if PY2:
     VENV_PATH = PY2_VENV_PATH
@@ -117,6 +123,7 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
+user_id = os.getuid()
 
 def main(options):
     # type: (Any) -> int
@@ -169,6 +176,8 @@ def main(options):
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
     run(["tools/setup/download-zxcvbn"])
+    if os.path.isdir(EMOJI_CACHE_PATH):
+        run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["python", "tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:
@@ -208,6 +217,8 @@ def main(options):
         # issue with the symlinks being improperly owned by root.
         if os.path.islink("node_modules"):
             run(["sudo", "rm", "-f", "node_modules"])
+        if os.path.isdir(NPM_CACHE_PATH):
+            run(["sudo", "chown", "%s:%s" % (user_id, user_id), NPM_CACHE_PATH])
         setup_node_modules()
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)

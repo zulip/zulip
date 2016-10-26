@@ -150,6 +150,7 @@ class Realm(ModelReprMixin, models.Model):
     allow_message_editing = models.BooleanField(default=True) # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS) # type: int
+    message_retention_days = models.IntegerField(null=True) # type: Optional[int]
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -240,6 +241,7 @@ post_save.connect(flush_realm, sender=Realm)
 
 class RealmAlias(models.Model):
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True, unique=True) # type: text_type
 
 # These functions should only be used on email addresses that have
@@ -294,6 +296,10 @@ def alias_for_realm(domain):
         return RealmAlias.objects.get(domain=domain)
     except RealmAlias.DoesNotExist:
         return None
+
+def list_of_domains_for_realm(realm):
+    # type: (Realm) -> List[text_type]
+    return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
 
 def remote_user_to_email(remote_user):
     # type: (text_type) -> text_type
@@ -441,6 +447,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     enable_sounds = models.BooleanField(default=True) # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True) # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True) # type: bool
+    enable_online_push_notifications = models.BooleanField(default=False) # type: bool
 
     enable_digest_emails = models.BooleanField(default=True) # type: bool
 
@@ -549,6 +556,11 @@ def receives_offline_notifications(user_profile):
     # type: (UserProfile) -> bool
     return ((user_profile.enable_offline_email_notifications or
              user_profile.enable_offline_push_notifications) and
+            not user_profile.is_bot)
+
+def receives_online_notifications(user_profile):
+    # type: (UserProfile) -> bool
+    return (user_profile.enable_online_push_notifications and
             not user_profile.is_bot)
 
 # Make sure we flush the UserProfile object from our remote cache

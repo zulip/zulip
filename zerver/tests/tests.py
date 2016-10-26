@@ -1564,6 +1564,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.check_for_toggle_param("/json/notify_settings/change", "enable_sounds")
         self.check_for_toggle_param("/json/notify_settings/change", "enable_offline_email_notifications")
         self.check_for_toggle_param("/json/notify_settings/change", "enable_offline_push_notifications")
+        self.check_for_toggle_param("/json/notify_settings/change", "enable_online_push_notifications")
         self.check_for_toggle_param("/json/notify_settings/change", "enable_digest_emails")
 
     def test_ui_settings(self):
@@ -1768,6 +1769,7 @@ class HomeTest(ZulipTestCase):
             "alert_words",
             "autoscroll_forever",
             "avatar_url",
+            "avatar_url_medium",
             "bot_list",
             "can_create_streams",
             "cross_realm_user_emails",
@@ -1778,11 +1780,13 @@ class HomeTest(ZulipTestCase):
             "desktop_notifications_enabled",
             "development_environment",
             "domain",
+            "domains",
             "email",
             "email_dict",
             "enable_digest_emails",
             "enable_offline_email_notifications",
             "enable_offline_push_notifications",
+            "enable_online_push_notifications",
             "enter_sends",
             "event_queue_id",
             "first_in_realm",

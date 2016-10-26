@@ -1,6 +1,6 @@
 class zulip_ops::postgres_appdb {
   include zulip_ops::postgres_common
-  include zulip::postgres_appdb_base
+  include zulip::postgres_appdb_tuned
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/pg_hba.conf":
     require => Package["postgresql-${zulip::base::postgres_version}"],
