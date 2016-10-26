@@ -72,7 +72,7 @@ def github_object_commented_content(payload, type):
     # type: (Mapping[text_type, Any], text_type) -> text_type
     comment = payload['comment']
     issue = payload['issue']
-    action = u'[commented]({})'.format(comment['html_url'])
+    action = u'[commented]({}) on'.format(comment['html_url'])
 
     return get_pull_request_event_message(
         comment['user']['login'],

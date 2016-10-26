@@ -119,7 +119,7 @@ def get_objects_assignee(payload):
 def get_commented_commit_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('object_attributes')
-    action = u'[commented]({})'.format(comment['url'])
+    action = u'[commented]({}) on'.format(comment['url'])
     return get_pull_request_event_message(
         get_issue_user_name(payload),
         action,
@@ -131,7 +131,7 @@ def get_commented_commit_event_body(payload):
 def get_commented_merge_request_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('object_attributes')
-    action = u'[commented]({})'.format(comment['url'])
+    action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/merge_requests/{}'.format(
         payload.get('project').get('web_url'),
         payload.get('merge_request').get('iid')
@@ -147,7 +147,7 @@ def get_commented_merge_request_event_body(payload):
 def get_commented_issue_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('object_attributes')
-    action = u'[commented]({})'.format(comment['url'])
+    action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/issues/{}'.format(
         payload.get('project').get('web_url'),
         payload.get('issue').get('iid')
@@ -163,7 +163,7 @@ def get_commented_issue_event_body(payload):
 def get_commented_snippet_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('object_attributes')
-    action = u'[commented]({})'.format(comment['url'])
+    action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/snippets/{}'.format(
         payload.get('project').get('web_url'),
         payload.get('snippet').get('id')
