@@ -26,6 +26,8 @@ class TypingNotificationEndToEndTest(ZulipTestCase):
         """
         sender = 'hamlet@zulip.com'
         recipient = 'othello@zulip.com'
+        expected_recipients = set([sender, recipient])
+
         register_result = self.client_post('/api/v1/register', {'event_types': ['typing']},
                                            **self.api_auth(recipient))
         self.assert_json_success(register_result)
@@ -54,7 +56,7 @@ class TypingNotificationEndToEndTest(ZulipTestCase):
         recipient = ['othello@zulip.com', 'cordelia@zulip.com']
         expected_recipients = set(recipient) | set([sender])
 
-        recipient_queues = []
+        recipient_queues = [] # type: List[Tuple[str, str]]
         for user in recipient:
             result = self.client_post('/api/v1/register', {'event_types': ['typing']},
                                       **self.api_auth(user))
