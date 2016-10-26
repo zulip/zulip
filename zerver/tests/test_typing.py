@@ -2,17 +2,12 @@
 from __future__ import absolute_import
 
 import ujson
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 from six import string_types
 
 from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list, get_display_recipient
 
 class TypingNotificationEndToEndTest(ZulipTestCase):
-    def tornado_call(self, view_func, user_profile, post_data):
-        # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any]) -> HttpResponse
-        request = POSTRequestMock(post_data, user_profile)
-        return view_func(request, user_profile)
-
     def test_post_result(self):
         # type: () -> None
         """
