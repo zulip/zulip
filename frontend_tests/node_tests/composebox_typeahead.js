@@ -2,8 +2,12 @@ var ct = require('js/composebox_typeahead.js');
 
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
                   {emoji_name: "moneybags", emoji_url: "TBD"}];
+var stream_list = ['Denmark', 'Sweden'];
 
 set_global('emoji', {emojis: emoji_list});
+set_global('stream_data', {subscribed_streams: function () {
+    return stream_list;
+}});
 
 global.stub_out_jquery();
 add_dependencies({
@@ -35,8 +39,8 @@ global.people.add({
     // Stub out split_at_cursor that uses $(':focus')
     ct.split_at_cursor = function (word) { return [word, '']; };
 
-    var begin_typehead_this = {options: {completions: {emoji: true,
-                                                      mention: true}}};
+    var begin_typehead_this = {options: {completions: {
+        emoji: true, mention: true, stream: true}}};
 
     function assert_typeahead_equals(input, reference) {
         var returned = ct.compose_content_begins_typeahead.call(begin_typehead_this, input);
@@ -62,4 +66,7 @@ global.people.add({
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
 
+    assert_typeahead_equals("test #", false);
+    assert_typeahead_equals("test #D", stream_list);
+    assert_typeahead_equals("#s", stream_list);
 }());
