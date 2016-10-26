@@ -117,7 +117,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_commit_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211) [Commit](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7)\n\n~~~ quote\nnice commit\n~~~"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211) on [Commit](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7)\n\n~~~ quote\nnice commit\n~~~"
 
         self.send_and_test_stream_message(
             'commit_note',
@@ -129,7 +129,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_merge_request_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / MR #1 Tomek"
-        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1)\n\n~~~ quote\nNice merge request!\n~~~"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) on [MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1)\n\n~~~ quote\nNice merge request!\n~~~"
 
         self.send_and_test_stream_message(
             'merge_request_note',
@@ -141,7 +141,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_issue_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / Issue #2 abc"
-        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2)\n\n~~~ quote\nNice issue\n~~~"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [Issue](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2)\n\n~~~ quote\nNice issue\n~~~"
 
         self.send_and_test_stream_message(
             'issue_note',
@@ -153,7 +153,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_snippet_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / Snippet #2 test"
-        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) [Snippet](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2)\n\n~~~ quote\nNice snippet\n~~~"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [Snippet](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2)\n\n~~~ quote\nNice snippet\n~~~"
 
         self.send_and_test_stream_message(
             'snippet_note',
