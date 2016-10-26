@@ -219,9 +219,10 @@ class Client(object):
             site = site.rstrip("/")
             self.base_url = site
         else:
-            self.base_url = "https://api.zulip.com"
+           # Removes default and prompts user to enter SITE
+           raise RuntimeError("Please enter site")
 
-        if self.base_url != "https://api.zulip.com" and not self.base_url.endswith("/api"):
+        if not self.base_url.endswith("/api"):
             self.base_url += "/api"
         self.base_url += "/"
         self.retry_on_errors = retry_on_errors
