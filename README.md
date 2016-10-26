@@ -25,7 +25,7 @@ at https://www.zulip.org.
 
 There are several places online where folks discuss Zulip.
 
-One of those places is our [public Zulip instance](https://zulip.tabbott.net/).
+One of those places is our [public Zulip instance](https://chat.zulip.org/).
 You can go through the simple signup process at that link, and then you
 will soon be talking to core Zulip developers and other users.  To get
 help in real time, you will have the best luck finding core developers

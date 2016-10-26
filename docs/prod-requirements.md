@@ -6,7 +6,7 @@ following [these
 instructions](readme-symlink.html#installing-the-zulip-development-environment),
 since then you don't need to worry about setting up SSL certificates and an
 authentication mechanism. Or, you can check out the
-[developers' chatroom](http://zulip.tabbott.net/) (a public, running Zulip
+[developers' chatroom](http://chat.zulip.org/) (a public, running Zulip
 instance).
 
 ## Server
