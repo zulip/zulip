@@ -164,6 +164,6 @@ If you get an error after `scripts/setup/install` completes, check
 [troubleshooting section](prod-troubleshooting.html) for advice on
 how to debug.  If that doesn't help, please visit [the "installation
 help" stream in the Zulip developers'
-chat](https://zulip.tabbott.net/#narrow/stream/installation.20help)
+chat](https://chat.zulip.org/#narrow/stream/installation.20help)
 for realtime help or email zulip-help@googlegroups.com with the
 traceback and we'll try to help you out!
