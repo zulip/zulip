@@ -513,12 +513,14 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
 
     event = dict(type="realm_user", op="remove",
                  person=dict(email=user_profile.email,
+                             user_id=user_profile.id,
                              full_name=user_profile.full_name))
     send_event(event, active_user_ids(user_profile.realm))
 
     if user_profile.is_bot:
         event = dict(type="realm_bot", op="remove",
                      bot=dict(email=user_profile.email,
+                              user_id=user_profile.id,
                               full_name=user_profile.full_name))
         send_event(event, bot_owner_userids(user_profile))
 
