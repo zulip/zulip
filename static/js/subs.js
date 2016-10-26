@@ -377,15 +377,6 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
-exports.pin_or_unpin_stream = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    if (stream_name === undefined) {
-        return;
-    } else {
-        stream_list.refresh_stream_in_sidebar(sub);
-    }
-};
-
 exports.filter_table = function (query) {
     var sub_name_elements = $('#subscriptions_table .subscription_name');
 
@@ -521,6 +512,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'pin_to_top':
         update_stream_pin(sub, value);
+        stream_list.refresh_pinned_or_unpinned_stream(sub);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,

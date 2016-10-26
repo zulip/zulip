@@ -602,9 +602,9 @@ exports.rename_stream = function (sub) {
     exports.build_stream_list(); // big hammer
 };
 
-exports.refresh_stream_in_sidebar = function (sub) {
-    // used by subs.pin_or_unpin_stream,
-    // since pinning/unpinning requires reordering of streams in the sidebar
+exports.refresh_pinned_or_unpinned_stream = function (sub) {
+    // Pinned/unpinned streams require re-ordering.
+    // We use kind of brute force now, which is probably fine.
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
     exports.build_stream_list();
     exports.update_streams_sidebar();
