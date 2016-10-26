@@ -123,6 +123,7 @@ REPO_STOPWORDS_PATH = os.path.join(
 
 LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
+user_id = os.getuid()
 
 def main(options):
     # type: (Any) -> int
@@ -176,7 +177,7 @@ def main(options):
 
     run(["tools/setup/download-zxcvbn"])
     if os.path.isdir(EMOJI_CACHE_PATH):
-        run(["sudo", "chown", "zulip:zulip", EMOJI_CACHE_PATH])
+        run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["python", "tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:
@@ -217,7 +218,7 @@ def main(options):
         if os.path.islink("node_modules"):
             run(["sudo", "rm", "-f", "node_modules"])
         if os.path.isdir(NPM_CACHE_PATH):
-            run(["sudo", "chown", "zulip:zulip", NPM_CACHE_PATH])
+            run(["sudo", "chown", "%s:%s" % (user_id, user_id), NPM_CACHE_PATH])
         setup_node_modules()
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
