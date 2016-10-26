@@ -269,6 +269,7 @@ def notify_created_user(user_profile):
     # type: (UserProfile) -> None
     event = dict(type="realm_user", op="add",
                  person=dict(email=user_profile.email,
+                             user_id=user_profile.id,
                              is_admin=user_profile.is_realm_admin,
                              full_name=user_profile.full_name,
                              is_bot=user_profile.is_bot))
@@ -288,6 +289,7 @@ def notify_created_bot(user_profile):
 
     event = dict(type="realm_bot", op="add",
                  bot=dict(email=user_profile.email,
+                          user_id=user_profile.id,
                           full_name=user_profile.full_name,
                           api_key=user_profile.api_key,
                           default_sending_stream=default_sending_stream_name,
@@ -2783,6 +2785,7 @@ def get_status_dict(requesting_user_profile):
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, text_type]]
     return [{'email'     : userdict['email'],
+             'user_id'   : userdict['id'],
              'is_admin'  : userdict['is_realm_admin'],
              'is_bot'    : userdict['is_bot'],
              'full_name' : userdict['full_name']}

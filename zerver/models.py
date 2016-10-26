@@ -1065,6 +1065,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
     from zerver.lib.avatar import get_avatar_url
 
     return [{'email': botdict['email'],
+             'user_id': botdict['id'],
              'full_name': botdict['full_name'],
              'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
