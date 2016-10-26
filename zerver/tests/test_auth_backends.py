@@ -6,6 +6,7 @@ from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
 from typing import Any, Callable, Dict
 from builtins import object
+from oauth2client.crypt import AppIdentityError
 
 import jwt
 import mock
@@ -177,6 +178,11 @@ class AuthBackendTest(TestCase):
             result = backend.authenticate(return_data=ret)
             self.assertIsNone(result)
             self.assertTrue(ret["valid_attestation"])
+        with mock.patch('apiclient.sample_tools.client.verify_id_token',
+                        side_effect=AppIdentityError):
+            ret = dict()
+            result = backend.authenticate(return_data=ret)
+            self.assertIsNone(result)
 
     def test_ldap_backend(self):
         # type: () -> None
