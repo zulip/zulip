@@ -19,6 +19,11 @@ function iterate_to_find(selector, name_to_find, context) {
     return found ? $(found) : $();
 }
 
+exports.remove_expanded_topics = function () {
+    popovers.hide_topic_sidebar_popover();
+    $("ul.expanded_subjects").remove();
+};
+
 function get_topic_filter_li(stream_li, topic) {
     return iterate_to_find(".expanded_subjects li.expanded_subject", topic, stream_li);
 }
