@@ -1679,6 +1679,7 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'full_name': full_name})
 
     payload = dict(email=user_profile.email,
+                   user_id=user_profile.id,
                    full_name=user_profile.full_name)
     send_event(dict(type='realm_user', op='update', person=payload),
                active_user_ids(user_profile.realm))
@@ -1708,7 +1709,9 @@ def do_regenerate_api_key(user_profile, log=True):
         send_event(dict(type='realm_bot',
                         op='update',
                         bot=dict(email=user_profile.email,
-                                api_key=user_profile.api_key,)),
+                                 user_id=user_profile.id,
+                                 api_key=user_profile.api_key,
+                                 )),
                     bot_owner_userids(user_profile))
 
 def do_change_avatar_source(user_profile, avatar_source, log=True):
@@ -1725,13 +1728,15 @@ def do_change_avatar_source(user_profile, avatar_source, log=True):
         send_event(dict(type='realm_bot',
                         op='update',
                         bot=dict(email=user_profile.email,
-                                avatar_url=avatar_url(user_profile),)),
+                                 user_id=user_profile.id,
+                                 avatar_url=avatar_url(user_profile),
+                                 )),
                     bot_owner_userids(user_profile))
     else:
         payload = dict(
             email=user_profile.email,
             avatar_url=avatar_url(user_profile),
-            id=user_profile.id
+            user_id=user_profile.id
         )
 
         send_event(dict(type='realm_user',
@@ -1768,7 +1773,9 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
         send_event(dict(type='realm_bot',
                         op='update',
                         bot=dict(email=user_profile.email,
-                                default_sending_stream=stream_name,)),
+                                 user_id=user_profile.id,
+                                 default_sending_stream=stream_name,
+                                 )),
                     bot_owner_userids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
@@ -1789,7 +1796,9 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
         send_event(dict(type='realm_bot',
                         op='update',
                         bot=dict(email=user_profile.email,
-                                 default_events_register_stream=stream_name,)),
+                                 user_id=user_profile.id,
+                                 default_events_register_stream=stream_name,
+                                 )),
                     bot_owner_userids(user_profile))
 
 def do_change_default_all_public_streams(user_profile, value, log=True):
@@ -1804,7 +1813,9 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
         send_event(dict(type='realm_bot',
                         op='update',
                         bot=dict(email=user_profile.email,
-                                default_all_public_streams=user_profile.default_all_public_streams,)),
+                                 user_id=user_profile.id,
+                                 default_all_public_streams=user_profile.default_all_public_streams,
+                                 )),
                     bot_owner_userids(user_profile))
 
 def do_change_is_admin(user_profile, value, permission='administer'):
