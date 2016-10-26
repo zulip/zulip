@@ -20,7 +20,7 @@ PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
 REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
 
-PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}]({url})"
+PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}{id}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = u"(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = u"\nfrom `{target}` to `{base}`"
 PULL_REQUEST_OR_ISSUE_CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
@@ -56,16 +56,17 @@ def get_remove_branch_event_message(user_name, branch_name):
     )
 
 def get_pull_request_event_message(
-        user_name, action, url,
+        user_name, action, url, number=None,
         target_branch=None, base_branch=None,
         message=None, assignee=None, type='PR'
 ):
-    # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> text_type
+    # type: (text_type, text_type, text_type, Optional[int], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> text_type
     main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
         type=type,
-        url=url
+        url=url,
+        id=" #{}".format(number) if number is not None else ''
     )
     if assignee:
         main_message += PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE.format(assignee=assignee)
@@ -79,12 +80,13 @@ def get_pull_request_event_message(
         main_message += '\n' + PULL_REQUEST_OR_ISSUE_CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
 
-def get_issue_event_message(user_name, action, url, message=None, assignee=None):
-    # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> text_type
+def get_issue_event_message(user_name, action, url, number=None, message=None, assignee=None):
+    # type: (text_type, text_type, text_type, Optional[int], Optional[text_type], Optional[text_type]) -> text_type
     return get_pull_request_event_message(
         user_name,
         action,
         url,
+        number,
         message=message,
         assignee=assignee,
         type='Issue'

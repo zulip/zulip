@@ -68,6 +68,7 @@ def get_issue_created_event_body(payload):
         get_issue_user_name(payload),
         'created',
         get_object_url(payload),
+        payload.get('object_attributes').get('iid'),
         payload.get('object_attributes').get('description'),
         get_objects_assignee(payload)
     )
@@ -78,6 +79,7 @@ def get_issue_event_body(payload, action):
         get_issue_user_name(payload),
         action,
         get_object_url(payload),
+        payload.get('object_attributes').get('iid'),
     )
 
 def get_merge_request_updated_event_body(payload):
@@ -93,6 +95,7 @@ def get_merge_request_event_body(payload, action):
         get_issue_user_name(payload),
         action,
         pull_request.get('url'),
+        pull_request.get('iid'),
         type='MR',
     )
 
@@ -103,6 +106,7 @@ def get_merge_request_open_or_updated_body(payload, action):
         get_issue_user_name(payload),
         action,
         pull_request.get('url'),
+        pull_request.get('iid'),
         pull_request.get('source_branch'),
         pull_request.get('target_branch'),
         pull_request.get('description'),
@@ -140,6 +144,7 @@ def get_commented_merge_request_event_body(payload):
         get_issue_user_name(payload),
         action,
         url,
+        payload.get('merge_request').get('iid'),
         message=comment['note'],
         type='MR'
     )
@@ -156,6 +161,7 @@ def get_commented_issue_event_body(payload):
         get_issue_user_name(payload),
         action,
         url,
+        payload.get('issue').get('iid'),
         message=comment['note'],
         type='Issue'
     )
@@ -172,6 +178,7 @@ def get_commented_snippet_event_body(payload):
         get_issue_user_name(payload),
         action,
         url,
+        payload.get('snippet').get('id'),
         message=comment['note'],
         type='Snippet'
     )
