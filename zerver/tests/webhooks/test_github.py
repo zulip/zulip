@@ -89,49 +89,49 @@ class GithubV1HookTests(WebhookTestCase):
         # type: () -> None
         self.basic_test('issues_opened', 'issues',
                         "zulip-test / Issue #5 The frobnicator doesn't work",
-                        "zbenjamin opened [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+                        "zbenjamin opened [Issue #5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
 
     def test_issue_comment(self):
         # type: () -> None
         self.basic_test('issue_comment', 'issues',
                         "zulip-test / Issue #5 The frobnicator doesn't work",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [Issue #5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
 
     def test_issues_closed(self):
         # type: () -> None
         self.basic_test('issues_closed', 'issues',
                         "zulip-test / Issue #5 The frobnicator doesn't work",
-                        "zbenjamin closed [Issue](https://github.com/zbenjamin/zulip-test/issues/5)")
+                        "zbenjamin closed [Issue #5](https://github.com/zbenjamin/zulip-test/issues/5)")
 
     def test_pull_request_opened(self):
         # type: () -> None
         self.basic_test('pull_request_opened', 'commits',
                         "zulip-test / PR #7 Counting is hard.",
-                        "lfaraone opened [PR](https://github.com/zbenjamin/zulip-test/pull/7)(assigned to lfaraone)\nfrom `patch-2` to `master`\n\n~~~ quote\nOmitted something I think?\n~~~")
+                        "lfaraone opened [PR #7](https://github.com/zbenjamin/zulip-test/pull/7)(assigned to lfaraone)\nfrom `patch-2` to `master`\n\n~~~ quote\nOmitted something I think?\n~~~")
 
     def test_pull_request_closed(self):
         # type: () -> None
         self.basic_test('pull_request_closed', 'commits',
                         "zulip-test / PR #7 Counting is hard.",
-                        "zbenjamin closed [PR](https://github.com/zbenjamin/zulip-test/pull/7)")
+                        "zbenjamin closed [PR #7](https://github.com/zbenjamin/zulip-test/pull/7)")
 
     def test_pull_request_synchronize(self):
         # type: () -> None
         self.basic_test('pull_request_synchronize', 'commits',
                         "zulip-test / PR #13 Even more cowbell.",
-                        "zbenjamin synchronized [PR](https://github.com/zbenjamin/zulip-test/pull/13)")
+                        "zbenjamin synchronized [PR #13](https://github.com/zbenjamin/zulip-test/pull/13)")
 
     def test_pull_request_comment(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'commits',
                         "zulip-test / PR #9 Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR #9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
 
     def test_pull_request_comment_user_specified_stream(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'my_commits',
                         "zulip-test / PR #9 Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR #9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
                         send_stream=True)
 
     def test_commit_comment(self):
@@ -230,50 +230,50 @@ class GithubV2HookTests(WebhookTestCase):
         # type: () -> None
         self.basic_test('issues_opened', 'issues',
                         "zulip-test / Issue #5 The frobnicator doesn't work",
-                        "zbenjamin opened [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
+                        "zbenjamin opened [Issue #5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nI tried changing the widgets, but I got:\r\n\r\nPermission denied: widgets are immutable\n~~~")
 
     def test_issue_comment(self):
         # type: () -> None
         self.basic_test('issue_comment', 'issues',
                         "zulip-test / Issue #5 The frobnicator doesn't work",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [Issue](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/issues/5#issuecomment-23374280) on [Issue #5](https://github.com/zbenjamin/zulip-test/issues/5)\n\n~~~ quote\nWhoops, I did something wrong.\r\n\r\nI'm sorry.\n~~~")
 
     def test_issues_closed(self):
         # type: () -> None
         self.basic_test('issues_closed', 'issues',
                         "zulip-test / Issue #5 The frobnicator doesn't work",
-                        "zbenjamin closed [Issue](https://github.com/zbenjamin/zulip-test/issues/5)")
+                        "zbenjamin closed [Issue #5](https://github.com/zbenjamin/zulip-test/issues/5)")
 
     def test_pull_request_opened(self):
         # type: () -> None
         self.basic_test('pull_request_opened', 'commits',
                         "zulip-test / PR #7 Counting is hard.",
-                        "lfaraone opened [PR](https://github.com/zbenjamin/zulip-test/pull/7)(assigned to lfaraone)\nfrom `patch-2` to `master`\n\n~~~ quote\nOmitted something I think?\n~~~")
+                        "lfaraone opened [PR #7](https://github.com/zbenjamin/zulip-test/pull/7)(assigned to lfaraone)\nfrom `patch-2` to `master`\n\n~~~ quote\nOmitted something I think?\n~~~")
 
     def test_pull_request_closed(self):
         # type: () -> None
         self.basic_test('pull_request_closed', 'commits',
                         "zulip-test / PR #7 Counting is hard.",
-                        "zbenjamin closed [PR](https://github.com/zbenjamin/zulip-test/pull/7)")
+                        "zbenjamin closed [PR #7](https://github.com/zbenjamin/zulip-test/pull/7)")
 
     def test_pull_request_synchronize(self):
         # type: () -> None
         self.basic_test('pull_request_synchronize', 'commits',
                         "zulip-test / PR #13 Even more cowbell.",
 
-                        "zbenjamin synchronized [PR](https://github.com/zbenjamin/zulip-test/pull/13)")
+                        "zbenjamin synchronized [PR #13](https://github.com/zbenjamin/zulip-test/pull/13)")
 
     def test_pull_request_comment(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'commits',
                         "zulip-test / PR #9 Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR #9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~")
 
     def test_pull_request_comment_user_specified_stream(self):
         # type: () -> None
         self.basic_test('pull_request_comment', 'my_commits',
                         "zulip-test / PR #9 Less cowbell.",
-                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
+                        "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/pull/9#issuecomment-24771110) on [PR #9](https://github.com/zbenjamin/zulip-test/pull/9)\n\n~~~ quote\nYeah, who really needs more cowbell than we already have?\n~~~",
                         send_stream=True)
 
     def test_commit_comment(self):
