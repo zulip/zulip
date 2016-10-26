@@ -21,12 +21,16 @@ from zerver.lib.test_helpers import (
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, email_to_username, UserProfile, \
-    Realm
+    PreregistrationUser, Realm
+
+from confirmation.models import Confirmation
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     password_auth_enabled, github_auth_enabled
+
+from zerver.views.auth import maybe_send_to_registration
 
 from social.exceptions import AuthFailed
 from social.strategies.django_strategy import DjangoStrategy
@@ -1216,3 +1220,60 @@ class TestPasswordAuthEnabled(ZulipTestCase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
             realm = Realm.objects.get(domain='zulip.com')
             self.assertTrue(password_auth_enabled(realm))
+
+class TestMaybeSendToRegistration(ZulipTestCase):
+    def test_sso_only_when_preregistration_user_does_not_exist(self):
+        # type: () -> None
+        rf = RequestFactory()
+        request = rf.get('/')
+        request.session = {}
+        request.user = None
+
+        # Creating a mock Django form in order to keep the test simple.
+        # This form will be returned by the create_hompage_form function
+        # and will always be valid so that the code that we want to test
+        # actually runs.
+        class Form(object):
+            def is_valid(self):
+                # type: () -> bool
+                return True
+
+        with self.settings(ONLY_SSO=True):
+            with mock.patch('zerver.views.auth.create_homepage_form', return_value=Form()):
+                self.assertEqual(PreregistrationUser.objects.all().count(), 0)
+                result = maybe_send_to_registration(request, 'hamlet@zulip.com')
+                self.assertEqual(result.status_code, 302)
+                confirmation = Confirmation.objects.all().first()
+                confirmation_key = confirmation.confirmation_key
+                self.assertIn('do_confirm/' + confirmation_key, result.url)
+                self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+
+    def test_sso_only_when_preregistration_user_exists(self):
+        # type: () -> None
+        rf = RequestFactory()
+        request = rf.get('/')
+        request.session = {}
+        request.user = None
+
+        # Creating a mock Django form in order to keep the test simple.
+        # This form will be returned by the create_hompage_form function
+        # and will always be valid so that the code that we want to test
+        # actually runs.
+        class Form(object):
+            def is_valid(self):
+                # type: () -> bool
+                return True
+
+        email = 'hamlet@zulip.com'
+        user = PreregistrationUser(email=email)
+        user.save()
+
+        with self.settings(ONLY_SSO=True):
+            with mock.patch('zerver.views.auth.create_homepage_form', return_value=Form()):
+                self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+                result = maybe_send_to_registration(request, email)
+                self.assertEqual(result.status_code, 302)
+                confirmation = Confirmation.objects.all().first()
+                confirmation_key = confirmation.confirmation_key
+                self.assertIn('do_confirm/' + confirmation_key, result.url)
+                self.assertEqual(PreregistrationUser.objects.all().count(), 1)
