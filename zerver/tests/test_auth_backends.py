@@ -1167,3 +1167,10 @@ class TestLDAP(ZulipTestCase):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
                                                      realm_subdomain='zulip')
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
+
+class TestZulipLDAPUserPopulator(ZulipTestCase):
+    def test_authenticate(self):
+        # type: () -> None
+        backend = ZulipLDAPUserPopulator()
+        result = backend.authenticate('hamlet@zulip.com', 'testing')  # type: ignore # complains that the function does not return any value!
+        self.assertIs(result, None)
