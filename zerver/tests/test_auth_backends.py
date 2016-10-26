@@ -24,7 +24,8 @@ from zerver.models import \
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin
+    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
+    ZulipLDAPUserPopulator
 
 from social.exceptions import AuthFailed
 from social.strategies.django_strategy import DjangoStrategy
@@ -1027,7 +1028,7 @@ class TestLDAP(ZulipTestCase):
     def test_login_failure_due_to_nonexistent_user(self):
         # type: () -> None
         self.mock_ldap.directory = {
-            'uid=nonexitent,ou=users,dc=zulip,dc=com': {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
                 'userPassword': 'testing'
             }
         }
@@ -1083,7 +1084,7 @@ class TestLDAP(ZulipTestCase):
             backend = self.backend
             email = 'nonexisting@zulip.com'
             user_profile, created = backend.get_or_create_user(email, _LDAPUser())
-            self.assertFalse(created)
+            self.assertTrue(created)
             self.assertEqual(user_profile.email, email)
             self.assertEqual(user_profile.full_name, 'Full Name')
 
@@ -1173,6 +1174,13 @@ class TestLDAP(ZulipTestCase):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
                                                      realm_subdomain='zulip')
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
+
+class TestZulipLDAPUserPopulator(ZulipTestCase):
+    def test_authenticate(self):
+        # type: () -> None
+        backend = ZulipLDAPUserPopulator()
+        result = backend.authenticate('hamlet@zulip.com', 'testing')  # type: ignore # complains that the function does not return any value!
+        self.assertIs(result, None)
 
 class TestZulipAuthMixin(ZulipTestCase):
     def test_get_user(self):
