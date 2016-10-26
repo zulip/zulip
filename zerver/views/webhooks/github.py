@@ -173,17 +173,17 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
                                                      forced=payload['forced'],
                                                      created=payload['created'])
     elif event == 'commit_comment':
-        comment = payload['comment']
-        subject = u'%s: commit %s' % (topic_focus, comment['commit_id'])
+        subject = topic_focus
 
-        content = (u'%s [commented](%s)'
-                   % (comment['user']['login'],
-                      comment['html_url']))
-
-        if comment['line'] is not None:
-            content += u' on `%s`, line %d' % (comment['path'], comment['line'])
-
-        content += u'\n\n~~~ quote\n%s\n~~~' % (comment['body'],)
+        comment = payload.get('comment')
+        action = u'[commented]({}) on'.format(comment['html_url'])
+        content = get_pull_request_event_message(
+            comment['user']['login'],
+            action,
+            comment['html_url'].split('#', 1)[0],
+            message=comment['body'],
+            type='Commit'
+        )
 
     else:
         raise UnknownEventType(force_str(u'Event %s is unknown and cannot be handled' % (event,)))
