@@ -30,19 +30,24 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     success_stamp = os.path.join(cached_node_modules, '.success-stamp')
     # Check if a cached version already exists
     if not os.path.exists(success_stamp):
-        do_npm_install(npm_cache, npm_args or [], stdout, stderr, copy_modules)
+        do_npm_install(npm_cache,
+                       npm_args or [],
+                       stdout=stdout,
+                       stderr=stderr,
+                       success_stamp=success_stamp,
+                       copy_modules=copy_modules)
 
     print("Using cached node modules from %s" % (cached_node_modules,))
     cmds = [
         ['rm', '-rf', 'node_modules'],
         ["ln", "-nsf", cached_node_modules, 'node_modules'],
-        ['touch', success_stamp],
     ]
     for cmd in cmds:
         run(cmd, stdout=stdout, stderr=stderr)
 
-def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules=False):
-    # type: (str, List[str], Optional[IO], Optional[IO], Optional[bool]) -> None
+def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules=False,
+                   success_stamp=None):
+    # type: (str, List[str], Optional[IO], Optional[IO], Optional[bool], Optional[str]) -> None
     cmds = [
         ["sudo", "rm", "-rf", target_path],
         ['sudo', 'mkdir', '-p', target_path],
@@ -55,6 +60,7 @@ def do_npm_install(target_path, npm_args, stdout=None, stderr=None, copy_modules
     else:
         print("Cached version not found! Installing node modules.")
         cmds.append(['npm', 'install'] + npm_args + ['--prefix', target_path])
+    cmds.append(['touch', success_stamp])
 
     for cmd in cmds:
         run(cmd, stdout=stdout, stderr=stderr)
