@@ -226,11 +226,6 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
     remove_expanded_private_messages();
 }
 
-function get_subject_filter_li(stream, subject) {
-    var stream_li = get_filter_li('stream', stream);
-    return iterate_to_find(".expanded_subjects li.expanded_subject", subject, stream_li);
-}
-
 function get_private_message_filter_li(conversation) {
     var pm_li = get_filter_li('global', 'private');
     return iterate_to_find(".expanded_private_messages li.expanded_private_message",
@@ -353,19 +348,6 @@ function set_count_toggle_button(elem, count) {
     }
 }
 
-exports.set_subject_count = function (stream, subject, count) {
-    var subject_li = get_subject_filter_li(stream, subject);
-    var count_span = subject_li.find('.subject_count');
-    var value_span = count_span.find('.value');
-
-    if (count_span.length === 0 || value_span.length === 0) {
-        return;
-    }
-
-    topic_list.update_count_in_dom(count_span, value_span, count);
-};
-
-
 exports.set_pm_conversation_count = function (conversation, count) {
     var pm_li = get_private_message_filter_li(conversation);
     var count_span = pm_li.find('.private_message_count');
@@ -470,7 +452,7 @@ function rebuild_recent_topics(stream, active_topic) {
     stream_li.append(topic_dom);
 
     if (active_topic) {
-        get_subject_filter_li(stream, active_topic).addClass('active-sub-filter');
+        topic_list.activate_topic(stream_li, active_topic);
     }
 }
 
@@ -574,8 +556,9 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // counts.subject_count maps streams to hashes of subjects to counts
     counts.subject_count.each(function (subject_hash, stream) {
+        var stream_li = get_filter_li('stream', stream);
         subject_hash.each(function (count, subject) {
-            exports.set_subject_count(stream, subject, count);
+            topic_list.set_count(stream_li, subject, count);
         });
     });
 
