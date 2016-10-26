@@ -823,10 +823,11 @@ def do_send_typing_notification(notification):
                                                           notification['sender'].id)
     recipients = [{'id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
     active_recipients = [profile for profile in recipient_user_profiles if profile.is_active]
+    sender = {'id': notification['sender'].id, 'email': notification['sender'].email}
     event = dict(
             type            = 'typing',
             op              = notification['op'],
-            sender          = notification['sender'],
+            sender          = sender,
             recipients      = recipients)
 
     # Only deliver the notification to active user recipients
