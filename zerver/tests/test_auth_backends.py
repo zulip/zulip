@@ -24,7 +24,7 @@ from zerver.models import \
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend
+    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin
 
 from social.exceptions import AuthFailed
 from social.strategies.django_strategy import DjangoStrategy
@@ -1179,4 +1179,11 @@ class TestZulipLDAPUserPopulator(ZulipTestCase):
         # type: () -> None
         backend = ZulipLDAPUserPopulator()
         result = backend.authenticate('hamlet@zulip.com', 'testing')  # type: ignore # complains that the function does not return any value!
+        self.assertIs(result, None)
+
+class TestZulipAuthMixin(ZulipTestCase):
+    def test_get_user(self):
+        # type: () -> None
+        backend = ZulipAuthMixin()
+        result = backend.get_user(11111)
         self.assertIs(result, None)
