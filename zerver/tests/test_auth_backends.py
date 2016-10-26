@@ -20,11 +20,13 @@ from zerver.lib.test_helpers import (
     ZulipTestCase
 )
 from zerver.models import \
-    get_realm, get_user_profile_by_email, email_to_username, UserProfile
+    get_realm, get_user_profile_by_email, email_to_username, UserProfile, \
+    Realm
 
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
-    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin
+    ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
+    password_auth_enabled
 
 from social.exceptions import AuthFailed
 from social.strategies.django_strategy import DjangoStrategy
@@ -1187,3 +1189,16 @@ class TestZulipAuthMixin(ZulipTestCase):
         backend = ZulipAuthMixin()
         result = backend.get_user(11111)
         self.assertIs(result, None)
+
+class TestPasswordAuthEnabled(ZulipTestCase):
+    def test_password_auth_enabled_on_production(self):
+        # type: () -> None
+        with self.settings(PRODUCTION=True):
+            realm = Realm.objects.get(domain='zulip.com')
+            self.assertFalse(password_auth_enabled(realm))
+
+    def test_password_auth_enabled_for_ldap(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
+            realm = Realm.objects.get(domain='zulip.com')
+            self.assertTrue(password_auth_enabled(realm))
