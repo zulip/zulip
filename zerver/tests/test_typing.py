@@ -7,18 +7,6 @@ from six import string_types
 
 from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list, get_display_recipient
 
-class TypingNotificationEndToEndTest(ZulipTestCase):
-    def test_post_result(self):
-        # type: () -> None
-        """
-        Sending typing notification results in success response
-        """
-        sender = 'hamlet@zulip.com'
-        recipient = 'othello@zulip.com'
-        result = self.client_post('/api/v1/typing', {'to': recipient, 'op': 'start'},
-                                  **self.api_auth(sender))
-        self.assert_json_success(result)
-
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self):
         # type: () -> None
