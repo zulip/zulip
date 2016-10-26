@@ -211,6 +211,7 @@ def get_issue_action_body(payload, action):
         get_user_username(payload),
         action,
         issue['links']['html']['href'],
+        issue['id'],
         message,
         assignee
     )
@@ -222,6 +223,7 @@ def get_pull_request_action_body(payload, action):
         get_user_username(payload),
         action,
         get_pull_request_url(pull_request),
+        pull_request.get('id')
     )
 
 def get_pull_request_created_or_updated_body(payload, action):
@@ -235,6 +237,7 @@ def get_pull_request_created_or_updated_body(payload, action):
         get_user_username(payload),
         action,
         get_pull_request_url(pull_request),
+        pull_request.get('id'),
         target_branch=pull_request['source']['branch']['name'],
         base_branch=pull_request['destination']['branch']['name'],
         message=pull_request['description'],
@@ -258,6 +261,7 @@ def get_pull_request_comment_action_body(payload, action):
         get_user_username(payload),
         action,
         payload['pullrequest']['links']['html']['href'],
+        payload['pullrequest']['id'],
         message=payload['comment']['content']['raw']
     )
 

@@ -38,6 +38,7 @@ def github_pull_request_content(payload):
             payload['sender']['login'],
             action,
             pull_request['html_url'],
+            pull_request['number'],
             pull_request['head']['ref'],
             pull_request['base']['ref'],
             pull_request['body'],
@@ -47,6 +48,7 @@ def github_pull_request_content(payload):
             payload['sender']['login'],
             action,
             pull_request['html_url'],
+            pull_request['number']
         )
 
 def github_issues_content(payload):
@@ -59,6 +61,7 @@ def github_issues_content(payload):
             payload['sender']['login'],
             action,
             issue['html_url'],
+            issue['number'],
             issue['body'],
             get_pull_request_or_issue_assignee(issue)
         )
@@ -66,6 +69,7 @@ def github_issues_content(payload):
             payload['sender']['login'],
             action,
             issue['html_url'],
+            issue['number'],
         )
 
 def github_object_commented_content(payload, type):
@@ -78,6 +82,7 @@ def github_object_commented_content(payload, type):
         comment['user']['login'],
         action,
         issue['html_url'],
+        issue['number'],
         message=comment['body'],
         type=type
     )
