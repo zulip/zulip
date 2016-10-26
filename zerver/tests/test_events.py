@@ -624,6 +624,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('add')),
             ('bot', check_dict([
                 ('email', check_string),
+                ('user_id', check_int),
                 ('full_name', check_string),
                 ('api_key', check_string),
                 ('default_sending_stream', check_none_or(check_string)),

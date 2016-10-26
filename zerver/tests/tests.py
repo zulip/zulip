@@ -772,12 +772,15 @@ class BotTest(ZulipTestCase):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
+        bot = get_user_profile_by_email('hambot-bot@zulip.com')
+
         event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
         self.assertEqual(
             dict(
                 type='realm_bot',
                 op='add',
                 bot=dict(email='hambot-bot@zulip.com',
+                     user_id=bot.id,
                      full_name='The Bot of Hamlet',
                      api_key=result['api_key'],
                      avatar_url=result['avatar_url'],
@@ -931,6 +934,7 @@ class BotTest(ZulipTestCase):
                 type='realm_bot',
                 op='add',
                 bot=dict(email='hambot-bot@zulip.com',
+                     user_id=profile.id,
                      full_name='The Bot of Hamlet',
                      api_key=result['api_key'],
                      avatar_url=result['avatar_url'],
@@ -984,8 +988,8 @@ class BotTest(ZulipTestCase):
         self.assert_num_bots_equal(1)
         self.assertEqual(result['default_events_register_stream'], 'Denmark')
 
-        profile = get_user_profile_by_email('hambot-bot@zulip.com')
-        self.assertEqual(profile.default_events_register_stream.name, 'Denmark')
+        bot_profile = get_user_profile_by_email('hambot-bot@zulip.com')
+        self.assertEqual(bot_profile.default_events_register_stream.name, 'Denmark')
 
         event = [e for e in events if e['event']['type'] == 'realm_bot'][0]
         self.assertEqual(
@@ -994,6 +998,7 @@ class BotTest(ZulipTestCase):
                 op='add',
                 bot=dict(email='hambot-bot@zulip.com',
                      full_name='The Bot of Hamlet',
+                     user_id=bot_profile.id,
                      api_key=result['api_key'],
                      avatar_url=result['avatar_url'],
                      default_sending_stream=None,
@@ -1961,6 +1966,19 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['notifications_stream'], 'Denmark')
+
+    def test_people(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        for params in ['people_list', 'bot_list']:
+            users = page_params['people_list']
+            self.assertTrue(len(users) >= 3)
+            for user in users:
+                self.assertEqual(user['user_id'],
+                                 get_user_profile_by_email(user['email']).id)
 
     def test_new_stream(self):
         # type: () -> None
