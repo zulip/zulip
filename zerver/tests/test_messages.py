@@ -362,7 +362,7 @@ class StreamMessagesTest(ZulipTestCase):
         with queries_captured() as queries:
             send_message()
 
-        self.assert_max_length(queries, 7)
+        self.assert_max_length(queries, 8)
 
     def test_stream_message_unicode(self):
         # type: () -> None
