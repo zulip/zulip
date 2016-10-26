@@ -96,7 +96,7 @@ class AuthBackendTest(TestCase):
     def setup_subdomain(self, user_profile):
         # type: (UserProfile) -> None
         realm = user_profile.realm
-        realm.subdomain = 'zulip'
+        realm.string_id = 'zulip'
         realm.save()
 
     def test_email_auth_backend(self):
@@ -1100,7 +1100,7 @@ class TestLDAP(ZulipTestCase):
     def setup_subdomain(self, user_profile):
         # type: (UserProfile) -> None
         realm = user_profile.realm
-        realm.subdomain = 'zulip'
+        realm.string_id = 'zulip'
         realm.save()
 
     def test_login_success(self):

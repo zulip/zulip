@@ -1959,7 +1959,7 @@ def get_realm_creation_defaults(org_type=None, restricted_to_domain=None, invite
             'restricted_to_domain': restricted_to_domain,
             'invite_required': invite_required}
 
-def do_create_realm(domain, name, subdomain=None, restricted_to_domain=None,
+def do_create_realm(domain, name, string_id=None, restricted_to_domain=None,
                     invite_required=None, org_type=None):
     # type: (text_type, text_type, Optional[text_type], Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
     domain = domain.lower()
@@ -1972,7 +1972,7 @@ def do_create_realm(domain, name, subdomain=None, restricted_to_domain=None,
         org_type = realm_params['org_type']
         restricted_to_domain = realm_params['restricted_to_domain']
         invite_required = realm_params['invite_required']
-        realm = Realm(domain=domain, name=name, org_type=org_type, subdomain=subdomain,
+        realm = Realm(domain=domain, name=name, org_type=org_type, string_id=string_id,
                       restricted_to_domain=restricted_to_domain, invite_required=invite_required)
         realm.save()
 

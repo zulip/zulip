@@ -138,7 +138,7 @@ class Realm(ModelReprMixin, models.Model):
     # name is the user-visible identifier for the realm. It has no required
     # structure.
     name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
-    subdomain = models.CharField(max_length=40, null=True, unique=True) # type: Optional[text_type]
+    string_id = models.CharField(max_length=40, null=True, unique=True) # type: Optional[text_type]
     restricted_to_domain = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
@@ -200,6 +200,13 @@ class Realm(ModelReprMixin, models.Model):
         # type: () -> Sequence[UserProfile]
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+
+    @property
+    def subdomain(self):
+        # type: () -> text_type
+        if settings.REALMS_HAVE_SUBDOMAINS:
+            return self.string_id
+        return None
 
     @property
     def uri(self):
@@ -272,7 +279,7 @@ def resolve_email_to_domain(email):
 def resolve_subdomain_to_realm(subdomain):
     # type: (text_type) -> Optional[Realm]
     try:
-        return Realm.objects.get(subdomain=subdomain)
+        return Realm.objects.get(string_id=subdomain)
     except Realm.DoesNotExist:
         return None
 

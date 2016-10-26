@@ -164,7 +164,7 @@ def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')
     if settings.REALMS_HAVE_SUBDOMAINS:
-        if not subdomain or not Realm.objects.filter(subdomain=subdomain).count():
+        if not subdomain or not Realm.objects.filter(string_id=subdomain).exists():
             return redirect_to_subdomain_login_url()
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
@@ -264,7 +264,7 @@ def finish_google_oauth2(request):
                                              full_name, invalid_subdomain)
 
     try:
-        realm = Realm.objects.get(subdomain=subdomain)
+        realm = Realm.objects.get(string_id=subdomain)
     except Realm.DoesNotExist:
         return redirect_to_subdomain_login_url()
 
