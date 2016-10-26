@@ -26,7 +26,7 @@ from zerver.models import \
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
-    password_auth_enabled
+    password_auth_enabled, github_auth_enabled
 
 from social.exceptions import AuthFailed
 from social.strategies.django_strategy import DjangoStrategy
@@ -301,6 +301,15 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.get_host = lambda: 'acme.testserver'
         request.user = self.user_profile
         self.backend.strategy.request = request
+
+    def test_github_auth_enabled(self):
+        # type: () -> None
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
+            self.assertTrue(github_auth_enabled())
+
+    def test_full_name_with_missing_key(self):
+        # type: () -> None
+        self.assertEqual(self.backend.get_full_name(), '')
 
     def test_github_backend_do_auth_without_subdomains(self):
         # type: () -> None
