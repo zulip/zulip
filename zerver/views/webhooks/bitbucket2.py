@@ -168,7 +168,7 @@ def get_fork_body(payload):
 def get_commit_comment_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('comment')
-    action = u'[commented]({})'.format(comment['links']['html']['href'])
+    action = u'[commented]({}) on'.format(comment['links']['html']['href'])
     return get_pull_request_event_message(
         get_user_username(payload),
         action,
@@ -194,7 +194,7 @@ def get_commit_status_changed_body(payload):
 
 def get_issue_commented_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
+    action = '[commented]({}) on'.format(payload['comment']['links']['html']['href'])
     return get_issue_action_body(payload, action)
 
 def get_issue_action_body(payload, action):
@@ -253,6 +253,7 @@ def get_pull_request_deleted_or_updated_comment_action_body(payload, action):
 
 def get_pull_request_comment_action_body(payload, action):
     # type: (Dict[str, Any], str) -> text_type
+    action += ' on'
     return get_pull_request_event_message(
         get_user_username(payload),
         action,
