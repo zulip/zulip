@@ -64,7 +64,10 @@ function query_matches_person(query, person) {
 
     return ( person.email    .toLowerCase().indexOf(query) !== -1
          ||  person.full_name.toLowerCase().indexOf(query) !== -1);
+}
 
+function query_matches_stream(query, stream) {
+    return ( stream.toLowerCase().indexOf(query.toLowerCase()) !== -1);
 }
 
 // Case-insensitive
@@ -248,6 +251,20 @@ exports.compose_content_begins_typeahead = function (query) {
         return page_params.people_list.concat([all_item, everyone_item]);
     }
 
+    if (this.options.completions.stream && current_token[0] === '#') {
+        if (!autocomplete_checks(q, '#')) {
+            return false;
+        }
+
+        current_token = q.substring(q.lastIndexOf('#') + 1);
+        if (current_token.length < 1) {
+            return false;
+        }
+
+        this.completing = 'stream';
+        this.token = current_token.substring(current_token.indexOf("#")+1);
+        return stream_data.subscribed_streams();
+    }
     return false;
 };
 
@@ -257,6 +274,8 @@ exports.content_highlighter = function (item) {
     } else if (this.completing === 'mention') {
         var item_formatted = typeahead_helper.render_person(item);
         return typeahead_helper.highlight_with_escaping(this.token, item_formatted);
+    } else if (this.completing === 'stream') {
+        return typeahead_helper.highlight_with_escaping(this.token, item);
     }
 };
 
@@ -276,6 +295,10 @@ exports.content_typeahead_selected = function (item) {
         beginning = (beginning.substring(0, beginning.length - this.token.length-1)
                 + '@**' + item.full_name + '** ');
         $(document).trigger('usermention_completed.zulip', {mentioned: item});
+    } else if (this.completing === 'stream') {
+        beginning = (beginning.substring(0, beginning.length - this.token.length-1)
+                + '#**' + item + '** ');
+        $(document).trigger('streamname_completed.zulip', {stream: item});  // todo: not handling now
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
@@ -287,7 +310,7 @@ exports.content_typeahead_selected = function (item) {
 };
 
 exports.initialize_compose_typeahead = function (selector, completions) {
-    completions = $.extend({mention: false, emoji: false}, completions);
+    completions = $.extend({mention: false, emoji: false, stream: false}, completions);
 
     $(selector).typeahead({
         items: 5,
@@ -300,6 +323,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                 return query_matches_emoji(this.token, item);
             } else if (this.completing === 'mention') {
                 return query_matches_person(this.token, item);
+            } else if (this.completing === 'stream') {
+                return query_matches_stream(this.token, item);
             }
         },
         sorter: function (matches) {
@@ -307,6 +332,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                 return typeahead_helper.sort_emojis(matches, this.token);
             } else if (this.completing === 'mention') {
                 return typeahead_helper.sort_recipients(matches, this.token);
+            } else if (this.completing === 'stream') {
+                return typeahead_helper.sort_streams(matches, this.token);
             }
         },
         updater: exports.content_typeahead_selected,
@@ -417,7 +444,7 @@ exports.initialize = function () {
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
 
-    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true});
+    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true});
 
     $( "#private_message_recipient" ).blur(function (event) {
         var val = $(this).val();

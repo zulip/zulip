@@ -147,6 +147,11 @@ exports.sort_emojis = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
+exports.sort_streams = function (matches, query) {
+    var results = prefix_sort(query, matches, function (x) { return x; });
+    return results.matches.concat(results.rest);
+};
+
 exports.sort_recipientbox_typeahead = function (matches) {
     // input_text may be one or more pm recipients
     var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
