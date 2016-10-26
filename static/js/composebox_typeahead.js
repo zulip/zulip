@@ -174,6 +174,23 @@ function select_on_focus(field_id) {
     });
 }
 
+function autocomplete_checks(q, char) {
+    // Don't autocomplete more than this many characters.
+    var max_chars = 30;
+    var last_at = q.lastIndexOf(char);
+    if (last_at === -1 || last_at < q.length - 1 - max_chars) {
+        return false;  // No special character, or too far back
+    }
+
+    // Only match if the special character follows a space,
+    // various punctuation, or is at the beginning of the string.
+    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
+        return false;
+    }
+
+    return true;
+}
+
 exports.split_at_cursor = function (query, input) {
     var cursor = input.caret();
     return [query.slice(0, cursor), query.slice(cursor)];
@@ -203,44 +220,35 @@ exports.compose_content_begins_typeahead = function (query) {
         return emoji.emojis;
     }
 
-    if (!this.options.completions.mention) {
-        return false;
+    if (this.options.completions.mention && current_token[0] === '@') {
+        if (!autocomplete_checks(q, '@')) {
+            return false;
+        }
+
+        current_token = q.substring(q.lastIndexOf('@') + 1);
+        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+            return false;
+        }
+
+        this.completing = 'mention';
+        this.token = current_token.substring(current_token.indexOf("@") + 1);
+        var all_item = {
+            special_item_text: "all (Notify everyone)",
+            email: "all",
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: "all"
+        };
+        var everyone_item = {
+            special_item_text: "everyone (Notify everyone)",
+            email: "everyone",
+            full_name: "everyone"
+        };
+        return page_params.people_list.concat([all_item, everyone_item]);
     }
 
-    // Don't autocomplete more than this many characters.
-    var max_chars = 30;
-    var last_at = q.lastIndexOf('@');
-    if (last_at === -1 || last_at < q.length-1 - max_chars) {
-        return false;  // No '@', or too far back
-    }
-
-    // Only match if the @ follows a space, various punctuation,
-    // or is at the beginning of the string.
-    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at-1]) === -1) {
-        return false;
-    }
-
-    current_token = q.substring(last_at + 1);
-    if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
-        return false;
-    }
-
-    this.completing = 'mention';
-    this.token = current_token.substring(current_token.indexOf("@")+1);
-    var all_item = {
-        special_item_text: "all (Notify everyone)",
-        email: "all",
-        // Always sort above, under the assumption that names will
-        // be longer and only contain "all" as a substring.
-        pm_recipient_count: Infinity,
-        full_name: "all"
-    };
-    var everyone_item = {
-        special_item_text: "everyone (Notify everyone)",
-        email: "everyone",
-        full_name: "everyone"
-    };
-    return page_params.people_list.concat([all_item, everyone_item]);
+    return false;
 };
 
 exports.content_highlighter = function (item) {
