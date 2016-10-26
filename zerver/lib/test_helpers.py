@@ -103,8 +103,8 @@ def simulated_empty_cache():
     cache.cache_get_many = old_get_many
 
 @contextmanager
-def queries_captured():
-    # type: () -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
+def queries_captured(include_savepoints=False):
+    # type: (Optional[bool]) -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
     '''
     Allow a user to capture just the queries executed during
     the with statement.
@@ -120,10 +120,11 @@ def queries_captured():
         finally:
             stop = time.time()
             duration = stop - start
-            queries.append({
-                'sql': self.mogrify(sql, params).decode('utf-8'),
-                'time': "%.3f" % duration,
-            })
+            if include_savepoints or ('SAVEPOINT' not in sql):
+                queries.append({
+                    'sql': self.mogrify(sql, params).decode('utf-8'),
+                    'time': "%.3f" % duration,
+                })
 
     old_execute = TimeTrackingCursor.execute
     old_executemany = TimeTrackingCursor.executemany
