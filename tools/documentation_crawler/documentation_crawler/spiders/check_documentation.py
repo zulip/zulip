@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 from __future__ import print_function
+
+import logging
 import os
+import pathlib2
 import re
 import scrapy
-import pathlib2
+
 from scrapy import Request
 from scrapy.linkextractors import IGNORED_EXTENSIONS
 from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.utils.url import url_has_any_extension
+
 from typing import Any, Callable, Generator, List, Optional
 
 
@@ -75,8 +79,11 @@ class DocumentationSpider(scrapy.Spider):
 
     def error_callback(self, failure):
         # type: (Any) -> Optional[Generator[Any, None, None]]
-        if hasattr(failure.value, 'response'):
+        if hasattr(failure.value, 'response') and failure.value.response:
             response = failure.value.response
+            if response.status in [500, 502, 503, 504, 429]:
+                self.log("Error! Please check link: {}".format(response), logging.ERROR)
+                return None
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
