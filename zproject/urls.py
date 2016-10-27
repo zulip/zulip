@@ -211,6 +211,10 @@ v1_api_and_json_patterns = [
          'PUT': 'zerver.views.alert_words.add_alert_words',
          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
 
+    url(r'^users/me/(?P<stream_id>\d+)/topics$', 'zerver.lib.rest.rest_dispatch',
+        {'GET': 'zerver.views.streams.get_topics_backend'}),
+
+
     # streams -> zerver.views.streams
     # (this API is only used externally)
     url(r'^streams$', 'zerver.lib.rest.rest_dispatch',
