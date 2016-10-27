@@ -28,7 +28,10 @@ SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' +
 
 def subdomain_unavailable(subdomain):
     # type: (text_type) -> text_type
-    return u"The subdomain '%s' is not available. Please choose another one." % (subdomain)
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        return _("The subdomain '%s' is not available. Please choose another one.") % (subdomain,)
+    else:
+        return _("The short name '%s' is not available. Please choose another one.") % (subdomain,)
 
 if settings.SHOW_OSS_ANNOUNCEMENT:
     SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \

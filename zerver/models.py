@@ -138,7 +138,7 @@ class Realm(ModelReprMixin, models.Model):
     # name is the user-visible identifier for the realm. It has no required
     # structure.
     name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
-    string_id = models.CharField(max_length=40, null=True, unique=True) # type: Optional[text_type]
+    string_id = models.CharField(max_length=40, unique=True) # type: text_type
     restricted_to_domain = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool

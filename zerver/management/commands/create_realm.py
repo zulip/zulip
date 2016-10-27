@@ -25,6 +25,10 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
                     dest='domain',
                     type='str',
                     help='The domain for the realm.'),
+        make_option('-s', '--string_id',
+                    dest='string_id',
+                    type='str',
+                    help="A short name for the realm. If this installation uses subdomains, this will be used as the realm's subdomain."),
         make_option('-n', '--name',
                     dest='name',
                     type='str',
@@ -68,9 +72,10 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
         # type: (*Any, **Any) -> None
         domain = options["domain"]
         name = options["name"]
+        string_id=options["string_id"]
 
-        if domain is None or name is None:
-            print("\033[1;31mPlease provide both a domain and name.\033[0m\n", file=sys.stderr)
+        if domain is None or name is None or string_id is None:
+            print("\033[1;31mPlease provide a domain, name, and string_id.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
@@ -80,7 +85,8 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
         self.validate_domain(domain)
 
-        realm, created = do_create_realm(domain, name, org_type=options["org_type"])
+        realm, created = do_create_realm(domain, name, string_id=string_id,
+                                         org_type=options["org_type"])
         if created:
             print(domain, "created.")
             if options["deployment_id"] is not None:

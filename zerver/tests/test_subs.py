@@ -553,7 +553,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_set_default_streams(self):
         # type: () -> None
-        (realm, _) = do_create_realm("testrealm.com", "Test Realm")
+        (realm, _) = do_create_realm("testrealm.com", "Test Realm", string_id="testrealm")
         stream_names = ['apple', 'banana', 'Carrot Cake']
         expected_names = stream_names + ['announce']
         set_default_streams(realm, stream_names)
@@ -562,7 +562,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_set_default_streams_no_notifications_stream(self):
         # type: () -> None
-        (realm, _) = do_create_realm("testrealm.com", "Test Realm")
+        (realm, _) = do_create_realm("testrealm.com", "Test Realm", string_id="testrealm")
         realm.notifications_stream = None
         realm.save(update_fields=["notifications_stream"])
         stream_names = ['apple', 'banana', 'Carrot Cake']

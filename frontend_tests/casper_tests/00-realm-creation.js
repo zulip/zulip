@@ -60,22 +60,13 @@ casper.then(function () {
 
 casper.then(function () {
     this.waitForSelector('form[action^="/accounts/register/"]', function () {
-        if (REALMS_HAVE_SUBDOMAINS) {
-            this.fill('form[action^="/accounts/register/"]', {
-                full_name: 'Alice',
-                realm_name: organization_name,
-                realm_subdomain: subdomain,
-                password: 'password',
-                terms: true
-            }, true);
-        } else {
-            this.fill('form[action^="/accounts/register/"]', {
-                full_name: 'Alice',
-                realm_name: organization_name,
-                password: 'password',
-                terms: true
-            }, true);
-        }
+        this.fill('form[action^="/accounts/register/"]', {
+            full_name: 'Alice',
+            realm_name: organization_name,
+            realm_subdomain: subdomain,
+            password: 'password',
+            terms: true
+        }, true);
     });
 
     this.waitWhileSelector('form[action^="/accounts/register/"]', function () {

@@ -63,9 +63,15 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {{ _('This can be changed later on the settings page.') }}
                 </div>
             </div>
-            {% if realms_have_subdomains %}
+
             <div class="input-group grid">
-                <label for="id_team_subdomain" class="inline-block label-title">{{ _('Subdomain') }}</label>
+                <label for="id_team_subdomain" class="inline-block label-title">
+                    {% if realms_have_subdomains %}
+                    {{ _('Subdomain') }}
+                    {% else %}
+                    {{ _('Short Name') }}
+                    {% endif %}
+                </label>
                 <input id="id_team_subdomain" class="required" type="text"
                     placeholder="{{ _("acme") }}"
                     name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
@@ -75,10 +81,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endfor %}
                     {% endif %}
                 <div class="help-box">
+                    {% if realms_have_subdomains %}
                     {{ _("The address you'll use to sign in to your organization.") }}
+                    {% else %}
+                    {{ _("A short, unique name for your organization, with no spaces.") }}
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
 
             <div class="m-v-20">
               <label for="id_org_type" class="label-title">{{ _('Organization Type') }}</label>
