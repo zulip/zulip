@@ -40,7 +40,7 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.8
 
 # Django extension providing bitfield support
-django-bitfield==1.8.0
+git+https://github.com/lutris/django-bitfield.git@c866ea31e6e33ed3f5913e362e84e295eb44ab05#egg=django-bitfield==1.9.0
 
 # Django-guardian is actually no longer used; just needed for the
 # migration that removes it.
