@@ -5,9 +5,16 @@ from .prod_settings_template import *
 import os
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
-# We check the environment to support test_settings.py controlling
-# EXTERNAL_HOST.
-EXTERNAL_HOST = os.getenv('EXTERNAL_HOST', 'localhost:9991')
+# Default to subdomains disabled in development until we can update
+# the development documentation to make sense with subdomains.
+REALMS_HAVE_SUBDOMAINS = False
+# Check if test_settings.py set EXTERNAL_HOST.
+EXTERNAL_HOST = os.getenv('EXTERNAL_HOST')
+if EXTERNAL_HOST is None:
+    if REALMS_HAVE_SUBDOMAINS:
+        EXTERNAL_HOST = 'zulipdev.com:9991'
+    else:
+        EXTERNAL_HOST = 'localhost:9991'
 ALLOWED_HOSTS = ['*']
 AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
 # Add some of the below if you're testing other backends
@@ -23,10 +30,6 @@ EXTRA_INSTALLED_APPS = ["zilencer", "analytics"]
 # Disable Camo in development
 CAMO_URI = ''
 OPEN_REALM_CREATION = True
-# Default to subdomains disabled in development until we can update
-# the development documentation to make sense with subdomains.
-# Change EXTERNAL_HOST to "zulipdev.com:9991" if you set REALMS_HAVE_SUBDOMAINS to True
-REALMS_HAVE_SUBDOMAINS = False
 TERMS_OF_SERVICE = 'zproject/terms.md.template'
 
 SAVE_FRONTEND_STACKTRACES = True
