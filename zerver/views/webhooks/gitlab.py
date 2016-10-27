@@ -5,7 +5,8 @@ from zerver.lib.response import json_success
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
     get_remove_branch_event_message, get_pull_request_event_message,\
-    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
+    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
+    get_commits_comment_action_message
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -123,13 +124,13 @@ def get_objects_assignee(payload):
 def get_commented_commit_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('object_attributes')
-    action = u'[commented]({}) on'.format(comment['url'])
-    return get_pull_request_event_message(
+    action = u'[commented]({})'.format(comment['url'])
+    return get_commits_comment_action_message(
         get_issue_user_name(payload),
         action,
         payload.get('commit').get('url'),
-        message=comment['note'],
-        type='Commit'
+        payload.get('commit').get('id'),
+        comment['note'],
     )
 
 def get_commented_merge_request_event_body(payload):

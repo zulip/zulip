@@ -117,7 +117,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_note_commit_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211) on [Commit](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7)\n\n~~~ quote\nnice commit\n~~~"
+        expected_message = u"Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7#note_14169211) on [66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7)\n~~~ quote\nnice commit\n~~~"
 
         self.send_and_test_stream_message(
             'commit_note',
