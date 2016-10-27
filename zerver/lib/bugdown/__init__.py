@@ -1196,8 +1196,6 @@ def maybe_update_realm_filters(domain):
             # Data has changed, re-load filters
             make_realm_filters(domain, realm_filters)
 
-maybe_update_realm_filters(domain=None)
-
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
 # characters with 'x'.
@@ -1238,6 +1236,9 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
     if realm_domain in md_engines:
         _md_engine = md_engines[realm_domain]
     else:
+        if 'default' not in md_engines:
+            maybe_update_realm_filters(domain=None)
+
         _md_engine = md_engines["default"]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
