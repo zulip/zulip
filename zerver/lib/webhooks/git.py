@@ -23,7 +23,10 @@ REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}{id}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = u"(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = u"\nfrom `{target}` to `{base}`"
-PULL_REQUEST_OR_ISSUE_CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
+
+CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
+
+COMMITS_COMMENT_MESSAGE_TEMPLATE = u"{user_name} {action} on [{sha}]({url})"
 
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data):
     # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]]) -> text_type
@@ -77,7 +80,7 @@ def get_pull_request_event_message(
             base=base_branch
         )
     if message:
-        main_message += '\n' + PULL_REQUEST_OR_ISSUE_CONTENT_MESSAGE_TEMPLATE.format(message=message)
+        main_message += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
 
 def get_issue_event_message(user_name, action, url, number=None, message=None, assignee=None):
@@ -92,12 +95,26 @@ def get_issue_event_message(user_name, action, url, number=None, message=None, a
         type='Issue'
     )
 
+def get_commits_comment_action_message(user_name, action, commit_url, sha, message=None):
+    # type: (text_type, text_type, text_type, text_type, Optional[text_type]) -> text_type
+    content = COMMITS_COMMENT_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        action=action,
+        sha=get_short_sha(sha),
+        url=commit_url
+    )
+    if message is not None:
+        content += CONTENT_MESSAGE_TEMPLATE.format(
+            message=message
+        )
+    return content
+
 def get_commits_content(commits_data):
     # type: (List[Dict[str, Any]]) -> text_type
     commits_content = u''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
-            commit_short_sha=commit.get('sha')[:7],
+            commit_short_sha=get_short_sha(commit.get('sha')),
             commit_url=commit.get('url'),
             commit_msg=commit.get('message').partition('\n')[0]
         )
@@ -106,3 +123,7 @@ def get_commits_content(commits_data):
         commits_content += COMMITS_MORE_THAN_LIMIT_TEMPLATE.format(
             commits_number=len(commits_data) - COMMITS_LIMIT)
     return commits_content.rstrip()
+
+def get_short_sha(sha):
+    # type: (text_type) -> text_type
+    return sha[:7]

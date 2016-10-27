@@ -12,14 +12,13 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import Client, UserProfile
 from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
     get_force_push_commits_event_message, get_remove_branch_event_message, get_pull_request_event_message,\
-    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_issue_event_message
+    SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_issue_event_message, get_commits_comment_action_message
 
 
 BITBUCKET_SUBJECT_TEMPLATE = '{repository_name}'
 USER_PART = 'User {display_name}(login: {username})'
 
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
-BITBUCKET_COMMIT_COMMENT_BODY = USER_PART + ' added [comment]({url_to_comment}) to commit.'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = '[System {key}]({system_url}) changed status of {commit_info} to {status}.'
 
 
@@ -168,13 +167,13 @@ def get_fork_body(payload):
 def get_commit_comment_body(payload):
     # type: (Dict[str, Any]) -> text_type
     comment = payload.get('comment')
-    action = u'[commented]({}) on'.format(comment['links']['html']['href'])
-    return get_pull_request_event_message(
+    action = u'[commented]({})'.format(comment['links']['html']['href'])
+    return get_commits_comment_action_message(
         get_user_username(payload),
         action,
         comment['commit']['links']['html']['href'],
-        message=comment['content']['raw'],
-        type='Commit'
+        comment['commit']['hash'],
+        comment['content']['raw'],
     )
 
 def get_commit_status_changed_body(payload):

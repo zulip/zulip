@@ -46,7 +46,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_commit_comment_created_event(self):
         # type: () -> None
-        expected_message = u"kolaszek [commented](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74#comment-3354963) on [Commit](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74)\n\n~~~ quote\nNice fix!\n~~~"
+        expected_message = u"kolaszek [commented](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74#comment-3354963) on [32c4ea1](https://bitbucket.org/kolaszek/repository-name/commits/32c4ea19aa3af10acd08e419e2c354941a365d74)\n~~~ quote\nNice fix!\n~~~"
         self.send_and_test_stream_message('v2_commit_comment_created', self.EXPECTED_SUBJECT, expected_message)
 
     def test_bitbucket2_on_commit_status_changed_event(self):
