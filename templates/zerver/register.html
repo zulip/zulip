@@ -64,18 +64,18 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
             </div>
             {% if realms_have_subdomains %}
-            <div class="control-group">
-                <label for="id_team_subdomain" class="control-label">{{ _('Subdomain') }}</label>
-                <div class="controls">
-                    <input id="id_team_subdomain" class="required" type="text"
-                        placeholder="{{ _("acme") }}"
-                        name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
-                        {% if form.realm_subdomain.errors %}
-                            {% for error in form.realm_subdomain.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    <br /><span class="small"><p>{% trans %}The address you'll use to sign in to your organization.{% endtrans %}.</p></span>
+            <div class="input-group grid">
+                <label for="id_team_subdomain" class="inline-block label-title">{{ _('Subdomain') }}</label>
+                <input id="id_team_subdomain" class="required" type="text"
+                    placeholder="{{ _("acme") }}"
+                    name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
+                    {% if form.realm_subdomain.errors %}
+                        {% for error in form.realm_subdomain.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                <div class="help-box">
+                    {% trans %}The address you'll use to sign in to your organization.{% endtrans %}
                 </div>
             </div>
             {% endif %}
