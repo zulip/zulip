@@ -60,6 +60,10 @@ AVATAR_SALT = get_secret("avatar_salt")
 # restarted for triggering browser clients to reload.
 SERVER_GENERATION = int(time.time())
 
+# Key to authenticate this server to zulip.org for push notifications, etc.
+ZULIP_ORG_KEY = get_secret("zulip_org_key")
+ZULIP_ORG_ID = get_secret("zulip_org_id")
+
 if 'DEBUG' not in globals():
     # Uncomment end of next line to test JS/CSS minification.
     DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
