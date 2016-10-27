@@ -399,16 +399,8 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 function rebuild_recent_topics(stream, active_topic) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
-    topic_list.remove_expanded_topics();
-    var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
-
-    var topic_dom = topic_list.build_list(stream, active_topic, max_subjects);
-    stream_li.append(topic_dom);
-
-    if (active_topic) {
-        topic_list.activate_topic(stream_li, active_topic);
-    }
+    topic_list.rebuild(stream_li, stream, active_topic);
 }
 
 function rebuild_recent_private_messages(active_conversation) {
