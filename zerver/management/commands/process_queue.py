@@ -31,7 +31,11 @@ class Command(BaseCommand):
         logger = logging.getLogger('process_queue')
 
         if not settings.USING_RABBITMQ:
-            logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
+            # Make the warning silent when running the tests
+            if settings.TEST_SUITE:
+                logger.info("Not using RabbitMQ queue workers in the test suite.")
+            else:
+                logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
             sys.exit(1)
 
         def run_threaded_workers(logger):
