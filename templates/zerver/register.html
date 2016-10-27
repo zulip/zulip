@@ -60,7 +60,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endfor %}
                     {% endif %}
                 <div class="help-box">
-                  This can be changed later on the settings page.
+                    {{ _('This can be changed later on the settings page.') }}
                 </div>
             </div>
             {% if realms_have_subdomains %}
@@ -75,7 +75,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endfor %}
                     {% endif %}
                 <div class="help-box">
-                    {% trans %}The address you'll use to sign in to your organization.{% endtrans %}
+                    {{ _("The address you'll use to sign in to your organization.") }}
                 </div>
             </div>
             {% endif %}
