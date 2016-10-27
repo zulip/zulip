@@ -55,6 +55,46 @@ exports.set_count = function (stream_li, topic, count) {
     exports.update_count_in_dom(count_span, value_span, count);
 };
 
+exports.build_list = function (stream, active_topic, max_topics) {
+    var subjects = stream_data.recent_subjects.get(stream) || [];
+
+    if (active_topic) {
+        active_topic = active_topic.toLowerCase();
+    }
+
+    var display_subjects = [];
+    var hiding_topics = false;
+
+    _.each(subjects, function (subject_obj, idx) {
+        var topic_name = subject_obj.subject;
+        var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
+
+        // Show the most recent subjects, as well as any with unread messages
+        var always_visible = (idx < max_topics) || (num_unread > 0) || (active_topic === topic_name);
+
+        if (!always_visible) {
+            hiding_topics = true;
+        }
+
+        var display_subject = {
+            topic_name: topic_name,
+            unread: num_unread,
+            is_zero: num_unread === 0,
+            is_muted: muting.is_topic_muted(stream, topic_name),
+            zoom_out_hide: !always_visible,
+            url: narrow.by_stream_subject_uri(stream, topic_name)
+        };
+        display_subjects.push(display_subject);
+    });
+
+    var topic_dom = templates.render('sidebar_subject_list',
+                                      {subjects: display_subjects,
+                                       want_show_more_topics_links: hiding_topics,
+                                       stream: stream});
+
+    return topic_dom;
+};
+
 
 return exports;
 }());
