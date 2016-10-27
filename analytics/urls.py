@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 i18n_urlpatterns = [
     url(r'^activity$', 'analytics.views.get_activity'),
@@ -6,4 +6,4 @@ i18n_urlpatterns = [
     url(r'^user_activity/(?P<email>[\S]+)/$', 'analytics.views.get_user_activity'),
 ]
 
-urlpatterns = patterns('', *i18n_urlpatterns)
+urlpatterns = i18n_urlpatterns

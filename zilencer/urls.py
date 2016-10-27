@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 
 i18n_urlpatterns = [
     # SSO dispatch page for desktop app with SSO
