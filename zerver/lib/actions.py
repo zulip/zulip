@@ -802,6 +802,7 @@ def do_send_messages(messages):
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
 
+    links_for_embed = set() # type: Set[text_type]
     # Render our messages.
     for message in messages:
         assert message['message'].rendered_content is None
@@ -811,6 +812,7 @@ def do_send_messages(messages):
             message_users=message['active_recipients'])
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
+        links_for_embed |= message['message'].links_for_preview
 
     for message in messages:
         message['message'].update_calculated_fields()
@@ -843,6 +845,7 @@ def do_send_messages(messages):
                     um.flags |= UserMessage.flags.has_alert_word
                 if is_me_message:
                     um.flags |= UserMessage.flags.is_me_message
+
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
@@ -892,6 +895,14 @@ def do_send_messages(messages):
         if message['sender_queue_id'] is not None:
             event['sender_queue_id'] = message['sender_queue_id']
         send_event(event, users)
+
+        if settings.INLINE_URL_EMBED_PREVIEW and links_for_embed:
+            event_data = {
+                'message_id': message['message'].id,
+                'message_content': message['message'].content,
+                'urls': links_for_embed}
+            queue_json_publish('embed_links', event_data, lambda x: None)
+
         if (settings.ENABLE_FEEDBACK and
             message['message'].recipient.type == Recipient.PERSONAL and
                 settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
@@ -2639,6 +2650,39 @@ def update_to_dict_cache(changed_messages):
             (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
     cache_set_many(items_for_remote_cache)
     return message_ids
+
+# We use transaction.atomic to support select_for_update in the attachment codepath.
+@transaction.atomic
+def do_update_embedded_data(user_profile, message, content, rendered_content):
+    # type: (UserProfile, Message, Optional[text_type], Optional[text_type]) -> None
+    event = {
+        'type': 'update_message',
+        'sender': user_profile.email,
+        'message_id': message.id}  # type: Dict[str, Any]
+    changed_messages = [message]
+
+    ums = UserMessage.objects.filter(message=message.id)
+
+    if content is not None:
+        update_user_message_flags(message, ums)
+        message.content = content
+        message.rendered_content = rendered_content
+        message.rendered_content_version = bugdown_version
+        event["content"] = content
+        event["rendered_content"] = rendered_content
+
+    log_event(event)
+    message.save(update_fields=["content", "rendered_content"])
+
+    event['message_ids'] = update_to_dict_cache(changed_messages)
+
+    def user_info(um):
+        # type: (UserMessage) -> Dict[str, Any]
+        return {
+            'id': um.user_profile_id,
+            'flags': um.flags_list()
+        }
+    send_event(event, list(map(user_info, ums)))
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic

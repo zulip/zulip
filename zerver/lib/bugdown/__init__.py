@@ -33,7 +33,9 @@ from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.timeout import timeout, TimeoutExpired
-from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
+from zerver.lib.cache import (
+    cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
+from zerver.lib.url_preview import preview as link_preview
 from zerver.models import Message
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
@@ -123,6 +125,35 @@ def add_a(root, url, link, height="", title=None, desc=None,
         title_div.text = title
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
         desc_div.set("class", "message_inline_image_desc")
+
+
+def add_embed(root, link, extracted_data):
+    # type: (Element, text_type, Dict[text_type, Any]) -> None
+    container = markdown.util.etree.SubElement(root, "div")
+    container.set("class", "message_embed")
+
+    title = extracted_data.get('title')
+    if title:
+        title_elm = markdown.util.etree.SubElement(container, "div")
+        title_elm.set("class", "message_embed_title")
+        a = markdown.util.etree.SubElement(title_elm, "a")
+        a.set("href", link)
+        a.set("target", "_blank")
+        a.set("title", title)
+        a.text = title
+
+    description = extracted_data.get('description')
+    if description:
+        description_elm = markdown.util.etree.SubElement(container, "div")
+        description_elm.set("class", "message_embed_description")
+        description_elm.text = description
+
+    img_link = extracted_data.get('image')
+    if img_link:
+        img = markdown.util.etree.SubElement(container, "img")
+        img.set("src", img_link)
+        img.set("class", "message_embed_image")
+
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
@@ -576,6 +607,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 yt_id = self.youtube_id(url)
                 add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
                 continue
+
+            if current_message is None or not settings.INLINE_URL_EMBED_PREVIEW:
+                continue
+            try:
+                extracted_data = link_preview.link_embed_data_from_cache(url)
+            except NotFoundInCache:
+                current_message.links_for_preview.add(url)
+                continue
+            if extracted_data:
+                add_embed(root, url, extracted_data)
+
 
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):

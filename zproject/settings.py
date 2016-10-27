@@ -182,6 +182,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'POST_MIGRATION_CACHE_FLUSHING': False,
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
+                    'INLINE_URL_EMBED_PREVIEW': False,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):

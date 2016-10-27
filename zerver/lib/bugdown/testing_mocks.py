@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from six import text_type
 from typing import Any, Dict, Optional, Text
 import ujson
 
@@ -191,3 +192,10 @@ def twitter(tweet_id):
         return ujson.loads(MEDIA_TWEET)
     else:
         return None
+
+
+def fake_urlembed_data():
+    # type: () -> Dict[text_type, text_type]
+    return {
+        'title': 'Test',
+        'description': 'Short description'}

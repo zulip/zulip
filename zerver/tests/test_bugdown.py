@@ -202,13 +202,14 @@ class BugdownTest(TestCase):
 
         print("Running Bugdown Linkify tests")
         self.maxDiff = None # type: Optional[int]
-        for inline_url, reference, url in linkify_tests:
-            try:
-                match = replaced(reference, url, phrase=inline_url)
-            except TypeError:
-                match = reference
-            converted = bugdown_convert(inline_url)
-            self.assertEqual(match, converted)
+        with mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None):
+            for inline_url, reference, url in linkify_tests:
+                try:
+                    match = replaced(reference, url, phrase=inline_url)
+                except TypeError:
+                    match = reference
+                converted = bugdown_convert(inline_url)
+                self.assertEqual(match, converted)
 
     def test_inline_file(self):
         # type: () -> None
@@ -272,8 +273,7 @@ class BugdownTest(TestCase):
         # type: () -> None
         # Don't fail on bad dropbox links
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
-        with mock.patch('zerver.lib.bugdown.fetch_open_graph_image', return_value=None):
-            converted = bugdown_convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
 
     def test_twitter_id_extraction(self):
