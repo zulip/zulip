@@ -371,7 +371,6 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         var replies_to = private_message_obj.reply_to;
         var num_unread = unread.num_unread_for_person(private_message_obj.reply_to);
 
-        // Show the most recent subjects, as well as any with unread messages
         var always_visible = (idx < max_private_messages) || (num_unread > 0)
             || (replies_to === active_conversation);
 
