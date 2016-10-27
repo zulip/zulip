@@ -1,20 +1,29 @@
+from __future__ import absolute_import
+from __future__ import print_function
+
 import mock
 from mock import call
 import time
 from typing import Any, Dict, Union, SupportsInt, Text
 
 import gcm
+import ujson
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.conf import settings
+from django.http import HttpResponse
 
 from zerver.models import PushDeviceToken, UserProfile, Message
 from zerver.models import get_user_profile_by_email, receives_online_notifications, \
     receives_offline_notifications
 from zerver.lib import push_notifications as apn
+from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+
+from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
+from django.utils.timezone import now
 
 class MockRedis(object):
     data = {}  # type: Dict[str, Any]
@@ -39,6 +48,172 @@ class MockRedis(object):
     def expire(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         pass
+
+class PushBouncerNotificationTest(ZulipTestCase):
+    server_uuid = "1234-abcd"
+
+    def setUp(self):
+        # type: () -> None
+        server = RemoteZulipServer(uuid=self.server_uuid,
+                                   api_key="magic_secret_api_key",
+                                   hostname="demo.example.com",
+                                   last_updated=now())
+        server.save()
+
+    def tearDown(self):
+        # type: () -> None
+        RemoteZulipServer.objects.filter(uuid=self.server_uuid).delete()
+
+    def bounce_request(self, *args, **kwargs):
+        # type: (*Any, **Any) -> HttpResponse
+        """This method is used to carry out the push notification bouncer
+        requests using the Django test browser, rather than python-requests.
+        """
+        # args[0] is method, args[1] is URL.
+        local_url = args[1].replace(settings.PUSH_NOTIFICATION_BOUNCER_URL, "")
+        if args[0] == "POST":
+            result = self.client_post(local_url,
+                                      ujson.loads(kwargs['data']),
+                                      **self.get_auth())
+        else:
+            raise AssertionError("Unsupported method for bounce_request")
+        return result
+
+    def test_unregister_remote_push_user_params(self):
+        # type: () -> None
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = '/api/v1/remotes/push/unregister'
+        result = self.client_post(endpoint, {'token_kind': token_kind},
+                                  **self.get_auth())
+        self.assert_json_error(result, "Missing 'token' argument")
+        result = self.client_post(endpoint, {'token': token},
+                                  **self.get_auth())
+        self.assert_json_error(result, "Missing 'token_kind' argument")
+        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
+                                  **self.api_auth("hamlet@zulip.com"))
+        self.assert_json_error(result, "Must validate with valid Zulip server API key")
+
+    def test_register_remote_push_user_paramas(self):
+        # type: () -> None
+        token = "111222"
+        user_id = 11
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = '/api/v1/remotes/push/register'
+
+        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind},
+                                  **self.get_auth())
+        self.assert_json_error(result, "Missing 'token' argument")
+        result = self.client_post(endpoint, {'user_id': user_id, 'token': token},
+                                  **self.get_auth())
+        self.assert_json_error(result, "Missing 'token_kind' argument")
+        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind},
+                                  **self.get_auth())
+        self.assert_json_error(result, "Missing 'user_id' argument")
+        result = self.client_post(endpoint, {'user_id': user_id, 'token_kind': token_kind,
+                                             'token': token},
+                                  **self.api_auth("hamlet@zulip.com"))
+        self.assert_json_error(result, "Must validate with valid Zulip server API key")
+
+    def test_remote_push_user_endpoints(self):
+        # type: () -> None
+        endpoints = [
+            ('/api/v1/remotes/push/register', 'register'),
+            ('/api/v1/remotes/push/unregister', 'unregister'),
+        ]
+
+        for endpoint, method in endpoints:
+            payload = self.get_generic_payload(method)
+
+            # Verify correct results are success
+            result = self.client_post(endpoint, payload, **self.get_auth())
+            self.assert_json_success(result)
+
+            remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
+            token_count = 1 if method == 'register' else 0
+            self.assertEqual(len(remote_tokens), token_count)
+
+            # Try adding/removing tokens that are too big...
+            broken_token = "x" * 5000 # too big
+            payload['token'] = broken_token
+            result = self.client_post(endpoint, payload, **self.get_auth())
+            self.assert_json_error(result, 'Empty or invalid length token')
+
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL='https://push.zulip.org.example.com')
+    @mock.patch('zerver.lib.push_notifications.requests.request')
+    def test_push_bouncer_api(self, mock):
+        # type: (Any) -> None
+        """This is a variant of the below test_push_api, but using the full
+        push notification bouncer flow
+        """
+        mock.side_effect = self.bounce_request
+        email = "cordelia@zulip.com"
+        user = get_user_profile_by_email(email)
+        self.login(email)
+        server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
+
+        endpoints = [
+            ('/json/users/me/apns_device_token', 'apple-token'),
+            ('/json/users/me/android_gcm_reg_id', 'android-token'),
+        ]
+
+        # Test error handling
+        for endpoint, _ in endpoints:
+            # Try adding/removing tokens that are too big...
+            broken_token = "x" * 5000 # too big
+            result = self.client_post(endpoint, {'token': broken_token})
+            self.assert_json_error(result, 'Empty or invalid length token')
+
+            result = self.client_delete(endpoint, {'token': broken_token})
+            self.assert_json_error(result, 'Empty or invalid length token')
+
+            # Try to remove a non-existent token...
+            result = self.client_delete(endpoint, {'token': 'non-existent token'})
+            self.assert_json_error(result, 'Token does not exist')
+
+        # Add tokens
+        for endpoint, token in endpoints:
+            # Test that we can push twice
+            result = self.client_post(endpoint, {'token': token})
+            self.assert_json_success(result)
+
+            result = self.client_post(endpoint, {'token': token})
+            self.assert_json_success(result)
+
+            tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
+                                                               server=server))
+            self.assertEqual(len(tokens), 1)
+            self.assertEqual(tokens[0].token, token)
+
+        # User should have tokens for both devices now.
+        tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id,
+                                                           server=server))
+        self.assertEqual(len(tokens), 2)
+
+        # Remove tokens
+        for endpoint, token in endpoints:
+            result = self.client_delete(endpoint, {'token': token})
+            self.assert_json_success(result)
+            tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token,
+                                                               server=server))
+            self.assertEqual(len(tokens), 0)
+
+    def get_generic_payload(self, method='register'):
+        # type: (Text) -> Dict[str, Any]
+        user_id = 10
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        return {'user_id': user_id,
+                'token': token,
+                'token_kind': token_kind}
+
+    def get_auth(self):
+        # type: () -> Dict[str, Text]
+        # Auth on this user
+        return self.api_auth(self.server_uuid)
 
 class PushNotificationTest(TestCase):
     def setUp(self):

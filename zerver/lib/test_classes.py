@@ -46,6 +46,7 @@ from zerver.models import (
 )
 
 from zerver.lib.request import JsonableError
+from zilencer.models import get_remote_server_by_uuid
 
 
 import base64
@@ -268,9 +269,21 @@ class ZulipTestCase(TestCase):
             API_KEYS[email] = get_user_profile_by_email(email).api_key
         return API_KEYS[email]
 
+    def get_server_api_key(self, server_uuid):
+        # type: (Text) -> Text
+        if server_uuid not in API_KEYS:
+            API_KEYS[server_uuid] = get_remote_server_by_uuid(server_uuid).api_key
+
+        return API_KEYS[server_uuid]
+
     def api_auth(self, email):
         # type: (Text) -> Dict[str, Text]
-        credentials = u"%s:%s" % (email, self.get_api_key(email))
+        if "@" not in email:
+            api_key = self.get_server_api_key(email)
+        else:
+            api_key = self.get_api_key(email)
+
+        credentials = u"%s:%s" % (email, api_key)
         return {
             'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }

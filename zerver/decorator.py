@@ -30,8 +30,17 @@ from io import BytesIO
 from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
 from zerver.lib.str_utils import force_bytes
+
+# This is a hack to ensure that RemoteZulipServer always exists even
+# if Zilencer isn't enabled.
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
+else:
+    from mock import Mock
+    get_remote_server_by_uuid = Mock()
+    RemoteZulipServer = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
@@ -155,14 +164,20 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
     update_user_activity(request, user_profile)
 
 def validate_api_key(request, role, api_key, is_webhook=False):
-    # type: (HttpRequest, Text, Text, bool) -> UserProfile
+    # type: (HttpRequest, Text, Text, bool) -> Union[UserProfile, RemoteZulipServer]
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
-    try:
-        profile = get_user_profile_by_email(role)
-    except UserProfile.DoesNotExist:
-        raise JsonableError(_("Invalid user: %s") % (role,))
+    if "@" in role:
+        try:
+            profile = get_user_profile_by_email(role) # type: Union[UserProfile, RemoteZulipServer]
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("Invalid user: %s") % (role,))
+    else:
+        try:
+            profile = get_remote_server_by_uuid(role)
+        except RemoteZulipServer.DoesNotExist:
+            raise JsonableError(_("Invalid Zulip server: %s") % (role,))
 
     if api_key != profile.api_key:
         if len(api_key) != 32:
@@ -171,6 +186,14 @@ def validate_api_key(request, role, api_key, is_webhook=False):
         else:
             reason = _("Invalid API key for role '%s'")
         raise JsonableError(reason % (role,))
+
+    # early exit for RemoteZulipServer instances
+    if settings.ZILENCER_ENABLED and isinstance(profile, RemoteZulipServer):
+        if not check_subdomain(get_subdomain(request), ""):
+            raise JsonableError(_("This API key only works on the root subdomain"))
+        return profile
+
+    profile = cast(UserProfile, profile) # is UserProfile
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
     if profile.is_incoming_webhook and not is_webhook:
@@ -389,13 +412,18 @@ def authenticated_rest_api_view(is_webhook=False):
 
             # Now we try to do authentication or die
             try:
-                # role is a UserProfile
+                # profile is a Union[UserProfile, RemoteZulipServer]
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
                 return json_unauthorized(e.error)
             request.user = profile
             process_client(request, profile)
-            request._email = profile.email
+            if isinstance(profile, UserProfile):
+                request._email = profile.email
+            else:
+                assert isinstance(profile, RemoteZulipServer)  # type: ignore # https://github.com/python/mypy/issues/2957
+                request._email = "zulip-server:" + role
+                profile.rate_limits = ""
             # Apply rate limiting
             return rate_limit()(view_func)(request, profile, *args, **kwargs)
         return _wrapped_func_arguments
