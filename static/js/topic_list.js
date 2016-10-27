@@ -95,6 +95,19 @@ exports.build_list = function (stream, active_topic, max_topics) {
     return topic_dom;
 };
 
+exports.rebuild = function (stream_li, stream, active_topic) {
+    var max_topics = 5;
+
+    exports.remove_expanded_topics();
+
+    var topic_dom = exports.build_list(stream, active_topic, max_topics);
+    stream_li.append(topic_dom);
+
+    if (active_topic) {
+        exports.activate_topic(stream_li, active_topic);
+    }
+};
+
 
 return exports;
 }());
