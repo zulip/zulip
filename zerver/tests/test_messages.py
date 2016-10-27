@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     check_message, check_send_message,
     do_create_user,
     get_client,
+    get_recipient,
 )
 
 from zerver.lib.upload import create_attachment
@@ -49,6 +50,95 @@ import ujson
 from six import text_type
 from six.moves import range
 from typing import Any, Optional
+
+class TopicHistoryTest(ZulipTestCase):
+    def test_topics_history(self):
+        # type: () -> None
+        # verified: int(UserMessage.flags.read) == 1
+        email = 'iago@zulip.com'
+        stream_name = 'Verona'
+        self.login(email)
+
+        user_profile = get_user_profile_by_email(email)
+        stream = Stream.objects.get(name=stream_name)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+
+        def create_test_message(topic, read, starred=False):
+            # type: (str, bool, bool) -> None
+
+            hamlet = get_user_profile_by_email('hamlet@zulip.com')
+            message = Message.objects.create(
+                sender=hamlet,
+                recipient=recipient,
+                subject=topic,
+                content='whatever',
+                pub_date=timezone.now(),
+                sending_client=get_client('whatever'),
+            )
+            flags = 0
+            if read:
+                flags |= UserMessage.flags.read
+
+            # use this to make sure our query isn't confused
+            # by other flags
+            if starred:
+                flags |= UserMessage.flags.starred
+
+            UserMessage.objects.create(
+                user_profile=user_profile,
+                message=message,
+                flags=flags,
+            )
+
+        create_test_message('topic2', read=False)
+        create_test_message('toPIc1', read=False, starred=True)
+        create_test_message('topic2', read=False)
+        create_test_message('topic2', read=True)
+        create_test_message('topic2', read=False, starred=True)
+        create_test_message('Topic2', read=False)
+        create_test_message('already_read', read=True)
+
+        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        result = self.client_get(endpoint, dict())
+        self.assert_json_success(result)
+        history = ujson.loads(result.content)['topics']
+
+        # We only look at the most recent three topics, because
+        # the prior fixture data may be unreliable.
+        self.assertEqual(history[:3], [
+            [u'already_read', 0],
+            [u'Topic2', 4],
+            [u'toPIc1', 1],
+        ])
+
+    def test_bad_stream_id(self):
+        # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        # non-sensible stream id
+        endpoint = '/json/users/me/9999999999/topics'
+        result = self.client_get(endpoint, dict())
+        self.assert_json_error(result, 'Invalid stream id')
+
+        # out of realm
+        bad_stream = self.make_stream(
+            'mit_stream',
+            realm=get_realm('mit.edu')
+        )
+        endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
+        result = self.client_get(endpoint, dict())
+        self.assert_json_error(result, 'Invalid stream id')
+
+        # private stream to which I am not subscribed
+        private_stream = self.make_stream(
+            'private_stream',
+            invite_only=True
+        )
+        endpoint = '/json/users/me/%s/topics' % (private_stream.id,)
+        result = self.client_get(endpoint, dict())
+        self.assert_json_error(result, 'Invalid stream id')
+
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain):
