@@ -539,6 +539,14 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
 };
 
 $(function () {
+    // TODO, Eventually topic_list won't be a big singleton,
+    // and we can create more component-based click handlers for
+    // each stream.
+    topic_list.set_click_handlers({
+        zoom_in: zoom_in,
+        zoom_out: zoom_out
+    });
+
     $(document).on('narrow_activated.zulip', function (event) {
         reset_to_unnarrowed(active_stream_name() === zoomed_stream);
 
@@ -610,21 +618,6 @@ $(function () {
         previous_unpinned_order = undefined;
     });
 
-    $('.show-all-streams').on('click', function (e) {
-        zoom_out();
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    $('#stream_filters').on('click', '.show-more-topics', function (e) {
-        var stream = $(e.target).parents('.show-more-topics').attr('data-name');
-
-        zoom_in();
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     $('#global_filters').on('click', '.show-more-private-messages', function (e) {
         popovers.hide_all();
         $(".expanded_private_messages").expectOne().removeClass("zoom-out").addClass("zoom-in");
@@ -649,24 +642,6 @@ $(function () {
 
         e.preventDefault();
         e.stopPropagation();
-    });
-
-    $('#stream_filters').on('click', '.subject_box', function (e) {
-        if (e.metaKey || e.ctrlKey) {
-            return;
-        }
-        if (ui.home_tab_obscured()) {
-            ui.change_tab_to('#home');
-        }
-
-        var stream = $(e.target).parents('ul').attr('data-stream');
-        var subject = $(e.target).parents('li').attr('data-name');
-
-        narrow.activate([{operator: 'stream',  operand: stream},
-                         {operator: 'topic', operand: subject}],
-                        {select_first_unread: true, trigger: 'sidebar'});
-
-        e.preventDefault();
     });
 
 });

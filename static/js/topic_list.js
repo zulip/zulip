@@ -108,6 +108,43 @@ exports.rebuild = function (stream_li, stream, active_topic) {
     }
 };
 
+exports.set_click_handlers = function (callbacks) {
+    $('#stream_filters').on('click', '.show-more-topics', function (e) {
+        callbacks.zoom_in();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $('.show-all-streams').on('click', function (e) {
+        callbacks.zoom_out();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $('#stream_filters').on('click', '.subject_box', function (e) {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+
+        // In a more componentized world, we would delegate some
+        // of this stuff back up to our parents.
+        if (ui.home_tab_obscured()) {
+            ui.change_tab_to('#home');
+        }
+
+        var stream = $(e.target).parents('ul').attr('data-stream');
+        var topic = $(e.target).parents('li').attr('data-name');
+
+        narrow.activate([{operator: 'stream',  operand: stream},
+                         {operator: 'topic', operand: topic}],
+                        {select_first_unread: true, trigger: 'sidebar'});
+
+        e.preventDefault();
+    });
+};
+
 
 return exports;
 }());
