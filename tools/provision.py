@@ -176,8 +176,9 @@ def main(options):
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
     run(["tools/setup/download-zxcvbn"])
-    if os.path.isdir(EMOJI_CACHE_PATH):
-        run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
+    if not os.path.isdir(EMOJI_CACHE_PATH):
+        run(["sudo", "mkdir", EMOJI_CACHE_PATH])
+    run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["python", "tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:
@@ -217,8 +218,9 @@ def main(options):
         # issue with the symlinks being improperly owned by root.
         if os.path.islink("node_modules"):
             run(["sudo", "rm", "-f", "node_modules"])
-        if os.path.isdir(NPM_CACHE_PATH):
-            run(["sudo", "chown", "%s:%s" % (user_id, user_id), NPM_CACHE_PATH])
+        if not os.path.isdir(NPM_CACHE_PATH):
+            run(["sudo", "mkdir", NPM_CACHE_PATH])
+        run(["sudo", "chown", "%s:%s" % (user_id, user_id), NPM_CACHE_PATH])
         setup_node_modules()
     except subprocess.CalledProcessError:
         print(WARNING + "`npm install` failed; retrying..." + ENDC)
