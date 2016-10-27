@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, TypeVar
 from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
+from django.utils.module_loading import import_string
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -60,6 +61,10 @@ class WebhookIntegration(Integration):
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
+
+        if isinstance(function, str):
+            function = import_string(function)
+
         self.function = function
 
         if url is None:
