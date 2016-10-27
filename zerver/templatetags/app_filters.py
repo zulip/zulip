@@ -1,6 +1,6 @@
 from django.template import Library
 from django.utils.safestring import mark_safe
-from django.utils.functional import memoize
+from django.utils.lru_cache import lru_cache
 
 register = Library()
 
@@ -41,8 +41,7 @@ def display_list(values, display_limit):
 
     return display_string
 
-memoize_cache = {} # type: Dict[str, str]
-
+@lru_cache(512)
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path):
     # type: (str) -> str
@@ -50,10 +49,6 @@ def render_markdown_path(markdown_file_path):
     Given a path to a markdown file, return the rendered html
     """
     import markdown
-    def path_to_html(path):
-        # type: (str) -> str
-        markdown_string = open(path).read()
-        return markdown.markdown(markdown_string, safe_mode='escape')
-
-    html = memoize(path_to_html, memoize_cache, 1)(markdown_file_path)
+    markdown_string = open(markdown_file_path).read()
+    html = markdown.markdown(markdown_string, safe_mode='escape')
     return mark_safe(html)
