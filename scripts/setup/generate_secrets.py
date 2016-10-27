@@ -18,6 +18,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.utils.crypto import get_random_string
 import six
 import argparse
+import uuid
 from zerver.lib.str_utils import force_str
 from zerver.lib.utils import generate_random_token
 
@@ -85,6 +86,12 @@ def generate_secrets(development=False):
 
     camo_key = old_conf.get('camo_key', get_random_string(64))
     lines.append(config_line('camo_key', camo_key))
+
+    zulip_org_key = old_conf.get('zulip_org_key', get_random_string(64))
+    lines.append(config_line('zulip_org_key', zulip_org_key))
+
+    zulip_org_id = old_conf.get('zulip_org_id', str(uuid.uuid4()))
+    lines.append(config_line('zulip_org_id', zulip_org_id))
 
     if not development:
         # Write the Camo config file directly
