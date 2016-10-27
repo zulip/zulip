@@ -1,4 +1,6 @@
 from django.conf.urls import url, include
+from zerver.lib.rest import rest_dispatch
+import zilencer.views
 
 i18n_urlpatterns = [
     # SSO dispatch page for desktop app with SSO
@@ -6,17 +8,19 @@ i18n_urlpatterns = [
     # and then redirects the user to the proper deployment
     # SSO-login page
     url(r'^accounts/deployment_dispatch$',
-        'zilencer.views.account_deployment_dispatch',
-        {'template_name': 'zerver/login.html'}),
+        zilencer.views.account_deployment_dispatch,
+        {'template_name': 'zerver/login.html'},
+        name='zilencer.views.account_deployment_dispatch',)
 ]
 
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
-    url('^deployment/feedback$', 'zerver.lib.rest.rest_dispatch',
+    url('^deployment/feedback$', rest_dispatch,
           {'POST': 'zilencer.views.submit_feedback'}),
-    url('^deployment/report_error$', 'zerver.lib.rest.rest_dispatch',
+    url('^deployment/report_error$', rest_dispatch,
           {'POST': 'zilencer.views.report_error'}),
-    url('^deployment/endpoints$', 'zilencer.views.lookup_endpoints_for_user'),
+    url('^deployment/endpoints$', zilencer.views.lookup_endpoints_for_user,
+        name='zilencer.views.lookup_endpoints_for_user'),
 ]
 
 urlpatterns = [
