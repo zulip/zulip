@@ -37,7 +37,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% if lock_name %}
                 <p class="fakecontrol">{{ full_name }}</p>
             {% else %}
-                <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "John Doe" }}'
+                <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "Wile E. Coyote" }}'
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
                        maxlength="100" />
                 {% if form.full_name.errors %}
@@ -52,7 +52,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <div class="input-group grid">
                 <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
                 <input id="id_team_name" class="required" type="text"
-                    placeholder="{{ _("E.g. Acme") }}"
+                    placeholder="{{ _("Acme") }}"
                     name="realm_name" maxlength="100" />
                     {% if form.realm_name.errors %}
                         {% for error in form.realm_name.errors %}
@@ -68,7 +68,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <label for="id_team_subdomain" class="control-label">{{ _('Subdomain') }}</label>
                 <div class="controls">
                     <input id="id_team_subdomain" class="required" type="text"
-                        placeholder="{{ _("E.g. acme") }}"
+                        placeholder="{{ _("acme") }}"
                         name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
                         {% if form.realm_subdomain.errors %}
                             {% for error in form.realm_subdomain.errors %}
