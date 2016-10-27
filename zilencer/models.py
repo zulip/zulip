@@ -8,6 +8,28 @@ def get_deployment_by_domain(domain):
     # type: (Text) -> Deployment
     return Deployment.objects.get(realms__domain=domain)
 
+class RemoteZulipServer(models.Model):
+    uuid = models.CharField(max_length=36, unique=True) # type: text_type
+    api_key = models.CharField(max_length=32) # type: text_type
+
+    hostname = models.CharField(max_length=128, unique=True) # type: text_type
+    contact_email = models.EmailField(blank=True, null=False) # type: text_type
+    last_updated = models.DateTimeField('last updated') # type: datetime.datetime
+
+# Variant of PushDeviceToken for a remote server.
+class RemotePushDeviceToken(models.Model):
+    server = models.ForeignKey(RemoteZulipServer)
+    # The user id on the remote server for this device device this is
+    user_id = models.BigIntegerField() # type: int
+
+    kind = models.PositiveSmallIntegerField(choices=zerver.models.PushDeviceToken.KINDS) # type: int
+
+    token = models.CharField(max_length=4096, unique=True) # type: text_type
+    last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
+
+    # [optional] Contains the app id of the device if it is an iOS device
+    ios_app_id = models.TextField(null=True) # type: Optional[text_type]
+
 class Deployment(models.Model):
     realms = models.ManyToManyField(zerver.models.Realm,
                                     related_name="_deployments") # type: Manager
