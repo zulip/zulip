@@ -8,7 +8,8 @@ from zerver.views.messages import send_message_backend
 from zerver.lib.webhooks.git import get_push_commits_event_message,\
     SUBJECT_WITH_BRANCH_TEMPLATE, get_force_push_commits_event_message, \
     get_remove_branch_event_message, get_pull_request_event_message,\
-    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
+    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
+    get_commits_comment_action_message
 import logging
 import re
 import ujson
@@ -176,13 +177,13 @@ def api_github_v2(user_profile, event, payload, branches, default_stream,
         subject = topic_focus
 
         comment = payload.get('comment')
-        action = u'[commented]({}) on'.format(comment['html_url'])
-        content = get_pull_request_event_message(
+        action = u'[commented]({})'.format(comment['html_url'])
+        content = get_commits_comment_action_message(
             comment['user']['login'],
             action,
             comment['html_url'].split('#', 1)[0],
-            message=comment['body'],
-            type='Commit'
+            comment['commit_id'],
+            comment['body'],
         )
 
     else:
