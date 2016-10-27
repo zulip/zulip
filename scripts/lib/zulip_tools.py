@@ -92,8 +92,11 @@ def run(args, **kwargs):
         # With shell=True we can only pass string to Popen
         args = " ".join(args)
 
-    process = subprocess.Popen(args, **kwargs)
-    rc = process.wait()
-    if rc:
-        raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
-    return 0
+    try:
+        subprocess.check_call(args, **kwargs)
+    except subprocess.CalledProcessError:
+        print(WARNING + "A command run by %s failed; see output above." % (sys.argv[0])
+              + ENDC)
+        print(WARNING + "Command was: %s" % (" ".join(args))
+              + ENDC)
+        raise
