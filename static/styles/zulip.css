@@ -16,8 +16,7 @@ body {
 
 /* Common background color */
 body,
-#tab_bar_underpadding,
-.compose-content {
+#tab_bar_underpadding {
     background-color: #ffffff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
@@ -133,10 +132,6 @@ p.n-margin {
     font-weight: 200;
     margin: 5px 0px 0px 10px;
     cursor: pointer;
-}
-
-.ztable_comp_col1 {
-    width: 10px;
 }
 
 .header {
@@ -421,10 +416,6 @@ a:hover code {
 
 .logout {
     white-space: nowrap;
-}
-
-.new_message_button {
-    padding-top: 1.1em;
 }
 
 .sidebar-title,
@@ -832,16 +823,6 @@ ul.filters li.out_of_home_view li.muted_topic {
     overflow: visible;
 }
 
-
-.message_comp {
-    display: none;
-    padding: 10px 10px 8px 5px;
-}
-
-#compose_buttons {
-    text-align: center;
-}
-
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
@@ -1125,77 +1106,6 @@ just a temporary hack.
     to { transform:rotate(359deg); }
 }
 
-.compose_table .message_header_colorblock,
-.compose_table .message_header {
-    box-shadow: none;
-    background: none;
-}
-
-.compose_table .message_header_colorblock,
-.compose_table .message_header_colorblock.message_header_private_message {
-    border-radius: 3px 0px 0px 3px;
-    border-bottom: 0px;
-}
-
-.compose_table .message_header_colorblock.message_header_private_message {
-    background: #444;
-}
-
-.compose_table .right_part {
-    padding: 0px;
-}
-
-.compose_table .right_part .icon-vector-narrow {
-    font-size: 0.6em;
-    position: relative;
-}
-
-.compose_table .compose_checkbox_label {
-    display: inline-block;
-}
-
-.compose_table .pm_recipient {
-    position: relative;
-    margin-right: 30px;
-    height: 25px;
-}
-
-.compose_table #private-message .you_text {
-    position: absolute;
-    height: 25px;
-    line-height: 25px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    width: 4em;
-    background: #444444;
-    color: #ffffff;
-}
-
-.compose_table .pm_recipient #private_message_recipient {
-    margin-left: 4em;
-    border-left: none;
-    border-radius: 0px 3px 3px 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    height: 23px;
-    line-height: 23px;
-}
-
-.compose_table #private-message .right_part {
-    padding-right: 4em;
-}
-
-.compose_table #compose-lock-icon {
-    position: relative;
-    width: 0px;
-}
-
-.compose_table #compose-lock-icon i {
-    position: absolute;
-    left: 5px;
-    top: 3px;
-}
-
 .messagebox-bottom {
     height: 3px;
     background-color: #fff;
@@ -1229,20 +1139,8 @@ just a temporary hack.
     line-height: 17px;
 }
 
-.compose_table .message_header {
-    background: none;
-    background-color: #ececec;
-    border: none;
-    border-radius: 0px;
-    box-shadow: none !important;
-}
-
 /* Base color backgrounds for messageboxes,
    private messages, mentions, and unread messages */
-
-.compose_table .messagebox {
-   box-shadow: none !important;
-}
 
 .messagebox {
     background-color: #ffffff;
@@ -1504,12 +1402,6 @@ div.message_table {
     z-index: 2;
 }
 
-table.compose_table {
-    table-layout: fixed;
-    margin-left: auto;
-    width: 100%;
-}
-
 div.focused_table {
     display: block;
 }
@@ -1665,37 +1557,6 @@ blockquote p {
     border-left-color: #ddd;
 }
 
-#send_message_form {
-    margin: 0px;
-}
-
-#send_message_form .messagebox {
-    /* normally 5px 14px; pull in the right and bottom a bit */
-    cursor: default;
-    padding: 0px;
-    background: none;
-    box-shadow: none;
-    border: none;
-}
-
-#enter-sends-label {
-    margin-bottom: 0px;
-    margin-top: 2px;
-}
-
-#send_message_form .message_content {
-    margin-right: 0px;
-}
-
-#compose-send-button {
-    height: 31px; /* Same as height of compose textarea. */
-}
-
-#below-compose-content {
-    width: 100%;
-    margin-top: 6px;
-}
-
 .bookend {
     padding-top: 10px;
     background-color: transparent;
@@ -1723,132 +1584,6 @@ blockquote p {
     vertical-align: top;
 }
 
-#compose {
-    position: fixed;
-    bottom: 0px;
-    left: 0px;
-    z-index: 2;
-    width: 100%;
-}
-
-#compose-container {
-    width: 100%;
-    max-width: 1400px;
-    margin: auto;
-}
-
-.compose-content {
-    border-top: 1px solid #dadada;
-    border-left: 1px solid #dadada;
-    border-right: 1px solid #dadada;
-    padding: 8px 15px 8px 10px;
-    margin-left: 250px;
-    margin-right: 250px;
-    position: relative;
-}
-
-#compose_close {
-    display: none;
-    position: absolute;
-    right: -4px;
-    top: 5px;
-}
-
-#compose_invite_users {
-    /* Don't overlap into the compose_close × */
-    margin-right: 10px;
-}
-
-.compose_invite_user {
-    padding: 4px 0px 4px 0px;
-}
-
-.compose_invite_close {
-    display: inline;
-    margin-top: 4px;
-
-    width: 10px;
-}
-
-.compose-all-everyone-controls,
-.compose_invite_user_controls {
-    float: right;
-}
-
-.compose_invite_link {
-    height: 20px;
-    margin-bottom: 3px;
-}
-
-.compose_invite_user_error {
-    margin-right: 10px;
-
-    padding: 3px 8px 3px 8px;
-}
-
-/* Like .nav-tabs > li > a */
-#send-status {
-    width: 90%;
-    padding: 8px 14px 8px 14px;
-    line-height: 20px;
-    display: none;
-}
-
-/* Like .alert .close */
-.send-status-close {
-    font-size:   17px;
-    font-weight: bold;
-    color:       black;
-    text-shadow: 0 1px 0 white;
-    opacity:     .2;
-    filter:      alpha(opacity=20);
-    float:       right;
-}
-
-.send-status-close:hover {
-    cursor:  pointer;
-    opacity: .4;
-    filter:  alpha(opacity=40);
-}
-
-#out-of-view-notification {
-    background: #9bff8b;
-    background: rgba(163,211,147,0.95);
-    border-bottom: 1px solid #ffffff;
-    border-right: 1px solid #ffffff;
-    border-left: 1px solid #ffffff;
-    border-radius: 0px 0px 2px 2px;
-    font-weight: 400;
-    font-size: 12px;
-    display: inline-block;
-    box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.5);
-    position: relative;
-    top: -8px;
-    width: 100%;
-    padding-right: 5px;
-}
-
-.compose-notifications-content {
-    padding: 4px 10px 4px 10px;
-    text-align: center;
-}
-
-.composition-area {
-    position: relative;
-}
-
-#out-of-view-notification .close {
-    position: absolute;
-    right: 5px;
-    top: 5px;
-    font-size:   17px;
-    font-weight: bold;
-    color:       black;
-    text-shadow: 0 1px 0 white;
-    opacity:     .2;
-    filter:      alpha(opacity=20);
-}
-
 .home-error-bar {
     margin-top: 5px;
     display: none;
@@ -1865,84 +1600,6 @@ blockquote p {
 .home-error-bar .alert {
     margin-bottom: auto;
 }
-
-textarea.new_message_textarea {
-    display: table-cell;
-    width: calc(100% - 10px);
-    padding: 5px;
-    height: 1.5em;
-    max-height: 22em;
-    margin-bottom: 0px;
-    resize: none;
-    margin-top: 5px;
-}
-
-input.recipient_box {
-    margin: 0px;
-    height: 1.1em;
-    border-radius: 3px;
-}
-
-#stream.recipient_box {
-    width: 20%;
-    border-radius: 0px 3px 3px 0px;
-    border-left: 0px;
-    min-width: 120px;
-}
-
-#subject.recipient_box {
-    width: 25%;
-    min-width: 140px;
-}
-
-#stream.recipient_box.lock-padding {
-    padding-left: 18px;
-}
-
-#private_message_recipient.recipient_box {
-    width: 100%;
-}
-
-#send_controls {
-    float: right;
-    position: relative;
-    right: -7px;
-    font-size: 0.8em;
-    height: 2.2em;
-}
-
-#send_controls .compose_checkbox_label {
-    margin-right: 2px;
-}
-
-#send_controls .compose_checkbox_label input {
-    position: relative;
-    top: -3px;
-}
-
-#send_controls #compose-send-button {
-    font-weight: 600;
-    height: 2.2em;
-    background-image: -moz-linear-gradient(top, rgba(14,70,67,1) 0%, rgba(14,83,68,1) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,1)), color-stop(100%,rgba(14,83,68,1))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* IE10+ */
-    background-image: linear-gradient(to bottom, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* W3C */
-}
-
-#send_controls #compose-send-button:hover {
-    font-weight: 600;
-    height: 2.2em;
-    background: #fff;
-    background-image: -moz-linear-gradient(top, rgba(14,70,67,0.6) 0%, rgba(14,83,68,0.6) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,0.6)), color-stop(100%,rgba(14,83,68,1))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* IE10+ */
-    background-image: linear-gradient(to bottom, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* W3C */
-}
-
 
 .brand.skinny-user-gravatar {
     display: table-cell;
@@ -2102,7 +1759,6 @@ input.recipient_box {
     z-index: 99;
 }
 
-
 #navbar-buttons {
     white-space: nowrap;
     margin-left: 15px;
@@ -2201,7 +1857,6 @@ input.recipient_box {
     content: '';
     z-index: 10;
 }
-
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle {
@@ -2437,7 +2092,6 @@ div.floating_recipient {
     display: inline !important;
 }
 
-
 .twitter-image,
 .message_inline_image {
     margin-bottom: 5px;
@@ -2556,7 +2210,6 @@ div.floating_recipient {
     background-color: #444;
     color: white;
 }
-
 
 #fmt_help_table {
     table-layout: fixed;
@@ -2735,23 +2388,12 @@ button.topic_edit_cancel {
     opacity: 0.4;
 }
 
-#stream-message,
-#private-message {
-    display: none;
-}
-
 .emoji {
     height: 25px;
     width: 25px;
     position: relative;
     top: 3px;
     margin-top: -7px;
-}
-
-#sending-indicator {
-    float: left;
-    font-weight: bold;
-    display: none;
 }
 
 .streamlist_swatch {
@@ -2937,81 +2579,6 @@ li.expanded_private_message {
 .date_row span:after {
     left: 0.5em;
     margin-right: -50%;
-}
-
-#restore-draft {
-    float: left;
-    display: none;
-    margin-right: 1em;
-    padding-top: 2px;
-}
-
-#sending-indicator {
-    padding-top: 2px;
-}
-
-#restore-draft:hover {
-    cursor:  pointer;
-}
-
-#compose a.message-control-button {
-    display: block;
-    color: #777;
-    text-decoration: none;
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-    margin-right: 8px;
-    padding-top: 5px;
-    text-align: center;
-    float: left;
-}
-
-#compose a.message-control-button:hover {
-    color: #000;
-}
-
-.drag {
-    display: none;
-    height: 18px;
-    width: 100%;
-    top: 23px;
-    position: relative;
-    cursor: ns-resize;
-}
-
-.emoji_popover {
-    display: none;
-    position: relative;
-    margin-top: 10px;
-    bottom: 0px;
-    z-index: 1010;
-    width: 100%;
-    height: 140px;
-    padding: 1px;
-    text-align: center;
-    background-color: #ffffff;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    overflow-y: scroll;
-}
-
-.emoji_popover .emoji {
-    margin: 2px;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: inline-block;
-}
-
-.emoji_popover .emoji:active {
-    border-radius: 5px;
-    border: 2px white solid;
-}
-
-#enter_sends {
-    margin-top: 0px;
-    margin-right: 5px;
 }
 
 #group-pm-list {
@@ -3330,41 +2897,4 @@ li.show-more-private-messages a {
 .user-list-filter ,
 .add-user-list-filter {
     width: 80%;
-}
-
-.inline-subscribe-error {
-    margin-left: 5px;
-}
-
-#preview_message_area {
-    /* minus 5px padding. */
-    width: calc(100% - 10px);
-    padding: 5px;
-    /* the maximum height the textarea gets to. */
-    max-height: 308px;
-    /* the minimum height the textarea collapses to. */
-    min-height: 42px;
-    overflow: auto;
-
-    margin-top: 5px;
-
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-}
-
-a#markdown_preview,
-a#undo_markdown_preview {
-    text-decoration: none;
-    position: relative;
-    top: 3px;
-    font-size: 16px;
-    color: #777;
-}
-
-#markdown_preview_spinner {
-    margin: auto;
 }
