@@ -1944,36 +1944,21 @@ def do_change_stream_description(realm, stream_name, new_description):
                  value=new_description)
     send_event(event, stream_user_ids(stream))
 
-def get_realm_creation_defaults(org_type=None, restricted_to_domain=None, invite_required=None):
-    # type: (Optional[int], Optional[bool], Optional[bool]) -> Dict[text_type, Any]
-    if org_type is None:
-        org_type = Realm.CORPORATE
-    # not totally clear what the defaults should be if exactly one of
-    # restricted_to_domain or invite_required are set. Just doing the
-    # least complicated thing that works when both are unset.
-    if restricted_to_domain is None:
-        restricted_to_domain = (org_type == Realm.CORPORATE)
-    if invite_required is None:
-        invite_required = not (org_type == Realm.CORPORATE)
-    return {'org_type': org_type,
-            'restricted_to_domain': restricted_to_domain,
-            'invite_required': invite_required}
-
 def do_create_realm(string_id, name, restricted_to_domain=None,
                     invite_required=None, org_type=None, domain=None):
     # type: (text_type, text_type, Optional[bool], Optional[bool], Optional[int], Optional[text_type]) -> Tuple[Realm, bool]
     realm = get_realm_by_string_id(string_id)
     created = not realm
     if created:
-        realm_params = get_realm_creation_defaults(org_type=org_type,
-                                                   restricted_to_domain=restricted_to_domain,
-                                                   invite_required=invite_required)
-        org_type = realm_params['org_type']
-        restricted_to_domain = realm_params['restricted_to_domain']
-        invite_required = realm_params['invite_required']
-        realm = Realm(name=name, string_id=string_id, org_type=org_type,
-                      restricted_to_domain=restricted_to_domain, invite_required=invite_required,
-                      domain=string_id + '@acme.com')
+        kwargs = {} # type: Dict[str, Any]
+        if restricted_to_domain is not None:
+            kwargs['restricted_to_domain'] = restricted_to_domain
+        if invite_required is not None:
+            kwargs['invite_required'] = invite_required
+        if org_type is not None:
+            kwargs['org_type'] = org_type
+        realm = Realm(string_id=string_id, name=name,
+                      domain=string_id + '@acme.com', **kwargs)
         realm.save()
 
         if domain:

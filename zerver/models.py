@@ -139,8 +139,8 @@ class Realm(ModelReprMixin, models.Model):
     # structure.
     name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
     string_id = models.CharField(max_length=40, unique=True) # type: text_type
-    restricted_to_domain = models.BooleanField(default=True) # type: bool
-    invite_required = models.BooleanField(default=False) # type: bool
+    restricted_to_domain = models.BooleanField(default=False) # type: bool
+    invite_required = models.BooleanField(default=True) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
     mandatory_topics = models.BooleanField(default=False) # type: bool
@@ -155,7 +155,7 @@ class Realm(ModelReprMixin, models.Model):
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
     COMMUNITY = 2
-    org_type = models.PositiveSmallIntegerField(default=CORPORATE) # type: int
+    org_type = models.PositiveSmallIntegerField(default=COMMUNITY) # type: int
 
     date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]

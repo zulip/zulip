@@ -608,7 +608,6 @@ class RealmCreationTest(ZulipTestCase):
         password = "test"
         string_id = "test"
         domain = "test.com"
-        org_type = Realm.COMMUNITY
         email = "user1@test.com"
 
         # Make sure the realm does not exist
@@ -629,7 +628,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEquals(result.status_code, 200)
 
             result = self.submit_reg_form_for_user(username, password, domain=domain,
-                                                   realm_subdomain = string_id, realm_org_type=org_type)
+                                                   realm_subdomain = string_id)
             self.assertEquals(result.status_code, 302)
 
             # Make sure the realm is created
@@ -648,32 +647,6 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEquals(realm.invite_required, True)
 
             self.assertTrue(result["Location"].endswith("/"))
-
-    def test_realm_corporate_defaults(self):
-        # type: () -> None
-        username = "user1"
-        password = "test"
-        string_id = "test"
-        domain = "test.com"
-        org_type = Realm.CORPORATE
-        email = "user1@test.com"
-
-        # Make sure the realm does not exist
-        self.assertIsNone(get_realm_by_string_id(string_id))
-
-        # Create new realm with the email
-        with self.settings(OPEN_REALM_CREATION=True):
-            self.client_post('/create_realm/', {'email': email})
-            confirmation_url = self.get_confirmation_url_from_outbox(email)
-            self.client_get(confirmation_url)
-            self.submit_reg_form_for_user(username, password, domain=domain,
-                                          realm_subdomain = string_id, realm_org_type=org_type)
-
-        # Check corporate defaults were set correctly
-        realm = get_realm_by_string_id(string_id)
-        self.assertEquals(realm.org_type, Realm.CORPORATE)
-        self.assertEquals(realm.restricted_to_domain, True)
-        self.assertEquals(realm.invite_required, False)
 
 class UserSignUpTest(ZulipTestCase):
 

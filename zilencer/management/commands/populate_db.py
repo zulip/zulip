@@ -125,10 +125,14 @@ class Command(BaseCommand):
             # Create our two default realms
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
-            zulip_realm = Realm.objects.create(string_id="zulip", name="Zulip Dev", domain="zulip.com")
+            zulip_realm = Realm.objects.create(
+                string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
+                invite_required=False, org_type=Realm.CORPORATE, domain="zulip.com")
             RealmAlias.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
-                mit_realm = Realm.objects.create(string_id="mit", name="MIT", domain="mit.edu")
+                mit_realm = Realm.objects.create(
+                    string_id="mit", name="MIT", restricted_to_domain=True,
+                    invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
             realms = {} # type: Dict[text_type, Realm]
             for realm in Realm.objects.all():
