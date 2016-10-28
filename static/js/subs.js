@@ -278,6 +278,69 @@ function prepend_subscriber(sub_row, email) {
     list.prepend(format_member_list_elem(email));
 }
 
+function show_subscription_settings(sub_row) {
+    var stream = sub_row.find('.subscription_name').text();
+    var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
+    var error_elem = sub_row.find('.subscriber_list_container .alert-error');
+    var list = get_subscriber_list(sub_row);
+    var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
+
+    if (!stream_data.get_sub(stream).render_subscribers) {
+        return;
+    }
+
+    warning_elem.addClass('hide');
+    error_elem.addClass('hide');
+    list.empty();
+
+    loading.make_indicator(indicator_elem);
+
+    channel.post({
+        url: "/json/get_subscribers",
+        idempotent: true,
+        data: {stream: stream},
+        success: function (data) {
+            loading.destroy_indicator(indicator_elem);
+            var subscribers = _.map(data.subscribers, function (elem) {
+                var person = people.get_by_email(elem);
+                if (person === undefined) {
+                    return elem;
+                }
+                return format_member_list_elem(elem);
+            });
+            _.each(subscribers.sort(), function (elem) {
+                list.append(elem);
+            });
+        },
+        error: function (xhr) {
+            loading.destroy_indicator(indicator_elem);
+            error_elem.removeClass("hide").text("Could not fetch subscriber list");
+        }
+    });
+
+    sub_row.find('input[name="principal"]').typeahead({
+        source: page_params.people_list,
+        items: 5,
+        highlighter: function (item) {
+            var item_formatted = typeahead_helper.render_person(item);
+            return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
+        },
+        matcher: function (item) {
+            var query = $.trim(this.query.toLowerCase());
+            if (query === '' || query === item.email) {
+                return false;
+            }
+            // Case-insensitive.
+            return (item.email.toLowerCase().indexOf(query) !== -1) ||
+                (item.full_name.toLowerCase().indexOf(query) !== -1);
+        },
+        sorter: typeahead_helper.sort_recipientbox_typeahead,
+        updater: function (item) {
+            return item.email;
+        }
+    });
+}
+
 exports.mark_subscribed = function (stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
 
@@ -1092,66 +1155,7 @@ $(function () {
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var sub_row = $(e.target).closest('.subscription_row');
-        var stream = sub_row.find('.subscription_name').text();
-        var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
-        var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-        var list = get_subscriber_list(sub_row);
-        var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
-
-        if (!stream_data.get_sub(stream).render_subscribers) {
-            return;
-        }
-
-        warning_elem.addClass('hide');
-        error_elem.addClass('hide');
-        list.empty();
-
-        loading.make_indicator(indicator_elem);
-
-        channel.post({
-            url: "/json/get_subscribers",
-            idempotent: true,
-            data: {stream: stream},
-            success: function (data) {
-                loading.destroy_indicator(indicator_elem);
-                var subscribers = _.map(data.subscribers, function (elem) {
-                    var person = people.get_by_email(elem);
-                    if (person === undefined) {
-                        return elem;
-                    }
-                    return format_member_list_elem(elem);
-                });
-                _.each(subscribers.sort(), function (elem) {
-                    list.append(elem);
-                });
-            },
-            error: function (xhr) {
-                loading.destroy_indicator(indicator_elem);
-                error_elem.removeClass("hide").text("Could not fetch subscriber list");
-            }
-        });
-
-        sub_row.find('input[name="principal"]').typeahead({
-            source: page_params.people_list,
-            items: 5,
-            highlighter: function (item) {
-                var item_formatted = typeahead_helper.render_person(item);
-                return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
-            },
-            matcher: function (item) {
-                var query = $.trim(this.query.toLowerCase());
-                if (query === '' || query === item.email) {
-                    return false;
-                }
-                // Case-insensitive.
-                return (item.email.toLowerCase().indexOf(query) !== -1) ||
-                    (item.full_name.toLowerCase().indexOf(query) !== -1);
-            },
-            sorter: typeahead_helper.sort_recipientbox_typeahead,
-            updater: function (item) {
-                return item.email;
-            }
-        });
+        show_subscription_settings(sub_row);
     });
 
     // Change the down arrow to an up arrow on expansion, and back to a down
