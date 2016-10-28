@@ -236,8 +236,17 @@ def accounts_register(request):
                                           tos_version=settings.TOS_VERSION,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
-        # This logs you in using the ZulipDummyBackend, since honestly nothing
-        # more fancy than this is required.
+        if first_in_realm:
+            do_change_is_admin(user_profile, True)
+
+        if realm_creation and settings.REALMS_HAVE_SUBDOMAINS:
+            # Because for realm creation, registration happens on the
+            # root domain, we need to log them into the subdomain for
+            # their new realm.
+            return redirect_and_log_into_subdomain(realm, full_name, email)
+
+        # This dummy_backend check below confirms the user is
+        # authenticating to the correct subdomain.
         return_data = {} # type: Dict[str, bool]
         auth_result = authenticate(username=user_profile.email,
                                    realm_subdomain=realm.subdomain,
@@ -249,9 +258,6 @@ def accounts_register(request):
                 realm.subdomain, user_profile.email,))
             return redirect('/')
         login(request, auth_result)
-
-        if first_in_realm:
-            do_change_is_admin(user_profile, True)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
 
     return render_to_response('zerver/register.html',
