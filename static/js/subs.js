@@ -160,6 +160,12 @@ function update_stream_name(sub, new_name) {
     // Update the left sidebar.
     stream_list.rename_stream(sub);
 
+    // Update the subscriptions page
+    var sub_settings_selector = '.stream-row[data-stream-id=' + sub.stream_id + ']';
+    $(sub_settings_selector + ' .stream-name').text(new_name);
+    var sub_row = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
+    sub_row.attr("data-stream-name", new_name);
+
     // Update the message feed.
     _.each([home_msg_list, current_msg_list, message_list.all], function (list) {
         list.change_display_recipient(old_name, new_name);
