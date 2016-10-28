@@ -39,7 +39,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% else %}
                 <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "Wile E. Coyote" }}'
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                       maxlength="100" />
+                    maxlength="100" />
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
                         <div class="alert alert-error">{{ error }}</div>
@@ -48,138 +48,134 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
         </div>
 
-      {% if creating_new_team %}
-            <div class="input-group grid">
-                <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
-                <input id="id_team_name" class="required" type="text"
-                    placeholder="{{ _("Acme") }}"
-                    name="realm_name" maxlength="100" />
-                    {% if form.realm_name.errors %}
-                        {% for error in form.realm_name.errors %}
+        {% if creating_new_team %}
+        <div class="input-group grid">
+            <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
+            <input id="id_team_name" class="required" type="text"
+                placeholder="{{ _("Acme") }}"
+                name="realm_name" maxlength="100" />
+                {% if form.realm_name.errors %}
+                    {% for error in form.realm_name.errors %}
                         <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                <div class="help-box">
-                    {{ _('This can be changed later on the settings page.') }}
-                </div>
+                    {% endfor %}
+                {% endif %}
+            <div class="help-box">
+                {{ _('This can be changed later on the settings page.') }}
             </div>
+        </div>
 
-            <div class="input-group grid">
-                <label for="id_team_subdomain" class="inline-block label-title">
-                    {% if realms_have_subdomains %}
+        <div class="input-group grid">
+            <label for="id_team_subdomain" class="inline-block label-title">
+                {% if realms_have_subdomains %}
                     {{ _('Subdomain') }}
-                    {% else %}
+                {% else %}
                     {{ _('Short Name') }}
-                    {% endif %}
-                </label>
-                <input id="id_team_subdomain" class="required" type="text"
-                    placeholder="{{ _("acme") }}"
-                    name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
-                    {% if form.realm_subdomain.errors %}
-                        {% for error in form.realm_subdomain.errors %}
+                {% endif %}
+            </label>
+            <input id="id_team_subdomain" class="required" type="text"
+                placeholder="{{ _("acme") }}"
+                name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
+                {% if form.realm_subdomain.errors %}
+                    {% for error in form.realm_subdomain.errors %}
                         <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                <div class="help-box">
-                    {% if realms_have_subdomains %}
+                    {% endfor %}
+                {% endif %}
+            <div class="help-box">
+                {% if realms_have_subdomains %}
                     {{ _("The address you'll use to sign in to your organization.") }}
-                    {% else %}
+                {% else %}
                     {{ _("A short, unique name for your organization, with no spaces.") }}
-                    {% endif %}
-                </div>
+                {% endif %}
             </div>
+        </div>
 
-            <div class="m-v-20">
-              <label for="id_org_type" class="label-title">{{ _('Organization Type') }}</label>
+        <div class="m-v-20">
+          <label for="id_org_type" class="label-title">{{ _('Organization Type') }}</label>
 
-              {% for org_type_value, org_type_text in form.realm_org_type.field.choices %}
-              <div class="input-group radio">
-                <input id="id_radio_{{ org_type_value }}" class="required inline-block" type="radio"
-                       name="realm_org_type" value="{{ org_type_value }}"
-                    {% if org_type_value == form.realm_org_type.value() %} checked {% endif %} />
-                <label for="id_radio_{{ org_type_value }}" class="inline-block">{{ org_type_text }}</label>
-              </div>
-              {% endfor %}
+          {% for org_type_value, org_type_text in form.realm_org_type.field.choices %}
+          <div class="input-group radio">
+            <input id="id_radio_{{ org_type_value }}" class="required inline-block" type="radio"
+                   name="realm_org_type" value="{{ org_type_value }}"
+                {% if org_type_value == form.realm_org_type.value() %} checked {% endif %} />
+            <label for="id_radio_{{ org_type_value }}" class="inline-block">{{ org_type_text }}</label>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="m-v-20">
+          <div class="help-box">
+            <div id="org_type_blob_1" class="blob display-none">
+              {% trans %}
+              Create a corporate organization if your users will be members of the
+              same company, where the privacy expectation is that the company's
+              organization administrators may need to have access to your users'
+              private message history. Zulip features that allow organization
+              administrators to take control of accounts or access private message
+              history for other users are only available to corporate organizations.
+              {% endtrans %}
             </div>
-            <div class="m-v-20">
-              <div class="help-box">
-                <div id="org_type_blob_1" class="blob display-none">
-                  {% trans %}
-                  Create a corporate organization if your users will
-                  be members of the same company, where the privacy
-                  expectation is that the company's organization
-                  administrators may need to have access to your
-                  users' private message history.  Zulip features that
-                  allow organization administrators to take control of
-                  accounts or access private message history for other
-                  users are only available to corporate organizations.
-                  {% endtrans %}
-                </div>
-                <div id="org_type_blob_2" class="blob">
-                  {% trans %}
-                  Create a community organization for an open source
-                  project, social group, or other community where the
-                  privacy expectation is that you and other
-                  organization administrators won't have access to
-                  your users' private message history.  Zulip features
-                  that allow organization administrators to take
-                  control of accounts or access private message
-                  history for other users are disabled in community
-                  organizations.
-                  {% endtrans %}
-                </div>
-              </div>
+            <div id="org_type_blob_2" class="blob">
+              {% trans %}
+              Create a community organization for an open source project, social
+              group, or other community where the privacy expectation is that you
+              and other organization administrators won't have access to your users'
+              private message history. Zulip features that allow organization
+              administrators to take control of accounts or access private message
+              history for other users are disabled in community organizations.
+              {% endtrans %}
             </div>
-            {% endif %}
+          </div>
+        </div>
+        {% endif %}
 
         {% if password_auth_enabled %}
-            <div class="input-group">
-                <label for="id_password" class="inline-block">{{ _('Password') }}</label>
-                <div class="controls">
-                    <input id="id_password" class="required" type="password" name="password"
-                           value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                           maxlength="100" />
-                    {% if full_name %}
-                    <span class="help-inline">{{ _('This is used for mobile applications and other tools that require a password.') }}</span>
-                    {% endif %}
-                    {% if form.password.errors %}
-                        {% for error in form.password.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
+        <div class="input-group">
+            <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+            <div class="controls">
+                <input id="id_password" class="required" type="password" name="password"
+                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
+                       maxlength="100" />
+                {% if full_name %}
+                <span class="help-inline">
+                    {{ _('This is used for mobile applications and other tools that require a password.') }}
+                </span>
+                {% endif %}
+                {% if form.password.errors %}
+                   {% for error in form.password.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
             </div>
-            <div class="input-group">
-                <label class="inline-block">{{ _('Password strength') }}</label>
-                <div class="progress" id="pw_strength">
-                    <div class="bar bar-danger" style="width: 10%;"></div>
-                </div>
+        </div>
+        <div class="input-group">
+            <label class="inline-block">{{ _('Password strength') }}</label>
+            <div class="progress" id="pw_strength">
+                <div class="bar bar-danger" style="width: 10%;"></div>
             </div>
-
+        </div>
         {% endif %}
 
         <div class="input-group margin">
             {% if terms_of_service %}
-                <div class="float-left">
-                    {#
-                    This is somewhat subtle.
-                    Checkboxes have a name and value, and when the checkbox is ticked, the form posts
-                    with name=value. If the checkbox is unticked, the field just isn't present at all.
+            <div class="float-left">
+                {#
+                This is somewhat subtle.
+                Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                with name=value. If the checkbox is unticked, the field just isn't present at all.
 
-                    This is distinct from 'checked', which determines whether the checkbox appears
-                    at all. (So, it's not symmetric to the code above.)
-                    #}
-                    <input id="id_terms" class="required" type="checkbox" name="terms"
-                           {% if form.terms.value() %}checked="checked"{% endif %} />
-                    <label for="id_terms" class="inline-block">
-                      {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
-                    </label>
-                    {% if form.terms.errors %}
-                        {% for error in form.terms.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
+                This is distinct from 'checked', which determines whether the checkbox appears
+                at all. (So, it's not symmetric to the code above.)
+                #}
+                <input id="id_terms" class="required" type="checkbox" name="terms"
+                       {% if form.terms.value() %}checked="checked"{% endif %} />
+                <label for="id_terms" class="inline-block">
+                  {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
+                </label>
+                {% if form.terms.errors %}
+                    {% for error in form.terms.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
             {% endif %}
             <div class="submit-button-box float-right">
                 <input type="submit" class="button-new sea-green" value="Register" /><br />
