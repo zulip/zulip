@@ -229,10 +229,6 @@ exports.rerender_subscribers_count = function (sub) {
     $(".stream-row[data-stream-id='" + id + "'] .subscriber-count").text(sub.subscriber_count);
 };
 
-exports.show_settings_for = function (stream_name) {
-    settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
-};
-
 function add_email_hint(row, email_address_hint_content) {
     // Add a popover explaining stream e-mail addresses on hover.
     var hint_id = "#email-address-hint-" + row.stream_id;
@@ -367,6 +363,11 @@ function show_subscription_settings(sub_row) {
     // Make all inputs have a default tabindex
     sub_row.find('.subscription_settings :input').removeAttr('tabindex');
 }
+
+exports.show_settings_for = function (stream_name) {
+    settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
+};
+
 
 exports.mark_subscribed = function (stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
