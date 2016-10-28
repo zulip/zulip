@@ -10,5 +10,6 @@ set -x
 ./tools/test-management
 ./tools/test-migrations
 ./tools/test-run-dev
+# Some test suites disabled in CI for being flaky
 #./tools/test-queue-worker-reload
-./tools/test-documentation
+#./tools/test-documentation
