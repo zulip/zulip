@@ -169,7 +169,7 @@ function update_stream_name(sub, new_name) {
 function update_stream_description(sub, description) {
     sub.description = description;
 
-    var sub_settings_selector = '.stream-row[data-subscription-id=' + sub.stream_id + ']';
+    var sub_settings_selector = '.stream-row[data-stream-id=' + sub.stream_id + ']';
     $(sub_settings_selector + ' .subscription_description').text(description);
     $(sub_settings_selector + ' input.description').val(description);
 }
