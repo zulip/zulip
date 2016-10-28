@@ -851,17 +851,18 @@ def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],
                                                           notification['sender'].id)
-    recipients = [{'id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
-    active_recipients = [profile for profile in recipient_user_profiles if profile.is_active]
-    sender = {'id': notification['sender'].id, 'email': notification['sender'].email}
+    # Only deliver the notification to active user recipients
+    user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
+    sender_dict = {'user_id': notification['sender'].id, 'email': notification['sender'].email}
+    # Include a list of recipients in the event body to help identify where the typing is happening
+    recipient_dicts = [{'user_id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
     event = dict(
             type            = 'typing',
             op              = notification['op'],
-            sender          = sender,
-            recipients      = recipients)
+            sender          = sender_dict,
+            recipients      = recipient_dicts)
 
-    # Only deliver the notification to active user recipients
-    send_event(event, active_recipients)
+    send_event(event, user_ids_to_notify)
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it
