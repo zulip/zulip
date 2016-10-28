@@ -136,7 +136,7 @@ p.n-margin {
 
 .header {
     position: fixed;
-    z-index: 101;
+    z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     background: #ffffff;
     border-bottom: 1px solid #dadada;
