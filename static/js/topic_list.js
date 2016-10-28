@@ -88,7 +88,7 @@ exports.build_list = function (stream, active_topic, max_topics) {
     });
 
     var topic_dom = templates.render('sidebar_subject_list',
-                                      {subjects: display_topics,
+                                      {topics: display_topics,
                                        want_show_more_topics_links: hiding_topics,
                                        stream: stream});
 
