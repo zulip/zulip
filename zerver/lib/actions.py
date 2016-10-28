@@ -2007,8 +2007,6 @@ system-generated notifications.""" % (product_name, notifications_stream.name,)
 
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"
-            if not restricted_to_domain:
-                signup_message += " (open realm)"
             internal_send_message(settings.NEW_USER_BOT, "stream",
                                   "signups", string_id, signup_message)
     return (realm, created)
