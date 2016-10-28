@@ -316,7 +316,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 short_name = ldap_user.attrs[short_name_attr][0]
 
             user_profile = do_create_user(username, None, realm, full_name, short_name)
-            return user_profile, False
+            return user_profile, True
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
