@@ -2,35 +2,26 @@
 {{#with this}}
 <div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
   <div class="subscription_table_elem subscription_header collapsed" data-toggle="collapse" data-target="#subscription_settings_{{stream_id}}">
-    <div class="subscription-info-container">
-      <span class="subscription-setting-icon">
-        {{partial "subscription_setting_icon"}}
-      </span>
-      <div class="subscription-info">
-        <span class="stream-name subscription-name-row">{{name}}</span>
-        <span class="subscriber_icon">(<span class="subscriber-count">{{subscriber_count}}</span> <i class="icon-vector-user"></i>)</span>
-        <span class="description subscription-description-row light">{{description}}</span>
-      </div>
-    </div>
 
-    <span class="sub_arrow"><i class="icon-vector-chevron-down"></i></span>
-    <button class="btn sub_unsub_button btn-default{{#subscribed}} btn-success subscribed-button{{/subscribed}}"
-            type="button" name="subscription">
-      {{#subscribed}}
-      {{t "Subscribed" }}
-      {{/subscribed}}
-      {{^subscribed}}
-      {{t "Subscribe" }}
-      {{/subscribed}}
-    </button>
-    <a class="preview-stream" href="#narrow/stream/{{name}}">
-      {{#subscribed}}
-        {{t "Narrow" }}
-      {{/subscribed}}
-      {{^subscribed}}
-        {{t "Preview" }}
-      {{/subscribed}}
-    </a>
+    {{#if subscribed}}
+    <div class="check checked sub_unsub_button"></div>
+    {{else}}
+    <div class="check sub_unsub_button"></div>
+    {{/if}}
+    {{ partial "subscription_setting_icon" }}
+    <div class="sub-info-box">
+        <div class="top-bar">
+            <div class="stream-name">{{name}}</div>
+            <div class="settings-dropdown-trigger">
+                <i class="icon-vector-chevron-down"></i>
+            </div>
+            <div class="subscriber-count">
+                <i class="icon-vector-user"></i>
+                {{subscriber_count}}
+            </div>
+        </div>
+        <div class="description">{{description}}</div>
+    </div>
   </div>
   {{ partial "subscription_settings" }}
 </div>

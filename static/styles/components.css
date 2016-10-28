@@ -1,5 +1,17 @@
 /* Reusable, object-oriented CSS base components for the Zulip redesign */
 
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide {
+    display: none;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;

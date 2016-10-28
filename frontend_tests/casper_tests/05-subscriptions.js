@@ -19,8 +19,8 @@ casper.then(function () {
     });
 });
 
-casper.waitForSelector('.sub_unsub_button.subscribed-button', function () {
-    casper.test.assertTextExists('Subscribed', 'Initial subscriptions loaded');
+casper.waitForSelector('.sub_unsub_button.checked', function () {
+    casper.test.assertExists('.sub_unsub_button.checked', 'Initial subscriptions loaded');
     casper.click('form#add_new_subscription input.btn');
 });
 casper.waitForSelector('#create_stream_button', function () {

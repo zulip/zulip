@@ -180,11 +180,6 @@
     margin: 20px 15px 20px 15px;
 }
 
-.stream-row {
-    position: relative;
-    border-top: 1px solid #ddd;
-}
-
 .stream-email .email-address {
     width: 90%;
     display: block;
@@ -240,7 +235,7 @@
     border: 1px solid #adadad;
 }
 
-.sub_unsub_button {
+.btn.sub_unsub_button {
     display: inline-block;
     min-width: 140px;
     float: right;
@@ -381,4 +376,107 @@ form#add_new_subscription {
 
 .change-stream-privacy-feedback {
     display: none;
+}
+
+.streams-list {
+    overflow: auto;
+    height: calc(100% - 41px);
+}
+
+.stream-row {
+    padding: 15px 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.stream-row.active {
+    background-color: #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.stream-row.no-border {
+    border-bottom: 1px solid #eee;
+}
+
+.subscription_table_elem > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.stream-row .check {
+    width: 25px;
+    height: 35px;
+    margin-right: 8px;
+    background-size: 60% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.stream-row .checked {
+    background-image: url(../images/checkbox-green.png);
+}
+
+.stream-row .icon {
+    width: 35px;
+    height: 35px;
+    margin-right: 8px;
+    background-color: purple;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.stream-row .icon .symbol {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.stream-row .icon .icon-vector-lock {
+    font-size: 1.4em;
+}
+
+.stream-row .icon .hashtag {
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.stream-row .sub-info-box {
+    width: calc(100% - 90px);
+}
+
+.stream-row .sub-info-box .top-bar > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.stream-row .sub-info-box .top-bar .stream-title {
+    font-weight: 600;
+}
+
+.stream-row .sub-info-box .top-bar .message-count,
+.stream-row .sub-info-box .top-bar .subscriber-count {
+    float: right;
+    color: #aaa;
+}
+
+.stream-row .sub-info-box .top-bar .subscriber-count {
+    margin-left: 10px;
+}
+
+.stream-row .sub-info-box .description {
+    margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stream-row .sub-info-box .description:empty:after {
+    content: "No description given.";
+    font-style: italic;
+    color: #aaa;
+}
+
+.stream-row .settings-dropdown-trigger {
+    float: right;
+    margin-left: 10px;
+    color: #aaa;
 }

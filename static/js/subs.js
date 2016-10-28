@@ -221,7 +221,7 @@ function create_sub(stream_name, attrs) {
 
 function button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream-id='" + id + "'] .sub_unsub_button");
+    return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
 
 function settings_for_sub(sub) {
@@ -393,7 +393,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         if (button.length !== 0) {
             exports.rerender_subscribers_count(sub);
 
-            button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
+            button.toggleClass("checked");
             button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
             // viewing the members of this stream
@@ -442,7 +442,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         sub.subscribed = false;
 
         var button = button_for_sub(sub);
-        button.removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text(i18n.t("Subscribe"));
+        button.toggleClass("checked");
         button.parent().children(".preview-stream").text(i18n.t("Preview"));
 
         var settings = settings_for_sub(sub);
@@ -1077,7 +1077,7 @@ $(function () {
         sub = stream_data.add_admin_options(sub);
 
         html = templates.render('subscription_setting_icon', sub);
-        sub_row.find('.subscription-setting-icon').expectOne().html(html);
+        sub_row.find('.icon').expectOne().replaceWith($(html));
 
         html = templates.render('subscription_type', sub);
         sub_row.find('.subscription-type').expectOne().html(html);
