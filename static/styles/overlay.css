@@ -11,7 +11,7 @@
 
     background-color: #19203a;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    z-index: 101;
+    z-index: 110;
 
     transition: all 0.2s ease;
     overflow: auto;
