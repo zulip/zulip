@@ -17,6 +17,7 @@ from tornado import httputil
 from tornado import gen
 from tornado import web
 from tornado.ioloop import IOLoop
+from tornado.websocket import WebSocketHandler, websocket_connect
 
 if False: from typing import Any, Callable, Generator, Optional
 
@@ -142,11 +143,60 @@ def fetch_request(url, callback, **kwargs):
     callback(response)
 
 
-class BaseHandler(web.RequestHandler):
+class BaseWebsocketHandler(WebSocketHandler):
     # target server ip
     target_host = '127.0.0.1'  # type: str
     # target server port
     target_port = None  # type: int
+
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        super(BaseWebsocketHandler, self).__init__(*args, **kwargs)
+        # define client for target websocket server
+        self.client = None # type: Any
+
+    def get(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Callable
+        # use get method from WebsocketHandler
+        return super(BaseWebsocketHandler, self).get(*args, **kwargs)
+
+    def open(self):
+        # type: () -> None
+        # setup connection with target websocket server
+        websocket_url = "ws://{host}:{port}{uri}".format(
+            host=self.target_host,
+            port=self.target_port,
+            uri=self.request.uri
+        )
+        request = httpclient.HTTPRequest(websocket_url)
+        request.headers = self._add_request_headers(['sec-websocket-extensions'])
+        websocket_connect(request, callback=self.open_callback,
+                          on_message_callback=self.on_client_message)
+
+    def open_callback(self, future):
+        # type: (Any) -> None
+        # callback on connect with target websocket server
+        self.client = future.result()
+
+    def on_client_message(self, message):
+        # type: (str) -> None
+        if not message:
+            # if message empty -> target websocket server close connection
+            return self.close()
+        if self.ws_connection:
+            # send message to client if connection exists
+            self.write_message(message, False)
+
+    def on_message(self, message, binary=False):
+        # type: (str, bool) -> Optional[Callable]
+        if not self.client:
+            # close websocket proxy connection if no connection with target websocket server
+            return self.close()
+        self.client.write_message(message, binary)
+
+    def check_origin(self, origin):
+        # type: (str) -> bool
+        return True
 
     def _add_request_headers(self, exclude_lower_headers_list=None):
         # type: (Optional[List[str]]) -> httputil.HTTPHeaders
@@ -157,9 +207,13 @@ class BaseHandler(web.RequestHandler):
                 headers.add(header, v)
         return headers
 
-    def get(self):
-        # type: () -> None
-        pass
+
+class CombineHandler(BaseWebsocketHandler):
+
+    def get(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[Callable]
+        if self.request.headers.get("Upgrade", "").lower() == 'websocket':
+            return super(CombineHandler, self).get(*args, **kwargs)
 
     def head(self):
         # type: () -> None
@@ -207,6 +261,8 @@ class BaseHandler(web.RequestHandler):
     @web.asynchronous
     def prepare(self):
         # type: () -> None
+        if self.request.headers.get("Upgrade", "").lower() == 'websocket':
+            return super(CombineHandler, self).prepare()
         url = transform_url(
             self.request.protocol,
             self.request.path,
@@ -233,15 +289,15 @@ class BaseHandler(web.RequestHandler):
                 self.finish()
 
 
-class WebPackHandler(BaseHandler):
+class WebPackHandler(CombineHandler):
     target_port = webpack_port
 
 
-class DjangoHandler(BaseHandler):
+class DjangoHandler(CombineHandler):
     target_port = django_port
 
 
-class TornadoHandler(BaseHandler):
+class TornadoHandler(CombineHandler):
     target_port = tornado_port
 
 
