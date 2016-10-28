@@ -89,3 +89,49 @@
     width: auto;
     min-width: inherit;
 }
+
+/* -- tab switcher -- */
+
+.new-style .tab-switcher {
+    font-weight: initial;
+    margin: 2px 4px;
+    display: inline-block;
+}
+
+.new-style .tab-switcher .ind-tab {
+    display: inline-block;
+    width: 90px;
+    margin: 0px -2px;
+    text-align: center;
+    padding: 3px 10px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.new-style .tab-switcher .ind-tab:not(.selected) {
+    border: 1px solid #ccc;
+}
+
+.new-style .tab-switcher .ind-tab.first {
+    border-radius: 5px 0px 0px 5px;
+    border-right: none;
+}
+
+.new-style .tab-switcher .ind-tab.second {
+    border-radius: 0px 5px 5px 0px;
+    border-left: none;
+}
+
+.new-style .tab-switcher .ind-tab.selected {
+    position: relative;
+    background: #888;
+    color: #fff;
+    border: 1px solid #777;
+    z-index: 2;
+}
+
+.new-style .tab-switcher .ind-tab.disabled {
+    pointer-events: none;
+    color: #CCC;
+    border-color: #DDD;
+}
