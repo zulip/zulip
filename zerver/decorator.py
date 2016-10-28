@@ -511,9 +511,9 @@ def internal_notify_view(view_func):
     return _wrapped_view_func
 
 # Converter functions for use with has_request_variables
-def to_non_negative_int(x):
-    # type: (float) -> int
-    x = int(x)
+def to_non_negative_int(s):
+    # type: (text_type) -> int
+    x = int(s)
     if x < 0:
         raise ValueError("argument is negative")
     return x
