@@ -185,7 +185,7 @@
         display: none;
     }
 
-    .subscription_name {
+    .stream-name {
         max-width: 120px;
         white-space: nowrap;
         overflow: hidden;

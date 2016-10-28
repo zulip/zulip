@@ -55,7 +55,7 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
 
 function stream_home_view_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
     var sub = stream_data.get_sub(stream);
     var notification_checkboxes = sub_row.find(".sub_notification_setting");
 
@@ -176,7 +176,7 @@ function update_stream_description(sub, description) {
 
 function stream_desktop_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     sub.desktop_notifications = ! sub.desktop_notifications;
@@ -185,7 +185,7 @@ function stream_desktop_notifications_clicked(e) {
 
 function stream_audible_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     sub.audible_notifications = ! sub.audible_notifications;
@@ -194,7 +194,7 @@ function stream_audible_notifications_clicked(e) {
 
 function stream_pin_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     exports.toggle_pin_to_top_stream(stream);
@@ -283,7 +283,7 @@ function show_subscription_settings(sub_row) {
     sub_arrow.removeClass('icon-vector-chevron-down');
     sub_arrow.addClass('icon-vector-chevron-up');
 
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
     var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
     var error_elem = sub_row.find('.subscriber_list_container .alert-error');
     var list = get_subscriber_list(sub_row);
@@ -346,7 +346,7 @@ function show_subscription_settings(sub_row) {
 
     var colorpicker = sub_row.find('.colorpicker');
 
-    var color = stream_data.get_color(sub_row.find('.subscription_name').text());
+    var color = stream_data.get_color(sub_row.find('.stream-name').text());
     stream_color.set_colorpicker_color(colorpicker, color);
 
     // To figure out the worst case for an expanded row's height, we do some math:
@@ -468,7 +468,7 @@ exports.mark_sub_unsubscribed = function (sub) {
 };
 
 exports.filter_table = function (query) {
-    var sub_name_elements = $('#subscriptions_table .subscription_name');
+    var sub_name_elements = $('#subscriptions_table .stream-name');
 
     if (query === '') {
         _.each(sub_name_elements, function (sub_name_elem) {
@@ -858,7 +858,7 @@ $(function () {
     }
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var stream_name = $(e.target).closest('.stream-row').find('.subscription_name').text();
+        var stream_name = $(e.target).closest('.stream-row').find('.stream-name').text();
         sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
@@ -936,7 +936,7 @@ $(function () {
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
         var sub_row = $(e.target).closest('.stream-row');
-        var stream = sub_row.find('.subscription_name').text();
+        var stream = sub_row.find('.stream-name').text();
         var text_box = sub_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
         // TODO: clean up this error handling
@@ -976,7 +976,7 @@ $(function () {
         var list_entry = $(e.target).closest("tr");
         var principal = list_entry.children(".subscriber-email").text();
         var sub_row = $(e.target).closest('.stream-row');
-        var stream_name = sub_row.find('.subscription_name').text();
+        var stream_name = sub_row.find('.stream-name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
 
@@ -1012,7 +1012,7 @@ $(function () {
         e.preventDefault();
 
         var sub_row = $(e.target).closest('.stream-row');
-        var old_name_box = sub_row.find('.subscription_name');
+        var old_name_box = sub_row.find('.stream-name');
         var old_name = old_name_box.text();
         var new_name_box = sub_row.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());
@@ -1044,7 +1044,7 @@ $(function () {
         var $form = $(e.target);
 
         var $sub_row = $(e.target).closest('.stream-row');
-        var stream_name = $sub_row.find('.subscription_name').text();
+        var stream_name = $sub_row.find('.stream-name').text();
         var description = $sub_row.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
