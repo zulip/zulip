@@ -12,7 +12,7 @@ from zilencer.models import Deployment
 from zerver.views import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
-    get_realm, get_prereg_user_by_email, get_user_profile_by_email,
+    get_realm, get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
 )
 
@@ -605,6 +605,7 @@ class RealmCreationTest(ZulipTestCase):
         # type: () -> None
         username = "user1"
         password = "test"
+        string_id = "test"
         domain = "test.com"
         org_type = Realm.COMMUNITY
         email = "user1@test.com"
@@ -626,13 +627,14 @@ class RealmCreationTest(ZulipTestCase):
             result = self.client_get(confirmation_url)
             self.assertEquals(result.status_code, 200)
 
-            result = self.submit_reg_form_for_user(username, password, domain=domain, realm_org_type=org_type)
+            result = self.submit_reg_form_for_user(username, password, domain=domain,
+                                                   realm_subdomain = string_id, realm_org_type=org_type)
             self.assertEquals(result.status_code, 302)
 
             # Make sure the realm is created
-            realm = get_realm(domain)
+            realm = get_realm_by_string_id(string_id)
             self.assertIsNotNone(realm)
-            self.assertEqual(realm.domain, domain)
+            self.assertEqual(realm.string_id, string_id)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
 
             # Make sure the RealmAlias is created
@@ -650,22 +652,24 @@ class RealmCreationTest(ZulipTestCase):
         # type: () -> None
         username = "user1"
         password = "test"
+        string_id = "test"
         domain = "test.com"
         org_type = Realm.CORPORATE
         email = "user1@test.com"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm(domain))
+        self.assertIsNone(get_realm_by_string_id(string_id))
 
         # Create new realm with the email
         with self.settings(OPEN_REALM_CREATION=True):
             self.client_post('/create_realm/', {'email': email})
             confirmation_url = self.get_confirmation_url_from_outbox(email)
             self.client_get(confirmation_url)
-            self.submit_reg_form_for_user(username, password, domain=domain, realm_org_type=org_type)
+            self.submit_reg_form_for_user(username, password, domain=domain,
+                                          realm_subdomain = string_id, realm_org_type=org_type)
 
         # Check corporate defaults were set correctly
-        realm = get_realm(domain)
+        realm = get_realm_by_string_id(string_id)
         self.assertEquals(realm.org_type, Realm.CORPORATE)
         self.assertEquals(realm.restricted_to_domain, True)
         self.assertEquals(realm.invite_required, False)
@@ -749,10 +753,10 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEquals(result.status_code, 302)
 
             # Make sure the realm is created
-            realm = get_realm(domain)
+            realm = get_realm_by_string_id(subdomain)
 
             self.assertIsNotNone(realm)
-            self.assertEqual(realm.domain, domain)
+            self.assertEqual(realm.string_id, subdomain)
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, subdomain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)

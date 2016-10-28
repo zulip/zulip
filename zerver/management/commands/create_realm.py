@@ -16,9 +16,9 @@ import re
 import sys
 
 class Command(BaseCommand):
-    help = """Create a realm for the specified domain.
+    help = """Create a realm.
 
-Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
+Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
 
     option_list = BaseCommand.option_list + (
         make_option('-d', '--domain',
@@ -70,12 +70,12 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        domain = options["domain"]
-        name = options["name"]
         string_id=options["string_id"]
+        name = options["name"]
+        domain = options["domain"]
 
-        if domain is None or name is None or string_id is None:
-            print("\033[1;31mPlease provide a domain, name, and string_id.\033[0m\n", file=sys.stderr)
+        if name is None or not string_id:
+            print("\033[1;31mPlease provide a name and string_id.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
@@ -83,12 +83,13 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
             print("\033[1;31mExternal deployments are not supported on voyager deployments.\033[0m\n", file=sys.stderr)
             exit(1)
 
-        self.validate_domain(domain)
+        if domain is not None:
+            self.validate_domain(domain)
 
-        realm, created = do_create_realm(domain, name, string_id=string_id,
-                                         org_type=options["org_type"])
+        realm, created = do_create_realm(string_id, name, org_type=options["org_type"],
+                                         domain=domain)
         if created:
-            print(domain, "created.")
+            print(string_id, "created.")
             if options["deployment_id"] is not None:
                 deployment = Deployment.objects.get(id=options["deployment_id"])
                 deployment.realms.add(realm)
@@ -104,4 +105,4 @@ Usage: python manage.py create_realm --domain=foo.com --name='Foo, Inc.'"""
 
             print("\033[1;36mDefault streams set to social,engineering,zulip!\033[0m")
         else:
-            print(domain, "already exists.")
+            print(string_id, "already exists.")

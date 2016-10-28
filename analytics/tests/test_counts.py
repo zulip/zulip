@@ -30,8 +30,8 @@ class AnalyticsTestCase(TestCase):
     def setUp(self):
         # type: () -> None
         self.default_realm = Realm.objects.create(
-            domain='analytics.test', name='Realm Test',
-            string_id='realmtest', date_created=self.TIME_ZERO - 2*self.DAY)
+            string_id='realmtest', name='Realm Test',
+            domain='analytics.test', date_created=self.TIME_ZERO - 2*self.DAY)
 
     # Lightweight creation of users, streams, and messages
     def create_user(self, email, **kwargs):
@@ -188,7 +188,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
                          {'is_bot': False, 'is_active': True}, None, CountStat.HOUR, False)
 
-        realm = Realm.objects.create(domain='domain', name='name', string_id='string_id',
+        realm = Realm.objects.create(string_id='string_id', name='name', domain='domain',
                                      date_created=self.TIME_ZERO)
         self.create_user('email', realm=realm)
 

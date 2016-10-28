@@ -218,12 +218,12 @@ def accounts_register(request):
             password = None
 
         if realm_creation:
-            domain = split_email_to_domain(email)
+            string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
             org_type = int(form.cleaned_data['realm_org_type'])
-            string_id = form.cleaned_data['realm_subdomain']
-            realm = do_create_realm(domain, realm_name, org_type=org_type,
-                                    string_id=string_id)[0]
+            domain = split_email_to_domain(email)
+            realm = do_create_realm(string_id, realm_name, org_type=org_type,
+                                    domain=domain)[0]
 
             set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
 

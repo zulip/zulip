@@ -29,7 +29,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    get_realm, bulk_get_recipients, \
+    get_realm, get_realm_by_string_id, bulk_get_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
@@ -1959,11 +1959,10 @@ def get_realm_creation_defaults(org_type=None, restricted_to_domain=None, invite
             'restricted_to_domain': restricted_to_domain,
             'invite_required': invite_required}
 
-def do_create_realm(domain, name, string_id=None, restricted_to_domain=None,
-                    invite_required=None, org_type=None):
-    # type: (text_type, text_type, Optional[text_type], Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
-    domain = domain.lower()
-    realm = get_realm(domain)
+def do_create_realm(string_id, name, restricted_to_domain=None,
+                    invite_required=None, org_type=None, domain=None):
+    # type: (text_type, text_type, Optional[bool], Optional[bool], Optional[int], Optional[text_type]) -> Tuple[Realm, bool]
+    realm = get_realm_by_string_id(string_id)
     created = not realm
     if created:
         realm_params = get_realm_creation_defaults(org_type=org_type,
@@ -1972,12 +1971,15 @@ def do_create_realm(domain, name, string_id=None, restricted_to_domain=None,
         org_type = realm_params['org_type']
         restricted_to_domain = realm_params['restricted_to_domain']
         invite_required = realm_params['invite_required']
-        realm = Realm(domain=domain, name=name, org_type=org_type, string_id=string_id,
-                      restricted_to_domain=restricted_to_domain, invite_required=invite_required)
+        realm = Realm(name=name, string_id=string_id, org_type=org_type,
+                      restricted_to_domain=restricted_to_domain, invite_required=invite_required,
+                      domain=string_id + '@acme.com')
         realm.save()
 
-        realmalias = RealmAlias(realm=realm, domain=domain)
-        realmalias.save()
+        if domain:
+            domain = domain.lower()
+            realmalias = RealmAlias(realm=realm, domain=domain)
+            realmalias.save()
 
         # Create stream once Realm object has been saved
         notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
@@ -1997,17 +1999,18 @@ system-generated notifications.""" % (product_name, notifications_stream.name,)
 
         # Log the event
         log_event({"type": "realm_created",
-                   "domain": domain,
+                   "string_id": string_id,
                    "restricted_to_domain": restricted_to_domain,
                    "invite_required": invite_required,
-                   "org_type": org_type})
+                   "org_type": org_type,
+                   "domain": domain})
 
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"
             if not restricted_to_domain:
                 signup_message += " (open realm)"
             internal_send_message(settings.NEW_USER_BOT, "stream",
-                                  "signups", domain, signup_message)
+                                  "signups", string_id, signup_message)
     return (realm, created)
 
 def do_change_enable_stream_desktop_notifications(user_profile,

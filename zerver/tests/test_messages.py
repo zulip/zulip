@@ -52,7 +52,7 @@ from typing import Any, Optional
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain):
         # type: (text_type) -> Realm
-        realm = Realm.objects.create(domain=domain, string_id=domain)
+        realm = Realm.objects.create(string_id=domain, domain=domain)
         RealmAlias.objects.create(realm=realm, domain=domain)
         return realm
 

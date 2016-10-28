@@ -41,7 +41,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        Realm.objects.create(domain=settings.INTERNAL_BOT_DOMAIN)
+        Realm.objects.create(string_id=settings.INTERNAL_BOT_DOMAIN.split('.')[0],
+                             domain=settings.INTERNAL_BOT_DOMAIN)
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
         create_users(names, bot_type=UserProfile.DEFAULT_BOT)
