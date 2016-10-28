@@ -9,6 +9,9 @@
 # Needed to compute test coverage
 coverage==4.2
 
+# fake for LDAP testing
+git+https://github.com/umairwaheed/fakeldap.git@7e824313d98a96e52119c359a9b0233fe0b8e585#egg=fakeldap==0.5.1
+
 # Needed to run pyflakes linter
 pyflakes==1.3.0
 
