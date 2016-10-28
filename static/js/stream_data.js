@@ -16,6 +16,9 @@ exports.clear_subscriptions = function () {
 exports.recent_subjects = new Dict({fold_case: true});
 exports.clear_subscriptions();
 
+exports.is_active = function (stream_name) {
+    return exports.recent_subjects.has(stream_name);
+};
 
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
