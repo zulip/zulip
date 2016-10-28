@@ -1094,8 +1094,8 @@ $(function () {
     function change_stream_privacy(e, url, success_message, error_message, invite_only) {
         e.preventDefault();
 
-        var stream_name = $(e.target).attr("data-stream-name");
         var sub_row = $(e.target).closest('.stream-row');
+        var stream_name = sub_row.attr("data-stream-name");
 
         $("#subscriptions-status").hide();
         var data = {"stream_name": stream_name};
