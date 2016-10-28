@@ -406,7 +406,7 @@ form#add_new_subscription {
     border-bottom: 1px solid #ddd;
 }
 
-.exit {
+.subscriptions-container .exit {
     font-weight: 400;
     position: absolute;
     top: 5px;
@@ -415,7 +415,7 @@ form#add_new_subscription {
     cursor: pointer;
 }
 
-.exit-sign {
+.subscriptions-container .exit-sign {
     position: relative;
     top: 2px;
     margin-left: 3px;
@@ -436,7 +436,7 @@ form#add_new_subscription {
     border-right: 1px solid #ddd;
 }
 
-.left .search-container {
+.subscriptions-container .left .search-container {
     padding: 6px 8px;
     border-bottom: 1px solid #ddd;
 }
@@ -448,11 +448,11 @@ form#add_new_subscription {
     border-bottom: 1px solid #ddd;
 }
 
-.display-type.preview:after {
+.subscriptions-container .display-type.preview:after {
     content: "Preview";
 }
 
-.display-type.preferences:after {
+.subscriptions-container .display-type.preferences:after {
     content: "Preferences";
 }
 
@@ -460,50 +460,6 @@ form#add_new_subscription {
     width: 100%;
     height: calc(100% - 41px);
     border: none;
-}
-
-.new-style .tab-switcher {
-    font-weight: initial;
-    margin: 2px 4px;
-    display: inline-block;
-}
-
-.new-style .tab-switcher .ind-tab {
-    display: inline-block;
-    width: 90px;
-    margin: 0px -2px;
-    text-align: center;
-    padding: 3px 10px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-.new-style .tab-switcher .ind-tab:not(.selected) {
-    border: 1px solid #ccc;
-}
-
-.new-style .tab-switcher .ind-tab.first {
-    border-radius: 5px 0px 0px 5px;
-    border-right: none;
-}
-
-.new-style .tab-switcher .ind-tab.second {
-    border-radius: 0px 5px 5px 0px;
-    border-left: none;
-}
-
-.new-style .tab-switcher .ind-tab.selected {
-    position: relative;
-    background: #888;
-    color: #fff;
-    border: 1px solid #777;
-    z-index: 2;
-}
-
-.new-style .tab-switcher .ind-tab.disabled {
-    pointer-events: none;
-    color: #CCC;
-    border-color: #DDD;
 }
 
 input[type=text].small {
