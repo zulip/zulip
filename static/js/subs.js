@@ -55,7 +55,7 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
 
 function stream_home_view_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
     var sub = stream_data.get_sub(stream);
     var notification_checkboxes = sub_row.find(".sub_notification_setting");
 
@@ -117,7 +117,7 @@ function update_in_home_view(sub, value) {
 
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
-    var not_in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_not_in_home_view .sub_setting_control");
+    var not_in_home_view_checkbox = $(".subscription_settings[data-stream='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);
 }
 
@@ -133,13 +133,13 @@ exports.toggle_pin_to_top_stream = function (stream_name) {
 };
 
 function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
+    var desktop_notifications_checkbox = $(".subscription_settings[data-stream='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
     sub.desktop_notifications = value;
 }
 
 function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_audible_notifications_setting .sub_setting_control");
+    var audible_notifications_checkbox = $(".subscription_settings[data-stream='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
     audible_notifications_checkbox.prop('checked', value);
     sub.audible_notifications = value;
 }
@@ -170,13 +170,13 @@ function update_stream_description(sub, description) {
     sub.description = description;
 
     var sub_settings_selector = '.stream-row[data-subscription-id=' + sub.stream_id + ']';
-    $(sub_settings_selector + ' .subscription_description').text(description);
+    $(sub_settings_selector + ' .description').text(description);
     $(sub_settings_selector + ' input.description').val(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     sub.desktop_notifications = ! sub.desktop_notifications;
@@ -185,7 +185,7 @@ function stream_desktop_notifications_clicked(e) {
 
 function stream_audible_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     sub.audible_notifications = ! sub.audible_notifications;
@@ -194,7 +194,7 @@ function stream_audible_notifications_clicked(e) {
 
 function stream_pin_clicked(e) {
     var sub_row = $(e.target).closest('.stream-row');
-    var stream = sub_row.find('.subscription_name').text();
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     exports.toggle_pin_to_top_stream(stream);
@@ -307,7 +307,7 @@ var show_subscription_settings = function ($sub_row) {
     });
 
     var stream_name = $sub_row.data("stream-name");
-    var colorpicker = $sub_row.find('.colorpicker');
+    var colorpicker = $("#subscription_overlay .subscription_settings[data-stream-id='" + $sub_row.data("stream-id") + "'] .colorpicker");
 
     var color = stream_data.get_color(stream_name);
     stream_color.set_colorpicker_color(colorpicker, color);
@@ -949,7 +949,7 @@ $(function () {
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
         var sub_row = $(e.target).closest('.stream-row');
-        var stream = sub_row.find('.subscription_name').text();
+        var stream = sub_row.find('.stream-name').text();
         var text_box = sub_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
         // TODO: clean up this error handling
@@ -995,7 +995,7 @@ $(function () {
         var list_entry = $(e.target).closest("tr");
         var principal = list_entry.children(".subscriber-email").text();
         var sub_row = $(e.target).closest('.stream-row');
-        var stream_name = sub_row.find('.subscription_name').text();
+        var stream_name = sub_row.find('.stream-name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
 
@@ -1031,7 +1031,7 @@ $(function () {
         e.preventDefault();
 
         var sub_row = $(e.target).closest('.stream-row');
-        var old_name_box = sub_row.find('.subscription_name');
+        var old_name_box = sub_row.find('.stream-name');
         var old_name = old_name_box.text();
         var new_name_box = sub_row.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());

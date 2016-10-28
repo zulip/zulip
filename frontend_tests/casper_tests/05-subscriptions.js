@@ -62,12 +62,12 @@ casper.then(function () {
 });
 casper.waitFor(function () {
     return casper.evaluate(function () {
-        return $('.subscription_name').is(':contains("Waseemio")');
+        return $('.stream-name').is(':contains("Waseemio")');
     });
 });
 casper.then(function () {
     casper.test.info("User should be subscribed to stream Waseemio");
-    casper.test.assertSelectorHasText('.subscription_name', 'Waseemio');
+    casper.test.assertSelectorHasText('.stream-name', 'Waseemio');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
     casper.click('form#add_new_subscription input.btn');
 });
@@ -93,7 +93,7 @@ casper.waitForText('A stream with this name already exists', function () {
 });
 casper.waitForText('Filter by stream name', function () {
     casper.test.assertSelectorHasText('.stream-row[data-stream-name="Verona"] .stream-name', 'Verona', 'Verona stream exists before filtering');
-    casper.test.assertSelectorDoesntHaveText('.stream-row.notdisplayed .subscription_name', 'Verona', 'Verona stream shown before filtering');
+    casper.test.assertSelectorDoesntHaveText('.stream-row.notdisplayed .stream-name', 'Verona', 'Verona stream shown before filtering');
 });
 casper.then(function () {
     casper.fill('form#add_new_subscription', {stream_name: 'was'});

@@ -733,7 +733,7 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 
     global.write_handlebars_output("subscription_table_body", html);
 
-    var span = $(html).find(".subscription_name:first");
+    var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
 
     span = $(html).find(".admin-settings .sub_settings_title");
