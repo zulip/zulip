@@ -180,7 +180,7 @@
     margin: 20px 15px 20px 15px;
 }
 
-.subscription_row {
+.stream-row {
     position: relative;
     border-top: 1px solid #ddd;
 }
@@ -220,7 +220,7 @@
     margin-right: 10px;
 }
 
-.subscription_row:hover .preview-stream {
+.stream-row:hover .preview-stream {
     display: inline-block;
 }
 

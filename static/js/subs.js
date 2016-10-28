@@ -54,7 +54,7 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
 };
 
 function stream_home_view_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
+    var sub_row = $(e.target).closest('.stream-row');
     var stream = sub_row.find('.subscription_name').text();
     var sub = stream_data.get_sub(stream);
     var notification_checkboxes = sub_row.find(".sub_notification_setting");
@@ -169,13 +169,13 @@ function update_stream_name(sub, new_name) {
 function update_stream_description(sub, description) {
     sub.description = description;
 
-    var sub_settings_selector = '.subscription_row[data-subscription-id=' + sub.stream_id + ']';
+    var sub_settings_selector = '.stream-row[data-subscription-id=' + sub.stream_id + ']';
     $(sub_settings_selector + ' .subscription_description').text(description);
     $(sub_settings_selector + ' input.description').val(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
+    var sub_row = $(e.target).closest('.stream-row');
     var stream = sub_row.find('.subscription_name').text();
 
     var sub = stream_data.get_sub(stream);
@@ -184,7 +184,7 @@ function stream_desktop_notifications_clicked(e) {
 }
 
 function stream_audible_notifications_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
+    var sub_row = $(e.target).closest('.stream-row');
     var stream = sub_row.find('.subscription_name').text();
 
     var sub = stream_data.get_sub(stream);
@@ -193,7 +193,7 @@ function stream_audible_notifications_clicked(e) {
 }
 
 function stream_pin_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
+    var sub_row = $(e.target).closest('.stream-row');
     var stream = sub_row.find('.subscription_name').text();
 
     var sub = stream_data.get_sub(stream);
@@ -399,7 +399,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         }
 
         // Display the swatch and subscription settings
-        var sub_row = settings.closest('.subscription_row');
+        var sub_row = settings.closest('.stream-row');
         sub_row.find(".color_swatch").addClass('in');
         sub_row.find(".regular_subscription_settings").collapse('show');
     } else {
@@ -446,7 +446,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         exports.rerender_subscribers_count(sub);
 
         // Hide the swatch and subscription settings
-        var sub_row = settings.closest('.subscription_row');
+        var sub_row = settings.closest('.stream-row');
         sub_row.find(".color_swatch").removeClass('in');
         if (sub.render_subscribers) {
             // TODO: having a completely empty settings div messes
@@ -472,7 +472,7 @@ exports.filter_table = function (query) {
 
     if (query === '') {
         _.each(sub_name_elements, function (sub_name_elem) {
-            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
         });
         return;
     }
@@ -500,9 +500,9 @@ exports.filter_table = function (query) {
         });
 
         if (matches) {
-            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
         } else {
-            $(sub_name_elem).parents('.subscription_row').addClass("notdisplayed");
+            $(sub_name_elem).parents('.stream-row').addClass("notdisplayed");
         }
     });
 };
@@ -858,7 +858,7 @@ $(function () {
     }
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var stream_name = $(e.target).closest('.subscription_row').find('.subscription_name').text();
+        var stream_name = $(e.target).closest('.stream-row').find('.subscription_name').text();
         sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
@@ -911,7 +911,7 @@ $(function () {
     });
 
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
 
         // Remove all inputs from the tabindex
         sub_row.find('.subscription_settings :input').attr('tabindex', '-1');
@@ -935,7 +935,7 @@ $(function () {
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
         var stream = sub_row.find('.subscription_name').text();
         var text_box = sub_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
@@ -975,7 +975,7 @@ $(function () {
 
         var list_entry = $(e.target).closest("tr");
         var principal = list_entry.children(".subscriber-email").text();
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
         var stream_name = sub_row.find('.subscription_name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
@@ -1011,7 +1011,7 @@ $(function () {
     $("#subscriptions_table").on("submit", ".rename-stream form", function (e) {
         e.preventDefault();
 
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
         var old_name_box = sub_row.find('.subscription_name');
         var old_name = old_name_box.text();
         var new_name_box = sub_row.find('input[name="new-name"]');
@@ -1043,7 +1043,7 @@ $(function () {
         e.preventDefault();
         var $form = $(e.target);
 
-        var $sub_row = $(e.target).closest('.subscription_row');
+        var $sub_row = $(e.target).closest('.stream-row');
         var stream_name = $sub_row.find('.subscription_name').text();
         var description = $sub_row.find('input[name="description"]').val();
 
@@ -1088,7 +1088,7 @@ $(function () {
         e.preventDefault();
 
         var stream_name = $(e.target).attr("data-stream-name");
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
 
         $("#subscriptions-status").hide();
         var data = {"stream_name": stream_name};
@@ -1138,12 +1138,12 @@ $(function () {
     });
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
         show_subscription_settings(sub_row);
     });
 
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
+        var sub_arrow = $(e.target).closest('.stream-row').find('.sub_arrow i');
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
