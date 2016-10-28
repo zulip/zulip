@@ -117,7 +117,7 @@ function update_in_home_view(sub, value) {
 
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
-    var not_in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_not_in_home_view .sub_setting_control");
+    var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);
 }
 
@@ -133,13 +133,13 @@ exports.toggle_pin_to_top_stream = function (stream_name) {
 };
 
 function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
+    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
     sub.desktop_notifications = value;
 }
 
 function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_audible_notifications_setting .sub_setting_control");
+    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
     audible_notifications_checkbox.prop('checked', value);
     sub.audible_notifications = value;
 }
@@ -215,18 +215,18 @@ function create_sub(stream_name, attrs) {
 
 function button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_" + id + " .sub_unsub_button");
+    return $(".stream-row[data-stream-id='" + id + "'] .sub_unsub_button");
 }
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_settings_" + id);
+    return $(".stream-row[data-stream-id='" + id + "'] .subscription_settings");
 }
 
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     stream_data.update_subscribers_count(sub);
-    $("#subscription_" + id + " .subscriber_count").text(sub.subscriber_count);
+    $(".stream-row[data-stream-id='" + id + "'] .subscriber_count").text(sub.subscriber_count);
 };
 
 exports.show_settings_for = function (stream_name) {
