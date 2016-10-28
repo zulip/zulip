@@ -117,7 +117,7 @@ function update_in_home_view(sub, value) {
 
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
-    var not_in_home_view_checkbox = $(".subscription_settings[data-stream='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
+    var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);
 }
 
@@ -133,13 +133,13 @@ exports.toggle_pin_to_top_stream = function (stream_name) {
 };
 
 function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $(".subscription_settings[data-stream='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
+    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
     sub.desktop_notifications = value;
 }
 
 function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $(".subscription_settings[data-stream='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
+    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
     audible_notifications_checkbox.prop('checked', value);
     sub.audible_notifications = value;
 }
@@ -215,17 +215,17 @@ function create_sub(stream_name, attrs) {
 
 function button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream='" + id + "'] .check");
+    return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_overlay .subscription_settings[data-stream='" + id + "']");
+    return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 }
 
 function get_subscriber_list(sub_row) {
-    var id = sub_row.data("stream");
-    return $('.subscription_settings[data-stream="' + id + '"] .subscriber-list');
+    var id = sub_row.data("stream-id");
+    return $('.subscription_settings[data-stream-id="' + id + '"] .subscriber-list');
 }
 
 function format_member_list_elem(email) {
@@ -329,7 +329,7 @@ var show_subscription_settings = function ($sub_row) {
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     stream_data.update_subscribers_count(sub);
-    $(".stream-row [data-stream='" + id + "'] .num-subs").text(sub.subscriber_count);
+    $(".stream-row [data-stream-id='" + id + "'] .num-subs").text(sub.subscriber_count);
 };
 
 exports.show_settings_for = function (stream_name) {
@@ -1063,7 +1063,7 @@ $(function () {
         var $form = $(e.target);
 
         var $settings = $(e.target).closest(".subscription_settings");
-        var $sub_row = $(".stream-row[data-stream='" + $settings.data("stream") + "']");
+        var $sub_row = $(".stream-row[data-stream-id='" + $settings.data("stream-id") + "']");
         var stream_name = $sub_row.data("stream-name");
         var description = $settings.find('input[name="description"]').val();
 
