@@ -1,0 +1,96 @@
+<div id="subscription_settings_{{stream_id}}" class="collapse subscription_settings">
+  <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
+    <div class="subscription-type">
+      {{partial "subscription_type"}}
+    </div>
+    <div class="subscription-config">
+    <ul>
+      <li>
+        <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox sub-mute-setting">
+          <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
+          <label class="subscription-control-label">Mute stream</label>
+          <p class="mute-note {{#if in_home_view}}hide-mute-note{{/if}}">{{t "Muted streams don't show up in your home view or generate notifications unless you are mentioned." }}</p>
+        </div>
+      </li>
+      <li>
+
+        <div id="sub_desktop_notifications_setting"
+             class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+          <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+          <label class="subscription-control-label">{{t "Receive desktop <br />notifications" }}</label>
+        </div>
+
+        <div id="sub_audible_notifications_setting"
+             class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
+          <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
+          <label class="subscription-control-label">{{t "Receive audible<br />notifications" }}</label>
+        </div>
+
+      </li>
+      <li>
+        <div id="sub_pin_setting" class="sub_setting_checkbox">
+          <input id="pinstream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if pin_to_top}}checked{{/if}} />
+          <label class="subscription-control-label">{{t "Pin stream to top<br /> of left sidebar" }}</label>
+        </div>
+      </li>
+      <li>
+        <span class="sub_setting_control">
+          <input stream_name="{{name}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" tabindex="-1" />
+        </span>
+        <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
+      </li>
+    </ul>
+    </div>
+  </div>
+  {{#if_and subscribed email_address}}
+  <div class="stream-email-box">
+      <span class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{stream_id}}"></i></span>
+  <div class="stream-email">
+      <span class="email-address">{{email_address}}</span>
+  </div>
+  </div>
+  {{/if_and}}
+
+  {{#if is_admin}}
+    <div class="admin-settings">
+      <span class="sub_settings_title">{{t "Administrator settings" }}</span>
+      <div class="rename-stream">
+        <form class="form-inline">
+          <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
+          <input type="submit" name="rename" value="{{t 'Rename stream' }}" class="btn btn-danger stream-rename-button" tabindex="-1" />
+        </form>
+      </div>
+      <div class="change-stream-description">
+        <form class="form-inline">
+          <input type="hidden" name="stream_name" value="{{name}}" />
+          <input type="text" name="description" value="{{description}}" class="input-block description" tabindex="-1" />
+          <input type="submit" name="change-stream-description" value="{{t 'Change stream description' }}" class="btn btn-danger change-stream-description-button" tabindex="-1" />
+        </form>
+      </div>
+      <div class="change-stream-privacy">
+        {{partial "change_stream_privacy"}}
+      </div>
+    </div>
+  {{/if}}
+
+  {{#render_subscribers}}
+  <div class="subscriber_list_settings">
+    <span class="sub_settings_title">{{t "Stream membership" }}</span>
+    <div class="subscriber_list_add">
+      <form class="form-inline">
+        <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
+        <input type="submit" name="add_subscriber" value="{{t 'Add' }}" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
+      </form>
+    </div>
+  </div>
+  <div class="subscriber-list-box">
+    <div class="subscriber_list_container">
+      <div class="subscriber_list_loading_indicator"></div>
+      <div class="alert alert-error hide"></div>
+      <div class="alert alert-warning hide"></div>
+      <table class="subscriber-list">
+      </table>
+    </div>
+  </div>
+  {{/render_subscribers}}
+</div>

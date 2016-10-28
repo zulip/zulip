@@ -722,6 +722,7 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     };
 
     global.use_template('subscription'); // partial
+    global.use_template('subscription_settings'); // partial
     global.use_template('subscription_type'); // partial
     global.use_template('subscription_setting_icon'); // partial
     global.use_template('change_stream_privacy'); // partial
