@@ -279,7 +279,7 @@ function get_topic_suggestions(query_operators) {
     topics = topics.slice(0, 10);
 
     // Just use alphabetical order.  While recency and read/unreadness of
-    // subjects do matter in some contexts, you can get that from the left sidebar,
+    // topics do matter in some contexts, you can get that from the left sidebar,
     // and I'm leaning toward high scannability for autocompletion.  I also don't
     // care about case.
     topics.sort();
