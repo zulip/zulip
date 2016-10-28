@@ -7,17 +7,17 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
+var recent_topics = new Dict({fold_case: true});
 
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
     subs_by_stream_id = new Dict();
 };
 
-exports.recent_subjects = new Dict({fold_case: true});
 exports.clear_subscriptions();
 
 exports.is_active = function (stream_name) {
-    return exports.recent_subjects.has(stream_name);
+    return recent_topics.has(stream_name);
 };
 
 exports.add_sub = function (stream_name, sub) {
@@ -232,10 +232,10 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
     var stream = message.stream;
     var canon_subject = exports.canonicalized_name(message.subject);
 
-    if (! exports.recent_subjects.has(stream)) {
-        exports.recent_subjects.set(stream, []);
+    if (! recent_topics.has(stream)) {
+        recent_topics.set(stream, []);
     } else {
-        exports.recent_subjects.set(stream, _.filter(exports.recent_subjects.get(stream), function (item) {
+        recent_topics.set(stream, _.filter(recent_topics.get(stream), function (item) {
             var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
             if (is_duplicate) {
                 current_timestamp = item.timestamp;
@@ -245,7 +245,7 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
         }));
     }
 
-    var recents = exports.recent_subjects.get(stream);
+    var recents = recent_topics.get(stream);
 
     if (remove_message !== undefined) {
         count = count - 1;
@@ -264,7 +264,7 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
         return b.timestamp - a.timestamp;
     });
 
-    exports.recent_subjects.set(stream, recents);
+    recent_topics.set(stream, recents);
 };
 
 exports.get_streams_for_settings_page = function (public_streams) {
@@ -344,12 +344,12 @@ exports.initialize_from_page_params = function () {
 };
 
 exports.get_recent_topics = function (stream_name) {
-    return exports.recent_subjects.get(stream_name);
+    return recent_topics.get(stream_name);
 };
 
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
-    exports.recent_subjects = new Dict.from(stream_map, {fold_case: true});
+    recent_topics = new Dict.from(stream_map, {fold_case: true});
 };
 
 return exports;
