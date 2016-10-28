@@ -56,20 +56,20 @@ exports.set_count = function (stream_li, topic, count) {
 };
 
 exports.build_list = function (stream, active_topic, max_topics) {
-    var subjects = stream_data.get_recent_topics(stream) || [];
+    var topics = stream_data.get_recent_topics(stream) || [];
 
     if (active_topic) {
         active_topic = active_topic.toLowerCase();
     }
 
-    var display_subjects = [];
+    var display_topics = [];
     var hiding_topics = false;
 
-    _.each(subjects, function (subject_obj, idx) {
+    _.each(topics, function (subject_obj, idx) {
         var topic_name = subject_obj.subject;
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
-        // Show the most recent subjects, as well as any with unread messages
+        // Show the most recent topics, as well as any with unread messages
         var always_visible = (idx < max_topics) || (num_unread > 0) || (active_topic === topic_name);
 
         if (!always_visible) {
@@ -84,11 +84,11 @@ exports.build_list = function (stream, active_topic, max_topics) {
             zoom_out_hide: !always_visible,
             url: narrow.by_stream_subject_uri(stream, topic_name)
         };
-        display_subjects.push(display_subject);
+        display_topics.push(display_subject);
     });
 
     var topic_dom = templates.render('sidebar_subject_list',
-                                      {subjects: display_subjects,
+                                      {subjects: display_topics,
                                        want_show_more_topics_links: hiding_topics,
                                        stream: stream});
 
