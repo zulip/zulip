@@ -1142,6 +1142,17 @@ def get_realm(domain):
     except Realm.DoesNotExist:
         return None
 
+# Added to assist with the domain to string_id transition. Will eventually
+# be renamed and replace get_realm.
+def get_realm_by_string_id(string_id):
+    # type: (text_type) -> Optional[Realm]
+    if not string_id:
+        return None
+    try:
+        return Realm.objects.get(string_id=string_id)
+    except Realm.DoesNotExist:
+        return None
+
 def clear_database():
     # type: () -> None
     pylibmc.Client(['127.0.0.1']).flush_all()
