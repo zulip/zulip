@@ -254,7 +254,7 @@ function get_topic_suggestions(query_operators) {
         return [];
     }
 
-    var topics = stream_data.recent_subjects.get(stream);
+    var topics = stream_data.get_recent_topics(stream);
 
     stream = stream_data.get_name(stream);
 
@@ -262,8 +262,8 @@ function get_topic_suggestions(query_operators) {
         return [];
     }
 
-    // Be defensive here in case stream_data.recent_subjects gets super huge, but
-    // still slice off enough topics to find matches.
+    // Be defensive here in case stream_data.get_recent_topics gets
+    // super huge, but still slice off enough topics to find matches.
     topics = topics.slice(0, 300);
 
     topics = _.map(topics, function (topic) {
@@ -279,7 +279,7 @@ function get_topic_suggestions(query_operators) {
     topics = topics.slice(0, 10);
 
     // Just use alphabetical order.  While recency and read/unreadness of
-    // subjects do matter in some contexts, you can get that from the left sidebar,
+    // topics do matter in some contexts, you can get that from the left sidebar,
     // and I'm leaning toward high scannability for autocompletion.  I also don't
     // care about case.
     topics.sort();

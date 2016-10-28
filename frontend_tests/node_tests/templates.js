@@ -598,7 +598,7 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 (function sidebar_subject_list() {
     var args = {
         want_show_more_topics_links: true,
-        subjects: [
+        topics: [
             {
                 is_muted: false,
                 topic_name: 'lunch',

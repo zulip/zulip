@@ -20,13 +20,9 @@ set_global('page_params', {
     email: 'bob@zulip.com'
 });
 
-var stream_data = require('js/stream_data.js');
-set_global('stream_data', {
-    get_name: stream_data.get_name,
-    recent_subjects: new global.Dict({fold_case: true})
-});
-
 set_global('narrow', {});
+
+global.stream_data.populate_stream_topics_for_tests({});
 
 (function test_basic_get_suggestions() {
     var query = 'fred';
@@ -240,7 +236,7 @@ set_global('narrow', {});
         return 'office';
     };
 
-    global.stream_data.recent_subjects = new global.Dict.from({
+    global.stream_data.populate_stream_topics_for_tests({
         'devel': [
             {subject: 'REXX'}
         ],
@@ -249,7 +245,7 @@ set_global('narrow', {});
             {subject: 'ignore'},
             {subject: 'test'}
         ]
-    }, {fold_case: true});
+    });
 
     suggestions = search.get_suggestions('te');
     expected = [
@@ -308,7 +304,7 @@ set_global('narrow', {});
         return;
     };
 
-    global.stream_data.recent_subjects = new global.Dict({fold_case: true});
+    global.stream_data.populate_stream_topics_for_tests({});
 
     var suggestions = search.get_suggestions(query);
 
@@ -330,7 +326,7 @@ set_global('narrow', {});
         return;
     };
 
-    global.stream_data.recent_subjects = new global.Dict({fold_case: true});
+    global.stream_data.populate_stream_topics_for_tests({});
 
     var suggestions = search.get_suggestions(query);
 
@@ -368,13 +364,13 @@ set_global('narrow', {});
         }
     ];
 
-    global.stream_data.recent_subjects = new global.Dict.from({
+    global.stream_data.populate_stream_topics_for_tests({
         office: [
             {subject: 'team'},
             {subject: 'ignore'},
             {subject: 'test'}
         ]
-    }, {fold_case: true});
+    });
 
     var suggestions = search.get_suggestions(query);
 

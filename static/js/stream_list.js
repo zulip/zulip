@@ -78,10 +78,10 @@ exports.build_stream_list = function () {
     function add_sidebar_li(stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
-            if (! stream_data.recent_subjects.has(stream)) {
-                li.addClass('inactive_stream');
-            } else {
+            if (stream_data.is_active(stream)) {
                 li.removeClass('inactive_stream');
+            } else {
+                li.addClass('inactive_stream');
             }
         }
         elems.push(li.get(0));
@@ -98,9 +98,9 @@ exports.build_stream_list = function () {
 
     unpinned_streams.sort(function (a, b) {
         if (sort_recent) {
-            if (stream_data.recent_subjects.has(b) && ! stream_data.recent_subjects.has(a)) {
+            if (stream_data.is_active(b) && ! stream_data.is_active(a)) {
                 return 1;
-            } else if (! stream_data.recent_subjects.has(b) && stream_data.recent_subjects.has(a)) {
+            } else if (! stream_data.is_active(b) && stream_data.is_active(a)) {
                 return -1;
             }
         }
@@ -120,7 +120,7 @@ exports.build_stream_list = function () {
     _.each(pinned_streams, function (stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
-            if (! stream_data.recent_subjects.has(stream)) {
+            if (! stream_data.is_active(stream)) {
                 li.addClass('inactive_stream');
             } else {
                 li.removeClass('inactive_stream');
@@ -500,7 +500,7 @@ exports.update_dom_with_unread_counts = function (counts) {
         set_count("stream", stream, count);
     });
 
-    // counts.subject_count maps streams to hashes of subjects to counts
+    // counts.subject_count maps streams to hashes of topics to counts
     counts.subject_count.each(function (subject_hash, stream) {
         var stream_li = get_filter_li('stream', stream);
         subject_hash.each(function (count, subject) {

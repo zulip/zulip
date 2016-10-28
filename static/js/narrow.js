@@ -362,7 +362,7 @@ exports.by_subject = function (target_id, opts) {
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var original = message_store.get(target_id);
     if (original.type !== 'stream') {
-        // Only stream messages have subjects, but the
+        // Only stream messages have topics, but the
         // user wants us to narrow in some way.
         exports.by_recipient(target_id, opts);
         return;

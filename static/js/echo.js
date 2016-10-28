@@ -183,9 +183,9 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
 exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
     message.raw_content = raw_content;
     if (new_topic !== undefined) {
-        message_store.process_message_for_recent_topics(message, true);
+        stream_data.process_message_for_recent_topics(message, true);
         message.subject = new_topic;
-        message_store.process_message_for_recent_topics(message);
+        stream_data.process_message_for_recent_topics(message);
     }
 
     message.content = exports.apply_markdown(raw_content);

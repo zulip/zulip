@@ -7,15 +7,18 @@ var exports = {};
 // Call clear_subscriptions() to initialize it.
 var stream_info;
 var subs_by_stream_id;
+var recent_topics = new Dict({fold_case: true});
 
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
     subs_by_stream_id = new Dict();
 };
 
-exports.recent_subjects = new Dict({fold_case: true});
 exports.clear_subscriptions();
 
+exports.is_active = function (stream_name) {
+    return recent_topics.has(stream_name);
+};
 
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
@@ -223,6 +226,47 @@ exports.add_admin_options = function (sub) {
     });
 };
 
+exports.process_message_for_recent_topics = function process_message_for_recent_topics(message, remove_message) {
+    var current_timestamp = 0;
+    var count = 0;
+    var stream = message.stream;
+    var canon_subject = exports.canonicalized_name(message.subject);
+
+    if (! recent_topics.has(stream)) {
+        recent_topics.set(stream, []);
+    } else {
+        recent_topics.set(stream, _.filter(recent_topics.get(stream), function (item) {
+            var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
+            if (is_duplicate) {
+                current_timestamp = item.timestamp;
+                count = item.count;
+            }
+            return !is_duplicate;
+        }));
+    }
+
+    var recents = recent_topics.get(stream);
+
+    if (remove_message !== undefined) {
+        count = count - 1;
+    } else {
+        count = count + 1;
+    }
+
+    if (count !== 0) {
+        recents.push({subject: message.subject,
+                      canon_subject: canon_subject,
+                      count: count,
+                      timestamp: Math.max(message.timestamp, current_timestamp)});
+    }
+
+    recents.sort(function (a, b) {
+        return b.timestamp - a.timestamp;
+    });
+
+    recent_topics.set(stream, recents);
+};
+
 exports.get_streams_for_settings_page = function (public_streams) {
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
@@ -299,6 +343,14 @@ exports.initialize_from_page_params = function () {
     delete page_params.email_dict;
 };
 
+exports.get_recent_topics = function (stream_name) {
+    return recent_topics.get(stream_name);
+};
+
+exports.populate_stream_topics_for_tests = function (stream_map) {
+    // This is only used by tests.
+    recent_topics = new Dict.from(stream_map, {fold_case: true});
+};
 
 return exports;
 
