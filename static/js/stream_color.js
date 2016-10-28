@@ -95,7 +95,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     // The swatch in the subscription row header.
     $(".stream-row[data-stream='" + id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.
-    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-sub-settings='" + id + "'] .colorpicker"), color);
+    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream='" + id + "'] .colorpicker"), color);
 
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);

@@ -220,7 +220,7 @@ function button_for_sub(sub) {
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_overlay .subscription_settings[data-sub-settings='" + id + "']");
+    return $("#subscription_overlay .subscription_settings[data-stream='" + id + "']");
 }
 
 function get_subscriber_list(sub_row) {
@@ -335,7 +335,7 @@ exports.rerender_subscribers_count = function (sub) {
 exports.show_settings_for = function (stream_name) {
     var $sub_settings = settings_for_sub(stream_data.get_sub(stream_name));
     var $stream = $(".stream-row[data-stream-name='" + stream_name + "']");
-    $("[data-sub-settings].show").removeClass("show");
+    $(".subscription_settings[data-stream].show").removeClass("show");
     show_subscription_settings($stream);
     $("#subscription_overlay").fadeIn(300);
     $("#subscription_overlay .subscription_settings.show").removeClass("show");
@@ -1176,7 +1176,7 @@ $(function () {
         var $form = $(e.target);
 
         var $settings = $(e.target).closest(".subscription_settings");
-        var $sub_row = $(".stream-row[data-stream='" + $settings.data("sub-settings") + "']");
+        var $sub_row = $(".stream-row[data-stream='" + $settings.data("stream") + "']");
         var stream_name = $sub_row.data("stream-name");
         var description = $settings.find('input[name="description"]').val();
 
