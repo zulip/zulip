@@ -54,8 +54,8 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
 };
 
 function stream_home_view_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
-    var stream = sub_row.find('.subscription_name').text();
+    var sub_row = $(e.target).closest('.stream-row');
+    var stream = sub_row.find('.stream-name').text();
     var sub = stream_data.get_sub(stream);
     var notification_checkboxes = sub_row.find(".sub_notification_setting");
 
@@ -117,7 +117,7 @@ function update_in_home_view(sub, value) {
 
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
-    var not_in_home_view_checkbox = $("#subscription_" + sub.stream_id + " #sub_setting_not_in_home_view .sub_setting_control");
+    var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
     not_in_home_view_checkbox.prop('checked', !value);
 }
 
@@ -133,13 +133,13 @@ exports.toggle_pin_to_top_stream = function (stream_name) {
 };
 
 function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_desktop_notifications_setting .sub_setting_control");
+    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
     desktop_notifications_checkbox.prop('checked', value);
     sub.desktop_notifications = value;
 }
 
 function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $("#subscription_" + sub.stream_id + " #sub_audible_notifications_setting .sub_setting_control");
+    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
     audible_notifications_checkbox.prop('checked', value);
     sub.audible_notifications = value;
 }
@@ -169,14 +169,14 @@ function update_stream_name(sub, new_name) {
 function update_stream_description(sub, description) {
     sub.description = description;
 
-    var sub_settings_selector = '.subscription_row[data-subscription-id=' + sub.stream_id + ']';
-    $(sub_settings_selector + ' .subscription_description').text(description);
+    var sub_settings_selector = '.stream-row[data-subscription-id=' + sub.stream_id + ']';
+    $(sub_settings_selector + ' .description').text(description);
     $(sub_settings_selector + ' input.description').val(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
-    var stream = sub_row.find('.subscription_name').text();
+    var sub_row = $(e.target).closest('.stream-row');
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     sub.desktop_notifications = ! sub.desktop_notifications;
@@ -184,8 +184,8 @@ function stream_desktop_notifications_clicked(e) {
 }
 
 function stream_audible_notifications_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
-    var stream = sub_row.find('.subscription_name').text();
+    var sub_row = $(e.target).closest('.stream-row');
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     sub.audible_notifications = ! sub.audible_notifications;
@@ -193,8 +193,8 @@ function stream_audible_notifications_clicked(e) {
 }
 
 function stream_pin_clicked(e) {
-    var sub_row = $(e.target).closest('.subscription_row');
-    var stream = sub_row.find('.subscription_name').text();
+    var sub_row = $(e.target).closest('.stream-row');
+    var stream = sub_row.find('.stream-name').text();
 
     var sub = stream_data.get_sub(stream);
     exports.toggle_pin_to_top_stream(stream);
@@ -215,51 +215,17 @@ function create_sub(stream_name, attrs) {
 
 function button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_" + id + " .sub_unsub_button");
+    return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_settings_" + id);
+    return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 }
 
-exports.rerender_subscribers_count = function (sub) {
-    var id = parseInt(sub.stream_id, 10);
-    stream_data.update_subscribers_count(sub);
-    $("#subscription_" + id + " .subscriber_count").text(sub.subscriber_count);
-};
-
-exports.show_settings_for = function (stream_name) {
-    settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
-};
-
-function add_email_hint(row, email_address_hint_content) {
-    // Add a popover explaining stream e-mail addresses on hover.
-    var hint_id = "#email-address-hint-" + row.stream_id;
-    var email_address_hint = $(hint_id);
-    email_address_hint.popover({"placement": "bottom",
-                "title": "Email integration",
-                "content": email_address_hint_content,
-                "trigger": "manual"});
-
-    $("body").on("mouseover", hint_id, function (e) {
-        email_address_hint.popover('show');
-        e.stopPropagation();
-    });
-    $("body").on("mouseout", hint_id, function (e) {
-        email_address_hint.popover('hide');
-        e.stopPropagation();
-    });
-}
-
-function add_sub_to_table(sub) {
-    sub = stream_data.add_admin_options(sub);
-    stream_data.update_subscribers_count(sub);
-    var html = templates.render('subscription', sub);
-    $('#create_or_filter_stream_row').after(html);
-    settings_for_sub(sub).collapse('show');
-    var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
-    add_email_hint(sub, email_address_hint_content);
+function get_subscriber_list(sub_row) {
+    var id = sub_row.data("stream-id");
+    return $('.subscription_settings[data-stream-id="' + id + '"] .subscriber-list');
 }
 
 function format_member_list_elem(email) {
@@ -269,25 +235,21 @@ function format_member_list_elem(email) {
                              displaying_for_admin: page_params.is_admin});
 }
 
-function get_subscriber_list(sub_row) {
-    return sub_row.find('.subscriber_list_container .subscriber-list');
-}
-
 function prepend_subscriber(sub_row, email) {
     var list = get_subscriber_list(sub_row);
     list.prepend(format_member_list_elem(email));
 }
 
-function show_subscription_settings(sub_row) {
-    var sub_arrow = sub_row.find('.sub_arrow i');
-    sub_arrow.removeClass('icon-vector-chevron-down');
-    sub_arrow.addClass('icon-vector-chevron-up');
+var show_subscription_settings = function ($sub_row) {
+    var $sub_arrow = $sub_row.find('.sub_arrow i');
+    $sub_arrow.removeClass('icon-vector-chevron-down');
+    $sub_arrow.addClass('icon-vector-chevron-up');
 
-    var stream = sub_row.find('.subscription_name').text();
-    var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
-    var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-    var list = get_subscriber_list(sub_row);
-    var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
+    var stream = $sub_row.data("stream-name");
+    var warning_elem = $sub_row.find('.subscriber_list_container .alert-warning');
+    var error_elem = $sub_row.find('.subscriber_list_container .alert-error');
+    var list = get_subscriber_list($sub_row);
+    var indicator_elem = $sub_row.find('.subscriber_list_loading_indicator');
 
     if (!stream_data.get_sub(stream).render_subscribers) {
         return;
@@ -322,7 +284,7 @@ function show_subscription_settings(sub_row) {
         }
     });
 
-    sub_row.find('input[name="principal"]').typeahead({
+    $sub_row.find('input[name="principal"]').typeahead({
         source: page_params.people_list,
         items: 5,
         highlighter: function (item) {
@@ -344,9 +306,10 @@ function show_subscription_settings(sub_row) {
         }
     });
 
-    var colorpicker = sub_row.find('.colorpicker');
+    var stream_name = $sub_row.data("stream-name");
+    var colorpicker = $("#subscription_overlay .subscription_settings[data-stream-id='" + $sub_row.data("stream-id") + "'] .colorpicker");
 
-    var color = stream_data.get_color(sub_row.find('.subscription_name').text());
+    var color = stream_data.get_color(stream_name);
     stream_color.set_colorpicker_color(colorpicker, color);
 
     // To figure out the worst case for an expanded row's height, we do some math:
@@ -356,16 +319,56 @@ function show_subscription_settings(sub_row) {
     // .subscription_header line-height,
     // .subscription_header padding
     var expanded_row_size = 200 + 30 + 100 + 30 + 5;
-    var cover = sub_row.offset().top + expanded_row_size -
+    var cover = $sub_row.offset().top + expanded_row_size -
         viewport.height() + viewport.scrollTop();
-    if (cover > 0) {
-        $('.app').animate({
-            scrollTop: viewport.scrollTop() + cover + 5
-        });
-    }
 
     // Make all inputs have a default tabindex
-    sub_row.find('.subscription_settings :input').removeAttr('tabindex');
+    $sub_row.find('.subscription_settings :input').removeAttr('tabindex');
+};
+
+exports.rerender_subscribers_count = function (sub) {
+    var id = parseInt(sub.stream_id, 10);
+    stream_data.update_subscribers_count(sub);
+    $(".stream-row [data-stream-id='" + id + "'] .num-subs").text(sub.subscriber_count);
+};
+
+exports.show_settings_for = function (stream_name) {
+    var $sub_settings = settings_for_sub(stream_data.get_sub(stream_name));
+    var $stream = $(".stream-row[data-stream-name='" + stream_name + "']");
+    $(".subscription_settings[data-stream].show").removeClass("show");
+    show_subscription_settings($stream);
+    $("#subscription_overlay").fadeIn(300);
+    $("#subscription_overlay .subscription_settings.show").removeClass("show");
+    $sub_settings.addClass("show");
+};
+
+function add_email_hint(row, email_address_hint_content) {
+    // Add a popover explaining stream e-mail addresses on hover.
+    var hint_id = "#email-address-hint-" + row.stream_id;
+    var email_address_hint = $(hint_id);
+    email_address_hint.popover({"placement": "bottom",
+                "title": "Email integration",
+                "content": email_address_hint_content,
+                "trigger": "manual"});
+
+    $("body").on("mouseover", hint_id, function (e) {
+        email_address_hint.popover('show');
+        e.stopPropagation();
+    });
+    $("body").on("mouseout", hint_id, function (e) {
+        email_address_hint.popover('hide');
+        e.stopPropagation();
+    });
+}
+
+function add_sub_to_table(sub) {
+    sub = stream_data.add_admin_options(sub);
+    stream_data.update_subscribers_count(sub);
+    var html = templates.render('subscription', sub);
+    $('#create_or_filter_stream_row').after(html);
+    settings_for_sub(sub).collapse('show');
+    var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
+    add_email_hint(sub, email_address_hint_content);
 }
 
 exports.mark_subscribed = function (stream_name, attrs) {
@@ -385,8 +388,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             exports.rerender_subscribers_count(sub);
-
-            button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
+            button.toggleClass("checked");
             button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
             // viewing the members of this stream
@@ -399,7 +401,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         }
 
         // Display the swatch and subscription settings
-        var sub_row = settings.closest('.subscription_row');
+        var sub_row = settings.closest('.stream-row');
         sub_row.find(".color_swatch").addClass('in');
         sub_row.find(".regular_subscription_settings").collapse('show');
     } else {
@@ -435,7 +437,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         sub.subscribed = false;
 
         var button = button_for_sub(sub);
-        button.removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text(i18n.t("Subscribe"));
+        button.toggleClass("checked");
         button.parent().children(".preview-stream").text(i18n.t("Preview"));
 
         var settings = settings_for_sub(sub);
@@ -446,7 +448,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         exports.rerender_subscribers_count(sub);
 
         // Hide the swatch and subscription settings
-        var sub_row = settings.closest('.subscription_row');
+        var sub_row = settings.closest('.stream-row');
         sub_row.find(".color_swatch").removeClass('in');
         if (sub.render_subscribers) {
             // TODO: having a completely empty settings div messes
@@ -468,11 +470,11 @@ exports.mark_sub_unsubscribed = function (sub) {
 };
 
 exports.filter_table = function (query) {
-    var sub_name_elements = $('#subscriptions_table .subscription_name');
+    var sub_name_elements = $('#subscriptions_table .stream-name');
 
     if (query === '') {
         _.each(sub_name_elements, function (sub_name_elem) {
-            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
         });
         return;
     }
@@ -500,9 +502,9 @@ exports.filter_table = function (query) {
         });
 
         if (matches) {
-            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
         } else {
-            $(sub_name_elem).parents('.subscription_row').addClass("notdisplayed");
+            $(sub_name_elem).parents('.stream-row').addClass("notdisplayed");
         }
     });
 };
@@ -858,11 +860,12 @@ $(function () {
     }
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var stream_name = $(e.target).closest('.subscription_row').find('.subscription_name').text();
+        var stream_name = $(e.target).closest('.stream-row').find('.stream-name').text();
         sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
     });
+
     $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
@@ -910,13 +913,6 @@ $(function () {
         $('#empty_narrow_message').show();
     });
 
-    $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.subscription_row');
-
-        // Remove all inputs from the tabindex
-        sub_row.find('.subscription_settings :input').attr('tabindex', '-1');
-    });
-
     $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
         var control = $(e.target).closest('.sub_setting_checkbox').find('.sub_setting_control');
         // A hack.  Don't change the state of the checkbox if we
@@ -935,8 +931,8 @@ $(function () {
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
-        var sub_row = $(e.target).closest('.subscription_row');
-        var stream = sub_row.find('.subscription_name').text();
+        var sub_row = $(e.target).closest('.stream-row');
+        var stream = sub_row.find('.stream-name').text();
         var text_box = sub_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
         // TODO: clean up this error handling
@@ -970,13 +966,19 @@ $(function () {
         exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
     });
 
+    $("#subscriptions_table").on("click", ".stream-row", function (e) {
+        if ($(e.target).closest(".check, .subscription_settings").length === 0) {
+            exports.show_settings_for($(this).closest(".stream-row").data("stream-name"));
+        }
+    });
+
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
         e.preventDefault();
 
         var list_entry = $(e.target).closest("tr");
         var principal = list_entry.children(".subscriber-email").text();
-        var sub_row = $(e.target).closest('.subscription_row');
-        var stream_name = sub_row.find('.subscription_name').text();
+        var sub_row = $(e.target).closest('.stream-row');
+        var stream_name = sub_row.find('.stream-name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
 
@@ -1011,8 +1013,8 @@ $(function () {
     $("#subscriptions_table").on("submit", ".rename-stream form", function (e) {
         e.preventDefault();
 
-        var sub_row = $(e.target).closest('.subscription_row');
-        var old_name_box = sub_row.find('.subscription_name');
+        var sub_row = $(e.target).closest('.stream-row');
+        var old_name_box = sub_row.find('.stream-name');
         var old_name = old_name_box.text();
         var new_name_box = sub_row.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());
@@ -1043,9 +1045,10 @@ $(function () {
         e.preventDefault();
         var $form = $(e.target);
 
-        var $sub_row = $(e.target).closest('.subscription_row');
-        var stream_name = $sub_row.find('.subscription_name').text();
-        var description = $sub_row.find('input[name="description"]').val();
+        var $settings = $(e.target).closest(".subscription_settings");
+        var $sub_row = $(".stream-row[data-stream-id='" + $settings.data("stream-id") + "']");
+        var stream_name = $sub_row.data("stream-name");
+        var description = $settings.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
 
@@ -1059,12 +1062,19 @@ $(function () {
                 // The event from the server will update the rest of the UI
                 ui.report_success(i18n.t("The stream description has been updated!"),
                                  $("#subscriptions-status"), 'subscriptions-status');
+                $sub_row.find(".description").text(description);
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating the stream description"), xhr,
                                 $("#subscriptions-status"), 'subscriptions-status');
             }
         });
+    });
+
+    $("body").on("click", "#subscription_overlay", function (e) {
+        if ($(e.target).is(".flex, #subscription_overlay")) {
+            $("#subscription_overlay").fadeOut(300);
+        }
     });
 
     function redraw_privacy_related_stuff(sub_row, sub) {
@@ -1088,7 +1098,7 @@ $(function () {
         e.preventDefault();
 
         var stream_name = $(e.target).attr("data-stream-name");
-        var sub_row = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.stream-row');
 
         $("#subscriptions-status").hide();
         var data = {"stream_name": stream_name};
@@ -1137,13 +1147,8 @@ $(function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.subscription_row');
-        show_subscription_settings(sub_row);
-    });
-
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
+        var sub_arrow = $(e.target).closest('.stream-row').find('.sub_arrow i');
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
@@ -1173,12 +1178,7 @@ function focus_on_narrowed_stream() {
         return;
     }
     var sub = stream_data.get_sub(stream_name);
-    if (sub !== undefined) {
-        // This stream is in the list, so focus on it.
-        $('html, body').animate({
-            scrollTop: settings_for_sub(sub).offset().top
-        });
-    } else {
+    if (sub === undefined) {
         // This stream doesn't exist, so prep for creating it.
         $("#create_stream_name").val(stream_name);
     }

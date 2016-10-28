@@ -1,4 +1,5 @@
-<div id="subscription_settings_{{stream_id}}" class="collapse subscription_settings">
+{{#with this}}
+<div class="subscription_settings" data-stream-id="{{stream_id}}">
   <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
     <div class="subscription-type">
       {{partial "subscription_type"}}
@@ -94,3 +95,4 @@
   </div>
   {{/render_subscribers}}
 </div>
+{{/with}}

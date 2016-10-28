@@ -14,3 +14,11 @@
 {{#each subscriptions}}
 {{partial "subscription"}}
 {{/each}}
+
+<div id="subscription_overlay">
+    <div class="flex">
+        {{#each subscriptions}}
+        {{ partial "subscription_settings" }}
+        {{/each}}
+    </div>
+</div>
