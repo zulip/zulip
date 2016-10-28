@@ -21,6 +21,14 @@ v1_api_and_json_patterns = [
         {'POST': 'zilencer.views.report_error'}),
     url('^deployment/endpoints$', zilencer.views.lookup_endpoints_for_user,
         name='zilencer.views.lookup_endpoints_for_user'),
+    url('^remotes/push/register$', rest_dispatch,
+          {'POST': 'zilencer.views.remote_server_register_push'}),
+    url('^remotes/push/unregister$', rest_dispatch,
+          {'POST': 'zilencer.views.remote_server_unregister_push'}),
+    url('^remotes/push/message$', rest_dispatch,
+          {'POST': 'zilencer.views.remote_server_push_message'}),
+    url('^remotes/update$', rest_dispatch,
+          {'POST': 'zilencer.views.update_remote_server'}),
 ]
 
 urlpatterns = [

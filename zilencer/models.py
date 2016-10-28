@@ -4,9 +4,9 @@ from typing import Text
 
 import zerver.models
 
-def get_deployment_by_domain(domain):
-    # type: (Text) -> Deployment
-    return Deployment.objects.get(realms__domain=domain)
+def get_remote_server_by_uuid(uuid):
+    # type: (text_type) -> RemoteZulipServer 
+    return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):
     uuid = models.CharField(max_length=36, unique=True) # type: text_type

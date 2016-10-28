@@ -31,6 +31,34 @@ def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=Non
         token.last_updated = now()
         token.save(update_fields=['last_updated'])
 
+    # register user with push.zulip.org
+    # send secret, UUID, user_id & token
+    post_data = {
+      'api_key' : settings.ZULIP_ORG_KEY,
+      'server_uuid': settings.ZULIP_ORG_ID,
+      'user_id': user_profile.id,
+      'token': token_str,
+      'token_kind': kind,
+    }
+
+    if kind == PushDeviceToken.APNS:
+      post_data['ios_app_id'] = ios_app_id
+
+    api_auth=request.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
+    # todo: what to do about verify & cert
+    # todo: user agent ?
+    res = requests.post(settings.PUSH_NOTIFICATION_BOUNCER_URL,
+      data=json.dumps(post_data),
+      auth=api_auth,
+      timeout=30,
+      headers={"User-agent":"todo", "X-Zulip-Install-ID" : settings.ZULIP_ORG_ID})
+    
+    #todo: much better error handling/ should we retry?
+    if res.status_code >= 500:
+      return json_error("Fatal error received from Zulip.org bouncer")
+    elif res.status_code >= 400:
+      return json_error("Error received from Zulip.org bouncer")
+      
     return json_success()
 
 @has_request_variables

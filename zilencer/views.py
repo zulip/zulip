@@ -46,6 +46,22 @@ def get_ticket_number():
     return ticket_number
 
 @has_request_variables
+def remote_server_push_message():
+  # stub. todo: write this method
+
+@has_request_variables
+def remote_server_register_push():
+  # stub. todo: write this method
+
+@has_request_variables
+def remote_server_unregister_push():
+  # stub. todo: write this method
+
+@has_request_variables
+def update_remote_server():
+  # stub. todo: write this method (either update or save a new remote server object)
+
+@has_request_variables
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
     # type: (HttpRequest, Deployment, Dict[str, Text]) -> HttpResponse
     domainish = message["sender_domain"]
