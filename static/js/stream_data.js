@@ -343,6 +343,10 @@ exports.initialize_from_page_params = function () {
     delete page_params.email_dict;
 };
 
+exports.get_recent_topics = function (stream_name) {
+    return exports.recent_subjects.get(stream_name);
+};
+
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
     exports.recent_subjects = new Dict.from(stream_map, {fold_case: true});

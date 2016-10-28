@@ -157,7 +157,7 @@ var stream_data = require('js/stream_data.js');
     };
     stream_data.process_message_for_recent_topics(message);
 
-    var history = stream_data.recent_subjects.get('Rome');
+    var history = stream_data.get_recent_topics('Rome');
     assert.deepEqual(history, [
         {
             subject: 'toPic1',
@@ -173,7 +173,7 @@ var stream_data = require('js/stream_data.js');
         subject: 'Topic1'
     };
     stream_data.process_message_for_recent_topics(message);
-    history = stream_data.recent_subjects.get('Rome');
+    history = stream_data.get_recent_topics('Rome');
     assert.deepEqual(history, [
         {
             subject: 'Topic1',
@@ -189,7 +189,7 @@ var stream_data = require('js/stream_data.js');
         subject: 'topic2'
     };
     stream_data.process_message_for_recent_topics(message);
-    history = stream_data.recent_subjects.get('Rome');
+    history = stream_data.get_recent_topics('Rome');
     assert.deepEqual(history, [
         {
             subject: 'topic2',
@@ -206,7 +206,7 @@ var stream_data = require('js/stream_data.js');
     ]);
 
     stream_data.process_message_for_recent_topics(message, true);
-    history = stream_data.recent_subjects.get('Rome');
+    history = stream_data.get_recent_topics('Rome');
     assert.deepEqual(history, [
         {
             subject: 'Topic1',

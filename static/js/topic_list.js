@@ -56,7 +56,7 @@ exports.set_count = function (stream_li, topic, count) {
 };
 
 exports.build_list = function (stream, active_topic, max_topics) {
-    var subjects = stream_data.recent_subjects.get(stream) || [];
+    var subjects = stream_data.get_recent_topics(stream) || [];
 
     if (active_topic) {
         active_topic = active_topic.toLowerCase();
