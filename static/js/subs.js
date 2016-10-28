@@ -220,11 +220,12 @@ function button_for_sub(sub) {
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream='" + id + "'] .subscription_settings[data-sub-settings='" + id + "']");
+    return $("#subscription_overlay .subscription_settings[data-sub-settings='" + id + "']");
 }
 
 function get_subscriber_list(sub_row) {
-    return sub_row.find('.subscriber_list_container .subscriber-list');
+    var id = sub_row.data("stream");
+    return $('.subscription_settings[data-stream="' + id + '"] .subscriber-list');
 }
 
 function format_member_list_elem(email) {
@@ -336,7 +337,9 @@ exports.show_settings_for = function (stream_name) {
     var $stream = $(".stream-row[data-stream-name='" + stream_name + "']");
     $("[data-sub-settings].show").removeClass("show");
     show_subscription_settings($stream);
-    $stream.find(".subscription_settings").slideToggle(300);
+    $("#subscription_overlay").fadeIn(300);
+    $("#subscription_overlay .subscription_settings.show").removeClass("show");
+    $sub_settings.addClass("show");
 };
 
 function add_email_hint(row, email_address_hint_content) {
@@ -1196,6 +1199,12 @@ $(function () {
                                 $("#subscriptions-status"), 'subscriptions-status');
             }
         });
+    });
+
+    $("body").on("click", "#subscription_overlay", function (e) {
+        if ($(e.target).is(".flex, #subscription_overlay")) {
+            $("#subscription_overlay").fadeOut(300);
+        }
     });
 
     function redraw_privacy_related_stuff(sub_row, sub) {

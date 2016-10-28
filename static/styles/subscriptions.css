@@ -651,15 +651,17 @@ input[type=text].small:valid {
     display: block;
 }
 
-.ind-stream .subscription_settings {
+#subscription_overlay .subscription_settings {
     display: none;
     position: relative;
     width: 600px;
     margin: 0 auto;
     border-radius: 4px;
     top: -1px;
+    max-height: 85vh;
+    overflow: auto;
 }
 
-.ind-stream .subscription_settings.show {
+#subscription_overlay .subscription_settings.show {
     display: block;
 }
