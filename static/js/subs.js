@@ -576,7 +576,7 @@ exports.mark_sub_unsubscribed = function (sub) {
 };
 
 exports.filter_table = function (query) {
-    var sub_name_elements = $('#subscriptions_table .stream-title');
+    var sub_name_elements = $('#subscriptions_table .stream-name');
 
     if (query === '') {
         _.each(sub_name_elements, function (sub_name_elem) {
@@ -983,7 +983,7 @@ $(function () {
     }
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var stream_name = $(e.target).closest('.stream-row').find('.stream-title').text();
+        var stream_name = $(e.target).closest('.stream-row').find('.stream-name').text();
         sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
