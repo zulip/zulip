@@ -149,6 +149,74 @@ var stream_data = require('js/stream_data.js');
 
 }());
 
+(function test_process_message_for_recent_topics() {
+    var message = {
+        stream: 'Rome',
+        timestamp: 101,
+        subject: 'toPic1'
+    };
+    stream_data.process_message_for_recent_topics(message);
+
+    var history = stream_data.recent_subjects.get('Rome');
+    assert.deepEqual(history, [
+        {
+            subject: 'toPic1',
+            canon_subject: 'topic1',
+            count: 1,
+            timestamp: 101
+        }
+    ]);
+
+    message = {
+        stream: 'Rome',
+        timestamp: 102,
+        subject: 'Topic1'
+    };
+    stream_data.process_message_for_recent_topics(message);
+    history = stream_data.recent_subjects.get('Rome');
+    assert.deepEqual(history, [
+        {
+            subject: 'Topic1',
+            canon_subject: 'topic1',
+            count: 2,
+            timestamp: 102
+        }
+    ]);
+
+    message = {
+        stream: 'Rome',
+        timestamp: 103,
+        subject: 'topic2'
+    };
+    stream_data.process_message_for_recent_topics(message);
+    history = stream_data.recent_subjects.get('Rome');
+    assert.deepEqual(history, [
+        {
+            subject: 'topic2',
+            canon_subject: 'topic2',
+            count: 1,
+            timestamp: 103
+        },
+        {
+            subject: 'Topic1',
+            canon_subject: 'topic1',
+            count: 2,
+            timestamp: 102
+        }
+    ]);
+
+    stream_data.process_message_for_recent_topics(message, true);
+    history = stream_data.recent_subjects.get('Rome');
+    assert.deepEqual(history, [
+        {
+            subject: 'Topic1',
+            canon_subject: 'topic1',
+            count: 2,
+            timestamp: 102
+        }
+    ]);
+}());
+
 (function test_admin_options() {
     function make_sub() {
         return {
