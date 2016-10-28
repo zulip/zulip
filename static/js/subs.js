@@ -215,22 +215,128 @@ function create_sub(stream_name, attrs) {
 
 function button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_" + id + " .sub_unsub_button");
+    return $(".ind-stream[data-stream='" + id + "'] .check");
 }
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $("#subscription_settings_" + id);
+    return $(".ind-stream[data-stream='" + id + "'] .subscription_settings[data-sub-settings='" + id + "']");
 }
+
+function get_subscriber_list(sub_row) {
+    return sub_row.find('.subscriber_list_container .subscriber-list');
+}
+
+function format_member_list_elem(email) {
+    var person = people.get_by_email(email);
+    return templates.render('stream_member_list_entry',
+                            {name: person.full_name, email: email,
+                             displaying_for_admin: page_params.is_admin});
+}
+
+function prepend_subscriber(sub_row, email) {
+    var list = get_subscriber_list(sub_row);
+    list.prepend(format_member_list_elem(email));
+}
+
+var show_subscription_settings = function ($sub_row) {
+    var $sub_arrow = $sub_row.find('.sub_arrow i');
+    $sub_arrow.removeClass('icon-vector-chevron-down');
+    $sub_arrow.addClass('icon-vector-chevron-up');
+
+    var stream = $sub_row.data("stream-name");
+    var warning_elem = $sub_row.find('.subscriber_list_container .alert-warning');
+    var error_elem = $sub_row.find('.subscriber_list_container .alert-error');
+    var list = get_subscriber_list($sub_row);
+    var indicator_elem = $sub_row.find('.subscriber_list_loading_indicator');
+
+    if (!stream_data.get_sub(stream).render_subscribers) {
+        return;
+    }
+
+    warning_elem.addClass('hide');
+    error_elem.addClass('hide');
+    list.empty();
+
+    loading.make_indicator(indicator_elem);
+
+    channel.post({
+        url: "/json/get_subscribers",
+        idempotent: true,
+        data: {stream: stream},
+        success: function (data) {
+            loading.destroy_indicator(indicator_elem);
+            var subscribers = _.map(data.subscribers, function (elem) {
+                var person = people.get_by_email(elem);
+                if (person === undefined) {
+                    return elem;
+                }
+                return format_member_list_elem(elem);
+            });
+            _.each(subscribers.sort(), function (elem) {
+                list.append(elem);
+            });
+        },
+        error: function (xhr) {
+            loading.destroy_indicator(indicator_elem);
+            error_elem.removeClass("hide").text("Could not fetch subscriber list");
+        }
+    });
+
+    $sub_row.find('input[name="principal"]').typeahead({
+        source: page_params.people_list,
+        items: 5,
+        highlighter: function (item) {
+            var item_formatted = typeahead_helper.render_person(item);
+            return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
+        },
+        matcher: function (item) {
+            var query = $.trim(this.query.toLowerCase());
+            if (query === '' || query === item.email) {
+                return false;
+            }
+            // Case-insensitive.
+            return (item.email.toLowerCase().indexOf(query) !== -1) ||
+                (item.full_name.toLowerCase().indexOf(query) !== -1);
+        },
+        sorter: typeahead_helper.sort_recipientbox_typeahead,
+        updater: function (item) {
+            return item.email;
+        }
+    });
+
+    var stream_name = $sub_row.data("stream-name");
+    var colorpicker = $sub_row.find('.colorpicker');
+
+    var color = stream_data.get_color(stream_name);
+    stream_color.set_colorpicker_color(colorpicker, color);
+
+    // To figure out the worst case for an expanded row's height, we do some math:
+    // .subscriber_list_container max-height,
+    // .subscriber_list_settings,
+    // .regular_subscription_settings
+    // .subscription_header line-height,
+    // .subscription_header padding
+    var expanded_row_size = 200 + 30 + 100 + 30 + 5;
+    var cover = $sub_row.offset().top + expanded_row_size -
+        viewport.height() + viewport.scrollTop();
+
+    // Make all inputs have a default tabindex
+    $sub_row.find('.subscription_settings :input').removeAttr('tabindex');
+};
 
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     stream_data.update_subscribers_count(sub);
-    $("#subscription_" + id + " .subscriber_count").text(sub.subscriber_count);
+    $(".ind-stream [data-stream='" + id + "'] .num-subs").text(sub.subscriber_count);
 };
 
 exports.show_settings_for = function (stream_name) {
-    settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
+    var $sub_settings = settings_for_sub(stream_data.get_sub(stream_name));
+    var $stream = $(".ind-stream[data-stream-name='" + stream_name + "']");
+    $("[data-sub-settings].show").removeClass("show");
+    show_subscription_settings($stream);
+    $stream.find(".subscription_settings").slideToggle(300);
 };
 
 function add_email_hint(row, email_address_hint_content) {
@@ -262,6 +368,7 @@ function add_sub_to_table(sub) {
     add_email_hint(sub, email_address_hint_content);
 }
 
+<<<<<<< 4fe5fc849ec849fe764e649d34499499f36555ab
 function format_member_list_elem(email) {
     var person = people.get_by_email(email);
     return templates.render('stream_member_list_entry',
@@ -368,6 +475,8 @@ function show_subscription_settings(sub_row) {
     sub_row.find('.subscription_settings :input').removeAttr('tabindex');
 }
 
+=======
+>>>>>>> Create new streams list.
 exports.mark_subscribed = function (stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
 
@@ -385,8 +494,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             exports.rerender_subscribers_count(sub);
-
-            button.text(i18n.t("Subscribed")).addClass("subscribed-button").addClass("btn-success");
+            button.toggleClass("checked");
             button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
             // viewing the members of this stream
@@ -435,7 +543,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         sub.subscribed = false;
 
         var button = button_for_sub(sub);
-        button.removeClass("subscribed-button").removeClass("btn-success").removeClass("btn-danger").text(i18n.t("Subscribe"));
+        button.toggleClass("checked");
         button.parent().children(".preview-stream").text(i18n.t("Preview"));
 
         var settings = settings_for_sub(sub);
@@ -468,11 +576,11 @@ exports.mark_sub_unsubscribed = function (sub) {
 };
 
 exports.filter_table = function (query) {
-    var sub_name_elements = $('#subscriptions_table .subscription_name');
+    var sub_name_elements = $('#subscriptions_table .stream-title');
 
     if (query === '') {
         _.each(sub_name_elements, function (sub_name_elem) {
-            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+            $(sub_name_elem).parents('.ind-stream').removeClass("notdisplayed");
         });
         return;
     }
@@ -500,9 +608,9 @@ exports.filter_table = function (query) {
         });
 
         if (matches) {
-            $(sub_name_elem).parents('.subscription_row').removeClass("notdisplayed");
+            $(sub_name_elem).parents('.ind-stream').removeClass("notdisplayed");
         } else {
-            $(sub_name_elem).parents('.subscription_row').addClass("notdisplayed");
+            $(sub_name_elem).parents('.ind-stream').addClass("notdisplayed");
         }
     });
 };
@@ -875,11 +983,12 @@ $(function () {
     }
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var stream_name = $(e.target).closest('.subscription_row').find('.subscription_name').text();
+        var stream_name = $(e.target).closest('.ind-stream').find('.stream-title').text();
         sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
     });
+
     $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
@@ -987,6 +1096,12 @@ $(function () {
         exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
     });
 
+    $("#subscriptions_table").on("click", ".ind-stream", function (e) {
+        if ($(e.target).closest(".check, .subscription_settings").length === 0) {
+            exports.show_settings_for($(this).closest(".ind-stream").data("stream-name"));
+        }
+    });
+
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
         e.preventDefault();
 
@@ -1060,9 +1175,10 @@ $(function () {
         e.preventDefault();
         var $form = $(e.target);
 
-        var $sub_row = $(e.target).closest('.subscription_row');
-        var stream_name = $sub_row.find('.subscription_name').text();
-        var description = $sub_row.find('input[name="description"]').val();
+        var $settings = $(e.target).closest(".subscription_settings");
+        var $sub_row = $(".ind-stream[data-stream='" + $settings.data("sub-settings") + "']");
+        var stream_name = $sub_row.data("stream-name");
+        var description = $settings.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
 
@@ -1076,6 +1192,7 @@ $(function () {
                 // The event from the server will update the rest of the UI
                 ui.report_success(i18n.t("The stream description has been updated!"),
                                  $("#subscriptions-status"), 'subscriptions-status');
+                $sub_row.find(".description").text(description);
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating the stream description"), xhr,
@@ -1154,11 +1271,14 @@ $(function () {
         e.stopPropagation();
     });
 
+<<<<<<< 4fe5fc849ec849fe764e649d34499499f36555ab
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var sub_row = $(e.target).closest('.subscription_row');
         show_subscription_settings(sub_row);
     });
 
+=======
+>>>>>>> Create new streams list.
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
         var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
         sub_arrow.removeClass('icon-vector-chevron-up');
@@ -1182,12 +1302,7 @@ function focus_on_narrowed_stream() {
         return;
     }
     var sub = stream_data.get_sub(stream_name);
-    if (sub !== undefined) {
-        // This stream is in the list, so focus on it.
-        $('html, body').animate({
-            scrollTop: settings_for_sub(sub).offset().top
-        });
-    } else {
+    if (sub === undefined) {
         // This stream doesn't exist, so prep for creating it.
         $("#create_stream_name").val(stream_name);
     }

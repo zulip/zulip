@@ -1,5 +1,9 @@
-{{#if invite_only}}
-   <span class="subscription_lock"><i class="icon-vector-lock" style="color: {{color}}"></i></span>
-{{else}}
- <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
-{{/if}}
+<div class="icon" style="background-color: {{color}}">
+    <div class="flex">
+        {{#if invite_only}}
+        <i class="icon-vector-lock"></i>
+        {{else}}
+        <span class="hashtag">#</span>
+        {{/if}}
+    </div>
+</div>

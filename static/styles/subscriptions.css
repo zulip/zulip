@@ -118,12 +118,6 @@
     margin-right: 1px;
 }
 
-.subscription_settings {
-    width: 100%;
-    position: relative;
-    top: -1px;
-}
-
 .subscription_settings form {
     text-align: center;
 }
@@ -238,14 +232,6 @@
     text-decoration: none;
     background-color: #ebebeb;
     border: 1px solid #adadad;
-}
-
-.sub_unsub_button {
-    display: inline-block;
-    min-width: 140px;
-    float: right;
-    margin-top: 9px;
-    margin-right: 10px;
 }
 
 .sub_arrow {
@@ -381,4 +367,299 @@ form#add_new_subscription {
 
 .change-stream-privacy-feedback {
     display: none;
+}
+
+.subscriptions-overlay-bg {
+    font: menu;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(20,20,20,0.7);
+    color: #444;
+}
+
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subscriptions-container {
+    position: relative;
+    height: 80%;
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 0px;
+    width: 900px;
+    overflow: hidden;
+}
+
+.subscriptions-header {
+    padding: 12px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid #ddd;
+}
+
+.exit {
+    font-weight: 400;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    color: #AAA;
+    cursor: pointer;
+}
+
+.exit-sign {
+    position: relative;
+    top: 2px;
+    margin-left: 3px;
+    font-size: 1.7em;
+    font-weight: 300;
+}
+
+.subscriptions-container .left,
+.subscriptions-container .right {
+    vertical-align: top;
+    display: inline-block;
+    width: 50%;
+    height: calc(100% - 39px);
+    margin: 0px -2px;
+}
+
+.subscriptions-container .left {
+    border-right: 1px solid #ddd;
+}
+
+.left .search-container {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.subscriptions-container .right .display-type {
+    padding: 6px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+}
+
+.display-type.preview:after {
+    content: "Preview";
+}
+
+.display-type.preferences:after {
+    content: "Preferences";
+}
+
+.subscriptions-container .right iframe {
+    width: 100%;
+    height: calc(100% - 41px);
+    border: none;
+}
+
+.new-style .tab-switcher {
+    font-weight: initial;
+    margin: 2px 4px;
+    display: inline-block;
+}
+
+.new-style .tab-switcher .ind-tab {
+    display: inline-block;
+    width: 90px;
+    margin: 0px -2px;
+    text-align: center;
+    padding: 3px 10px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.new-style .tab-switcher .ind-tab:not(.selected) {
+    border: 1px solid #ccc;
+}
+
+.new-style .tab-switcher .ind-tab.first {
+    border-radius: 5px 0px 0px 5px;
+    border-right: none;
+}
+
+.new-style .tab-switcher .ind-tab.second {
+    border-radius: 0px 5px 5px 0px;
+    border-left: none;
+}
+
+.new-style .tab-switcher .ind-tab.selected {
+    position: relative;
+    background: #888;
+    color: #fff;
+    border: 1px solid #777;
+    z-index: 2;
+}
+
+.new-style .tab-switcher .ind-tab.disabled {
+    pointer-events: none;
+    color: #CCC;
+    border-color: #DDD;
+}
+
+input[type=text].small {
+    font: menu;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 3px;
+    outline: none;
+    color: #444;
+    text-align: center;
+}
+
+input[type=text].small:focus {
+    text-align: left;
+}
+
+input[type=text].small:valid {
+    text-align: left;
+}
+
+#find_streams {
+    width: 194px;
+}
+
+.streams-list {
+    overflow: auto;
+    height: calc(100% - 41px);
+}
+
+.ind-stream {
+    padding: 15px 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.ind-stream.active {
+    background-color: #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.hide {
+    display: none;
+}
+
+.ind-stream.no-border {
+    border-bottom: 1px solid #eee;
+}
+
+.ind-stream > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.ind-stream .check {
+    width: 25px;
+    height: 35px;
+    margin-right: 8px;
+    background-size: 60% auto;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.checked {
+    background-image: url(http://localhost/work/zulip/static/images/checkbox-green.png);
+}
+
+.ind-stream .icon {
+    width: 35px;
+    height: 35px;
+    margin-right: 8px;
+    background-color: purple;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.ind-stream .icon .symbol {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.ind-stream .icon .icon-vector-lock {
+    font-size: 1.4em;
+}
+
+.ind-stream .icon .hashtag {
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.ind-stream .sub-info-box {
+    width: calc(100% - 90px);
+}
+
+.ind-stream .sub-info-box .top-bar > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.ind-stream .sub-info-box .top-bar .stream-title {
+    font-weight: 600;
+}
+
+.ind-stream .sub-info-box .top-bar .num-posts,
+.ind-stream .sub-info-box .top-bar .num-subs {
+    float: right;
+    color: #aaa;
+}
+
+.ind-stream .sub-info-box .top-bar .num-subs {
+    margin-left: 10px;
+}
+
+.ind-stream .sub-info-box .description {
+    margin-top: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ind-stream .sub-info-box .description:empty:after {
+    content: "No description given.";
+    font-style: italic;
+    color: #aaa;
+}
+
+.ind-stream .settings-dropdown-trigger {
+    float: right;
+    margin-left: 10px;
+    color: #aaa;
+}
+
+#subscription_overlay {
+    display: none;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    overflow: auto;
+    z-index: 102;
+}
+
+#subscription_overlay.show {
+    display: block;
+}
+
+.ind-stream .subscription_settings {
+    display: none;
+    position: relative;
+    width: 600px;
+    margin: 0 auto;
+    border-radius: 4px;
+    top: -1px;
+}
+
+.ind-stream .subscription_settings.show {
+    display: block;
 }
