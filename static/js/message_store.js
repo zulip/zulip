@@ -39,47 +39,6 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     return recipient;
 };
 
-exports.process_message_for_recent_topics = function process_message_for_recent_topics(message, remove_message) {
-    var current_timestamp = 0;
-    var count = 0;
-    var stream = message.stream;
-    var canon_subject = stream_data.canonicalized_name(message.subject);
-
-    if (! stream_data.recent_subjects.has(stream)) {
-        stream_data.recent_subjects.set(stream, []);
-    } else {
-        stream_data.recent_subjects.set(stream, _.filter(stream_data.recent_subjects.get(stream), function (item) {
-            var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
-            if (is_duplicate) {
-                current_timestamp = item.timestamp;
-                count = item.count;
-            }
-            return !is_duplicate;
-        }));
-    }
-
-    var recents = stream_data.recent_subjects.get(stream);
-
-    if (remove_message !== undefined) {
-        count = count - 1;
-    } else {
-        count = count + 1;
-    }
-
-    if (count !== 0) {
-        recents.push({subject: message.subject,
-                      canon_subject: canon_subject,
-                      count: count,
-                      timestamp: Math.max(message.timestamp, current_timestamp)});
-    }
-
-    recents.sort(function (a, b) {
-        return b.timestamp - a.timestamp;
-    });
-
-    stream_data.recent_subjects.set(stream, recents);
-};
-
 exports.process_message_for_recent_private_messages = function process_message_for_recent_private_messages(message, remove_message) {
     var current_timestamp = 0;
 
@@ -149,7 +108,7 @@ function add_message_metadata(message) {
         composebox_typeahead.add_topic(message.stream, message.subject);
         message.reply_to = message.sender_email;
 
-        exports.process_message_for_recent_topics(message);
+        stream_data.process_message_for_recent_topics(message);
 
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
@@ -334,7 +293,7 @@ exports.update_messages = function update_messages(events) {
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we update msg.subject
-                exports.process_message_for_recent_topics(msg, true);
+                stream_data.process_message_for_recent_topics(msg, true);
                 // Update the unread counts; again, this must be called
                 // before we update msg.subject
                 unread.update_unread_topics(msg, event);
@@ -344,7 +303,7 @@ exports.update_messages = function update_messages(events) {
                 set_topic_edit_properties(msg);
                 // Add the recent topics entry for the new topics; must
                 // be called after we update msg.subject
-                exports.process_message_for_recent_topics(msg);
+                stream_data.process_message_for_recent_topics(msg);
             });
         }
 

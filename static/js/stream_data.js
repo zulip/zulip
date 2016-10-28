@@ -230,6 +230,47 @@ exports.add_admin_options = function (sub) {
     });
 };
 
+exports.process_message_for_recent_topics = function process_message_for_recent_topics(message, remove_message) {
+    var current_timestamp = 0;
+    var count = 0;
+    var stream = message.stream;
+    var canon_subject = exports.canonicalized_name(message.subject);
+
+    if (! exports.recent_subjects.has(stream)) {
+        exports.recent_subjects.set(stream, []);
+    } else {
+        exports.recent_subjects.set(stream, _.filter(exports.recent_subjects.get(stream), function (item) {
+            var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
+            if (is_duplicate) {
+                current_timestamp = item.timestamp;
+                count = item.count;
+            }
+            return !is_duplicate;
+        }));
+    }
+
+    var recents = exports.recent_subjects.get(stream);
+
+    if (remove_message !== undefined) {
+        count = count - 1;
+    } else {
+        count = count + 1;
+    }
+
+    if (count !== 0) {
+        recents.push({subject: message.subject,
+                      canon_subject: canon_subject,
+                      count: count,
+                      timestamp: Math.max(message.timestamp, current_timestamp)});
+    }
+
+    recents.sort(function (a, b) {
+        return b.timestamp - a.timestamp;
+    });
+
+    exports.recent_subjects.set(stream, recents);
+};
+
 exports.get_streams_for_settings_page = function () {
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
