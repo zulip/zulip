@@ -226,7 +226,7 @@ function settings_for_sub(sub) {
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     stream_data.update_subscribers_count(sub);
-    $(".stream-row[data-stream-id='" + id + "'] .subscriber_count").text(sub.subscriber_count);
+    $(".stream-row[data-stream-id='" + id + "'] .subscriber-count").text(sub.subscriber_count);
 };
 
 exports.show_settings_for = function (stream_name) {
