@@ -1,6 +1,6 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#with this}}
-<div class="ind-stream" data-stream="{{stream_id}}" data-stream-name="{{name}}">
+<div class="stream-row" data-stream="{{stream_id}}" data-stream-name="{{name}}">
     {{#if subscribed}}
     <div class="check checked sub_unsub_button"></div>
     {{else}}

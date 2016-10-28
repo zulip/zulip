@@ -93,7 +93,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     sub.color = color;
     var id = parseInt(sub.stream_id, 10);
     // The swatch in the subscription row header.
-    $(".ind-stream[data-stream='" + id + "'] .icon").css('background-color', color);
+    $(".stream-row[data-stream='" + id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.
     exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-sub-settings='" + id + "'] .colorpicker"), color);
 

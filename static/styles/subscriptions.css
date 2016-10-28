@@ -533,13 +533,13 @@ input[type=text].small:valid {
     height: calc(100% - 41px);
 }
 
-.ind-stream {
+.stream-row {
     padding: 15px 10px;
     border-bottom: 1px solid #ddd;
     cursor: pointer;
 }
 
-.ind-stream.active {
+.stream-row.active {
     background-color: #eee;
     border-bottom: 1px solid #eee;
 }
@@ -548,16 +548,16 @@ input[type=text].small:valid {
     display: none;
 }
 
-.ind-stream.no-border {
+.stream-row.no-border {
     border-bottom: 1px solid #eee;
 }
 
-.ind-stream > div {
+.stream-row > div {
     display: inline-block;
     vertical-align: top;
 }
 
-.ind-stream .check {
+.stream-row .check {
     width: 25px;
     height: 35px;
     margin-right: 8px;
@@ -570,7 +570,7 @@ input[type=text].small:valid {
     background-image: url(http://localhost/work/zulip/static/images/checkbox-green.png);
 }
 
-.ind-stream .icon {
+.stream-row .icon {
     width: 35px;
     height: 35px;
     margin-right: 8px;
@@ -579,57 +579,57 @@ input[type=text].small:valid {
     color: #fff;
 }
 
-.ind-stream .icon .symbol {
+.stream-row .icon .symbol {
     font-weight: 600;
     font-size: 1.1em;
 }
 
-.ind-stream .icon .icon-vector-lock {
+.stream-row .icon .icon-vector-lock {
     font-size: 1.4em;
 }
 
-.ind-stream .icon .hashtag {
+.stream-row .icon .hashtag {
     font-size: 1.4em;
     font-weight: 600;
 }
 
-.ind-stream .sub-info-box {
+.stream-row .sub-info-box {
     width: calc(100% - 90px);
 }
 
-.ind-stream .sub-info-box .top-bar > div {
+.stream-row .sub-info-box .top-bar > div {
     display: inline-block;
     vertical-align: top;
 }
 
-.ind-stream .sub-info-box .top-bar .stream-title {
+.stream-row .sub-info-box .top-bar .stream-title {
     font-weight: 600;
 }
 
-.ind-stream .sub-info-box .top-bar .num-posts,
-.ind-stream .sub-info-box .top-bar .num-subs {
+.stream-row .sub-info-box .top-bar .num-posts,
+.stream-row .sub-info-box .top-bar .num-subs {
     float: right;
     color: #aaa;
 }
 
-.ind-stream .sub-info-box .top-bar .num-subs {
+.stream-row .sub-info-box .top-bar .num-subs {
     margin-left: 10px;
 }
 
-.ind-stream .sub-info-box .description {
+.stream-row .sub-info-box .description {
     margin-top: 5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.ind-stream .sub-info-box .description:empty:after {
+.stream-row .sub-info-box .description:empty:after {
     content: "No description given.";
     font-style: italic;
     color: #aaa;
 }
 
-.ind-stream .settings-dropdown-trigger {
+.stream-row .settings-dropdown-trigger {
     float: right;
     margin-left: 10px;
     color: #aaa;
