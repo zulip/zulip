@@ -1041,11 +1041,11 @@ $(function () {
 
     $('#subscriptions_table').on('submit', '.change-stream-description form', function (e) {
         e.preventDefault();
-        var $form = $(e.target);
+        var form = $(e.target);
 
-        var $sub_row = $(e.target).closest('.stream-row');
-        var stream_name = $sub_row.find('.stream-name').text();
-        var description = $sub_row.find('input[name="description"]').val();
+        var sub_row = $(e.target).closest('.stream-row');
+        var stream_name = sub_row.find('.stream-name').text();
+        var description = sub_row.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
 
