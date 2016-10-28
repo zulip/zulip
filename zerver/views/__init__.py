@@ -236,23 +236,28 @@ def accounts_register(request):
                                           tos_version=settings.TOS_VERSION,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
-        # This logs you in using the ZulipDummyBackend, since honestly nothing
-        # more fancy than this is required.
-        return_data = {} # type: Dict[str, bool]
-        auth_result = authenticate(username=user_profile.email,
-                                   realm_subdomain=realm.subdomain,
-                                   return_data=return_data,
-                                   use_dummy_backend=True)
-        if return_data.get('invalid_subdomain'):
-            # By construction, this should never happen.
-            logging.error("Subdomain mismatch in registration %s: %s" % (
-                realm.subdomain, user_profile.email,))
-            return redirect('/')
-        login(request, auth_result)
+        if settings.REALMS_HAVE_SUBDOMAINS:
+            if first_in_realm:
+                do_change_is_admin(user_profile, True)
+            return redirect_and_log_into_subdomain(realm, full_name, email)
+        else:
+            # This logs you in using the ZulipDummyBackend, since honestly nothing
+            # more fancy than this is required.
+            return_data = {} # type: Dict[str, bool]
+            auth_result = authenticate(username=user_profile.email,
+                                       realm_subdomain=realm.subdomain,
+                                       return_data=return_data,
+                                       use_dummy_backend=True)
+            if return_data.get('invalid_subdomain'):
+                # By construction, this should never happen.
+                logging.error("Subdomain mismatch in registration %s: %s" % (
+                    realm.subdomain, user_profile.email,))
+                return redirect('/')
+            login(request, auth_result)
 
-        if first_in_realm:
-            do_change_is_admin(user_profile, True)
-        return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
+            if first_in_realm:
+                do_change_is_admin(user_profile, True)
+            return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
 
     return render_to_response('zerver/register.html',
             {'form': form,
