@@ -901,10 +901,10 @@ $(function () {
     });
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var subrow = $(e.target).closest('.subscription_row');
-        var colorpicker = subrow.find('.colorpicker');
+        var sub_row = $(e.target).closest('.subscription_row');
+        var colorpicker = sub_row.find('.colorpicker');
 
-        var color = stream_data.get_color(subrow.find('.subscription_name').text());
+        var color = stream_data.get_color(sub_row.find('.subscription_name').text());
         stream_color.set_colorpicker_color(colorpicker, color);
 
         // To figure out the worst case for an expanded row's height, we do some math:
@@ -914,7 +914,7 @@ $(function () {
         // .subscription_header line-height,
         // .subscription_header padding
         var expanded_row_size = 200 + 30 + 100 + 30 + 5;
-        var cover = subrow.offset().top + expanded_row_size -
+        var cover = sub_row.offset().top + expanded_row_size -
             viewport.height() + viewport.scrollTop();
         if (cover > 0) {
             $('.app').animate({
@@ -923,14 +923,14 @@ $(function () {
         }
 
         // Make all inputs have a default tabindex
-        subrow.find('.subscription_settings :input').removeAttr('tabindex');
+        sub_row.find('.subscription_settings :input').removeAttr('tabindex');
     });
 
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var subrow = $(e.target).closest('.subscription_row');
+        var sub_row = $(e.target).closest('.subscription_row');
 
         // Remove all inputs from the tabindex
-        subrow.find('.subscription_settings :input').attr('tabindex', '-1');
+        sub_row.find('.subscription_settings :input').attr('tabindex', '-1');
     });
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
