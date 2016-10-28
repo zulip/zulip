@@ -78,10 +78,10 @@ exports.build_stream_list = function () {
     function add_sidebar_li(stream) {
         var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
-            if (! stream_data.recent_subjects.has(stream)) {
-                li.addClass('inactive_stream');
-            } else {
+            if (stream_data.recent_subjects.has(stream)) {
                 li.removeClass('inactive_stream');
+            } else {
+                li.addClass('inactive_stream');
             }
         }
         elems.push(li.get(0));
