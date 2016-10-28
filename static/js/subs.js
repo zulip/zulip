@@ -339,6 +339,29 @@ function show_subscription_settings(sub_row) {
             return item.email;
         }
     });
+
+    var colorpicker = sub_row.find('.colorpicker');
+
+    var color = stream_data.get_color(sub_row.find('.subscription_name').text());
+    stream_color.set_colorpicker_color(colorpicker, color);
+
+    // To figure out the worst case for an expanded row's height, we do some math:
+    // .subscriber_list_container max-height,
+    // .subscriber_list_settings,
+    // .regular_subscription_settings
+    // .subscription_header line-height,
+    // .subscription_header padding
+    var expanded_row_size = 200 + 30 + 100 + 30 + 5;
+    var cover = sub_row.offset().top + expanded_row_size -
+        viewport.height() + viewport.scrollTop();
+    if (cover > 0) {
+        $('.app').animate({
+            scrollTop: viewport.scrollTop() + cover + 5
+        });
+    }
+
+    // Make all inputs have a default tabindex
+    sub_row.find('.subscription_settings :input').removeAttr('tabindex');
 }
 
 exports.mark_subscribed = function (stream_name, attrs) {
@@ -898,32 +921,6 @@ $(function () {
         }
         $('.empty_feed_notice').hide();
         $('#empty_narrow_message').show();
-    });
-
-    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.subscription_row');
-        var colorpicker = sub_row.find('.colorpicker');
-
-        var color = stream_data.get_color(sub_row.find('.subscription_name').text());
-        stream_color.set_colorpicker_color(colorpicker, color);
-
-        // To figure out the worst case for an expanded row's height, we do some math:
-        // .subscriber_list_container max-height,
-        // .subscriber_list_settings,
-        // .regular_subscription_settings
-        // .subscription_header line-height,
-        // .subscription_header padding
-        var expanded_row_size = 200 + 30 + 100 + 30 + 5;
-        var cover = sub_row.offset().top + expanded_row_size -
-            viewport.height() + viewport.scrollTop();
-        if (cover > 0) {
-            $('.app').animate({
-                scrollTop: viewport.scrollTop() + cover + 5
-            });
-        }
-
-        // Make all inputs have a default tabindex
-        sub_row.find('.subscription_settings :input').removeAttr('tabindex');
     });
 
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
