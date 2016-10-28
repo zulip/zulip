@@ -279,6 +279,10 @@ function prepend_subscriber(sub_row, email) {
 }
 
 function show_subscription_settings(sub_row) {
+    var sub_arrow = sub_row.find('.sub_arrow i');
+    sub_arrow.removeClass('icon-vector-chevron-down');
+    sub_arrow.addClass('icon-vector-chevron-up');
+
     var stream = sub_row.find('.subscription_name').text();
     var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
     var error_elem = sub_row.find('.subscriber_list_container .alert-error');
@@ -1155,14 +1159,6 @@ $(function () {
         show_subscription_settings(sub_row);
     });
 
-    // Change the down arrow to an up arrow on expansion, and back to a down
-    // arrow on collapse.
-    // FIXME: If there's a way, it may be better to do this in pure CSS.
-    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
-        sub_arrow.removeClass('icon-vector-chevron-down');
-        sub_arrow.addClass('icon-vector-chevron-up');
-    });
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
         var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
         sub_arrow.removeClass('icon-vector-chevron-up');
