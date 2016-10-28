@@ -85,7 +85,7 @@ var subscriptions_table_colorpicker_options = {
 
 exports.set_colorpicker_color = function (colorpicker, color) {
     colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
-                         {color: color, container: "#subscriptions_table"}));
+                         {color: color, container: "#subscription_overlay .subscription_settings.show"}));
 };
 
 exports.update_stream_color = function (sub, stream_name, color, opts) {
@@ -95,7 +95,8 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     // The swatch in the subscription row header.
     $(".stream-row[data-stream-id='" + id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.
-    exports.set_colorpicker_color($(".stream-row[data-stream-id='" + id + "'] .colorpicker"), color);
+    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .colorpicker"), color);
+    $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .large-icon").css("color", color);
 
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);

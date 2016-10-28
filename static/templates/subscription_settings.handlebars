@@ -1,4 +1,20 @@
-<div id="subscription_settings_{{stream_id}}" class="collapse subscription_settings" data-stream-id="{{stream_id}}">
+{{#with this}}
+<div class="subscription_settings" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
+ <div class="inner-box">
+  <div class="stream-header">
+    {{#if invite_only}}
+    <div class="large-icon lock" style="color: {{color}}">
+      <i class="icon-vector-lock"></i>
+    </div>
+    {{else}}
+    <div class="large-icon hash" style="color: {{color}}"></div>
+    {{/if}}
+    <div class="stream-name">
+      {{name}}
+    </div>
+  </div>
+  <div class="stream-description">{{description}}</div>
+
   <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
     <div class="subscription-type">
       {{partial "subscription_type"}}
@@ -16,28 +32,28 @@
         <div id="sub_desktop_notifications_setting"
              class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
           <input id="desktop-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if desktop_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
-          <label class="subscription-control-label">{{t "Receive desktop <br />notifications" }}</label>
+          <label class="subscription-control-label">{{t "Receive desktop notifications" }}</label>
         </div>
       </li>
       <li>
         <div id="sub_audible_notifications_setting"
              class="sub_setting_checkbox sub_notification_setting {{#unless in_home_view}}muted-sub{{/unless}}">
           <input id="audible-notifystream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if audible_notifications}}checked{{/if}} {{#unless in_home_view}}disabled="disabled"{{/unless}}/>
-          <label class="subscription-control-label">{{t "Receive audible<br />notifications" }}</label>
+          <label class="subscription-control-label">{{t "Receive audible notifications" }}</label>
         </div>
 
       </li>
       <li>
         <div id="sub_pin_setting" class="sub_setting_checkbox">
           <input id="pinstream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if pin_to_top}}checked{{/if}} />
-          <label class="subscription-control-label">{{t "Pin stream to top<br /> of left sidebar" }}</label>
+          <label class="subscription-control-label">{{t "Pin stream to top of left sidebar" }}</label>
         </div>
       </li>
       <li>
+        <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
         <span class="sub_setting_control">
           <input stream_id="{{stream_id}}" class="colorpicker" id="streamcolor" type="text" value="{{color}}" tabindex="-1" />
         </span>
-        <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
       </li>
     </ul>
     </div>
@@ -93,4 +109,6 @@
     </div>
   </div>
   {{/render_subscribers}}
+ </div>
 </div>
+{{/with}}

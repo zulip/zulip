@@ -118,35 +118,21 @@
     margin-right: 1px;
 }
 
-.subscription_settings {
-    width: 100%;
-    position: relative;
-    top: -1px;
-}
-
-.subscription_settings form {
-    text-align: center;
+.subscription_settings .btn {
+    border-radius: 2px;
 }
 
 .subscription_settings ul {
     list-style-type: none;
 }
 
-.subscription-type {
-    text-align: center;
-    padding: 5px;
-    width: 80%;
-    margin: auto;
-    font-weight: 300;
-}
-
 .stream-email {
-    width: 80%;
-    margin: auto;
-    margin-top: 5px;
-    text-align: center;
-    padding: 5px;
     font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    padding: 5px;
+    font-size: 0.9em;
+    background-color: #EEE;
+    border: 1px solid #DDD;
+    border-radius: 4px;
 }
 
 .subscription-control-label {
@@ -168,20 +154,7 @@
     box-shadow: 0px 0px 2px rgba(0,0,0,0.8);
 }
 
-.subscription-config {
-    width: 270px;
-    margin: auto;
-    margin-top: 25px;
-}
-
-.stream-email-box,
-.subscriber_list_settings,
-.rename-stream {
-    margin: 20px 15px 20px 15px;
-}
-
 .stream-email .email-address {
-    width: 90%;
     display: block;
     margin: auto;
     white-space: -moz-pre-wrap !important;
@@ -191,10 +164,6 @@
     word-wrap: break-word;
     word-break: break-all;
     white-space: normal;
-}
-
-.sub_setting_control[type="checkbox"] {
-    margin: 0 30px 5px 20px;
 }
 
 .muted-sub {
@@ -282,7 +251,6 @@ form#add_new_subscription {
 .sub_settings_title {
     line-height: 30px;
     margin: 10px 0;
-    font-weight: 300;
     font-size: 16px;
 }
 
@@ -311,7 +279,6 @@ form#add_new_subscription {
 .subscriber-list {
     width: auto;
     margin: auto;
-    margin-bottom: 20px;
     background: #efefef;
     border-radius: 6px;
 }
@@ -337,11 +304,6 @@ form#add_new_subscription {
 .subscriber_list_add {
     margin: auto;
     text-align: center;
-}
-
-.add-subscriber-button,
-.stream-rename-button {
-    margin-left: 5px;
 }
 
 .remove-subscriber-form {
@@ -378,6 +340,112 @@ form#add_new_subscription {
     display: none;
 }
 
+.subscriptions-overlay-bg {
+    font: menu;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(20,20,20,0.7);
+    color: #444;
+}
+
+.subscriptions-container {
+    position: relative;
+    height: 80%;
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 0px;
+    width: 900px;
+    overflow: hidden;
+}
+
+.subscriptions-header {
+    padding: 12px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid #ddd;
+}
+
+.subscriptions-container .exit {
+    font-weight: 400;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    color: #AAA;
+    cursor: pointer;
+}
+
+.subscriptions-container .exit-sign {
+    position: relative;
+    top: 2px;
+    margin-left: 3px;
+    font-size: 1.7em;
+    font-weight: 300;
+}
+
+.subscriptions-container .left,
+.subscriptions-container .right {
+    vertical-align: top;
+    display: inline-block;
+    width: 50%;
+    height: calc(100% - 39px);
+    margin: 0px -2px;
+}
+
+.subscriptions-container .left {
+    border-right: 1px solid #ddd;
+}
+
+.subscriptions-container .left .search-container {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.subscriptions-container .right .display-type {
+    padding: 6px;
+    text-align: center;
+    font-weight: 600;
+    border-bottom: 1px solid #ddd;
+}
+
+.subscriptions-container .display-type.preview:after {
+    content: "Preview";
+}
+
+.subscriptions-container .display-type.preferences:after {
+    content: "Preferences";
+}
+
+.subscriptions-container .right iframe {
+    width: 100%;
+    height: calc(100% - 41px);
+    border: none;
+}
+
+.subscriptions-container input[type=text].small {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 3px;
+    outline: none;
+    color: #444;
+    text-align: center;
+}
+
+.subscriptions-container input[type=text].small:focus {
+    text-align: left;
+}
+
+.subscriptions-container input[type=text].small:valid {
+    text-align: left;
+}
+
+#find_streams {
+    width: 194px;
+}
+
 .streams-list {
     overflow: auto;
     height: calc(100% - 41px);
@@ -398,7 +466,7 @@ form#add_new_subscription {
     border-bottom: 1px solid #eee;
 }
 
-.subscription_table_elem > div {
+.stream-row > div {
     display: inline-block;
     vertical-align: top;
 }
@@ -448,7 +516,7 @@ form#add_new_subscription {
     vertical-align: top;
 }
 
-.stream-row .sub-info-box .top-bar .stream-title {
+.stream-row .sub-info-box .top-bar .stream-name {
     font-weight: 600;
 }
 
@@ -469,7 +537,8 @@ form#add_new_subscription {
     text-overflow: ellipsis;
 }
 
-.stream-row .sub-info-box .description:empty:after {
+.stream-row .sub-info-box .description:empty:after,
+#subscription_overlay .stream-description:empty:after {
     content: "No description given.";
     font-style: italic;
     color: #aaa;
@@ -479,4 +548,103 @@ form#add_new_subscription {
     float: right;
     margin-left: 10px;
     color: #aaa;
+}
+
+#subscription_overlay .inner-box {
+    margin: 20px;
+}
+
+#subscription_overlay .stream-header {
+    margin-bottom: 20px;
+}
+
+#subscription_overlay .stream-header .stream-name {
+    display: inline-block;
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+#subscription_overlay .stream-header .large-icon {
+    display: inline-block;
+    margin-right: 5px;
+    font-size: 1.5em;
+}
+
+#subscription_overlay .stream-description {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+#subscription_overlay .subscription-type {
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    color: #888;
+}
+
+#subscription_overlay .subscription-type b {
+    font-weight: 600;
+    color: #666;
+}
+
+#subscription_overlay .stream-header .large-icon.hash::after {
+    position: relative;
+    top: 1px;
+    content: "#";
+    font-weight: 800;
+}
+
+#subscription_overlay {
+    display: none;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.8);
+    overflow: auto;
+    z-index: 102;
+}
+
+#subscription_overlay.show {
+    display: block;
+}
+
+#subscription_overlay .subscription_settings {
+    display: none;
+    position: relative;
+    width: 600px;
+    margin: 0 auto;
+    border-radius: 4px;
+    top: -1px;
+    max-height: 85vh;
+    overflow: auto;
+}
+
+#subscription_overlay .subscription_settings.show {
+    display: block;
+}
+
+#subscription_overlay .subscription_settings ul {
+    margin: 0px;
+    padding: 10px;
+    background-color: #EEE;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+}
+
+#subscription_overlay .subscription_settings ul li {
+    border-bottom: 1px solid #DDD;
+    padding: 5px 0px;
+}
+
+#subscription_overlay .subscription_settings ul li input[type=checkbox] {
+    margin-top: 0px;
+}
+
+#subscription_overlay .subscription_settings ul li:last-of-type {
+    border-bottom: none;
+}
+
+#subscription_overlay .subscription_settings ul li .sp-replacer {
+    box-shadow: none;
 }

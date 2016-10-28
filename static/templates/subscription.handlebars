@@ -1,8 +1,6 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#with this}}
 <div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
-  <div class="subscription_table_elem subscription_header collapsed" data-toggle="collapse" data-target="#subscription_settings_{{stream_id}}">
-
     {{#if subscribed}}
     <div class="check checked sub_unsub_button"></div>
     {{else}}
@@ -22,7 +20,5 @@
         </div>
         <div class="description">{{description}}</div>
     </div>
-  </div>
-  {{ partial "subscription_settings" }}
 </div>
 {{/with}}

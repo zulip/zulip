@@ -4,7 +4,7 @@ var exports = {};
 
 function settings_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream-id='" + id + "'] .subscription_settings");
+    return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 }
 
 function button_for_sub(sub) {
@@ -181,6 +181,7 @@ function update_stream_name(stream_id, old_name, new_name) {
     // Update the stream settings
     var sub_settings = settings_for_sub(stream_data.get_sub_by_id(stream_id));
     sub_settings.find(".email-address").text(sub.email_address);
+    sub_settings.find(".stream-name").text(new_name);
 
     // Update the subscriptions page
     var sub_row = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
@@ -203,6 +204,7 @@ function update_stream_description(sub, description) {
     // Update stream settings
     var settings = settings_for_sub(sub);
     settings.find('input.description').val(description);
+    settings.find('.stream-description').text(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
@@ -286,10 +288,6 @@ function prepend_subscriber(sub_row, email) {
 }
 
 function show_subscription_settings(sub_row) {
-    var sub_arrow = sub_row.find('.sub_arrow i');
-    sub_arrow.removeClass('icon-vector-chevron-down');
-    sub_arrow.addClass('icon-vector-chevron-up');
-
     var stream_id = sub_row.data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
     var sub_settings = settings_for_sub(sub);
@@ -367,20 +365,19 @@ function show_subscription_settings(sub_row) {
     var expanded_row_size = 200 + 30 + 100 + 30 + 5;
     var cover = sub_row.offset().top + expanded_row_size -
         viewport.height() + viewport.scrollTop();
-    if (cover > 0) {
-        $('.app').animate({
-            scrollTop: viewport.scrollTop() + cover + 5
-        });
-    }
-
-    // Make all inputs have a default tabindex
-    sub_settings.find('.subscription_settings :input').removeAttr('tabindex');
 }
 
 exports.show_settings_for = function (stream_name) {
-    settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
-};
+    var sub_settings = settings_for_sub(stream_data.get_sub(stream_name));
+    var stream = $(".subscription_settings[data-stream-name='" + stream_name + "']");
+    $(".subscription_settings[data-stream].show").removeClass("show");
 
+    $("#subscription_overlay").fadeIn(300);
+    $("#subscription_overlay .subscription_settings.show").removeClass("show");
+    sub_settings.addClass("show");
+
+    show_subscription_settings(stream);
+};
 
 exports.mark_subscribed = function (stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
@@ -880,6 +877,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
     });
+
     $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
@@ -925,13 +923,6 @@ $(function () {
         }
         $('.empty_feed_notice').hide();
         $('#empty_narrow_message').show();
-    });
-
-    $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.stream-row');
-
-        // Remove all inputs from the tabindex
-        sub_row.find('.subscription_settings :input').attr('tabindex', '-1');
     });
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
@@ -982,6 +973,12 @@ $(function () {
         }
 
         exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
+    });
+
+    $("#subscriptions_table").on("click", ".stream-row", function (e) {
+        if ($(e.target).closest(".check, .subscription_settings").length === 0) {
+            exports.show_settings_for(get_stream_name($(e.target)));
+        }
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
@@ -1076,6 +1073,12 @@ $(function () {
         });
     });
 
+    $("body").on("click", "#subscription_overlay", function (e) {
+        if ($(e.target).is(".flex, #subscription_overlay")) {
+            $("#subscription_overlay").fadeOut(300);
+        }
+    });
+
     function redraw_privacy_related_stuff(sub_row, sub) {
         var stream_settings = settings_for_sub(sub);
         var html;
@@ -1150,11 +1153,6 @@ $(function () {
         e.stopPropagation();
     });
 
-    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var sub_row = $(e.target).closest('.stream-row');
-        show_subscription_settings(sub_row);
-    });
-
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
         var sub_arrow = $(e.target).closest('.stream-row').find('.sub_arrow i');
         sub_arrow.removeClass('icon-vector-chevron-up');
@@ -1186,12 +1184,7 @@ function focus_on_narrowed_stream() {
         return;
     }
     var sub = stream_data.get_sub(stream_name);
-    if (sub !== undefined) {
-        // This stream is in the list, so focus on it.
-        $('html, body').animate({
-            scrollTop: settings_for_sub(sub).offset().top
-        });
-    } else {
+    if (sub === undefined) {
         // This stream doesn't exist, so prep for creating it.
         $("#create_stream_name").val(stream_name);
     }
