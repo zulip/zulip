@@ -279,13 +279,13 @@ function show_subscription_settings(sub_row) {
     sub_arrow.removeClass('icon-vector-chevron-down');
     sub_arrow.addClass('icon-vector-chevron-up');
 
-    var stream = sub_row.find('.stream-name').text();
+    var stream_name = sub_row.data("stream-name");
     var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
     var error_elem = sub_row.find('.subscriber_list_container .alert-error');
     var list = get_subscriber_list(sub_row);
     var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
-    if (!stream_data.get_sub(stream).render_subscribers) {
+    if (!stream_data.get_sub(stream_name).render_subscribers) {
         return;
     }
 
@@ -298,7 +298,7 @@ function show_subscription_settings(sub_row) {
     channel.post({
         url: "/json/get_subscribers",
         idempotent: true,
-        data: {stream: stream},
+        data: {stream: stream_name},
         success: function (data) {
             loading.destroy_indicator(indicator_elem);
             var subscribers = _.map(data.subscribers, function (elem) {
@@ -342,7 +342,7 @@ function show_subscription_settings(sub_row) {
 
     var colorpicker = sub_row.find('.colorpicker');
 
-    var color = stream_data.get_color(sub_row.find('.stream-name').text());
+    var color = stream_data.get_color(stream_name);
     stream_color.set_colorpicker_color(colorpicker, color);
 
     // To figure out the worst case for an expanded row's height, we do some math:
