@@ -62,21 +62,24 @@ exports.build_list = function (stream, active_topic, max_topics) {
         active_topic = active_topic.toLowerCase();
     }
 
-    var display_topics = [];
     var hiding_topics = false;
+
+    var ul = $('<ul class="expanded_subjects">');
+    ul.attr('data-stream', stream);
 
     _.each(topics, function (subject_obj, idx) {
         var topic_name = subject_obj.subject;
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
         // Show the most recent topics, as well as any with unread messages
-        var always_visible = (idx < max_topics) || (num_unread > 0) || (active_topic === topic_name);
+        var always_visible = (idx < max_topics) || (num_unread > 0) ||
+                             (active_topic === topic_name);
 
         if (!always_visible) {
             hiding_topics = true;
         }
 
-        var display_subject = {
+        var topic_info = {
             topic_name: topic_name,
             unread: num_unread,
             is_zero: num_unread === 0,
@@ -84,15 +87,20 @@ exports.build_list = function (stream, active_topic, max_topics) {
             zoom_out_hide: !always_visible,
             url: narrow.by_stream_subject_uri(stream, topic_name)
         };
-        display_topics.push(display_subject);
+        var li = templates.render('topic_list_item', topic_info);
+        ul.append(li);
     });
 
-    var topic_dom = templates.render('sidebar_subject_list',
-                                      {topics: display_topics,
-                                       want_show_more_topics_links: hiding_topics,
-                                       stream: stream});
+    if (hiding_topics) {
+        var show_more = $('<li class="show-more-topics">');
+        show_more.attr('data-stream', stream);
+        var link = $('<a href="#">');
+        link.html(i18n.t('more topics'));
+        show_more.html(link);
+        ul.append(show_more);
+    }
 
-    return topic_dom;
+    return ul;
 };
 
 exports.rebuild = function (stream_li, stream, active_topic) {
