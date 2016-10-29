@@ -225,9 +225,7 @@ def accounts_register(request):
             string_id = form.cleaned_data['realm_subdomain']
             realm_name = form.cleaned_data['realm_name']
             org_type = int(form.cleaned_data['realm_org_type'])
-            domain = split_email_to_domain(email)
-            realm = do_create_realm(string_id, realm_name, org_type=org_type,
-                                    domain=domain)[0]
+            realm = do_create_realm(string_id, realm_name, org_type=org_type)[0]
 
             set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
 
