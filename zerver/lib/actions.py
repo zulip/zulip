@@ -1945,8 +1945,8 @@ def do_change_stream_description(realm, stream_name, new_description):
     send_event(event, stream_user_ids(stream))
 
 def do_create_realm(string_id, name, restricted_to_domain=None,
-                    invite_required=None, org_type=None, domain=None):
-    # type: (text_type, text_type, Optional[bool], Optional[bool], Optional[int], Optional[text_type]) -> Tuple[Realm, bool]
+                    invite_required=None, org_type=None):
+    # type: (text_type, text_type, Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
     realm = get_realm_by_string_id(string_id)
     created = not realm
     if created:
@@ -1960,11 +1960,6 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
         realm = Realm(string_id=string_id, name=name,
                       domain=string_id + '@acme.com', **kwargs)
         realm.save()
-
-        if domain:
-            domain = domain.lower()
-            realmalias = RealmAlias(realm=realm, domain=domain)
-            realmalias.save()
 
         # Create stream once Realm object has been saved
         notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
@@ -1987,8 +1982,7 @@ system-generated notifications.""" % (product_name, notifications_stream.name,)
                    "string_id": string_id,
                    "restricted_to_domain": restricted_to_domain,
                    "invite_required": invite_required,
-                   "org_type": org_type,
-                   "domain": domain})
+                   "org_type": org_type})
 
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"

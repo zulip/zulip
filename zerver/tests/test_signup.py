@@ -637,10 +637,6 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(realm.string_id, string_id)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
 
-            # Make sure the RealmAlias is created
-            realmalias = RealmAlias.objects.get(domain = domain)
-            self.assertEqual(realmalias.realm, realm)
-
             # Check defaults
             self.assertEquals(realm.org_type, Realm.COMMUNITY)
             self.assertEquals(realm.restricted_to_domain, False)

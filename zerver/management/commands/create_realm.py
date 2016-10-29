@@ -86,10 +86,12 @@ Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
         if domain is not None:
             self.validate_domain(domain)
 
-        realm, created = do_create_realm(string_id, name, org_type=options["org_type"],
-                                         domain=domain)
+        realm, created = do_create_realm(string_id, name, org_type=options["org_type"])
         if created:
             print(string_id, "created.")
+            if domain:
+                RealmAlias.objects.create(realm=realm, domain=domain)
+                print("RealmAlias %s created for realm %s" % (domain, string_id))
             if options["deployment_id"] is not None:
                 deployment = Deployment.objects.get(id=options["deployment_id"])
                 deployment.realms.add(realm)
