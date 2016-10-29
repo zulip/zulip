@@ -202,16 +202,6 @@ function send_delayed_stream_message(stream, topic, content, delay) {
     }, delay * 1000); // delay is in seconds.
 }
 
-function hide_app_alert() {
-    $('#alert-bar-container').slideUp(100);
-}
-
-function show_app_alert(contents) {
-    $('#custom-alert-bar-content').html(contents);
-    $('#alert-bar-container').show();
-    $('#alert-bar-container .close-alert-icon').expectOne().click(hide_app_alert);
-}
-
 function disable_event_handlers() {
     $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
@@ -353,15 +343,6 @@ function finale(skip) {
         callback();
     });
     deferred_work = [];
-
-    var alert_contents;
-
-    if (page_params.prompt_for_invites) {
-        alert_contents = "<i class='icon-vector-heart alert-icon'></i>It's lonely in here! <a href='#invite-user' data-toggle='modal'>Invite some users</a>.";
-    } else {
-        alert_contents = "<i class='icon-vector-desktop alert-icon'></i>What's better than " + page_params.product_name + " in your browser? The <a href='/apps' target='_blank'>"+ page_params.product_name + " desktop app</a>!";
-    }
-    show_app_alert(alert_contents);
 
     // We start you in a narrow so it's not overwhelming.
     if (stream_data.in_home_view(page_params.notifications_stream)) {

@@ -2406,52 +2406,6 @@ button.topic_edit_cancel {
     margin-top: 41px;
 }
 
-#home .alert-bar-container {
-    position: fixed;
-    top: 41px;
-    left: 320px;
-    z-index: 101;
-}
-
-#home .alert-bar {
-    width: 100%;
-    max-width: 1210px;
-    margin: auto;
-    text-align: center;
-}
-
-#home .alert-bar-contents {
-    background: rgba(163,211,147,0.95);
-    font-weight: 400;
-    padding: 10px 35px 10px 10px;
-    display: inline-block;
-    position: relative;
-    z-index: 101;
-}
-
-#home .alert-bar .alert-icon {
-    font-size: 20px;
-    margin-right: 10px;
-    line-height: 5px;
-}
-
-#home .alert-bar .close-alert-icon {
-    display: block;
-    height: 100%;
-    width: 28px;
-    line-height: 38px;
-    font-size: 15px;
-    opacity: 0.5;
-    position: absolute;
-    top: 0px;
-    right: 0px;
-}
-
-#home .alert-bar .close-alert-icon:hover {
-    opacity: 0.7;
-    cursor: pointer;
-}
-
 .message-pane {
     padding-left: 0.3em;
 }
