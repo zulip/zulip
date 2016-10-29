@@ -48,6 +48,33 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
         </div>
 
+        {% if password_auth_enabled %}
+        <div class="input-group">
+            <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+            <div class="controls">
+                <input id="id_password" class="required" type="password" name="password"
+                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
+                       maxlength="100" />
+                {% if full_name %}
+                <span class="help-inline">
+                    {{ _('This is used for mobile applications and other tools that require a password.') }}
+                </span>
+                {% endif %}
+                {% if form.password.errors %}
+                   {% for error in form.password.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="input-group">
+            <label class="inline-block">{{ _('Password strength') }}</label>
+            <div class="progress" id="pw_strength">
+                <div class="bar bar-danger" style="width: 10%;"></div>
+            </div>
+        </div>
+        {% endif %}
+
         {% if creating_new_team %}
         <div class="input-group grid">
             <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
@@ -124,33 +151,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
               {% endtrans %}
             </div>
           </div>
-        </div>
-        {% endif %}
-
-        {% if password_auth_enabled %}
-        <div class="input-group">
-            <label for="id_password" class="inline-block">{{ _('Password') }}</label>
-            <div class="controls">
-                <input id="id_password" class="required" type="password" name="password"
-                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                       maxlength="100" />
-                {% if full_name %}
-                <span class="help-inline">
-                    {{ _('This is used for mobile applications and other tools that require a password.') }}
-                </span>
-                {% endif %}
-                {% if form.password.errors %}
-                   {% for error in form.password.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            </div>
-        </div>
-        <div class="input-group">
-            <label class="inline-block">{{ _('Password strength') }}</label>
-            <div class="progress" id="pw_strength">
-                <div class="bar bar-danger" style="width: 10%;"></div>
-            </div>
         </div>
         {% endif %}
 
