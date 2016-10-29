@@ -939,6 +939,12 @@ a.bottom-signup-button {
     margin: 10px 0px;
 }
 
+.input-group .progress {
+    margin: 0;
+    margin-top: 5px;
+    display: inline-block;
+}
+
 .password-reset .input-group {
     margin: 15px 0px;
 }
