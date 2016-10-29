@@ -127,7 +127,6 @@ if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None an
 else:
     sender = get_user_profile_by_email(settings.NAGIOS_SEND_BOT)
     recipient = get_user_profile_by_email(settings.NAGIOS_RECEIVE_BOT)
-site = settings.EXTERNAL_API_URI
 
 zulip_sender = zulip.Client(
     email=sender.email,
@@ -135,7 +134,7 @@ zulip_sender = zulip.Client(
     verbose=True,
     insecure=options.insecure,
     client="ZulipMonitoring/0.1",
-    site=site)
+    site=options.site)
 
 zulip_recipient = zulip.Client(
     email=recipient.email,
@@ -143,7 +142,7 @@ zulip_recipient = zulip.Client(
     verbose=True,
     insecure=options.insecure,
     client="ZulipMonitoring/0.1",
-    site=site)
+    site=options.site)
 
 try:
     res = zulip_recipient.register(event_types=["message"])
