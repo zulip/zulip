@@ -235,6 +235,7 @@ class FeedbackBot(QueueProcessingWorker):
 
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
+        logging.info("Received feedback from %s" % (event["sender_email"],))
         if not settings.ENABLE_FEEDBACK:
             return
         if settings.FEEDBACK_EMAIL is not None:
