@@ -34,7 +34,7 @@ global.use_template('stream_sidebar_row');
 global.use_template('stream_privacy');
 global.use_template('topic_list_item');
 
-(function test_topic_list_build_list() {
+(function test_topic_list_build_widget() {
     var stream = "devel";
     var active_topic = "testing";
     var max_topics = 5;
@@ -47,8 +47,9 @@ global.use_template('topic_list_item');
         return 1;
     };
 
-    var topic_html = topic_list.build_list(stream, active_topic, max_topics);
-    global.write_test_output("test_topic_list_build_list", topic_html);
+    var widget = topic_list.build_widget(stream, active_topic, max_topics);
+    var topic_html = widget.get_dom();
+    global.write_test_output("test_topic_list_build_widget", topic_html);
 
     var topic = $(topic_html).find('a').text().trim();
     assert.equal(topic, 'coding');

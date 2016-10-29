@@ -55,52 +55,63 @@ exports.set_count = function (stream_li, topic, count) {
     update_count_in_dom(count_span, value_span, count);
 };
 
-exports.build_list = function (stream, active_topic, max_topics) {
-    var topics = stream_data.get_recent_topics(stream) || [];
+exports.build_widget = function (stream, active_topic, max_topics) {
+    var self = {};
 
-    if (active_topic) {
-        active_topic = active_topic.toLowerCase();
-    }
+    function build_list(stream, active_topic, max_topics) {
+        var topics = stream_data.get_recent_topics(stream) || [];
 
-    var hiding_topics = false;
-
-    var ul = $('<ul class="expanded_subjects">');
-    ul.attr('data-stream', stream);
-
-    _.each(topics, function (subject_obj, idx) {
-        var topic_name = subject_obj.subject;
-        var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
-
-        // Show the most recent topics, as well as any with unread messages
-        var always_visible = (idx < max_topics) || (num_unread > 0) ||
-                             (active_topic === topic_name);
-
-        if (!always_visible) {
-            hiding_topics = true;
+        if (active_topic) {
+            active_topic = active_topic.toLowerCase();
         }
 
-        var topic_info = {
-            topic_name: topic_name,
-            unread: num_unread,
-            is_zero: num_unread === 0,
-            is_muted: muting.is_topic_muted(stream, topic_name),
-            zoom_out_hide: !always_visible,
-            url: narrow.by_stream_subject_uri(stream, topic_name)
-        };
-        var li = templates.render('topic_list_item', topic_info);
-        ul.append(li);
-    });
+        var hiding_topics = false;
 
-    if (hiding_topics) {
-        var show_more = $('<li class="show-more-topics">');
-        show_more.attr('data-stream', stream);
-        var link = $('<a href="#">');
-        link.html(i18n.t('more topics'));
-        show_more.html(link);
-        ul.append(show_more);
+        var ul = $('<ul class="expanded_subjects">');
+        ul.attr('data-stream', stream);
+
+        _.each(topics, function (subject_obj, idx) {
+            var topic_name = subject_obj.subject;
+            var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
+
+            // Show the most recent topics, as well as any with unread messages
+            var always_visible = (idx < max_topics) || (num_unread > 0) ||
+                                 (active_topic === topic_name);
+
+            if (!always_visible) {
+                hiding_topics = true;
+            }
+
+            var topic_info = {
+                topic_name: topic_name,
+                unread: num_unread,
+                is_zero: num_unread === 0,
+                is_muted: muting.is_topic_muted(stream, topic_name),
+                zoom_out_hide: !always_visible,
+                url: narrow.by_stream_subject_uri(stream, topic_name)
+            };
+            var li = templates.render('topic_list_item', topic_info);
+            ul.append(li);
+        });
+
+        if (hiding_topics) {
+            var show_more = $('<li class="show-more-topics">');
+            show_more.attr('data-stream', stream);
+            var link = $('<a href="#">');
+            link.html(i18n.t('more topics'));
+            show_more.html(link);
+            ul.append(show_more);
+        }
+
+        return ul;
     }
 
-    return ul;
+    self.get_dom = function () {
+        return self.dom;
+    };
+
+    self.dom = build_list(stream, active_topic, max_topics);
+    return self;
 };
 
 exports.rebuild = function (stream_li, stream, active_topic) {
@@ -108,8 +119,8 @@ exports.rebuild = function (stream_li, stream, active_topic) {
 
     exports.remove_expanded_topics();
 
-    var topic_dom = exports.build_list(stream, active_topic, max_topics);
-    stream_li.append(topic_dom);
+    var widget = exports.build_widget(stream, active_topic, max_topics);
+    stream_li.append(widget.get_dom());
 
     if (active_topic) {
         exports.activate_topic(stream_li, active_topic);
