@@ -39,10 +39,6 @@ function update_count_in_dom(count_span, value_span, count) {
     }
 }
 
-exports.activate_topic = function (stream_li, active_topic) {
-    get_topic_filter_li(stream_li, active_topic).addClass('active-sub-filter');
-};
-
 exports.set_count = function (stream_li, topic, count) {
     var topic_li = get_topic_filter_li(stream_li, topic);
     var count_span = topic_li.find('.subject_count');
@@ -57,6 +53,7 @@ exports.set_count = function (stream_li, topic, count) {
 
 exports.build_widget = function (stream, active_topic, max_topics) {
     var self = {};
+    self.topic_items = new Dict({fold_case: true});
 
     function build_list(stream, active_topic, max_topics) {
         var topics = stream_data.get_recent_topics(stream) || [];
@@ -90,7 +87,8 @@ exports.build_widget = function (stream, active_topic, max_topics) {
                 zoom_out_hide: !always_visible,
                 url: narrow.by_stream_subject_uri(stream, topic_name)
             };
-            var li = templates.render('topic_list_item', topic_info);
+            var li = $(templates.render('topic_list_item', topic_info));
+            self.topic_items.set(topic_name, li);
             ul.append(li);
         });
 
@@ -110,6 +108,13 @@ exports.build_widget = function (stream, active_topic, max_topics) {
         return self.dom;
     };
 
+    self.activate_topic = function (active_topic) {
+        var li = self.topic_items.get(active_topic);
+        if (li) {
+            li.addClass('active-sub-filter');
+        }
+    };
+
     self.dom = build_list(stream, active_topic, max_topics);
     return self;
 };
@@ -123,7 +128,7 @@ exports.rebuild = function (stream_li, stream, active_topic) {
     stream_li.append(widget.get_dom());
 
     if (active_topic) {
-        exports.activate_topic(stream_li, active_topic);
+        widget.activate_topic(active_topic);
     }
 };
 
