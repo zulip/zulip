@@ -118,11 +118,15 @@ def accounts_register(request):
         # realm.
         domain = prereg_user.realm.domain
         realm = get_realm(domain)
+    elif realm_creation:
+        # For creating a new realm, there is no existing realm or domain
+        realm = None
+        domain = None
     elif settings.REALMS_HAVE_SUBDOMAINS:
         subdomain_realm = resolve_subdomain_to_realm(get_subdomain(request))
         domain = resolve_email_to_domain(email)
         domain = subdomain_realm.domain if subdomain_realm else domain
-        if (not realm_creation and completely_open(domain)):
+        if completely_open(domain):
             # When subdomains are enabled and the user is registering into a
             # completely open subdomain without going through the correct url
             # for the completely open domains.

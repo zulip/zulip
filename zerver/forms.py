@@ -171,14 +171,6 @@ class RealmCreationForm(forms.Form):
             del kwargs["domain"]
         super(RealmCreationForm, self).__init__(*args, **kwargs)
 
-    def clean_email(self):
-        # type: () -> text_type
-        data = self.cleaned_data['email']
-        domain = split_email_to_domain(data)
-        if (get_realm(domain) is not None):
-            raise ValidationError(mark_safe(get_registration_string(domain)))
-        return data
-
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
         # type: (bool) -> UserProfile
