@@ -959,9 +959,6 @@ $(function () {
                 if (util.is_current_user(principal)) {
                     // mark_subscribed adds the user to the member list
                     exports.mark_subscribed(stream);
-                } else {
-                    prepend_subscriber(sub_row,
-                                       principal);
                 }
             } else {
                 error_elem.addClass("hide");
