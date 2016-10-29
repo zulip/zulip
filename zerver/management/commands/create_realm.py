@@ -7,7 +7,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import Realm, do_create_realm, set_default_streams
-from zerver.models import RealmAlias
+from zerver.models import RealmAlias, can_add_alias
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import Deployment
@@ -65,8 +65,8 @@ Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
         if len(domain.split(".")) < 2:
             raise ValueError("Domains must contain a '.'")
 
-        if RealmAlias.objects.filter(domain=domain).count() > 0:
-            raise ValueError("Cannot create a new realm that is already an alias for an existing realm")
+        if not can_add_alias(domain):
+            raise ValueError("Domain already assigned to an existing realm")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

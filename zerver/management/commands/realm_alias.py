@@ -5,7 +5,7 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
-from zerver.models import Realm, RealmAlias, get_realm
+from zerver.models import Realm, RealmAlias, get_realm, can_add_alias
 from zerver.lib.actions import realm_aliases
 import sys
 
@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
         alias = options['alias']
         if options["op"] == "add":
-            if get_realm(alias) is not None:
+            if not can_add_alias(alias):
                 print("A Realm already exists for this domain, cannot add it as an alias for another realm!")
                 sys.exit(1)
             RealmAlias.objects.create(realm=realm, domain=alias)

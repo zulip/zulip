@@ -249,7 +249,15 @@ post_save.connect(flush_realm, sender=Realm)
 class RealmAlias(models.Model):
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
     # should always be stored lowercase
-    domain = models.CharField(max_length=80, db_index=True, unique=True) # type: text_type
+    domain = models.CharField(max_length=80, db_index=True) # type: text_type
+
+def can_add_alias(domain):
+    # type: (text_type) -> bool
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        return True
+    if RealmAlias.objects.filter(domain=domain).exists():
+        return False
+    return True
 
 # These functions should only be used on email addresses that have
 # been validated via django.core.validators.validate_email
