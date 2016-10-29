@@ -22,7 +22,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    resolve_subdomain_to_realm, list_of_domains_for_realm
+    get_realm_by_string_id, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -123,7 +123,7 @@ def accounts_register(request):
         realm = None
         domain = None
     elif settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain_realm = resolve_subdomain_to_realm(get_subdomain(request))
+        subdomain_realm = get_realm_by_string_id(get_subdomain(request))
         domain = resolve_email_to_domain(email)
         domain = subdomain_realm.domain if subdomain_realm else domain
         if completely_open(domain):

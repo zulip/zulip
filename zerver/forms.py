@@ -10,7 +10,7 @@ from django.db.models.query import QuerySet
 from jinja2 import Markup as mark_safe
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
-from zerver.models import resolve_subdomain_to_realm
+from zerver.models import get_realm_by_string_id
 from zerver.lib.utils import get_subdomain, check_subdomain
 
 import logging
@@ -97,7 +97,7 @@ class RegistrationForm(forms.Form):
     def clean_realm_subdomain(self):
         # type: () -> str
         data = self.cleaned_data['realm_subdomain']
-        realm = resolve_subdomain_to_realm(data)
+        realm = get_realm_by_string_id(data)
         if realm is not None:
             raise ValidationError(subdomain_unavailable(data))
         return data
@@ -135,7 +135,7 @@ class HomepageForm(forms.Form):
             return data
 
         # If the subdomain encodes a complete open realm, pass
-        subdomain_realm = resolve_subdomain_to_realm(self.subdomain)
+        subdomain_realm = get_realm_by_string_id(self.subdomain)
         if (subdomain_realm is not None and
             completely_open(subdomain_realm.domain)):
             return data

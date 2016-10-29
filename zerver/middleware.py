@@ -14,7 +14,7 @@ from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches, resolve_subdomain_to_realm
+from zerver.models import flush_per_request_caches, get_realm_by_string_id
 from zerver.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -356,7 +356,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                               settings.EXTERNAL_HOST))
                 if subdomain != "":
-                    realm = resolve_subdomain_to_realm(subdomain)
+                    realm = get_realm_by_string_id(subdomain)
                     if (realm is None):
                         return render_to_response("zerver/invalid_realm.html")
         """

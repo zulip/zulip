@@ -284,13 +284,6 @@ def resolve_email_to_domain(email):
         domain = alias.realm.domain
     return domain
 
-def resolve_subdomain_to_realm(subdomain):
-    # type: (text_type) -> Optional[Realm]
-    try:
-        return Realm.objects.get(string_id=subdomain)
-    except Realm.DoesNotExist:
-        return None
-
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
 # So for invite-only realms, this is the test for whether a user can be invited,
