@@ -811,7 +811,7 @@ def do_send_messages(messages):
             settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
             queue_json_publish(
                     'feedback_messages',
-                    message['message'].to_dict(apply_markdown=False),
+                    message_to_dict(message['message'], apply_markdown=False),
                     lambda x: None
             )
 
