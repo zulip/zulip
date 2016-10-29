@@ -502,9 +502,8 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // counts.subject_count maps streams to hashes of topics to counts
     counts.subject_count.each(function (subject_hash, stream) {
-        var stream_li = get_filter_li('stream', stream);
         subject_hash.each(function (count, subject) {
-            topic_list.set_count(stream_li, subject, count);
+            topic_list.set_count(stream, subject, count);
         });
     });
 
