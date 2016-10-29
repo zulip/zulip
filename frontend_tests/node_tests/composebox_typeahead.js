@@ -4,9 +4,13 @@ var people_in_realm = [{email: 'othello@zulip.com', full_name: "Othello, Moor of
                        {email: 'cordelia@zulip.com', full_name: "Cordelia Lear"}];
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
                   {emoji_name: "moneybags", emoji_url: "TBD"}];
+var stream_list = ['Denmark', 'Sweden'];
 
 set_global('page_params', {people_list: people_in_realm});
 set_global('emoji', {emojis: emoji_list});
+set_global('stream_data', {subscribed_streams: function () {
+    return stream_list;
+}});
 
 (function test_add_topic () {
     ct.add_topic('Denmark', 'civil fears');
@@ -22,8 +26,8 @@ set_global('emoji', {emojis: emoji_list});
     // Stub out split_at_cursor that uses $(':focus')
     ct.split_at_cursor = function (word) { return [word, '']; };
 
-    var begin_typehead_this = {options: {completions: {emoji: true,
-                                                      mention: true}}};
+    var begin_typehead_this = {options: {completions: {
+        emoji: true, mention: true, stream: true}}};
 
     function assert_typeahead_equals(input, reference) {
         var returned = ct.compose_content_begins_typeahead.call(begin_typehead_this, input);
@@ -49,4 +53,7 @@ set_global('emoji', {emojis: emoji_list});
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
 
+    assert_typeahead_equals("test #", false);
+    assert_typeahead_equals("test #D", stream_list);
+    assert_typeahead_equals("#s", stream_list);
 }());

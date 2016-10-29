@@ -20,14 +20,17 @@ from zerver.lib.request import (
 from zerver.lib.test_helpers import (
     ZulipTestCase,
 )
+from zerver.lib.str_utils import force_str
 from zerver.models import (
     domain_in_local_realm_filters_cache,
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
     get_user_profile_by_email,
+    get_stream,
     realm_filters_for_domain,
     Message,
+    Stream,
     Realm,
     RealmFilter,
     Recipient,
@@ -39,6 +42,7 @@ import ujson
 import six
 
 from six import text_type
+from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
 from typing import Any, AnyStr, Dict, List, Optional, Tuple
 
@@ -619,6 +623,73 @@ class BugdownTest(TestCase):
         content = "Hey @**Nonexistent User**"
         self.assertEqual(render_markdown(msg, content),
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
+        self.assertEqual(msg.mentions_user_ids, set())
+
+    def test_stream_single(self):
+        # type: () -> None
+        denmark = get_stream('Denmark', get_realm('zulip.com'))
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Denmark**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/Denmark">#{d.name}</a></p>'.format(
+                d=denmark
+            ))
+
+    def test_stream_multiple(self):
+        # type: () -> None
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        realm = get_realm('zulip.com')
+        denmark = get_stream('Denmark', realm)
+        scotland = get_stream('Scotland', realm)
+        content = "Look to #**Denmark** and #**Scotland**, there something"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>Look to '
+                         '<a class="stream" '
+                         'data-stream-id="{denmark.id}" '
+                         'href="/#narrow/stream/Denmark">#{denmark.name}</a> and '
+                         '<a class="stream" '
+                         'data-stream-id="{scotland.id}" '
+                         'href="/#narrow/stream/Scotland">#{scotland.name}</a>, '
+                         'there something</p>'.format(denmark=denmark, scotland=scotland))
+
+    def test_stream_case_sens(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        case_sens = Stream.objects.create(name='CaseSens', realm=realm)
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**CaseSens**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{s.name}">#{s.name}</a></p>'.format(
+                s=case_sens
+            ))
+
+    def test_stream_unicode(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        uni = Stream.objects.create(name=u'привет', realm=realm)
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = u"#**привет**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            u'<p><a class="stream" data-stream-id="{s.id}" href="/#narrow/stream/{url}">#{s.name}</a></p>'.format(
+                s=uni,
+                url=urllib.parse.quote(force_str(uni.name))
+            ))
+
+    def test_stream_invalid(self):
+        # type: () -> None
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "There #**Nonexistentstream**"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>There #<strong>Nonexistentstream</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_stream_subscribe_button_simple(self):
