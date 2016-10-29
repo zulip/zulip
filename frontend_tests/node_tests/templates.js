@@ -595,40 +595,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     global.write_handlebars_output("sidebar_private_message_list", html);
 }());
 
-(function sidebar_subject_list() {
-    var args = {
-        want_show_more_topics_links: true,
-        topics: [
-            {
-                is_muted: false,
-                topic_name: 'lunch',
-                url: '/lunch/url',
-                unread: 5
-            },
-            {
-                is_muted: true,
-                topic_name: 'dinner',
-                url: '/dinner/url',
-                is_zero: true
-            }
-        ]
-    };
-
-    var html = '';
-    html += '<ul class="filters">';
-    html += '<li>';
-    html += '<ul class="expanded_subjects">';
-    html += render('sidebar_subject_list', args);
-    html += '</ul>';
-    html += '</li>';
-    html += '</ul>';
-
-    global.write_handlebars_output("sidebar_subject_list", html);
-
-    var li = $(html).find("li.expanded_subject:first");
-    assert.equal(li.attr('data-name'), 'lunch');
-}());
-
 (function stream_member_list_entry() {
     var everyone_items = ["subscriber-name", "subscriber-email"];
     var admin_items = ["remove-subscriber-button"];
@@ -778,6 +744,22 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     var button = $(html).find("button:first");
     assert.equal(button.find("i").attr("class"), 'icon-vector-ok');
 }());
+
+(function topic_list_item() {
+    var args = {
+        is_muted: false,
+        topic_name: 'lunch',
+        url: '/lunch/url',
+        unread: 5
+    };
+
+    var html = render('topic_list_item', args);
+
+    global.write_handlebars_output("topic_list_item", html);
+
+    assert.equal($(html).attr('data-name'), 'lunch');
+}());
+
 
 (function topic_sidebar_actions() {
     var args = {
