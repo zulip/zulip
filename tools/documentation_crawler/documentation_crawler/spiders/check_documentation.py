@@ -81,12 +81,11 @@ class DocumentationSpider(scrapy.Spider):
         # type: (Any) -> Optional[Generator[Any, None, None]]
         if hasattr(failure.value, 'response') and failure.value.response:
             response = failure.value.response
-            if response.status in [500, 502, 503, 504, 429]:
-                self.log("Error! Please check link: {}".format(response), logging.ERROR)
-                return None
+            if response.status == 404:
+                raise Exception('Page not found: {}'.format(response))
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
-            raise Exception(failure.value.response)
+            self.log("Error! Please check link: {}".format(response), logging.ERROR)
         else:
             raise Exception(failure.value)
