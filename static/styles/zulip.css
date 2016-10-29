@@ -2408,9 +2408,8 @@ button.topic_edit_cancel {
 
 #home .alert-bar-container {
     position: fixed;
-    width: 100%;
     top: 41px;
-    left: 0px;
+    left: 320px;
     z-index: 101;
 }
 
@@ -2427,7 +2426,7 @@ button.topic_edit_cancel {
     padding: 10px 35px 10px 10px;
     display: inline-block;
     position: relative;
-    z-index: 99;
+    z-index: 101;
 }
 
 #home .alert-bar .alert-icon {
