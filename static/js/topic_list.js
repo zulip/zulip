@@ -28,11 +28,7 @@ function get_topic_filter_li(stream_li, topic) {
     return iterate_to_find(".expanded_subjects li.expanded_subject", topic, stream_li);
 }
 
-exports.activate_topic = function (stream_li, active_topic) {
-    get_topic_filter_li(stream_li, active_topic).addClass('active-sub-filter');
-};
-
-exports.update_count_in_dom = function (count_span, value_span, count) {
+function update_count_in_dom(count_span, value_span, count) {
     if (count === 0) {
         count_span.hide();
         value_span.text('');
@@ -41,6 +37,10 @@ exports.update_count_in_dom = function (count_span, value_span, count) {
         count_span.show();
         value_span.text(count);
     }
+}
+
+exports.activate_topic = function (stream_li, active_topic) {
+    get_topic_filter_li(stream_li, active_topic).addClass('active-sub-filter');
 };
 
 exports.set_count = function (stream_li, topic, count) {
@@ -52,7 +52,7 @@ exports.set_count = function (stream_li, topic, count) {
         return;
     }
 
-    exports.update_count_in_dom(count_span, value_span, count);
+    update_count_in_dom(count_span, value_span, count);
 };
 
 exports.build_list = function (stream, active_topic, max_topics) {
