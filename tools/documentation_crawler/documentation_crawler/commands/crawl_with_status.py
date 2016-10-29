@@ -18,6 +18,8 @@ class StatusCommand(Command):
         self.crawler_process.start()
         # Get exceptions quantity from crawler stat data
         stats = crawler.stats.get_stats()
-        if stats.get('spider_exceptions/Exception') or stats.get('downloader/exception_count'):
+        error_404 = 'downloader/response_status_count/404'
+        error_io = 'downloader/exception_type_count/exceptions.IOError'
+        if stats.get(error_404) or stats.get(error_io):
             # Return non-zero exit code if exceptions are contained
             self.exitcode = 1
