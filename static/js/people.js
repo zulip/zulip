@@ -105,9 +105,6 @@ exports.get_by_name = function realm_get(name) {
 
 // TODO: Replace these with the tests setting up page_params before
 // loading people.js
-exports.test_set_people_dict = function (data) {
-    people_dict = new Dict.from(data);
-};
 exports.test_set_people_name_dict = function (data) {
     people_by_name_dict = new Dict.from(data);
 };
