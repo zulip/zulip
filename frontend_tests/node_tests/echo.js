@@ -5,6 +5,7 @@ var fs = require('fs');
 global.stub_out_jquery();
 
 set_global('page_params', {
+    people_list: [],
     realm_emoji: {
         burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
                   source_url: '/static/third/gemoji/images/emoji/burrito.png'}
@@ -48,8 +49,13 @@ set_global('$', function (obj) {
 
 set_global('feature_flags', {local_echo: true});
 
-var people = require("js/people.js");
-people.test_set_people_name_dict({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}});
+var people = global.people;
+
+people.add({
+    full_name: 'Cordelia Lear',
+    user_id: 101,
+    email: 'cordelia@zulip.com'
+});
 
 var echo = require('js/echo.js');
 
