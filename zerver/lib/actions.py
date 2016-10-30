@@ -2859,7 +2859,6 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
-        state['email_dict'] = email_dict
 
     if want('update_message_flags'):
         # There's no initial data for message flag updates, client will
