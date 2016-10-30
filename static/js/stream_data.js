@@ -353,9 +353,6 @@ exports.initialize_from_page_params = function () {
     delete page_params.subbed_info;
     delete page_params.unsubbed_info;
     delete page_params.neversubbed_info;
-
-    // This will be completely deprecated soon.
-    delete page_params.email_dict;
 };
 
 exports.get_recent_topics = function (stream_name) {

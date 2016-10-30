@@ -569,7 +569,6 @@ def home(request):
         subbed_info           = register_ret['subscriptions'],
         unsubbed_info         = register_ret['unsubscribed'],
         neversubbed_info      = register_ret['never_subscribed'],
-        email_dict            = register_ret['email_dict'],
         people_list           = register_ret['realm_users'],
         bot_list              = register_ret['realm_bots'],
         initial_pointer       = register_ret['pointer'],
