@@ -20,6 +20,16 @@ exports.is_active = function (stream_name) {
     return recent_topics.has(stream_name);
 };
 
+exports.rename_sub = function (stream_id, new_name) {
+    var sub = subs_by_stream_id.get(stream_id);
+    var old_name = sub.name;
+    sub.name = new_name;
+    stream_info.del(old_name);
+    stream_info.set(new_name, sub);
+
+    return sub;
+};
+
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
         sub.subscribers = Dict.from_array([], {fold_case: true});

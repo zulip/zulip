@@ -62,12 +62,6 @@ var stream_data = require('js/stream_data.js');
 
     assert(stream_data.in_home_view('social'));
     assert(!stream_data.in_home_view('denmark'));
-
-    // Deleting a subscription makes you unsubscribed from the perspective of
-    // the client.
-    // Deleting a subscription is case-insensitive.
-    stream_data.delete_sub('SOCIAL');
-    assert(!stream_data.is_subscribed('social'));
 }());
 
 (function test_get_by_id() {
@@ -84,6 +78,11 @@ var stream_data = require('js/stream_data.js');
     assert.equal(sub.color, 'red');
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
+
+    stream_data.rename_sub(id, 'Sweden');
+    sub = stream_data.get_sub_by_id(id);
+    assert.equal(sub.color, 'red');
+    assert.equal(sub.name, 'Sweden');
 }());
 
 (function test_subscribers() {
