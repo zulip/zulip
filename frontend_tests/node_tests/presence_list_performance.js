@@ -47,22 +47,30 @@ activity.presence_info = {
 
 
 // TODO: de-dup with activity.js
-people.test_set_people_dict({
-    'alice@zulip.com': {
-        full_name: 'Alice Smith'
-    },
-    'fred@zulip.com': {
-        full_name: "Fred Flintstone"
-    },
-    'jill@zulip.com': {
-        full_name: 'Jill Hill'
-    },
-    'mark@zulip.com': {
-        full_name: 'Marky Mark'
-    },
-    'norbert@zulip.com': {
-        full_name: 'Norbert Oswald'
-    }
+global.people.add({
+    email: 'alice@zulip.com',
+    user_id: 1,
+    full_name: 'Alice Smith'
+});
+global.people.add({
+    email: 'fred@zulip.com',
+    user_id: 2,
+    full_name: "Fred Flintstone"
+});
+global.people.add({
+    email: 'jill@zulip.com',
+    user_id: 3,
+    full_name: 'Jill Hill'
+});
+global.people.add({
+    email: 'mark@zulip.com',
+    user_id: 4,
+    full_name: 'Marky Mark'
+});
+global.people.add({
+    email: 'norbert@zulip.com',
+    user_id: 5,
+    full_name: 'Norbert Oswald'
 });
 
 (function test_presence_list_full_update() {
