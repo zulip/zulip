@@ -212,13 +212,6 @@ exports.set_color = function (stream_name, color) {
     set_stream_property(stream_name, 'color', color);
 };
 
-function create_sub(stream_name, attrs) {
-    var sub = stream_data.create_sub_from_server_data(stream_name, attrs);
-
-    $(document).trigger($.Event('sub_obj_created.zulip', {sub: sub}));
-    return sub;
-}
-
 function button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
     return $(".stream-row[data-stream-id='" + id + "'] .sub_unsub_button");
@@ -379,10 +372,11 @@ exports.mark_subscribed = function (stream_name, attrs) {
     var sub = stream_data.get_sub(stream_name);
 
     if (sub === undefined) {
-        // Create a new stream.
-        sub = create_sub(stream_name, attrs);
-        add_sub_to_table(sub);
-    } else if (! sub.subscribed) {
+        blueslip.error('Unknown stream in mark_subscribed: ' + stream_name);
+        return;
+    }
+
+    if (! sub.subscribed) {
         // Add yourself to a stream we already know about client-side.
         var color = get_color();
         exports.set_color(stream_name, color);

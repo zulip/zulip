@@ -598,12 +598,6 @@ $(function () {
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 
-    $(document).on('sub_obj_created.zulip', function (event) {
-        if (event.sub.subscribed) {
-            exports.create_sidebar_row(event.sub);
-        }
-    });
-
     $(document).on('subscription_add_done.zulip', function (event) {
         exports.create_sidebar_row(event.sub);
         exports.build_stream_list();
