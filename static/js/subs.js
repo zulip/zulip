@@ -378,7 +378,9 @@ exports.mark_subscribed = function (stream_name, attrs) {
         var color = get_color();
         exports.set_color(stream_name, color);
         sub.subscribed = true;
-        sub.subscribers = Dict.from_array(attrs.subscribers);
+        if (attrs) {
+            stream_data.set_subscriber_emails(sub, attrs.subscribers);
+        }
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {

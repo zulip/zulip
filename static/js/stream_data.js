@@ -32,7 +32,7 @@ exports.rename_sub = function (stream_id, new_name) {
 
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
-        sub.subscribers = Dict.from_array([], {fold_case: true});
+        sub.subscribers = Dict.from_array([]);
     }
 
     stream_info.set(stream_name, sub);
@@ -131,8 +131,19 @@ exports.get_name = function (stream_name) {
     return sub.name;
 };
 
-exports.set_subscribers = function (sub, emails) {
-    sub.subscribers = Dict.from_array(emails || [], {fold_case: true});
+exports.set_subscribers = function (sub, user_ids) {
+    sub.subscribers = Dict.from_array(user_ids || []);
+};
+
+exports.set_subscriber_emails = function (sub, emails) {
+    _.each(emails, function (email) {
+        var user_id = people.get_user_id(email);
+        if (!user_id) {
+            blueslip.error("We tried to set invalid subscriber: " + email);
+        } else {
+            sub.subscribers.set(user_id, true);
+        }
+    });
 };
 
 exports.add_subscriber = function (stream_name, user_email) {
@@ -141,7 +152,12 @@ exports.add_subscriber = function (stream_name, user_email) {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return;
     }
-    sub.subscribers.set(user_email, true);
+    var user_id = people.get_user_id(user_email);
+    if (!user_id) {
+        blueslip.error("We tried to add invalid subscriber: " + user_email);
+        return;
+    }
+    sub.subscribers.set(user_id, true);
 };
 
 exports.remove_subscriber = function (stream_name, user_email) {
@@ -150,7 +166,13 @@ exports.remove_subscriber = function (stream_name, user_email) {
         blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_name);
         return;
     }
-    sub.subscribers.del(user_email);
+    var user_id = people.get_user_id(user_email);
+    if (!user_id) {
+        blueslip.error("We tried to remove invalid subscriber: " + user_email);
+        return;
+    }
+
+    sub.subscribers.del(user_id);
 };
 
 exports.user_is_subscribed = function (stream_name, user_email) {
@@ -162,12 +184,20 @@ exports.user_is_subscribed = function (stream_name, user_email) {
         blueslip.warn("We got a user_is_subscribed call for a non-existent or unsubscribed stream.");
         return undefined;
     }
-    return sub.subscribers.has(user_email);
+    var user_id = people.get_user_id(user_email);
+    if (!user_id) {
+        blueslip.warn("Bad email passed to user_is_subscribed: " + user_email);
+        return false;
+    }
+
+    return sub.subscribers.has(user_id);
 };
 
 exports.create_streams = function (streams) {
     _.each(streams, function (stream) {
+        // We handle subscriber stuff in other events.
         var attrs = _.defaults(stream, {
+            subscribers: [],
             subscribed: false
         });
         exports.create_sub_from_server_data(stream.name, attrs);
@@ -190,7 +220,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
     // Our internal data structure for subscriptions is mostly plain dictionaries,
     // so we just reuse the attrs that are passed in to us, but we encapsulate how
     // we handle subscribers.
-    var subscriber_emails = attrs.subscribers;
+    var subscriber_user_ids = attrs.subscribers;
     var raw_attrs = _.omit(attrs, 'subscribers');
 
     sub = _.defaults(raw_attrs, {
@@ -204,7 +234,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         description: ''
     });
 
-    exports.set_subscribers(sub, subscriber_emails);
+    exports.set_subscribers(sub, subscriber_user_ids);
 
     if (!sub.color) {
         var used_colors = exports.get_colors();
@@ -311,14 +341,6 @@ exports.initialize_from_page_params = function () {
             var stream_name = sub.name;
             sub.subscribed = subscribed;
 
-            // When we get subscriber lists from the back end,
-            // they are sent as user ids to save bandwidth,
-            // but the legacy JS code wants emails.
-            if (sub.subscribers) {
-                sub.subscribers = _.map(sub.subscribers, function (subscription) {
-                    return page_params.email_dict[subscription];
-                });
-            }
             exports.create_sub_from_server_data(stream_name, sub);
         });
     }
@@ -331,6 +353,8 @@ exports.initialize_from_page_params = function () {
     delete page_params.subbed_info;
     delete page_params.unsubbed_info;
     delete page_params.neversubbed_info;
+
+    // This will be completely deprecated soon.
     delete page_params.email_dict;
 };
 
