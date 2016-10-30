@@ -45,6 +45,7 @@ var _ = global._;
     people.add(isaac);
 
     var person = people.get_by_name(full_name);
+    assert.equal(people.get_user_id(email), 32);
     assert.equal(person.email, email);
     person = people.get_by_email(email);
     assert.equal(person.full_name, full_name);
