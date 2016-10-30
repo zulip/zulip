@@ -20,6 +20,21 @@ exports.get_by_email = function get_by_email(email) {
     return people_dict.get(email);
 };
 
+exports.get_user_id = function (email) {
+    var person = people_dict.get(email);
+    if (person === undefined) {
+        blueslip.error('Unknown email for get_user_id: ' + email);
+        return undefined;
+    }
+    var user_id = person.user_id;
+    if (!user_id) {
+        blueslip.error('No userid found for ' + email);
+        return undefined;
+    }
+
+    return user_id;
+};
+
 exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(email);
 };
