@@ -2023,7 +2023,7 @@ class GetSubscribersTest(ZulipTestCase):
             invite_only=True)
         self.assert_json_success(ret)
         with queries_captured() as queries:
-            subscribed, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(self.user_profile)
+            subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(self.user_profile)
         self.assertTrue(len(never_subscribed) >= 10)
 
         # Invite only stream should not be there in never_subscribed streams
@@ -2031,7 +2031,7 @@ class GetSubscribersTest(ZulipTestCase):
             if stream_dict["name"].startswith("stream_"):
                 self.assertFalse(stream_dict['name'] == "stream_invite_only_1")
                 self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 3)
 
     @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
