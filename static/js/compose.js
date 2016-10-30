@@ -10,7 +10,6 @@ var is_composing_message = false;
 var user_acknowledged_all_everyone;
 
 var message_snapshot;
-var empty_topic_placeholder = "(no topic)";
 
 var uploads_domain = document.location.protocol + '//' + document.location.host;
 var uploads_path = '/user_uploads';
@@ -315,7 +314,7 @@ exports.cancel = function () {
 };
 
 exports.empty_topic_placeholder = function () {
-    return empty_topic_placeholder;
+    return i18n.t("(no topic)");
 };
 
 function create_message_object() {
