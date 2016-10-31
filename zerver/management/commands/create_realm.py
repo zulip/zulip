@@ -7,7 +7,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from zerver.lib.actions import Realm, do_create_realm, set_default_streams
-from zerver.models import RealmAlias, can_add_alias
+from zerver.models import RealmAlias, can_add_alias, get_realm_by_string_id
 
 if settings.ZILENCER_ENABLED:
     from zilencer.models import Deployment
@@ -74,7 +74,7 @@ Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
         name = options["name"]
         domain = options["domain"]
 
-        if name is None or not string_id:
+        if not name or not string_id:
             print("\033[1;31mPlease provide a name and string_id.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")
             exit(1)
@@ -85,6 +85,9 @@ Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
 
         if domain is not None:
             self.validate_domain(domain)
+
+        if get_realm_by_string_id(string_id) is not None:
+            raise ValueError("string_id taken. Please choose another one.")
 
         realm, created = do_create_realm(string_id, name, org_type=options["org_type"])
         if created:
