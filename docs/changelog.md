@@ -4,6 +4,7 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+- Show subscriber counts in Manage Streams.
 - Added support for (optionally) using PGRoonga to support full-text
   search in all languages (not just English).
 - Added GitLab and Sentry integrations.
