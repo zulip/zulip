@@ -1494,7 +1494,7 @@ def bulk_add_subscriptions(streams, users):
             for added_user in new_users:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
-                             user_email=added_user.email)
+                             user_id=added_user.id)
                 send_event(event, peer_user_ids)
 
 
@@ -3021,7 +3021,7 @@ def apply_events(state, events, user_profile):
                     if sub['name'].lower() == event['name'].lower():
                         sub[event['property']] = event['value']
             elif event['op'] == 'peer_add':
-                user_id = get_user_profile_by_email(event['user_email']).id
+                user_id = event['user_id']
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
                         user_id not in sub['subscribers']):

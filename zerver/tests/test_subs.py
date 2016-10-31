@@ -1355,7 +1355,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 14)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_email'], self.test_email)
+        self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
 
         stream = get_stream('multi_user_stream', realm)
         self.assertEqual(stream.num_subscribers(), 3)
@@ -1384,7 +1384,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 14)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_email'], email3)
+        self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
 
 
     def test_users_getting_add_peer_event(self):
