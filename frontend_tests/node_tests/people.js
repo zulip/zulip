@@ -22,6 +22,7 @@ var _ = global._;
 (function test_basics() {
     var orig_person = {
         email: 'orig@example.com',
+        user_id: 31,
         full_name: 'Original'
     };
     people.add(orig_person);
@@ -38,6 +39,7 @@ var _ = global._;
     var email = 'isaac@example.com';
     var isaac = {
         email: email,
+        user_id: 32,
         full_name: full_name
     };
     people.add(isaac);
@@ -84,22 +86,61 @@ var _ = global._;
     assert.equal(person.full_name, 'Original');
 }());
 
+(function test_get_person_from_user_id() {
+    var person = {
+        email: 'mary@example.com',
+        user_id: 42,
+        full_name: 'Mary'
+    };
+    people.add(person);
+    person = people.get_by_email('mary@example.com');
+    assert.equal(person.full_name, 'Mary');
+    person = people.get_person_from_user_id(42);
+    assert.equal(person.email, 'mary@example.com');
+
+    // The semantics for update() are going to eventually
+    // change to use user_id as a key, but now we use email
+    // as a key and change attributes.  With the current
+    // behavior, we don't have to make update() do anything
+    // new.
+    person = {
+        email: 'mary@example.com',
+        user_id: 42,
+        full_name: 'Mary New'
+    };
+    people.update(person);
+    person = people.get_person_from_user_id(42);
+    assert.equal(person.full_name, 'Mary New');
+
+    // remove() should eventually just take a user_id, but
+    // now it takes a full person object
+    people.remove(person);
+    person = people.get_by_email('mary@example.com');
+    assert.equal(person, undefined);
+    person = people.get_person_from_user_id(42);
+    assert.equal(person, undefined);
+}());
+
 (function test_get_rest_of_realm() {
     var myself = {
         email: 'myself@example.com',
+        user_id: 201,
         full_name: 'Yours Truly'
     };
     global.page_params.email = myself.email;
     var alice1 = {
         email: 'alice1@example.com',
+        user_id: 202,
         full_name: 'Alice'
     };
     var alice2 = {
         email: 'alice2@example.com',
+        user_id: 203,
         full_name: 'Alice'
     };
     var bob = {
         email: 'bob@example.com',
+        user_id: 204,
         full_name: 'Bob van Roberts'
     };
     people.add_in_realm(myself);
@@ -132,14 +173,17 @@ var _ = global._;
 (function test_filtered_users() {
      var charles = {
         email: 'charles@example.com',
+        user_id: 301,
         full_name: 'Charles Dickens'
     };
     var maria = {
         email: 'athens@example.com',
+        user_id: 302,
         full_name: 'Maria Athens'
     };
     var ashton = {
         email: 'ashton@example.com',
+        user_id: 303,
         full_name: 'Ashton Smith'
     };
 
