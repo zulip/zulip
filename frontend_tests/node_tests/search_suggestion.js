@@ -89,6 +89,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     var alice =
     {
         email: 'alice@zulip.com',
+        user_id: 102,
         full_name: 'Alice Ignore'
     };
 
@@ -362,16 +363,19 @@ global.stream_data.populate_stream_topics_for_tests({});
 
     var ted = {
         email: 'ted@zulip.com',
+        user_id: 201,
         full_name: 'Ted Smith'
     };
 
     var bob = {
         email: 'bob@zulip.com',
+        user_id: 202,
         full_name: 'Bob Terry'
     };
 
     var alice = {
         email: 'alice@zulip.com',
+        user_id: 203,
         full_name: 'Alice Ignore'
     };
     people.add(ted);

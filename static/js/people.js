@@ -6,10 +6,15 @@ var exports = {};
 // All people we've seen
 var people_dict = new Dict({fold_case: true});
 var people_by_name_dict = new Dict({fold_case: true});
+var people_by_user_id_dict = new Dict();
 // People in this realm
 var realm_people_dict = new Dict({fold_case: true});
 var cross_realm_dict = new Dict({fold_case: true});
 var pm_recipient_count_dict = new Dict({fold_case: true});
+
+exports.get_person_from_user_id = function (user_id) {
+    return people_by_user_id_dict.get(user_id);
+};
 
 exports.get_by_email = function get_by_email(email) {
     return people_dict.get(email);
@@ -114,6 +119,18 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
 };
 
 exports.add = function add(person) {
+    if (person.user_id) {
+        people_by_user_id_dict.set(person.user_id, person);
+    } else {
+        // We eventually want to lock this down completely
+        // and report an error and not update other the data
+        // structures here, but we have a lot of edge cases
+        // with cross-realm bots, zephyr users, etc., deactivated
+        // users, where we are probably fine for now not to
+        // find them via user_id lookups.
+        blueslip.warn('No user_id provided for ' + person.email);
+    }
+
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
 };
@@ -125,6 +142,7 @@ exports.add_in_realm = function add_in_realm(person) {
 
 exports.remove = function remove(person) {
     people_dict.del(person.email);
+    people_by_user_id_dict.del(person.user_id);
     people_by_name_dict.del(person.full_name);
     realm_people_dict.del(person.email);
 };
