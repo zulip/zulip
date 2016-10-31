@@ -13,24 +13,30 @@
     <div class="padded-container">
       <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
-               id="enable_stream_desktop_notifications"
-               {{#if page_params.stream_desktop_notifications_enabled}}
-               checked="checked"
-               {{/if}} />
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" class="inline-block" name="enable_stream_desktop_notifications"
+                 id="enable_stream_desktop_notifications"
+                 {{#if page_params.stream_desktop_notifications_enabled}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_stream_desktop_notifications" class="inline-block">
           {{t "Desktop notifications" }}
         </label>
         <div class="propagate_stream_notifications_change"></div>
       </div>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_stream_sounds" id="enable_stream_sounds"
-               {{#if page_params.stream_sounds_enabled}}
-               checked="checked"
-               {{/if}} />
-        <label for="enable_stream_sounds" class="inline-block">
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" class="inline-block" name="enable_stream_sounds" id="enable_stream_sounds"
+                 {{#if page_params.stream_sounds_enabled}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
+        <label for="enable_stream_sounds" class="inline-block no-border">
           {{t "Audible notifications" }}
         </label>
         <div class="propagate_stream_notifications_change"></div>
@@ -46,51 +52,66 @@
     <div class="padded-container">
       <p>{{t "I want:" }}</p>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_desktop_notifications" id="enable_desktop_notifications"
-               {{#if page_params.desktop_notifications_enabled}}
-               checked="checked"
-               {{/if}} />
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
+                 {{#if page_params.desktop_notifications_enabled}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_desktop_notifications" class="inline-block">
           {{t "Desktop notifications" }}
         </label>
       </div>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_sounds" id="enable_sounds"
-               {{#if page_params.sounds_enabled}}
-               checked="checked"
-               {{/if}} />
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" name="enable_sounds" id="enable_sounds"
+                 {{#if page_params.sounds_enabled}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_sounds" class="inline-block">
           {{t "Audible notifications" }}
         </label>
       </div>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
-               {{#if page_params.enable_offline_email_notifications}}
-               checked="checked"
-               {{/if}} />
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
+                 {{#if page_params.enable_offline_email_notifications}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_offline_email_notifications" class="inline-block">
           {{t "Email notifications when offline" }}
         </label>
       </div>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
-               {{#if page_params.enable_offline_push_notifications}}
-               checked="checked"
-               {{/if}} />
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" name="enable_offline_push_notifications" id="enable_offline_push_notifications"
+                 {{#if page_params.enable_offline_push_notifications}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_offline_push_notifications" class="inline-block">
           {{t "Mobile push notifications when offline" }}
         </label>
       </div>
 
-      <div class="input-group thinner">
-        <input type="checkbox" class="inline-block" name="enable_online_push_notifications" id="enable_online_push_notifications"
-               {{#if page_params.enable_online_push_notifications}}
-               checked="checked"
-               {{/if}} />
+      <div class="input-group">
+        <label class="checkbox">
+          <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
+                 {{#if page_params.enable_online_push_notifications}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_online_push_notifications" class="inline-block">
           {{t "Mobile push notifications always (even when online)" }}
         </label>
@@ -104,10 +125,13 @@
 
     <div class="padded-container">
       <div class="input-group no-margin" id="digest_container">
-        <input type="checkbox" class="inline-block" name="enable_digest_emails" id="enable_digest_emails"
-               {{#if page_params.enable_digest_emails}}
-               checked="checked"
-               {{/if}} />
+        <label class="checkbox">
+          <input type="checkbox" name="enable_digest_emails" id="enable_digest_emails"
+                 {{#if page_params.enable_digest_emails}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
         <label for="enable_digest_emails" class="inline-block">
           {{t "Digest emails when I'm away" }}
         </label>
@@ -119,12 +143,13 @@
     --}}
     </div>
 
-    <div class="input-group">
+    <div class="input-group no-border">
       <div class="controls notification-submission">
         <input type="submit" id="change_notification_settings"
                name="change_notification_settings" value="{{t 'Save Changes' }}"
-               class="button green" />
+               class="button sea-green" />
       </div>
     </div>
   </form>
+
 </div>
