@@ -1418,6 +1418,10 @@ div.focused_table {
     position: relative;
 }
 
+.message_content p {
+    overflow: auto;
+}
+
 .message_edit_content {
     line-height: 18px;
 }
