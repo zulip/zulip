@@ -118,8 +118,23 @@ def accounts_register(request):
         domain = prereg_user.realm.domain
         realm = get_realm(domain)
     else:
+        subdomain_realm = resolve_subdomain_to_realm(get_subdomain(request))
         domain = resolve_email_to_domain(email)
-        realm = get_realm(domain)
+        domain = subdomain_realm.domain if subdomain_realm else domain
+        if (not realm_creation and completely_open(domain)):
+            # When subdomains are enabled and the user is registering into a
+            # completely open subdomain without going through the correct url
+            # for the completely open domains.
+            # NOTE: When the user comes through the correct url then
+            # `prereg_user.realm` will have the correct value and this branch
+            # will not run.
+            path = reverse('zerver.views.accounts_home_with_domain',
+                           kwargs={'domain': subdomain_realm.domain})
+            ctx = {"link": "%s%s" % (subdomain_realm.uri, path)}
+            return render_to_response("zerver/completely_open_link.html", ctx)
+        else:
+            realm = get_realm(domain)
+
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to

@@ -4,6 +4,8 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase
 
+from mock import patch
+
 from zilencer.models import Deployment
 
 from zerver.views import do_change_password
@@ -753,6 +755,101 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, subdomain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+    def test_completely_open_domain_under_subdomains(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "zulip.com"
+        email = "user1@acme.com"
+        subdomain = "zulip"
+        realm_name = "Zulip"
+
+        realm = get_realm(domain)
+        realm.restricted_to_domain = False
+        realm.invite_required = False
+        realm.save()
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            # Create new realm with the email
+            with patch('zerver.views.get_subdomain', return_value=subdomain):
+                result = self.client_post('/register/', {'email': email})
+
+            self.assertEquals(result.status_code, 302)
+            self.assertTrue(result["Location"].endswith(
+                    "/accounts/send_confirm/%s" % (email,)))
+            result = self.client_get(result["Location"])
+            self.assert_in_response("Check your email so we can get started.", result)
+            # Visit the confirmation link.
+            from django.core.mail import outbox
+            for message in reversed(outbox):
+                if email in message.to:
+                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                    confirmation_url = confirmation_link_pattern.search(
+                        message.body).groups()[0]
+                    break
+            else:
+                raise ValueError("Couldn't find a confirmation email.")
+
+            result = self.client_get(confirmation_url)
+            self.assertEquals(result.status_code, 200)
+
+            result = self.submit_reg_form_for_user(username,
+                                                   password,
+                                                   domain='acme.com',
+                                                   realm_name=realm_name,
+                                                   realm_subdomain=subdomain,
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEquals(result.status_code, 200)
+            self.assertIn('Register through proper link', result.content.decode('utf8'))
+
+    def test_completely_open_domain(self):
+        # type: () -> None
+        username = "user1"
+        password = "test"
+        domain = "zulip.com"
+        email = "user1@acme.com"
+        subdomain = "zulip"
+        realm_name = "Zulip"
+
+        realm = get_realm(domain)
+        realm.restricted_to_domain = False
+        realm.invite_required = False
+        realm.save()
+
+        # Create new realm with the email
+        with patch('zerver.views.get_subdomain', return_value=subdomain):
+            result = self.client_post('/register/', {'email': email})
+
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+                "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+        # Visit the confirmation link.
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_url = confirmation_link_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
+
+        result = self.client_get(confirmation_url)
+        self.assertEquals(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(username,
+                                               password,
+                                               domain='acme.com',
+                                               realm_name=realm_name,
+                                               realm_subdomain=subdomain,
+                                               # Pass HTTP_HOST for the target subdomain
+                                               HTTP_HOST=subdomain + ".testserver")
+        self.assertEquals(result.status_code, 200)
+        self.assertIn('Register through proper link', result.content.decode('utf8'))
 
 class DeactivateUserTest(ZulipTestCase):
 

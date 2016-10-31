@@ -1,0 +1,10 @@
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+
+<h3>{{ _('Register through proper link') }}</h3>
+
+<p>{{ _('Hi there! Thank you for your interest in Zulip.') }}</p>
+
+<p>{% trans %}Please register using <a href='{{ link }}'>this link</a>.{% endtrans %}</p>
+
+{% endblock %}
