@@ -44,7 +44,7 @@
   </div>
   {{#if_and subscribed email_address}}
   <div class="stream-email-box">
-      <span class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{stream_id}}"></i></span>
+      <div class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{stream_id}}"></i></div>
   <div class="stream-email">
       <span class="email-address">{{email_address}}</span>
   </div>
@@ -53,7 +53,7 @@
 
   {{#if is_admin}}
     <div class="admin-settings">
-      <span class="sub_settings_title">{{t "Administrator settings" }}</span>
+      <div class="sub_settings_title">{{t "Administrator settings" }}</div>
       <div class="rename-stream">
         <form class="form-inline">
           <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
@@ -75,7 +75,7 @@
 
   {{#render_subscribers}}
   <div class="subscriber_list_settings">
-    <span class="sub_settings_title">{{t "Stream membership" }}</span>
+    <div class="sub_settings_title">{{t "Stream membership" }}</div>
     <div class="subscriber_list_add">
       <form class="form-inline">
         <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
