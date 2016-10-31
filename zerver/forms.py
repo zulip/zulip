@@ -11,9 +11,11 @@ from jinja2 import Markup as mark_safe
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from zerver.models import get_realm_by_string_id
+from zerver.lib.name_restrictions import is_reserved_subdomain
 from zerver.lib.utils import get_subdomain, check_subdomain
 
 import logging
+import re
 
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, resolve_email_to_domain, get_realm, \
@@ -25,13 +27,6 @@ from six import text_type
 
 SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
                 u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
-
-def subdomain_unavailable(subdomain):
-    # type: (text_type) -> text_type
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        return _("The subdomain '%s' is not available. Please choose another one.") % (subdomain,)
-    else:
-        return _("The short name '%s' is not available. Please choose another one.") % (subdomain,)
 
 if settings.SHOW_OSS_ANNOUNCEMENT:
     SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
@@ -96,11 +91,31 @@ class RegistrationForm(forms.Form):
 
     def clean_realm_subdomain(self):
         # type: () -> str
-        data = self.cleaned_data['realm_subdomain']
-        realm = get_realm_by_string_id(data)
-        if realm is not None:
-            raise ValidationError(subdomain_unavailable(data))
-        return data
+        if settings.REALMS_HAVE_SUBDOMAINS:
+            error_strings = {
+                'too short': _("Subdomain needs to have length 3 or greater."),
+                'extremal dash': _("Subdomain cannot start or end with a '-'."),
+                'bad character': _("Subdomain can only have lowercase letters, numbers, and '-'s."),
+                'unavailable': _("Subdomain unavailable. Please choose a different one.")}
+        else:
+            error_strings = {
+                'too short': _("Short name needs at least 3 characters."),
+                'extremal dash': _("Short name cannot start or end with a '-'."),
+                'bad character': _("Short name can only have lowercase letters, numbers, and '-'s."),
+                'unavailable': _("Short name unavailable. Please choose a different one.")}
+        subdomain = self.cleaned_data['realm_subdomain']
+        if not subdomain:
+            return ''
+        if len(subdomain) < 3:
+            raise ValidationError(error_strings['too short'])
+        if subdomain[0] == '-' or subdomain[-1] == '-':
+            raise ValidationError(error_strings['extremal dash'])
+        if not re.match('^[a-z0-9-]*$', subdomain):
+            raise ValidationError(error_strings['bad character'])
+        if is_reserved_subdomain(subdomain) or \
+           get_realm_by_string_id(subdomain) is not None:
+            raise ValidationError(error_strings['unavailable'])
+        return subdomain
 
 class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
