@@ -661,13 +661,13 @@ PIPELINE = {
                 'third/spectrum/spectrum.css',
                 'styles/components.css',
                 'styles/zulip.css',
-                'styles/media.css',
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
+                'styles/media.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
             ),
             'output_filename': 'min/app-fontcompat.css'
@@ -679,7 +679,6 @@ PIPELINE = {
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
                 'styles/components.css',
                 'styles/zulip.css',
-                'styles/media.css',
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
@@ -687,6 +686,7 @@ PIPELINE = {
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 'styles/fonts.css',
+                'styles/media.css',
             ),
             'output_filename': 'min/app.css'
         },
