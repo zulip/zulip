@@ -944,6 +944,13 @@ class AtomicLinkPattern(LinkPattern):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
+class MessageImagePattern(markdown.inlinepatterns.ImagePattern):
+    def handleMatch(self, m):
+        # type: (Match[text_type]) -> Optional[Element]
+        el = super(MessageImagePattern, self).handleMatch(m)
+        el.set('class', 'message_image')
+        return el
+
 class Bugdown(markdown.Extension):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Union[bool, None, text_type]) -> None
@@ -959,7 +966,7 @@ class Bugdown(markdown.Extension):
         # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['reference']
 
-        for k in ('image_link', 'image_reference', 'automail',
+        for k in ('image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
                   'escape', 'strong_em', 'emphasis', 'emphasis2',
                   'linebreak', 'strong'):
@@ -1048,6 +1055,7 @@ class Bugdown(markdown.Extension):
             )
             """ % (tlds, nested_paren_chunk)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
+        md.inlinePatterns['image_link'] = MessageImagePattern(markdown.inlinepatterns.IMAGE_LINK_RE, md)
 
         md.preprocessors.add('hanging_ulists',
                                  BugdownUListPreprocessor(md),

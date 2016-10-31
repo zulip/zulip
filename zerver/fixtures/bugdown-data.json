@@ -139,6 +139,18 @@
       "bugdown_matches_marked": false
     },
     {
+      "name": "message_image",
+      "input": "Google logo today: ![logo](https://www.google.com/images/srpr/logo4w.png)\nKinda boring",
+      "expected_output": "<p>Google logo today: <img alt=\"logo\" class=\"message_image\" src=\"https://www.google.com/images/srpr/logo4w.png\"><br>\nKinda boring</p>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "two_messages_images",
+      "input": "Google logo today: ![logo1](https://www.google.com/images/srpr/logo4w.png)\nKinda boringGoogle logo today: ![logo2](https://www.google.com/images/srpr/logo4w.png)\nKinda boring",
+      "expected_output": "<p>Google logo today: <img alt=\"logo1\" class=\"message_image\" src=\"https://www.google.com/images/srpr/logo4w.png\"><br>\nKinda boringGoogle logo today: <img alt=\"logo2\" class=\"message_image\" src=\"https://www.google.com/images/srpr/logo4w.png\"><br>\nKinda boring</p>",
+      "bugdown_matches_marked": false
+    },
+    {
       "name": "camo",
       "input": "Google logo today: http://www.google.com/images/srpr/logo4w.png",
       "expected_output": "<p>Google logo today: <a href=\"http://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"http://www.google.com/images/srpr/logo4w.png\">http://www.google.com/images/srpr/logo4w.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"http://www.google.com/images/srpr/logo4w.png\"><img src=\"https://external-content.zulipcdn.net/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67\"></a></div>",
