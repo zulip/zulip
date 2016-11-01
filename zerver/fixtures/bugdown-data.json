@@ -91,6 +91,12 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "ulist_with_dash",
+      "input": "- One item\n- Two items\n- Three items",
+      "expected_output": "<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "malformed_fence",
       "input": "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~",
       "expected_output": "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>",

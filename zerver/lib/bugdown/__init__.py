@@ -829,7 +829,12 @@ class UListProcessor(markdown.blockprocessors.UListProcessor):
         '+' or '-' as a bullet character."""
 
     TAG = 'ul'
-    RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)')
+    RE_TEMPLATE = u'^[ ]{0,3}[%s][ ]+(.*)'
+
+    def __init__(self, parser, list_marker):
+        # type: (markdown.blockparser.BlockParser, text_type) -> None
+        super(UListProcessor, self).__init__(parser)
+        self.RE = re.compile(self.RE_TEMPLATE % (list_marker,))
 
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows unordered list blocks that come directly after a
@@ -839,8 +844,14 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
         directly after a line of text, and inserts a newline between
         to satisfy Markdown"""
 
-    LI_RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
+    LI_RE_TEMPLATE = u'^[ ]{0,3}[%s][ ]+(.*)'
     HANGING_ULIST_RE = re.compile(u'^.+\\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
+
+    def __init__(self, md, list_marker):
+        # type: (markdown.Extension, text_type) -> None
+        super(BugdownUListPreprocessor, self).__init__(md)
+        self.LI_RE = re.compile(
+            self.LI_RE_TEMPLATE % (list_marker,), re.MULTILINE)
 
     def run(self, lines):
         # type: (List[Text]) -> List[Text]
@@ -1071,7 +1082,12 @@ class Bugdown(markdown.Extension):
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
             del md.parser.blockprocessors[k]
 
-        md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
+        is_zephyr_mirror = self.getConfig("realm") == "zephyr_mirror"
+        ul_list_marker = '*' if is_zephyr_mirror else '*-'
+        md.parser.blockprocessors.add(
+            'ulist',
+            UListProcessor(md.parser, list_marker=ul_list_marker),
+            '>hr')
 
         # Note that !gravatar syntax should be deprecated long term.
         md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '>backtick')
@@ -1155,7 +1171,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
-                             BugdownUListPreprocessor(md),
+                             BugdownUListPreprocessor(md, list_marker=ul_list_marker),
                              "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")

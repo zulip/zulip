@@ -835,6 +835,17 @@ class BugdownTest(TestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
 
+    def test_ulist_with_dashes(self):
+        # type: () -> None
+        msg = '- first\n- second\n- third'
+        converted = bugdown.convert(msg)
+        self.assertEqual(converted, '<ul>\n<li>first</li>\n<li>second</li>\n<li>third</li>\n</ul>')
+
+        # dashes lists must be disabled for the MIT Zephyr mirroring system
+        converted = bugdown.convert(msg, "zephyr_mirror")
+        self.assertEqual(converted, '<p>- first\n- second\n- third</p>')
+
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
         # type: () -> None
