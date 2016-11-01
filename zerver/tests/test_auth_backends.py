@@ -308,6 +308,11 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.user = self.user_profile
         self.backend.strategy.request = request
 
+    def do_auth(self, *args, **kwargs):
+        # type: (*Any, **Any) -> UserProfile
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
+            return self.backend.authenticate(*args, **kwargs)
+
     def test_github_auth_enabled(self):
         # type: () -> None
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
@@ -319,12 +324,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_without_subdomains(self):
         # type: () -> None
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
-            return self.backend.authenticate(*args, **kwargs)
-
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth), \
+                        side_effect=self.do_auth), \
                 mock.patch('zerver.views.auth.login'):
             response=dict(email=self.email, name=self.name)
             result = self.backend.do_auth(response=response)
@@ -332,12 +333,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
-            return self.backend.authenticate(*args, **kwargs)
-
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
+                        side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
                 response=dict(email=self.email, name=self.name)
                 result = self.backend.do_auth(response=response)
@@ -345,12 +342,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
-            return self.backend.authenticate(*args, **kwargs)
-
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth), \
+                        side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response=dict(email=self.email, name=self.name)
             self.backend.do_auth('fake-access-token', response=response)
@@ -362,12 +355,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
-            return self.backend.authenticate(*args, **kwargs)
-
         with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
-                        side_effect=do_auth), \
+                        side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response=dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
@@ -394,12 +383,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
-        def do_auth(*args, **kwargs):
-            # type: (*Any, **Any) -> UserProfile
-            return self.backend.authenticate(*args, **kwargs)
-
         with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
-                        side_effect=do_auth), \
+                        side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response=dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
