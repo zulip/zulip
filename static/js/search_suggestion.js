@@ -389,15 +389,15 @@ exports.get_suggestions = function (query) {
     suggestions = get_stream_suggestions(operators);
     result = result.concat(suggestions);
 
-    var people = page_params.people_list;
+    var persons = people.get_all_persons();
 
-    suggestions = get_person_suggestions(people, query, 'pm-with');
+    suggestions = get_person_suggestions(persons, query, 'pm-with');
     result = result.concat(suggestions);
 
-    suggestions = get_person_suggestions(people, query, 'sender');
+    suggestions = get_person_suggestions(persons, query, 'sender');
     result = result.concat(suggestions);
 
-    suggestions = get_private_suggestions(people, operators, ['pm-with', 'sender']);
+    suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender']);
     result = result.concat(suggestions);
 
     suggestions = get_topic_suggestions(operators);
