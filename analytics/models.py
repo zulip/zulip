@@ -74,7 +74,7 @@ class BaseCount(ModelReprMixin, models.Model):
 class InstallationCount(BaseCount):
 
     class Meta(object):
-        unique_together = ("property", "end_time", "interval")
+        unique_together = ("property", "subgroup", "end_time", "interval")
 
     @staticmethod
     def extended_id():
@@ -94,7 +94,7 @@ class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("realm", "property", "end_time", "interval")
+        unique_together = ("realm", "property", "subgroup", "end_time", "interval")
 
     @staticmethod
     def extended_id():
@@ -115,7 +115,7 @@ class UserCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("user", "property", "end_time", "interval")
+        unique_together = ("user", "property", "subgroup", "end_time", "interval")
 
     @staticmethod
     def extended_id():
@@ -136,7 +136,7 @@ class StreamCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("stream", "property", "end_time", "interval")
+        unique_together = ("stream", "property", "subgroup", "end_time", "interval")
 
     @staticmethod
     def extended_id():

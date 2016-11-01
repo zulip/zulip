@@ -279,10 +279,52 @@ count_stream_by_realm_query = """
 """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
 
+# This query violates the count_X_by_Y_query conventions in several ways. One,
+# the X table is not specified by the query name; MessageType is not a zerver
+# table. Two, it ignores the subgroup column in the CountStat object; instead,
+# it uses 'message_type' from the subquery to fill in the subgroup column.
+count_message_type_by_user_query = """
+    INSERT INTO analytics_usercount
+            (realm_id, user_id, value, property, subgroup, end_time, interval)
+    SELECT realm_id, id, SUM(count) AS value, 'message_type_by_user', message_type, %%(time_end)s, '%(interval)s'
+    FROM
+    (
+        SELECT zerver_userprofile.realm_id, zerver_userprofile.id, count(*),
+        CASE WHEN
+                  zerver_recipient.type != 2 THEN 'pm'
+             WHEN
+                  zerver_stream.invite_only = TRUE THEN 'private_stream'
+             ELSE 'public_stream'
+        END
+        message_type
+
+        FROM zerver_userprofile
+        JOIN zerver_message
+        ON
+            zerver_message.sender_id = zerver_userprofile.id AND
+            zerver_message.pub_date >= %%(time_start)s AND
+            zerver_message.pub_date < %%(time_end)s
+            %(join_args)s
+        JOIN zerver_recipient
+        ON
+            zerver_recipient.id = zerver_message.recipient_id
+        JOIN zerver_stream
+        ON
+            zerver_stream.id = zerver_recipient.type_id
+        GROUP BY zerver_userprofile.realm_id, zerver_userprofile.id, zerver_recipient.type, zerver_stream.invite_only
+    ) AS subquery
+    GROUP BY realm_id, id, message_type
+"""
+zerver_count_message_type_by_user = ZerverCountQuery(Message, UserCount, count_message_type_by_user_query)
+
 COUNT_STATS = {
     'active_users_by_is_bot': CountStat('active_users_by_is_bot', zerver_count_user_by_realm,
-                               {'is_active': True}, (UserProfile, 'is_bot'), CountStat.DAY, True),
+                                        {'is_active': True}, (UserProfile, 'is_bot'), CountStat.DAY, True),
     'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, None,
                                CountStat.HOUR, False),
-    'messages_sent_by_is_bot': CountStat('messages_sent_by_is_bot', zerver_count_message_by_user, {}, (UserProfile, 'is_bot'),
-                               CountStat.DAY, False)}
+    'messages_sent_by_is_bot': CountStat('messages_sent_by_is_bot', zerver_count_message_by_user, {},
+                                         (UserProfile, 'is_bot'), CountStat.DAY, False),
+    'message_sent_by_type_by_user': CountStat('messages_sent_by_type_by_user',
+                                              zerver_count_message_type_by_user, {},
+                                              None, CountStat.DAY, False)
+}
