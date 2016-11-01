@@ -186,10 +186,7 @@ exports.update = function update(person) {
 
 $(function () {
     _.each(page_params.people_list, function (person) {
-        people_dict.set(person.email, person);
-        people_by_name_dict.set(person.full_name, person);
-        realm_people_dict.set(person.email, person);
-        person.pm_recipient_count = 0;
+        exports.add_in_realm(person);
     });
 
     delete page_params.people_list; // We are the only consumer of this.
