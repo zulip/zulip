@@ -3,7 +3,7 @@
 Zulip allows multiple *realms* to be hosted on a single instance.
 Realms are the Zulip codebases's internal name for what we refer to in
 user documentation as an organization (the name "realm" comes from
-[Kerberos](https://web.mit.edu/kerberos/).
+[Kerberos](https://web.mit.edu/kerberos/)).
 
 ## Creating Realms
 
