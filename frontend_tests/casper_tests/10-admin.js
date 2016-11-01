@@ -101,7 +101,7 @@ casper.then(function () {
 casper.then(function () {
     // Leave the page and return
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#subscriptions"]');
+    casper.click('a[href^="#"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 

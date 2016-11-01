@@ -43,9 +43,9 @@ function then_navigate_to_subscriptions() {
         var menu_selector = '#settings-dropdown';
         casper.waitUntilVisible(menu_selector, function () {
             casper.click(menu_selector);
-            casper.then(function () {
-                casper.click('a[href^="#subscriptions"]');
-                wait_for_tab('subscriptions');
+            casper.click('a[href^="#subscriptions"]');
+            casper.waitForSelector(".subscriptions", function () {
+                casper.test.assertExists('#subscriptions_table', "#subscriptions page is active");
             });
         });
     });

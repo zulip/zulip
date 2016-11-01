@@ -4,8 +4,10 @@
 <input class="add-user-list-filter" name="user_list_filter" type="text" placeholder="{{t "Filter users" }}" />
 <div id="user-checkboxes">
   {{#each users}}
-  <label class="checkbox" data-name="{{this.email}}">
-    <input type="checkbox" name="user" value="{{this.email}}" /> {{this.full_name}} ({{this.email}})
+  <label class="checkbox add-user-label" data-name="{{this.email}}">
+    <input type="checkbox" name="user" value="{{this.email}}" />
+    <span></span>
+    {{this.full_name}} ({{this.email}})
   </label>
   {{/each}}
 </div>

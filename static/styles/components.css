@@ -32,6 +32,10 @@
     background-color: #FFF;
 }
 
+.clear-float {
+    clear: both;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
@@ -213,6 +217,10 @@
     background-position: 50% 50%;
     background-repeat: no-repeat;
     -webkit-filter: grayscale(1);
+}
+
+.new-style label.checkbox input[type=checkbox]:disabled ~ span {
+    opacity: 0.3;
 }
 
 .new-style a.no-style {

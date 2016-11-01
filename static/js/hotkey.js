@@ -190,9 +190,14 @@ function process_hotkey(e) {
         }
     }
 
-    if (event_name === "escape" && $("#overlay").hasClass("show")) {
-        ui.exit_lightbox_photo();
-        return true;
+    if (event_name === "escape") {
+        if ($("#overlay").hasClass("show")) {
+            ui.exit_lightbox_photo();
+            return true;
+        } else if ($("#subscription_overlay").css("display") === "block") {
+            $("#subscription_overlay").click();
+            return true;
+        }
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button

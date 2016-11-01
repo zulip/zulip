@@ -329,7 +329,7 @@ exports.get_streams_for_settings_page = function () {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    var all_subs = subscribed_rows.concat(unsubscribed_rows);
+    var all_subs = unsubscribed_rows.concat(subscribed_rows);
 
     // Add in admin options and stream counts.
     var sub_rows = [];

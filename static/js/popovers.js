@@ -685,17 +685,13 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.open_stream_settings', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        if (! $('#subscriptions').hasClass('active')) {
-            // Go to streams page and once it loads, expand the relevant
-            // stream's settings.
-            $(document).one('subs_page_loaded.zulip', function (event) {
-                subs.show_settings_for(stream);
-            });
-            ui.change_tab_to('#subscriptions');
-        } else {
-            // Already on streams page, so just expand the relevant stream.
-            subs.show_settings_for(stream);
-        }
+
+        window.location.hash = "#subscriptions";
+        // the template for subs needs to render.
+
+        subs.onlaunch("narrow_to_row", function () {
+            $(".stream-row[data-stream-name='" + stream + "']").click();
+        }, true);
     });
 
 };
