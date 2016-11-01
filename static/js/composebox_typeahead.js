@@ -378,7 +378,7 @@ exports.initialize = function () {
     });
 
     $( "#private_message_recipient" ).typeahead({
-        source: page_params.people_list,
+        source: people.get_all_persons, // This is a function.
         items: 5,
         dropup: true,
         fixed: true,
