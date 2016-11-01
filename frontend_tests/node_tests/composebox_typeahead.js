@@ -1,12 +1,26 @@
 var ct = require('js/composebox_typeahead.js');
 
-var people_in_realm = [{email: 'othello@zulip.com', full_name: "Othello, Moor of Venice"},
-                       {email: 'cordelia@zulip.com', full_name: "Cordelia Lear"}];
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
                   {emoji_name: "moneybags", emoji_url: "TBD"}];
 
-set_global('page_params', {people_list: people_in_realm});
+set_global('page_params', {people_list: []});
 set_global('emoji', {emojis: emoji_list});
+
+global.stub_out_jquery();
+add_dependencies({
+    people: 'js/people.js'
+});
+
+global.people.add({
+    email: 'othello@zulip.com',
+    user_id: 101,
+    full_name: "Othello, Moor of Venice"
+});
+global.people.add({
+    email: 'cordelia@zulip.com',
+    user_id: 102,
+    full_name: "Cordelia Lear"
+});
 
 (function test_add_topic () {
     ct.add_topic('Denmark', 'civil fears');
@@ -39,7 +53,7 @@ set_global('emoji', {emojis: emoji_list});
 
     var all_items = [{ special_item_text: 'all (Notify everyone)', email: 'all', pm_recipient_count: Infinity, full_name: 'all' },
                      { special_item_text: 'everyone (Notify everyone)', email: 'everyone', full_name: 'everyone' }];
-    var people_with_all = people_in_realm.concat(all_items);
+    var people_with_all = global.people.get_all_persons().concat(all_items);
 
     assert_typeahead_equals("test @o", people_with_all);
     assert_typeahead_equals("test @z", people_with_all);

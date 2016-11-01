@@ -240,7 +240,8 @@ exports.compose_content_begins_typeahead = function (query) {
         email: "everyone",
         full_name: "everyone"
     };
-    return page_params.people_list.concat([all_item, everyone_item]);
+    var persons = people.get_all_persons();
+    return [].concat(persons, [all_item, everyone_item]);
 };
 
 exports.content_highlighter = function (item) {
