@@ -390,7 +390,7 @@ class ZulipTestCase(TestCase):
         return self.submit_reg_form_for_user(username, password, domain=domain)
 
     def submit_reg_form_for_user(self, username, password, domain="zulip.com",
-                                 realm_name=None, realm_subdomain=None,
+                                 realm_name="Zulip Test", realm_subdomain="zuliptest",
                                  realm_org_type=Realm.COMMUNITY,
                                  from_confirmation='', **kwargs):
         # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], int, Optional[text_type], **Any) -> HttpResponse
