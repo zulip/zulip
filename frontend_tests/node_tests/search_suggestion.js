@@ -22,7 +22,6 @@ var people = global.people;
 var search = require('js/search_suggestion.js');
 
 set_global('page_params', {
-    people_list: [], // TODO: should not need eventually
     email: 'bob@zulip.com'
 });
 

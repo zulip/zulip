@@ -3,7 +3,6 @@ var ct = require('js/composebox_typeahead.js');
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
                   {emoji_name: "moneybags", emoji_url: "TBD"}];
 
-set_global('page_params', {people_list: []});
 set_global('emoji', {emojis: emoji_list});
 
 global.stub_out_jquery();
