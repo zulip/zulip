@@ -5,18 +5,24 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies.
 
+global.stub_out_jquery();
+
 add_dependencies({
     util: 'js/util.js',
     Handlebars: 'handlebars',
     Filter: 'js/filter.js',
     typeahead_helper: 'js/typeahead_helper.js',
+    people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     narrow: 'js/narrow.js'
 });
 
+var people = global.people;
+
 var search = require('js/search_suggestion.js');
 
 set_global('page_params', {
+    people_list: [], // TODO: should not need eventually
     email: 'bob@zulip.com'
 });
 
@@ -74,16 +80,21 @@ global.stream_data.populate_stream_topics_for_tests({});
         return undefined;
     };
 
-    global.page_params.people_list = [
-        {
-            email: 'ted@zulip.com',
-            full_name: 'Ted Smith'
-        },
-        {
-            email: 'alice@zulip.com',
-            full_name: 'Alice Ignore'
-        }
-    ];
+    var ted =
+    {
+        email: 'ted@zulip.com',
+        user_id: 101,
+        full_name: 'Ted Smith'
+    };
+
+    var alice =
+    {
+        email: 'alice@zulip.com',
+        full_name: 'Alice Ignore'
+    };
+
+    people.add(ted);
+    people.add(alice);
 
     var query = 'is:private';
     var suggestions = search.get_suggestions(query);
@@ -182,7 +193,8 @@ global.stream_data.populate_stream_topics_for_tests({});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    global.page_params.people_list = [];
+    people.remove(ted);
+    people.remove(alice);
 }());
 
 (function test_empty_query_suggestions() {
@@ -349,20 +361,24 @@ global.stream_data.populate_stream_topics_for_tests({});
         return;
     };
 
-    global.page_params.people_list = [
-        {
-            email: 'ted@zulip.com',
-            full_name: 'Ted Smith'
-        },
-        {
-            email: 'bob@zulip.com',
-            full_name: 'Bob Terry'
-        },
-        {
-            email: 'alice@zulip.com',
-            full_name: 'Alice Ignore'
-        }
-    ];
+    var ted = {
+        email: 'ted@zulip.com',
+        full_name: 'Ted Smith'
+    };
+
+    var bob = {
+        email: 'bob@zulip.com',
+        full_name: 'Bob Terry'
+    };
+
+    var alice = {
+        email: 'alice@zulip.com',
+        full_name: 'Alice Ignore'
+    };
+    people.add(ted);
+    people.add(bob);
+    people.add(alice);
+
 
     global.stream_data.populate_stream_topics_for_tests({
         office: [
@@ -400,4 +416,8 @@ global.stream_data.populate_stream_topics_for_tests({});
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+
+    people.remove(ted);
+    people.remove(bob);
+    people.remove(alice);
 }());
