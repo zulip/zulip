@@ -587,6 +587,51 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             result = self.client_get('/accounts/login/subdomain/')
             self.assertEquals(result.status_code, 400)
 
+    def test_google_oauth2_registration(self):
+        # type: () -> None
+        """If the user doesn't exist yet, Google auth can be used to register an account"""
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            email = "newuser@zulip.com"
+            token_response = ResponseMock(200, {'access_token': "unique_token"})
+            account_data = dict(name=dict(formatted="Full Name"),
+                                emails=[dict(type="account",
+                                             value=email)])
+            account_response = ResponseMock(200, account_data)
+            result = self.google_oauth2_test(token_response, account_response, 'zulip')
+
+            data = self.unsign_subdomain_cookie(result)
+            self.assertEqual(data['email'], email)
+            self.assertEqual(data['name'], 'Full Name')
+            self.assertEqual(data['subdomain'], 'zulip')
+            self.assertEquals(result.status_code, 302)
+            parsed_url = urllib.parse.urlparse(result.url)
+            uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                     parsed_url.path)
+            self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
+                result = self.client_get(result.url)
+
+            result = self.client_get(result.url)  # Call the confirmation url.
+            key_match = re.search('value="(?P<key>[0-9a-f]+)" name="key"', result.content.decode("utf-8"))
+            name_match = re.search('value="(?P<name>[^"]+)" name="full_name"', result.content.decode("utf-8"))
+
+            # This goes through a brief stop on a page that auto-submits via JS
+            result = self.client_post('/accounts/register/',
+                                      {'full_name': name_match.group("name"),
+                                       'key': key_match.group("key"),
+                                       'from_confirmation': "1"})
+            self.assertEquals(result.status_code, 200)
+            result = self.client_post('/accounts/register/',
+                                      {'full_name': "New User",
+                                       'password': 'test_password',
+                                       'key': key_match.group("key"),
+                                       'terms': True})
+            self.assertEquals(result.status_code, 302)
+            self.assertEquals(result.url, "http://zulip.testserver/")
+            user_profile = get_user_profile_by_email(email)
+            self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
 class GoogleLoginTest(GoogleOAuthTest):
     def test_google_oauth2_success(self):
         # type: () -> None
