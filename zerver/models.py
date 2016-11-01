@@ -950,7 +950,7 @@ def sew_messages_and_reactions(messages, reactions):
     return list(converted_messages.values())
 
 
-class Message(ModelReprMixin, models.Model):
+class AbstractMessage(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: Text
@@ -964,6 +964,16 @@ class Message(ModelReprMixin, models.Model):
     has_attachment = models.BooleanField(default=False, db_index=True) # type: bool
     has_image = models.BooleanField(default=False, db_index=True) # type: bool
     has_link = models.BooleanField(default=False, db_index=True) # type: bool
+
+    class Meta(object):
+        abstract = True
+
+
+class ArchivedMessage(AbstractMessage):
+    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+
+
+class Message(AbstractMessage):
 
     def topic_name(self):
         # type: () -> Text
@@ -1139,9 +1149,8 @@ class Reaction(ModelReprMixin, models.Model):
 #
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
-class UserMessage(ModelReprMixin, models.Model):
+class AbstractUserMessage(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    message = models.ForeignKey(Message) # type: Message
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
@@ -1151,16 +1160,27 @@ class UserMessage(ModelReprMixin, models.Model):
     flags = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
 
     class Meta(object):
+        abstract = True
         unique_together = ("user_profile", "message")
+
+    def flags_list(self):
+        # type: () -> List[str]
+        return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
+
+
+class ArchivedUserMessage(AbstractUserMessage):
+    message = models.ForeignKey(ArchivedMessage)  # type: Message
+    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+
+
+class UserMessage(AbstractUserMessage):
+    message = models.ForeignKey(Message)  # type: Message
 
     def __unicode__(self):
         # type: () -> Text
         display_recipient = get_display_recipient(self.message.recipient)
         return u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_list())
 
-    def flags_list(self):
-        # type: () -> List[str]
-        return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
 
 def parse_usermessage_flags(val):
     # type: (int) -> List[str]
@@ -1172,18 +1192,31 @@ def parse_usermessage_flags(val):
         mask <<= 1
     return flags
 
-class Attachment(ModelReprMixin, models.Model):
-    file_name = models.TextField(db_index=True) # type: Text
+
+class AbstractAttachment(ModelReprMixin, models.Model):
+    file_name = models.TextField(db_index=True)  # type: Text
     # path_id is a storage location agnostic representation of the path of the file.
     # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
     # then its path_id will be a/b/abc/temp_file.py.
-    path_id = models.TextField(db_index=True) # type: Text
-    owner = models.ForeignKey(UserProfile) # type: UserProfile
-    realm = models.ForeignKey(Realm, blank=True, null=True) # type: Realm
-    is_realm_public = models.BooleanField(default=False) # type: bool
-    messages = models.ManyToManyField(Message) # type: Manager
-    create_time = models.DateTimeField(default=timezone.now, db_index=True) # type: datetime.datetime
-    size = models.IntegerField(null=True) # type: int
+    path_id = models.TextField(db_index=True)  # type: Text
+    owner = models.ForeignKey(UserProfile)  # type: UserProfile
+    realm = models.ForeignKey(Realm, blank=True, null=True)  # type: Realm
+    is_realm_public = models.BooleanField(default=False)  # type: bool
+    create_time = models.DateTimeField(default=timezone.now,
+                                       db_index=True)  # type: datetime.datetime
+    size = models.IntegerField(null=True)  # type: int
+
+    class Meta(object):
+        abstract = True
+
+
+class ArchivedAttachment(AbstractAttachment):
+    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+    messages = models.ManyToManyField(ArchivedMessage)  # type: Manager
+
+
+class Attachment(AbstractAttachment):
+    messages = models.ManyToManyField(Message)  # type: Manager
 
     def __unicode__(self):
         # type: () -> Text
@@ -1206,6 +1239,7 @@ class Attachment(ModelReprMixin, models.Model):
                 'name': time.mktime(m.pub_date.timetuple()) * 1000
             } for m in self.messages.all()]
         }
+
 
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
