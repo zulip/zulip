@@ -112,7 +112,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
-        user3 = self.create_user(user3_email)
+        self.create_user(user3_email)
         feedback_bot = self.create_user(feedback_email)
         support_bot = self.create_user(support_email)
 
@@ -138,19 +138,20 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.send_message(user1_email, [support_email], Recipient.PERSONAL)
         assert_message_received(support_bot, user1)
 
-        # We have a loophole where I can send PMs to other users as long
-        # as I copy a cross-realm bot from the same realm.  In practice this
-        # not a bug, since our only cross-realm bots are on the zulip.com
-        # realm.
-        self.send_message(user1_email, [user3_email, support_email], Recipient.PERSONAL)
-        assert_message_received(user3, user1)
+        # Allow sending PMs to two different cross-realm bots simultaneously.
+        # (We don't particularly need this feature, but since users can
+        # already individually send PMs to cross-realm bots, we shouldn't
+        # prevent them from sending multiple bots at once.  We may revisit
+        # this if it's a nuisance for huddles.)
+        self.send_message(user1_email, [feedback_email, support_email],
+                          Recipient.PERSONAL)
+        assert_message_received(feedback_bot, user1)
         assert_message_received(support_bot, user1)
 
-        # Users can't email two cross-realm bots at once. (This is just
-        # an anomaly of the current implementation.)
+        # Prevent old loophole where I could send PMs to other users as long
+        # as I copied a cross-realm bot from the same realm.
         with assert_disallowed():
-            self.send_message(user1_email, [feedback_email, support_email],
-                              Recipient.PERSONAL)
+            self.send_message(user1_email, [user3_email, support_email], Recipient.PERSONAL)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.

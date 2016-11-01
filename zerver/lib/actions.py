@@ -909,10 +909,13 @@ def recipient_for_emails(emails, not_forged_mirror_message,
                          user_profile, sender):
     # type: (Iterable[text_type], bool, UserProfile, UserProfile) -> Recipient
     recipient_profile_ids = set()
-    normalized_emails = set()
+
+    # We exempt cross-realm bots from the check that all the recipients
+    # are in the same domain.
     realm_domains = set()
-    normalized_emails.add(sender.email)
-    realm_domains.add(sender.realm.domain)
+    exempt_emails = get_cross_realm_users()
+    if sender.email not in exempt_emails:
+        realm_domains.add(sender.realm.domain)
 
     for email in emails:
         try:
@@ -923,21 +926,13 @@ def recipient_for_emails(emails, not_forged_mirror_message,
                 user_profile.realm.deactivated:
             raise ValidationError(_("'%s' is no longer using Zulip.") % (email,))
         recipient_profile_ids.add(user_profile.id)
-        normalized_emails.add(user_profile.email)
-        realm_domains.add(user_profile.realm.domain)
+        if email not in exempt_emails:
+            realm_domains.add(user_profile.realm.domain)
 
     if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
         raise ValidationError(_("User not authorized for this query"))
 
-    # Prevent cross realm private messages unless it is between only two realms
-    # and one of users is a cross-realm user
-    if len(realm_domains) == 2:
-        # get_cross_realm_users does database queries; We assume that
-        # cross-realm PMs with the "admin realm" are rare, and
-        # therefore can be slower
-        if not (normalized_emails & get_cross_realm_users()):
-            raise ValidationError(_("You can't send private messages outside of your organization."))
-    if len(realm_domains) > 2:
+    if len(realm_domains) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
     # If the private message is just between the sender and
