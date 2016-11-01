@@ -108,6 +108,7 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+   
     $("body").on("click", ".message_edit_save", function (e) {
         var row = $(this).closest(".message_row");
         message_edit.save(row, false);

@@ -1,4 +1,5 @@
 <div class="header">
+ 
 <div class="header-main rightside-userlist" id="top_navbar">
   <div class="column-left">
     <a class="brand logo" href="#"><img src="/static/images/logo/zulipcornerlogo@2x.png" class="logoimage" alt="{{product_name}}" content="{{product_name}}" /></a>
@@ -23,6 +24,7 @@
               </div>
             </form>
           </div>{# /searchbox #}
+
     </div>
   </div>
   <div class="column-right">
@@ -60,14 +62,21 @@
                     </a>
                   </li>
                   <li title="Message formatting">
-                    <a href="#markdown-help" role="button" data-toggle="modal">
+                    <a href="#markdown-help" role="button" data-toggle="modal" >
                       <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
                     </a>
                   </li>
                   <li title="Search help">
-                    <a href="#search-operators" role="button" data-toggle="modal">
+                  
+                    <a href="#search-operators" role="button" data-toggle="modal" >
                       <i class="icon-vector-search"></i> {{ _('Search help') }}
                     </a>
+                  </li>
+                  <li title="Tutorial">
+                    <a class="go" role="button" data-toggle="modal" >
+                      <i class="icon-vector-search"></i> {{ _('Tutorial') }}
+                    </a>
+                    
                   </li>
                   <li class="divider"></li>
                   <li title="Desktop & mobile apps">
@@ -98,6 +107,7 @@
                     </a>
                   </li>
                   {% endif %}
+
                   {% if enable_feedback %}
                   <li title="Feedback">
                     <a href="#feedback" class="feedback">

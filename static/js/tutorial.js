@@ -1,5 +1,4 @@
 var tutorial = (function () {
-
 var exports = {};
 var is_running = false;
 var event_handlers = {};
@@ -520,7 +519,9 @@ function welcome() {
     });
 }
 
+
 exports.start = function () {
+    alert("done");
     if (ui.home_tab_obscured()) {
         ui.change_tab_to('#home');
     }
@@ -531,6 +532,7 @@ exports.start = function () {
     stream_color.default_color = tutorial_default_color;
     // Add the fake messages to the feed and get started.
     current_msg_list.add_and_rerender(fake_messages);
+    alert("done1");
     disable_event_handlers();
     is_running = true;
     set_tutorial_status("started");
@@ -538,8 +540,10 @@ exports.start = function () {
 };
 
 exports.initialize = function () {
+/*    alert("tutorial");*/
     if (page_params.needs_tutorial) {
-        exports.start();
+        alert(page_params.needs_tutorial)
+       exports.start();
     }
     $(window).resize($.debounce(100, function () {
         if (current_popover_info !== undefined) {
@@ -547,6 +551,14 @@ exports.initialize = function () {
         }
     }));
 };
+
+$(document).on("click", ".go", function (e) {
+        alert("hello");
+        page_params.needs_tutorial=true;
+        alert(page_params.needs_tutorial);
+        exports.start();
+
+    });
 
 return exports;
 }());
