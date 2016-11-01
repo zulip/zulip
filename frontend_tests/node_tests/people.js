@@ -30,6 +30,10 @@ var _ = global._;
     assert.equal(_.size(persons), 1);
     assert.equal(persons[0].full_name, 'Original');
 
+    var realm_persons = people.get_realm_persons();
+    assert.equal(_.size(realm_persons), 0);
+
+
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
     var isaac = {
@@ -47,6 +51,10 @@ var _ = global._;
     people.add_in_realm(isaac);
     person = people.realm_get(email);
     assert.equal(person.email, email);
+
+    realm_persons = people.get_realm_persons();
+    assert.equal(_.size(realm_persons), 1);
+    assert.equal(realm_persons[0].full_name, 'Isaac Newton');
 
     people.update({email: email, is_admin: true});
     person = people.get_by_email(email);

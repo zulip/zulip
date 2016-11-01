@@ -21,6 +21,10 @@ exports.get_all_persons = function () {
     return people_dict.values();
 };
 
+exports.get_realm_persons = function () {
+    return realm_people_dict.values();
+};
+
 exports.filter_people_by_search_terms = function (users, search_terms) {
         var filtered_users = {};
 
