@@ -26,6 +26,10 @@ var _ = global._;
     };
     people.add(orig_person);
 
+    var persons = people.get_all_persons();
+    assert.equal(_.size(persons), 1);
+    assert.equal(persons[0].full_name, 'Original');
+
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
     var isaac = {
