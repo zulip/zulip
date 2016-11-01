@@ -69,7 +69,6 @@ exports.test_set_people_name_dict = function (data) {
 };
 
 function people_cmp(person1, person2) {
-    // Compares objects of the form used in people_list.
     var name_cmp = util.strcmp(person1.full_name, person2.full_name);
     if (name_cmp < 0) {
         return -1;
@@ -91,7 +90,6 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
 };
 
 exports.add = function add(person) {
-    page_params.people_list.push(person);
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
     person.pm_recipient_count = 0;
@@ -103,13 +101,6 @@ exports.add_in_realm = function add_in_realm(person) {
 };
 
 exports.remove = function remove(person) {
-    var i;
-    for (i = 0; i < page_params.people_list.length; i++) {
-        if (page_params.people_list[i].email.toLowerCase() === person.email.toLowerCase()) {
-            page_params.people_list.splice(i, 1);
-            break;
-        }
-    }
     people_dict.del(person.email);
     people_by_name_dict.del(person.full_name);
     realm_people_dict.del(person.email);
@@ -133,14 +124,11 @@ exports.reify = function reify(person) {
         return;
     }
 
-    var old_idx = page_params.people_list.indexOf(old_person);
-
     var new_person = _.extend({}, old_person, person);
     new_person.skeleton = false;
 
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
-    page_params.people_list[old_idx] = new_person;
 
     if (people_by_name_dict.has(person.email)) {
         people_by_name_dict.del(person.email);
@@ -203,6 +191,8 @@ $(function () {
         realm_people_dict.set(person.email, person);
         person.pm_recipient_count = 0;
     });
+
+    delete page_params.people_list; // We are the only consumer of this.
 
     // The special account feedback@zulip.com is used for in-app
     // feedback and should always show up as an autocomplete option.

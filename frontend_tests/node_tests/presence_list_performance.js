@@ -7,10 +7,7 @@ set_global('document', {
     }
 });
 set_global('feature_flags', {});
-set_global('page_params', {
-    people_list: []
-});
-
+set_global('page_params', {});
 
 add_dependencies({
    Handlebars: 'handlebars',
