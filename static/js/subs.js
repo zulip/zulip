@@ -325,7 +325,7 @@ function show_subscription_settings(sub_row) {
     });
 
     sub_row.find('input[name="principal"]').typeahead({
-        source: page_params.people_list,
+        source: people.get_realm_persons, // This is a function.
         items: 5,
         highlighter: function (item) {
             var item_formatted = typeahead_helper.render_person(item);
