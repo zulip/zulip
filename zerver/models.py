@@ -10,6 +10,7 @@ from django.db.models import Manager
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
+import django.contrib.auth
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
@@ -163,8 +164,28 @@ class Realm(ModelReprMixin, models.Model):
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: text_type
+    authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
+                                      default=2**31 - 1) # type: BitHandler
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
+
+    def authentication_methods_dict(self):
+        # type: () -> Dict[text_type, bool]
+        """Returns the a mapping from authentication flags to their status,
+        showing only those authentication flags that are supported on
+        the current server (i.e. if EmailAuthBackend is not configured
+        on the server, this will not return an entry for "Email")."""
+        # This mapping needs to be imported from here due to the cyclic
+        # dependency.
+        from zproject.backends import AUTH_BACKEND_NAME_MAP
+
+        ret = {} # type: Dict[text_type, bool]
+        supported_backends = {backend.__class__ for backend in django.contrib.auth.get_backends()}
+        for k, v in self.authentication_methods.iteritems():
+            backend = AUTH_BACKEND_NAME_MAP[k]
+            if backend in supported_backends:
+                ret[k] = v
+        return ret
 
     def __unicode__(self):
         # type: () -> text_type

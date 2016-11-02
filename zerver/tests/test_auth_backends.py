@@ -29,7 +29,7 @@ from confirmation.models import Confirmation
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
-    password_auth_enabled, github_auth_enabled
+    password_auth_enabled, github_auth_enabled, AUTH_BACKEND_NAME_MAP
 
 from zerver.views.auth import maybe_send_to_registration
 
@@ -95,6 +95,18 @@ class AuthBackendTest(TestCase):
         # Verify auth fails if the auth backend is disabled on server
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',)):
             self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+
+        # Verify auth fails if the auth backend is disabled for the realm
+        for backend_name in AUTH_BACKEND_NAME_MAP.keys():
+            if isinstance(backend, AUTH_BACKEND_NAME_MAP[backend_name]):
+                break
+
+        index = getattr(user_profile.realm.authentication_methods, backend_name).number
+        user_profile.realm.authentication_methods.set_bit(index, False)
+        user_profile.realm.save()
+        self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+        user_profile.realm.authentication_methods.set_bit(index, True)
+        user_profile.realm.save()
 
     def test_dummy_backend(self):
         # type: () -> None

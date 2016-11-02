@@ -36,8 +36,12 @@ def pad_method_dict(method_dict):
 
 def auth_enabled_helper(backends_to_check, realm):
     # type: (List[text_type], Optional[Realm]) -> bool
-    enabled_method_dict = dict((method, True) for method in Realm.AUTHENTICATION_FLAGS)
-    pad_method_dict(enabled_method_dict)
+    if realm is not None:
+        enabled_method_dict = realm.authentication_methods_dict()
+        pad_method_dict(enabled_method_dict)
+    else:
+        enabled_method_dict = dict((method, True) for method in Realm.AUTHENTICATION_FLAGS)
+        pad_method_dict(enabled_method_dict)
     for supported_backend in django.contrib.auth.get_backends():
         for backend_name in backends_to_check:
             backend = AUTH_BACKEND_NAME_MAP[backend_name]
