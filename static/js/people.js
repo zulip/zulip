@@ -8,6 +8,7 @@ var people_dict = new Dict({fold_case: true});
 var people_by_name_dict = new Dict({fold_case: true});
 // People in this realm
 var realm_people_dict = new Dict({fold_case: true});
+var cross_realm_dict = new Dict({fold_case: true});
 
 exports.get_by_email = function get_by_email(email) {
     return people_dict.get(email);
@@ -23,6 +24,10 @@ exports.get_all_persons = function () {
 
 exports.get_realm_persons = function () {
     return realm_people_dict.values();
+};
+
+exports.is_cross_realm_email = function (email) {
+    return cross_realm_dict.has(email);
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
@@ -189,14 +194,15 @@ $(function () {
         exports.add_in_realm(person);
     });
 
-    delete page_params.people_list; // We are the only consumer of this.
+    _.each(page_params.cross_realm_bots, function (person) {
+        if (!people_dict.has(person.email)) {
+            exports.add(person);
+        }
+        cross_realm_dict.set(person.email, person);
+    });
 
-    // The special account feedback@zulip.com is used for in-app
-    // feedback and should always show up as an autocomplete option.
-    if (! people.get_by_email('feedback@zulip.com')) {
-        exports.add({"email": "feedback@zulip.com",
-                     "full_name": "Zulip Feedback Bot"});
-    }
+    delete page_params.people_list; // We are the only consumer of this.
+    delete page_params.cross_realm_bots;
 });
 
 return exports;

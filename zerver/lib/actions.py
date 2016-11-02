@@ -2801,6 +2801,16 @@ def get_realm_user_dicts(user_profile):
              'full_name' : userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
+def get_cross_realm_dicts():
+    # type: () -> List[Dict[str, Any]]
+    users = [get_user_profile_by_email(email) for email in get_cross_realm_emails()]
+    return [{'email'     : user.email,
+             'user_id'   : user.id,
+             'is_admin'  : user.is_realm_admin,
+             'is_bot'    : user.is_bot,
+             'full_name' : user.full_name}
+            for user in users]
+
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data

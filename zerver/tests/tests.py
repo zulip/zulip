@@ -1777,7 +1777,7 @@ class HomeTest(ZulipTestCase):
             "avatar_url_medium",
             "bot_list",
             "can_create_streams",
-            "cross_realm_user_emails",
+            "cross_realm_bots",
             "debug_mode",
             "default_desktop_notifications",
             "default_language",
@@ -1979,6 +1979,26 @@ class HomeTest(ZulipTestCase):
             for user in users:
                 self.assertEqual(user['user_id'],
                                  get_user_profile_by_email(user['email']).id)
+
+        cross_bots = page_params['cross_realm_bots']
+        self.assertEqual(len(cross_bots), 2)
+        cross_bots.sort(key=lambda d: d['email'])
+        self.assertEqual(cross_bots, [
+            dict(
+                user_id=get_user_profile_by_email('feedback@zulip.com').id,
+                is_admin=False,
+                email='feedback@zulip.com',
+                full_name='Zulip Feedback Bot',
+                is_bot=True
+            ),
+            dict(
+                user_id=get_user_profile_by_email('notification-bot@zulip.com').id,
+                is_admin=False,
+                email='notification-bot@zulip.com',
+                full_name='Notification Bot',
+                is_bot=True
+            ),
+        ])
 
     def test_new_stream(self):
         # type: () -> None

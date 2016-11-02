@@ -22,13 +22,14 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
     split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_cross_realm_emails, resolve_subdomain_to_realm, list_of_domains_for_realm
+    resolve_subdomain_to_realm, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
     do_change_tos_version, \
     user_email_is_unique, \
     compute_mit_user_fullname, do_set_muted_topics, \
+    get_cross_realm_dicts, \
     do_update_pointer, realm_user_count
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
@@ -594,7 +595,7 @@ def home(request):
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
         notifications_stream  = notifications_stream,
-        cross_realm_user_emails = list(get_cross_realm_emails()),
+        cross_realm_bots      = list(get_cross_realm_dicts()),
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled =
