@@ -59,10 +59,26 @@ the old iOS app. We aim to have this launched by early January 2017.
 This category includes important improvements to the core user
 experience that will benefit all users.
 
-* <strike>[Improve missed message notifications to make "reply" work nicely](https://github.com/zulip/zulip/issues/612)</strike>
-* [Add support for showing "user is typing" notifications](https://github.com/zulip/zulip/issues/150)
+* Complete visual redesign (in progress).
+* [Provide shorter UI/Keyboard sequence to edit the last
+  message](https://github.com/zulip/zulip/issues/1147)
+* [Better drafts
+  management](https://github.com/zulip/zulip/issues/1717)
+* [Make clicking on desktop notifications renarrow
+  properly](https://github.com/zulip/zulip/issues/1996)
+
+### Social features
+
+* [Add support for showing "user is typing" notifications, at least
+  for private messages](https://github.com/zulip/zulip/issues/150)
+* [Support lightweight emoji
+  "reactions](https://github.com/zulip/zulip/issues/541)
+* [Open graph previews of generic
+  websites](https://github.com/zulip/zulip/issues/406)
+
+### Nice to have
+
 * [Add pretty bubbles for recipients in the compose box](https://github.com/zulip/zulip/issues/595)
-* <strike>[Finish and merge support for pinning a few important streams](https://github.com/zulip/zulip/issues/285)</strike>
 * [Display stream descriptions more prominently](https://github.com/zulip/zulip/issues/164)
 * [Integration inline URL previews](https://github.com/zulip/zulip/issues/406)
 * [Add support for managing uploaded files](https://github.com/zulip/zulip/issues/454)
