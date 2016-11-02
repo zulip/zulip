@@ -220,36 +220,36 @@ exports.compose_content_begins_typeahead = function (query) {
         return emoji.emojis;
     }
 
-    if (!this.options.completions.mention) {
-        return false;
+    if (this.options.completions.mention && current_token[0] === '@') {
+        if (!autocomplete_checks(q, '@')) {
+            return false;
+        }
+
+        current_token = q.substring(q.lastIndexOf('@') + 1);
+        if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
+            return false;
+        }
+
+        this.completing = 'mention';
+        this.token = current_token.substring(current_token.indexOf("@")+1);
+        var all_item = {
+            special_item_text: "all (Notify everyone)",
+            email: "all",
+            // Always sort above, under the assumption that names will
+            // be longer and only contain "all" as a substring.
+            pm_recipient_count: Infinity,
+            full_name: "all"
+        };
+        var everyone_item = {
+            special_item_text: "everyone (Notify everyone)",
+            email: "everyone",
+            full_name: "everyone"
+        };
+        var persons = people.get_all_persons();
+        return [].concat(persons, [all_item, everyone_item]);
     }
 
-    if (!autocomplete_checks(q, '@')) {
-        return false;
-    }
-
-    current_token = q.substring(q.lastIndexOf('@') + 1);
-    if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
-        return false;
-    }
-
-    this.completing = 'mention';
-    this.token = current_token.substring(current_token.indexOf("@")+1);
-    var all_item = {
-        special_item_text: "all (Notify everyone)",
-        email: "all",
-        // Always sort above, under the assumption that names will
-        // be longer and only contain "all" as a substring.
-        pm_recipient_count: Infinity,
-        full_name: "all"
-    };
-    var everyone_item = {
-        special_item_text: "everyone (Notify everyone)",
-        email: "everyone",
-        full_name: "everyone"
-    };
-    var persons = people.get_all_persons();
-    return [].concat(persons, [all_item, everyone_item]);
+    return false;
 };
 
 exports.content_highlighter = function (item) {
