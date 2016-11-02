@@ -12,6 +12,8 @@ coverage/
 .kateproject.d/
 .kateproject
 *.kate-swp
+*.sublime-project
+*.sublime-workspace
 .vagrant
 /zproject/dev-secrets.conf
 static/js/bundle.js
