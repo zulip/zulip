@@ -109,26 +109,24 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.create_user(user3_email)
         cross_bot = self.create_user(cross_email)
 
-        """Users can PM themselves"""
+        # Users can PM themselves
         self.send_message(user1_email, user1_email, Recipient.PERSONAL)
         assert_message_received(user1, user1)
 
-        """Users on the same realm can PM each other"""
+        # Users on the same realm can PM each other
         self.send_message(user1_email, user1a_email, Recipient.PERSONAL)
         assert_message_received(user1a, user1)
 
-        """OG Users in the zulip.com realm can PM any realm"""
+        # Cross-realm bots in the zulip.com realm can PM any realm
         self.send_message(cross_email, user2_email, Recipient.PERSONAL)
         assert_message_received(user2, cross_bot)
 
-        """All users can PM users in the zulip.com realm"""
-
+        # All users can PM cross-realm bots in the zulip.com realm
         self.send_message(user1_email, cross_email, Recipient.PERSONAL)
         assert_message_received(cross_bot, user1)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
-
         with assert_disallowed():
             self.send_message(user1_email, [user2_email, cross_email],
                               Recipient.PERSONAL)
