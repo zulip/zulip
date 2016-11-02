@@ -106,23 +106,17 @@ Zulip server, setting up a new Zulip realm, or starting to use Zulip.
 * [Merge a supported way to use Zulip in Docker in production
   implementation](https://github.com/zulip/zulip/pull/450).
 
-## Internationalization
+## Real-time sync
 
-The core Zulip UI has been mostly translated into 5 languages, and
-those translations display in the Zulip UI; we don't currently have
-any localization/internationalization work on the roadmap.
+This category focuses on notifications and keeping the user up-to-date
+with their community.
 
-## User Experience at scale
-
-There are a few parts of the Zulip UI which could benefit from
-overhauls designed around making the user experience nice for large
-teams.
-
-* [Make the buddy list work better for large teams](https://github.com/zulip/zulip/issues/236)
-* [Improve @-mentioning syntax based on stronger unique identifiers](https://github.com/zulip/zulip/issues/374)
-* [Show subscriber counts on streams](https://github.com/zulip/zulip/pull/525)
-* <strike>[Make the streams page easier to navigate with 100s of streams](https://github.com/zulip/zulip/issues/563)</strike>
-* <strike>[Add support for filtering long lists of streams](https://github.com/zulip/zulip/issues/565)</strike>
+* [Notification bot advertisements for new streams don’t handle stream
+  renames](https://github.com/zulip/zulip/issues/426)
+* [Avatar/name changes don’t propagate to already-sent
+  messages](https://github.com/zulip/zulip/issues/1932)
+* [Advance the pointer / where we load the user to based on unread
+  counts in home view](https://github.com/zulip/zulip/issues/1529)
 
 ## Administration and management
 
@@ -143,27 +137,31 @@ controlled only via the command line.
 * [Enhance the LDAP integration and make it web-configurable](https://github.com/zulip/zulip/issues/715)
 * [Improve administrative controls for managing streams](https://github.com/zulip/zulip/issues/425)
 
-## Scalability
+## Scalability and performance
 
 Zulip should support 10000 users in a realm and also support smaller
 realms in more resource-constrained environments (probably a good
-initial goal is working well with only 2GB of RAM).
+initial goal is working well with only 2GB of RAM). Scaling includes
+improving the user experience for large teams. Performance is also
+essential, and some things are already quite good (e.g., narrowing and
+message sending is speedy).
 
-* [Make the Zulip Tornado service support horizontal scaling](https://github.com/zulip/zulip/issues/445)
-* [Make presence system scale well to 10000 users in a realm.](https://github.com/zulip/zulip/issues/728)
+* [Make the Zulip Tornado service support horizontal
+  scaling](https://github.com/zulip/zulip/issues/445)
+
+### Nice to have
+
+* [Make presence system scale well to 10000 users in a
+  realm.](https://github.com/zulip/zulip/issues/728)
 * [Support running queue workers multithreaded in production to
-  decrease minimum memory footprint](https://github.com/zulip/zulip/issues/34)
-
-## Performance
-
-Performance is essential for a communication tool.  While some things
-are already quite good (e.g. narrowing and message sending is speedy),
-this is an area where one can always improve.  There are a few known
-performance opportunities:
-
-* <strike>[Migrate to faster jinja2 templating engine](https://github.com/zulip/zulip/issues/620)</strike>
-* <strike>[Don't load zxcvbn when it isn't needed](https://github.com/zulip/zulip/issues/263)</strike>
-* [Optimize the frontend performance of loading the Zulip webapp using profiling](https://github.com/zulip/zulip/issues/714)
+  decrease minimum memory
+  footprint](https://github.com/zulip/zulip/issues/34)
+* [Optimize the frontend performance of loading the Zulip webapp using
+  profiling](https://github.com/zulip/zulip/issues/714)
+* [Improve @-mentioning syntax based on stronger unique
+  identifiers](https://github.com/zulip/zulip/issues/374)
+* [Show subscriber counts on
+  streams](https://github.com/zulip/zulip/pull/525)
 
 ## Technology improvements
 
@@ -291,7 +289,18 @@ early August 2016.
 These don't get GitHub issues since they're not technical projects,
 but they are important goals for the project.
 
-* <strike>Setup a Zulip server for the Zulip development community</strike>
-* <strike>Expand the number of core developers able to do code reviews</strike>
-* <strike>Expand the number of contributors regularly adding features to Zulip</strike>
-* <strike>Have a successful summer with Zulip's 3 GSOC students</strike>
+* Expand the number of core developers able to do code reviews
+* Have a successful season with Zulip's Outreachy participants
+
+## Internationalization
+
+The core Zulip UI has been mostly translated into 5 languages, and
+those translations display in the Zulip UI; we don't currently have
+any localization/internationalization work on the roadmap.
+
+## Development environment -- nice to have
+
+* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
+* [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
+* [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
+* [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
