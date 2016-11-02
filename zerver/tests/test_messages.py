@@ -58,8 +58,6 @@ class TestCrossRealmPMs(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
-
         dep = Deployment()
         dep.base_api_url = "https://zulip.com/api/"
         dep.base_site_url = "https://zulip.com/"
@@ -101,13 +99,15 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1a_email = 'user1a@1.example.com'
         user2_email = 'user2@2.example.com'
         user3_email = 'user3@3.example.com'
-        cross_email = 'test-og-bot@zulip.com'
+        feedback_email = 'feedback@zulip.com'
+
+        settings.CROSS_REALM_BOT_EMAILS.add('feedback@zulip.com')
 
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
-        cross_bot = self.create_user(cross_email)
+        feedback_bot = self.create_user(feedback_email)
 
         # Users can PM themselves
         self.send_message(user1_email, user1_email, Recipient.PERSONAL)
@@ -118,17 +118,17 @@ class TestCrossRealmPMs(ZulipTestCase):
         assert_message_received(user1a, user1)
 
         # Cross-realm bots in the zulip.com realm can PM any realm
-        self.send_message(cross_email, user2_email, Recipient.PERSONAL)
-        assert_message_received(user2, cross_bot)
+        self.send_message(feedback_email, user2_email, Recipient.PERSONAL)
+        assert_message_received(user2, feedback_bot)
 
         # All users can PM cross-realm bots in the zulip.com realm
-        self.send_message(user1_email, cross_email, Recipient.PERSONAL)
-        assert_message_received(cross_bot, user1)
+        self.send_message(user1_email, feedback_email, Recipient.PERSONAL)
+        assert_message_received(feedback_bot, user1)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
         with assert_disallowed():
-            self.send_message(user1_email, [user2_email, cross_email],
+            self.send_message(user1_email, [user2_email, feedback_email],
                               Recipient.PERSONAL)
 
         # Users on the different realms can not PM each other
