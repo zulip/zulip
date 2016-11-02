@@ -60,37 +60,37 @@ exports.use_template = function (name) {
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
+// list all files in a directory and it's subdirectories in a recursive sync way.
+exports.walk = function (dir, filelist) {
+    filelist = filelist || [];
+
+    // grab files one level deep.
+    var files = fs.readdirSync(dir);
+
+    // for each file, check if it's a directory. If so, continue recursion.
+    // if not add to the file list.
+    files.forEach(function (file) {
+        if (fs.statSync(dir + "/" + file).isDirectory()) {
+            filelist = exports.walk(dir + "/" + file, filelist);
+        } else {
+            filelist.push({
+                url: dir + "/" + file,
+                name: file
+            });
+        }
+    });
+
+    // return all recursively found files.
+    return filelist;
+};
+
 exports.partial_finder = (function () {
     var meta = {
         read: []
     };
 
-    // list all files in a directory and it's subdirectories in a recursive sync way.
-    var walk = function (dir, filelist) {
-        filelist = filelist || [];
-
-        // grab files one level deep.
-        var files = fs.readdirSync(dir);
-
-        // for each file, check if it's a directory. If so, continue recursion.
-        // if not add to the file list.
-        files.forEach(function (file) {
-            if (fs.statSync(dir + "/" + file).isDirectory()) {
-                filelist = walk(dir + "/" + file, filelist);
-            } else {
-                filelist.push({
-                    url: dir + "/" + file,
-                    name: file
-                });
-            }
-        });
-
-        // return all recursively found files.
-        return filelist;
-    };
-
     // get all files and then map them into friendlier names.
-    var files = walk(path.join(__dirname, "../../static/templates")).map(function (file) {
+    var files = exports.walk(path.join(__dirname, "../../static/templates")).map(function (file) {
         return {
             url: file.url,
             name: file.name.replace(/\.handlebars$/, "")
