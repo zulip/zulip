@@ -175,17 +175,17 @@ function edit_message (row, raw_content) {
     form.keydown(_.partial(handle_edit_keydown, false));
 
     if (editability === editability_types.NO) {
-        row.find('textarea.message_edit_content').attr("disabled", "disabled");
-        row.find('input.message_edit_topic').attr("disabled", "disabled");
+        row.find('textarea.message_edit_content').prop("readonly", "readonly");
+        row.find('input.message_edit_topic').prop("readonly", "readonly");
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
         // changes (e.g. if we stop allowing topics to be modified forever
         // in streams), then we'll need to disable
         // row.find('input.message_edit_topic') as well.
-        row.find('textarea.message_edit_content').attr("disabled", "disabled");
+        row.find('textarea.message_edit_content').prop("readonly", "readonly");
         row.find('.message_edit_countdown_timer').text(i18n.t("View source"));
     } else if (editability === editability_types.TOPIC_ONLY) {
-        row.find('textarea.message_edit_content').attr("disabled", "disabled");
+        row.find('textarea.message_edit_content').prop("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
         row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
@@ -233,9 +233,9 @@ function edit_message (row, raw_content) {
         var countdown_timer = setInterval(function () {
             if (--seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                message_content_row.attr("disabled","disabled");
+                message_content_row.prop("readonly", "readonly");
                 if (message.type === 'stream') {
-                    message_topic_row.attr("disabled","disabled");
+                    message_topic_row.prop("readonly", "readonly");
                     message_topic_propagate_row.hide();
                 }
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
