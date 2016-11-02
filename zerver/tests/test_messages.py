@@ -100,14 +100,19 @@ class TestCrossRealmPMs(ZulipTestCase):
         user2_email = 'user2@2.example.com'
         user3_email = 'user3@3.example.com'
         feedback_email = 'feedback@zulip.com'
+        support_email = 'support@3.example.com' # note: not zulip.com
 
-        settings.CROSS_REALM_BOT_EMAILS.add('feedback@zulip.com')
+        settings.CROSS_REALM_BOT_EMAILS = [
+            feedback_email,
+            support_email,
+        ]
 
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
         feedback_bot = self.create_user(feedback_email)
+        support_bot = self.create_user(support_email)
 
         # Users can PM themselves
         self.send_message(user1_email, user1_email, Recipient.PERSONAL)
@@ -124,6 +129,12 @@ class TestCrossRealmPMs(ZulipTestCase):
         # All users can PM cross-realm bots in the zulip.com realm
         self.send_message(user1_email, feedback_email, Recipient.PERSONAL)
         assert_message_received(feedback_bot, user1)
+
+        # Users can PM cross-realm bots on non-zulip realms.
+        # (The support bot represents some theoretical bot that we may
+        # create in the future that does not have zulip.com as its realm.)
+        self.send_message(user1_email, [support_email], Recipient.PERSONAL)
+        assert_message_received(support_bot, user1)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
