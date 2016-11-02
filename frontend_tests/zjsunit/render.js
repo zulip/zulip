@@ -60,6 +60,76 @@ exports.use_template = function (name) {
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
+// list all files in a directory and it's subdirectories in a recursive sync way.
+exports.walk = function (dir, filelist) {
+    filelist = filelist || [];
+
+    // grab files one level deep.
+    var files = fs.readdirSync(dir);
+
+    // for each file, check if it's a directory. If so, continue recursion.
+    // if not add to the file list.
+    files.forEach(function (file) {
+        if (fs.statSync(dir + "/" + file).isDirectory()) {
+            filelist = exports.walk(dir + "/" + file, filelist);
+        } else {
+            filelist.push({
+                url: dir + "/" + file,
+                name: file
+            });
+        }
+    });
+
+    // return all recursively found files.
+    return filelist;
+};
+
+exports.partial_finder = (function () {
+    var meta = {
+        read: []
+    };
+
+    // get all files and then map them into friendlier names.
+    var files = exports.walk(path.join(__dirname, "../../static/templates")).map(function (file) {
+        return {
+            url: file.url,
+            name: file.name.replace(/\.handlebars$/, "")
+        };
+    });
+
+    // this is the external function that is called that will recursively search
+    // for partials in a file and partials inside partials until it finds them all.
+    // it then adds them to a maintenance list of already read partials so that
+    // they don't have to be read/searched again.
+    var __prototype__ = function (name, callback) {
+        if (meta.read.indexOf(name) === -1) {
+            if (callback) {
+                callback(name);
+            }
+
+            meta.read.push(name);
+
+            var file = files.find(function (file) {
+                return file.name === name;
+            });
+
+            if (file) {
+                var template = fs.readFileSync(file.url, "utf8");
+
+                // match partial tags.
+                // this uses String.prototype.replace which is kind of hacky but
+                // it is the only JS function IIRC that allows you to match all
+                // instances of a pattern AND return capture groups.
+                template.replace(/\{\{\s*partial\s*"(.+?)"/ig, function (match, $1) {
+                    __prototype__($1, callback);
+                });
+            }
+        }
+    };
+
+    return __prototype__;
+}());
+
 fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
     exports.use_template(o.replace(/\.handlebars/, ""));
 });

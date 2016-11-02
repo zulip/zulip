@@ -32,7 +32,9 @@ var _ = global._;
 // ./tools/get-handlebar-vars static/templates/*.handlebars
 
 function render(template_name, args) {
-    global.use_template(template_name);
+    global.partial_finder(template_name, function (name) {
+        global.use_template(name);
+    });
     return global.templates.render(template_name, args);
 }
 
@@ -100,7 +102,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 }());
 
 (function admin_emoji_list() {
-    global.use_template('admin_emoji_list');
     var args = {
         emoji: {
             "name": "MouseFace",
@@ -437,10 +438,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
         }
     ];
 
-    global.use_template('single_message'); // partial
-    global.use_template('recipient_row'); // partial
-    global.use_template('bookend'); // partial
-
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
     var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
@@ -641,8 +638,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 }());
 
 (function stream_sidebar_row() {
-    global.use_template('stream_privacy'); // partial
-
     var args = {
         name: "devel",
         color: "red",
@@ -687,11 +682,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
         ]
     };
 
-    global.use_template('subscription'); // partial
-    global.use_template('subscription_settings'); // partial
-    global.use_template('subscription_type'); // partial
-    global.use_template('subscription_setting_icon'); // partial
-    global.use_template('change_stream_privacy'); // partial
     var html = '';
     html += '<div id="subscriptions_table">';
     html += render('subscription_table_body', args);
@@ -797,7 +787,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 }());
 
 (function user_presence_rows() {
-    global.use_template('user_presence_row'); // partial
     var args = {
         users: [
             {
