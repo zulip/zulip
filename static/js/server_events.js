@@ -64,6 +64,9 @@ function dispatch_normal_event(event) {
             $.each(event.data, function (key, value) {
                 page_params['realm_' + key] = value;
             });
+            if (event.data.authentication_methods !== undefined) {
+                admin.populate_auth_methods(event.data.authentication_methods);
+            }
         } else if (event.op === 'update' && event.property === 'default_language') {
             page_params.realm_default_language = event.value;
             admin.reset_realm_default_language();
