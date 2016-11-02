@@ -178,13 +178,13 @@ function autocomplete_checks(q, char) {
     // Don't autocomplete more than this many characters.
     var max_chars = 30;
     var last_at = q.lastIndexOf(char);
-    if (last_at === -1 || last_at < q.length-1 - max_chars) {
+    if (last_at === -1 || last_at < q.length - 1 - max_chars) {
         return false;  // char doesn't appear, or too far back
     }
 
     // Only match if the char follows a space, various punctuation,
     // or is at the beginning of the string.
-    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at-1]) === -1) {
+    if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
         return false;
     }
 
@@ -231,7 +231,7 @@ exports.compose_content_begins_typeahead = function (query) {
         }
 
         this.completing = 'mention';
-        this.token = current_token.substring(current_token.indexOf("@")+1);
+        this.token = current_token.substring(current_token.indexOf("@") + 1);
         var all_item = {
             special_item_text: "all (Notify everyone)",
             email: "all",
