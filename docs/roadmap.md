@@ -50,9 +50,9 @@ is on a good path.  The iOS app has fewer features than Android and
 has more bugs, but more importantly is in need of an experienced iOS
 developer who has time to drive the project.
 
-Update: Neeraj Wahi is leading an effort on to write a [new React
-Native iOS app for Zulip](https://github.com/zulip/zulip-mobile) to
-replace the old iOS app.
+Update: Neeraj Wahi is leading an effort to write a [new React Native
+iOS app for Zulip](https://github.com/zulip/zulip-mobile) to replace
+the old iOS app. We aim to have this launched by early January 2017.
 
 ## Core User Experience
 
@@ -217,28 +217,25 @@ The Zulip Android app is ahead of the iOS app in terms of feature set,
 but there is still a lot of work to do. Most of the things listed below
 will eventually apply to the iOS app as well.
 
-* <strike>[Support using a non-zulip.com server](https://github.com/zulip/zulip-android/issues/1)</strike>
-* <strike>[Support Google authentication with a non-Zulip.com server](https://github.com/zulip/zulip-android/issues/49)</strike>
-* [Add support for narrowing to @-mentions](https://github.com/zulip/zulip-android/issues/39)
-* [Support having multiple Zulip realms open simultaneously](https://github.com/zulip/zulip-android/issues/47)
-* <strike>[Build a slick development login page to simplify testing (similar to
-  the development homepage on web)](https://github.com/zulip/zulip-android/issues/48)</strike>
-* <strike>[Improve the compose box to let you see what you're replying to](https://github.com/zulip/zulip-android/issues/8)</strike>
-* <strike>[Make it easy to compose messages with mentions, emoji, etc.](https://github.com/zulip/zulip-android/issues/11)</strike>
-* <strike>[Display unread counts and improve navigation](https://github.com/zulip/zulip-android/issues/57)</strike>
-* <strike>[Hide messages sent to muted topics](https://github.com/zulip/zulip-android/issues/9)</strike>
-* <strike>[Fill out documentation to make it easy to get started](https://github.com/zulip/zulip-android/issues/58)</strike>
+* [Add support for narrowing to
+  @-mentions](https://github.com/zulip/zulip-android/issues/39)
+* [Support having multiple Zulip realms open
+  simultaneously](https://github.com/zulip/zulip-android/issues/47)
 
-## iOS app
+## Server/webapp support for mobile
 
-Most of the projects listed under Android apply here as well, but it's
-worth highlighting some areas where iOS is substantially behind
-Android.  The top priority here is recruiting a lead developer for the
-iOS app.  Once we have that resolved, we'll expand our ambitions for
-the app with more specific improvements.
+To support a great mobile experiences, we need to make some
+improvements in Zulip core.
 
-* [iOS app needs maintainer](https://github.com/zulip/zulip-ios/issues/12)
-* <strike>[APNS notifications are broken](https://github.com/zulip/zulip/issues/538)</strike>
+* [Push notifications bouncer service for GCM and
+  APNS](https://github.com/zulip/zulip/issues/1767)
+* [A slick process for doing mobile login without typing your password
+  on your phone](https://github.com/zulip/zulip/issues/2185)
+* [`@here` mention support (that doesn’t spam people not currently
+  online, i.e. no email/push
+  notifications)](https://github.com/zulip/zulip/issues/2183)
+* [Fix sending messages from mobile
+  web](https://github.com/zulip/zulip/issues/2184)
 
 ## Desktop apps
 
