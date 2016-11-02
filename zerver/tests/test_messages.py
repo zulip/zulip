@@ -111,14 +111,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.assertEqual(len(messages), 1)
         self.assertEquals(messages[0].sender.pk, user1.pk)
 
-        """Users on the different realms can not PM each other"""
-        with assert_disallowed():
-            self.send_message(user1_email, user2_email, Recipient.PERSONAL)
-
-        """Users on three different realms can not PM each other"""
-        with assert_disallowed():
-            self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
-
         """OG Users in the zulip.com realm can PM any realm"""
         self.send_message(cross_email, user2_email, Recipient.PERSONAL)
 
@@ -139,6 +131,14 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_disallowed():
             self.send_message(user1_email, [user2_email, cross_email],
                               Recipient.PERSONAL)
+
+        # Users on the different realms can not PM each other
+        with assert_disallowed():
+            self.send_message(user1_email, user2_email, Recipient.PERSONAL)
+
+        # Users on three different realms can not PM each other
+        with assert_disallowed():
+            self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
 
 class PersonalMessagesTest(ZulipTestCase):
 
