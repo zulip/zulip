@@ -170,10 +170,17 @@ of its size, it takes work to keep it that way.
 
 ## Security
 
-* [Add support for 2-factor authentication on all platforms](https://github.com/zulip/zulip/pull/451)
-* [Add a retention policy feature that automatically deletes old messages](https://github.com/zulip/zulip/issues/106)
-* [The LOCAL_UPLOADS_DIR file uploads backend only supports world-readable uploads](https://github.com/zulip/zulip/issues/320)
-* [Add support for stronger security controls for uploaded files](https://github.com/zulip/zulip/issues/320)
+* [Add support for 2-factor authentication on all
+  platforms](https://github.com/zulip/zulip/pull/451)
+* [Add support for stronger security controls for uploaded files (The
+  LOCAL_UPLOADS_DIR file uploads backend only supports world-readable
+  uploads)](https://github.com/zulip/zulip/issues/320)
+* [Fix requirement to set a password when creating account via
+  Google](https://github.com/zulip/zulip/issues/1633)
+* [Add a retention policy feature that automatically deletes old
+  messages](https://github.com/zulip/zulip/issues/106)
+* [Add UI for viewing and cancelling open Zulip
+  invitations](https://github.com/zulip/zulip/issues/1180)
 
 ## Testing
 
@@ -183,11 +190,20 @@ of its size, it takes work to keep it that way.
 
 ## Documentation
 
+* [Add an in-app mechanism for updating users about new Zulip
+  features](https://github.com/zulip/zulip/issues/2187)
 * [Significantly expand documentation of the Zulip API and integrating
   with Zulip.](https://github.com/zulip/zulip/issues/672)
+* [Write a visual design / frontend style guide for
+  Zulip](https://github.com/zulip/zulip/issues/979)
+* [Update all screenshots to show the current Zulip
+  UI](https://github.com/zulip/zulip/issues/599)
+
+### Nice to have
+
 * [Expand library of documentation on Zulip's feature set.  Currently
-  most documentation is for either developers or system administrators.](https://github.com/zulip/zulip/issues/675)
-* [Update all screenshots to show the current Zulip UI](https://github.com/zulip/zulip/issues/599)
+  most documentation is for either developers or system
+  administrators.](https://github.com/zulip/zulip/issues/675)
 
 ## Integrations
 
