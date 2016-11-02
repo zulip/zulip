@@ -56,17 +56,25 @@ the old iOS app. We aim to have this launched by early January 2017.
 
 ## Core User Experience
 
-This category includes important improvements to the core user
-experience that will benefit all users.
-
-* <strike>[Improve missed message notifications to make "reply" work nicely](https://github.com/zulip/zulip/issues/612)</strike>
-* [Add support for showing "user is typing" notifications](https://github.com/zulip/zulip/issues/150)
+* [Provide shorter UI/Keyboard sequence to edit the last
+  message](https://github.com/zulip/zulip/issues/1147)
+* [Better drafts
+  management](https://github.com/zulip/zulip/issues/1717)
+* [Make clicking on desktop notifications renarrow
+  properly](https://github.com/zulip/zulip/issues/1996)
 * [Add pretty bubbles for recipients in the compose box](https://github.com/zulip/zulip/issues/595)
-* <strike>[Finish and merge support for pinning a few important streams](https://github.com/zulip/zulip/issues/285)</strike>
 * [Display stream descriptions more prominently](https://github.com/zulip/zulip/issues/164)
-* [Integration inline URL previews](https://github.com/zulip/zulip/issues/406)
 * [Add support for managing uploaded files](https://github.com/zulip/zulip/issues/454)
-* [Make Zulip onboarding experience smoother for teams not used to topics](https://github.com/zulip/zulip/issues/647).  That specific proposal might not be right but the issue is worth investing time in.
+
+## Social features
+
+* [Add support for showing "user is typing" notifications, at least
+  for private messages](https://github.com/zulip/zulip/issues/150)
+* [Support lightweight emoji
+  "reactions](https://github.com/zulip/zulip/issues/541)
+* [Open graph previews of generic
+  websites](https://github.com/zulip/zulip/issues/406)
+* [Add a "join Zulip chat" badge for projects that use Zulip to document that nicely](https://github.com/zulip/zulip/issues/2270)
 
 ## Ease of setup and onboarding issues
 
@@ -204,7 +212,7 @@ process and make bots that receive messages just as easy to build.
 * [Add an outgoing webhook integration system](https://github.com/zulip/zulip/issues/735)
 * [Make setting up a new integration a smooth flow](https://github.com/zulip/zulip/issues/692)
 * [Default new incoming webhooks to permissions-limited incoming webhook bots](https://github.com/zulip/zulip/issues/2186)
-* [Display how Zulip displays bot names to distinguish them from human users](https://github.com/zulip/zulip/issues/1107)
+* [Change how Zulip displays bot names to distinguish them from human users](https://github.com/zulip/zulip/issues/1107)
 
 ## Android app
 
