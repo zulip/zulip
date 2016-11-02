@@ -7,11 +7,11 @@ Zulip has received a great deal of interest and attention since it was
 released as free and open source software by Dropbox.  That attention
 has come with a lot of active development work from members of the
 Zulip community.  From when Zulip was released as open source in late
-September 2015 through today (mid-April, 2016), over 300 pull requests
-have been submitted to the various Zulip repositories (and over 250
-have been merged!), the vast majority of which are submitted by
-Zulip's users around the world (as opposed to the small core team that
-reviews and merges the pull requests).
+September 2015 through today (early November, 2016), over 1000 pull
+requests have been submitted to the various Zulip repositories (and
+nearly 1000 have been merged!), the vast majority of which are
+submitted by Zulip's users around the world (as opposed to the small
+core team that reviews and merges the pull requests).
 
 In any project, there can be a lot of value in periodically putting
 together a roadmap detailing the major areas where the project is
