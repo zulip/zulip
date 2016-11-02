@@ -35,7 +35,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_users, receives_online_notifications
+    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
@@ -913,7 +913,7 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     # We exempt cross-realm bots from the check that all the recipients
     # are in the same domain.
     realm_domains = set()
-    exempt_emails = get_cross_realm_users()
+    exempt_emails = get_cross_realm_emails()
     if sender.email not in exempt_emails:
         realm_domains.add(sender.realm.domain)
 
