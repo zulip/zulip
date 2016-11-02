@@ -76,16 +76,22 @@ the old iOS app. We aim to have this launched by early January 2017.
   websites](https://github.com/zulip/zulip/issues/406)
 * [Add a "join Zulip chat" badge for projects that use Zulip to document that nicely](https://github.com/zulip/zulip/issues/2270)
 
-## Ease of setup and onboarding issues
+## Onboarding issues
 
 This category focuses on issues users experience when installing a new
-Zulip server or setting up a new Zulip realm.
+Zulip server, setting up a new Zulip realm, or starting to use Zulip.
 
-* [Document or better script solution to rabbitmq startup issues](https://github.com/zulip/zulip/issues/465)
+* [Move Zulip's prompt for permission to display notifications to be
+  manually triggered](https://github.com/zulip/zulip/issues/1189)
+* [Add a mechanism for deleting early test messages (e.g.,
+  administrators can hard-delete
+  messages)](https://github.com/zulip/zulip/issues/135)
+* [Allow customizing emails when inviting new users](https://github.com/zulip/zulip/pull/2252)
 
 ## Production installation issues
 
-* [Add a mechanism for deleting early test messages](https://github.com/zulip/zulip/issues/135)
+* [Document or better script solution to rabbitmq startup
+  issues](https://github.com/zulip/zulip/issues/465)
 * [Merge a supported way to use Zulip in Docker in production
   implementation](https://github.com/zulip/zulip/pull/450).
 
@@ -103,16 +109,18 @@ teams.
 
 ## Administration and management
 
-Currently, Zulip has a number of administration features that can be
-controlled only via the command line.
-
-* <strike>[Make default streams web-configurable](https://github.com/zulip/zulip/issues/665)</strike>
-* <strike>[Make realm emoji web-configurable](https://github.com/zulip/zulip/pull/543)</strike>
+* [Make list of allowed domains web-configurable](https://github.com/zulip/zulip/issues/651)
+* [Statistics display for realm and server
+  administrators](https://github.com/zulip/zulip/issues/2052)
+* [Keep track of which users added which realm
+  emoji](https://github.com/zulip/zulip/issues/984)
+* [Add setting to enable any user to add new realm
+  emoji](https://github.com/zulip/zulip/issues/978)
 * [Make realm filters web-configurable](https://github.com/zulip/zulip/pull/544)
-* [Make realm aliases web-configurable](https://github.com/zulip/zulip/pull/651)
-* [Enhance the LDAP integration and make it web-configurable](https://github.com/zulip/zulip/issues/715)
-* [Add a SAML integration for Zulip](https://github.com/zulip/zulip/issues/716)
 * [Improve administrative controls for managing streams](https://github.com/zulip/zulip/issues/425)
+* [Enhance the LDAP integration and make it web-configurable](https://github.com/zulip/zulip/issues/715)
+* [Add a SAML integration for
+  Zulip](https://github.com/zulip/zulip/issues/716)
 
 ## Scalability
 
