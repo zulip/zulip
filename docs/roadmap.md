@@ -210,12 +210,10 @@ reasonably good framework for writing new webhook integrations for
 getting notifications into Zulip, it'd be great to streamline that
 process and make bots that receive messages just as easy to build.
 
-* <strike>[Make it super easy to take screenshots for new webhook integrations](https://github.com/zulip/zulip/issues/658)</strike>
 * [Add an outgoing webhook integration system](https://github.com/zulip/zulip/issues/735)
-* <strike>[Build a framework to cut duplicated code in new webhook integrations](https://github.com/zulip/zulip/issues/660)</strike>
 * [Make setting up a new integration a smooth flow](https://github.com/zulip/zulip/issues/692)
-* <strike>[Optimize the integration writing documentation to make writing new
-   ones really easy.](https://github.com/zulip/zulip/issues/70)</strike>
+* [Default new incoming webhooks to permissions-limited incoming webhook bots](https://github.com/zulip/zulip/issues/2186)
+* [Display how Zulip displays bot names to distinguish them from human users](https://github.com/zulip/zulip/issues/1107)
 
 ## Android app
 
