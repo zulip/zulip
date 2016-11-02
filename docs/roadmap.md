@@ -76,6 +76,19 @@ the old iOS app. We aim to have this launched by early January 2017.
   websites](https://github.com/zulip/zulip/issues/406)
 * [Add a "join Zulip chat" badge for projects that use Zulip to document that nicely](https://github.com/zulip/zulip/issues/2270)
 
+## Real-time sync
+
+The overall goal is to eliminate the few known issues where Zulip does
+not provide a seamless real-time sync experience.
+
+* [Notification bot advertisements for new streams don’t handle stream
+  renames](https://github.com/zulip/zulip/issues/426)
+* [Avatar/name changes don’t propagate to already-sent
+  messages](https://github.com/zulip/zulip/issues/1932)
+* [Advance the pointer / where we load the user to based on unread
+  counts in home view](https://github.com/zulip/zulip/issues/1529)
+* [Fix the known bug where messages could be incorrectly marked as read](https://github.com/zulip/zulip/issues/2091)
+
 ## Onboarding issues
 
 This category focuses on issues users experience when installing a new
@@ -95,18 +108,6 @@ Zulip server, setting up a new Zulip realm, or starting to use Zulip.
 * [Merge a supported way to use Zulip in Docker in production
   implementation](https://github.com/zulip/zulip/pull/450).
 
-## User Experience at scale
-
-There are a few parts of the Zulip UI which could benefit from
-overhauls designed around making the user experience nice for large
-teams.
-
-* [Make the buddy list work better for large teams](https://github.com/zulip/zulip/issues/236)
-* [Improve @-mentioning syntax based on stronger unique identifiers](https://github.com/zulip/zulip/issues/374)
-* <strike>[Show subscriber counts on streams](https://github.com/zulip/zulip/pull/525)</strike>
-* <strike>[Make the streams page easier to navigate with 100s of streams](https://github.com/zulip/zulip/issues/563)</strike>
-* <strike>[Add support for filtering long lists of streams](https://github.com/zulip/zulip/issues/565)</strike>
-
 ## Administration and management
 
 * [Make list of allowed domains web-configurable](https://github.com/zulip/zulip/issues/651)
@@ -122,27 +123,22 @@ teams.
 * [Add a SAML integration for
   Zulip](https://github.com/zulip/zulip/issues/716)
 
-## Scalability
+## Scalability and performance
 
-Zulip should support 10000 users in a realm and also support smaller
-realms in more resource-constrained environments (probably a good
-initial goal is working well with only 2GB of RAM).
+Scalability and performance are not currently major problems for
+Zulip; it already scales well to thousands of users and is
+significantly faster than proprietary alternatives.  So, this is not a
+major focus area for the project.
 
-* [Make the Zulip Tornado service support horizontal scaling](https://github.com/zulip/zulip/issues/445)
-* [Make presence system scale well to 10000 users in a realm.](https://github.com/zulip/zulip/issues/728)
+* [Make the Zulip Tornado service support horizontal
+  scaling](https://github.com/zulip/zulip/issues/445)
+* [Make presence system scale well to 10000 users in a
+  realm.](https://github.com/zulip/zulip/issues/728)
 * [Support running queue workers multithreaded in production to
-  decrease minimum memory footprint](https://github.com/zulip/zulip/issues/34)
-
-## Performance
-
-Performance is essential for a communication tool.  While some things
-are already quite good (e.g. narrowing and message sending is speedy),
-this is an area where one can always improve.  There are a few known
-performance opportunities:
-
-* <strike>[Migrate to faster jinja2 templating engine](https://github.com/zulip/zulip/issues/620)</strike>
-* <strike>[Don't load zxcvbn when it isn't needed](https://github.com/zulip/zulip/issues/263)</strike>
-* [Optimize the frontend performance of loading the Zulip webapp using profiling](https://github.com/zulip/zulip/issues/714)
+  decrease minimum memory
+  footprint](https://github.com/zulip/zulip/issues/34)
+* [Improve @-mentioning syntax based on stronger unique
+  identifiers](https://github.com/zulip/zulip/issues/374)
 
 ## Technology improvements
 
@@ -240,7 +236,7 @@ moving quickly, we're
 ## Server/webapp support for mobile
 
 To support a great mobile experiences, we need to make some
-improvements in Zulip core.
+improvements in the Zulip server.
 
 * [Push notifications bouncer service for GCM and
   APNS](https://github.com/zulip/zulip/issues/1767)
@@ -274,7 +270,13 @@ early August 2016.
 These don't get GitHub issues since they're not technical projects,
 but they are important goals for the project.
 
-* <strike>Setup a Zulip server for the Zulip development community</strike>
-* <strike>Expand the number of core developers able to do code reviews</strike>
-* <strike>Expand the number of contributors regularly adding features to Zulip</strike>
-* <strike>Have a successful summer with Zulip's 3 GSOC students</strike>
+* Expand the number of core developers able to do code reviews
+* Have a successful season with Zulip's Outreachy participants
+* Have a successful season with Google Code In.
+
+## Development environment -- nice to have
+
+* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
+* [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
+* [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
+* [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
