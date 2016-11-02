@@ -31,8 +31,80 @@ var _ = global._;
 // When writing these tests, the following command might be helpful:
 // ./tools/get-handlebar-vars static/templates/*.handlebars
 
+var partial_finder = (function () {
+    var meta = {
+        read: []
+    };
+
+    // list all files in a directory and it's subdirectories in a recursive sync way.
+    var walk = function (dir, filelist) {
+        filelist = filelist || [];
+
+        // grab files one level deep.
+        var files = fs.readdirSync(dir);
+
+        // for each file, check if it's a directory. If so, continue recursion.
+        // if not add to the file list.
+        files.forEach(function (file) {
+            if (fs.statSync(dir + "/" + file).isDirectory()) {
+                filelist = walk(dir + "/" + file, filelist);
+            } else {
+                filelist.push({
+                    url: dir + "/" + file,
+                    name: file
+                });
+            }
+        });
+
+        // return all recursively found files.
+        return filelist;
+    };
+
+    // get all files and then map them into friendlier names.
+    var files = walk(path.join(__dirname, "../../static/templates")).map(function (file) {
+        return {
+            url: file.url,
+            name: file.name.replace(/\.handlebars$/, "")
+        };
+    });
+
+    // this is the external function that is called that will recursively search
+    // for partials in a file and partials inside partials until it finds them all.
+    // it then adds them to a maintenance list of already read partials so that
+    // they don't have to be read/searched again.
+    var __prototype__ = function (name, callback) {
+        if (meta.read.indexOf(name) === -1) {
+            if (callback) {
+                callback(name);
+            }
+
+            meta.read.push(name);
+
+            var file = files.find(function (file) {
+                return file.name === name;
+            });
+
+            if (file) {
+                var template = fs.readFileSync(file.url, "utf8");
+
+                // match partial tags.
+                // this uses String.prototype.replace which is kind of hacky but
+                // it is the only JS function IIRC that allows you to match all
+                // instances of a pattern AND return capture groups.
+                template.replace(/{{\s*partial\s*"(.+?)"/ig, function (match, $1) {
+                    __prototype__($1, callback);
+                });
+            }
+        }
+    };
+
+    return __prototype__;
+}());
+
 function render(template_name, args) {
-    global.use_template(template_name);
+    partial_finder(template_name, function (name) {
+        global.use_template(name);
+    });
     return global.templates.render(template_name, args);
 }
 
@@ -100,7 +172,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 }());
 
 (function admin_emoji_list() {
-    global.use_template('admin_emoji_list');
     var args = {
         emoji: {
             "name": "MouseFace",
@@ -437,10 +508,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
         }
     ];
 
-    global.use_template('single_message'); // partial
-    global.use_template('recipient_row'); // partial
-    global.use_template('bookend'); // partial
-
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
     var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
@@ -675,8 +742,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 }());
 
 (function stream_sidebar_row() {
-    global.use_template('stream_privacy'); // partial
-
     var args = {
         name: "devel",
         color: "red",
@@ -721,11 +786,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
         ]
     };
 
-    global.use_template('subscription'); // partial
-    global.use_template('subscription_settings'); // partial
-    global.use_template('subscription_type'); // partial
-    global.use_template('subscription_setting_icon'); // partial
-    global.use_template('change_stream_privacy'); // partial
     var html = '';
     html += '<div id="subscriptions_table">';
     html += render('subscription_table_body', args);
@@ -815,7 +875,6 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
 }());
 
 (function user_presence_rows() {
-    global.use_template('user_presence_row'); // partial
     var args = {
         users: [
             {
