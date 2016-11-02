@@ -199,38 +199,50 @@ of its size, it takes work to keep it that way.
 
 ## Security
 
-* [Add support for 2-factor authentication on all platforms](https://github.com/zulip/zulip/pull/451)
-* [Add a retention policy feature that automatically deletes old messages](https://github.com/zulip/zulip/issues/106)
-* [Upgrade every Zulip dependency to a modern version](https://github.com/zulip/zulip/issues/1331)
-* [The LOCAL_UPLOADS_DIR file uploads backend only supports world-readable uploads](https://github.com/zulip/zulip/issues/320)
-* [Add support for stronger security controls for uploaded files](https://github.com/zulip/zulip/issues/320)
+* [Add support for 2-factor authentication on all
+  platforms](https://github.com/zulip/zulip/pull/451)
+* [Add support for stronger security controls for uploaded files (The
+  LOCAL_UPLOADS_DIR file uploads backend only supports world-readable
+  uploads)](https://github.com/zulip/zulip/issues/320)
+* [Fix requirement to set a password when creating account via
+  Google](https://github.com/zulip/zulip/issues/1633) (Basically
+  requires making the a re-prompt-for-password flow for things like
+  “show my my API key” that supports other auth mechanisms)
+* [Add a retention policy feature that automatically deletes old
+  messages](https://github.com/zulip/zulip/issues/106)
+* [Add UI for viewing and cancelling open Zulip
+  invitations](https://github.com/zulip/zulip/issues/1180)
+
+### Nice to have
+
+* [Upgrade every Zulip dependency to a modern
+  version](https://github.com/zulip/zulip/issues/1331)
 
 ## Testing
 
 * [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/732)
 * [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
-* <strike>[Improve Travis CI "production" test suite to catch more regressions](https://github.com/zulip/zulip/issues/598)</strike>
-
-## Development environment
-
-* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
-* <strike>[Figure out a nice upgrade process for Zulip Vagrant VMs](https://github.com/zulip/zulip/issues/264)</strike>
-* [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
-* [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
-* [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
 
 ## Documentation
 
+* [Add an in-app mechanism for updating users about new Zulip
+  features](https://github.com/zulip/zulip/issues/2187)
 * [Significantly expand documentation of the Zulip API and integrating
   with Zulip.](https://github.com/zulip/zulip/issues/672)
+* [Write a visual design / frontend style guide for
+  Zulip](https://github.com/zulip/zulip/issues/979)
+* [Update all screenshots to show the current Zulip
+  UI](https://github.com/zulip/zulip/issues/599)
+
+### Nice to have
+
 * [Expand library of documentation on Zulip's feature set.  Currently
-  most documentation is for either developers or system administrators.](https://github.com/zulip/zulip/issues/675)
-* [Expand developer documentation with more tutorials explaining how to do
-  various types of projects.](https://github.com/zulip/zulip/issues/676)
-* [Overhaul new contributor documentation, especially on coding style,
-  to better highlight and teach the important pieces.](https://github.com/zulip/zulip/issues/677)
-* [Update all screenshots to show the current Zulip UI](https://github.com/zulip/zulip/issues/599)
+  most documentation is for either developers or system
+  administrators.](https://github.com/zulip/zulip/issues/675)
+* [Expand developer documentation with more tutorials explaining how
+  to do various types of
+  projects.](https://github.com/zulip/zulip/issues/676)
 
 ## Integrations
 
