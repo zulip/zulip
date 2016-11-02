@@ -142,14 +142,22 @@ major focus area for the project.
 
 ## Technology improvements
 
-Zulip should be making use of the best Python/Django tools available.
-
-* [Add support for Zulip running on Python 3](https://github.com/zulip/zulip/issues/256)
-* [Add support for changing users' email addresses](https://github.com/zulip/zulip/issues/734)
-* [Automatic thumbnailing of uploaded images](https://github.com/zulip/zulip/issues/432)
-* [Upgrade Zulip to use Django 1.10 once it is released.  The patches
+* [Add support for Zulip running purely on Python
+  3](https://github.com/zulip/zulip/issues/256)
+* [Automatic thumbnailing of uploaded images' previews to save
+  bandwidth](https://github.com/zulip/zulip/issues/432)
+* [Upgrade Zulip to use Django 1.10.  The patches
   needed to run Zulip were merged into mainline Django in Django 1.10,
-  so this will mean we don't need to use a fork of Django anymore.](https://github.com/zulip/zulip/issues/3)
+  so this will mean we don't need to use a fork of Django
+  anymore.](https://github.com/zulip/zulip/issues/3)
+* [Upgrade and remove from codebase all unnecessarily vendored JS
+  libraries](https://github.com/zulip/zulip/issues/1709)
+* [Add support for changing users' email
+  addresses](https://github.com/zulip/zulip/issues/734)
+* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
+* [Replace the slow closure-compiler based static asset toolchain](https://github.com/zulip/zulip/issues/693)
+* [Use a modern JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
+* [Add support for building frontend features in something like React](https://github.com/zulip/zulip/issues/694)
 
 ## Technical Debt
 
@@ -185,14 +193,6 @@ of its size, it takes work to keep it that way.
 * <strike>[Use caching to make Travis CI runtimes faster](https://github.com/zulip/zulip/issues/712)</strike>
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
 * <strike>[Improve Travis CI "production" test suite to catch more regressions](https://github.com/zulip/zulip/issues/598)</strike>
-
-## Development environment
-
-* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
-* <strike>[Figure out a nice upgrade process for Zulip Vagrant VMs](https://github.com/zulip/zulip/issues/264)</strike>
-* [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
-* [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
-* [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
 
 ## Documentation
 
@@ -274,9 +274,3 @@ but they are important goals for the project.
 * Have a successful season with Zulip's Outreachy participants
 * Have a successful season with Google Code In.
 
-## Development environment -- nice to have
-
-* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
-* [Replace closure-compiler with a faster minifier toolchain](https://github.com/zulip/zulip/issues/693)
-* [Add support for building frontend features in React](https://github.com/zulip/zulip/issues/694)
-* [Use a JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
