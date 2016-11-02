@@ -2,14 +2,13 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
-import datetime
+import json
 from typing import Any, Generator
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import QuerySet
 
 from zerver.lib.message import render_markdown
-from zerver.lib.str_utils import force_str
 from zerver.models import Message
 
 
@@ -32,18 +31,27 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('destination', help='Destination folder for resulting file')
-        parser.add_argument('--amount', default=100000, required=False, help='Amount of messages')
+        parser.add_argument('destination', help='Destination file path')
+        parser.add_argument('--amount', default=100000, help='Amount of messages')
+        parser.add_argument('--latest_id', default=0, help="Last message id")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        dest_dir = options['destination']
-        amount = options['amount']
+        dest_dir = os.path.realpath(os.path.dirname(options['destination']))
+        amount = int(options['amount'])
+        latest = int(options['latest_id']) or Message.objects.latest('id').id
+        self.stdout.write('Latest message id: {latest}'.format(latest=latest))
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
-        now = datetime.datetime.now()
-        with open(os.path.join(dest_dir, now.strftime('%Y-%m-%d-%H:%M:%S.txt')), 'w') as result:
-            latest = Message.objects.latest('pub_date').id
-            messages = Message.objects.filter(pk__gt=latest-amount).order_by('pk')
+
+        with open(options['destination'], 'w') as result:
+            result.write('[')
+            messages = Message.objects.filter(pk__gt=latest - amount, pk__lte=latest).order_by('pk')
             for message in queryset_iterator(messages):
-                result.write(force_str(render_markdown(message, message.content)))
+                result.write(json.dumps({
+                    'id': message.id,
+                    'content': render_markdown(message, message.content)
+                }))
+                if message.id != latest:
+                    result.write(',')
+            result.write(']')
