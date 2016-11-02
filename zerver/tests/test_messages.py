@@ -136,6 +136,12 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.send_message(user1_email, [support_email], Recipient.PERSONAL)
         assert_message_received(support_bot, user1)
 
+        # Users can't email two cross-realm bots at once. (This is just
+        # an anomaly of the current implementation.)
+        with assert_disallowed():
+            self.send_message(user1_email, [feedback_email, support_email],
+                              Recipient.PERSONAL)
+
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
         with assert_disallowed():
