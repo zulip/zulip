@@ -109,6 +109,10 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.create_user(user3_email)
         cross_bot = self.create_user(cross_email)
 
+        """Users can PM themselves"""
+        self.send_message(user1_email, user1_email, Recipient.PERSONAL)
+        assert_message_received(user1, user1)
+
         """Users on the same realm can PM each other"""
         self.send_message(user1_email, user1a_email, Recipient.PERSONAL)
         assert_message_received(user1a, user1)
