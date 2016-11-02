@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.db.models import Q
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
@@ -74,6 +74,8 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.register(username, 'test', domain=domain)
         return get_user_profile_by_email(email)
 
+    @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
+                                               'support@3.example.com'])
     def test_realm_scenarios(self):
         # type: () -> None
         r1 = self.make_realm('1.example.com')
@@ -102,11 +104,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         user3_email = 'user3@3.example.com'
         feedback_email = 'feedback@zulip.com'
         support_email = 'support@3.example.com' # note: not zulip.com
-
-        settings.CROSS_REALM_BOT_EMAILS = [
-            feedback_email,
-            support_email,
-        ]
 
         self.create_user(random_zulip_email)
         user1 = self.create_user(user1_email)
