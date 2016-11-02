@@ -267,9 +267,13 @@ class Command(BaseCommand):
                     ("Zulip Commit Bot", "commit-bot@zulip.com"),
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
-                    ("Zulip Feedback Bot", "feedback@zulip.com"),
                     ]
                 create_users(realms, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
+
+            zulip_cross_realm_bots = [
+                ("Zulip Feedback Bot", "feedback@zulip.com"),
+                ]
+            create_users(realms, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)

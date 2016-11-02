@@ -113,7 +113,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
-        feedback_bot = self.create_user(feedback_email)
+        feedback_bot = get_user_profile_by_email(feedback_email)
         support_bot = self.create_user(support_email)
 
         # Users can PM themselves
