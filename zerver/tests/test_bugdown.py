@@ -669,10 +669,10 @@ class BugdownTest(TestCase):
             ))
 
     def test_stream_case_sensitivity_nonmatching(self):
+        # type: () -> None
         """#StreamName requires the stream be spelled with the correct case
         currently.  If we change that in the future, we'll need to change this
         test."""
-        # type: () -> None
         realm = get_realm('zulip.com')
         Stream.objects.create(name='CaseSens', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
