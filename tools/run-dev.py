@@ -42,16 +42,16 @@ to this file.
 """)
 
 parser.add_option('--test',
-    action='store_true', dest='test',
-    help='Use the testing database and ports')
+                  action='store_true', dest='test',
+                  help='Use the testing database and ports')
 
 parser.add_option('--interface',
-    action='store', dest='interface',
-    default=None, help='Set the IP or hostname for the proxy to listen on')
+                  action='store', dest='interface',
+                  default=None, help='Set the IP or hostname for the proxy to listen on')
 
 parser.add_option('--no-clear-memcached',
-    action='store_false', dest='clear_memcached',
-    default=True, help='Do not clear memcached')
+                  action='store_false', dest='clear_memcached',
+                  default=True, help='Do not clear memcached')
 
 (options, args) = parser.parse_args()
 
@@ -67,9 +67,9 @@ if options.interface is None:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
 
-base_port   = 9991
+base_port = 9991
 if options.test:
-    base_port   = 9981
+    base_port = 9981
     settings_module = "zproject.test_settings"
 else:
     settings_module = "zproject.settings"
@@ -81,10 +81,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from scripts.lib.zulip_tools import WARNING, ENDC
 
-proxy_port   = base_port
-django_port  = base_port+1
-tornado_port = base_port+2
-webpack_port = base_port+3
+proxy_port = base_port
+django_port = base_port + 1
+tornado_port = base_port + 2
+webpack_port = base_port + 3
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -109,9 +109,9 @@ os.setpgrp()
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['python', 'manage.py', 'rundjango'] +
-          manage_args + ['127.0.0.1:%d' % (django_port,)],
+        manage_args + ['127.0.0.1:%d' % (django_port,)],
         ['python', '-u', 'manage.py', 'runtornado'] +
-          manage_args + ['127.0.0.1:%d' % (tornado_port,)],
+        manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1', # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates']]
