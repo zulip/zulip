@@ -175,20 +175,25 @@ function edit_message (row, raw_content) {
 
     form.keydown(_.partial(handle_edit_keydown, false));
 
+    var message_edit_content = row.find('textarea.message_edit_content');
+    var message_edit_topic = row.find('input.message_edit_topic');
+    var message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
+    var message_edit_countdown_timer = row.find('.message_edit_countdown_timer');
+
     if (editability === editability_types.NO) {
-        row.find('textarea.message_edit_content').prop("readonly", "readonly");
-        row.find('input.message_edit_topic').prop("readonly", "readonly");
+        message_edit_content.prop("readonly", "readonly");
+        message_edit_topic.prop("readonly", "readonly");
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
         // changes (e.g. if we stop allowing topics to be modified forever
         // in streams), then we'll need to disable
         // row.find('input.message_edit_topic') as well.
-        row.find('textarea.message_edit_content').prop("readonly", "readonly");
-        row.find('.message_edit_countdown_timer').text(i18n.t("View source"));
+        message_edit_content.prop("readonly", "readonly");
+        message_edit_countdown_timer.text(i18n.t("View source"));
     } else if (editability === editability_types.TOPIC_ONLY) {
-        row.find('textarea.message_edit_content').prop("readonly", "readonly");
+        message_edit_content.prop("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
-        row.find('.message_edit_countdown_timer').text(i18n.t("Topic editing only"));
+        message_edit_countdown_timer.text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
     }
@@ -217,36 +222,29 @@ function edit_message (row, raw_content) {
             now.diffSeconds(message.timestamp * 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
-        // I believe these need to be defined outside the countdown_timer, since
+        // I believe this needs to be defined outside the countdown_timer, since
         // row just refers to something like the currently selected message, and
         // can change out from under us
-        var timer_row = row.find('.message_edit_countdown_timer');
-        var message_content_row = row.find('textarea.message_edit_content');
-        var message_topic_row, message_topic_propagate_row;
-        if (message.type === 'stream') {
-            message_topic_row = row.find('input.message_edit_topic');
-            message_topic_propagate_row = row.find('select.message_edit_topic_propagate');
-        }
-        var message_save_row = row.find('button.message_edit_save');
+        var message_edit_save = row.find('button.message_edit_save');
         // Do this right away, rather than waiting for the timer to do its first update,
         // since otherwise there is a noticeable lag
-        timer_row.text(timer_text(seconds_left));
+        message_edit_countdown_timer.text(timer_text(seconds_left));
         var countdown_timer = setInterval(function () {
             if (--seconds_left <= 0) {
                 clearInterval(countdown_timer);
-                message_content_row.prop("readonly", "readonly");
+                message_edit_content.prop("readonly", "readonly");
                 if (message.type === 'stream') {
-                    message_topic_row.prop("readonly", "readonly");
-                    message_topic_propagate_row.hide();
+                    message_edit_topic.prop("readonly", "readonly");
+                    message_edit_topic_propagate.hide();
                 }
                 // We don't go directly to a "TOPIC_ONLY" type state (with an active Save button),
                 // since it isn't clear what to do with the half-finished edit. It's nice to keep
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
-                message_save_row.addClass("disabled");
-                timer_row.text(i18n.t("Time's up!"));
+                message_edit_save.addClass("disabled");
+                message_edit_countdown_timer.text(i18n.t("Time's up!"));
             } else {
-                timer_row.text(timer_text(seconds_left));
+                message_edit_countdown_timer.text(timer_text(seconds_left));
             }
         }, 1000);
     }
@@ -275,7 +273,7 @@ function edit_message (row, raw_content) {
         var original_topic = message.subject;
         topic_input.keyup( function () {
             var new_topic = topic_input.val();
-            row.find('.message_edit_topic_propagate').toggle(new_topic !== original_topic && new_topic !== "" );
+            message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });
     }
 }
