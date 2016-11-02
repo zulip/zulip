@@ -59,6 +59,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         settings.CROSS_REALM_BOT_EMAILS.add('test-og-bot@zulip.com')
+
         dep = Deployment()
         dep.base_api_url = "https://zulip.com/api/"
         dep.base_site_url = "https://zulip.com/"
@@ -68,51 +69,15 @@ class TestCrossRealmPMs(ZulipTestCase):
         dep.realms = [get_realm("zulip.com")]
         dep.save()
 
+
     def create_user(self, email):
         # type: (text_type) -> UserProfile
         username, domain = email.split('@')
         self.register(username, 'test', domain=domain)
         return get_user_profile_by_email(email)
 
-    def test_same_realm(self):
+    def test_realm_scenarios(self):
         # type: () -> None
-        """Users on the same realm can PM each other"""
-        r1 = self.make_realm('1.example.com')
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
-
-        user1_email = 'user1@1.example.com'
-        user1 = self.create_user(user1_email)
-        user2_email = 'user2@1.example.com'
-        user2 = self.create_user(user2_email)
-
-        self.send_message(user1_email, user2_email, Recipient.PERSONAL)
-
-        messages = get_user_messages(user2)
-        self.assertEqual(len(messages), 1)
-        self.assertEquals(messages[0].sender.pk, user1.pk)
-
-    def test_different_realms(self):
-        # type: () -> None
-        """Users on the different realms can not PM each other"""
-        r1 = self.make_realm('1.example.com')
-        r2 = self.make_realm('2.example.com')
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
-        deployment.realms.add(r2)
-
-        user1_email = 'user1@1.example.com'
-        self.create_user(user1_email)
-        user2_email = 'user2@2.example.com'
-        self.create_user(user2_email)
-
-        with self.assertRaisesRegexp(JsonableError,
-                                     'You can\'t send private messages outside of your organization.'):
-            self.send_message(user1_email, user2_email, Recipient.PERSONAL)
-
-    def test_three_different_realms(self):
-        # type: () -> None
-        """Users on three different realms can not PM each other"""
         r1 = self.make_realm('1.example.com')
         r2 = self.make_realm('2.example.com')
         r3 = self.make_realm('3.example.com')
@@ -121,72 +86,58 @@ class TestCrossRealmPMs(ZulipTestCase):
         deployment.realms.add(r2)
         deployment.realms.add(r3)
 
-        user1_email = 'user1@1.example.com'
-        self.create_user(user1_email)
-        user2_email = 'user2@2.example.com'
-        self.create_user(user2_email)
-        user3_email = 'user3@2.example.com'
-        self.create_user(user3_email)
+        def assert_disallowed():
+            # type: () -> Any
+            return self.assertRaisesRegexp(
+                JsonableError,
+                'You can\'t send private messages outside of your organization.')
 
-        with self.assertRaisesRegexp(JsonableError,
-                                     'You can\'t send private messages outside of your organization.'):
+        user1_email = 'user1@1.example.com'
+        user1a_email = 'user1a@1.example.com'
+        user2_email = 'user2@2.example.com'
+        user3_email = 'user3@3.example.com'
+        cross_email = 'test-og-bot@zulip.com'
+
+        user1 = self.create_user(user1_email)
+        user1a = self.create_user(user1a_email)
+        user2 = self.create_user(user2_email)
+        self.create_user(user3_email)
+        cross_bot = self.create_user(cross_email)
+
+        """Users on the same realm can PM each other"""
+        self.send_message(user1_email, user1a_email, Recipient.PERSONAL)
+
+        messages = get_user_messages(user1a)
+        self.assertEqual(len(messages), 1)
+        self.assertEquals(messages[0].sender.pk, user1.pk)
+
+        """Users on the different realms can not PM each other"""
+        with assert_disallowed():
+            self.send_message(user1_email, user2_email, Recipient.PERSONAL)
+
+        """Users on three different realms can not PM each other"""
+        with assert_disallowed():
             self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
 
-    def test_from_zulip_realm(self):
-        # type: () -> None
         """OG Users in the zulip.com realm can PM any realm"""
-        r1 = self.make_realm('1.example.com')
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
-
-        user1_email = 'test-og-bot@zulip.com'
-        user1 = self.create_user(user1_email)
-        user2_email = 'user2@1.example.com'
-        user2 = self.create_user(user2_email)
-
-        self.send_message(user1_email, user2_email, Recipient.PERSONAL)
+        self.send_message(cross_email, user2_email, Recipient.PERSONAL)
 
         messages = get_user_messages(user2)
         self.assertEqual(len(messages), 1)
-        self.assertEquals(messages[0].sender.pk, user1.pk)
+        self.assertEquals(messages[0].sender.pk, cross_bot.pk)
 
-    def test_to_zulip_realm(self):
-        # type: () -> None
         """All users can PM users in the zulip.com realm"""
-        r1 = self.make_realm('1.example.com')
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
 
-        user1_email = 'user1@1.example.com'
-        user1 = self.create_user(user1_email)
-        user2_email = 'test-og-bot@zulip.com'
-        user2 = self.create_user(user2_email)
+        self.send_message(user1_email, cross_email, Recipient.PERSONAL)
 
-        self.send_message(user1_email, user2_email, Recipient.PERSONAL)
+        messages = get_user_messages(cross_bot)
+        self.assertEquals(messages[-1].sender.pk, user1.pk)
 
-        messages = get_user_messages(user2)
-        self.assertEqual(len(messages), 1)
-        self.assertEquals(messages[0].sender.pk, user1.pk)
+        # Users on three different realms can't PM each other,
+        # even if one of the users is a cross-realm bot.
 
-    def test_zulip_realm_can_not_join_realms(self):
-        # type: () -> None
-        """Adding a zulip.com user to a PM will not let you cross realms"""
-        r1 = self.make_realm('1.example.com')
-        r2 = self.make_realm('2.example.com')
-        deployment = Deployment.objects.filter()[0]
-        deployment.realms.add(r1)
-        deployment.realms.add(r2)
-
-        user1_email = 'user1@1.example.com'
-        self.create_user(user1_email)
-        user2_email = 'user2@2.example.com'
-        self.create_user(user2_email)
-        user3_email = 'test-og-bot@zulip.com'
-        self.create_user(user3_email)
-
-        with self.assertRaisesRegexp(JsonableError,
-                                     'You can\'t send private messages outside of your organization.'):
-            self.send_message(user1_email, [user2_email, user3_email],
+        with assert_disallowed():
+            self.send_message(user1_email, [user2_email, cross_email],
                               Recipient.PERSONAL)
 
 class PersonalMessagesTest(ZulipTestCase):
