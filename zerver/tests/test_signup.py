@@ -986,6 +986,60 @@ class UserSignUpTest(ZulipTestCase):
         mock_ldap.reset()
         mock_initialize.stop()
 
+    def test_registration_of_mirror_dummy_user(self):
+        # type: () -> None
+        username = "sipbtest"
+        password = "test"
+        domain = "mit.edu"
+        email = "sipbtest@mit.edu"
+        subdomain = "cs"
+        realm_name = "MIT"
+
+        user_profile = get_user_profile_by_email(email)
+        user_profile.is_mirror_dummy = True
+        user_profile.is_active = False
+        user_profile.save()
+
+        with patch('zerver.views.get_subdomain', return_value=subdomain):
+            result = self.client_post('/register/', {'email': email})
+
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+                "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+        # Visit the confirmation link.
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_url = confirmation_link_pattern.search(
+                    message.body).groups()[0]
+                break
+        else:
+            raise ValueError("Couldn't find a confirmation email.")
+
+        result = self.client_get(confirmation_url)
+        self.assertEquals(result.status_code, 200)
+        result = self.submit_reg_form_for_user(username,
+                                               password,
+                                               domain=domain,
+                                               realm_name=realm_name,
+                                               realm_subdomain=subdomain,
+                                               from_confirmation='1',
+                                               # Pass HTTP_HOST for the target subdomain
+                                               HTTP_HOST=subdomain + ".testserver")
+        self.assertEquals(result.status_code, 200)
+        result = self.submit_reg_form_for_user(username,
+                                               password,
+                                               domain=domain,
+                                               realm_name=realm_name,
+                                               realm_subdomain=subdomain,
+                                               # Pass HTTP_HOST for the target subdomain
+                                               HTTP_HOST=subdomain + ".testserver")
+        self.assertEquals(result.status_code, 302)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
 class DeactivateUserTest(ZulipTestCase):
 
     def test_deactivate_user(self):
