@@ -190,14 +190,11 @@ of its size, it takes work to keep it that way.
 
 * [Migrate most web routes to REST API](https://github.com/zulip/zulip/issues/611)
 * [Finish purging global variables from the Zulip JavaScript](https://github.com/zulip/zulip/issues/610)
-* <strike>[Finish deprecating and remove the pre-REST Zulip /send_message API](https://github.com/zulip/zulip/issues/730)</strike>
 * [Split Tornado subsystem into a separate Django app](https://github.com/zulip/zulip/issues/729)
-* <strike>[Clean up clutter in the root of the zulip.git repository](https://github.com/zulip/zulip/issues/707)</strike>
 * [Refactor zulip.css to be broken into components](https://github.com/zulip/zulip/issues/731)
 
 ## Deployment and upgrade process
 
-* <strike>[Support backwards-incompatible upgrades to Python libraries](https://github.com/zulip/zulip/issues/717)</strike>
 * [Minimize the downtime required in the Zulip upgrade process](https://github.com/zulip/zulip/issues/646)
 
 ## Security
@@ -212,9 +209,6 @@ of its size, it takes work to keep it that way.
 
 * [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/732)
 * [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
-* <strike>[Add Python static type-checking to Zulip using mypy](https://github.com/zulip/zulip/issues/733)</strike>
-* <strike>[Improve the runtime of Zulip's backend test suite](https://github.com/zulip/zulip/issues/441)</strike>
-* <strike>[Use caching to make Travis CI runtimes faster](https://github.com/zulip/zulip/issues/712)</strike>
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
 * <strike>[Improve Travis CI "production" test suite to catch more regressions](https://github.com/zulip/zulip/issues/598)</strike>
 
