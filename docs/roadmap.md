@@ -244,7 +244,7 @@ of its size, it takes work to keep it that way.
   to do various types of
   projects.](https://github.com/zulip/zulip/issues/676)
 
-## Integrations
+## Integrations and bots
 
 Integrations are essential to Zulip.  While we currently have a
 reasonably good framework for writing new webhook integrations for
@@ -290,12 +290,15 @@ contribute to the apps. The new [cross-platform
 app](https://github.com/zulip/zulip-electron) is implemented in
 [Electron](http://electron.atom.io/), a framework (maintained by
 GitHub) that uses Chromium and Node.js, so Zulip developers only need
-to write HTML, CSS, and JavaScript. The new Zulip app is in alpha as of
-early August 2016.
+to write HTML, CSS, and JavaScript. The new Zulip app is in alpha as
+of early November 2016.
 
 * Migrate platform from QT/webkit to Electron
-* Desktop app doesn't recover well from entering the wrong Zulip server
-* [Support having multiple Zulip realms open simultaneously](https://github.com/zulip/zulip-electron/issues/1)
+* Finish releasing the Electron app to replace the old desktop app
+* Desktop app doesn't recover well from entering the wrong Zulip
+  server
+* [Support having multiple Zulip realms open
+  simultaneously](https://github.com/zulip/zulip-electron/issues/1)
 * Build an efficient process for testing and releasing new versions of
   the desktop apps
 
