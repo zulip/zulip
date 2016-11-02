@@ -32,7 +32,9 @@ os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "..
 usage = """%prog [options]
     test-js-with-casper # Run all test files
     test-js-with-casper 09-navigation.js # Run a single test file
-    test-js-with-casper 01-login.js 03-narrow.js # Run a few test files"""
+    test-js-with-casper 09 # Run a single test file 09-navigation.js
+    test-js-with-casper 01-login.js 03-narrow.js # Run a few test files
+    test-js-with-casper 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
 parser = optparse.OptionParser(usage)
 
 parser.add_option('--force', dest='force',
@@ -93,6 +95,10 @@ def run_tests(realms_have_subdomains, files):
     test_dir = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests')
     test_files = []
     for file in files:
+        for file_name in os.listdir(test_dir):
+            if file_name.startswith(file):
+                file = file_name
+                break
         if not os.path.exists(file):
             file = os.path.join(test_dir, file)
         test_files.append(os.path.abspath(file))
