@@ -73,22 +73,13 @@ experience that will benefit all users.
 This category focuses on issues users experience when installing a new
 Zulip server or setting up a new Zulip realm.
 
-* <strike>[Create a web flow for setting up a new realm / the first realm on a new server (currently, it's a command-line process)](https://github.com/zulip/zulip/issues/260)</strike>
 * [Document or better script solution to rabbitmq startup issues](https://github.com/zulip/zulip/issues/465)
+
+## Production installation issues
+
 * [Add a mechanism for deleting early test messages](https://github.com/zulip/zulip/issues/135)
 * [Merge a supported way to use Zulip in Docker in production
   implementation](https://github.com/zulip/zulip/pull/450).
-
-## Internationalization
-
-The core Zulip UI has been mostly translated into 5 languages;
-however, more work is required to make those translations actually
-displayed in the Zulip UI for the users who would benefit from them.
-
-* <strike>[Merge support for using translations in Django templates](https://github.com/zulip/zulip/pull/607)</strike>
-* <strike>[Add text in handlebars templates to translatable string database](https://github.com/zulip/zulip/issues/726)</strike>
-* <strike>[Merge support for translating text in handlebars](https://github.com/zulip/zulip/issues/726)</strike>
-* <strike>[Add text in error messages to translatable strings](https://github.com/zulip/zulip/issues/727)</strike>
 
 ## User Experience at scale
 
