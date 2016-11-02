@@ -39,7 +39,7 @@ Zulip](https://github.com/zulip/zulip#how-to-get-involved-with-contributing-to-z
 We occasionally update this roadmap by adding strikethrough for issues
 that have been resolved.
 
-Without further ado, below is the Zulip 2016 roadmap.
+Without further ado, below is the Zulip roadmap for late 2016.
 
 ## Burning problems
 
