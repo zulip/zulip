@@ -389,8 +389,9 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(self, username, password, domain="zulip.com",
                                  realm_name=None, realm_subdomain=None,
-                                 realm_org_type=Realm.COMMUNITY, **kwargs):
-        # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], int, **Any) -> HttpResponse
+                                 realm_org_type=Realm.COMMUNITY,
+                                 from_confirmation='', **kwargs):
+        # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], int, Optional[text_type], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -405,7 +406,8 @@ class ZulipTestCase(TestCase):
                                  'realm_subdomain': realm_subdomain,
                                  'key': find_key_by_email(username + '@' + domain),
                                  'realm_org_type': realm_org_type,
-                                 'terms': True},
+                                 'terms': True,
+                                 'from_confirmation': from_confirmation},
                                 **kwargs)
 
     def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
