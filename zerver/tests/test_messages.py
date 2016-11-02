@@ -95,6 +95,7 @@ class TestCrossRealmPMs(ZulipTestCase):
                 JsonableError,
                 'You can\'t send private messages outside of your organization.')
 
+        random_zulip_email = 'random@zulip.com'
         user1_email = 'user1@1.example.com'
         user1a_email = 'user1a@1.example.com'
         user2_email = 'user2@2.example.com'
@@ -107,6 +108,7 @@ class TestCrossRealmPMs(ZulipTestCase):
             support_email,
         ]
 
+        self.create_user(random_zulip_email)
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
@@ -151,6 +153,10 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Users on the different realms can not PM each other
         with assert_disallowed():
             self.send_message(user1_email, user2_email, Recipient.PERSONAL)
+
+        # Users on non-zulip realms can't PM "ordinary" Zulip users
+        with assert_disallowed():
+            self.send_message(user1_email, random_zulip_email, Recipient.PERSONAL)
 
         # Users on three different realms can not PM each other
         with assert_disallowed():
