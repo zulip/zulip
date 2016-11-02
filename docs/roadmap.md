@@ -167,12 +167,21 @@ message sending is speedy).
 
 Zulip should be making use of the best Python/Django tools available.
 
-* [Add support for Zulip running on Python 3](https://github.com/zulip/zulip/issues/256)
-* [Add support for changing users' email addresses](https://github.com/zulip/zulip/issues/734)
-* [Automatic thumbnailing of uploaded images](https://github.com/zulip/zulip/issues/432)
+* [Add support for Zulip running purely on Python
+  3](https://github.com/zulip/zulip/issues/256)
+* [Automatic thumbnailing of uploaded images' previews to save
+  bandwidth](https://github.com/zulip/zulip/issues/432)
 * [Upgrade Zulip to use Django 1.10 once it is released.  The patches
   needed to run Zulip were merged into mainline Django in Django 1.10,
-  so this will mean we don't need to use a fork of Django anymore.](https://github.com/zulip/zulip/issues/3)
+  so this will mean we don't need to use a fork of Django
+  anymore.](https://github.com/zulip/zulip/issues/3)
+* [Upgrade and remove from codebase all of our vendored JS
+  libraries](https://github.com/zulip/zulip/issues/1709)
+
+### Nice to have
+
+* [Add support for changing users' email
+  addresses](https://github.com/zulip/zulip/issues/734)
 
 ## Technical Debt
 
