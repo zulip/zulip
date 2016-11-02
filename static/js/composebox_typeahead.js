@@ -228,8 +228,7 @@ exports.compose_content_begins_typeahead = function (query) {
         return false;
     }
 
-    var last_at = q.lastIndexOf('@');
-    current_token = q.substring(last_at + 1);
+    current_token = q.substring(q.lastIndexOf('@') + 1);
     if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
         return false;
     }
