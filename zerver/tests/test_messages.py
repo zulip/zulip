@@ -86,6 +86,11 @@ class TestCrossRealmPMs(ZulipTestCase):
         deployment.realms.add(r2)
         deployment.realms.add(r3)
 
+        def assert_message_received(to_user, from_user):
+            # type: (UserProfile, UserProfile) -> None
+            messages = get_user_messages(to_user)
+            self.assertEquals(messages[-1].sender.pk, from_user.pk)
+
         def assert_disallowed():
             # type: () -> Any
             return self.assertRaisesRegexp(
@@ -106,24 +111,16 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         """Users on the same realm can PM each other"""
         self.send_message(user1_email, user1a_email, Recipient.PERSONAL)
-
-        messages = get_user_messages(user1a)
-        self.assertEqual(len(messages), 1)
-        self.assertEquals(messages[0].sender.pk, user1.pk)
+        assert_message_received(user1a, user1)
 
         """OG Users in the zulip.com realm can PM any realm"""
         self.send_message(cross_email, user2_email, Recipient.PERSONAL)
-
-        messages = get_user_messages(user2)
-        self.assertEqual(len(messages), 1)
-        self.assertEquals(messages[0].sender.pk, cross_bot.pk)
+        assert_message_received(user2, cross_bot)
 
         """All users can PM users in the zulip.com realm"""
 
         self.send_message(user1_email, cross_email, Recipient.PERSONAL)
-
-        messages = get_user_messages(cross_bot)
-        self.assertEquals(messages[-1].sender.pk, user1.pk)
+        assert_message_received(cross_bot, user1)
 
         # Users on three different realms can't PM each other,
         # even if one of the users is a cross-realm bot.
