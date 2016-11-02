@@ -529,6 +529,52 @@ casper.waitUntilVisible('#admin-realm-default-language-status', function () {
     casper.test.assertSelectorHasText('#admin-realm-default-language-status', 'Default language changed!');
 });
 
+// Test authentication methods setting
+casper.waitForSelector('input[type="checkbox"]', function () {
+    casper.click(".method_row[data-method='Email'] input[type='checkbox']");
+    casper.click('form.admin-realm-form input.button');
+});
+
+// Test setting was activated--default is checked
+casper.then(function () {
+    // Scroll to bottom so that casper snapshots show the auth methods table
+    this.scrollToBottom();
+    // Test setting was activated
+    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
+        casper.test.assertEval(function () {
+            return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
+        });
+    });
+});
+
+casper.then(function () {
+    // Leave the page and return
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#subscriptions"]');
+    casper.click('#settings-dropdown');
+    casper.click('a[href^="#administration"]');
+
+    casper.waitForSelector(".method_row[data-method='Email'] input[type='checkbox']", function () {
+        // Test Setting was saved
+        casper.test.assertEval(function () {
+            return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
+        });
+    });
+});
+
+// Deactivate setting--default is checked
+casper.then(function () {
+    casper.click(".method_row[data-method='Email'] input[type='checkbox']");
+    casper.click('form.admin-realm-form input.button');
+    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
+        casper.test.assertEval(function () {
+            return document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked;
+        });
+    });
+});
+
 common.then_log_out();
 
 casper.run(function () {

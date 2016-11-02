@@ -216,6 +216,26 @@ function render(template_name, args) {
     assert.equal(count.text(), 99);
 }());
 
+(function admin_auth_methods_list() {
+    var args = {
+        method: {
+            "method": "Email",
+            "enabled": false
+        }
+    };
+
+    var html = '';
+    html += '<tbody id="admin_auth_methods_table">';
+    html += render('admin_auth_methods_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_auth_methods_list.handlebars', html);
+
+    var method = $(html).find('tr.method_row:first span.method');
+    assert.equal(method.text(), 'Email');
+    assert.equal(method.is("checked"), false);
+}());
+
 (function bookend() {
     // Do subscribed/unsubscribed cases here.
     var args = {
