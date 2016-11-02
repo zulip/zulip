@@ -293,14 +293,14 @@ GitHub) that uses Chromium and Node.js, so Zulip developers only need
 to write HTML, CSS, and JavaScript. The new Zulip app is in alpha as
 of early November 2016.
 
-* Migrate platform from QT/webkit to Electron
 * Finish releasing the Electron app to replace the old desktop app
-* Desktop app doesn't recover well from entering the wrong Zulip
-  server
 * [Support having multiple Zulip realms open
   simultaneously](https://github.com/zulip/zulip-electron/issues/1)
-* Build an efficient process for testing and releasing new versions of
-  the desktop apps
+
+### Nice to have
+
+* [Build an efficient process for testing and releasing new versions of
+  the desktop apps](https://github.com/zulip/zulip-electron/issues/82)
 
 ## Community
 
