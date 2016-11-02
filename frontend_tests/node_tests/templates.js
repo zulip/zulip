@@ -91,7 +91,7 @@ var partial_finder = (function () {
                 // this uses String.prototype.replace which is kind of hacky but
                 // it is the only JS function IIRC that allows you to match all
                 // instances of a pattern AND return capture groups.
-                template.replace(/{{\s*partial\s*"(.+?)"/ig, function (match, $1) {
+                template.replace(/\{\{\s*partial\s*"(.+?)"/ig, function (match, $1) {
                     __prototype__($1, callback);
                 });
             }
