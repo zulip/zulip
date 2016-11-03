@@ -101,9 +101,12 @@ exports.sorter = function (query, objs, get_item) {
 };
 
 exports.compare_by_pms = function (user_a, user_b) {
-    if (user_a.pm_recipient_count > user_b.pm_recipient_count) {
+    var count_a = people.get_recipient_count(user_a);
+    var count_b = people.get_recipient_count(user_b);
+
+    if (count_a > count_b) {
         return -1;
-    } else if (user_a.pm_recipient_count < user_b.pm_recipient_count) {
+    } else if (count_a < count_b) {
         return 1;
     }
 
