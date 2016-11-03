@@ -128,19 +128,15 @@ function add_message_metadata(message) {
 
     // Add new people involved in this message to the people list
     _.each(involved_people, function (person) {
-        // Do the hasOwnProperty() call via the prototype to avoid problems
-        // with keys like "hasOwnProperty"
-        if (! people.get_by_email(person.email)) {
-            people.add(person);
-        }
+        if (!person.unknown_local_echo_user) {
+            if (! people.get_by_email(person.email)) {
+                people.add(person);
+            }
 
-        if (people.get_by_email(person.email).full_name !== person.full_name) {
-            people.reify(person);
-        }
-
-        if (message.type === 'private' && message.sent_by_me) {
-            // Track the number of PMs we've sent to this person to improve autocomplete
-            people.incr_recipient_count(person.email);
+            if (message.type === 'private' && message.sent_by_me) {
+                // Track the number of PMs we've sent to this person to improve autocomplete
+                people.incr_recipient_count(person.email);
+            }
         }
     });
 

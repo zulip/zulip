@@ -151,10 +151,14 @@ function insert_local_message(message_request, local_id) {
         message.display_recipient = _.map(emails, function (email) {
             email = email.trim();
             var person = people.get_by_email(email);
-            if (person !== undefined) {
+            if (person === undefined) {
+                // For unknown users, we return a skeleton object.
+                return {email: email, full_name: email,
+                        unknown_local_echo_user: true};
+            } else {
+                // NORMAL PATH
                 return person;
             }
-            return {email: email, full_name: email, skeleton: true};
         });
     }
 
@@ -231,22 +235,6 @@ exports.process_from_server = function process_from_server(messages) {
                 client_message.content = message.content;
                 updated = true;
                 compose.mark_rendered_content_disparity(message.id, true);
-            }
-            // If a PM was sent to an out-of-realm address,
-            // we didn't have the full person object originally,
-            // so we might have to update the recipient bar and
-            // internal data structures
-            if (client_message.type === 'private') {
-                var reply_to = message_store.get_private_message_recipient(message, 'full_name', 'email');
-                if (client_message.display_reply_to !== reply_to) {
-                    client_message.display_reply_to = reply_to;
-                    _.each(message.display_recipient, function (person) {
-                        if (people.get_by_email(person.email).full_name !== person.full_name) {
-                            people.reify(person);
-                        }
-                    });
-                    updated = true;
-                }
             }
             msgs_to_rerender.push(client_message);
             locally_processed_ids.push(client_message.id);
