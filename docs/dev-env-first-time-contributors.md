@@ -21,7 +21,7 @@ If you encounter errors installing the Zulip development environment,
 check [Troubleshooting & Common
 Errors](#troubleshooting-common-errors). If that doesn't help, please
 visit [the `provision` stream in the Zulip developers'
-chat](https://zulip.tabbott.net/#narrow/stream/provision) for realtime
+chat](https://chat.zulip.org/#narrow/stream/provision) for realtime
 help, or send a note to the [Zulip-devel Google
 group](https://groups.google.com/forum/#!forum/zulip-devel) or [file
 an issue](https://github.com/zulip/zulip/issues).
@@ -249,7 +249,7 @@ processes. (See [Specifying a
 proxy](brief-install-vagrant-dev.html#specifying-a-proxy) if you need
 a proxy to access the internet.) And if you're running into any
 problems, please come chat with us [in the `provision` stream of our
-developers' chat](https://zulip.tabbott.net/#narrow/stream/provision).
+developers' chat](https://chat.zulip.org/#narrow/stream/provision).
 
 Once `vagrant up` has completed, connect to the dev environment with `vagrant
 ssh`:

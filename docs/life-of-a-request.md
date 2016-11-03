@@ -120,7 +120,7 @@ identifier, the user's email.
 The OPTIONS method will yield the allowed methods.
 
 This request:
-`OPTIONS https://zulip.tabbott.net/api/v1/users`
+`OPTIONS https://chat.zulip.org/api/v1/users`
 yields a response with this HTTP header:
 `Allow: PUT, GET`
 

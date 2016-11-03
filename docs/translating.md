@@ -11,7 +11,7 @@ translating Zulip would be greatly appreciated!
 
 If you're interested in contributing translations to Zulip, please
 [join the "translation" stream in our developers' Zulip
-chat](https://zulip.tabbott.net/#narrow/stream/translation), and say
+chat](https://chat.zulip.org/#narrow/stream/translation), and say
 hello. And please join the [Zulip project on
 Transifex](https://www.transifex.com/zulip/zulip/) and ask to join any
 languages you'd like to contribute to (or add new ones).  Transifex's
