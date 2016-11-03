@@ -305,7 +305,6 @@ class Application(web.Application):
     def __init__(self):
         # type: () -> None
         handlers = [
-            (r"/sockjs/.*/websocket$", TornadoHandler),
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
             (r"/webpack.*", WebPackHandler),
