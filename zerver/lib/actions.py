@@ -35,7 +35,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications
+    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications, \
+    Reaction
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
@@ -905,6 +906,30 @@ def do_send_messages(messages):
     # mirror single zephyr messages at a time and don't otherwise
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
+
+def do_add_reaction(user_profile, message, emoji_name):
+    # type: (UserProfile, Message, text_type) -> None
+    reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
+    reaction.save()
+
+    user_dict = {'user_id': user_profile.id,
+                 'email': user_profile.email,
+                 'full_name': user_profile.full_name}
+
+    event = {'type': 'reaction',
+             'op': 'add',
+             'user': user_dict,
+             'message_id': message.id,
+             'emoji_name': emoji_name} # type: Dict[str, Any]
+
+    # Recipients for message update events, including reactions, are
+    # everyone who got the original message.  This means reactions
+    # won't live-update in preview narrows, but it's the right
+    # performance tradeoff, since otherwise we'd need to send all
+    # reactions to public stream messages to every browser for every
+    # client in the organization, which doesn't scale.
+    ums = UserMessage.objects.filter(message=message.id)
+    send_event(event, [um.user_profile.id for um in ums])
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
