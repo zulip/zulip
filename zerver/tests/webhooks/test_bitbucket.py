@@ -127,7 +127,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_updated_event(self):
         # type: () -> None
-        expected_message = u"kolaszek updated [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3)\n\n~~~ quote\nComment1\n~~~"
+        expected_message = u"kolaszek updated a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3)\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:comment_updated'
         }
@@ -135,7 +135,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_pull_request_comment_deleted_event(self):
         # type: () -> None
-        expected_message = u"kolaszek deleted [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3)\n\n~~~ quote\nComment1\n~~~"
+        expected_message = u"kolaszek deleted a [comment](https://bitbucket.org/kolaszek/repository-name/pull-requests/3/_/diff#comment-20576503) on [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/3)\n\n~~~ quote\nComment1\n~~~"
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:comment_deleted'
         }
