@@ -45,7 +45,7 @@ def test_nagios(nagios_logfile):
         os.path.join(PUPPET_DIR,
                      'zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time'),
         '--nagios',
-        '--site=127.0.0.1:9991',
+        '--site=http://127.0.0.1:9991',
     ]
     result = subprocess.check_output(args, env=my_env, universal_newlines=True,
                                      stderr=nagios_logfile)
