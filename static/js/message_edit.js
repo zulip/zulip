@@ -258,6 +258,10 @@ function edit_message (row, raw_content) {
         row.find(".message_edit_cancel").focus();
     } else {
         message_edit_content.focus();
+        // Put cursor at end of input.
+        var contents = message_edit_content.val();
+        message_edit_content.val('');
+        message_edit_content.val(contents);
     }
 
     // Scroll to keep the message content in the same place
