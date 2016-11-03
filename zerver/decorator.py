@@ -124,8 +124,10 @@ def get_client_name(request, is_json_view):
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
-    if 'client' in request.REQUEST:
-        return request.REQUEST['client']
+    if 'client' in request.GET:
+        return request.GET['client']
+    elif 'client' in request.POST:
+        return request.POST['client']
     elif "HTTP_USER_AGENT" in request.META:
         user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
         # We could check for a browser's name being "Mozilla", but

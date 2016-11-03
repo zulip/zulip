@@ -129,7 +129,9 @@ def has_request_variables(view_func):
 
             default_assigned = False
             try:
-                val = request.REQUEST[param.post_var_name]
+                query_params = request.GET.copy()
+                query_params.update(request.POST)
+                val = query_params[param.post_var_name]
             except KeyError:
                 if param.default is REQ.NotSpecified:
                     raise RequestVariableMissingError(param.post_var_name)

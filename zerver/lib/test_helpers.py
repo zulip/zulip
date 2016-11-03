@@ -199,7 +199,8 @@ class POSTRequestMock(object):
 
     def __init__(self, post_data, user_profile):
         # type: (Dict[str, Any], UserProfile) -> None
-        self.REQUEST = self.POST = post_data
+        self.GET = {}  # type: Dict[str, Any]
+        self.POST = post_data
         self.user = user_profile
         self._tornado_handler = DummyHandler()
         self._log_data = {} # type: Dict[str, Any]

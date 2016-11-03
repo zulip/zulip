@@ -34,12 +34,14 @@ import ujson
 class DecoratorTestCase(TestCase):
     def test_get_client_name(self):
         class Request(object):
-            def __init__(self, REQUEST, META):
-                self.REQUEST = REQUEST
+            def __init__(self, GET, POST, META):
+                self.GET = GET
+                self.POST = POST
                 self.META = META
 
         req = Request(
-            REQUEST=dict(),
+            GET=dict(),
+            POST=dict(),
             META=dict(),
             )
 
@@ -47,7 +49,8 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(get_client_name(req, is_json_view=False), 'Unspecified')
 
         req = Request(
-            REQUEST=dict(),
+            GET=dict(),
+            POST=dict(),
             META=dict(HTTP_USER_AGENT='Mozilla/bla bla bla'),
             )
 
@@ -56,7 +59,8 @@ class DecoratorTestCase(TestCase):
 
 
         req = Request(
-            REQUEST=dict(),
+            GET=dict(),
+            POST=dict(),
             META=dict(HTTP_USER_AGENT='ZulipDesktop/bla bla bla'),
             )
 
@@ -64,7 +68,8 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(get_client_name(req, is_json_view=False), 'ZulipDesktop')
 
         req = Request(
-            REQUEST=dict(client='fancy phone'),
+            GET=dict(client='fancy phone'),
+            POST=dict(),
             META=dict(),
             )
 
@@ -87,24 +92,25 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request(object):
-            REQUEST = {} # type: Dict[str, str]
+            GET = {}  # type: Dict[str, str]
+            POST = {}  # type: Dict[str, str]
 
         request = Request()
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)
 
-        request.REQUEST['numbers'] = 'bad_value'
+        request.POST['numbers'] = 'bad_value'
         with self.assertRaises(RequestVariableConversionError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
 
-        request.REQUEST['numbers'] = ujson.dumps([2, 3, 5, 8, 13, 21])
+        request.POST['numbers'] = ujson.dumps([2, 3, 5, 8, 13, 21])
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), "13 is an unlucky number!")
 
-        request.REQUEST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
+        request.POST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
         result = get_total(request)
         self.assertEqual(result, 21)
 
@@ -115,24 +121,25 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request(object):
-            REQUEST = {} # type: Dict[str, str]
+            GET = {} # type: Dict[str, str]
+            POST = {} # type: Dict[str, str]
 
         request = Request()
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)
 
-        request.REQUEST['numbers'] = 'bad_value'
+        request.POST['numbers'] = 'bad_value'
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), 'argument "numbers" is not valid json.')
 
-        request.REQUEST['numbers'] = ujson.dumps([1, 2, "what?", 4, 5, 6])
+        request.POST['numbers'] = ujson.dumps([1, 2, "what?", 4, 5, 6])
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
         self.assertEqual(str(cm.exception), 'numbers[2] is not an integer')
 
-        request.REQUEST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
+        request.POST['numbers'] = ujson.dumps([1, 2, 3, 4, 5, 6])
         result = get_total(request)
         self.assertEqual(result, 21)
 
@@ -168,7 +175,8 @@ class DecoratorTestCase(TestCase):
             return user_profile.email
 
         class Request(HostRequestMock):
-            REQUEST = {} # type: Dict[str, str]
+            GET = {} # type: Dict[str, str]
+            POST = {} # type: Dict[str, str]
             COOKIES = {}
             META = {'PATH_INFO': ''}
 
@@ -179,12 +187,12 @@ class DecoratorTestCase(TestCase):
         request = Request()
         request.host = settings.EXTERNAL_HOST
 
-        request.REQUEST['api_key'] = 'not_existing_api_key'
+        request.POST['api_key'] = 'not_existing_api_key'
         with self.assertRaisesRegexp(JsonableError, "Invalid API key"):
             my_webhook(request)
 
         # Start a valid request here
-        request.REQUEST['api_key'] = webhook_bot_api_key
+        request.POST['api_key'] = webhook_bot_api_key
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
