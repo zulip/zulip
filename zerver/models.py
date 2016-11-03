@@ -1011,6 +1011,11 @@ def get_context_for_message(message):
 
 post_save.connect(flush_message, sender=Message)
 
+class Reaction(ModelReprMixin, models.Model):
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+    message = models.ForeignKey(Message) # type: Message
+    emoji_name = models.TextField() # type: text_type
+
 # Whenever a message is sent, for each user current subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
 # table, which has has columns (id, user profile id, message id,
