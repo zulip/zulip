@@ -249,30 +249,27 @@ function edit_message (row, raw_content) {
         }, 1000);
     }
 
-    var edit_row = row.find(".message_edit");
     if (!is_editable) {
-        edit_row.find(".message_edit_close").focus();
+        row.find(".message_edit_close").focus();
     } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
-        edit_row.find(".message_edit_topic").val('');
-        edit_row.find(".message_edit_topic").focus();
+        message_edit_topic.val('');
+        message_edit_topic.focus();
     } else if (editability === editability_types.TOPIC_ONLY) {
-        edit_row.find(".message_edit_cancel").focus();
+        row.find(".message_edit_cancel").focus();
     } else {
-        edit_row.find(".message_edit_content").focus();
+        message_edit_content.focus();
     }
 
     // Scroll to keep the message content in the same place
-    var edit_top = edit_row.find('.message_edit_content')[0]
-        .getBoundingClientRect().top;
+    var edit_top = message_edit_content[0].getBoundingClientRect().top;
     var scroll_by = edit_top - content_top + 5 /* border and padding */;
     edit_obj.scrolled_by = scroll_by;
     viewport.scrollTop(viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
-        var topic_input = edit_row.find(".message_edit_topic");
         var original_topic = message.subject;
-        topic_input.keyup( function () {
-            var new_topic = topic_input.val();
+        message_edit_topic.keyup( function () {
+            var new_topic = message_edit_topic.val();
             message_edit_topic_propagate.toggle(new_topic !== original_topic && new_topic !== "");
         });
     }
