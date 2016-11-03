@@ -777,7 +777,6 @@ class UserSignUpTest(ZulipTestCase):
         realm.save()
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            # Create new realm with the email
             with patch('zerver.views.get_subdomain', return_value=subdomain):
                 result = self.client_post('/register/', {'email': email})
 
@@ -871,9 +870,7 @@ class UserSignUpTest(ZulipTestCase):
         realm.invite_required = False
         realm.save()
 
-        # Create new realm with the email
-        with patch('zerver.views.get_subdomain', return_value=subdomain):
-            result = self.client_post('/register/zulip.com/', {'email': email})
+        result = self.client_post('/register/zulip.com/', {'email': email})
 
         self.assertEquals(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
