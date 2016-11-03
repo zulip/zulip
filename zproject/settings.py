@@ -279,7 +279,7 @@ TEMPLATES = [
             'context_processors': [
                 'zerver.context_processors.add_settings',
                 'zerver.context_processors.add_metrics',
-                'django.core.context_processors.i18n',
+                'django.template.context_processors.i18n',
             ],
         },
     },
