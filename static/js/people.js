@@ -129,35 +129,6 @@ exports.remove = function remove(person) {
     realm_people_dict.del(person.email);
 };
 
-exports.reify = function reify(person) {
-    // If a locally sent message is a PM to
-    // an out-of-realm recipient, a people_dict
-    // entry is created with simply an email address
-    // Once we've received the full person object, replace
-    // it
-    if (! people_dict.has(person.email)) {
-        return;
-    }
-
-    var old_person = people_dict.get(person.email);
-
-    // Only overwrite skeleton objects here.  If the object
-    // had already been reified, exit early.
-    if (!old_person.skeleton) {
-        return;
-    }
-
-    var new_person = _.extend({}, old_person, person);
-    new_person.skeleton = false;
-
-    people_dict.set(person.email, person);
-    people_by_name_dict.set(person.full_name, person);
-
-    if (people_by_name_dict.has(person.email)) {
-        people_by_name_dict.del(person.email);
-    }
-};
-
 exports.update = function update(person) {
     if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",
