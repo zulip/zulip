@@ -846,7 +846,7 @@ function validate_private_message() {
             if (people.realm_get(email) !== undefined) {
                 return;
             }
-            if (util.string_in_list_case_insensitive(email, page_params.cross_realm_user_emails)) {
+            if (people.is_cross_realm_email(email)) {
                 return;
             }
             invalid_recipients.push(email);

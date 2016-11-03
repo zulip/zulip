@@ -74,6 +74,8 @@ class TestCrossRealmPMs(ZulipTestCase):
         self.register(username, 'test', domain=domain)
         return get_user_profile_by_email(email)
 
+    @ZulipTestCase.settings(CROSS_REALM_BOT_EMAILS=['feedback_email@zulip.com',
+                                                    'support@3.example.com'])
     def test_realm_scenarios(self):
         # type: () -> None
         r1 = self.make_realm('1.example.com')
@@ -103,17 +105,12 @@ class TestCrossRealmPMs(ZulipTestCase):
         feedback_email = 'feedback@zulip.com'
         support_email = 'support@3.example.com' # note: not zulip.com
 
-        settings.CROSS_REALM_BOT_EMAILS = [
-            feedback_email,
-            support_email,
-        ]
-
         self.create_user(random_zulip_email)
         user1 = self.create_user(user1_email)
         user1a = self.create_user(user1a_email)
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
-        feedback_bot = self.create_user(feedback_email)
+        feedback_bot = get_user_profile_by_email(feedback_email)
         support_bot = self.create_user(support_email)
 
         # Users can PM themselves

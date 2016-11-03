@@ -1089,7 +1089,7 @@ def get_prereg_user_by_email(email):
     # invite.
     return PreregistrationUser.objects.filter(email__iexact=email.strip()).latest("invited_at")
 
-def get_cross_realm_users():
+def get_cross_realm_emails():
     # type: () -> Set[text_type]
     return set(settings.CROSS_REALM_BOT_EMAILS)
 
