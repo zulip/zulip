@@ -213,6 +213,7 @@ def build_custom_checkers(by_lang):
         {'pattern': "'.*'%\([a-z_].*\)?$",
          'exclude': set(['tools/lint-all',
                          'analytics/lib/counts.py',
+                         'analytics/tests/test_counts.py',
                          ]),
          'exclude_line': set([
              ('zerver/views/users.py',
