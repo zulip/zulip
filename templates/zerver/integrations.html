@@ -1473,9 +1473,11 @@ key = NAGIOS_BOT_API_KEY
         <code>/usr/local/share/zulip/integrations/perforce</code></li>
 
         <li>Open <code>integrations/perforce/zulip_perforce_config.py</code> in
-        your favorite editor and change the <code>ZULIP_USER</code> and
+        your favorite editor, change the <code>ZULIP_USER</code> and
         <code>ZULIP_API_KEY</code> variables at the top of the file to the
         credentials for the bot you'd like to use for this integration.</li>
+
+        <li>You should also change <code>ZULIP_SITE</code> to {{ external_api_path_subdomain }}</li>
 
         <li>Edit your
         <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html#d0e14583">trigger table</a>
