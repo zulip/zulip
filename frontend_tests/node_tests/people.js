@@ -143,6 +143,14 @@ var _ = global._;
     people.remove(bob);
 }());
 
+(function test_recipient_counts() {
+    var email = 'anybody@example.com';
+    assert.equal(people.get_recipient_count({email: email}), 0);
+    people.incr_recipient_count(email);
+    people.incr_recipient_count(email);
+    assert.equal(people.get_recipient_count({email: email}), 2);
+}());
+
 (function test_filtered_users() {
      var charles = {
         email: 'charles@example.com',

@@ -140,7 +140,7 @@ function add_message_metadata(message) {
 
         if (message.type === 'private' && message.sent_by_me) {
             // Track the number of PMs we've sent to this person to improve autocomplete
-            people.get_by_email(person.email).pm_recipient_count += 1;
+            people.incr_recipient_count(person.email);
         }
     });
 

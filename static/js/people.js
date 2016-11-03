@@ -9,6 +9,7 @@ var people_by_name_dict = new Dict({fold_case: true});
 // People in this realm
 var realm_people_dict = new Dict({fold_case: true});
 var cross_realm_dict = new Dict({fold_case: true});
+var pm_recipient_count_dict = new Dict({fold_case: true});
 
 exports.get_by_email = function get_by_email(email) {
     return people_dict.get(email);
@@ -28,6 +29,24 @@ exports.get_realm_persons = function () {
 
 exports.is_cross_realm_email = function (email) {
     return cross_realm_dict.has(email);
+};
+
+exports.get_recipient_count = function (person) {
+    // We can have fake person objects like the "all"
+    // pseudo-person in at-mentions.  They will have
+    // the pm_recipient_count on the object itself.
+    if (person.pm_recipient_count) {
+        return person.pm_recipient_count;
+    }
+
+    var count = pm_recipient_count_dict.get(person.email);
+
+    return count || 0;
+};
+
+exports.incr_recipient_count = function (email) {
+    var old_count = pm_recipient_count_dict.get(email) || 0;
+    pm_recipient_count_dict.set(email, old_count + 1);
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
@@ -97,7 +116,6 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
 exports.add = function add(person) {
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
-    person.pm_recipient_count = 0;
 };
 
 exports.add_in_realm = function add_in_realm(person) {
