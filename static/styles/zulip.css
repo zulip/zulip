@@ -1702,6 +1702,44 @@ blockquote p {
     z-index: 5;
 }
 
+nav .column-left {
+    text-align: center;
+}
+
+nav a.no-style:hover {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+nav .column-left .nav-logo {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 8px;
+    width: 25px;
+    height: 25px;
+    background-image: url(../images/logo/zulip-icon-128x128.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+nav .column-left .company-name {
+    display: inline-block;
+    vertical-align: top;
+    text-transform: uppercase;
+    margin-top: 12px;
+    margin-left: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #52c2af;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+}
+
+nav a .no-style {
+    text-decoration: none;
+}
+
 .navbar-search {
     margin-top: 0px;
     width: auto;
