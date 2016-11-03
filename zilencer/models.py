@@ -1,11 +1,13 @@
 from django.db import models
 from django.db.models import Manager
-from typing import Text
+from typing import Text, Optional
+from six import text_type
 
 import zerver.models
+import datetime
 
 def get_remote_server_by_uuid(uuid):
-    # type: (text_type) -> RemoteZulipServer 
+    # type: (text_type) -> RemoteZulipServer
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):
@@ -54,5 +56,5 @@ class Deployment(models.Model):
         # TODO: This only does the right thing for prod because prod authenticates to
         # staging with the zulip.com deployment key, while staging is technically the
         # deployment for the zulip.com realm.
-        # This also doesn't necessarily handle other multi-realm deployments correctly.
+        # This also doesn't necessarily handle other multi-realm deployments correctly
         return self.realms.order_by('pk')[0].domain

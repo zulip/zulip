@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+import requests
+import json
+
 from typing import Optional
 
 from django.conf import settings
@@ -30,11 +33,17 @@ def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=Non
     if not created:
         token.last_updated = now()
         token.save(update_fields=['last_updated'])
+  
+    # If we're sending things to the push notification bouncer
+    # register this user with them here
+    if settings.PUSH_NOTIFICATION_BOUNCER_URL != '':
+      return send_to_push_bouncer(user_profile, token_str, kind, ios_app_id)
 
-    # register user with push.zulip.org
-    # send secret, UUID, user_id & token
+    return json_success()
+
+def send_to_push_bouncer(user_profile, token_str, kind, ios_app_id=None):
+  # type: (UserProfile, text_type, int, text_type) -> HTTPResponse
     post_data = {
-      'api_key' : settings.ZULIP_ORG_KEY,
       'server_uuid': settings.ZULIP_ORG_ID,
       'user_id': user_profile.id,
       'token': token_str,
@@ -44,7 +53,7 @@ def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=Non
     if kind == PushDeviceToken.APNS:
       post_data['ios_app_id'] = ios_app_id
 
-    api_auth=request.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
+    api_auth=requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID, settings.ZULIP_ORG_KEY)
     # todo: what to do about verify & cert
     # todo: user agent ?
     res = requests.post(settings.PUSH_NOTIFICATION_BOUNCER_URL,
@@ -52,13 +61,12 @@ def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=Non
       auth=api_auth,
       timeout=30,
       headers={"User-agent":"todo", "X-Zulip-Install-ID" : settings.ZULIP_ORG_ID})
-    
-    #todo: much better error handling/ should we retry?
+
+    # todo: much better error handling/ should we retry?
     if res.status_code >= 500:
-      return json_error("Fatal error received from Zulip.org bouncer")
+        return json_error(_("Fatal error received from Zulip.org bouncer"))
     elif res.status_code >= 400:
-      return json_error("Error received from Zulip.org bouncer")
-      
+        return json_error(_("Error received from Zulip.org notification bouncer"))
     return json_success()
 
 @has_request_variables
@@ -81,6 +89,8 @@ def remove_push_device_token(request, user_profile, token_str, kind):
         token.delete()
     except PushDeviceToken.DoesNotExist:
         return json_error(_("Token does not exist"))
+
+    # todo: remove token from bouncer as well
 
     return json_success()
 

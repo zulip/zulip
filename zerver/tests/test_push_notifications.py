@@ -40,6 +40,82 @@ class MockRedis(object):
         # type: (Any, Any) -> None
         pass
 
+class PushBouncerNotificationTest(ZulipTestCase):
+  def test_unregister_remote_push_user_params(self):
+    # type: () -> None
+    server_uuid = "1234-abcd"
+    token = "111222"
+    token_kind = PushDeviceToken.GCM
+
+    # Auth on this user
+    email = "cordelia@zulip.com"
+    auth = self.api_auth(email)
+
+    endpoint = '/api/v1/remotes/push/unregister'
+    result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind}, **auth)
+    self.assert_json_error(result, "Missing 'server_uuid' argument")
+    result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token_kind': token_kind}, **auth)
+    self.assert_json_error(result, "Missing 'token' argument")
+    result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token}, **auth)
+    self.assert_json_error(result, "Missing 'token_kind' argument")
+    # Verify successful parsing
+    result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token_kind': token_kind, 'token': token}, **auth)
+    self.assert_json_success(result)
+
+  def test_register_remote_push_user_paramas(self):
+    # type: () -> None
+      server_uuid = "1234-abcd"
+      token = "111222"
+      user_id = 11
+      token_kind = PushDeviceToken.GCM
+
+      # Auth on this user
+      email = "cordelia@zulip.com"
+      auth = self.api_auth(email)
+      endpoint = '/api/v1/remotes/push/unregister'
+
+      result = self.client_post(endpoint, {'user_id': user_id, 'token': token, 'token_kind': token_kind}, **auth)
+      self.assert_json_error(result, "Missing 'server_uuid' argument")
+      result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token_kind': token_kind}, **auth)
+      self.assert_json_error(result, "Missing 'token' argument")
+      result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token': token}, **auth)
+      self.assert_json_error(result, "Missing 'token_kind' argument")
+      result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **auth)
+      self.assert_json_error(result, "Missing 'user_id' argument")
+
+      # Verify correct results are success
+      result = self.client_post(endpoint, {'user_id': user_id,'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **auth)
+      self.assert_json_success(result)
+
+  def test_register_new_remote_push_user(self):
+    # type: () -> None
+
+    # Auth on this user
+    email = "cordelia@zulip.com"
+    auth = self.api_auth(email)
+
+    endpoints = [
+          ('/api/v1/remotes/push/register', 'register'),
+      ]
+
+    for endpoint, method in endpoints:
+      payload = self.get_generic_payload(method)
+      broken_token = "x" * 5000 # too big
+      payload['token'] = broken_token
+      # Try adding/removing tokens that are too big...
+      result = self.client_post(endpoint, payload, **auth)
+      #self.assert_json_error(result, 'Empty or invalid length token')
+
+  def get_generic_payload(self, method='register'):
+    #type: (text_type) -> Dict[str, Any]
+    server_uuid = "1234-abcd"
+    user_id = 10
+    token = "111222"
+    token_kind = PushDeviceToken.GCM
+
+    return {'user_id':user_id,'server_uuid':server_uuid, 'token':token,'token_kind':token_kind}
+
+
 class PushNotificationTest(TestCase):
     def setUp(self):
         # type: () -> None

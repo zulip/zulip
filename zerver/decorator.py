@@ -30,11 +30,13 @@ from io import BytesIO
 from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text
+<<<<<<< b90e9d320022d024f427b35a2c266d21f81de81b
+from six import text_type
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
 from zerver.lib.str_utils import force_bytes
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer 
+    from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
 else:
     from mock import Mock
     get_remote_server_by_uuid = Mock()
@@ -186,7 +188,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     if isinstance(profile, RemoteZulipServer):
       return profile
 
-    # further validation required for UserProfiles
+    profile = cast(UserProfile, profile) # is UserProfile
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
     if profile.is_incoming_webhook and not is_webhook:
@@ -383,7 +385,7 @@ def authenticated_rest_api_view(is_webhook=False):
 
             # Now we try to do authentication or die
             try:
-                # Could be a UserProfile or a RemoteZulipServer 
+                # Could be a UserProfile or a RemoteZulipServer
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
                 return json_unauthorized(e.error)
