@@ -829,6 +829,7 @@ class BugdownTest(TestCase):
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
 
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
         # type: () -> None
