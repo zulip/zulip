@@ -447,11 +447,18 @@ $(function () {
     disable_markdown_regex(marked.Lexer.rules.tables, 'heading');
     disable_markdown_regex(marked.Lexer.rules.tables, 'lheading');
 
-    // Disable __strong__, all <em>
+    // Disable __strong__
     marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
-    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'em');
+
     // Make sure <del> syntax matches the backend processor
     marked.InlineLexer.rules.zulip.del = /^(?!<\~)\~\~([^~]+)\~\~(?!\~)/;
+
+    // Disable _emphasis_
+    // Disable special characters for the emphasis syntax
+    // Inside ** allowed only: word characters/spaces/tabulate
+    // it need for things like "const char *x = (char *)y"
+    marked.InlineLexer.rules.zulip.em = /^\*((?:\*\*|[\w|\ |\t])+?)\*(?!\*)/;
+
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 

@@ -151,7 +151,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
      expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
     {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
-     expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'}
+     expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+    {input: 'Test *italic*',
+     expected: '<p>Test <em>italic</em></p>'}
   ];
 
   test_cases.forEach(function (test_case) {
