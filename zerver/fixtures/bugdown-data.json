@@ -121,9 +121,21 @@
       "bugdown_matches_marked": true
     },
     {
-      "name": "star_disabled",
+      "name": "emphasis_text",
       "input": "*foo*",
-      "expected_output": "<p>*foo*</p>",
+      "expected_output": "<p><em>foo</em></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "emphasis_code",
+      "input": "const char *x = (char *)y",
+      "expected_output": "<p>const char *x = (char *)y</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "emphasis_with_space",
+      "input": "A *foo bar* is a *baz quux*",
+      "expected_output": "<p>A <em>foo bar</em> is a <em>baz quux</em></p>",
       "bugdown_matches_marked": true
     },
     {
