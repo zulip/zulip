@@ -1079,8 +1079,9 @@ class MirroredMessageUsersTest(TestCase):
             self.assertEqual(valid_input, False)
             self.assertEqual(mirror_sender, None)
 
-    def test_zephyr_mirror_new_recipient(self):
-        # type: () -> None
+    @mock.patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
+    def test_zephyr_mirror_new_recipient(self, ignored):
+        # type: (Any) -> None
         """Test mirror dummy user creation for PM recipients"""
         client = get_client(name='zephyr_mirror')
 
@@ -1111,8 +1112,9 @@ class MirroredMessageUsersTest(TestCase):
         bob = get_user_profile_by_email(new_user_email)
         self.assertTrue(bob.is_mirror_dummy)
 
-    def test_zephyr_mirror_new_sender(self):
-        # type: () -> None
+    @mock.patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
+    def test_zephyr_mirror_new_sender(self, ignored):
+        # type: (Any) -> None
         """Test mirror dummy user creation for sender when sending to stream"""
         client = get_client(name='zephyr_mirror')
 

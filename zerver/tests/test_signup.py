@@ -36,6 +36,7 @@ from six.moves import urllib
 from six.moves import range
 import six
 from six import text_type
+from typing import Any
 
 class PublicURLTest(ZulipTestCase):
     """
@@ -990,8 +991,9 @@ class UserSignUpTest(ZulipTestCase):
         mock_ldap.reset()
         mock_initialize.stop()
 
-    def test_registration_of_mirror_dummy_user(self):
-        # type: () -> None
+    @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
+    def test_registration_of_mirror_dummy_user(self, ignored):
+        # type: (Any) -> None
         username = "sipbtest"
         password = "test"
         domain = "mit.edu"
@@ -1004,8 +1006,7 @@ class UserSignUpTest(ZulipTestCase):
         user_profile.is_active = False
         user_profile.save()
 
-        with patch('zerver.views.get_subdomain', return_value=subdomain):
-            result = self.client_post('/register/', {'email': email})
+        result = self.client_post('/register/', {'email': email})
 
         self.assertEquals(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
