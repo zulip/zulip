@@ -115,7 +115,13 @@ def main():
 
     print("Using cached emojis from {}".format(source_emoji_dump))
     run(['rm', '-rf', TARGET_EMOJI_DUMP])
-    run(['ln', '-nsf', source_emoji_dump, TARGET_EMOJI_DUMP])
+    try:
+        os.symlink(
+            source_emoji_dump,
+            TARGET_EMOJI_DUMP
+        )
+    except OSError:
+        print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
 
 def get_success_stamp():
     # type: () -> str
@@ -168,10 +174,16 @@ def dump_emojis(cache_path):
                 failed = True
                 continue
 
-        os.symlink(
-            'unicode/{}.png'.format(code_point),
-            'out/{}.png'.format(name)
-        )
+        try:
+            os.symlink(
+                'unicode/{}.png'.format(code_point),
+                'out/{}.png'.format(name)
+            )
+        except OSError:
+            print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
+            failed = True
+            # probably should not try to create additional links
+            break
 
     if failed:
         print("Errors dumping emoji!")
