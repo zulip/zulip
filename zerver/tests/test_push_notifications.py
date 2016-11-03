@@ -72,7 +72,7 @@ class PushBouncerNotificationTest(ZulipTestCase):
       # Auth on this user
       email = "cordelia@zulip.com"
       auth = self.api_auth(email)
-      endpoint = '/api/v1/remotes/push/unregister'
+      endpoint = '/api/v1/remotes/push/register'
 
       result = self.client_post(endpoint, {'user_id': user_id, 'token': token, 'token_kind': token_kind}, **auth)
       self.assert_json_error(result, "Missing 'server_uuid' argument")
