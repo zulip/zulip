@@ -102,7 +102,7 @@ Here are the top things to know:
 
 - **Most Git operations are local:** Git is a distributed version control
   system, so once you've cloned a repository, you have a complete copy of that
-  repository's *entire history*. Staging, commiting, branching, and browsing
+  repository's *entire history*. Staging, committing, branching, and browsing
   history are all things you can do locally without network access and without
   immediately affecting any remote repositories. To make or receive changes
   from remote repositories, you need to `git fetch`, `git pull`, or `git push`.
@@ -110,7 +110,7 @@ Here are the top things to know:
 - **Nearly all Git actions add information to the Git database**, rather than
   removing it. As such, it's hard to make Git perform actions that you can't
   undo. However, Git can't undo what it doesn't know about, so it's a good
-  practice to frequently commit your changes and freqently push your commits to
+  practice to frequently commit your changes and frequently push your commits to
   your remote repository.
 
 - **Git is designed for lightweight branching and merging.** Branches are
@@ -1047,7 +1047,7 @@ Date:   Mon Oct 10 13:25:51 2016 -0700
 Some graphical Git clients may also create merge commits.
 
 To undo a merge commit, first run `git reflog` to identify the commit you want
-to to roll back to:
+to roll back to:
 
 ```
 $ git reflog
