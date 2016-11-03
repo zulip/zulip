@@ -126,7 +126,7 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
                 zerver_realm.id, COALESCE(sum(%(analytics_table)s.value), 0), '%(property)s',
                 %(analytics_table)s.subgroup, %%(end_time)s, '%(interval)s'
             FROM zerver_realm
-            LEFT JOIN %(analytics_table)s
+            JOIN %(analytics_table)s
             ON
             (
                 %(analytics_table)s.realm_id = zerver_realm.id AND
@@ -148,7 +148,7 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
         INSERT INTO analytics_installationcount
             (value, property, subgroup, end_time, interval)
         SELECT
-            COALESCE(sum(value), 0), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s, '%(interval)s'
+            sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s, '%(interval)s'
         FROM analytics_realmcount
         WHERE
         (
@@ -199,7 +199,7 @@ count_user_by_realm_query = """
     SELECT
         zerver_realm.id, count(%(zerver_table)s),'%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
     FROM zerver_realm
-    LEFT JOIN zerver_userprofile
+    JOIN zerver_userprofile
     ON
     (
         zerver_userprofile.realm_id = zerver_realm.id AND
@@ -240,13 +240,13 @@ count_message_by_stream_query = """
     SELECT
         zerver_stream.id, zerver_stream.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
     FROM zerver_stream
-    INNER JOIN zerver_recipient
+    JOIN zerver_recipient
     ON
     (
         zerver_recipient.type = 2 AND
         zerver_stream.id = zerver_recipient.type_id
     )
-    INNER JOIN zerver_message
+    JOIN zerver_message
     ON
     (
         zerver_message.recipient_id = zerver_recipient.id AND
@@ -265,7 +265,7 @@ count_stream_by_realm_query = """
     SELECT
         zerver_realm.id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
     FROM zerver_realm
-    LEFT JOIN zerver_stream
+    JOIN zerver_stream
     ON
     (
         zerver_stream.realm_id = zerver_realm.id AND
