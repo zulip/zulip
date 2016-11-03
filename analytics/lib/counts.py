@@ -318,13 +318,13 @@ count_message_type_by_user_query = """
 zerver_count_message_type_by_user = ZerverCountQuery(Message, UserCount, count_message_type_by_user_query)
 
 COUNT_STATS = {
-    'active_users_by_is_bot': CountStat('active_users_by_is_bot', zerver_count_user_by_realm,
+    'active_users:is_bot': CountStat('active_users:is_bot', zerver_count_user_by_realm,
                                         {'is_active': True}, (UserProfile, 'is_bot'), CountStat.DAY, True),
     'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, None,
                                CountStat.HOUR, False),
-    'messages_sent_by_is_bot': CountStat('messages_sent_by_is_bot', zerver_count_message_by_user, {},
+    'messages_sent:is_bot': CountStat('messages_sent:is_bot', zerver_count_message_by_user, {},
                                          (UserProfile, 'is_bot'), CountStat.DAY, False),
-    'message_sent_by_type_by_user': CountStat('messages_sent_by_type_by_user',
+    'messages_sent:message_type': CountStat('messages_sent:message_type',
                                               zerver_count_message_type_by_user, {},
                                               None, CountStat.DAY, False)
 }
