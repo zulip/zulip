@@ -326,5 +326,9 @@ COUNT_STATS = {
                                          (UserProfile, 'is_bot'), CountStat.DAY, False),
     'messages_sent:message_type': CountStat('messages_sent:message_type',
                                               zerver_count_message_type_by_user, {},
-                                              None, CountStat.DAY, False)
-}
+                                              None, CountStat.DAY, False),
+    'messages_sent:client': CountStat('messages_sent:client', zerver_count_message_by_user, {},
+                                         (Message, 'sending_client_id'), CountStat.HOUR, False),
+    'messages_sent_to_stream:is_bot': CountStat('messages_sent_to_stream:is_bot', zerver_count_message_by_stream,
+                                              {'is_active': True}, (UserProfile, 'is_bot'), CountStat.HOUR, False)
+    }
