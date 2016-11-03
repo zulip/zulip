@@ -6,7 +6,7 @@ from typing import Any, Callable, Optional
 from zerver.models import get_user_profile_by_id
 from zerver.lib.rate_limiter import client, max_api_calls, max_api_window
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
 from optparse import make_option
 
@@ -17,13 +17,13 @@ class Command(BaseCommand):
 
     Usage: ./manage.py [--trim] check_redis"""
 
-    option_list = BaseCommand.option_list + (
-        make_option('-t', '--trim',
-                    dest='trim',
-                    default=False,
-                    action='store_true',
-                    help="Actually trim excess"),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-t', '--trim',
+                            dest='trim',
+                            default=False,
+                            action='store_true',
+                            help="Actually trim excess")
 
     def _check_within_range(self, key, count_func, trim_func=None):
         # type: (str, Callable[[], int], Optional[Callable[[str, int], None]]) -> None

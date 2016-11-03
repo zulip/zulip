@@ -5,7 +5,7 @@ from optparse import make_option
 import sys
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.models import get_realm
 from zerver.lib.create_user import random_api_key
@@ -16,21 +16,18 @@ from zilencer.models import Deployment
 class Command(BaseCommand):
     help = """Create a deployment and accompanying realm."""
 
-    option_list = CreateRealm.option_list + (
-        make_option('--no-realm',
-                    dest='no_realm',
-                    action='store_true',
-                    default=False,
-                    help='Do not create a new realm; associate with an existing one.' + \
-                           ' In this case, only the domain and URLs need to be specified.'),
-        make_option('-a', '--api-url',
-                    dest='api',
-                    type='str'),
-        make_option('-w', '--web-url',
-                    dest='web',
-                    type='str'),
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--no-realm',
+                            dest='no_realm',
+                            action='store_true',
+                            default=False,
+                            help='Do not create a new realm; associate with '
+                                 'an existing one. In this case, only the '
+                                 'domain and URLs need to be specified.')
 
-        )
+        parser.add_argument('-a', '--api-url', dest='api', type=str)
+        parser.add_argument('-w', '--web-url', dest='web', type=str)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

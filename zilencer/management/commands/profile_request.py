@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 from optparse import make_option
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import get_user_profile_by_email, UserMessage
 from zerver.views.messages import get_old_messages_backend
 import cProfile
@@ -50,9 +50,9 @@ def profile_request(request):
     return ret
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--email', action='store'),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--email', action='store')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

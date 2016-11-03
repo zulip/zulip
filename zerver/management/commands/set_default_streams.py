@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.models import get_realm
 from zerver.lib.actions import set_default_streams
@@ -26,16 +26,18 @@ python manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz wit
 python manage.py set_default_streams --domain=foo.com --streams=
 """
 
-    option_list = BaseCommand.option_list + (
-        make_option('-d', '--domain',
-                    dest='domain',
-                    type='str',
-                    help='The name of the existing realm to which to attach default streams.'),
-        make_option('-s', '--streams',
-                    dest='streams',
-                    type='str',
-                    help='A comma-separated list of stream names.'),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-d', '--domain',
+                            dest='domain',
+                            type=str,
+                            help='The name of the existing realm to which to '
+                                 'attach default streams.')
+
+        parser.add_argument('-s', '--streams',
+                            dest='streams',
+                            type=str,
+                            help='A comma-separated list of stream names.')
 
     def handle(self, **options):
         # type: (*Any, **str) -> None

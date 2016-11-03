@@ -5,7 +5,7 @@ from optparse import make_option
 from typing import Any
 
 from django.conf import settings
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.actions import Realm, do_create_realm, set_default_streams
 from zerver.models import RealmAlias, can_add_alias, get_realm_by_string_id
 
@@ -20,36 +20,44 @@ class Command(BaseCommand):
 
 Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
 
-    option_list = BaseCommand.option_list + (
-        make_option('-d', '--domain',
-                    dest='domain',
-                    type='str',
-                    help='The domain for the realm.'),
-        make_option('-s', '--string_id',
-                    dest='string_id',
-                    type='str',
-                    help="A short name for the realm. If this installation uses subdomains, this will be used as the realm's subdomain."),
-        make_option('-n', '--name',
-                    dest='name',
-                    type='str',
-                    help='The user-visible name for the realm.'),
-        make_option('--corporate',
-                    dest='org_type',
-                    action="store_const",
-                    const=Realm.CORPORATE,
-                    help='Is a corporate org_type'),
-        make_option('--community',
-                    dest='org_type',
-                    action="store_const",
-                    const=Realm.COMMUNITY,
-                    default=None,
-                    help='Is a community org_type. Is the default.'),
-        make_option('--deployment',
-                    dest='deployment_id',
-                    type='int',
-                    default=None,
-                    help='Optionally, the ID of the deployment you want to associate the realm with.'),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-d', '--domain',
+                            dest='domain',
+                            type=str,
+                            help='The domain for the realm.')
+
+        parser.add_argument('-s', '--string_id',
+                            dest='string_id',
+                            type=str,
+                            help="A short name for the realm. If this "
+                                 "installation uses subdomains, this will be "
+                                 "used as the realm's subdomain.")
+
+        parser.add_argument('-n', '--name',
+                            dest='name',
+                            type=str,
+                            help='The user-visible name for the realm.')
+
+        parser.add_argument('--corporate',
+                            dest='org_type',
+                            action="store_const",
+                            const=Realm.CORPORATE,
+                            help='Is a corporate org_type')
+
+        parser.add_argument('--community',
+                            dest='org_type',
+                            action="store_const",
+                            const=Realm.COMMUNITY,
+                            default=None,
+                            help='Is a community org_type. Is the default.')
+
+        parser.add_argument('--deployment',
+                            dest='deployment_id',
+                            type=int,
+                            default=None,
+                            help='Optionally, the ID of the deployment you '
+                                 'want to associate the realm with.')
 
     def validate_domain(self, domain):
         # type: (str) -> None

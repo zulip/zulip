@@ -5,7 +5,7 @@ from optparse import make_option
 
 from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
 from zerver.models import UserProfile, get_realm, get_user_profile_by_email
@@ -13,25 +13,32 @@ from zerver.models import UserProfile, get_realm, get_user_profile_by_email
 class Command(BaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
 
-    option_list = BaseCommand.option_list + (
-        make_option('-d', '--domain',
-                    dest='domain',
-                    type='str',
-                    help='The name of the realm in which you are adding people to streams.'),
-        make_option('-s', '--streams',
-                    dest='streams',
-                    type='str',
-                    help='A comma-separated list of stream names.'),
-        make_option('-u', '--users',
-                    dest='users',
-                    type='str',
-                    help='A comma-separated list of email addresses.'),
-        make_option('-a', '--all-users',
-                    dest='all_users',
-                    action="store_true",
-                    default=False,
-                    help='Add all users in this realm to these streams.'),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument(
+            '-d', '--domain',
+            dest='domain',
+            type=str,
+            help='The name of the realm in which you are adding people to streams.')
+
+        parser.add_argument(
+            '-s', '--streams',
+            dest='streams',
+            type=str,
+            help='A comma-separated list of stream names.')
+
+        parser.add_argument(
+            '-u', '--users',
+            dest='users',
+            type=str,
+            help='A comma-separated list of email addresses.')
+
+        parser.add_argument(
+            '-a', '--all-users',
+            dest='all_users',
+            action="store_true",
+            default=False,
+            help='Add all users in this realm to these streams.')
 
     def handle(self, **options):
         # type: (**Any) -> None

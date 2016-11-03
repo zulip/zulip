@@ -11,7 +11,6 @@ import sys
 class Command(BaseCommand):
     help = """Checks your Zulip Voyager Django configuration for issues."""
 
-    option_list = BaseCommand.option_list + ()
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         for (setting_name, default) in settings.REQUIRED_SETTINGS:

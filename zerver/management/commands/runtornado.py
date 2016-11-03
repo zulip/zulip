@@ -13,7 +13,7 @@ settings.RUNNING_INSIDE_TORNADO = True
 from zerver.lib.tornado_ioloop_logging import instrument_tornado_ioloop
 instrument_tornado_ioloop()
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.http import HttpRequest, HttpResponse
 from optparse import make_option
 import sys
@@ -53,16 +53,21 @@ def handle_callback_exception(callback):
     app_log.error("Exception in callback %r", callback, exc_info=True)
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--nokeepalive', action='store_true',
-            dest='no_keep_alive', default=False,
-            help="Tells Tornado to NOT keep alive http connections."),
-        make_option('--noxheaders', action='store_false',
-            dest='xheaders', default=True,
-            help="Tells Tornado to NOT override remote IP with X-Real-IP."),
-    )
     help = "Starts a Tornado Web server wrapping Django."
-    args = '[optional port number or ipaddr:port]\n  (use multiple ports to start multiple servers)'
+
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('addrport', nargs="?", type=str,
+                            help='[optional port number or ipaddr:port]\n '
+                                 '(use multiple ports to start multiple servers)')
+
+        parser.add_argument('--nokeepalive', action='store_true',
+                            dest='no_keep_alive', default=False,
+                            help="Tells Tornado to NOT keep alive http connections.")
+
+        parser.add_argument('--noxheaders', action='store_false',
+                            dest='xheaders', default=True,
+                            help="Tells Tornado to NOT override remote IP with X-Real-IP.")
 
     def handle(self, addrport, **options):
         # type: (str, **bool) -> None

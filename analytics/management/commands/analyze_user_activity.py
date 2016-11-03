@@ -7,7 +7,7 @@ from typing import Any, Dict
 from zerver.lib.statistics import seconds_usage_between
 
 from optparse import make_option
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import UserProfile
 import datetime
 from django.utils.timezone import utc
@@ -52,12 +52,12 @@ Usage: python manage.py analyze_user_activity [--realm=zulip.com] [--date=2013-0
 By default, if no date is selected 2013-09-10 is used. If no realm is provided, information
 is shown for all realms"""
 
-    option_list = BaseCommand.option_list + (
-        make_option('--realm', action='store'),
-        make_option('--date', action='store', default="2013-09-06"),
-        make_option('--duration', action='store', default=1, type=int,
-                    help="How many days to show usage information for"),
-        )
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--realm', action='store')
+        parser.add_argument('--date', action='store', default="2013-09-06")
+        parser.add_argument('--duration', action='store', default=1, type=int,
+                            help="How many days to show usage information for")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

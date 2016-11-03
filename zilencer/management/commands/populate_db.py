@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now
 
 from django.contrib.sites.models import Site
@@ -55,62 +55,72 @@ def create_streams(realms, realm, stream_list):
 class Command(BaseCommand):
     help = "Populate a test database"
 
-    option_list = BaseCommand.option_list + (
-        make_option('-n', '--num-messages',
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('-n', '--num-messages',
                     dest='num_messages',
-                    type='int',
+                    type=int,
                     default=600,
-                    help='The number of messages to create.'),
-        make_option('--extra-users',
+                    help='The number of messages to create.')
+
+        parser.add_argument('--extra-users',
                     dest='extra_users',
-                    type='int',
+                    type=int,
                     default=0,
-                    help='The number of extra users to create'),
-        make_option('--huddles',
+                    help='The number of extra users to create')
+
+        parser.add_argument('--huddles',
                     dest='num_huddles',
-                    type='int',
+                    type=int,
                     default=3,
-                    help='The number of huddles to create.'),
-        make_option('--personals',
+                    help='The number of huddles to create.')
+
+        parser.add_argument('--personals',
                     dest='num_personals',
-                    type='int',
+                    type=int,
                     default=6,
-                    help='The number of personal pairs to create.'),
-        make_option('--threads',
+                    help='The number of personal pairs to create.')
+
+        parser.add_argument('--threads',
                     dest='threads',
-                    type='int',
+                    type=int,
                     default=10,
-                    help='The number of threads to use.'),
-        make_option('--percent-huddles',
+                    help='The number of threads to use.')
+
+        parser.add_argument('--percent-huddles',
                     dest='percent_huddles',
-                    type='float',
+                    type=float,
                     default=15,
-                    help='The percent of messages to be huddles.'),
-        make_option('--percent-personals',
+                    help='The percent of messages to be huddles.')
+
+        parser.add_argument('--percent-personals',
                     dest='percent_personals',
-                    type='float',
+                    type=float,
                     default=15,
-                    help='The percent of messages to be personals.'),
-        make_option('--stickyness',
+                    help='The percent of messages to be personals.')
+
+        parser.add_argument('--stickyness',
                     dest='stickyness',
-                    type='float',
+                    type=float,
                     default=20,
-                    help='The percent of messages to repeat recent folks.'),
-        make_option('--nodelete',
+                    help='The percent of messages to repeat recent folks.')
+
+        parser.add_argument('--nodelete',
                     action="store_false",
                     default=True,
                     dest='delete',
-                    help='Whether to delete all the existing messages.'),
-        make_option('--test-suite',
+                    help='Whether to delete all the existing messages.')
+
+        parser.add_argument('--test-suite',
                     default=False,
                     action="store_true",
-                    help='Whether to delete all the existing messages.'),
-        make_option('--replay-old-messages',
+                    help='Whether to delete all the existing messages.')
+
+        parser.add_argument('--replay-old-messages',
                     action="store_true",
                     default=False,
                     dest='replay_old_messages',
-                    help='Whether to replace the log of old messages.'),
-        )
+                    help='Whether to replace the log of old messages.')
 
     def handle(self, **options):
         # type: (**Any) -> None

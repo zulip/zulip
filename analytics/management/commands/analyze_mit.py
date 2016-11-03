@@ -4,7 +4,7 @@ from __future__ import print_function
 from typing import Any
 
 from optparse import make_option
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import Recipient, Message
 from zerver.lib.timestamp import timestamp_to_datetime
 import datetime
@@ -73,10 +73,11 @@ def compute_stats(log_level):
         logging.info("%15s | %s%%" % (client, round(100. * total_counts[client] / grand_total, 1)))
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + \
-        (make_option('--verbose', default=False, action='store_true'),)
-
     help = "Compute statistics on MIT Zephyr usage."
+
+    def add_arguments(self, parser):
+        # type: (CommandParser) -> None
+        parser.add_argument('--verbose', default=False, action='store_true')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
