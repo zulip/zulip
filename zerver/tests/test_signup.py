@@ -22,7 +22,7 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import do_set_realm_default_language
+from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
 from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured
@@ -809,7 +809,7 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEquals(result.status_code, 200)
             self.assertIn('Register through proper link', result.content.decode('utf8'))
 
-    def test_completely_open_domain(self):
+    def test_unique_completely_open_domain(self):
         # type: () -> None
         username = "user1"
         password = "test"
@@ -823,9 +823,11 @@ class UserSignUpTest(ZulipTestCase):
         realm.invite_required = False
         realm.save()
 
-        # Create new realm with the email
-        with patch('zerver.views.get_subdomain', return_value=subdomain):
-            result = self.client_post('/register/', {'email': email})
+        realm = get_realm("mit.edu")
+        do_deactivate_realm(realm)
+        realm.save()
+
+        result = self.client_post('/register/', {'email': email})
 
         self.assertEquals(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
@@ -854,7 +856,7 @@ class UserSignUpTest(ZulipTestCase):
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEquals(result.status_code, 200)
-        self.assertIn('Register through proper link', result.content.decode('utf8'))
+        self.assertIn("You're almost there.", result.content.decode('utf8'))
 
     def test_completely_open_domain_success(self):
         # type: () -> None
