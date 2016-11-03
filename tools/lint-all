@@ -325,7 +325,7 @@ def build_custom_checkers(by_lang):
     prose_style_rules = [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
-         {'pattern': '[^\/\-\.\"\']([gG]ithub)[^\.\-\_\"]', # exclude usage in hrefs/divs
+         {'pattern': '[^\/\-\.\"\'\_]([gG]ithub)[^\.\-\_\"]', # exclude usage in hrefs/divs
          'description': "github should be spelled GitHub"},
     ] # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
