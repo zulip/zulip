@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any
+from typing import Any, Callable
 
 from django.conf import settings
 settings.RUNNING_INSIDE_TORNADO = True
@@ -16,11 +16,12 @@ instrument_tornado_ioloop()
 from django.core.management.base import BaseCommand, CommandError
 from django.http import HttpRequest, HttpResponse
 from optparse import make_option
-import os
 import sys
+import traceback
 import tornado.web
 import logging
 from tornado import ioloop
+from tornado.log import app_log
 from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.response import json_response
 from zerver.lib.event_queue import process_notification, missedmessage_hook
@@ -44,6 +45,12 @@ from django.conf import settings
 
 if settings.USING_RABBITMQ:
     from zerver.lib.queue import get_queue_client
+
+
+def handle_callback_exception(callback):
+    # type: (Callable) -> None
+    traceback.print_exc()
+    app_log.error("Exception in callback %r", callback, exc_info=True)
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -120,13 +127,16 @@ class Command(BaseCommand):
                                                     no_keep_alive=no_keep_alive)
                 http_server.listen(int(port), address=addr)
 
-                if django.conf.settings.DEBUG:
-                    ioloop.IOLoop.instance().set_blocking_log_threshold(5)
-
                 setup_event_queue()
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
-                ioloop.IOLoop.instance().start()
+
+                instance = ioloop.IOLoop.instance()
+
+                if django.conf.settings.DEBUG:
+                    instance.set_blocking_log_threshold(5)
+                    instance.handle_callback_exception=handle_callback_exception
+                instance.start()
             except KeyboardInterrupt:
                 sys.exit(0)
 
