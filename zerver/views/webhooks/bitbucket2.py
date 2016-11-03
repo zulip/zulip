@@ -250,7 +250,7 @@ def get_pull_request_comment_created_action_body(payload):
 
 def get_pull_request_deleted_or_updated_comment_action_body(payload, action):
     # type: (Dict[str, Any], text_type) -> text_type
-    action = "{} [comment]({})".format(action, payload['comment']['links']['html']['href'])
+    action = "{} a [comment]({})".format(action, payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action)
 
 def get_pull_request_comment_action_body(payload, action):
