@@ -111,6 +111,7 @@ function add_message_metadata(message) {
         stream_data.process_message_for_recent_topics(message);
 
         involved_people = [{'full_name': message.sender_full_name,
+                            'user_id': message.sender_id,
                             'email': message.sender_email}];
         set_topic_edit_properties(message);
         break;
@@ -130,7 +131,13 @@ function add_message_metadata(message) {
     _.each(involved_people, function (person) {
         if (!person.unknown_local_echo_user) {
             if (! people.get_by_email(person.email)) {
-                people.add(person);
+                people.add({
+                    email: person.email,
+                    user_id: person.user_id || person.id,
+                    full_name: person.full_name,
+                    is_admin: person.is_realm_admin || false,
+                    is_bot: person.is_bot || false
+                });
             }
 
             if (message.type === 'private' && message.sent_by_me) {
