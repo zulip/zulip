@@ -118,7 +118,7 @@ def accounts_register(request):
         # realm.
         domain = prereg_user.realm.domain
         realm = get_realm(domain)
-    else:
+    elif settings.REALMS_HAVE_SUBDOMAINS:
         subdomain_realm = resolve_subdomain_to_realm(get_subdomain(request))
         domain = resolve_email_to_domain(email)
         domain = subdomain_realm.domain if subdomain_realm else domain
@@ -135,6 +135,9 @@ def accounts_register(request):
             return render_to_response("zerver/completely_open_link.html", ctx)
         else:
             realm = get_realm(domain)
+    else:
+        domain = resolve_email_to_domain(email)
+        realm = get_realm(domain)
 
 
     if realm and realm.deactivated:
