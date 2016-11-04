@@ -60,7 +60,8 @@ function get_stream_name (target) {
     if (target.constructor !== jQuery) {
         target = $(target);
     }
-    return target.closest(".stream-row, .subscription_settings").data("stream-name");
+    var stream_id = target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
+    return stream_data.get_sub_by_id(stream_id).name;
 }
 
 function stream_home_view_clicked(e) {
