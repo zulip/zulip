@@ -950,13 +950,13 @@ $(function () {
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
-        var sub_row = $(e.target).closest('.stream-row');
-        var stream = get_stream_name(sub_row);
-        var text_box = sub_row.find('input[name="principal"]');
+        var settings_row = $(e.target).closest('.subscription_settings');
+        var stream = get_stream_name(settings_row);
+        var text_box = settings_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
         // TODO: clean up this error handling
-        var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-        var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
+        var error_elem = settings_row.find('.subscriber_list_container .alert-error');
+        var warning_elem = settings_row.find('.subscriber_list_container .alert-warning');
 
         function invite_success(data) {
             text_box.val('');
@@ -987,10 +987,10 @@ $(function () {
 
         var list_entry = $(e.target).closest("tr");
         var principal = list_entry.children(".subscriber-email").text();
-        var sub_row = $(e.target).closest('.stream-row');
-        var stream_name = get_stream_name(sub_row);
-        var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-        var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
+        var settings_row = $(e.target).closest('.subscription_settings');
+        var stream_name = get_stream_name(settings_row);
+        var error_elem = settings_row.find('.subscriber_list_container .alert-error');
+        var warning_elem = settings_row.find('.subscriber_list_container .alert-warning');
 
         function removal_success(data) {
             if (data.removed.length > 0) {
