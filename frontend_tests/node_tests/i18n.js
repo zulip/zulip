@@ -30,14 +30,6 @@ var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
 var _ = global._;
 
-// When writing these tests, the following command might be helpful:
-// ./tools/get-handlebar-vars static/templates/*.handlebars
-
-function render(template_name, args) {
-    global.use_template(template_name);
-    return global.templates.render(template_name, args);
-}
-
 (function test_t_tag() {
     var args = {
         "message": {
@@ -53,7 +45,7 @@ function render(template_name, args) {
     };
 
     var html = '<div style="height: 250px">';
-    html += render('actions_popover_content', args);
+    html += global.render_template('actions_popover_content', args);
     html += "</div>";
     var link = $(html).find("a.respond_button");
     assert.equal(link.text().trim(), 'French');
@@ -84,10 +76,10 @@ function render(template_name, args) {
     };
 
     fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
-        render(o.replace(/\.handlebars/, ""));
+        global.render_template(o.replace(/\.handlebars/, ""));
     });
 
-    var html = render('settings_tab', args);
+    var html = global.render_template('settings_tab', args);
     var div = $(html).find("div.notification-reminder");
     assert.equal(div.text().trim(), 'Some French text with Zulip');
     global.write_test_output("test_tr_tag settings", html);

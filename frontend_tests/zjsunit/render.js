@@ -35,7 +35,18 @@ exports.make_sure_all_templates_have_been_compiled = function () {
     });
 };
 
-exports.use_template = function (name) {
+exports.render_template = function (name, args) {
+    exports.compile_template(name);
+    return global.templates.render(name, args);
+};
+
+exports.compile_template = function (name) {
+    var included_fns = exports.find_included_partials(name);
+
+    _.each(included_fns, function (fn) {
+        exports.compile_template(fn);
+    });
+
     if (Handlebars.templates === undefined) {
         Handlebars.templates = {};
     }
@@ -137,38 +148,6 @@ exports.find_included_partials = function (name) {
 
     return lst;
 };
-
-exports.partial_finder = (function () {
-    var meta = {
-        read: []
-    };
-
-    // this is the external function that is called that will recursively search
-    // for partials in a file and partials inside partials until it finds them all.
-    // it then adds them to a maintenance list of already read partials so that
-    // they don't have to be read/searched again.
-    var __prototype__ = function (name, callback) {
-        if (meta.read.indexOf(name) === -1) {
-            if (callback) {
-                callback(name);
-            }
-
-            meta.read.push(name);
-            var included_fns = exports.find_included_partials(name);
-
-            _.each(included_fns, function (fn) {
-                __prototype__(fn, callback);
-            });
-
-        }
-    };
-
-    return __prototype__;
-}());
-
-fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
-    exports.use_template(o.replace(/\.handlebars/, ""));
-});
 
 return exports;
 }());

@@ -32,10 +32,7 @@ var _ = global._;
 // ./tools/get-handlebar-vars static/templates/*.handlebars
 
 function render(template_name, args) {
-    global.partial_finder(template_name, function (name) {
-        global.use_template(name);
-    });
-    return global.templates.render(template_name, args);
+    return global.render_template(template_name, args);
 }
 
 fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {

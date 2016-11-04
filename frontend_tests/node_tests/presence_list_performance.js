@@ -32,8 +32,8 @@ $.fn.expectOne = function () {
     return this;
 };
 
-global.use_template('user_presence_row');
-global.use_template('user_presence_rows');
+global.compile_template('user_presence_row');
+global.compile_template('user_presence_rows');
 
 var people = require("js/people.js");
 var activity = require('js/activity.js');

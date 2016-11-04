@@ -21,10 +21,10 @@ global.stub_out_jquery = namespace.stub_out_jquery;
 
 // Set up helpers to render templates.
 var render = require('./render.js');
-global.use_template = render.use_template;
 global.make_sure_all_templates_have_been_compiled = render.make_sure_all_templates_have_been_compiled;
-global.partial_finder = render.partial_finder;
 global.find_included_partials = render.find_included_partials;
+global.compile_template = render.compile_template;
+global.render_template = render.render_template;
 global.walk = render.walk;
 
 // Set up helpers to output HTML
