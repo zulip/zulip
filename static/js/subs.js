@@ -75,19 +75,19 @@ function get_stream_name (target) {
 }
 
 function stream_home_view_clicked(e) {
-    var stream = get_stream_name(e.target);
-    var sub_row = $(".stream-row[data-stream-name='" + stream + "']");
-    var sub = stream_data.get_sub(stream);
-    var notification_checkboxes = sub_row.find(".sub_notification_setting");
+    var stream_name = get_stream_name(e.target);
+    var sub = stream_data.get_sub(stream_name);
+    var sub_settings = settings_for_sub(sub);
+    var notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.toggle_home(stream);
+    subs.toggle_home(stream_name);
 
     if (sub.in_home_view) {
-        sub_row.find(".mute-note").addClass("hide-mute-note");
+        sub_settings.find(".mute-note").addClass("hide-mute-note");
         notification_checkboxes.removeClass("muted-sub");
         notification_checkboxes.find("input[type='checkbox']").removeAttr("disabled");
     } else {
-        sub_row.find(".mute-note").removeClass("hide-mute-note");
+        sub_settings.find(".mute-note").removeClass("hide-mute-note");
         notification_checkboxes.addClass("muted-sub");
         notification_checkboxes.find("input[type='checkbox']").attr("disabled", true);
     }
