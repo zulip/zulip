@@ -36,7 +36,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
-    create_streams_if_needed
+    create_streams_if_needed, active_user_ids
 )
 
 from zerver.views.streams import (
@@ -173,6 +173,43 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete('/json/streams/new_stream')
         self.assert_json_error(result, 'Must be a realm administrator')
 
+    def test_private_stream_live_updates(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        user_profile = get_user_profile_by_email(email)
+        do_change_is_admin(user_profile, True)
+
+        self.make_stream('private_stream', invite_only=True)
+        self.subscribe_to_stream(email, 'private_stream')
+        self.subscribe_to_stream('cordelia@zulip.com', 'private_stream')
+
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/private_stream',
+                                       {'description': ujson.dumps('Test description')})
+        self.assert_json_success(result)
+
+        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+        prospero = get_user_profile_by_email('prospero@zulip.com')
+
+        notified_user_ids = set(events[-1]['users'])
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(cordelia.id, notified_user_ids)
+        self.assertNotIn(prospero.id, notified_user_ids)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/streams/private_stream',
+                                       {'new_name': ujson.dumps('whatever')})
+        self.assert_json_success(result)
+
+        notified_user_ids = set(events[-1]['users'])
+        self.assertIn(user_profile.id, notified_user_ids)
+        self.assertIn(cordelia.id, notified_user_ids)
+        self.assertNotIn(prospero.id, notified_user_ids)
+
     def test_rename_stream(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -196,13 +233,18 @@ class StreamAdminTest(ZulipTestCase):
             value='stream_name2',
             name='stream_name1'
         ))
-        users = events[1]['users']
-        self.assertEqual(users, [user_profile.id])
+        notified_user_ids = set(events[1]['users'])
 
         stream_name1_exists = get_stream('stream_name1', realm)
         self.assertFalse(stream_name1_exists)
         stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
+
+        self.assertEqual(notified_user_ids, set(active_user_ids(realm)))
+        self.assertIn(user_profile.id,
+                      notified_user_ids)
+        self.assertIn(get_user_profile_by_email('prospero@zulip.com').id,
+                      notified_user_ids)
 
         # Test case to handle unicode stream name change
         # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
@@ -276,13 +318,18 @@ class StreamAdminTest(ZulipTestCase):
             value='Test description',
             name='stream_name1'
         ))
-        users = events[0]['users']
-        self.assertEqual(users, [user_profile.id])
+        notified_user_ids = set(events[0]['users'])
 
         stream = Stream.objects.get(
             name='stream_name1',
             realm=realm,
         )
+        self.assertEqual(notified_user_ids, set(active_user_ids(realm)))
+        self.assertIn(user_profile.id,
+                      notified_user_ids)
+        self.assertIn(get_user_profile_by_email('prospero@zulip.com').id,
+                      notified_user_ids)
+
         self.assertEqual('Test description', stream.description)
 
     def test_change_stream_description_requires_realm_admin(self):
