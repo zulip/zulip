@@ -75,10 +75,6 @@ var _ = global._;
         }
     };
 
-    fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
-        global.render_template(o.replace(/\.handlebars/, ""));
-    });
-
     var html = global.render_template('settings_tab', args);
     var div = $(html).find("div.notification-reminder");
     assert.equal(div.text().trim(), 'Some French text with Zulip');
