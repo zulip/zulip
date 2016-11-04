@@ -48,4 +48,4 @@ TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment", "owner"
 ZULIP_API_PATH = None
 
 # Set this to your Zulip API server URI
-ZULIP_SITE = "https://api.zulip.com"
+ZULIP_SITE = "https://zulip.example.com"

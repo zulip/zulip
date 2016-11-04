@@ -61,4 +61,4 @@ def format_commit_message(author, subject, commit_id):
 ZULIP_API_PATH = None
 
 # Set this to your Zulip server's API URI
-ZULIP_SITE = "https://api.zulip.com"
+ZULIP_SITE = "https://zulip.example.com"

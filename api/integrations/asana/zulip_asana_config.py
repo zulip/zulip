@@ -49,7 +49,7 @@ RESUME_FILE = "/var/tmp/zulip_asana.state"
 ASANA_INITIAL_HISTORY_HOURS = 1
 
 # Set this to your Zulip API server URI
-ZULIP_SITE = "https://api.zulip.com"
+ZULIP_SITE = "https://zulip.example.com"
 
 # If properly installed, the Zulip API should be in your import
 # path, but if not, set a custom path below

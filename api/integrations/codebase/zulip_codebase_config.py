@@ -50,7 +50,7 @@ ZULIP_TICKETS_STREAM_NAME = "tickets"
 ZULIP_API_PATH = None
 
 # Set this to your Zulip API server URI
-ZULIP_SITE = "https://api.zulip.com"
+ZULIP_SITE = "https://zulip.example.com"
 
 # If you wish to log to a file rather than stdout/stderr,
 # please fill this out your desired path
