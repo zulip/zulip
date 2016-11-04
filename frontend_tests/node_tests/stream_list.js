@@ -29,10 +29,10 @@ $.fn.expectOne = function () {
     return this;
 };
 
-global.use_template('sidebar_private_message_list');
-global.use_template('stream_sidebar_row');
-global.use_template('stream_privacy');
-global.use_template('topic_list_item');
+global.compile_template('sidebar_private_message_list');
+global.compile_template('stream_sidebar_row');
+global.compile_template('stream_privacy');
+global.compile_template('topic_list_item');
 
 (function test_topic_list_build_widget() {
     var stream = "devel";
