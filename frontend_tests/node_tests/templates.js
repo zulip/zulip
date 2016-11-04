@@ -42,6 +42,18 @@ fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forE
     render(o.replace(/\.handlebars/, ""));
 });
 
+(function test_finding_partials () {
+    var fns = global.find_included_partials('settings_tab');
+    assert.deepEqual(fns, [
+        'account-settings',
+        'display-settings',
+        'notification-settings',
+        'bot-settings',
+        'alert-word-settings',
+        'ui-settings'
+    ]);
+}());
+
 (function test_handlebars_bug () {
     // There was a bug in 1.0.9 where identically structured
     // blocks get confused, so when foo is false, it still
