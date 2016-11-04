@@ -644,42 +644,6 @@ class RealmCreationTest(ZulipTestCase):
 
             self.assertTrue(result["Location"].endswith("/"))
 
-class UserSignUpTest(ZulipTestCase):
-
-    def test_user_default_language(self):
-        # type: () -> None
-        """
-        Check if the default language of new user is the default language
-        of the realm.
-        """
-        username = "newguy"
-        email = "newguy@zulip.com"
-        domain = "zulip.com"
-        password = "newpassword"
-        realm = get_realm(domain)
-        do_set_realm_default_language(realm, "de")
-
-        result = self.client_post('/accounts/home/', {'email': email})
-        self.assertEquals(result.status_code, 302)
-        self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s@%s" % (username, domain)))
-        result = self.client_get(result["Location"])
-        self.assert_in_response("Check your email so we can get started.", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEquals(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(username, password, domain)
-        self.assertEquals(result.status_code, 302)
-
-        user_profile = get_user_profile_by_email(email)
-        self.assertEqual(user_profile.default_language, realm.default_language)
-        from django.core.mail import outbox
-        outbox.pop()
-
     def test_create_realm_with_subdomain(self):
         # type: () -> None
         username = "user1"
@@ -730,6 +694,42 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, subdomain)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
+
+class UserSignUpTest(ZulipTestCase):
+
+    def test_user_default_language(self):
+        # type: () -> None
+        """
+        Check if the default language of new user is the default language
+        of the realm.
+        """
+        username = "newguy"
+        email = "newguy@zulip.com"
+        domain = "zulip.com"
+        password = "newpassword"
+        realm = get_realm(domain)
+        do_set_realm_default_language(realm, "de")
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEquals(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+                "/accounts/send_confirm/%s@%s" % (username, domain)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEquals(result.status_code, 200)
+
+        # Pick a password and agree to the ToS.
+        result = self.submit_reg_form_for_user(username, password, domain)
+        self.assertEquals(result.status_code, 302)
+
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(user_profile.default_language, realm.default_language)
+        from django.core.mail import outbox
+        outbox.pop()
 
     def test_completely_open_domain_under_subdomains(self):
         # type: () -> None
