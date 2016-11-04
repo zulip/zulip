@@ -228,10 +228,10 @@ function stream_pin_clicked(e) {
     exports.toggle_pin_to_top_stream(stream);
 }
 
-exports.set_color = function (stream_name, color) {
-    var sub = stream_data.get_sub(stream_name);
-    stream_color.update_stream_color(sub, stream_name, color, {update_historical: true});
-    set_stream_property(stream_name, 'color', color);
+exports.set_color = function (stream_id, color) {
+    var sub = stream_data.get_sub_by_id(stream_id);
+    stream_color.update_stream_color(sub, sub.name, color, {update_historical: true});
+    set_stream_property(sub.name, 'color', color);
 };
 
 exports.rerender_subscribers_count = function (sub) {
