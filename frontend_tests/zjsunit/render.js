@@ -84,10 +84,13 @@ exports.walk = function (dir, filelist) {
     return filelist;
 };
 
-exports.partial_finder = (function () {
-    var meta = {
-        read: []
-    };
+exports.template_finder = (function () {
+    // This class lets you find template files in our file system.
+    // It may be slightly overkill for our flat directory system;
+    // it might make more sense to just do something more like
+    // this: get_template_dir() + name + '.handlebars'
+
+    var self = {};
 
     // get all files and then map them into friendlier names.
     var files = exports.walk(template_dir()).map(function (file) {
@@ -96,6 +99,23 @@ exports.partial_finder = (function () {
             name: file.name.replace(/\.handlebars$/, "")
         };
     });
+
+    self.get = function (name) {
+        var file = files.find(function (file) {
+            return file.name === name;
+        });
+        assert(file);
+
+        return file;
+    };
+
+    return self;
+}());
+
+exports.partial_finder = (function () {
+    var meta = {
+        read: []
+    };
 
     // this is the external function that is called that will recursively search
     // for partials in a file and partials inside partials until it finds them all.
@@ -109,9 +129,7 @@ exports.partial_finder = (function () {
 
             meta.read.push(name);
 
-            var file = files.find(function (file) {
-                return file.name === name;
-            });
+            var file = exports.template_finder.get(name);
 
             if (file) {
                 var template = fs.readFileSync(file.url, "utf8");
