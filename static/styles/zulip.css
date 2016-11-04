@@ -1217,7 +1217,8 @@ div.focused_table {
 }
 
 .message_content p {
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .message_edit_content {
