@@ -134,6 +134,7 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
+    $("#tab_bar").click();
     $('#search_query').select();
 };
 
