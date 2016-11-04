@@ -751,7 +751,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
-            ('user_email', check_string),
+            ('user_id', check_int),
             ('subscriptions', check_list(check_string)),
         ])
         error = schema_checker('events[2]', events[2])
@@ -791,7 +791,7 @@ class EventsRegisterTest(ZulipTestCase):
         peer_add_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
-            ('user_email', check_string),
+            ('user_id', check_int),
             ('subscriptions', check_list(check_string)),
         ])
         peer_remove_schema_checker = check_dict([

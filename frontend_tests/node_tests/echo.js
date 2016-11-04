@@ -4,10 +4,27 @@ var fs = require('fs');
 
 global.stub_out_jquery();
 
-set_global('page_params', {realm_emoji: {
-  burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
-            source_url: '/static/third/gemoji/images/emoji/burrito.png'}
-}});
+set_global('page_params', {
+    people_list: [],
+    realm_emoji: {
+        burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
+                  source_url: '/static/third/gemoji/images/emoji/burrito.png'}
+    },
+    realm_filters: [
+        [
+            "#(?P<id>[0-9]{2,8})",
+            "https://trac.zulip.net/ticket/%(id)s"
+        ],
+        [
+            "ZBUG_(?P<id>[0-9]{2,8})",
+            "https://trac2.zulip.net/ticket/%(id)s"
+        ],
+        [
+            "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
+            "https://zone_%(zone)s.zulip.net/ticket/%(id)s"
+        ]
+    ]
+});
 
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
@@ -30,16 +47,15 @@ set_global('$', function (obj) {
   }
 });
 
-set_global('page_params', {
-  realm_filters: [["#(?P<id>[0-9]{2,8})", "https://trac.zulip.net/ticket/%(id)s"],
-                  ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
-                  ["ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})", "https://zone_%(zone)s.zulip.net/ticket/%(id)s"]]
-});
-
 set_global('feature_flags', {local_echo: true});
 
-var people = require("js/people.js");
-people.test_set_people_name_dict({'Cordelia Lear': {full_name: 'Cordelia Lear', email: 'cordelia@zulip.com'}});
+var people = global.people;
+
+people.add({
+    full_name: 'Cordelia Lear',
+    user_id: 101,
+    email: 'cordelia@zulip.com'
+});
 
 var echo = require('js/echo.js');
 

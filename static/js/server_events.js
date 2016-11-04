@@ -121,6 +121,23 @@ function dispatch_normal_event(event) {
             _.each(event.subscriptions, function (sub) {
                 subs.mark_subscribed(sub.name, sub);
             });
+        } else if (event.op === 'peer_add') {
+            // TODO: remove email shim here and fix called functions
+            //       to use user_ids
+            var person = people.get_person_from_user_id(event.user_id);
+            var email = person.email;
+            _.each(event.subscriptions, function (sub) {
+                stream_data.add_subscriber(sub, email);
+                $(document).trigger('peer_subscribe.zulip',
+                                    {stream_name: sub, user_email: email});
+            });
+        } else if (event.op === 'peer_remove') {
+            _.each(event.subscriptions, function (sub) {
+                var email = event.user_email;
+                stream_data.remove_subscriber(sub, email);
+                $(document).trigger('peer_unsubscribe.zulip',
+                                    {stream_name: sub, user_email: email});
+            });
         } else if (event.op === 'remove') {
             _.each(event.subscriptions, function (rec) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
@@ -128,23 +145,6 @@ function dispatch_normal_event(event) {
             });
         } else if (event.op === 'update') {
             subs.update_subscription_properties(event.name, event.property, event.value);
-        } else if (event.op === 'peer_add' || event.op === 'peer_remove') {
-            _.each(event.subscriptions, function (sub) {
-                var js_event_type;
-                if (event.op === 'peer_add') {
-                    js_event_type = 'peer_subscribe.zulip';
-
-                    stream_data.add_subscriber(sub, event.user_email);
-                } else if (event.op === 'peer_remove') {
-                    js_event_type = 'peer_unsubscribe.zulip';
-
-                    stream_data.remove_subscriber(sub, event.user_email);
-                }
-
-                $(document).trigger(js_event_type, {stream_name: sub,
-                                                    user_email: event.user_email});
-            });
-
         }
         break;
 

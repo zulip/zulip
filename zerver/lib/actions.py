@@ -1494,7 +1494,7 @@ def bulk_add_subscriptions(streams, users):
             for added_user in new_users:
                 event = dict(type="subscription", op="peer_add",
                              subscriptions=[stream.name],
-                             user_email=added_user.email)
+                             user_id=added_user.id)
                 send_event(event, peer_user_ids)
 
 
@@ -2655,7 +2655,7 @@ def decode_email_address(email):
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
 def gather_subscriptions_helper(user_profile):
-    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]], Dict[int, text_type]]
+    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
@@ -2740,6 +2740,13 @@ def gather_subscriptions_helper(user_profile):
                 stream_dict['subscribers'] = subscribers
             never_subscribed.append(stream_dict)
 
+    return (sorted(subscribed, key=lambda x: x['name']),
+            sorted(unsubscribed, key=lambda x: x['name']),
+            sorted(never_subscribed, key=lambda x: x['name']))
+
+def gather_subscriptions(user_profile):
+    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]
+    subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
     user_ids = set()
     for subs in [subscribed, unsubscribed, never_subscribed]:
         for sub in subs:
@@ -2747,14 +2754,7 @@ def gather_subscriptions_helper(user_profile):
                 for subscriber in sub['subscribers']:
                     user_ids.add(subscriber)
     email_dict = get_emails_from_user_ids(list(user_ids))
-    return (sorted(subscribed, key=lambda x: x['name']),
-            sorted(unsubscribed, key=lambda x: x['name']),
-            sorted(never_subscribed, key=lambda x: x['name']),
-            email_dict)
 
-def gather_subscriptions(user_profile):
-    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]
-    subscribed, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(user_profile)
     for subs in [subscribed, unsubscribed]:
         for sub in subs:
             if 'subscribers' in sub:
@@ -2855,11 +2855,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
                               'used': user_profile.invites_used}
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(user_profile)
+        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
-        state['email_dict'] = email_dict
 
     if want('update_message_flags'):
         # There's no initial data for message flag updates, client will
@@ -3022,7 +3021,7 @@ def apply_events(state, events, user_profile):
                     if sub['name'].lower() == event['name'].lower():
                         sub[event['property']] = event['value']
             elif event['op'] == 'peer_add':
-                user_id = get_user_profile_by_email(event['user_email']).id
+                user_id = event['user_id']
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
                         user_id not in sub['subscribers']):

@@ -524,8 +524,8 @@ exports.update_dom_with_unread_counts = function (counts) {
     animate_mention_changes(counts.mentioned_message_count);
 };
 
-exports.rename_stream = function (sub) {
-    sub.sidebar_li = build_stream_sidebar_row(sub.name);
+exports.rename_stream = function (sub, new_name) {
+    sub.sidebar_li = build_stream_sidebar_row(new_name);
     exports.build_stream_list(); // big hammer
 };
 
@@ -596,12 +596,6 @@ $(function () {
     $(document).on('narrow_deactivated.zulip', function (event) {
         reset_to_unnarrowed();
         $("#global_filters li[data-name='home']").addClass('active-filter');
-    });
-
-    $(document).on('sub_obj_created.zulip', function (event) {
-        if (event.sub.subscribed) {
-            exports.create_sidebar_row(event.sub);
-        }
     });
 
     $(document).on('subscription_add_done.zulip', function (event) {

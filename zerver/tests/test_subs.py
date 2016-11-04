@@ -1355,7 +1355,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 14)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_email'], self.test_email)
+        self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
 
         stream = get_stream('multi_user_stream', realm)
         self.assertEqual(stream.num_subscribers(), 3)
@@ -1384,7 +1384,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(len(add_peer_event['users']), 14)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
-        self.assertEqual(add_peer_event['event']['user_email'], email3)
+        self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
 
 
     def test_users_getting_add_peer_event(self):
@@ -2023,7 +2023,7 @@ class GetSubscribersTest(ZulipTestCase):
             invite_only=True)
         self.assert_json_success(ret)
         with queries_captured() as queries:
-            subscribed, unsubscribed, never_subscribed, email_dict = gather_subscriptions_helper(self.user_profile)
+            subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(self.user_profile)
         self.assertTrue(len(never_subscribed) >= 10)
 
         # Invite only stream should not be there in never_subscribed streams
@@ -2031,7 +2031,7 @@ class GetSubscribersTest(ZulipTestCase):
             if stream_dict["name"].startswith("stream_"):
                 self.assertFalse(stream_dict['name'] == "stream_invite_only_1")
                 self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 3)
 
     @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):

@@ -296,7 +296,7 @@ var event_fixtures = {
     subscription__peer_add: {
         type: 'subscription',
         op: 'peer_add',
-        user_email: 'bob@example.com',
+        user_id: 555,
         subscriptions: [
             {
                 name: 'devel',
@@ -634,6 +634,14 @@ run(function (override, capture, args) {
 
 run(function (override, capture, args) {
     // subscription
+
+    // This next section can go away when we start handling
+    // user_ids more directly in some of subscriptions code.
+    override('people', 'get_person_from_user_id', function (user_id) {
+        assert_same(user_id, 555);
+        return {email: 'bob@example.com'};
+    });
+
     var event = event_fixtures.subscription__add;
     override('subs', 'mark_subscribed', capture(['name', 'sub']));
     dispatch(event);
@@ -644,7 +652,7 @@ run(function (override, capture, args) {
     override('stream_data', 'add_subscriber', capture(['sub', 'email']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.email, event.user_email);
+    assert_same(args.email, 'bob@example.com');
 
     event = event_fixtures.subscription__peer_remove;
     override('stream_data', 'remove_subscriber', capture(['sub', 'email']));
