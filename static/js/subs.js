@@ -2,6 +2,16 @@ var subs = (function () {
 
 var exports = {};
 
+function settings_for_sub(sub) {
+    var id = parseInt(sub.stream_id, 10);
+    return $(".stream-row[data-stream-id='" + id + "'] .subscription_settings");
+}
+
+function button_for_sub(sub) {
+    var id = parseInt(sub.stream_id, 10);
+    return $(".stream-row[data-stream-id='" + id + "'] .check");
+}
+
 function get_color() {
     var used_colors = stream_data.get_colors();
     var color = stream_color.pick_color(used_colors);
@@ -190,7 +200,6 @@ function update_stream_description(sub, description) {
     // Update stream settings
     var settings = settings_for_sub(sub);
     settings.find('input.description').val(description);
-    settings.find('.stream-description').text(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
@@ -221,16 +230,6 @@ exports.set_color = function (stream_name, color) {
     stream_color.update_stream_color(sub, stream_name, color, {update_historical: true});
     set_stream_property(stream_name, 'color', color);
 };
-
-function button_for_sub(sub) {
-    var id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream-id='" + id + "'] .check");
-}
-
-function settings_for_sub(sub) {
-    var id = parseInt(sub.stream_id, 10);
-    return $(".stream-row[data-stream-id='" + id + "'] .subscription_settings");
-}
 
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
