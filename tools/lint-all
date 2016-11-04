@@ -493,6 +493,13 @@ def run():
             return result
 
         @lint
+        def eslint():
+            # type: () -> int
+            result = subprocess.call(['npm', 'run', '--silent', 'lint']
+                                     + by_lang['js'])
+            return result
+
+        @lint
         def puppet():
             # type: () -> int
             if not by_lang['pp']:

@@ -16,17 +16,21 @@
     "webpack": "1.12.2"
   },
   "devDependencies": {
+    "casperjs": "1.1.3",
+    "cssstyle": "0.2.29",
+    "eslint": "^3.9.1",
+    "htmlparser2": "3.8.3",
     "istanbul": "0.4.0",
     "jsdom": "9.4.1",
-    "xmlhttprequest": "1.5.0",
     "nwmatcher": "1.3.6",
-    "htmlparser2": "3.8.3",
-    "cssstyle": "0.2.29",
-    "webpack-dev-server": "1.12.1",
     "phantomjs-prebuilt": "2.1.7",
-    "casperjs": "1.1.3"
+    "webpack-dev-server": "1.12.1",
+    "xmlhttprequest": "1.5.0"
   },
-  "scripts": {},
+  "scripts": {
+    "lint": "eslint --quiet",
+    "lint-loud": "eslint static/js frontend_tests"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/zulip/zulip.git"
