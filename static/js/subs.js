@@ -477,42 +477,29 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
+// query is now an object rather than a string.
+// Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
-    var sub_name_elements = $('#subscriptions_table .stream-name');
-
-    if (query === '') {
-        _.each(sub_name_elements, function (sub_name_elem) {
-            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
-        });
-        return;
-    }
-
-    var search_terms = query.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
+    var search_terms = query.input.toLowerCase().split(",").map(function (s) {
         return s.trim();
     });
 
-    _.each(sub_name_elements, function (sub_name_elem) {
-        var sub_name = $(sub_name_elem).text();
-        var matches = _.any(search_terms, function (search_term) {
-            var lower_sub_name = sub_name.toLowerCase();
-            var idx = lower_sub_name.indexOf(search_term);
-            if (idx === 0) {
-                // matched at beginning of the string
-                return true;
-            }
-            // we know now that idx === -1 or idx > 0
-            if (idx !== -1 && lower_sub_name.charAt(idx - 1) === ' ') {
-                // matched with a space immediately preceding
-                return true;
-            }
-            return false;
-        });
+    _.each($("#subscriptions_table .stream-row"), function (row) {
+        var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
+        var flag = true;
 
-        if (matches) {
-            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
+        flag = flag && (function () {
+            var sub_name = sub.name.toLowerCase();
+            var matches_list = search_terms.indexOf(sub_name) > -1;
+            var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
+            return matches_list || matches_last_val;
+        }());
+        flag = flag && (sub.subscribed || !query.subscribed_only);
+
+        if (flag) {
+            $(row).removeClass("notdisplayed");
         } else {
-            $(sub_name_elem).parents('.stream-row').addClass("notdisplayed");
+            $(row).addClass("notdisplayed");
         }
     });
 };
@@ -520,7 +507,7 @@ exports.filter_table = function (query) {
 function actually_filter_streams() {
     var search_box = $("#create_or_filter_stream_row input[type='text']");
     var query = search_box.expectOne().val().trim();
-    exports.filter_table(query);
+    exports.filter_table({input: query});
 }
 
 var filter_streams = _.throttle(actually_filter_streams, 50);
