@@ -112,4 +112,5 @@ Contents:
    full-text-search
    translating
    logging
+   release-checklist
    README
