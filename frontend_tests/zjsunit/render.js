@@ -112,6 +112,27 @@ exports.template_finder = (function () {
     return self;
 }());
 
+exports.find_included_partials = function (name) {
+
+    var file = exports.template_finder.get(name);
+
+    assert(file);
+
+    var template = fs.readFileSync(file.url, "utf8");
+
+    var lst = [];
+
+    // match partial tags.
+    // this uses String.prototype.replace which is kind of hacky but
+    // it is the only JS function IIRC that allows you to match all
+    // instances of a pattern AND return capture groups.
+    template.replace(/\{\{\s*partial\s*"(.+?)"/ig, function (match, $1) {
+        lst.push($1);
+    });
+
+    return lst;
+};
+
 exports.partial_finder = (function () {
     var meta = {
         read: []
@@ -128,20 +149,12 @@ exports.partial_finder = (function () {
             }
 
             meta.read.push(name);
+            var included_fns = exports.find_included_partials(name);
 
-            var file = exports.template_finder.get(name);
+            _.each(included_fns, function (fn) {
+                __prototype__(fn, callback);
+            });
 
-            if (file) {
-                var template = fs.readFileSync(file.url, "utf8");
-
-                // match partial tags.
-                // this uses String.prototype.replace which is kind of hacky but
-                // it is the only JS function IIRC that allows you to match all
-                // instances of a pattern AND return capture groups.
-                template.replace(/\{\{\s*partial\s*"(.+?)"/ig, function (match, $1) {
-                    __prototype__($1, callback);
-                });
-            }
         }
     };
 
