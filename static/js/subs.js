@@ -275,7 +275,8 @@ function format_member_list_elem(email) {
 }
 
 function get_subscriber_list(sub_row) {
-    return sub_row.find('.subscriber_list_container .subscriber-list');
+    var id = sub_row.data("stream-id");
+    return $('.subscription_settings[data-stream-id="' + id + '"] .subscriber-list');
 }
 
 function prepend_subscriber(sub_row, email) {
