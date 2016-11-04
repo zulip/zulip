@@ -1078,6 +1078,7 @@ $(function () {
     });
 
     function redraw_privacy_related_stuff(sub_row, sub) {
+        var stream_settings = settings_for_sub(sub);
         var html;
 
         sub = stream_data.add_admin_options(sub);
@@ -1086,10 +1087,10 @@ $(function () {
         sub_row.find('.icon').expectOne().replaceWith($(html));
 
         html = templates.render('subscription_type', sub);
-        sub_row.find('.subscription-type').expectOne().html(html);
+        stream_settings.find('.subscription-type').expectOne().html(html);
 
         html = templates.render('change_stream_privacy', sub);
-        sub_row.find('.change-stream-privacy').expectOne().html(html);
+        stream_settings.find('.change-stream-privacy').expectOne().html(html);
 
         stream_list.redraw_stream_privacy(sub.name);
     }
