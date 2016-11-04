@@ -1098,24 +1098,27 @@ $(function () {
     function change_stream_privacy(e, url, success_message, error_message, invite_only) {
         e.preventDefault();
 
-        var sub_row = $(e.target).closest('.stream-row');
-        var stream_name = sub_row.attr("data-stream-name");
+        var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
+        var sub = stream_data.get_sub_by_id(stream_id);
 
         $("#subscriptions-status").hide();
-        var data = {"stream_name": stream_name};
+        var data = {"stream_name": sub.name};
 
         channel.post({
             url: url,
             data: data,
             success: function (data) {
-                var sub = stream_data.get_sub(stream_name);
+                sub = stream_data.get_sub_by_id(stream_id);
+                var stream_settings = settings_for_sub(sub);
+                var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
                 sub.invite_only = invite_only;
                 redraw_privacy_related_stuff(sub_row, sub);
-                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
+                var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
                 ui.report_success(success_message, feedback_div);
             },
             error: function (xhr) {
-                var feedback_div = sub_row.find(".change-stream-privacy-feedback").expectOne();
+                var stream_settings = settings_for_sub(sub);
+                var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
                 ui.report_error(error_message, xhr, feedback_div);
             }
         });
