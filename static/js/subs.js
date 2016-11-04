@@ -230,7 +230,6 @@ function stream_pin_clicked(e) {
 
 exports.set_color = function (stream_id, color) {
     var sub = stream_data.get_sub_by_id(stream_id);
-    stream_color.update_stream_color(sub, sub.name, color, {update_historical: true});
     set_stream_property(sub.name, 'color', color);
 };
 
