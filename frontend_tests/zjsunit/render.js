@@ -11,12 +11,6 @@ function template_dir() {
     return __dirname + '/../../static/templates/';
 }
 
-var list_of_exceptions = [""].concat((function () {
-    return fs.readdirSync(template_dir()).filter(function (file) {
-        return fs.statSync(path.join(template_dir(), file)).isDirectory();
-    });
-}()));
-
 exports.init = function () {
     Handlebars.templates = {};
 };
@@ -56,23 +50,8 @@ exports.compile_template = function (name) {
         return;
     }
 
-    var flag = false,
-        counter = 0,
-        data;
-
-    while (flag === false && counter < list_of_exceptions.length) {
-        try {
-            data = fs.readFileSync(path.join(template_dir(), list_of_exceptions[counter], name + '.handlebars')).toString();
-            if (data) {
-                flag = true;
-            }
-        } catch (err) {
-            flag = false;
-        } finally {
-            counter++;
-        }
-    }
-
+    var file = exports.template_finder.get(name);
+    var data = fs.readFileSync(file.url).toString();
     Handlebars.templates[name] = Handlebars.compile(data);
 };
 
