@@ -90,7 +90,7 @@ exports.partial_finder = (function () {
     };
 
     // get all files and then map them into friendlier names.
-    var files = exports.walk(path.join(__dirname, "../../static/templates")).map(function (file) {
+    var files = exports.walk(template_dir()).map(function (file) {
         return {
             url: file.url,
             name: file.name.replace(/\.handlebars$/, "")
