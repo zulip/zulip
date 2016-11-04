@@ -16,15 +16,11 @@ exports.init = function () {
 };
 
 exports.make_sure_all_templates_have_been_compiled = function () {
-    var dir = template_dir();
-    var fns = fs.readdirSync(dir).filter(function (fn) {
-        return (/\.handlebars/).test(fn);
-    });
+    var files = exports.template_finder.get_all();
 
-    _.each(fns, function (fn) {
-        var name = fn.split('.')[0];
-        if (!Handlebars.templates[name]) {
-            throw "The file " + fn + " has no test coverage.";
+    _.each(files, function (file) {
+        if (!Handlebars.templates[file.name]) {
+            throw "The file " + file.url + " has no test coverage.";
         }
     });
 };
@@ -88,12 +84,17 @@ exports.template_finder = (function () {
     var self = {};
 
     // get all files and then map them into friendlier names.
-    var files = exports.walk(template_dir()).map(function (file) {
-        return {
-            url: file.url,
-            name: file.name.replace(/\.handlebars$/, "")
-        };
-    });
+    var all_files = exports.walk(template_dir());
+    var files = all_files
+            .filter(function (file) {
+                return (/\.handlebars$/).test(file.name);
+            })
+            .map(function (file) {
+                return {
+                    url: file.url,
+                    name: file.name.replace(/\.handlebars$/, "")
+                };
+            });
 
     self.get = function (name) {
         var file = files.find(function (file) {
@@ -102,6 +103,10 @@ exports.template_finder = (function () {
         assert(file);
 
         return file;
+    };
+
+    self.get_all = function () {
+        return files;
     };
 
     return self;
