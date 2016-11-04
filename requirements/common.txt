@@ -16,7 +16,7 @@ Pillow==3.3.1
 Pygments==2.1.3
 
 # Needed for building complex DB queries
-SQLAlchemy==1.1.1
+SQLAlchemy==1.1.3
 
 # Needed for Tornado >3.2 compatibility
 backports-abc==0.4
@@ -25,7 +25,7 @@ backports-abc==0.4
 backports.ssl-match-hostname==3.5.0.1
 
 # Needed for S3 file uploads
-boto==2.42.0
+boto==2.43.0
 
 certifi==2016.9.26
 chardet==2.3.0
@@ -50,7 +50,7 @@ git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042
 django-statsd-mozilla==0.3.16
 
 docopt==0.6.2
-fonttools==3.1.2
+fonttools==3.2.1
 
 # Needed for mock 2.0.0
 funcsigs==1.0.2
@@ -61,7 +61,7 @@ gcm-client==0.1.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.5.3
+google-api-python-client==1.5.5
 
 # Needed for the email mirror
 html2text==2016.9.19
@@ -107,7 +107,7 @@ redis==2.10.5
 # Dependencies of our API
 requests==2.11.1
 
-requests_oauthlib==0.6.2
+requests_oauthlib==0.7.0
 rsa==3.4.2
 
 # Dependencies of our API
@@ -138,7 +138,7 @@ typing==3.5.2.2
 # Fast JSON parser
 ujson==1.35
 
-uritemplate==0.6
+uritemplate==3.0.0
 
 # Django extension for static asset pipeline
 django-pipeline==1.6.9
