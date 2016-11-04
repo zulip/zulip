@@ -1,7 +1,9 @@
-Twisted==16.4.1
+Twisted==16.5.0
 zope.interface==4.3.2
 service-identity==16.0.0
 attrs==16.2.0
+constantly==15.1.0
+incremental==16.10.1
 
 # Needed for documentation links test
 -r scrapy.txt
