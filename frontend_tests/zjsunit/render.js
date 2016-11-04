@@ -40,6 +40,11 @@ exports.use_template = function (name) {
         Handlebars.templates = {};
     }
 
+    if (_.has(Handlebars.template, name)) {
+        // we already compile the template
+        return;
+    }
+
     var flag = false,
         counter = 0,
         data;
