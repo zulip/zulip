@@ -215,4 +215,16 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
   assert.equal(message.flags.length, 2);
   assert(message.flags.indexOf('read') !== -1);
   assert(message.flags.indexOf('mentioned') !== -1);
+
+  input = "test @all";
+  message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  echo._add_message_flags(message);
+  assert.equal(message.flags.length, 2);
+  assert(message.flags.indexOf('mentioned') !== -1);
+
+  input = "test @any";
+  message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  echo._add_message_flags(message);
+  assert.equal(message.flags.length, 1);
+  assert(message.flags.indexOf('mentioned') === -1);
 }());

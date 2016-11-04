@@ -536,7 +536,7 @@ inline.breaks = merge({}, inline.gfm, {
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
-  usermention: /^(@\*\*([^\*]+)?\*\*)/m,
+  usermention: /^(@(?:\*\*([^\*]+)?\*\*|(\w+)?))/m, // Match multi-word string between @** ** or match any one-word
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
@@ -721,7 +721,7 @@ InlineLexer.prototype.output = function(src) {
     // usermention (zulip)
     if (cap = this.rules.usermention.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.usermention(cap[2], cap[1]);
+      out += this.usermention(cap[2] || cap[3], cap[1]);
       continue;
     }
 
