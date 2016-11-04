@@ -179,9 +179,8 @@ function update_stream_name(stream_id, old_name, new_name) {
     stream_list.rename_stream(sub, new_name);
 
     // Update the subscriptions page
-    var sub_settings_selector = '.stream-row[data-stream-id=' + sub.stream_id + ']';
-    $(sub_settings_selector + ' .stream-name').text(new_name);
     var sub_row = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
+    sub_row.find(".stream-name").text(new_name);
     sub_row.attr("data-stream-name", new_name);
 
     // Update the message feed.
@@ -1022,24 +1021,24 @@ $(function () {
 
     $("#subscriptions_table").on("submit", ".rename-stream form", function (e) {
         e.preventDefault();
-
-        var sub_row = $(e.target).closest('.stream-row');
-        var old_name_box = sub_row.find('.stream-name');
-        var old_name = old_name_box.text();
-        var new_name_box = sub_row.find('input[name="new-name"]');
+        var sub_settings = $(e.target).closest('.subscription_settings');
+        var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
+        var sub = stream_data.get_sub_by_id(stream_id);
+        var new_name_box = sub_settings.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());
 
         $("#subscriptions-status").hide();
 
         channel.patch({
             // Stream names might contain unsafe characters so we must encode it first.
-            url: "/json/streams/" + encodeURIComponent(old_name),
+            url: "/json/streams/" + encodeURIComponent(sub.name),
             data: {"new_name": JSON.stringify(new_name)},
             success: function (data) {
                 new_name_box.val('');
                 // Update all visible instances of the old name to the new name.
                 old_name_box.text(new_name);
-                sub_row.find(".email-address").text(data.email_address);
+                sub_settings = settings_for_sub(stream_data.get_sub_by_id(stream_id));
+                sub_settings.find(".email-address").text(data.email_address);
 
                 ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
                                   'subscriptions-status');
