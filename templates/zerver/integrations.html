@@ -1021,7 +1021,7 @@
         <li><p>On your {{ settings_html|safe }}, create a bot account. Note its username, API key and full name; you will use them on the next step.</p></li>
 
         <li>To run Hubot locally, use:
-          <pre><code>HUBOT_ZULIP_BOT=hubot-bot@example.com HUBOT_ZULIP_API_KEY=your_key bin/hubot --adapter zulip --name "myhubot"</code></pre>
+          <pre><code>HUBOT_ZULIP_SITE={{ external_api_path_subdomain }} HUBOT_ZULIP_BOT=hubot-bot@example.com HUBOT_ZULIP_API_KEY=your_key bin/hubot --adapter zulip --name "myhubot"</code></pre>
 
         </li>
       </ol>
