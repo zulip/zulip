@@ -762,6 +762,7 @@ JS_SPECS = {
             'js/loading.js',
             'js/util.js',
             'js/dict.js',
+            'js/components.js',
             'js/localstorage.js',
             'js/channel.js',
             'js/setup.js',
