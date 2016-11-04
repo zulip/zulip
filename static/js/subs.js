@@ -1055,9 +1055,9 @@ $(function () {
         e.preventDefault();
         var form = $(e.target);
 
-        var sub_row = $(e.target).closest('.stream-row');
-        var stream_name = get_stream_name(sub_row);
-        var description = sub_row.find('input[name="description"]').val();
+        var sub_settings = $(e.target).closest('.subscription_settings');
+        var stream_name = get_stream_name(sub_settings);
+        var description = sub_settings.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
 
