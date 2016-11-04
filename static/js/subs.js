@@ -178,6 +178,10 @@ function update_stream_name(stream_id, old_name, new_name) {
     // Update the left sidebar.
     stream_list.rename_stream(sub, new_name);
 
+    // Update the stream settings
+    var sub_settings = settings_for_sub(stream_data.get_sub_by_id(stream_id));
+    sub_settings.find(".email-address").text(sub.email_address);
+
     // Update the subscriptions page
     var sub_row = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
     sub_row.find(".stream-name").text(new_name);
@@ -1035,11 +1039,6 @@ $(function () {
             data: {"new_name": JSON.stringify(new_name)},
             success: function (data) {
                 new_name_box.val('');
-                // Update all visible instances of the old name to the new name.
-                old_name_box.text(new_name);
-                sub_settings = settings_for_sub(stream_data.get_sub_by_id(stream_id));
-                sub_settings.find(".email-address").text(data.email_address);
-
                 ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
                                   'subscriptions-status');
             },
