@@ -43,6 +43,9 @@ from zerver.views.streams import (
     compose_views
 )
 
+
+from zerver.lib.actions import can_access_stream_user_ids
+
 from django.http import HttpResponse
 import mock
 import random
@@ -197,12 +200,13 @@ class StreamAdminTest(ZulipTestCase):
             name='stream_name1'
         ))
         users = events[1]['users']
-        self.assertEqual(users, [user_profile.id])
 
         stream_name1_exists = get_stream('stream_name1', realm)
         self.assertFalse(stream_name1_exists)
         stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
+
+        self.assertEqual(users, can_access_stream_user_ids(stream_name2_exists))
 
         # Test case to handle unicode stream name change
         # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
@@ -277,12 +281,12 @@ class StreamAdminTest(ZulipTestCase):
             name='stream_name1'
         ))
         users = events[0]['users']
-        self.assertEqual(users, [user_profile.id])
 
         stream = Stream.objects.get(
             name='stream_name1',
             realm=realm,
         )
+        self.assertEqual(users, can_access_stream_user_ids(stream))
         self.assertEqual('Test description', stream.description)
 
     def test_change_stream_description_requires_realm_admin(self):
