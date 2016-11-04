@@ -213,7 +213,9 @@ class Client(object):
         self.email = email
         self.verbose = verbose
         if site is not None:
-            if not site.startswith("http"):
+            if site.startswith("localhost"):
+                site = "http://" + site
+            elif not site.startswith("http"):
                 site = "https://" + site
             # Remove trailing "/"s from site to simplify the below logic for adding "/api"
             site = site.rstrip("/")
