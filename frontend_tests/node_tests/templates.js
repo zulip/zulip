@@ -35,10 +35,6 @@ function render(template_name, args) {
     return global.render_template(template_name, args);
 }
 
-fs.readdirSync(path.join(__dirname, "../../static/templates/", "settings")).forEach(function (o) {
-    render(o.replace(/\.handlebars/, ""));
-});
-
 (function test_finding_partials () {
     var fns = global.find_included_partials('settings_tab');
     assert.deepEqual(fns, [
