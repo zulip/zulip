@@ -125,6 +125,8 @@ var _ = global._;
     people.incr_recipient_count(email);
     people.incr_recipient_count(email);
     assert.equal(people.get_recipient_count({email: email}), 2);
+
+    assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 }());
 
 (function test_filtered_users() {
