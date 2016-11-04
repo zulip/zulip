@@ -288,16 +288,18 @@ function show_subscription_settings(sub_row) {
     sub_arrow.removeClass('icon-vector-chevron-down');
     sub_arrow.addClass('icon-vector-chevron-up');
 
-    var stream_name = get_stream_name(sub_row);
-    var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
-    var error_elem = sub_row.find('.subscriber_list_container .alert-error');
-    var list = get_subscriber_list(sub_row);
-    var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
+    var stream_id = sub_row.data("stream-id");
+    var sub = stream_data.get_sub_by_id(stream_id);
+    var sub_settings = settings_for_sub(sub);
+    var warning_elem = sub_settings.find('.subscriber_list_container .alert-warning');
+    var error_elem = sub_settings.find('.subscriber_list_container .alert-error');
+    var indicator_elem = sub_settings.find('.subscriber_list_loading_indicator');
 
-    if (!stream_data.get_sub(stream_name).render_subscribers) {
+    if (!sub.render_subscribers) {
         return;
     }
 
+    var list = get_subscriber_list(sub_settings);
     warning_elem.addClass('hide');
     error_elem.addClass('hide');
     list.empty();
@@ -307,7 +309,7 @@ function show_subscription_settings(sub_row) {
     channel.post({
         url: "/json/get_subscribers",
         idempotent: true,
-        data: {stream: stream_name},
+        data: {stream: sub.name},
         success: function (data) {
             loading.destroy_indicator(indicator_elem);
             var subscribers = _.map(data.subscribers, function (elem) {
@@ -327,7 +329,7 @@ function show_subscription_settings(sub_row) {
         }
     });
 
-    sub_row.find('input[name="principal"]').typeahead({
+    sub_settings.find('input[name="principal"]').typeahead({
         source: people.get_realm_persons, // This is a function.
         items: 5,
         highlighter: function (item) {
@@ -349,9 +351,9 @@ function show_subscription_settings(sub_row) {
         }
     });
 
-    var colorpicker = sub_row.find('.colorpicker');
+    var colorpicker = sub_settings.find('.colorpicker');
 
-    var color = stream_data.get_color(stream_name);
+    var color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
 
     // To figure out the worst case for an expanded row's height, we do some math:
@@ -370,7 +372,7 @@ function show_subscription_settings(sub_row) {
     }
 
     // Make all inputs have a default tabindex
-    sub_row.find('.subscription_settings :input').removeAttr('tabindex');
+    sub_settings.find('.subscription_settings :input').removeAttr('tabindex');
 }
 
 exports.show_settings_for = function (stream_name) {
