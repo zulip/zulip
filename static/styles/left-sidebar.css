@@ -139,6 +139,15 @@ li.hidden-filter {
     top: 2px;
 }
 
+.topic-name {
+    display: block;
+    line-height: 1.3em;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .subject_count {
     display: block;
     position: absolute;
