@@ -18,9 +18,6 @@ set_global('message_store', {
 
 var stream_list = require('js/stream_list.js');
 
-// TODO: split out topic_list stuff to its own test module.
-var topic_list = require('js/topic_list.js');
-
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
@@ -32,28 +29,6 @@ $.fn.expectOne = function () {
 global.compile_template('sidebar_private_message_list');
 global.compile_template('stream_sidebar_row');
 global.compile_template('stream_privacy');
-global.compile_template('topic_list_item');
-
-(function test_topic_list_build_widget() {
-    var stream = "devel";
-    var active_topic = "testing";
-    var max_topics = 5;
-
-    var topics = [
-        {subject: "coding"}
-    ];
-    global.stream_data.populate_stream_topics_for_tests({"devel": topics});
-    global.unread.num_unread_for_subject = function () {
-        return 1;
-    };
-
-    var widget = topic_list.build_widget(stream, active_topic, max_topics);
-    var topic_html = widget.get_dom();
-    global.write_test_output("test_topic_list_build_widget", topic_html);
-
-    var topic = $(topic_html).find('a').text().trim();
-    assert.equal(topic, 'coding');
-}());
 
 (function test_build_private_messages_list() {
     var reply_tos = "alice@zulip.com,bob@zulip.com";
