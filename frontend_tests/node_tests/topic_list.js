@@ -32,9 +32,11 @@ global.compile_template('topic_list_item');
 
     var widget = topic_list.build_widget(stream, active_topic, max_topics);
     var topic_html = widget.get_dom();
-    global.write_test_output("test_topic_list_build_widget", topic_html);
 
     var topic = $(topic_html).find('a').text().trim();
     assert.equal(topic, 'coding');
+
+    var output_html = '<div>' + topic_html.html() + '</div>';
+    global.write_test_output("test_topic_list_build_widget", topic_html.html());
 }());
 
