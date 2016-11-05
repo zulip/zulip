@@ -340,6 +340,10 @@ function handleRealmFilter(pattern, matches) {
     return url;
 }
 
+function handleStreamLinks(stream_name) {
+  return '<a href="' + window.location.origin + '#narrow/stream/' + stream_name + '">' + stream_name + '</a>';
+}
+
 function python_to_js_filter(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
@@ -478,7 +482,8 @@ $(function () {
         userMentionHandler: handleUserMentions,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
-        preprocessors: [preprocess_code_blocks]
+        preprocessors: [preprocess_code_blocks],
+        streamLinkHanlder: handleStreamLinks
     });
 
     function on_failed_action(action, callback) {

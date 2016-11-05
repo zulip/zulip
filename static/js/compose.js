@@ -1014,6 +1014,23 @@ $(function () {
             if (echo.contains_bugdown(message))  {
                 var spinner = $("#markdown_preview_spinner").expectOne();
                 loading.make_indicator(spinner);
+                channel.get({
+                    url: '/json/messages/render',
+                    idempotent: true,
+                    data: {content: message},
+                    success: function (response_data) {
+                        if (echo.contains_bugdown(message)) {
+                            loading.destroy_indicator($("#markdown_preview_spinner"));
+                        }
+                        $("#preview_content").html(response_data.rendered);
+                    },
+                    error: function () {
+                        if (echo.contains_bugdown(message)) {
+                            loading.destroy_indicator($("#markdown_preview_spinner"));
+                        }
+                        $("#preview_content").html(i18n.t("Failed to generate preview"));
+                    }
+                });
             } else {
                 // For messages that don't appear to contain
                 // bugdown-specific syntax not present in our
@@ -1024,23 +1041,6 @@ $(function () {
                 // incorrect wrong, users will see a brief flicker).
                 $("#preview_content").html(echo.apply_markdown(message));
             }
-            channel.get({
-                url: '/json/messages/render',
-                idempotent: true,
-                data: {content: message},
-                success: function (response_data) {
-                    if (echo.contains_bugdown(message)) {
-                        loading.destroy_indicator($("#markdown_preview_spinner"));
-                    }
-                    $("#preview_content").html(response_data.rendered);
-                },
-                error: function () {
-                    if (echo.contains_bugdown(message)) {
-                        loading.destroy_indicator($("#markdown_preview_spinner"));
-                    }
-                    $("#preview_content").html(i18n.t("Failed to generate preview"));
-                }
-            });
         }
     });
 
