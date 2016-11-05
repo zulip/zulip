@@ -537,6 +537,7 @@ inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
   usermention: /^(@(?:\*\*([^\*]+)?\*\*|(\w+)?))/m, // Match multi-word string between @** ** or match any one-word
+  streamlink: /^(#\*\*([^\*]+)\*\*)/,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
@@ -724,6 +725,12 @@ InlineLexer.prototype.output = function(src) {
       out += this.usermention(cap[2] || cap[3], cap[1]);
       continue;
     }
+    // streamlink (zulip)
+    if (cap = this.rules.streamlink.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.streamlink(cap[2], cap[1]);
+      continue;
+    }
 
     // strong
     if (cap = this.rules.strong.exec(src)) {
@@ -862,6 +869,23 @@ InlineLexer.prototype.usermention = function (username, orig) {
 
   return orig;
 };
+
+InlineLexer.prototype.streamlink = function(stream_name, orig) {
+  if (stream_data.get_sub(stream_name) === undefined) {
+    return orig;
+  }
+  if (typeof this.options.streamLinkHandler !== 'function')
+  {
+    return orig;
+  }
+
+  var handled = this.options.streamLinkHandler(stream_name);
+  if (handled !== undefined) {
+    return handled;
+  }
+
+  return orig;
+}
 
 /**
  * Smartypants Transformations
@@ -1270,7 +1294,7 @@ function escape(html, encode) {
 }
 
 function unescape(html) {
-	// explicitly match decimal, hex, and named HTML entities 
+  // explicitly match decimal, hex, and named HTML entities
   return html.replace(/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/g, function(_, n) {
     n = n.toLowerCase();
     if (n === 'colon') return ':';
