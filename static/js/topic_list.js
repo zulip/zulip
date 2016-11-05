@@ -148,7 +148,7 @@ exports.set_click_handlers = function (callbacks) {
         e.stopPropagation();
     });
 
-    $('#stream_filters').on('click', '.subject_box', function (e) {
+    $('#stream_filters').on('click', '.topic-box', function (e) {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
