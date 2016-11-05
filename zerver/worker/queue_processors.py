@@ -340,7 +340,8 @@ class MessageSenderWorker(QueueProcessingWorker):
         # We're mostly using a WSGIRequest for convenience
         environ.update(server_meta['request_environ'])
         request = WSGIRequest(environ)
-        request._request = event['request']
+        # Note: If we ever support non-POST methods, we'll need to change this.
+        request._post = event['request']
         request.csrf_processing_done = True
 
         user_profile = get_user_profile_by_id(server_meta['user_id'])
