@@ -1,29 +1,29 @@
 from __future__ import absolute_import
-from typing import Any, Callable, Optional
 
 from django import forms
-from django.core.exceptions import ValidationError
+from django.conf import settings
 from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
-from django.conf import settings
-from django.db.models.query import QuerySet
-from jinja2 import Markup as mark_safe
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
-from zerver.models import get_realm_by_string_id
+from jinja2 import Markup as mark_safe
+
+from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.utils import get_subdomain, check_subdomain
+from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
+    completely_open, resolve_email_to_domain, get_realm, get_realm_by_string_id, \
+    get_unique_open_realm, split_email_to_domain
+from zproject.backends import password_auth_enabled
 
 import logging
 import re
-
-from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    completely_open, resolve_email_to_domain, get_realm, \
-    get_unique_open_realm, split_email_to_domain
-from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
-from zproject.backends import password_auth_enabled
 import DNS
+
 from six import text_type
+from typing import Any, Callable, Optional
 
 SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
                 u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
