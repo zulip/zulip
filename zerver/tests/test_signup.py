@@ -686,6 +686,12 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(realm.name, realm_name)
             self.assertEqual(realm.subdomain, string_id)
 
+    def test_mailinator_signup(self):
+        # type: () -> None
+        with self.settings(OPEN_REALM_CREATION=True):
+            result = self.client_post('/create_realm/', {'email': "hi@mailinator.com"})
+            self.assert_in_response('Please use your real email address.', result)
+
     def test_subdomain_restrictions(self):
         # type: () -> None
         username = "user1"

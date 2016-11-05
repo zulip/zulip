@@ -11,7 +11,7 @@ from jinja2 import Markup as mark_safe
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from zerver.models import get_realm_by_string_id
-from zerver.lib.name_restrictions import is_reserved_subdomain
+from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.utils import get_subdomain, check_subdomain
 
 import logging
@@ -173,11 +173,16 @@ class HomepageForm(forms.Form):
         # Otherwise, the user is an MIT mailing list, and we return failure
         raise ValidationError(mark_safe(SIGNUP_STRING))
 
+def email_is_not_disposable(email):
+    # type: (text_type) -> None
+    if is_disposable_domain(split_email_to_domain(email)):
+        raise ValidationError(_("Please use your real email address."))
+
 class RealmCreationForm(forms.Form):
     # This form determines whether users can
     # create a new realm. Be careful when modifying the
     # validators.
-    email = forms.EmailField(validators=[user_email_is_unique,])
+    email = forms.EmailField(validators=[user_email_is_unique, email_is_not_disposable])
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
