@@ -7,30 +7,6 @@ var home_msg_list = new message_list.MessageList('zhome',
 );
 var current_msg_list = home_msg_list;
 
-function consider_bankruptcy() {
-    // Until we've handled possibly declaring bankruptcy, don't show
-    // unread counts since they only consider messages that are loaded
-    // client side and may be different from the numbers reported by
-    // the server.
-
-    if (!page_params.furthest_read_time) {
-        // We've never read a message.
-        unread.enable();
-        return;
-    }
-
-    var now = new XDate(true).getTime() / 1000;
-    if ((page_params.unread_count > 500) &&
-        (now - page_params.furthest_read_time > 60 * 60 * 24 * 2)) { // 2 days.
-        var unread_info = templates.render('bankruptcy_modal',
-                                           {"unread_count": page_params.unread_count});
-        $('#bankruptcy-unread-count').html(unread_info);
-        $('#bankruptcy').modal('show');
-    } else {
-        unread.enable();
-    }
-}
-
 // This is annoying to move to unread.js because the natural name
 // would be unread.process_loaded_messages, which this calls
 function process_loaded_for_unread(messages) {
@@ -51,9 +27,6 @@ function main() {
         pointer.server_furthest_read = page_params.orig_initial_pointer;
     }
     pointer.furthest_read = pointer.server_furthest_read;
-
-    // Before trying to load messages: is this user way behind?
-    consider_bankruptcy();
 
     // We only send pointer updates when the user has been idle for a
     // short while to avoid hammering the server

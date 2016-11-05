@@ -562,6 +562,7 @@ $(function () {
     gear_menu.initialize();
     hashchange.initialize();
     invite.initialize();
+    unread.initialize();
     activity.initialize();
     emoji.initialize();
 });

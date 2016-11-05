@@ -301,6 +301,35 @@ exports.mark_topic_as_read = function mark_topic_as_read(stream, topic, cont) {
     success:  cont});
 };
 
+function consider_bankruptcy() {
+    // Until we've handled possibly declaring bankruptcy, don't show
+    // unread counts since they only consider messages that are loaded
+    // client side and may be different from the numbers reported by
+    // the server.
+
+    if (!page_params.furthest_read_time) {
+        // We've never read a message.
+        unread.enable();
+        return;
+    }
+
+    var now = new XDate(true).getTime() / 1000;
+    if ((page_params.unread_count > 500) &&
+        (now - page_params.furthest_read_time > 60 * 60 * 24 * 2)) { // 2 days.
+        var unread_info = templates.render('bankruptcy_modal',
+                                           {"unread_count": page_params.unread_count});
+        $('#bankruptcy-unread-count').html(unread_info);
+        $('#bankruptcy').modal('show');
+    } else {
+        unread.enable();
+    }
+}
+
+exports.initialize = function initialize() {
+    consider_bankruptcy();
+};
+
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
