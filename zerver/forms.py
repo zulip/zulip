@@ -49,15 +49,6 @@ def get_registration_string(domain):
                                 'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
     return register_account_string
 
-def get_valid_realm(email):
-    # type: (str) -> Optional[Realm]
-    """Checks if there is a realm without invite_required
-    matching the domain of the input e-mail."""
-    realm = get_realm(resolve_email_to_domain(email))
-    if realm is None or realm.invite_required:
-        return None
-    return realm
-
 def email_is_not_mit_mailing_list(email):
     # type: (text_type) -> None
     """Prevent MIT mailing lists from signing up for Zulip"""
@@ -154,8 +145,8 @@ class HomepageForm(forms.Form):
             return email
 
         # If no realm is specified, fail
-        realm = get_valid_realm(email)
-        if realm is None:
+        realm = get_realm(resolve_email_to_domain(email))
+        if realm is None or realm.invite_required:
             raise ValidationError(mark_safe(SIGNUP_STRING))
 
         if realm.is_zephyr_mirror_realm:
