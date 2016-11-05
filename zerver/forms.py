@@ -130,9 +130,14 @@ class HomepageForm(forms.Form):
         """Returns the email if and only if the user's email address is
         allowed to join the realm they are trying to join."""
         email = self.cleaned_data['email']
-        # If the server has a unique open realm, pass
+
         if get_unique_open_realm():
             return email
+
+        # Otherwise, the user is trying to join a specific realm.
+        realm = get_realm(resolve_email_to_domain(email))
+        if realm is None or realm.invite_required:
+            raise ValidationError(mark_safe(SIGNUP_STRING))
 
         # If a realm is specified and that realm is open, pass
         if completely_open(self.domain):
@@ -143,11 +148,6 @@ class HomepageForm(forms.Form):
         if (subdomain_realm is not None and
             completely_open(subdomain_realm.domain)):
             return email
-
-        # If no realm is specified, fail
-        realm = get_realm(resolve_email_to_domain(email))
-        if realm is None or realm.invite_required:
-            raise ValidationError(mark_safe(SIGNUP_STRING))
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
