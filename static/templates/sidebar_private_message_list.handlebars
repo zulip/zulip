@@ -1,7 +1,7 @@
 <ul class='expanded_private_messages' data-name='private'>
     {{#each messages}}
     <li class='{{#if is_zero}}zero-subject-unreads{{/if}} {{#if zoom_out_hide}}zoom-out-hide{{/if}} expanded_private_message' data-name='{{reply_to}}'>
-      <span class='subject_box'>
+      <span class='pm-box'>
         <a href='{{url}}' class="conversation-partners">
           {{recipients}}
         </a>

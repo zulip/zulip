@@ -299,12 +299,14 @@ li.expanded_private_message {
     margin-bottom: -5px;
 }
 
-.subject_box {
+.pm-box,
+.topic-box {
     display: block;
     margin-right: 38px;
 }
 
-.zero-subject-unreads .subject_box {
+.zero-subject-unreads .pm-box,
+.zero-subject-unreads .topic-box {
     margin-right: 15px;
 }
 
