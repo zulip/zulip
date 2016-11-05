@@ -645,7 +645,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                      parsed_url.path)
             self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
-            with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
+            with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'), \
+                 mock.patch('zerver.views.get_subdomain', return_value='zulip'):
                 result = self.client_get(result.url)
 
             result = self.client_get(result.url)  # Call the confirmation url.

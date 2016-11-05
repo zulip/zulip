@@ -135,7 +135,12 @@ class HomepageForm(forms.Form):
             return email
 
         # Otherwise, the user is trying to join a specific realm.
-        realm = get_realm(resolve_email_to_domain(email))
+        realm = None
+        if self.subdomain:
+            realm = get_realm_by_string_id(self.subdomain)
+        elif not settings.REALMS_HAVE_SUBDOMAINS:
+            realm = get_realm(resolve_email_to_domain(email))
+
         if realm is None or realm.invite_required:
             raise ValidationError(mark_safe(SIGNUP_STRING))
 
