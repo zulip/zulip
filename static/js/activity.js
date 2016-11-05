@@ -399,6 +399,9 @@ exports.initialize = function () {
     setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
 
     focus_ping();
+
+    activity.set_user_statuses(page_params.initial_presences,
+                               page_params.initial_servertime);
 };
 
 // Set user statuses. `users` should be an object with user emails as keys

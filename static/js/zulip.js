@@ -16,12 +16,3 @@ function process_loaded_for_unread(messages) {
     unread.update_unread_counts();
     resize.resize_page_components();
 }
-
-function main() {
-    activity.set_user_statuses(page_params.initial_presences,
-                               page_params.initial_servertime);
-}
-
-$(function () {
-    main();
-});
