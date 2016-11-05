@@ -537,9 +537,9 @@ form#add_new_subscription {
     text-overflow: ellipsis;
 }
 
-.stream-row .sub-info-box .description:empty:after,
-#subscription_overlay .stream-description:empty:after {
-    content: "No description given.";
+#subscription_overlay .stream-description:empty:after,
+.stream-row .sub-info-box .description:empty:after {
+    content: attr(data-no-description);
     font-style: italic;
     color: #aaa;
 }
