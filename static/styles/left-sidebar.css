@@ -202,13 +202,13 @@ ul.filters .topic-sidebar-arrow {
     display: none !important;
 }
 
-ul.filters li.topic-list-item:hover .topic-sidebar-arrow {
+li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline !important;
     cursor: pointer;
     color: #888;
 }
 
-ul.filters li.topic-list-item .topic-sidebar-arrow:hover {
+li.topic-list-item .topic-sidebar-arrow:hover {
     display: inline;
     cursor: pointer;
     color: #000;
