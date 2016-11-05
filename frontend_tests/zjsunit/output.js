@@ -40,6 +40,8 @@ function stylesheets() {
     data += '<link href="../../static/styles/portico.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/settings.css" rel="stylesheet">\n';
+    data += '<link href="../../static/styles/left-sidebar.css" rel="stylesheet">\n';
     data += '<link href="../../static/third/bootstrap/css/bootstrap.css" rel="stylesheet">\n';
     data += '<link href="../../static/third/bootstrap-notify/css/bootstrap-notify.css" rel="stylesheet">\n';
 
