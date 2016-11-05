@@ -433,7 +433,7 @@ exports.register_click_handlers = function () {
         popovers.hide_all();
         popovers.show_streamlist_sidebar();
 
-        var stream_name = $(elt).closest('.expanded_subjects').expectOne().attr('data-stream');
+        var stream_name = $(elt).closest('.topic-list').expectOne().attr('data-stream');
         var topic_name = $(elt).closest('li').expectOne().attr('data-name');
 
         var is_muted = muting.is_topic_muted(stream_name, topic_name);
