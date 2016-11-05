@@ -54,7 +54,6 @@ var globals =
 
     // zulip.js
     + ' home_msg_list current_msg_list'
-    + ' process_loaded_for_unread'
     ;
 
 
