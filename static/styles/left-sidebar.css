@@ -299,15 +299,12 @@ li.expanded_private_message {
     margin-bottom: -5px;
 }
 
-.topic-list-item .subject_box,
-#private .expanded_private_message .subject_box {
+.subject_box {
     display: block;
     margin-right: 38px;
 }
 
-.topic-list-item.zero-subject-unreads .subject_box,
-#private .expanded_private_messages.zero-subject-unreads .subject_box {
-    display: block;
+.zero-subject-unreads .subject_box {
     margin-right: 15px;
 }
 
