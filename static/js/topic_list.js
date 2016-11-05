@@ -6,7 +6,7 @@ var widgets = new Dict({fold_case: true}); // key is stream_name
 
 exports.remove_expanded_topics = function () {
     popovers.hide_topic_sidebar_popover();
-    $("ul.expanded_subjects").remove();
+    $("ul.topic-list").remove();
 };
 
 
@@ -45,7 +45,7 @@ exports.build_widget = function (stream, active_topic, max_topics) {
 
         var hiding_topics = false;
 
-        var ul = $('<ul class="expanded_subjects">');
+        var ul = $('<ul class="topic-list">');
         ul.attr('data-stream', stream);
 
         _.each(topics, function (subject_obj, idx) {

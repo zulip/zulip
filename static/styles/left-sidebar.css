@@ -261,7 +261,7 @@ ul.filters li.out_of_home_view li.muted_topic {
     font-size: 15px;
 }
 
-ul.expanded_subjects {
+ul.topic-list {
     list-style-type: none;
     font-weight: normal;
     margin-left: 0px;
