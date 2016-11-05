@@ -156,6 +156,10 @@ class TestCrossRealmPMs(ZulipTestCase):
             self.send_message(user1_email, [user2_email, feedback_email],
                               Recipient.PERSONAL)
 
+        with assert_disallowed():
+            self.send_message(feedback_email, [user1_email, user2_email],
+                              Recipient.PERSONAL)
+
         # Users on the different realms can not PM each other
         with assert_disallowed():
             self.send_message(user1_email, user2_email, Recipient.PERSONAL)
