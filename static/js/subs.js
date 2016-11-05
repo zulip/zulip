@@ -393,7 +393,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
     if (! sub.subscribed) {
         // Add yourself to a stream we already know about client-side.
         var color = get_color();
-        exports.set_color(stream_name, color);
+        exports.set_color(sub.stream_id, color);
         sub.subscribed = true;
         if (attrs) {
             stream_data.set_subscriber_emails(sub, attrs.subscribers);
