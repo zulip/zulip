@@ -31,6 +31,12 @@ from six.moves import urllib
 import six
 from six import text_type
 
+def is_active_subscriber(user_profile, recipient):
+    # type: (UserProfile, Recipient) -> bool
+    return Subscription.objects.filter(user_profile=user_profile,
+                                       recipient=recipient,
+                                       active=True).exists()
+
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
     """Converts plaintext stream names to a list of Streams, validating input in the process
@@ -464,9 +470,10 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
         recipient = get_recipient(Recipient.STREAM, stream.id)
         if autosubscribe:
             bulk_add_subscriptions([stream], [user_profile])
-        result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
-                                                           recipient=recipient,
-                                                           active=True).exists()
+        result["subscribed"] = is_active_subscriber(
+                user_profile=user_profile,
+                recipient=recipient)
+
         return json_success(result) # results are ignored for HEAD requests
     return json_response(data=result, status=404)
 
