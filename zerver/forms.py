@@ -58,21 +58,19 @@ def get_valid_realm(email):
         return None
     return realm
 
-def not_mit_mailing_list(value):
-    # type: (str) -> bool
+def email_is_not_mit_mailing_list(email):
+    # type: (text_type) -> None
     """Prevent MIT mailing lists from signing up for Zulip"""
-    if "@mit.edu" in value:
-        username = value.rsplit("@", 1)[0]
+    if "@mit.edu" in email:
+        username = email.rsplit("@", 1)[0]
         # Check whether the user exists and can get mail.
         try:
             DNS.dnslookup("%s.pobox.ns.athena.mit.edu" % username, DNS.Type.TXT)
-            return True
         except DNS.Base.ServerError as e:
             if e.rcode == DNS.Status.NXDOMAIN:
                 raise ValidationError(mark_safe(MIT_VALIDATION_ERROR))
             else:
                 raise
-    return True
 
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
@@ -160,18 +158,10 @@ class HomepageForm(forms.Form):
         if realm is None:
             raise ValidationError(mark_safe(SIGNUP_STRING))
 
-        # If it's a clear realm not used for Zephyr mirroring, pass
-        if not realm.is_zephyr_mirror_realm:
-            return email
+        if realm.is_zephyr_mirror_realm:
+            email_is_not_mit_mailing_list(email)
 
-        # At this point, the user is trying to join a Zephyr mirroring
-        # realm.  We confirm that they are a real account (not a
-        # mailing list), and if so, let them in.
-        if not_mit_mailing_list(email):
-            return email
-
-        # Otherwise, the user is an MIT mailing list, and we return failure
-        raise ValidationError(mark_safe(SIGNUP_STRING))
+        return email
 
 def email_is_not_disposable(email):
     # type: (text_type) -> None
