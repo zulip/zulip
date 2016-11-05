@@ -202,13 +202,13 @@ ul.filters .topic-sidebar-arrow {
     display: none !important;
 }
 
-ul.filters li.expanded_subject:hover .topic-sidebar-arrow {
+ul.filters li.topic-list-item:hover .topic-sidebar-arrow {
     display: inline !important;
     cursor: pointer;
     color: #888;
 }
 
-ul.filters li.expanded_subject .topic-sidebar-arrow:hover {
+ul.filters li.topic-list-item .topic-sidebar-arrow:hover {
     display: inline;
     cursor: pointer;
     color: #000;
@@ -277,7 +277,7 @@ ul.expanded_private_messages {
 }
 
 li.show-more-topics,
-li.expanded_subject {
+li.topic-list-item {
     position: relative;
     padding-left: 33px;
 }
@@ -299,13 +299,13 @@ li.expanded_private_message {
     margin-bottom: -5px;
 }
 
-.expanded_subject .subject_box,
+.topic-list-item .subject_box,
 #private .expanded_private_message .subject_box {
     display: block;
     margin-right: 38px;
 }
 
-.expanded_subject.zero-subject-unreads .subject_box,
+.topic-list-item.zero-subject-unreads .subject_box,
 #private .expanded_private_messages.zero-subject-unreads .subject_box {
     display: block;
     margin-right: 15px;
