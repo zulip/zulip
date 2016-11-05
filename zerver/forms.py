@@ -49,11 +49,11 @@ def get_registration_string(domain):
                                 'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
     return register_account_string
 
-def get_valid_realm(value):
+def get_valid_realm(email):
     # type: (str) -> Optional[Realm]
     """Checks if there is a realm without invite_required
     matching the domain of the input e-mail."""
-    realm = get_realm(resolve_email_to_domain(value))
+    realm = get_realm(resolve_email_to_domain(email))
     if realm is None or realm.invite_required:
         return None
     return realm
@@ -140,35 +140,35 @@ class HomepageForm(forms.Form):
         # type: () -> str
         """Returns the email if and only if the user's email address is
         allowed to join the realm they are trying to join."""
-        data = self.cleaned_data['email']
+        email = self.cleaned_data['email']
         # If the server has a unique open realm, pass
         if get_unique_open_realm():
-            return data
+            return email
 
         # If a realm is specified and that realm is open, pass
         if completely_open(self.domain):
-            return data
+            return email
 
         # If the subdomain encodes a complete open realm, pass
         subdomain_realm = get_realm_by_string_id(self.subdomain)
         if (subdomain_realm is not None and
             completely_open(subdomain_realm.domain)):
-            return data
+            return email
 
         # If no realm is specified, fail
-        realm = get_valid_realm(data)
+        realm = get_valid_realm(email)
         if realm is None:
             raise ValidationError(mark_safe(SIGNUP_STRING))
 
         # If it's a clear realm not used for Zephyr mirroring, pass
         if not realm.is_zephyr_mirror_realm:
-            return data
+            return email
 
         # At this point, the user is trying to join a Zephyr mirroring
         # realm.  We confirm that they are a real account (not a
         # mailing list), and if so, let them in.
-        if not_mit_mailing_list(data):
-            return data
+        if not_mit_mailing_list(email):
+            return email
 
         # Otherwise, the user is an MIT mailing list, and we return failure
         raise ValidationError(mark_safe(SIGNUP_STRING))
