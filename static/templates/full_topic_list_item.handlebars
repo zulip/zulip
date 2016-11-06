@@ -1,0 +1,21 @@
+<li class='{{#if is_muted}}muted-topic{{/if}}' data-name='{{topic_name}}'>
+    <span class='topic-box'>
+        <div class="{{#if is_zero}}topic-no-unread{{else}}topic-unread-count{{/if}}">
+            <div class="value">{{unread}}</div>
+        </div>
+
+        {{#if is_muted}}
+            <a href="#" class="unmute-topic" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
+                <i class="icon-vector-eye-open"></i>
+            </a>
+        {{else}}
+            <a href="#" class="mute-topic" data-stream-name="{{ stream_name }}" data-topic-name="{{ topic_name }}">
+                <i class="icon-vector-eye-close"></i>
+            </a>
+        {{/if}}
+
+        <a href='{{url}}' class="full-topic-list-link">
+            {{topic_name}}
+        </a>
+    </span>
+</li>

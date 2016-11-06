@@ -135,7 +135,12 @@ exports.rebuild = function (stream_li, stream, active_topic) {
 
 exports.set_click_handlers = function (callbacks) {
     $('#stream_filters').on('click', '.show-more-topics', function (e) {
-        callbacks.zoom_in();
+        ui.change_tab_to('#topic-history');
+
+        var stream_name = $(e.target).parents('ul').attr('data-stream');
+        console.info(stream_name);
+
+        full_topic_list.build(stream_name);
 
         e.preventDefault();
         e.stopPropagation();
