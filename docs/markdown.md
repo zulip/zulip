@@ -4,43 +4,44 @@ Zulip has a special flavor of Markdown, currently called 'bugdown'
 after Zulip's original name of "humbug". End users are using Bugdown
 within the client, not original Markdown.
 
-Zulip has two implementations of Bugdown.  The first is based on
-Python-Markdown (`zerver/lib/bugdown/`) and is used to authoritatively
-render messages on the backend (and implements expensive features like
-querying the Twitter API to render tweets nicely).  The other is in
-JavaScript, based on marked (`static/js/echo.js`), and is used to
-preview and locally echo messages the moment the sender hits enter,
-without waiting for round trip from the server.
+Zulip has two implementations of Bugdown.  The backend implementation
+at `zerver/lib/bugdown/` is based on
+[Python-Markdown](https://pythonhosted.org/Markdown/) and is used to
+authoritatively render messages to HTML (and implements
+slow/expensive/complex features like querying the Twitter API to
+render tweets nicely).  The frontend implementation is in JavaScript,
+based on [marked.js](https://github.com/chjj/marked)
+(`static/js/echo.js`), and is used to preview and locally echo
+messages the moment the sender hits enter, without waiting for round
+trip from the server.
 
-The JavaScript implementation knows which types of messages it can
-render correctly, and thus while there is code to rerender messages
-based on the authoritative backend rendering (which would clause a
-change in the rendering visible only to the sender shortly after a
-message is sent), this should never happen, and whenever it does it is
-considered a bug.  Instead, if the frontend doesn't know how to
-correctly render a message, we simply won't echo the message for the
-sender until it's rendered by the backend.  So for example, a message
-containing a link to Twitter will not be rendered by the JavaScript
-implementation because it doesn't support doing the 3rd party API
-queries required to render tweets nicely.
+The JavaScript markdown implementation has a function,
+`echo.contains_bugdown`, that is used to check whether a message
+contains any syntax that needs to be rendered to HTML on the backend.
+If `echo.contains_bugdown` returns false, the frontend simply won't
+echo the message for the sender until it receives the rendered HTML
+from the backend.  If there is a bug where `echo.contains_bugdown`
+returns true incorrectly, the frontend will discover this when the
+backend returns the newly sent message, and will update the HTML based
+on the authoritative backend rendering (which would cause a change in
+the rendering that is visible only to the sender shortly after a
+message is sent).  As a result, we try to make sure that
+`echo.contains_bugdown` is always correct.
 
-The function `echo.contains_bugdown` is used by the frontend for
-testing whether the message contains any syntax that cannot be
-rendered by the frontend (e.g. links to tweets, which need something
-to query the Twitter API).  The function `echo.apply_markdown` is used
-for the actual rendering.
+## Testing
 
-The Python-Markdown is tested for compatibility via
-`zerver/tests/test_bugdown.py`. The methods echo.contains_bugdown and
-echo.apply_markdown are tested in `frontend_tests/node_tests/echo.js`.
-Test fixture data in `zerver/fixtures/bugdown-data.json` is preferred
-for new tests, since it is automatically tested in both the
-test_bugdown and echo.js test suites.
-
-Note that the below documentation is based on a comparison with
-original Markdown, not newer Markdown variants like CommonMark.
+The Python-Markdown implementation is tested by
+`zerver/tests/test_bugdown.py`, and the marked.js implementation and
+`echo.contains_bugdown` are tested by
+`frontend_tests/node_tests/echo.js`.  A shared set of fixed test data
+("test fixtures") is present in `zerver/fixtures/bugdown-data.json`,
+and is automatically used by both test suites; as a result, it the
+preferred place to add new tests for Zulip's markdown system.
 
 ## Zulip's Markdown philosophy
+
+Note that this discussion is based on a comparison with the original
+Markdown, not newer Markdown variants like CommonMark.
 
 Markdown is great for group chat for the same reason it's been
 successful in products ranging from blogs to wikis to bug trackers:
