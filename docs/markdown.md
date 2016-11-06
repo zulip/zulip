@@ -10,10 +10,7 @@ render messages on the backend (and implements expensive features like
 querying the Twitter API to render tweets nicely).  The other is in
 JavaScript, based on marked (`static/js/echo.js`), and is used to
 preview and locally echo messages the moment the sender hits enter,
-without waiting for round trip from the server.  The two
-implementations are tested for compatibility via
-`zerver/tests/test_bugdown.py` and the fixtures under
-`zerver/fixtures/bugdown-data.json`.
+without waiting for round trip from the server.
 
 The JavaScript implementation knows which types of messages it can
 render correctly, and thus while there is code to rerender messages
@@ -27,8 +24,21 @@ containing a link to Twitter will not be rendered by the JavaScript
 implementation because it doesn't support doing the 3rd party API
 queries required to render tweets nicely.
 
-I should note that the below documentation is based on a comparison
-with original Markdown, not newer Markdown variants like CommonMark.
+The function `echo.contains_bugdown` is used by the frontend for
+testing whether the message contains any syntax that cannot be
+rendered by the frontend (e.g. links to tweets, which need something
+to query the Twitter API).  The function `echo.apply_markdown` is used
+for the actual rendering.
+
+The Python-Markdown is tested for compatibility via
+`zerver/tests/test_bugdown.py`. The methods echo.contains_bugdown and
+echo.apply_markdown are tested in `frontend_tests/node_tests/echo.js`.
+Test fixture data in `zerver/fixtures/bugdown-data.json` is preferred
+for new tests, since it is automatically tested in both the
+test_bugdown and echo.js test suites.
+
+Note that the below documentation is based on a comparison with
+original Markdown, not newer Markdown variants like CommonMark.
 
 ## Zulip's Markdown philosophy
 
