@@ -8,6 +8,7 @@ from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.utils import timezone
 from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import (
     Recipient,
@@ -402,7 +403,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                             'sender_name': sender['name']}
             ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
                                         data=ujson.dumps(email_fields),
-                                        scheduled_timestamp=datetime.datetime.utcnow() + delay)
+                                        scheduled_timestamp=timezone.now() + delay)
         return
 
     # Mandrill implementation
