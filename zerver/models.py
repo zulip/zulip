@@ -137,6 +137,8 @@ class Realm(ModelReprMixin, models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True) # type: text_type
     # name is the user-visible identifier for the realm. It has no required
     # structure.
+    AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
+
     name = models.CharField(max_length=40, null=True) # type: Optional[text_type]
     string_id = models.CharField(max_length=40, unique=True) # type: text_type
     restricted_to_domain = models.BooleanField(default=False) # type: bool
