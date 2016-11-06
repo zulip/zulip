@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
@@ -441,9 +442,9 @@ class MessageDictTest(ZulipTestCase):
                     recipient=recipient,
                     subject='whatever',
                     content='whatever %d' % i,
-                    pub_date=datetime.datetime.now(),
+                    pub_date=timezone.now(),
                     sending_client=sending_client,
-                    last_edit_time=datetime.datetime.now(),
+                    last_edit_time=timezone.now(),
                     edit_history='[]'
                 )
                 message.save()
@@ -476,9 +477,9 @@ class MessageDictTest(ZulipTestCase):
             recipient=recipient,
             subject='whatever',
             content='hello **world**',
-            pub_date=datetime.datetime.now(),
+            pub_date=timezone.now(),
             sending_client=sending_client,
-            last_edit_time=datetime.datetime.now(),
+            last_edit_time=timezone.now(),
             edit_history='[]'
         )
         message.save()
