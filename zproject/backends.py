@@ -14,7 +14,7 @@ from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    resolve_email_to_domain, get_realm
+    resolve_email_to_domain, get_realm, resolve_subdomain_to_realm
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -24,20 +24,34 @@ from social.exceptions import AuthFailed
 from django.contrib.auth import authenticate
 from zerver.lib.utils import check_subdomain, get_subdomain
 
-def password_auth_enabled(realm):
-    # type: (Realm) -> bool
-    if realm is not None:
-        if realm.domain == 'zulip.com' and settings.PRODUCTION:
-            # the dropbox realm is SSO only, but the unit tests still need to be
-            # able to login
-            return False
+def pad_method_dict(method_dict):
+    # type: (Dict[text_type, bool]) -> Dict[text_type, bool]
+    for key in AUTH_BACKEND_NAME_MAP:
+        if key not in method_dict:
+            method_dict[key] = False
+    return method_dict
 
-    for backend in django.contrib.auth.get_backends():
-         if isinstance(backend, EmailAuthBackend):
-             return True
-         if isinstance(backend, ZulipLDAPAuthBackend):
-             return True
+def auth_enabled_helper(backends_to_check, realm):
+    # type: (List[Tuple[text_type, Any]], Realm) -> bool
+    if realm is not None:
+        enabled_method_dict = realm.authentication_methods_dict()
+        pad_method_dict(enabled_method_dict)
+    else:
+        enabled_method_dict = dict((method, True) for method in Realm.AUTHENTICATION_FLAGS)
+        pad_method_dict(enabled_method_dict)
+    for supported_backend in django.contrib.auth.get_backends():
+        for method in backends_to_check:
+            backend = AUTH_BACKEND_NAME_MAP[method[0]]
+
+            if enabled_method_dict[method[0]] and isinstance(supported_backend, backend):
+                return True
     return False
+
+def password_auth_enabled(realm=None):
+    # type: (Realm) -> bool
+    return auth_enabled_helper([(u'Email', EmailAuthBackend),
+                                (u'LDAP', ZulipLDAPAuthBackend)],
+                               realm)
 
 def dev_auth_enabled():
     # type: () -> bool
@@ -46,12 +60,15 @@ def dev_auth_enabled():
             return True
     return False
 
-def google_auth_enabled():
-    # type: () -> bool
-    for backend in django.contrib.auth.get_backends():
-        if isinstance(backend, GoogleMobileOauth2Backend):
-            return True
-    return False
+def google_auth_enabled(realm=None):
+    # type: (Realm) -> bool
+    return auth_enabled_helper([(u'Google', GoogleMobileOauth2Backend)],
+                               realm)
+
+def github_auth_enabled(realm=None):
+    # type: (Realm) -> bool
+    return auth_enabled_helper([(u'GitHub', GitHubAuthBackend)],
+                               realm)
 
 def common_get_active_user_by_email(email, return_data=None):
     # type: (text_type, Optional[Dict[str, Any]]) -> Optional[UserProfile]
@@ -68,13 +85,6 @@ def common_get_active_user_by_email(email, return_data=None):
             return_data['inactive_realm'] = True
         return None
     return user_profile
-
-def github_auth_enabled():
-    # type: () -> bool
-    for backend in django.contrib.auth.get_backends():
-        if isinstance(backend, GitHubAuthBackend):
-            return True
-    return False
 
 class ZulipAuthMixin(object):
     def get_user(self, user_profile_id):
@@ -211,6 +221,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         except AppIdentityError:
             return None
         if token_payload["email_verified"] in (True, "true"):
+            domain = resolve_email_to_domain(token_payload["email"])
             try:
                 user_profile = get_user_profile_by_email(token_payload["email"])
             except UserProfile.DoesNotExist:
@@ -224,6 +235,9 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
                 return None
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
                 return_data["invalid_subdomain"] = True
+                return None
+            if not google_auth_enabled(realm=get_realm(domain)):
+                return_data["google_auth_disabled"] = True
                 return None
             return user_profile
         else:
@@ -332,6 +346,16 @@ class DevAuthBackend(ZulipAuthMixin):
         return common_get_active_user_by_email(username, return_data=return_data)
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
+    def authenticate(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[UserProfile]
+        return_data = kwargs.get("return_data", {})
+        user_profile = super(GitHubAuthBackend, self).authenticate(*args, **kwargs)
+        if user_profile:
+            if not github_auth_enabled(user_profile.realm):
+                return_data["github_auth_disabled"] = True
+                return None
+        return user_profile
+
     def get_email_address(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[text_type]
         try:
@@ -378,3 +402,12 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 user_profile = None
 
         return self.process_do_auth(user_profile, *args, **kwargs)
+
+AUTH_BACKEND_NAME_MAP = {
+    u'Dev': DevAuthBackend,
+    u'Email': EmailAuthBackend,
+    u'GitHub': GitHubAuthBackend,
+    u'Google': GoogleMobileOauth2Backend,
+    u'LDAP': ZulipLDAPAuthBackend,
+    u'RemoteUser': ZulipRemoteUserBackend,
+    } # type: Dict[text_type, Any]

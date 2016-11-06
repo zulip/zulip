@@ -4,8 +4,10 @@ from typing import Dict, Any
 from django.http import HttpRequest
 from django.conf import settings
 import ujson
+from zerver.models import  resolve_subdomain_to_realm
 from zproject.backends import (password_auth_enabled, dev_auth_enabled,
                                google_auth_enabled, github_auth_enabled)
+from zerver.lib.utils import get_subdomain
 
 def add_settings(request):
     # type: (HttpRequest) -> Dict[str, Any]
@@ -13,7 +15,11 @@ def add_settings(request):
         realm = request.user.realm
         realm_uri = realm.uri
     else:
-        realm = None
+        if settings.REALMS_HAVE_SUBDOMAINS:
+            subdomain = get_subdomain(request)
+            realm = resolve_subdomain_to_realm(subdomain)
+        else:
+            realm = None
         # TODO: Figure out how to add an assertion that this is not used
         realm_uri = settings.SERVER_URI
 
@@ -39,8 +45,8 @@ def add_settings(request):
         'open_realm_creation':       settings.OPEN_REALM_CREATION,
         'password_auth_enabled':     password_auth_enabled(realm),
         'dev_auth_enabled':          dev_auth_enabled(),
-        'google_auth_enabled':       google_auth_enabled(),
-        'github_auth_enabled':       github_auth_enabled(),
+        'google_auth_enabled':       google_auth_enabled(realm),
+        'github_auth_enabled':       github_auth_enabled(realm),
         'development_environment':   settings.DEVELOPMENT,
         'support_email':             settings.ZULIP_ADMINISTRATOR,
     }

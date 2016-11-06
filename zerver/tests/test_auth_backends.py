@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
 from typing import Any, Callable, Dict, Optional
@@ -29,7 +29,7 @@ from confirmation.models import Confirmation
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
-    password_auth_enabled, github_auth_enabled
+    password_auth_enabled, github_auth_enabled, dev_auth_enabled
 
 from zerver.views.auth import maybe_send_to_registration
 
@@ -146,6 +146,7 @@ class AuthBackendTest(TestCase):
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
             self.assertIsNone(EmailAuthBackend().authenticate(email, password))
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_backend(self):
         # type: () -> None
         email = "hamlet@zulip.com"
@@ -271,6 +272,7 @@ class AuthBackendTest(TestCase):
                                     good_kwargs=dict(realm_subdomain='zulip'),
                                     bad_kwargs=dict(realm_subdomain='acme'))
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
     def test_github_backend(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -1342,12 +1344,6 @@ class TestZulipAuthMixin(ZulipTestCase):
         self.assertIs(result, None)
 
 class TestPasswordAuthEnabled(ZulipTestCase):
-    def test_password_auth_enabled_on_production(self):
-        # type: () -> None
-        with self.settings(PRODUCTION=True):
-            realm = Realm.objects.get(domain='zulip.com')
-            self.assertFalse(password_auth_enabled(realm))
-
     def test_password_auth_enabled_for_ldap(self):
         # type: () -> None
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
@@ -1410,3 +1406,41 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 confirmation_key = confirmation.confirmation_key
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+
+class TestAdminSetBackends(ZulipTestCase):
+
+    def test_change_enabled_backends(self):
+        # type: () -> None
+        # Log in as admin
+        self.login("iago@zulip.com")
+        result = self.client_patch("/json/realm", {
+            'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True})})
+        self.assert_json_success(result)
+        realm = get_realm('zulip.com')
+        self.assertFalse(password_auth_enabled(realm))
+        self.assertTrue(dev_auth_enabled())
+
+    def test_disable_all_backends(self):
+        # type: () -> None
+        # Log in as admin
+        self.login("iago@zulip.com")
+        result = self.client_patch("/json/realm", {
+            'authentication_methods' : ujson.dumps({u'Email': False, u'Dev': False})})
+        self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
+        realm = get_realm('zulip.com')
+        self.assertTrue(password_auth_enabled(realm))
+        self.assertTrue(dev_auth_enabled())
+
+    def test_supported_backends_only_updated(self):
+        # type: () -> None
+        # Log in as admin
+        self.login("iago@zulip.com")
+        # Set some supported and unsupported backends
+        result = self.client_patch("/json/realm", {
+            'authentication_methods' : ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
+        self.assert_json_success(result)
+        realm = get_realm('zulip.com')
+        # Check that unsupported backend is not enabled
+        self.assertFalse(github_auth_enabled(realm))
+        self.assertTrue(dev_auth_enabled())
+        self.assertFalse(password_auth_enabled(realm))
