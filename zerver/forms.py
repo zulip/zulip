@@ -15,7 +15,7 @@ from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_do
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, resolve_email_to_domain, get_realm, get_realm_by_string_id, \
-    get_unique_open_realm, split_email_to_domain
+    get_unique_open_realm, split_email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
 import logging
@@ -143,6 +143,12 @@ class HomepageForm(forms.Form):
 
         if realm is None or realm.invite_required:
             raise ValidationError(mark_safe(SIGNUP_STRING))
+
+        if not email_allowed_for_realm(email, realm):
+            raise ValidationError(
+                _("The organization you are trying to join, %(string_id)s, only allows users with e-mail "
+                  "addresses within the organization. Please try a different e-mail address."
+                  % {'string_id': realm.string_id}))
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
