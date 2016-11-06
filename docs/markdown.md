@@ -38,6 +38,20 @@ The Python-Markdown implementation is tested by
 and is automatically used by both test suites; as a result, it the
 preferred place to add new tests for Zulip's markdown system.
 
+## Changing Zulip's markdown processor
+
+When changing Zulip's markdown syntax, you need to update several
+places:
+
+* The backend markdown processor (`zerver/lib/bugdown/__init__.py`).
+* The frontend markdown processor (`static/js/echo.js` and sometimes
+  `static/third/marked/lib/marked.js`), or `echo.contains_bugdown` if
+  your changes won't be supported in the frontend processor.
+* If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
+* The test suite, probably via adding entries to `zerver/fixtures/bugdown-data.json`.
+* The in-app markdown documentation (`templates/zerver/markdown_help.html`).
+* The list of changes to markdown at the end of this document.
+
 ## Zulip's Markdown philosophy
 
 Note that this discussion is based on a comparison with the original
