@@ -25,15 +25,6 @@ import DNS
 from six import text_type
 from typing import Any, Callable, Optional
 
-SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
-                u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
-
-if settings.SHOW_OSS_ANNOUNCEMENT:
-    SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
-                    u"The zulip.com service is not taking new customer teams. <br /> " + \
-                    u"<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/\">" + \
-                    u"Zulip is open source</a>, so you can install your own Zulip server " + \
-                    u"by following the instructions on <a href=\"https://www.zulip.org\">www.zulip.org</a>!"
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        u'If you want to sign up an alias for Zulip, ' + \
@@ -141,8 +132,14 @@ class HomepageForm(forms.Form):
         elif not settings.REALMS_HAVE_SUBDOMAINS:
             realm = get_realm(resolve_email_to_domain(email))
 
-        if realm is None or realm.invite_required:
-            raise ValidationError(mark_safe(SIGNUP_STRING))
+        if realm is None:
+            if settings.REALMS_HAVE_SUBDOMAINS:
+                raise ValidationError(_("The organization you are trying to join does not exist."))
+            else:
+                raise ValidationError(_("Your email address does not correspond to any existing organization."))
+
+        if realm.invite_required:
+            raise ValidationError(_("Please request an invite from the organization administrator."))
 
         if not email_allowed_for_realm(email, realm):
             raise ValidationError(

@@ -490,8 +490,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response=dict(email='nonexisting@phantom.com', name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('Your e-mail does not match any '
-                                    'existing open organization.', result)
+            self.assert_in_response('Your email address does not correspond to any '
+                                    'existing organization.', result)
 
 class ResponseMock(object):
     def __init__(self, status_code, data):
