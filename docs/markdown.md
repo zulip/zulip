@@ -52,6 +52,29 @@ places:
 * The in-app markdown documentation (`templates/zerver/markdown_help.html`).
 * The list of changes to markdown at the end of this document.
 
+Important considerations for any changes are:
+
+* Security: A bug in the markdown processor can lead to XSS issues.
+  For example, we should not insert unsanitized HTML from a
+  third-party web application into a Zulip message.
+* Uniqueness: We want to avoid users having a bad experience due to
+  accidentally triggering markdown syntax or typeahead that isn't
+  related to what they are trying to express.
+* Performance: Zulip can render a lot of messages very quickly, and
+  we'd like to keep it that way.  New regular expressions similar to
+  the ones already present are unlikely to be a problem, but we need
+  to be thoughtful about expensive computations or third-party API
+  requests.
+* Database: The backend markdown processor runs inside a Python thread
+  (as part of how we implement timeouts for third-party API queries),
+  and for that reason we currently should avoid making database
+  queries inside the markdown processor.  This is a technical
+  implementation detail that could be changed with a few days of work,
+  but is important detail to know about until we do that work.
+* Testing: Every new feature should have both positive and negative
+  tests; they're easy to write and give us the flexibility to refactor
+  frequently.
+
 ## Zulip's Markdown philosophy
 
 Note that this discussion is based on a comparison with the original
