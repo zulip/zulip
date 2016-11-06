@@ -1342,12 +1342,6 @@ class TestZulipAuthMixin(ZulipTestCase):
         self.assertIs(result, None)
 
 class TestPasswordAuthEnabled(ZulipTestCase):
-    def test_password_auth_enabled_on_production(self):
-        # type: () -> None
-        with self.settings(PRODUCTION=True):
-            realm = Realm.objects.get(domain='zulip.com')
-            self.assertFalse(password_auth_enabled(realm))
-
     def test_password_auth_enabled_for_ldap(self):
         # type: () -> None
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):

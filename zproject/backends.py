@@ -26,12 +26,6 @@ from zerver.lib.utils import check_subdomain, get_subdomain
 
 def password_auth_enabled(realm):
     # type: (Realm) -> bool
-    if realm is not None:
-        if realm.domain == 'zulip.com' and settings.PRODUCTION:
-            # the dropbox realm is SSO only, but the unit tests still need to be
-            # able to login
-            return False
-
     for backend in django.contrib.auth.get_backends():
          if isinstance(backend, EmailAuthBackend):
              return True
