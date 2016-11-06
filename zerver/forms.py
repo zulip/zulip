@@ -144,14 +144,7 @@ class HomepageForm(forms.Form):
         if realm is None or realm.invite_required:
             raise ValidationError(mark_safe(SIGNUP_STRING))
 
-        # If a realm is specified and that realm is open, pass
-        if completely_open(self.domain):
-            return email
-
-        # If the subdomain encodes a complete open realm, pass
-        subdomain_realm = get_realm_by_string_id(self.subdomain)
-        if (subdomain_realm is not None and
-            completely_open(subdomain_realm.domain)):
+        if completely_open(realm.domain):
             return email
 
         if realm.is_zephyr_mirror_realm:
