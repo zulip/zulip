@@ -45,9 +45,17 @@ def auth_enabled_helper(backends_to_check, realm):
                 return True
     return False
 
+def ldap_auth_enabled(realm=None):
+    # type: (Optional[Realm]) -> bool
+    return auth_enabled_helper([u'LDAP'], realm)
+
+def email_auth_enabled(realm=None):
+    # type: (Optional[Realm]) -> bool
+    return auth_enabled_helper([u'Email'], realm)
+
 def password_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
-    return auth_enabled_helper([u'Email', u'LDAP'], realm)
+    return ldap_auth_enabled(realm) or email_auth_enabled(realm)
 
 def dev_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
@@ -186,6 +194,10 @@ class EmailAuthBackend(ZulipAuthMixin):
         if not password_auth_enabled(user_profile.realm):
             if return_data is not None:
                 return_data['password_auth_disabled'] = True
+            return None
+        if not email_auth_enabled(user_profile.realm):
+            if return_data is not None:
+                return_data['email_auth_disabled'] = True
             return None
         if user_profile.check_password(password):
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
