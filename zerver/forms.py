@@ -144,9 +144,6 @@ class HomepageForm(forms.Form):
         if realm is None or realm.invite_required:
             raise ValidationError(mark_safe(SIGNUP_STRING))
 
-        if completely_open(realm.domain):
-            return email
-
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
 
