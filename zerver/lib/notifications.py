@@ -290,7 +290,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
-    user_profile.last_reminder = datetime.datetime.now()
+    user_profile.last_reminder = timezone.now()
     user_profile.save(update_fields=['last_reminder'])
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
@@ -424,7 +424,7 @@ def send_future_email(recipients, email_html, email_text, subject,
     if delay < datetime.timedelta(minutes=1):
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")
     else:
-        send_time = (datetime.datetime.utcnow() + delay).__format__("%Y-%m-%d %H:%M:%S")
+        send_time = (timezone.now() + delay).__format__("%Y-%m-%d %H:%M:%S")
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
 

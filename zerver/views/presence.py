@@ -5,7 +5,7 @@ import time
 from typing import Any
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.timezone import now
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import authenticated_json_post_view
@@ -28,8 +28,8 @@ def update_active_status_backend(request, user_profile, status=REQ(),
     if status_val is None:
         raise JsonableError(_("Invalid presence status: %s") % (status,))
     else:
-        update_user_presence(user_profile, request.client, now(), status_val,
-                             new_user_input)
+        update_user_presence(user_profile, request.client, timezone.now(),
+                             status_val, new_user_input)
 
     ret = get_status_list(user_profile)
     if user_profile.realm.is_zephyr_mirror_realm:
@@ -42,10 +42,8 @@ def update_active_status_backend(request, user_profile, status=REQ(),
                                                 client__name="zephyr_mirror")
 
             ret['zephyr_mirror_active'] = \
-                (activity.last_visit.replace(tzinfo=None) >
-                 datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
+                (activity.last_visit > timezone.now() - datetime.timedelta(minutes=5))
         except UserActivity.DoesNotExist:
             ret['zephyr_mirror_active'] = False
 
     return json_success(ret)
-
