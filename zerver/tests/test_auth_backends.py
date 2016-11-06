@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.http import HttpResponse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
 from typing import Any, Callable, Dict, Optional
@@ -87,6 +87,15 @@ class AuthBackendTest(TestCase):
         result = backend.authenticate(username, *good_args, **good_kwargs)
         self.assertEqual(user_profile, result)
 
+        # ZulipDummyBackend isn't a real backend so the remainder
+        # doesn't make sense for it
+        if isinstance(backend, ZulipDummyBackend):
+            return
+
+        # Verify auth fails if the auth backend is disabled on server
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',)):
+            self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+
     def test_dummy_backend(self):
         # type: () -> None
         self.verify_backend(ZulipDummyBackend(),
@@ -146,6 +155,7 @@ class AuthBackendTest(TestCase):
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
             self.assertIsNone(EmailAuthBackend().authenticate(email, password))
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_backend(self):
         # type: () -> None
         email = "hamlet@zulip.com"
@@ -192,6 +202,7 @@ class AuthBackendTest(TestCase):
             result = backend.authenticate(return_data=ret)
             self.assertIsNone(result)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_backend(self):
         # type: () -> None
         email = "hamlet@zulip.com"
@@ -240,6 +251,7 @@ class AuthBackendTest(TestCase):
         # type: () -> None
         self.verify_backend(DevAuthBackend())
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend(self):
         # type: () -> None
         self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
@@ -253,6 +265,7 @@ class AuthBackendTest(TestCase):
                                 good_kwargs=dict(realm_subdomain='zulip'),
                                 bad_kwargs=dict(realm_subdomain='acme'))
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend_sso_append_domain(self):
         # type: () -> None
         self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
@@ -271,6 +284,7 @@ class AuthBackendTest(TestCase):
                                     good_kwargs=dict(realm_subdomain='zulip'),
                                     bad_kwargs=dict(realm_subdomain='acme'))
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
     def test_github_backend(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -1148,6 +1162,7 @@ class TestLDAP(ZulipTestCase):
         realm.string_id = 'zulip'
         realm.save()
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -1162,6 +1177,7 @@ class TestLDAP(ZulipTestCase):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing')
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_password(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -1177,6 +1193,7 @@ class TestLDAP(ZulipTestCase):
                                          'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
                 self.backend.authenticate('hamlet@zulip.com', 'wrong')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_nonexistent_user(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -1192,6 +1209,7 @@ class TestLDAP(ZulipTestCase):
                                          'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
                 self.backend.authenticate('nonexistent@zulip.com', 'testing')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_permissions(self):
         # type: () -> None
         backend = self.backend
@@ -1200,6 +1218,7 @@ class TestLDAP(ZulipTestCase):
         self.assertTrue(backend.get_all_permissions(None, None) == set())
         self.assertTrue(backend.get_group_permissions(None, None) == set())
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username(self):
         # type: () -> None
         backend = self.backend
@@ -1207,6 +1226,7 @@ class TestLDAP(ZulipTestCase):
             username = backend.django_to_ldap_username('"hamlet@test"@zulip.com')
             self.assertEqual(username, '"hamlet@test"')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_to_django_username(self):
         # type: () -> None
         backend = self.backend
@@ -1214,6 +1234,7 @@ class TestLDAP(ZulipTestCase):
             username = backend.ldap_to_django_username('"hamlet@test"')
             self.assertEqual(username, '"hamlet@test"@zulip.com')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_user_exists(self):
         # type: () -> None
         class _LDAPUser(object):
@@ -1225,6 +1246,7 @@ class TestLDAP(ZulipTestCase):
         self.assertFalse(created)
         self.assertEqual(user_profile.email, email)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_user_does_not_exist(self):
         # type: () -> None
         class _LDAPUser(object):
@@ -1240,6 +1262,7 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.email, email)
             self.assertEqual(user_profile.full_name, 'Full Name')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_realm_is_deactivated(self):
         # type: () -> None
         class _LDAPUser(object):
@@ -1255,6 +1278,7 @@ class TestLDAP(ZulipTestCase):
             with self.assertRaisesRegexp(Exception, 'Realm has been deactivated'):
                 backend.get_or_create_user(email, _LDAPUser())
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_django_to_ldap_username_when_domain_does_not_match(self):
         # type: () -> None
         backend = self.backend
@@ -1263,6 +1287,7 @@ class TestLDAP(ZulipTestCase):
             with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
                 backend.django_to_ldap_username(email)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_wrong_subdomain(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -1279,6 +1304,7 @@ class TestLDAP(ZulipTestCase):
                                                      realm_subdomain='acme')
             self.assertIs(user_profile, None)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_empty_subdomain(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -1295,6 +1321,7 @@ class TestLDAP(ZulipTestCase):
                                                      realm_subdomain='')
             self.assertIs(user_profile, None)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_when_subdomain_is_none(self):
         # type: () -> None
         self.mock_ldap.directory = {
@@ -1311,6 +1338,7 @@ class TestLDAP(ZulipTestCase):
                                                      realm_subdomain=None)
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success_with_valid_subdomain(self):
         # type: () -> None
         self.mock_ldap.directory = {

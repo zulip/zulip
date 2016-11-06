@@ -95,6 +95,8 @@ class ZulipAuthMixin(object):
             return None
 
 class SocialAuthMixin(ZulipAuthMixin):
+    auth_backend_name = None # type: text_type
+
     def get_email_address(self, *args, **kwargs):
         # type: (*Any, **Any) -> text_type
         raise NotImplementedError
@@ -128,6 +130,10 @@ class SocialAuthMixin(ZulipAuthMixin):
         if not check_subdomain(kwargs.get("realm_subdomain"),
                                user_profile.realm.subdomain):
             return_data["invalid_subdomain"] = True
+            return None
+
+        if not auth_enabled_helper([self.auth_backend_name], user_profile.realm):
+            return_data["auth_backend_disabled"] = True
             return None
 
         return user_profile
@@ -238,6 +244,9 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
                 return_data["invalid_subdomain"] = True
                 return None
+            if not google_auth_enabled(realm=user_profile.realm):
+                return_data["google_auth_disabled"] = True
+                return None
             return user_profile
         else:
             return_data["valid_attestation"] = False
@@ -250,10 +259,14 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return None
 
         email = remote_user_to_email(remote_user)
-        user = common_get_active_user_by_email(email)
-        if user is not None and check_subdomain(realm_subdomain, user.realm.subdomain):
-            return user
-        return None
+        user_profile = common_get_active_user_by_email(email)
+        if user_profile is None:
+            return None
+        if not check_subdomain(realm_subdomain, user_profile.realm.subdomain):
+            return None
+        if not auth_enabled_helper([u"RemoteUser"], user_profile.realm):
+            return None
+        return user_profile
 
 class ZulipLDAPException(Exception):
     pass
@@ -314,6 +327,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             user_profile = get_user_profile_by_email(username)
             if not user_profile.is_active or user_profile.realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
+            if not ldap_auth_enabled(user_profile.realm):
+                raise ZulipLDAPException("LDAP Authentication is not enabled")
             return user_profile, False
         except UserProfile.DoesNotExist:
             domain = resolve_email_to_domain(username)
@@ -341,10 +356,17 @@ class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
     def authenticate(self, username, realm_subdomain=None, return_data=None):
-        # type: (text_type, Optional[text_type], Optional[Dict[str, Any]]) -> UserProfile
-        return common_get_active_user_by_email(username, return_data=return_data)
+        # type: (text_type, Optional[text_type], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        user_profile = common_get_active_user_by_email(username, return_data=return_data)
+        if user_profile is None:
+            return None
+        if not dev_auth_enabled(user_profile.realm):
+            return None
+        return user_profile
 
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
+    auth_backend_name = u"GitHub"
+
     def get_email_address(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[text_type]
         try:
