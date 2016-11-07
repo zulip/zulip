@@ -440,3 +440,63 @@ li.show-more-private-messages a {
 .zoom-in .zoom-in-hide {
     display: none;
 }
+
+/* topic history stuff follows */
+
+a.full-topic-list-link {
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+    color: #333;
+}
+
+ul.full-topic-list {
+    list-style-type: none;
+    padding: 7px;
+}
+
+ul.full-topic-list li {
+    padding-left: 10px;
+    padding-bottom: 7px;
+    padding-top: 6px;
+    border-bottom: 1px solid #ddd;
+}
+
+ul.full-topic-list li.muted-topic {
+    opacity: 0.30;
+}
+    
+.topics-for-heading {
+    padding-top: 20px;
+    font-size: 25px;
+    font-weight: 300;
+}
+
+.topic-unread-count,
+.topic-no-unread {
+    padding: 2px 3px 1px 3px;
+    width: 15px;
+    display: inline-block;
+}
+
+.topic-unread-count {
+    background: #80837f;
+    border-radius: 0px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+    text-align: right;
+}
+
+.topic-no-unread {
+    background: #fffff;
+    color: #ffffff;
+}
+
+ul.full-topic-list .mute-topic,
+ul.full-topic-list .unmute-topic {
+    padding-left: 3px;
+    padding-right: 3px;
+}

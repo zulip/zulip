@@ -9,14 +9,14 @@ from django.http import HttpRequest, HttpResponse
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
     authenticated_json_view, \
-    get_user_profile_by_email, require_realm_admin
+    get_user_profile_by_email, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
     create_streams_if_needed, gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream
+    do_remove_default_stream, get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -30,6 +30,12 @@ from six.moves import urllib
 
 import six
 from six import text_type
+
+def is_active_subscriber(user_profile, recipient):
+    # type: (UserProfile, Recipient) -> bool
+    return Subscription.objects.filter(user_profile=user_profile,
+                                       recipient=recipient,
+                                       active=True).exists()
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
@@ -447,6 +453,37 @@ def get_streams_backend(request, user_profile,
                              include_default=include_default)
     return json_success({"streams": streams})
 
+@has_request_variables
+def get_topics_backend(request, user_profile,
+                       stream_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+
+    try:
+        stream = Stream.objects.get(pk=stream_id)
+    except Stream.DoesNotExist:
+        return json_error(_("Invalid stream id"))
+
+    if stream.realm_id != user_profile.realm_id:
+        return json_error(_("Invalid stream id"))
+
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+
+    if not stream.is_public():
+        if not is_active_subscriber(user_profile=user_profile,
+                                    recipient=recipient):
+            return json_error(_("Invalid stream id"))
+
+    result = get_topic_history_for_stream(
+        user_profile=user_profile,
+        recipient=recipient,
+    )
+
+    # Our data structure here is a list of tuples of
+    # (topic name, unread count), and it's reverse chronological,
+    # so the most recent topic is the first element of the list.
+    return json_success(dict(topics=result))
+
+
 @authenticated_json_post_view
 @has_request_variables
 def json_stream_exists(request, user_profile, stream=REQ(),
@@ -464,9 +501,10 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
         recipient = get_recipient(Recipient.STREAM, stream.id)
         if autosubscribe:
             bulk_add_subscriptions([stream], [user_profile])
-        result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
-                                                           recipient=recipient,
-                                                           active=True).exists()
+        result["subscribed"] = is_active_subscriber(
+                user_profile=user_profile,
+                recipient=recipient)
+
         return json_success(result) # results are ignored for HEAD requests
     return json_response(data=result, status=404)
 

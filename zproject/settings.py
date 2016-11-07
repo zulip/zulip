@@ -771,6 +771,7 @@ JS_SPECS = {
             'js/rows.js',
             'js/people.js',
             'js/unread.js',
+            'js/full_topic_list.js',
             'js/topic_list.js',
             'js/stream_list.js',
             'js/filter.js',

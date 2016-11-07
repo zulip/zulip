@@ -2432,6 +2432,10 @@ button.topic_edit_cancel {
     font-size: 20px;
 }
 
+#topic-history {
+    margin-top: 60px;
+}
+
 #home {
     margin-top: 41px;
 }
