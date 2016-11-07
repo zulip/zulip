@@ -39,7 +39,7 @@ from zerver.worker import queue_processors
 from django.conf import settings
 from django.core import mail
 from six import text_type
-from six.moves import range
+from six.moves import range, urllib
 import os
 import re
 import sys
@@ -2044,7 +2044,8 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(result["Location"].endswith("/desktop_home/"))
         result = self.client_get("/desktop_home/")
         self.assertEquals(result.status_code, 302)
-        self.assertEquals(result["Location"], "http://testserver/")
+        path = urllib.parse.urlparse(result['Location']).path
+        self.assertEquals(path, "/")
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):

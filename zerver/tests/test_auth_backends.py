@@ -787,7 +787,8 @@ class GoogleLoginTest(GoogleOAuthTest):
         # type: () -> None
         result = self.client_get("/accounts/login/google/done/?error=access_denied")
         self.assertEquals(result.status_code, 302)
-        self.assertEquals(result.url, "http://testserver/")
+        path = urllib.parse.urlparse(result.url).path
+        self.assertEquals(path, "/")
 
     def test_google_oauth2_error_other(self):
         # type: () -> None
