@@ -29,7 +29,8 @@ from confirmation.models import Confirmation
 from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
-    dev_auth_enabled, password_auth_enabled, github_auth_enabled, AUTH_BACKEND_NAME_MAP
+    dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
+    SocialAuthMixin, AUTH_BACKEND_NAME_MAP
 
 from zerver.views.auth import maybe_send_to_registration
 
@@ -316,6 +317,15 @@ class AuthBackendTest(TestCase):
             self.verify_backend(GitHubAuthBackend(),
                                 good_kwargs=good_kwargs,
                                 bad_kwargs=bad_kwargs)
+
+class SocialAuthMixinTest(ZulipTestCase):
+    def test_social_auth_mixing(self):
+        # type: () -> None
+        mixin = SocialAuthMixin()
+        with self.assertRaises(NotImplementedError):
+            mixin.get_email_address()
+        with self.assertRaises(NotImplementedError):
+            mixin.get_full_name()
 
 class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self):
