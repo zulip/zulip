@@ -16,7 +16,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
-from zilencer.models import RemoteZulipServer
+from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
 from django.utils.timezone import now
 
 class MockRedis(object):
@@ -77,7 +77,7 @@ class PushBouncerNotificationTest(ZulipTestCase):
         result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **self.get_auth())
         self.assert_json_error(result, "Missing 'user_id' argument")
 
-    def test_remote_push_user_no_server(self):
+    def test_remote_push_user_endpoints(self):
         # type: () -> None
         endpoints = [
             ('/api/v1/remotes/push/register', 'register'),
@@ -87,8 +87,9 @@ class PushBouncerNotificationTest(ZulipTestCase):
         for endpoint, method in endpoints:
             payload = self.get_generic_payload(method)
             server_uuid = payload['server_uuid']
-            result = self.client_post(endpoint, payload, **self.get_auth())
+
             # Should fail as server is not in database yet
+            result = self.client_post(endpoint, payload, **self.get_auth())
             self.assert_json_error(result, "Server not registered. UUID:" + server_uuid)
 
             # Save a new server to the database
@@ -96,8 +97,11 @@ class PushBouncerNotificationTest(ZulipTestCase):
             server.save()
 
             # Verify correct results are success
-            result = self.client_post(endpoint, self.get_generic_payload(method), **self.get_auth())
+            result = self.client_post(endpoint, payload, **self.get_auth())
             self.assert_json_success(result)
+            remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
+            token_count = 1 if method == 'register' else 0
+            self.assertEquals(len(remote_tokens), token_count)
 
             # Clean up database objs
             server.delete()
