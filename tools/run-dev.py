@@ -12,6 +12,8 @@ import traceback
 
 from six.moves.urllib.parse import urlunparse
 
+from django.conf import settings
+
 from tornado import httpclient
 from tornado import httputil
 from tornado import gen
@@ -37,6 +39,13 @@ Note that, while runserver and runtornado have the usual auto-restarting
 behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
 """)
+if __name__ == "__main__":
+    TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(os.path.dirname(TOOLS_DIR))
+    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+    from tools.lib.test_script import(
+        get_provisioning_status,
+    )
 
 parser.add_option('--test',
                   action='store_true', dest='test',
@@ -50,7 +59,18 @@ parser.add_option('--no-clear-memcached',
                   action='store_false', dest='clear_memcached',
                   default=True, help='Do not clear memcached')
 
+parser.add_option('--force', dest='force',
+                      action="store_true",
+                      default=False, help='Run tests despite possible problems.')
+
 (options, arguments) = parser.parse_args()
+
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
 
 if options.interface is None:
     user_id = os.getuid()
