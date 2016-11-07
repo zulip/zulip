@@ -839,6 +839,39 @@ class FetchAPIKeyTest(ZulipTestCase):
                                            password=initial_password(self.email)))
             self.assert_json_error_contains(result, "Password auth is disabled", 403)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_ldap_auth_email_auth_disabled_failure(self):
+        # type: () -> None
+        result = self.client_post("/api/v1/fetch_api_key",
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_error_contains(result, "Your username or password is incorrect.", 403)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_ldap_auth_email_auth_disabled_success(self):
+        # type: () -> None
+        ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+        self.mock_initialize = ldap_patcher.start()
+        self.mock_ldap = MockLDAP()
+        self.mock_initialize.return_value = self.mock_ldap
+        self.backend = ZulipLDAPAuthBackend()
+
+        self.mock_ldap.directory = {
+            'uid=hamlet,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username=self.email,
+                                           password="testing"))
+        self.assert_json_success(result)
+        self.mock_ldap.reset()
+        self.mock_initialize.stop()
+
     def test_inactive_user(self):
         # type: () -> None
         do_deactivate_user(self.user_profile)
