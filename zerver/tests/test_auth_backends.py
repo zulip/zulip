@@ -1491,7 +1491,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assert_json_success(result)
         realm = get_realm('zulip.com')
         self.assertFalse(password_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled())
+        self.assertTrue(dev_auth_enabled(realm))
 
     def test_disable_all_backends(self):
         # type: () -> None
@@ -1502,7 +1502,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
         realm = get_realm('zulip.com')
         self.assertTrue(password_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled())
+        self.assertTrue(dev_auth_enabled(realm))
 
     def test_supported_backends_only_updated(self):
         # type: () -> None
@@ -1515,5 +1515,5 @@ class TestAdminSetBackends(ZulipTestCase):
         realm = get_realm('zulip.com')
         # Check that unsupported backend is not enabled
         self.assertFalse(github_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled())
+        self.assertTrue(dev_auth_enabled(realm))
         self.assertFalse(password_auth_enabled(realm))
