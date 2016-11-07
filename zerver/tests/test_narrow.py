@@ -10,7 +10,7 @@ from sqlalchemy.sql import (
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
+    get_display_recipient, get_recipient, get_realm_by_string_id, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.message import (
     MessageDict,
@@ -61,7 +61,7 @@ def mute_stream(realm, user_profile, stream_name):
 
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self):
-        self.realm = get_realm('zulip.com')
+        self.realm = get_realm_by_string_id('zulip')
         self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.builder = NarrowBuilder(self.user_profile, column('id'))
         self.raw_query = select([column("id")], None, "zerver_message")
@@ -277,7 +277,7 @@ class BuildNarrowFilterTest(TestCase):
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.make_stream('public_stream', realm=realm)
 
         # Negated stream searches should not include history.
@@ -896,7 +896,7 @@ class GetOldMessagesTest(ZulipTestCase):
         doing.
         """
 
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
@@ -931,7 +931,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
 
     def test_exclude_muting_conditions(self):
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 

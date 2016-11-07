@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
 from zerver.models import (
-    get_client, get_realm, get_stream, get_user_profile_by_email,
+    get_client, get_realm_by_string_id, get_stream, get_user_profile_by_email,
     Message, Recipient, UserProfile
 )
 
@@ -216,7 +216,7 @@ class EventsRegisterTest(ZulipTestCase):
     def create_bot(self, email):
         # type: (str) -> UserProfile
         return do_create_user(email, '123',
-                              get_realm('zulip.com'), 'Test Bot', 'test',
+                              get_realm_by_string_id('zulip'), 'Test Bot', 'test',
                               bot_type=UserProfile.DEFAULT_BOT, bot_owner=self.user_profile)
 
     def realm_bot_schema(self, field_name, check):
@@ -619,12 +619,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
+        events = self.do_test(lambda: check_add_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji",
                                                          "https://realm.com/my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip.com"), "my_emoji"))
+        events = self.do_test(lambda: do_remove_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -634,12 +634,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_filters')),
             ('realm_filters', check_list(None)), # TODO: validate tuples in the list
         ])
-        events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
+        events = self.do_test(lambda: do_add_realm_filter(get_realm_by_string_id("zulip"), "#[123]",
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
+        self.do_test(lambda: do_remove_realm_filter(get_realm_by_string_id("zulip"), "#[123]"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -727,7 +727,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_rename_stream(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
@@ -865,7 +865,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-        action = lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream', u'new description')
+        action = lambda: do_change_stream_description(get_realm_by_string_id('zulip'), 'test_stream', u'new description')
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)

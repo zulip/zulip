@@ -14,7 +14,7 @@ from zerver.lib.test_classes import (
 
 from zerver.models import (
     get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient, get_realm,
+    Recipient, get_realm_by_string_id,
 )
 
 from zerver.lib.actions import (
@@ -358,7 +358,7 @@ class TestCommandMTA(TestCase):
         # type: (mock.Mock) -> None
 
         sender = "hamlet@zulip.com"
-        stream = get_stream("Denmark", get_realm("zulip.com"))
+        stream = get_stream("Denmark", get_realm_by_string_id("zulip"))
         stream_to_address = encode_email_address(stream)
 
         template_path = os.path.join(MAILS_DIR, "simple.txt")

@@ -31,7 +31,7 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
-    get_realm, get_stream, get_user_profile_by_email,
+    get_realm_by_string_id, get_stream, get_user_profile_by_email,
 )
 
 from zerver.lib.actions import (
@@ -127,7 +127,7 @@ class TopicHistoryTest(ZulipTestCase):
         # out of realm
         bad_stream = self.make_stream(
             'mit_stream',
-            realm=get_realm('mit.edu')
+            realm=get_realm_by_string_id('mit')
         )
         endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
         result = self.client_get(endpoint, dict())
@@ -158,7 +158,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         # We need to save the object before we can access
         # the many-to-many relationship 'realms'
         dep.save()
-        dep.realms = [get_realm("zulip.com")]
+        dep.realms = [get_realm_by_string_id("zulip")]
         dep.save()
 
 
@@ -508,7 +508,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
             self.subscribe_to_stream(user_profile.email, stream.name)

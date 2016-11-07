@@ -38,7 +38,7 @@ from zerver.lib.actions import (
     do_add_default_stream, do_change_is_admin,
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
-    gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
+    gather_subscriptions, get_default_streams_for_realm, get_realm_by_string_id, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
     create_streams_if_needed, active_user_ids
 )
@@ -59,7 +59,7 @@ class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self):
         # type: () -> None
         stream_names = [u'new1', u'new2', u'new3']
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -84,7 +84,7 @@ class TestCreateStreams(ZulipTestCase):
 class RecipientTest(ZulipTestCase):
     def test_recipient(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         stream = get_stream('Verona', realm)
         recipient = Recipient.objects.get(
             type_id=stream.id,
@@ -393,7 +393,7 @@ class StreamAdminTest(ZulipTestCase):
             self.assertEqual(deletion_events, [])
 
         with self.assertRaises(Stream.DoesNotExist):
-            Stream.objects.get(realm=get_realm("zulip.com"), name=active_name)
+            Stream.objects.get(realm=get_realm_by_string_id("zulip"), name=active_name)
 
         # A deleted stream's name is changed, is deactivated, is invite-only,
         # and has no subscribers.
@@ -624,7 +624,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_add_and_remove_default_stream(self):
         # type: () -> None
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         orig_stream_names = self.get_default_stream_names(realm)
         do_add_default_stream(realm, 'Added Stream')
         new_stream_names = self.get_default_stream_names(realm)
@@ -1353,7 +1353,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # type: () -> None
         email1 = 'cordelia@zulip.com'
         email2 = 'iago@zulip.com'
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         streams_to_sub = ['multi_user_stream']
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -1551,7 +1551,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_bulk_subscribe_MIT(self):
         # type: () -> None
-        realm = get_realm("mit.edu")
+        realm = get_realm_by_string_id("mit")
         streams = ["stream_%s" % i for i in range(40)]
         for stream_name in streams:
             self.make_stream(stream_name, realm=realm)
@@ -2057,7 +2057,7 @@ class GetSubscribersTest(ZulipTestCase):
         """
         Check never_subscribed streams are fetched correctly and not include invite_only streams.
         """
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         streams = ["stream_%s" % i for i in range(10)]
         for stream_name in streams:
             self.make_stream(stream_name, realm=realm)
