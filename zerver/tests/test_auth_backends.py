@@ -850,14 +850,6 @@ class FetchAPIKeyTest(ZulipTestCase):
             self.assert_json_error_contains(result, "Password auth is disabled", 403)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
-    def test_ldap_auth_email_auth_disabled_failure(self):
-        # type: () -> None
-        result = self.client_post("/api/v1/fetch_api_key",
-                                  dict(username=self.email,
-                                       password=initial_password(self.email)))
-        self.assert_json_error_contains(result, "Your username or password is incorrect.", 403)
-
-    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_auth_email_auth_disabled_success(self):
         # type: () -> None
         ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
