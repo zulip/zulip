@@ -142,7 +142,9 @@ if __name__ == "__main__":
 
     if options.coverage:
         import coverage
-        cov = coverage.Coverage(omit="*/zulip-venv-cache/*")
+        cov = coverage.Coverage(omit=["*/zulip-venv-cache/*",
+                                      "*/migrations/*",
+                                      "*/management/commands/*"])
         cov.start()
     if options.profile:
         import cProfile
