@@ -520,6 +520,7 @@ class GoogleOAuthTest(ZulipTestCase):
         if 'google' not in result.url:
             return result
 
+        self.client.cookies = result.cookies
         # Now extract the CSRF token from the redirect URL
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
