@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from zerver.lib.actions import get_realm, check_add_realm_emoji
+from zerver.lib.actions import get_realm_by_string_id, check_add_realm_emoji
 from zerver.lib.test_helpers import ZulipTestCase
 from zerver.models import RealmEmoji
 import ujson
@@ -11,7 +11,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_list(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
@@ -32,7 +32,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(len(content["emoji"]), 1)
 
-        realm_emoji = RealmEmoji.objects.get(realm=get_realm('zulip.com'))
+        realm_emoji = RealmEmoji.objects.get(realm=get_realm_by_string_id('zulip'))
         self.assertEqual(
             str(realm_emoji),
             '<RealmEmoji(zulip.com): my_emoji https://example.com/my_emoji>'
@@ -48,7 +48,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_delete(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_success(result)

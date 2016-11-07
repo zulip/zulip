@@ -21,7 +21,7 @@ from zerver.lib.test_helpers import (
     ZulipTestCase
 )
 from zerver.models import \
-    get_realm, get_user_profile_by_email, email_to_username, UserProfile, \
+    get_realm_by_string_id, get_user_profile_by_email, email_to_username, UserProfile, \
     PreregistrationUser, Realm
 
 from confirmation.models import Confirmation
@@ -1320,7 +1320,7 @@ class TestLDAP(ZulipTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = 'nonexisting@zulip.com'
-            realm = get_realm('zulip.com')
+            realm = get_realm_by_string_id('zulip')
             do_deactivate_realm(realm)
             with self.assertRaisesRegexp(Exception, 'Realm has been deactivated'):
                 backend.get_or_create_user(email, _LDAPUser())
@@ -1489,7 +1489,7 @@ class TestAdminSetBackends(ZulipTestCase):
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True})})
         self.assert_json_success(result)
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.assertFalse(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled())
 
@@ -1500,7 +1500,7 @@ class TestAdminSetBackends(ZulipTestCase):
         result = self.client_patch("/json/realm", {
             'authentication_methods' : ujson.dumps({u'Email': False, u'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.assertTrue(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled())
 
@@ -1512,7 +1512,7 @@ class TestAdminSetBackends(ZulipTestCase):
         result = self.client_patch("/json/realm", {
             'authentication_methods' : ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
         self.assert_json_success(result)
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         # Check that unsupported backend is not enabled
         self.assertFalse(github_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled())
