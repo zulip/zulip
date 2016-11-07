@@ -992,7 +992,7 @@ class Bugdown(markdown.Extension):
 
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
-                  'escape', 'strong_em', 'emphasis', 'emphasis2',
+                  'strong_em', 'emphasis', 'emphasis2',
                   'linebreak', 'strong'):
             del md.inlinePatterns[k]
         try:
