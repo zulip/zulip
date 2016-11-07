@@ -871,6 +871,9 @@ InlineLexer.prototype.usermention = function (username, orig) {
 };
 
 InlineLexer.prototype.streamlink = function(stream_name, orig) {
+  if (stream_data.get_sub(stream_name) === undefined) {
+    return orig;
+  }
   if (typeof this.options.streamLinkHanlder !== 'function')
   {
     return orig;
