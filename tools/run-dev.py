@@ -1,22 +1,26 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+import errno
 import optparse
 import os
 import pwd
 import signal
+import socket
 import subprocess
 import sys
 import time
 import traceback
+from functools import wraps
 
+from six.moves import range
 from six.moves.urllib.parse import urlunparse
 
 from tornado import httpclient
 from tornado import httputil
 from tornado import gen
 from tornado import web
-from tornado.ioloop import IOLoop
+from tornado.ioloop import IOLoop, TimeoutError
 from tornado.websocket import WebSocketHandler, websocket_connect
 
 if False: from typing import Any, Callable, Generator, Optional
@@ -100,6 +104,8 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+
+MAX_WAIT_SECONDS_BEFORE_SHUTDOWN = 5
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -333,19 +339,6 @@ class Application(web.Application):
         super(Application, self).__init__(handlers)
 
 
-def on_shutdown():
-    # type: () -> None
-    IOLoop.instance().stop()
-
-
-def shutdown_handler(*args, **kwargs):
-    # type: (*Any, **Any) -> None
-    io_loop = IOLoop.instance()
-    if io_loop._callbacks:
-        io_loop.add_timeout(time.time() + 1, shutdown_handler)
-    else:
-        io_loop.stop()
-
 # log which services/ports will be started
 print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
       "Django: {}, Tornado: {}".format(django_port, tornado_port), end='')
@@ -357,6 +350,80 @@ else:
 print("".join((WARNING,
                "Note: only port {} is exposed to the host in a Vagrant environment.".format(
                    proxy_port), ENDC)))
+
+
+def timeout(seconds=10, error_message=os.strerror(errno.ETIME)):
+    # type: (int, str) -> Callable
+    def decorator(func):
+        # type: (Callable) -> Any
+        def _handle_timeout(signum, frame):
+            # type: (int, Any) -> None
+            print(signum, frame)
+            raise TimeoutError(error_message)
+
+        def wrapper(*args, **kwargs):
+            # type: ( *Any, **Any) -> Any
+            signal.signal(signal.SIGALRM, _handle_timeout)
+            signal.alarm(seconds)
+            try:
+                result = func(*args, **kwargs)
+            finally:
+                signal.alarm(0)
+            return result
+
+        return wraps(func)(wrapper)
+
+    return decorator
+
+
+@timeout(30, 'Services launching timeout fail. Shutdown services.')
+def check_connections():
+    # type: () -> None
+    """Check services connections
+    before Tornado Proxy server starting.
+    """
+    ready = False
+    ports_number = 3 if options.test else 4
+    while not ready:
+        try:
+            for i in range(1, ports_number):
+                sock = socket.socket()
+                sock.connect(('127.0.0.1', base_port + i))
+                sock.close()
+            ready = True
+        except socket.error:
+            sock.close()
+            time.sleep(2)
+
+
+try:
+    check_connections()
+except TimeoutError as e:
+    print('\033[91m', e)
+    os.killpg(0, signal.SIGTERM)
+
+
+def shutdown_handler(*args, **kwargs):
+    # type: (*Any, **Any) -> None
+    io_loop = IOLoop.instance()
+    if not ioloop._running:
+        return
+    print('Stopping server')
+
+    print('Will shutdown in {} seconds ...'.format(MAX_WAIT_SECONDS_BEFORE_SHUTDOWN))
+
+    deadline = time.time() + MAX_WAIT_SECONDS_BEFORE_SHUTDOWN
+
+    def stop_loop():
+        # type: () -> None
+        now = time.time()
+        if now < deadline and io_loop._callbacks:
+            io_loop.add_timeout(now + 1, stop_loop)
+        else:
+            io_loop.stop()
+            print('Shutdown')
+
+    stop_loop()
 
 try:
     app = Application()
