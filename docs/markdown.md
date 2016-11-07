@@ -18,10 +18,10 @@ trip from the server.
 The JavaScript markdown implementation has a function,
 `echo.contains_bugdown`, that is used to check whether a message
 contains any syntax that needs to be rendered to HTML on the backend.
-If `echo.contains_bugdown` returns false, the frontend simply won't
+If `echo.contains_bugdown` returns true, the frontend simply won't
 echo the message for the sender until it receives the rendered HTML
 from the backend.  If there is a bug where `echo.contains_bugdown`
-returns true incorrectly, the frontend will discover this when the
+returns false incorrectly, the frontend will discover this when the
 backend returns the newly sent message, and will update the HTML based
 on the authoritative backend rendering (which would cause a change in
 the rendering that is visible only to the sender shortly after a
