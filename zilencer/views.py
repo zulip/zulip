@@ -20,7 +20,8 @@ from .error_notify import notify_server_error, notify_browser_error
 
 import time
 
-from typing import Dict, Optional, Any, Text
+from typing import Dict, Optional, Any, Text, Union, cast
+from six import text_type
 
 client = get_redis_client()
 
@@ -47,25 +48,24 @@ def get_ticket_number():
     return ticket_number
 
 @has_request_variables
-def remote_server_register_push(request, entity_profile, server_uuid=REQ(), user_id=REQ(), token=REQ(), token_kind=REQ(), ios_app_id=None):
-    # type: (HttpRequest, text_type, int, text_type, int, text_type) -> HttpResponse
+def remote_server_register_push(request, entity, server_uuid=REQ(), user_id=REQ(), token=REQ(), token_kind=REQ(), ios_app_id=None):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], text_type, int, text_type, int, text_type) -> HttpResponse
+    
+    if not isinstance(entity, RemoteZulipServer):
+        return json_error(_("Must validate with valid Zulip server API key"))
+
+    server = cast(RemoteZulipServer, entity)
     if token == '' or len(token) > 4096:
         return json_error(_("Empty or invalid length token"))
-
-    server_ids = RemoteZulipServer.objects.filter(uuid=server_uuid)
-    if len(server_ids) == 0:
-        # No server found for that uuid
-        return json_error(_("Server not registered. UUID:" + server_uuid))
-
 
     # If a user logged out on a device and failed to unregister,
     # we should delete any other user associations for this token
     # & RemoteServer pair
-    RemotePushDeviceToken.objects.filter(token=token,kind=token_kind,server_id__in=server_ids).exclude(user_id=user_id).delete()
+    RemotePushDeviceToken.objects.filter(token=token,kind=token_kind,server_id=server.id).exclude(user_id=user_id).delete()
 
     # Save or update
     remote_token, created = RemotePushDeviceToken.objects.get_or_create(user_id=user_id,
-                                              server=server_ids[0],
+                                              server=server,
                                               kind=token_kind,
                                               token=token,
                                               ios_app_id=ios_app_id,
@@ -74,29 +74,27 @@ def remote_server_register_push(request, entity_profile, server_uuid=REQ(), user
     return json_success()
 
 @has_request_variables
-def remote_server_unregister_push(request, entity_profile, server_uuid=REQ(), token=REQ(), token_kind=REQ(), ios_app_id=None):
-    # type: (HttpRequest, text_type, text_type, int, text_type) -> HttpResponse
+def remote_server_unregister_push(request, entity, server_uuid=REQ(), token=REQ(), token_kind=REQ(), ios_app_id=None):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], text_type, text_type, int, text_type) -> HttpResponse
+
+    if not isinstance(entity, RemoteZulipServer):
+        return json_error(_("Must validate with valid Zulip server API key"))
+
+    server = cast(RemoteZulipServer, entity)
+
     if token == '' or len(token) > 4096:
         return json_error(_("Empty or invalid length token"))
 
-    # Note that this doesn't filter by user_id;
-    # any token unregistration should remove that device for that
-    # server completely (it's impossible to have multiple users
-    # logged in to the same app on a single device)
-    server_ids = RemoteZulipServer.objects.filter(uuid=server_uuid)
-
-    if len(server_ids) == 0:
-        # No server found for that uuid
-        return json_error(_("Server not registered. UUID:" + server_uuid))
-
-    RemotePushDeviceToken.objects.filter(token=token,kind=token_kind,server_id__in=server_ids).delete()
+    RemotePushDeviceToken.objects.filter(token=token,kind=token_kind,server=server).delete()
 
     return json_success()
 
 @has_request_variables
-def remote_server_push_message(request):
-    # type: (HttpRequest) -> HttpResponse
-    # stub. todo: write this method
+def remote_server_push_message(request, entity_profile, server_uuid=REQ(), user_id=REQ(), msg=REQ()):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], text_type, int, text_type) -> HttpResponse
+
+    # accepts a user xyz
+
     return json_success()
 
 @has_request_variables

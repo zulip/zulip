@@ -44,6 +44,17 @@ class MockRedis(object):
         pass
 
 class PushBouncerNotificationTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        server_uuid = self.get_generic_payload()['server_uuid']
+        server = RemoteZulipServer(uuid=server_uuid,api_key="magic_secret_api_key",hostname="demo.example.com",last_updated=now())
+        server.save()
+
+    def tearDown(self):
+        # type: () -> None
+        server_uuid = self.get_generic_payload()['server_uuid']
+        RemoteZulipServer.objects.filter(uuid=server_uuid).delete()
+
     def test_unregister_remote_push_user_params(self):
         # type: () -> None
         server_uuid = "1234-abcd"
@@ -88,23 +99,13 @@ class PushBouncerNotificationTest(ZulipTestCase):
             payload = self.get_generic_payload(method)
             server_uuid = payload['server_uuid']
 
-            # Should fail as server is not in database yet
-            result = self.client_post(endpoint, payload, **self.get_auth())
-            self.assert_json_error(result, "Server not registered. UUID:" + server_uuid)
-
-            # Save a new server to the database
-            server = RemoteZulipServer(uuid=server_uuid,api_key="none",hostname="demo.example.com",last_updated=now())
-            server.save()
-
             # Verify correct results are success
             result = self.client_post(endpoint, payload, **self.get_auth())
             self.assert_json_success(result)
+
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
             token_count = 1 if method == 'register' else 0
             self.assertEquals(len(remote_tokens), token_count)
-
-            # Clean up database objs
-            server.delete()
 
             # Try adding/removing tokens that are too big...
             broken_token = "x" * 5000 # too big
@@ -125,8 +126,8 @@ class PushBouncerNotificationTest(ZulipTestCase):
     def get_auth(self):
         #type: () -> Dict[str, text_type]
         # Auth on this user
-        email = "cordelia@zulip.com"
-        return self.api_auth(email)
+        server_uuid = self.get_generic_payload()['server_uuid']
+        return self.api_auth(server_uuid)
 
 class PushNotificationTest(TestCase):
     def setUp(self):
