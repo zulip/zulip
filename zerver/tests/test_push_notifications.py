@@ -16,6 +16,9 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+from zilencer.models import RemoteZulipServer
+from django.utils.timezone import now
+
 class MockRedis(object):
     data = {}  # type: Dict[str, Any]
 
@@ -47,20 +50,14 @@ class PushBouncerNotificationTest(ZulipTestCase):
         token = "111222"
         token_kind = PushDeviceToken.GCM
 
-        # Auth on this user
-        email = "cordelia@zulip.com"
-        auth = self.api_auth(email)
-
         endpoint = '/api/v1/remotes/push/unregister'
-        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind}, **auth)
+        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind}, **self.get_auth())
         self.assert_json_error(result, "Missing 'server_uuid' argument")
-        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token_kind': token_kind}, **auth)
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token_kind': token_kind}, **self.get_auth())
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token}, **auth)
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token}, **self.get_auth())
         self.assert_json_error(result, "Missing 'token_kind' argument")
-        # Verify successful parsing
-        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token_kind': token_kind, 'token': token}, **auth)
-        self.assert_json_success(result)
+
 
     def test_register_remote_push_user_paramas(self):
         # type: () -> None
@@ -69,42 +66,48 @@ class PushBouncerNotificationTest(ZulipTestCase):
         user_id = 11
         token_kind = PushDeviceToken.GCM
 
-        # Auth on this user
-        email = "cordelia@zulip.com"
-        auth = self.api_auth(email)
         endpoint = '/api/v1/remotes/push/register'
 
-        result = self.client_post(endpoint, {'user_id': user_id, 'token': token, 'token_kind': token_kind}, **auth)
+        result = self.client_post(endpoint, {'user_id': user_id, 'token': token, 'token_kind': token_kind}, **self.get_auth())
         self.assert_json_error(result, "Missing 'server_uuid' argument")
-        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token_kind': token_kind}, **auth)
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token_kind': token_kind}, **self.get_auth())
         self.assert_json_error(result, "Missing 'token' argument")
-        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token': token}, **auth)
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token': token}, **self.get_auth())
         self.assert_json_error(result, "Missing 'token_kind' argument")
-        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **auth)
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **self.get_auth())
         self.assert_json_error(result, "Missing 'user_id' argument")
 
-        # Verify correct results are success
-        result = self.client_post(endpoint, {'user_id': user_id,'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **auth)
-        self.assert_json_success(result)
-
-    def test_register_new_remote_push_user(self):
+    def test_remote_push_user_no_server(self):
         # type: () -> None
-
-        # Auth on this user
-        email = "cordelia@zulip.com"
-        auth = self.api_auth(email)
-
         endpoints = [
             ('/api/v1/remotes/push/register', 'register'),
+            ('/api/v1/remotes/push/unregister', 'unregister'),
         ]
-
+        
         for endpoint, method in endpoints:
-          payload = self.get_generic_payload(method)
-          broken_token = "x" * 5000 # too big
-          payload['token'] = broken_token
-          # Try adding/removing tokens that are too big...
-          result = self.client_post(endpoint, payload, **auth)
-          #self.assert_json_error(result, 'Empty or invalid length token')
+            payload = self.get_generic_payload(method)
+            server_uuid = payload['server_uuid']
+            result = self.client_post(endpoint, payload, **self.get_auth())
+            # Should fail as server is not in database yet
+            self.assert_json_error(result, "Server not registered. UUID:" + server_uuid)
+
+            # Save a new server to the database
+            server = RemoteZulipServer(uuid=server_uuid,api_key="none",hostname="demo.example.com",last_updated=now())
+            server.save()
+
+            # Verify correct results are success
+            result = self.client_post(endpoint, self.get_generic_payload(method), **self.get_auth())
+            self.assert_json_success(result)
+
+            # Clean up database objs
+            server.delete()
+
+            # Try adding/removing tokens that are too big...
+            broken_token = "x" * 5000 # too big
+            payload['token'] = broken_token
+            result = self.client_post(endpoint, payload, **self.get_auth())
+            self.assert_json_error(result, 'Empty or invalid length token')
+
 
     def get_generic_payload(self, method='register'):
         #type: (text_type) -> Dict[str, Any]
@@ -115,6 +118,11 @@ class PushBouncerNotificationTest(ZulipTestCase):
 
         return {'user_id':user_id,'server_uuid':server_uuid, 'token':token,'token_kind':token_kind}
 
+    def get_auth(self):
+        #type: () -> Dict[str, text_type]
+        # Auth on this user
+        email = "cordelia@zulip.com"
+        return self.api_auth(email)
 
 class PushNotificationTest(TestCase):
     def setUp(self):
