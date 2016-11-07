@@ -17,12 +17,15 @@ from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
 from six.moves import urllib
+from six import text_type
+from PIL import Image
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from six.moves import StringIO as _StringIO
 import mock
 import os
+import io
 import shutil
 import re
 import datetime
@@ -35,12 +38,16 @@ from moto import mock_s3
 
 TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, IO, Union
 
 def destroy_uploads():
     # type: () -> None
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
         shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+
+def images_size_equal(img, img2):
+    # type: (Union[IO[str], text_type], Union[IO[str], text_type]) -> bool
+    return Image.open(img).size == Image.open(img2).size
 
 class StringIO(_StringIO):
     name = '' # https://github.com/python/typeshed/issues/598
@@ -416,10 +423,10 @@ class AvatarTest(ZulipTestCase):
             self.assertEquals(base, url[:len(base)])
 
             if rfname is not None:
-                rfp = open(os.path.join(TEST_AVATAR_DIR, rfname), 'rb')
+                rfp = os.path.join(TEST_AVATAR_DIR, rfname)
                 response = self.client_get(url)
                 data = b"".join(response.streaming_content)
-                self.assertEquals(rfp.read(), data)
+                self.assertTrue(images_size_equal(rfp, io.BytesIO(data)))
 
             # Verify that the medium-size avatar was created
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
