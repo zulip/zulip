@@ -29,6 +29,7 @@ from zerver.lib.message import (
     access_message,
     MessageDict,
     extract_message_dict,
+    render_markdown,
     stringify_message_dict,
 )
 from zerver.lib.response import json_success, json_error
@@ -940,7 +941,12 @@ def json_fetch_raw_message(request, user_profile,
 @has_request_variables
 def render_message_backend(request, user_profile, content=REQ()):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
-    rendered_content = bugdown.convert(content, user_profile.realm.domain)
+    message = Message()
+    message.sender = user_profile
+    message.content = content
+    message.sending_client = request.client
+
+    rendered_content = render_markdown(message, content, domain=user_profile.realm.domain)
     return json_success({"rendered": rendered_content})
 
 @authenticated_json_post_view

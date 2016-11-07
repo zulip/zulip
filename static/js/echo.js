@@ -480,10 +480,10 @@ $(function () {
         avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
         userMentionHandler: handleUserMentions,
+        streamLinkHandler: handleStreamLinks,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
-        preprocessors: [preprocess_code_blocks],
-        streamLinkHanlder: handleStreamLinks
+        preprocessors: [preprocess_code_blocks]
     });
 
     function on_failed_action(action, callback) {
