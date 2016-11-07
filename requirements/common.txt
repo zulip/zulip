@@ -162,3 +162,6 @@ git+https://github.com/lorenzogil/glue@01c00cd33b9b78ea868300c266c16acd59a81bfc#
 
 # Needed for cloning virtual environments
 git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtualenv-clone==0.2.6
+
+# Needed for reading json as stream
+ijson==2.3
