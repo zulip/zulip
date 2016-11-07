@@ -1163,7 +1163,7 @@ class TestLDAP(ZulipTestCase):
         self.mock_initialize.return_value = self.mock_ldap
         self.backend = ZulipLDAPAuthBackend()
 
-    def tearUp(self):
+    def tearDown(self):
         # type: () -> None
         self.mock_ldap.reset()
         self.mock_initialize.stop()
