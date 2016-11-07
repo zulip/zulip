@@ -91,6 +91,9 @@ CACHES['database'] = {
     }
 }
 
+# Enable file:/// hyperlink for test
+ENABLE_FILE_LINKS = True
+
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
 
