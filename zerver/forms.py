@@ -108,10 +108,7 @@ class HomepageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.domain = kwargs.get("domain")
         self.subdomain = kwargs.get("subdomain")
-        if "domain" in kwargs:
-            del kwargs["domain"]
         if "subdomain" in kwargs:
             del kwargs["subdomain"]
         super(HomepageForm, self).__init__(*args, **kwargs)
