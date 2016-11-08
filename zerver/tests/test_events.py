@@ -820,7 +820,7 @@ class EventsRegisterTest(ZulipTestCase):
         peer_remove_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_remove')),
-            ('user_email', check_string),
+            ('user_id', check_int),
             ('subscriptions', check_list(check_string)),
         ])
         stream_update_schema_checker = check_dict([
