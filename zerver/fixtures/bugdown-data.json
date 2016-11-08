@@ -187,6 +187,12 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "emojis_without_space",
+      "input": ":cat:hello:dog::rabbit:",
+      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/cat.png\" title=\":cat:\">hello<img alt=\":dog:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/dog.png\" title=\":dog:\"><img alt=\":rabbit:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/rabbit.png\" title=\":rabbit:\"></p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "not_emoji",
       "input": ":not_an_emoji:",
       "expected_output": "<p>:not_an_emoji:</p>",
