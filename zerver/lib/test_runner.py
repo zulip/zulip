@@ -107,14 +107,16 @@ def run_test(test):
             print("Actual test to be run is %s, but import failed." % (actual_test_name,))
             print("Importing test module directly to generate clearer traceback:")
             try:
-                command = ["python", "-c", "'import %s'" % (actual_test_name,)]
+                command = ["python", "-c", "import %s" % (actual_test_name,)]
                 print("Import test command: `%s`" % (' '.join(command),))
                 subprocess.check_call(command)
             except subprocess.CalledProcessError:
                 print("If that traceback is confusing, try doing the import inside `./manage.py shell`")
                 print()
                 return True
-            print("Import unexpectedly succeeded!  Something is wrong")
+            print("Import unexpectedly succeeded! Something is wrong.")
+            print("Try running `import %s` inside `./manage.py shell`" % (actual_test_name,))
+            print("If that works, you may have introduced an import cycle.")
             return True
         else:
             print("Test doesn't have _pre_setup; something is wrong.")
