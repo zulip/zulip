@@ -132,6 +132,9 @@ be non-standard.
 * Allow only `**` syntax for bold, not `__` (easy to hit by mistake if
   discussing Python `__init__` or something)
 
+* Allow `~~` syntax for strikethrough (same as github's syntax for
+  strikethrough)
+
 * Disable special use of `\` to escape other syntax. Rendering `\\` as
   `\` was hugely controversial, but having no escape syntax is also
   controversial.  We may revisit this.  For now you can always put
