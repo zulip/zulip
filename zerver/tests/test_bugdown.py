@@ -843,8 +843,9 @@ class BugdownApiTests(ZulipTestCase):
         self.assertEqual(data['rendered'],
             u'<p>That is a <strong>bold</strong> statement</p>')
 
-    def test_render_message_api(self):
+    def test_render_mention_stream_api(self):
         # type: () -> None
+        """Determines whether we're correctly passing the realm context"""
         content = 'This mentions #**Denmark** and @**King Hamlet**.'
         result = self.client_get(
             '/api/v1/messages/render',
