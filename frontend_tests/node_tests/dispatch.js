@@ -309,7 +309,7 @@ var event_fixtures = {
     subscription__peer_remove: {
         type: 'subscription',
         op: 'peer_remove',
-        user_email: 'bob@example.com',
+        user_id: 555,
         subscriptions: [
             {
                 stream_id: 42
@@ -649,16 +649,16 @@ run(function (override, capture, args) {
     assert_same(args.sub, event.subscriptions[0]);
 
     event = event_fixtures.subscription__peer_add;
-    override('stream_data', 'add_subscriber', capture(['sub', 'email']));
+    override('stream_data', 'add_subscriber', capture(['sub', 'user_id']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.email, 'bob@example.com');
+    assert_same(args.user_id, 555);
 
     event = event_fixtures.subscription__peer_remove;
     override('stream_data', 'remove_subscriber', capture(['sub', 'email']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.email, event.user_email);
+    assert_same(args.email, 'bob@example.com');
 
     event = event_fixtures.subscription__remove;
     var stream_id_looked_up;

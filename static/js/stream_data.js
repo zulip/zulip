@@ -146,15 +146,10 @@ exports.set_subscriber_emails = function (sub, emails) {
     });
 };
 
-exports.add_subscriber = function (stream_name, user_email) {
+exports.add_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
-        return;
-    }
-    var user_id = people.get_user_id(user_email);
-    if (!user_id) {
-        blueslip.error("We tried to add invalid subscriber: " + user_email);
         return;
     }
     sub.subscribers.set(user_id, true);
