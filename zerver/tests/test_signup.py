@@ -9,7 +9,7 @@ from fakeldap import MockLDAP
 
 from zilencer.models import Deployment
 
-from zerver.views import do_change_password
+from zerver.views import do_change_password, create_homepage_form
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
@@ -25,7 +25,8 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
-from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured
+from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured, \
+    HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
 
@@ -857,6 +858,33 @@ class UserSignUpTest(ZulipTestCase):
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEquals(result.status_code, 200)
         self.assertIn("You're almost there.", result.content.decode('utf8'))
+
+    def test_failed_signup_due_to_restricted_domain(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True):
+            request = HostRequestMock(host = realm.host)
+            request.session = {} # type: ignore
+            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            self.assertIn("trying to join, zulip, only allows users with e-mail", form.errors['email'][0])
+
+    def test_failed_signup_due_to_invite_required(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        realm.invite_required = True
+        realm.save()
+        request = HostRequestMock(host = realm.host)
+        request.session = {} # type: ignore
+        form = create_homepage_form(request, {'email': 'user@zulip.com'})
+        self.assertIn("Please request an invite from", form.errors['email'][0])
+
+    def test_failed_signup_due_to_nonexistent_realm(self):
+        # type: () -> None
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True):
+            request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
+            request.session = {} # type: ignore
+            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            self.assertIn("organization you are trying to join does not exist", form.errors['email'][0])
 
     def test_registration_through_ldap(self):
         # type: () -> None
