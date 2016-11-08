@@ -8,6 +8,7 @@ from confirmation.models import Confirmation
 from zerver.lib.actions import do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, clear_followup_emails_queue
 from zerver.models import UserProfile
+from zerver.context_processors import common_context
 from zproject.jinja2 import render_to_response
 
 def process_unsubscribe(token, subscription_type, unsubscribe_function):
@@ -19,13 +20,9 @@ def process_unsubscribe(token, subscription_type, unsubscribe_function):
 
     user_profile = confirmation.content_object
     unsubscribe_function(user_profile)
-    return render_to_response('zerver/unsubscribe_success.html',
-                              {"subscription_type": subscription_type,
-                               "external_host": settings.EXTERNAL_HOST,
-                               'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-                               'server_uri': settings.SERVER_URI,
-                               'realm_uri': user_profile.realm.uri,
-                              })
+    context = common_context(user_profile)
+    context.update({"subscription_type": subscription_type})
+    return render_to_response('zerver/unsubscribe_success.html', context)
 
 # Email unsubscribe functions. All have the function signature
 # processor(user_profile).
