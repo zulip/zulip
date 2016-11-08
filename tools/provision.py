@@ -57,6 +57,21 @@ if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
+try:
+    run(["mkdir", "-p", VAR_DIR_PATH])
+    if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
+        os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+    os.symlink(
+        os.path.join(ZULIP_PATH, 'README.md'),
+        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
+    )
+    os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+except OSError as err:
+    print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
+    print("See this page for more information:")
+    print("  http://zulip.readthedocs.io/en/latest/dev-env-first-time-contributors.html#os-symlink-error")
+    sys.exit(1)
+
 if platform.architecture()[0] == '64bit':
     arch = 'amd64'
 elif platform.architecture()[0] == '32bit':
