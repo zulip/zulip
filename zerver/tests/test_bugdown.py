@@ -26,6 +26,7 @@ from zerver.models import (
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
+    get_realm_by_string_id,
     get_user_profile_by_email,
     get_stream,
     realm_filters_for_domain,
@@ -855,7 +856,7 @@ class BugdownApiTests(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
-            u'<p>This mentions <a class="stream" data-stream-id="3" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>')
+            u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
