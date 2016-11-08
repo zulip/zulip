@@ -108,9 +108,9 @@ class HomepageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.subdomain = kwargs.get("subdomain")
-        if "subdomain" in kwargs:
-            del kwargs["subdomain"]
+        self.string_id = kwargs.get("string_id")
+        if "string_id" in kwargs:
+            del kwargs["string_id"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -124,8 +124,8 @@ class HomepageForm(forms.Form):
 
         # Otherwise, the user is trying to join a specific realm.
         realm = None
-        if self.subdomain:
-            realm = get_realm_by_string_id(self.subdomain)
+        if self.string_id:
+            realm = get_realm_by_string_id(self.string_id)
         elif not settings.REALMS_HAVE_SUBDOMAINS:
             realm = get_realm(resolve_email_to_domain(email))
 

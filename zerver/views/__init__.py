@@ -319,19 +319,19 @@ def accounts_accept_terms(request):
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
     if settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain = get_subdomain(request)
+        string_id = get_subdomain(request)
     else:
         realm = get_realm(request.session.get("domain"))
         if realm is not None:
-            subdomain = realm.string_id
+            string_id = realm.string_id
         else:
-            subdomain = ''
+            string_id = ''
 
     if user_info:
-        return HomepageForm(user_info, subdomain = subdomain)
+        return HomepageForm(user_info, string_id = string_id)
     # An empty fields dict is not treated the same way as not
     # providing it.
-    return HomepageForm(subdomain = subdomain)
+    return HomepageForm(string_id = string_id)
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
