@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from typing import Any
 
+import django
 import mock
 from django.test import TestCase
 from django.conf import settings
@@ -50,7 +51,9 @@ class TranslationTestCase(ZulipTestCase):
                      ]
 
         for lang, word in languages:
-            self.client.cookies = SimpleCookie({settings.LANGUAGE_COOKIE_NAME: lang})
+            # Applying str function to LANGUAGE_COOKIE_NAME to convert unicode
+            # into an ascii otherwise SimpleCookie will raise an exception
+            self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
 
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
@@ -60,8 +63,13 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
-                     ('zh-cn', u'注册'),
                      ]
+
+        # 'zh-cn' was deprecated in Django 1.10
+        if django.VERSION >= (1, 10):
+            languages.append(('zh-hans', u'注册'))
+        else:
+            languages.append(('zh-cn', u'注册'))
 
         for lang, word in languages:
             response = self.fetch('get', '/{}/integrations/'.format(lang), 200)
