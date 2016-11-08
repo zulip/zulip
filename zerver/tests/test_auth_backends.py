@@ -626,7 +626,10 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
     def test_google_oauth2_registration(self):
         # type: () -> None
         """If the user doesn't exist yet, Google auth can be used to register an account"""
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True), \
+             mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'), \
+             mock.patch('zerver.views.get_subdomain', return_value='zulip'):
+
             email = "newuser@zulip.com"
             token_response = ResponseMock(200, {'access_token': "unique_token"})
             account_data = dict(name=dict(formatted="Full Name"),
@@ -645,10 +648,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                      parsed_url.path)
             self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
-            with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'), \
-                 mock.patch('zerver.views.get_subdomain', return_value='zulip'):
-                result = self.client_get(result.url)
-
+            result = self.client_get(result.url)
             result = self.client_get(result.url)  # Call the confirmation url.
             key_match = re.search('value="(?P<key>[0-9a-f]+)" name="key"', result.content.decode("utf-8"))
             name_match = re.search('value="(?P<name>[^"]+)" name="full_name"', result.content.decode("utf-8"))
