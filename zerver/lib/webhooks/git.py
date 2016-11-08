@@ -28,6 +28,10 @@ CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
 
 COMMITS_COMMENT_MESSAGE_TEMPLATE = u"{user_name} {action} on [{sha}]({url})"
 
+PUSH_TAGS_MESSAGE_TEMPLATE = u"""{user_name} {action} {tag} tag"""
+TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
+TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
+
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data):
     # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]]) -> text_type
     if compare_url:
@@ -93,6 +97,18 @@ def get_issue_event_message(user_name, action, url, number=None, message=None, a
         message=message,
         assignee=assignee,
         type='Issue'
+    )
+
+def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed'):
+    # type: (text_type, text_type, Optional[text_type], Optional[text_type]) -> text_type
+    if tag_url:
+        tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
+    else:
+        tag_part = TAG_WITHOUT_URL_TEMPLATE.format(tag_name=tag_name)
+    return PUSH_TAGS_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        action=action,
+        tag=tag_part
     )
 
 def get_commits_comment_action_message(user_name, action, commit_url, sha, message=None):
