@@ -10,6 +10,16 @@ from zproject.backends import (password_auth_enabled, dev_auth_enabled,
 from zerver.lib.utils import get_subdomain
 
 
+def common_context(user):
+    # type: (UserProfile) -> Dict[str, Any]
+    return {
+        'realm_uri': user.realm.uri,
+        'server_uri': settings.SERVER_URI,
+        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
+        'external_host': settings.EXTERNAL_HOST,
+    }
+
+
 def add_settings(request):
     # type: (HttpRequest) -> Dict[str, Any]
     realm = None
