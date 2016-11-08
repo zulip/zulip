@@ -134,14 +134,14 @@ var people = global.people;
     assert(!stream_data.user_is_subscribed('Rome', email));
 
     // add
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
 
     // verify that adding an already-added subscriber is a noop
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -165,14 +165,14 @@ var people = global.people;
     // can be undefined.
     stream_data.set_subscribers(sub);
     stream_data.add_sub('Rome', sub);
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     sub.subscribed = true;
     assert(stream_data.user_is_subscribed('Rome', email));
 
-    // Verify that we noop and don't crash when unsubsribed.
+    // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
     global.blueslip.warn = function () {};
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
     stream_data.remove_subscriber('Rome', email);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);

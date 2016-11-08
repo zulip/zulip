@@ -649,10 +649,10 @@ run(function (override, capture, args) {
     assert_same(args.sub, event.subscriptions[0]);
 
     event = event_fixtures.subscription__peer_add;
-    override('stream_data', 'add_subscriber', capture(['sub', 'email']));
+    override('stream_data', 'add_subscriber', capture(['sub', 'user_id']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.email, 'bob@example.com');
+    assert_same(args.user_id, 555);
 
     event = event_fixtures.subscription__peer_remove;
     override('stream_data', 'remove_subscriber', capture(['sub', 'email']));

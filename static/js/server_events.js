@@ -133,7 +133,7 @@ function dispatch_normal_event(event) {
             person = people.get_person_from_user_id(event.user_id);
             email = person.email;
             _.each(event.subscriptions, function (sub) {
-                stream_data.add_subscriber(sub, email);
+                stream_data.add_subscriber(sub, event.user_id);
                 $(document).trigger('peer_subscribe.zulip',
                                     {stream_name: sub, user_email: email});
             });
