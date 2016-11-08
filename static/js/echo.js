@@ -450,7 +450,8 @@ $(function () {
     // Disable __strong__, all <em>
     marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'em');
-    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'del');
+    // Make sure <del> syntax matches the backend processor
+    marked.InlineLexer.rules.zulip.del = /^(?!<\~)\~\~([^~]+)\~\~(?!\~)/;
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 

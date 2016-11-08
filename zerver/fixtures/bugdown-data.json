@@ -97,6 +97,24 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "strikthrough_basic",
+      "input": "I like ~~software~~ hardware",
+      "expected_output": "<p>I like <del>software</del> hardware</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "strikthrough_multiword",
+      "input": "I ~~like software~~ love hardware",
+      "expected_output": "<p>I <del>like software</del> love hardware</p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "strikthrough_multiword",
+      "input": "I ~~ like software ~~ love hardware",
+      "expected_output": "<p>I <del> like software </del> love hardware</p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "underscore_disabled",
       "input": "_foo_",
       "expected_output": "<p>_foo_</p>",
