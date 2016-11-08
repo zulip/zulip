@@ -1614,7 +1614,7 @@ def bulk_remove_subscriptions(users, streams):
                 event = dict(type="subscription",
                              op="peer_remove",
                              subscriptions=[stream.name],
-                             user_email=removed_user.email)
+                             user_id=removed_user.id)
                 send_event(event, peer_user_ids)
 
     return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
@@ -3059,7 +3059,7 @@ def apply_events(state, events, user_profile):
                         user_id not in sub['subscribers']):
                         sub['subscribers'].append(user_id)
             elif event['op'] == 'peer_remove':
-                user_id = get_user_profile_by_email(event['user_email']).id
+                user_id = event['user_id']
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
                         user_id in sub['subscribers']):
