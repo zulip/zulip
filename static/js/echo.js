@@ -454,10 +454,9 @@ $(function () {
     marked.InlineLexer.rules.zulip.del = /^(?!<\~)\~\~([^~]+)\~\~(?!\~)/;
 
     // Disable _emphasis_
-    // Disable special characters for the emphasis syntax
-    // Inside ** allowed only: word characters/spaces/tabulate
+    // Text inside ** must start and end with a word character
     // it need for things like "const char *x = (char *)y"
-    marked.InlineLexer.rules.zulip.em = /^\*((?:\*\*|[\w|\ |\t])+?)\*(?!\*)/;
+    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\s\S])+?)((?:[\S]))\*(?!\*)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');

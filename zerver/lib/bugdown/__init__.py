@@ -1014,12 +1014,11 @@ class Bugdown(markdown.Extension):
             markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
             '>strong')
 
-        # Disable special characters for the emphasis syntax
-        # Inside ** allowed only: word characters/spaces/tabulate
+        # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
         md.inlinePatterns.add(
             'emphasis',
-            markdown.inlinepatterns.SimpleTagPattern(r'(\*)([\w|\ |\t]+)\*', 'em'),
+            markdown.inlinepatterns.SimpleTagPattern(r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*', 'em'),
             '>strong')
 
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
