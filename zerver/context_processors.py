@@ -3,24 +3,25 @@ from __future__ import absolute_import
 from typing import Dict, Any
 from django.http import HttpRequest
 from django.conf import settings
-import ujson
+
 from zerver.models import get_realm_by_string_id
 from zproject.backends import (password_auth_enabled, dev_auth_enabled,
                                google_auth_enabled, github_auth_enabled)
 from zerver.lib.utils import get_subdomain
 
+
 def add_settings(request):
     # type: (HttpRequest) -> Dict[str, Any]
+    realm = None
     if hasattr(request.user, "realm"):
         realm = request.user.realm
+    elif settings.REALMS_HAVE_SUBDOMAINS:
+        subdomain = get_subdomain(request)
+        realm = get_realm_by_string_id(subdomain)
+
+    if realm is not None:
         realm_uri = realm.uri
     else:
-        if settings.REALMS_HAVE_SUBDOMAINS:
-            subdomain = get_subdomain(request)
-            realm = get_realm_by_string_id(subdomain)
-        else:
-            realm = None
-        # TODO: Figure out how to add an assertion that this is not used
         realm_uri = settings.SERVER_URI
 
     return {
@@ -50,6 +51,7 @@ def add_settings(request):
         'development_environment':   settings.DEVELOPMENT,
         'support_email':             settings.ZULIP_ADMINISTRATOR,
     }
+
 
 def add_metrics(request):
     # type: (HttpRequest) -> Dict[str, str]
