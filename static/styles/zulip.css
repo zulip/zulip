@@ -742,6 +742,10 @@ td.pointer {
     margin-bottom: 10px;
 }
 
+.message_list .message_row:hover .message_time {
+    display: none;
+}
+
 .stream_label {
     display: inline-block;
     padding: 3px 4px 2px 4px;
@@ -1118,22 +1122,21 @@ a.message_label_clickable:hover {
 }
 
 .edit_content {
-    opacity: .4;
-    width: 0px;
-    height: 0px;
     display: inline-block;
     position: relative;
+    left: 15px;
+    width: 0px;
+    height: 0px;
+    opacity: .4;
 }
 
 .edit_content i {
     position: absolute;
     display: block;
-    background: #ffffff;
     top: -0.9em;
     left: 0.4em;
     border-radius: 1px;
     padding: 1px 2px;
-    border: 1px dotted #ccc;
 }
 
 .edit_content:hover {
@@ -1182,6 +1185,15 @@ a.dark_background:hover,
 .message_hovered .info,
 .message_hovered .empty-star {
     visibility: visible;
+}
+
+.info {
+    display: inline-block;
+    position: relative;
+    left: 40px;
+    font-size: 15px;
+    color: #bbb;
+    visibility: hidden;
 }
 
 .actions_hovered .actions_link {
@@ -2244,13 +2256,6 @@ button.topic_edit_cancel {
 .empty-star:hover {
     cursor: pointer;
     color: #565656;
-}
-
-.info {
-    display: inline-block;
-    font-size: 15px;
-    color: #bbb;
-    visibility: hidden;
 }
 
 .star:hover {
