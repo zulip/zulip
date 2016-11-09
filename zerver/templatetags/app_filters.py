@@ -46,10 +46,12 @@ def display_list(values, display_limit):
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path):
     # type: (str) -> str
-    """
-    Given a path to a markdown file, return the rendered html
-    """
+    """Given a path to a markdown file, return the rendered html.
+
+    Note that this assumes that any HTML in the markdown file is
+    trusted; it is intended to be used for documentation, not user
+    data."""
     import markdown
     markdown_string = open(markdown_file_path).read()
-    html = markdown.markdown(markdown_string, safe_mode='escape')
+    html = markdown.markdown(markdown_string)
     return mark_safe(html)
