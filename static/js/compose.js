@@ -10,7 +10,10 @@ var is_composing_message = false;
    undefined: no @all/@everyone in message;
    false: user typed @all/@everyone;
    true: user clicked YES */
+
 var user_acknowledged_all_everyone;
+
+exports.all_everyone_warn_threshold = 15;
 
 var message_snapshot;
 
@@ -783,14 +786,19 @@ function validate_stream_message() {
         }
     }
 
+    var current_stream = stream_data.get_sub(stream_name);
+    var stream_count = current_stream.subscribers.num_items();
+
     // check if @all or @everyone is in the message
-    if (util.is_all_or_everyone_mentioned(exports.message_content())) {
+    if (util.is_all_or_everyone_mentioned(exports.message_content()) &&
+        stream_count > compose.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings();
-            // user has not acknowledge the warning message yet
-            compose_error(i18n.t("Please remove @all / @everyone or acknowledge that you will be spamming everyone!"));
+
+            $("#compose-send-button").removeAttr('disabled');
+            $("#sending-indicator").hide();
             return false;
         }
     } else {
@@ -923,7 +931,6 @@ $(function () {
 
             // warn if @all or @everyone is mentioned
             if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {
-                show_all_everyone_warnings();
                 return; // don't check if @all or @everyone is subscribed to a stream
             }
 
@@ -952,7 +959,7 @@ $(function () {
         $(event.target).parents('.compose-all-everyone').remove();
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
-        $('#new_message_content').focus().select();
+        compose.finish();
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
