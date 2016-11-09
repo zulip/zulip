@@ -894,7 +894,9 @@ class EditMessageTest(ZulipTestCase):
             'message_id': msg_id,
             'content': ' '
         })
-        self.assert_json_error(result, "Content can't be empty")
+        self.assert_json_success(result)
+        content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
+        self.assertEqual(content, "(deleted)")
 
     def test_edit_message_content_limit(self):
         # type: () -> None
