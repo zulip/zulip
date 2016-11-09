@@ -180,14 +180,18 @@ var people = global.people;
     assert.equal(sub.subscriber_count, 1);
 
     // remove
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
+    // Defensive code will give warnings, which we ignore for the
+    // tests, but the defensive code needs to not actually blow up.
+    global.blueslip.warn = function () {};
+
     // verify that removing an already-removed subscriber is a noop
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -203,10 +207,9 @@ var people = global.people;
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
-    global.blueslip.warn = function () {};
     stream_data.add_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
 
 }());

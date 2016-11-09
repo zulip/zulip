@@ -639,7 +639,7 @@ run(function (override, capture, args) {
     // user_ids more directly in some of subscriptions code.
     override('people', 'get_person_from_user_id', function (user_id) {
         assert_same(user_id, 555);
-        return {email: 'bob@example.com'};
+        return {email: 'this-is-not-really-used-in-the-test'};
     });
 
     var event = event_fixtures.subscription__add;
@@ -655,10 +655,10 @@ run(function (override, capture, args) {
     assert_same(args.user_id, 555);
 
     event = event_fixtures.subscription__peer_remove;
-    override('stream_data', 'remove_subscriber', capture(['sub', 'email']));
+    override('stream_data', 'remove_subscriber', capture(['sub', 'user_id']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.email, 'bob@example.com');
+    assert_same(args.user_id, 555);
 
     event = event_fixtures.subscription__remove;
     var stream_id_looked_up;
