@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -13,8 +14,10 @@ from zerver.models import (Message, Realm, Recipient, UserProfile, ArchivedUserM
 from zerver.lib.retention import (move_expired_messages_to_archive,
                                   move_expired_user_messages_to_archive, delete_expired_messages,
                                   clean_unused_messages,
+                                  move_message_to_archive,
                                   delete_expired_user_messages, archive_messages,
-                                  move_message_to_archive)
+                                  move_expired_attachments_to_archive,
+                                  move_expired_attachments_message_rows_to_archive)
 
 from six.moves import range
 
@@ -90,6 +93,43 @@ class TestRetentionLib(ZulipTestCase):
             exp_message_ids,
             [arc_msg.id for arc_msg in arc_messages]
         )
+
+    def _send_msgs_with_attachments(self):
+        # type: () -> Dict[str, int]
+        sender_email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(sender_email)
+        sample_size = 10
+        dummy_files = [
+            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
+        ]
+
+        for file_name, path_id, size in dummy_files:
+            create_attachment(file_name, path_id, user_profile, size)
+
+        self.subscribe_to_stream(sender_email, "Denmark")
+        body = "Some files here ...[zulip.txt](http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)" + \
+               "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...." + \
+               "http://localhost:9991/user_uploads/1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+
+        expired_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, body,
+                                               "test")
+        actual_message_id = self.send_message(sender_email, "Denmark", Recipient.STREAM, body,
+                                              "test")
+        other_message_id = self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, body,
+                                             "test")
+        self._change_msgs_pub_date([expired_message_id], timezone_now() - timedelta(days=101))
+        return {'expired_message_id': expired_message_id, 'actual_message_id': actual_message_id,
+                'other_user_message_id': other_message_id}
+
+    def _add_expired_date_to_archive_data(self):
+        # type: () -> None
+        arc_expired_date = timezone_now() - timedelta(
+            days=settings.ARCHIVED_DATA_RETENTION_DAYS + 2)
+        ArchivedMessage.objects.update(archive_timestamp=arc_expired_date)
+        ArchivedUserMessage.objects.update(archive_timestamp=arc_expired_date)
+        ArchivedAttachment.objects.update(archive_timestamp=arc_expired_date)
 
     def _check_cross_realm_messages_archiving(self, arc_user_msg_qty, period, realm=None):
         # type: (int, int, Realm) -> int
@@ -251,6 +291,47 @@ class TestRetentionLib(ZulipTestCase):
             exp_msgs_ids_dict['zulip_msgs_ids'], self.zulip_realm)
         self._check_archived_messages_ids_by_realm(
             exp_msgs_ids_dict['mit_msgs_ids'], self.mit_realm)
+
+    def test_moving_attachments_to_archive_without_removing(self):
+        # type: () -> None
+        msgs_ids = self._send_msgs_with_attachments()
+        for realm_instance in Realm.objects.filter(message_retention_days__isnull=False):
+            move_expired_messages_to_archive(realm_instance)
+            move_expired_user_messages_to_archive(realm_instance)
+            move_expired_attachments_to_archive(realm_instance)
+            move_expired_attachments_message_rows_to_archive(realm_instance)
+        archived_attachment = ArchivedAttachment.objects.all()
+        self.assertEqual(archived_attachment.count(), 3)
+        self.assertEqual(
+            list(archived_attachment.distinct('messages__id').values_list('messages__id',
+                                                                          flat=True)),
+            [msgs_ids['expired_message_id']])
+
+    def test_archiving_attachments_with_removing(self):
+        # type: () -> None
+        msgs_ids = self._send_msgs_with_attachments()
+
+        archive_messages()
+        archived_attachment = ArchivedAttachment.objects.all()
+        attachment = Attachment.objects.all()
+        self.assertEqual(archived_attachment.count(), 3)
+        self.assertEqual(
+            list(archived_attachment.distinct('messages__id').values_list('messages__id',
+                                                                          flat=True)),
+            [msgs_ids['expired_message_id']])
+        self.assertEqual(attachment.count(), 3)
+        self._change_msgs_pub_date([msgs_ids['actual_message_id']],
+                                   timezone_now() - timedelta(days=101))
+        archive_messages()
+        self.assertEqual(attachment.count(), 3)
+        self._change_msgs_pub_date([msgs_ids['other_user_message_id']],
+                                   timezone_now() - timedelta(days=101))
+        archive_messages()
+        self.assertEqual(attachment.count(), 0)
+        self.assertEqual(
+            list(archived_attachment.distinct('messages__id').order_by('messages__id').values_list(
+                'messages__id', flat=True)),
+            sorted(msgs_ids.values()))
 
 
 class TestMoveMessageToArchive(ZulipTestCase):
