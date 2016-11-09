@@ -319,15 +319,19 @@ def split_email_to_domain(email):
     # type: (text_type) -> text_type
     return email.split("@")[-1].lower()
 
-# Returns the domain, potentually de-aliased, for the realm
-# that this user's email is in
-def resolve_email_to_domain(email):
-    # type: (text_type) -> text_type
-    domain = split_email_to_domain(email)
-    alias = alias_for_realm(domain)
-    if alias is not None:
-        domain = alias.realm.domain
-    return domain
+class GetRealmByDomainException(Exception):
+    pass
+
+def get_realm_by_email_domain(email):
+    # type: (text_type) -> Optional[Realm]
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        raise GetRealmByDomainException(
+            "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
+    try:
+        alias = RealmAlias.objects.select_related('realm').get(domain = split_email_to_domain(email))
+        return alias.realm
+    except RealmAlias.DoesNotExist:
+        return None
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
@@ -339,13 +343,6 @@ def email_allowed_for_realm(email, realm):
         return True
     domain = split_email_to_domain(email)
     return RealmAlias.objects.filter(realm = realm, domain = domain).exists()
-
-def alias_for_realm(domain):
-    # type: (text_type) -> Optional[RealmAlias]
-    try:
-        return RealmAlias.objects.get(domain=domain)
-    except RealmAlias.DoesNotExist:
-        return None
 
 def list_of_domains_for_realm(realm):
     # type: (Realm) -> List[text_type]

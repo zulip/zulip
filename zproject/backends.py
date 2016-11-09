@@ -14,7 +14,7 @@ from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    resolve_email_to_domain, get_realm
+    get_realm, get_realm_by_email_domain
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -335,8 +335,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPException("LDAP Authentication is not enabled")
             return user_profile, False
         except UserProfile.DoesNotExist:
-            domain = resolve_email_to_domain(username)
-            realm = get_realm(domain)
+            realm = get_realm_by_email_domain(username)
             # No need to check for an inactive user since they don't exist yet
             if realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
