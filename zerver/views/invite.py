@@ -92,7 +92,7 @@ def json_refer_friend(request, user_profile, email=REQ()):
     if user_profile.invites_granted - user_profile.invites_used <= 0:
         return json_error(_("Insufficient invites"))
 
-    do_refer_friend(user_profile, email);
+    do_refer_friend(user_profile, email)
 
     return json_success()
 

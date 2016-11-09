@@ -299,7 +299,7 @@ def run_mirror():
             time.sleep(sleepInterval)
 
     except KeyboardInterrupt:
-        open(config.RESUME_FILE, 'w').write(since.strftime("%s"));
+        open(config.RESUME_FILE, 'w').write(since.strftime("%s"))
         logging.info("Shutting down Codebase mirror")
 
 # void function that checks the permissions of the files this script needs.

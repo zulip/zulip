@@ -359,7 +359,7 @@ class MessageSenderWorker(QueueProcessingWorker):
 
         redis_key = req_redis_key(event['req_id'])
         self.redis_client.hmset(redis_key, {'status': 'complete',
-                                            'response': resp_content});
+                                            'response': resp_content})
 
         queue_json_publish(server_meta['return_queue'], result, lambda e: None)
 
