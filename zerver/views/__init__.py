@@ -104,31 +104,24 @@ def accounts_register(request):
     unique_open_realm = get_unique_open_realm()
     if unique_open_realm is not None:
         realm = unique_open_realm
-        domain = realm.domain
     elif prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
         realm = prereg_user.referred_by.realm
-        domain = realm.domain
         if not email_allowed_for_realm(email, realm):
             return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     elif prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
         # happens if you sign up through a special URL for an open
         # realm.
-        domain = prereg_user.realm.domain
-        realm = get_realm(domain)
+        realm = prereg_user.realm
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None
-        domain = None
     elif settings.REALMS_HAVE_SUBDOMAINS:
         realm = get_realm_by_string_id(get_subdomain(request))
-        domain = realm.domain
     else:
-        domain = resolve_email_to_domain(email)
-        realm = get_realm(domain)
-
+        realm = get_realm(resolve_email_to_domain(email))
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
@@ -156,8 +149,11 @@ def accounts_register(request):
             del request.session['authenticated_full_name']
         except KeyError:
             pass
-        if realm is not None and realm.is_zephyr_mirror_realm and domain == "mit.edu":
-            # for MIT users, we can get an authoritative name from Hesiod
+        if realm is not None and realm.is_zephyr_mirror_realm:
+            # For MIT users, we can get an authoritative name from Hesiod.
+            # Technically we should check that this is actually an MIT
+            # realm, but we can cross that bridge if we ever get a non-MIT
+            # zephyr mirroring realm.
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
@@ -267,7 +263,7 @@ def accounts_register(request):
 
     return render_to_response('zerver/register.html',
             {'form': form,
-             'company_name': domain,
+             'company_name': realm.name if realm is not None else '',
              'email': email,
              'key': key,
              'full_name': request.session.get('authenticated_full_name', None),
