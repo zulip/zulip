@@ -315,13 +315,10 @@ def resolve_email_to_domain(email):
 # not whether the user can sign up currently.)
 def email_allowed_for_realm(email, realm):
     # type: (text_type, Realm) -> bool
-    # Anyone can be in an open realm
     if not realm.restricted_to_domain:
         return True
-
-    # Otherwise, domains must match (case-insensitively)
-    email_domain = resolve_email_to_domain(email)
-    return email_domain == realm.domain.lower()
+    domain = split_email_to_domain(email)
+    return RealmAlias.objects.filter(realm = realm, domain = domain).exists()
 
 def alias_for_realm(domain):
     # type: (text_type) -> Optional[RealmAlias]
