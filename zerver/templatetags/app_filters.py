@@ -3,6 +3,8 @@ from django.template import Library
 from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
 
+from zerver.lib.utils import force_text
+
 register = Library()
 
 def and_n_others(values, limit):
@@ -52,6 +54,6 @@ def render_markdown_path(markdown_file_path):
     trusted; it is intended to be used for documentation, not user
     data."""
     import markdown
-    markdown_string = open(markdown_file_path).read()
+    markdown_string = force_text(open(markdown_file_path).read())
     html = markdown.markdown(markdown_string)
     return mark_safe(html)
