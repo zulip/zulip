@@ -3,8 +3,9 @@ from typing import Optional, Any, Dict
 from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
 
+import os
 import ujson
 
 from zerver.lib import bugdown
@@ -44,6 +45,37 @@ class ApiURLView(TemplateView):
 
 class APIView(ApiURLView):
     template_name = 'zerver/api.html'
+
+
+class HelpView(ApiURLView):
+    template_name = 'zerver/help/main.html'
+    path_template = os.path.join(settings.DEPLOY_ROOT, 'templates/zerver/help/%s.md')
+
+    def get_path(self, article):
+        # type: (**Any) -> str
+        if article == "":
+            article = "index"
+        return self.path_template % (article,)
+
+    def get_context_data(self, **kwargs):
+        # type: (**Any) -> Dict[str, str]
+        article = kwargs["article"]
+        context = super(HelpView, self).get_context_data()
+        path = self.get_path(article)
+        if os.path.exists(path):
+            context["article"] = path
+        else:
+            context["article"] = self.get_path("missing")
+        return context
+
+    def get(self, request, article=""):
+        # type: (HttpRequest, str) -> HttpResponse
+        path = self.get_path(article)
+        result = super(HelpView, self).get(self, article=article)
+        if not os.path.exists(path):
+            # Ensure a 404 response code if no such document
+            result.status_code = 404
+        return result
 
 
 class IntegrationView(ApiURLView):

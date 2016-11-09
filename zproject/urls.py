@@ -7,7 +7,7 @@ import os.path
 import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
-from zerver.views.integrations import IntegrationView, APIView
+from zerver.views.integrations import IntegrationView, APIView, HelpView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 # NB: There are several other pieces of code which route requests by URL:
@@ -301,6 +301,9 @@ urls += [
 
 # Python Social Auth
 urls += [url(r'^', include('social.apps.django_app.urls', namespace='social'))]
+
+# User documentation site
+urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
