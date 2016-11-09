@@ -30,6 +30,12 @@ exports.rename_sub = function (stream_id, new_name) {
     return sub;
 };
 
+exports.unsubscribe_myself = function (sub) {
+    // Remove user from subscriber's list
+    exports.remove_subscriber(sub.name, page_params.email);
+    sub.subscribed = false;
+};
+
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
         sub.subscribers = Dict.from_array([]);

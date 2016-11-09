@@ -91,6 +91,38 @@ var people = global.people;
     assert.equal(sub.name, 'Sweden');
 }());
 
+(function test_unsubscribe() {
+    stream_data.clear_subscriptions();
+
+    var sub = {name: 'devel', subscribed: false, stream_id: 1};
+    var me = {
+        email: 'me@zulip.com',
+        full_name: 'Current User',
+        user_id: 81
+    };
+
+    // set up user data
+    global.page_params.email = 'me@zulip.com';
+    people.add(me);
+
+    // set up our subscription
+    stream_data.add_sub('devel', sub);
+    sub.subscribed = true;
+    stream_data.set_subscribers(sub, [me.user_id]);
+
+    // ensure our setup is accurate
+    assert(stream_data.is_subscribed('devel'));
+
+    // DO THE UNSUBSCRIBE HERE
+    stream_data.unsubscribe_myself(sub);
+    assert(!sub.subscribed);
+    assert(!stream_data.is_subscribed('devel'));
+
+    // make sure subsequent calls work
+    sub = stream_data.get_sub('devel');
+    assert(!sub.subscribed);
+}());
+
 (function test_subscribers() {
     stream_data.clear_subscriptions();
     var sub = {name: 'Rome', subscribed: true, stream_id: 1};
