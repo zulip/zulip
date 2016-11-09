@@ -572,7 +572,7 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
     if not user_profile.is_active:
         return
 
-    user_profile.is_active = False;
+    user_profile.is_active = False
     user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
@@ -2623,7 +2623,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             if propagate_mode == 'change_later':
                 propagate_query = propagate_query & Q(id__gt = message.id)
 
-            messages = Message.objects.filter(propagate_query).select_related();
+            messages = Message.objects.filter(propagate_query).select_related()
 
             # Evaluate the query before running the update
             messages_list = list(messages)

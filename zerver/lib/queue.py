@@ -152,7 +152,7 @@ class SimpleQueueClient(object):
                 (meta, _, message) = self.channel.basic_get(queue_name)
 
                 if not message:
-                    break;
+                    break
 
                 self.channel.basic_ack(meta.delivery_tag)
                 if json:

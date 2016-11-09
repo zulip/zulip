@@ -73,7 +73,7 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
     if len(all_list) == 0:
         return
 
-    limit = (len(all_list) // batch_size) + 1;
+    limit = (len(all_list) // batch_size) + 1
     for i in range(limit):
         start = i*batch_size
         end = (i+1) * batch_size
