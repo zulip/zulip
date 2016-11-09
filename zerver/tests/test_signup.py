@@ -63,7 +63,8 @@ class PublicURLTest(ZulipTestCase):
         # through Tornado.
         get_urls = {200: ["/accounts/home/", "/accounts/login/"
                           "/en/accounts/home/", "/ru/accounts/home/",
-                          "/en/accounts/login/", "/ru/accounts/login/"],
+                          "/en/accounts/login/", "/ru/accounts/login/",
+                          "/help/"],
                     302: ["/", "/en/", "/ru/"],
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
@@ -71,6 +72,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
+                    404: ["/help/nonexistent",],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],

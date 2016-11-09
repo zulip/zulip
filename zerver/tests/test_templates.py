@@ -86,6 +86,7 @@ class TemplateTestCase(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
 
         context = dict(
+            article="templates/zerver/help/index.md",
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
