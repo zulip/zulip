@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.template import Library
 from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
@@ -41,7 +42,7 @@ def display_list(values, display_limit):
 
     return display_string
 
-@lru_cache(512)
+@lru_cache(512 if settings.PRODUCTION else 0)
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path):
     # type: (str) -> str
