@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import mock
 
 from datetime import datetime, timedelta
 
@@ -17,7 +18,8 @@ from zerver.lib.retention import (move_expired_messages_to_archive,
                                   move_message_to_archive,
                                   delete_expired_user_messages, archive_messages,
                                   move_expired_attachments_to_archive,
-                                  move_expired_attachments_message_rows_to_archive)
+                                  move_expired_attachments_message_rows_to_archive,
+                                  delete_expired_archived_data)
 
 from six.moves import range
 
@@ -332,6 +334,42 @@ class TestRetentionLib(ZulipTestCase):
             list(archived_attachment.distinct('messages__id').order_by('messages__id').values_list(
                 'messages__id', flat=True)),
             sorted(msgs_ids.values()))
+
+    def test_delete_archived_data(self):
+        # type: () -> None
+        msgs_ids = self._send_msgs_with_attachments()
+        exp_msgs_ids_dict = self._make_expired_messages()
+        archive_messages()
+
+        self.assertEqual(
+            ArchivedMessage.objects.count(),
+            len(exp_msgs_ids_dict['zulip_msgs_ids'] + exp_msgs_ids_dict['mit_msgs_ids']) + 1)
+        self.assertEqual(
+            ArchivedAttachment.objects.count(),
+            3
+        )
+        self._add_expired_date_to_archive_data()
+
+        delete_expired_archived_data()
+        self.assertEqual(
+            ArchivedAttachment.objects.count(),
+            3
+        )
+        self.assertEqual(
+            ArchivedMessage.objects.count(),
+            0)
+        self._change_msgs_pub_date(
+            [msgs_ids['actual_message_id'], msgs_ids['other_user_message_id']],
+            timezone_now() - timedelta(days=101))
+        archive_messages()
+        self._add_expired_date_to_archive_data()
+        with mock.patch('zerver.lib.upload.LocalUploadBackend.delete_message_image',
+                        return_value=True):
+            delete_expired_archived_data()
+        self.assertEqual(
+            ArchivedAttachment.objects.count(),
+            0
+        )
 
 
 class TestMoveMessageToArchive(ZulipTestCase):
