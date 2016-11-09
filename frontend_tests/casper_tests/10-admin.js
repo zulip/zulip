@@ -202,14 +202,14 @@ casper.waitWhileSelector('.filter_row', function () {
 
 casper.waitForSelector('.admin-filter-form', function () {
     casper.fill('form.admin-filter-form', {
-        'pattern': 'a',
+        'pattern': 'a$',
         'url_format_string': 'https://trac.zulip.net/ticket/%(id)s'
     });
     casper.click('form.admin-filter-form input.btn');
 });
 
 casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
-    casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Filter pattern cannot start with `a`, use one of the valid prefixes: #');
+    casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format PREFIX-(?P<id>.+)');
 });
 
 function get_suggestions(str) {

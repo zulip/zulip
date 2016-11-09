@@ -163,10 +163,10 @@ v1_api_and_json_patterns = [
         {'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
 
     # realm/filters -> zerver.views.realm_filters
-    url(r'^realm/filters$', 'zerver.views.realm_filters.rest_dispatch',
+    url(r'^realm/filters$', rest_dispatch,
         {'GET': 'zerver.views.realm_filters.list_filters',
          'PUT': 'zerver.views.realm_filters.create_filter'}),
-    url(r'^realm/filters/(?P<filter_id>\d+)$', 'zerver.views.realm_filters.rest_dispatch',
+    url(r'^realm/filters/(?P<filter_id>\d+)$', rest_dispatch,
         {'DELETE': 'zerver.views.realm_filters.delete_filter'}),
 
     # users -> zerver.views.users

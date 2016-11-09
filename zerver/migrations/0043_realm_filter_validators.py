@@ -9,7 +9,7 @@ import zerver.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0015_attachment'),
+        ('zerver', '0042_attachment_file_name_length'),
     ]
 
     operations = [

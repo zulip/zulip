@@ -130,7 +130,6 @@ function render(template_name, args) {
 }());
 
 (function admin_filter_list() {
-    global.use_template('admin_filter_list');
     var args = {
         filter: {
             "pattern": "#(?P<id>[0-9]+)",
@@ -143,7 +142,7 @@ function render(template_name, args) {
     html += render('admin_filter_list', args);
     html += '</tbody>';
 
-    global.write_test_output('admin_filter_list.handlebars', html);
+    global.write_test_output('admin_filter_list', html);
 
     var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
     var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');

@@ -444,7 +444,7 @@ class BugdownTest(TestCase):
                                    url_format_string=url_format_string)
         realm_filter.save()
         self.assertEqual(
-            str(realm_filter),
+            realm_filter.__unicode__(),
             '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
@@ -461,7 +461,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
 
-        RealmFilter(realm=get_realm('zulip.com'), pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
+        RealmFilter(realm=get_realm_by_string_id('zulip'), pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
         msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
 
@@ -485,7 +485,7 @@ class BugdownTest(TestCase):
         zulip_filters = all_filters['zulip.com']
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s'))
+            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
 
     def test_flush_realm_filter(self):
         # type: () -> None

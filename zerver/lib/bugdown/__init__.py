@@ -1129,7 +1129,7 @@ class Bugdown(markdown.Extension):
                     del md.parser.blockprocessors[k]
 
 md_engines = {}
-realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
@@ -1167,7 +1167,7 @@ def subject_links(domain, subject):
     return matches
 
 def make_realm_filters(domain, filters):
-    # type: (text_type, List[Tuple[text_type, text_type]]) -> None
+    # type: (text_type, List[Tuple[text_type, text_type, int]]) -> None
     global md_engines, realm_filter_data
     if domain in md_engines:
         del md_engines[domain]

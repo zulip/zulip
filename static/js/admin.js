@@ -294,6 +294,9 @@ function _setup_page() {
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
+    $('#admin-filter-status').expectOne().hide();
+    $('#admin-filter-pattern-status').expectOne().hide();
+    $('#admin-filter-format-status').expectOne().hide();
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
@@ -803,6 +806,29 @@ function _setup_page() {
         });
     });
 
+    $('.admin_filters_table').on('click', '.delete', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+
+        channel.del({
+            url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    btn.closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                     btn.text("Failed!");
+                }
+            },
+            success: function () {
+                var row = btn.parents('tr');
+                row.remove();
+            }
+        });
+    });
+
     $(".administration").on("submit", "form.admin-filter-form", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -820,21 +846,21 @@ function _setup_page() {
             data: $(this).serialize(),
             success: function (data) {
                 filter.id = data.id;
-                ui.report_success("Custom filter added!", filter_status);
+                ui.report_success(i18n.t("Custom filter added!"), filter_status);
             },
             error: function (xhr, error) {
-                var errors = $.parseJSON(xhr.responseText).msg;
+                var errors = $.parseJSON(xhr.responseText).errors;
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});
-                    ui.report_error("Failed", xhr, pattern_status);
+                    ui.report_error(i18n.t("Failed"), xhr, pattern_status);
                 }
                 if (errors.url_format_string !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.url_format_string});
-                    ui.report_error("Failed", xhr, format_status);
+                    ui.report_error(i18n.t("Failed"), xhr, format_status);
                 }
                 if (errors.__all__ !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.__all__});
-                    ui.report_error("Failed", xhr, filter_status);
+                    ui.report_error(i18n.t("Failed"), xhr, filter_status);
                 }
             }
         });
