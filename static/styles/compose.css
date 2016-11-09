@@ -289,7 +289,7 @@ textarea.new_message_textarea {
     height: 1.5em;
     max-height: 22em;
     margin-bottom: 0px;
-    resize: none;
+    resize: vertical !important;
     margin-top: 5px;
 }
 

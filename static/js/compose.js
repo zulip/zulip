@@ -227,6 +227,8 @@ function show_box_for_msg_type(msg_type, opts) {
 }
 
 exports.start = function (msg_type, opts) {
+    $("#new_message_content").autosize();
+
     if (reload.is_in_progress()) {
         return;
     }
@@ -289,6 +291,8 @@ function abort_xhr() {
 }
 
 exports.cancel = function () {
+    $("#new_message_content").height(40 + "px");
+
     if (page_params.narrow !== undefined) {
         // Never close the compose box in narrow embedded windows, but
         // at least clear the subject and unfade.
@@ -908,7 +912,35 @@ exports.validate = function () {
 };
 
 $(function () {
-    $("#new_message_content").autosize();
+    (function on_compose_resize(cb) {
+        var meta = {
+            compose_box: document.querySelector("#new_message_content"),
+            height: null,
+            mousedown: false,
+        };
+
+        meta.compose_box.addEventListener("mousedown", function () {
+            meta.mousedown = true;
+            meta.height = meta.compose_box.clientHeight;
+        });
+
+        // If the user resizes the compose box manually, we use the
+        // callback to stop autosize from adjusting the compose box height.
+        document.body.addEventListener("mouseup", function () {
+            if (meta.mousedown === true) {
+                meta.mousedown = false;
+                if (meta.height !== meta.compose_box.clientHeight) {
+                    meta.height = meta.compose_box.clientHeight;
+                    cb.call(meta.compose_box, meta.height);
+                }
+            }
+        });
+    }(function (height) {
+        // This callback disables autosize on the compose box.  It
+        // will be re-enabled when the compose box is next opened.
+        $("#new_message_content").trigger("autosize.destroy")
+            .height(height + "px");
+    }));
 
     // Run a feature test and decide whether to display
     // the "Attach files" button
