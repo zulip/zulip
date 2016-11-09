@@ -24,3 +24,4 @@ static/locale/language_options.json
 npm-debug.log
 *.mo
 var/*
+api/zulip.egg-info/*
