@@ -123,7 +123,7 @@ class TemplateTestCase(ZulipTestCase):
 
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         self.assertEqual(content_sans_whitespace,
-                         'header<h1>Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
+                         'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
     def test_custom_tos_template(self):
         # type: () -> None
