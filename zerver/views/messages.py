@@ -911,7 +911,7 @@ def update_message_backend(request, user_profile,
     if content is not None:
         content = content.strip()
         if content == "":
-            raise JsonableError(_("Content can't be empty"))
+            content = "(deleted)"
         content = truncate_body(content)
 
         # We exclude UserMessage.flags.historical rows since those
