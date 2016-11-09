@@ -5,6 +5,8 @@ from django.utils.lru_cache import lru_cache
 
 from zerver.lib.utils import force_text
 
+import markdown
+
 register = Library()
 
 def and_n_others(values, limit):
@@ -53,7 +55,7 @@ def render_markdown_path(markdown_file_path):
     Note that this assumes that any HTML in the markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
-    import markdown
     markdown_string = force_text(open(markdown_file_path).read())
-    html = markdown.markdown(markdown_string)
+    html = markdown.markdown(markdown_string,
+                             extensions=['markdown.extensions.toc'])
     return mark_safe(html)
