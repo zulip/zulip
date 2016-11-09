@@ -141,6 +141,36 @@ class Bitbucket2HookTests(WebhookTestCase):
         }
         self.send_and_test_stream_message('v2_pull_request_comment_action', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
 
+    def test_bitbucket2_on_push_one_tag_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek pushed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_push_one_tag', self.EXPECTED_SUBJECT, expected_message, **kwargs)
+
+    def test_bitbucket2_on_push_remove_tag_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek removed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_push_remove_tag', self.EXPECTED_SUBJECT, expected_message, **kwargs)
+
+    def test_bitbucket2_on_push_more_than_one_tag_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek pushed [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name}) tag"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_push_more_than_one_tag', **kwargs)
+        msg = self.get_last_message()
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+        self.do_test_message(msg, expected_message.format(name='b'))
+        msg = self.get_second_to_last_message()
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+        self.do_test_message(msg, expected_message.format(name='a'))
+
 class BitbucketHookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket'
     URL_TEMPLATE = "/api/v1/external/bitbucket?payload={payload}&stream={stream}"
