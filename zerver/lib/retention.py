@@ -1,8 +1,10 @@
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import connection, transaction
 from django.utils.timezone import now as timezone_now
+from zerver.lib.upload import delete_message_image
 from zerver.models import (Message, UserMessage, ArchivedMessage, ArchivedUserMessage, Realm,
                            Attachment, ArchivedAttachment)
 
@@ -140,6 +142,33 @@ def archive_messages() -> None:
         delete_expired_messages(realm)
         delete_expired_attachments(realm)
     clean_unused_messages()
+
+
+def delete_expired_archived_attachments_by_realm(realm_id):
+    # type: (int) -> None
+    expired_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_RETENTION_DAYS)
+    arc_attachments = ArchivedAttachment.objects \
+        .filter(archive_timestamp__lt=expired_date, realm_id=realm_id, messages__isnull=True) \
+        .exclude(id__in=Attachment.objects.filter(realm_id=realm_id))
+    for arc_att in arc_attachments:
+        delete_message_image(arc_att.path_id)
+    arc_attachments.delete()
+
+
+def delete_expired_archived_data_by_realm(realm_id):
+    # type: (int) -> None
+    arc_expired_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_RETENTION_DAYS)
+    ArchivedUserMessage.objects.filter(archive_timestamp__lt=arc_expired_date,
+                                       user_profile__realm_id=realm_id).delete()
+    ArchivedMessage.objects.filter(archive_timestamp__lt=arc_expired_date,
+                                   sender__realm_id=realm_id,
+                                   archivedusermessage__isnull=True).delete()
+    delete_expired_archived_attachments_by_realm(realm_id)
+
+def delete_expired_archived_data():
+    # type: () -> None
+    for realm in Realm.objects.filter(message_retention_days__isnull=False):
+        delete_expired_archived_data_by_realm(realm.id)
 
 
 def move_attachment_message_to_archive_by_message(message_ids: List[int]) -> None:
