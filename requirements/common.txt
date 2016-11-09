@@ -165,3 +165,6 @@ git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtua
 
 # Needed for reading json as stream
 ijson==2.3
+
+#for pep8 linter
+pycodestyle==2.1.0
