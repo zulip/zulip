@@ -20,9 +20,9 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
-    split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
+    split_email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm_by_string_id, list_of_domains_for_realm
+    get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -118,7 +118,7 @@ def accounts_register(request):
     elif settings.REALMS_HAVE_SUBDOMAINS:
         realm = get_realm_by_string_id(get_subdomain(request))
     else:
-        realm = get_realm(resolve_email_to_domain(email))
+        realm = get_realm_by_email_domain(email)
 
     if realm and not email_allowed_for_realm(email, realm):
         return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})

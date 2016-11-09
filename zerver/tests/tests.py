@@ -21,9 +21,9 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
-    get_user_profile_by_email, get_realm, \
+    get_user_profile_by_email, get_realm, get_realm_by_email_domain, \
     get_client, get_stream, Message, get_unique_open_realm, \
-    completely_open
+    completely_open, GetRealmByDomainException
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
@@ -263,6 +263,16 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
         realm = get_realm('zulip.com')
         self.assertNotEqual(realm.default_language, invalid_lang)
+
+
+class RealmAliasTest(ZulipTestCase):
+    def test_get_realm_by_email_domain(self):
+        # type: () -> None
+        self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
+        self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True), \
+             self.assertRaises(GetRealmByDomainException):
+            get_realm_by_email_domain('user@zulip.com')
 
 
 class PermissionTest(ZulipTestCase):

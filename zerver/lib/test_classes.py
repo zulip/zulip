@@ -35,7 +35,7 @@ from zerver.models import (
     get_realm,
     get_stream,
     get_user_profile_by_email,
-    resolve_email_to_domain,
+    get_realm_by_email_domain,
     Client,
     Message,
     Realm,
@@ -339,7 +339,7 @@ class ZulipTestCase(TestCase):
     def subscribe_to_stream(self, email, stream_name, realm=None):
         # type: (text_type, text_type, Optional[Realm]) -> None
         if realm is None:
-            realm = get_realm(resolve_email_to_domain(email))
+            realm = get_realm_by_email_domain(email)
         stream = get_stream(stream_name, realm)
         if stream is None:
             stream, _ = create_stream_if_needed(realm, stream_name)
@@ -462,4 +462,3 @@ class WebhookTestCase(ZulipTestCase):
         # type: (Message, Optional[text_type]) -> None
         if expected_message is not None:
             self.assertEqual(msg.content, expected_message)
-

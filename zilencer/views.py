@@ -13,7 +13,7 @@ from zerver.lib.actions import internal_send_message
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_dict
-from zerver.models import get_realm, get_user_profile_by_email, resolve_email_to_domain, \
+from zerver.models import get_realm, get_user_profile_by_email, get_realm_by_email_domain, \
         UserProfile, Realm
 from .error_notify import notify_server_error, notify_browser_error
 
@@ -106,7 +106,7 @@ def realm_for_email(email):
     except UserProfile.DoesNotExist:
         pass
 
-    return get_realm(resolve_email_to_domain(email))
+    return get_realm_by_email_domain(email)
 
 # Requests made to this endpoint are UNAUTHENTICATED
 @csrf_exempt
