@@ -108,12 +108,9 @@ def accounts_register(request):
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
         realm = prereg_user.referred_by.realm
-        if not email_allowed_for_realm(email, realm):
-            return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     elif prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
-        # happens if you sign up through a special URL for an open
-        # realm.
+        # happens if you sign up through a special URL for an open realm.
         realm = prereg_user.realm
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
@@ -122,6 +119,9 @@ def accounts_register(request):
         realm = get_realm_by_string_id(get_subdomain(request))
     else:
         realm = get_realm(resolve_email_to_domain(email))
+
+    if realm and not email_allowed_for_realm(email, realm):
+        return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
