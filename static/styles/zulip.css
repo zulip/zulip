@@ -328,6 +328,11 @@ code {
     font-size: 0.857em;
 }
 
+.message_content p code {
+    white-space: pre-wrap;
+    padding: 0px 4px;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
@@ -1214,11 +1219,6 @@ div.focused_table {
     padding-left: 46px;
     display: block;
     position: relative;
-}
-
-.message_content p {
-    overflow-x: auto;
-    overflow-y: hidden;
 }
 
 .message_edit_content {
