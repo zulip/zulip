@@ -10,16 +10,6 @@ var last_mention_count = 0;
 var previous_sort_order;
 var previous_unpinned_order;
 
-function active_stream_name() {
-    if (narrow.active()) {
-        var op_streams = narrow.filter().operands('stream');
-        if (op_streams) {
-            return op_streams[0];
-        }
-    }
-    return false;
-}
-
 function filter_streams_by_search(streams) {
     var search_box = $(".stream-list-filter");
 
@@ -168,7 +158,7 @@ function zoom_in() {
     popovers.hide_all();
     zoomed_to_topics = true;
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
-    zoomed_stream = active_stream_name();
+    zoomed_stream = narrow.stream();
 
     // Hide stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
@@ -547,7 +537,7 @@ $(function () {
     });
 
     $(document).on('narrow_activated.zulip', function (event) {
-        reset_to_unnarrowed(active_stream_name() === zoomed_stream);
+        reset_to_unnarrowed(narrow.stream() === zoomed_stream);
 
         // TODO: handle confused filters like "in:all stream:foo"
         var op_in = event.filter.operands('in');
