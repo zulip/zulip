@@ -178,9 +178,9 @@ function zoom_in() {
     });
 }
 
-function zoom_out() {
+function zoom_out(options) {
     popovers.hide_all();
-    topic_list.zoom_out();
+    topic_list.zoom_out(options);
 
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
@@ -202,12 +202,13 @@ function remove_expanded_private_messages() {
 
 function reset_to_unnarrowed(narrowed_within_same_stream) {
     if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
-        zoom_out();
+        zoom_out({clear_topics: true});
+    } else {
+        topic_list.remove_expanded_topics();
     }
 
     private_messages_open = false;
     $("ul.filters li").removeClass('active-filter active-sub-filter');
-    topic_list.remove_expanded_topics();
     remove_expanded_private_messages();
 }
 
