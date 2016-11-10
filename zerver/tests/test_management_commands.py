@@ -7,7 +7,7 @@ from django.core.management import call_command
 from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from datetime import timedelta
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'

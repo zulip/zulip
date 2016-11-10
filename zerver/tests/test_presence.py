@@ -10,6 +10,8 @@ from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     make_client,
     queries_captured,
+)
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import (

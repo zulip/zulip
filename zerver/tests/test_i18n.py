@@ -9,7 +9,9 @@ from django.conf import settings
 from django.http import HttpResponse
 from six.moves.http_cookies import SimpleCookie
 
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.management.commands import makemessages
 
 

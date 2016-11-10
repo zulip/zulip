@@ -12,7 +12,9 @@ from django.conf import settings
 from zerver.models import PushDeviceToken, UserProfile, Message
 from zerver.models import get_user_profile_by_email
 from zerver.lib import push_notifications as apn
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 
 class MockRedis(object):
     data = {}  # type: Dict[str, Any]

@@ -25,8 +25,11 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
-from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured, \
+from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
 

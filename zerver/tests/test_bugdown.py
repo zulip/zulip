@@ -17,7 +17,7 @@ from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
-from zerver.lib.test_helpers import (
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.str_utils import force_str

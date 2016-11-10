@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from six import text_type
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class TaigaHookTests(WebhookTestCase):
     STREAM_NAME = 'taiga'

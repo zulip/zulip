@@ -7,7 +7,10 @@ from zerver.models import (
     get_user_profile_by_email, Recipient, UserMessage
 )
 
-from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list
+from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 import ujson
 
 class PointerTest(ZulipTestCase):

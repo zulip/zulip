@@ -2,7 +2,7 @@
 from six import text_type
 from typing import Any, Optional
 
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class ZenDeskHookTests(WebhookTestCase):
     STREAM_NAME = 'zendesk'

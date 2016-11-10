@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from zerver.models import Message
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class GithubV1HookTests(WebhookTestCase):
     STREAM_NAME = None # type: Optional[text_type]

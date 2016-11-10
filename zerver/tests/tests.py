@@ -10,8 +10,11 @@ from django.test import TestCase, override_settings
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
-    simulated_queue_client, tornado_redirected_to_list, ZulipTestCase,
+    simulated_queue_client, tornado_redirected_to_list,
     most_recent_message, make_client
+)
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
 from zerver.forms import WRONG_SUBDOMAIN_ERROR

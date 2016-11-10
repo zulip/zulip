@@ -17,8 +17,8 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.session_user import get_session_dict_user
-from zerver.lib.test_helpers import (
-    ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, email_to_username, UserProfile, \
