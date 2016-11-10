@@ -97,6 +97,17 @@ exports.stream = function () {
     return undefined;
 };
 
+exports.topic = function () {
+    if (current_filter === undefined) {
+        return undefined;
+    }
+    var operands = current_filter.operands("topic");
+    if (operands.length === 1) {
+        return operands[0];
+    }
+    return undefined;
+};
+
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
         url: '/json/report_narrow_time',
