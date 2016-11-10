@@ -385,11 +385,11 @@ exports._build_private_messages_list = function (active_conversation, max_privat
     return recipients_dom;
 };
 
-function rebuild_recent_topics(stream, active_topic) {
+function rebuild_recent_topics(stream) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
     var stream_li = get_filter_li('stream', stream);
-    topic_list.rebuild(stream_li, stream, active_topic);
+    topic_list.rebuild(stream_li, stream);
 }
 
 function rebuild_recent_private_messages(active_conversation) {
@@ -417,14 +417,9 @@ exports.update_streams_sidebar = function () {
     }
 
     var op_stream = narrow.filter().operands('stream');
-    var op_subject = narrow.filter().operands('topic');
-    var subject;
     if (op_stream.length !== 0) {
-        if (op_subject.length !== 0) {
-            subject = op_subject[0];
-        }
         if (stream_data.is_subscribed(op_stream[0])) {
-            rebuild_recent_topics(op_stream[0], subject);
+            rebuild_recent_topics(op_stream[0]);
         }
     }
 };
@@ -572,13 +567,10 @@ $(function () {
         if (op_stream.length !== 0 && stream_data.is_subscribed(op_stream[0])) {
             var stream_li = get_filter_li('stream', op_stream[0]);
             var op_subject = event.filter.operands('topic');
-            var subject;
-            if (op_subject.length !== 0) {
-                subject = op_subject[0];
-            } else {
+            if (op_subject.length === 0) {
                 stream_li.addClass('active-filter');
             }
-            rebuild_recent_topics(op_stream[0], subject);
+            rebuild_recent_topics(op_stream[0]);
             unread.process_visible();
         }
     });
