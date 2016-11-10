@@ -33,7 +33,7 @@ exports.set_count = function (stream_name, topic, count) {
     }
 };
 
-exports.build_widget = function (stream, active_topic, max_topics) {
+exports.build_widget = function (parent_elem, stream, active_topic, max_topics) {
     var self = {};
     self.topic_items = new Dict({fold_case: true});
 
@@ -86,6 +86,10 @@ exports.build_widget = function (stream, active_topic, max_topics) {
         return ul;
     }
 
+    self.get_parent = function () {
+        return parent_elem;
+    };
+
     self.is_for_stream = function (stream_name) {
         return stream === stream_name;
     };
@@ -124,6 +128,13 @@ exports.build_widget = function (stream, active_topic, max_topics) {
 
     self.dom = build_list(stream, active_topic, max_topics);
 
+    parent_elem.append(self.dom);
+
+    if (active_topic) {
+        self.activate_topic(active_topic);
+    }
+
+
     return self;
 };
 
@@ -131,18 +142,8 @@ exports.rebuild = function (stream_li, stream) {
     var max_topics = 5;
 
     var active_topic = narrow.topic();
-
     exports.remove_expanded_topics();
-
-    var widget = exports.build_widget(stream, active_topic, max_topics);
-
-    stream_li.append(widget.get_dom());
-
-    if (active_topic) {
-        widget.activate_topic(active_topic);
-    }
-
-    active_widget = widget; // set our global
+    active_widget = exports.build_widget(stream_li, stream, active_topic, max_topics);
 };
 
 // For zooming, we only do topic-list stuff here...let stream_list
