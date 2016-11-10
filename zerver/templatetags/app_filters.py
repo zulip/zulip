@@ -1,6 +1,11 @@
+from django.conf import settings
 from django.template import Library
 from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
+
+from zerver.lib.utils import force_text
+
+import markdown
 
 register = Library()
 
@@ -41,14 +46,16 @@ def display_list(values, display_limit):
 
     return display_string
 
-@lru_cache(512)
+@lru_cache(512 if settings.PRODUCTION else 0)
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path):
     # type: (str) -> str
-    """
-    Given a path to a markdown file, return the rendered html
-    """
-    import markdown
-    markdown_string = open(markdown_file_path).read()
-    html = markdown.markdown(markdown_string, safe_mode='escape')
+    """Given a path to a markdown file, return the rendered html.
+
+    Note that this assumes that any HTML in the markdown file is
+    trusted; it is intended to be used for documentation, not user
+    data."""
+    markdown_string = force_text(open(markdown_file_path).read())
+    html = markdown.markdown(markdown_string,
+                             extensions=['markdown.extensions.toc'])
     return mark_safe(html)
