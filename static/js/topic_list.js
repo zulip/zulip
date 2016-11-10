@@ -5,6 +5,9 @@ var exports = {};
 // We can only ever have one active widget.
 var active_widget;
 
+// We know whether we're zoomed or not.
+var zoomed = false;
+
 exports.remove_expanded_topics = function () {
     popovers.hide_topic_sidebar_popover();
 
@@ -140,6 +143,20 @@ exports.rebuild = function (stream_li, stream) {
     }
 
     active_widget = widget; // set our global
+};
+
+// For zooming, we only do topic-list stuff here...let stream_list
+// handle hiding/showing the non-narrowed streams
+exports.zoom_in = function () {
+    zoomed = true;
+};
+
+exports.zoom_out = function () {
+    zoomed = false;
+};
+
+exports.is_zoomed = function () {
+    return zoomed;
 };
 
 exports.set_click_handlers = function (callbacks) {
