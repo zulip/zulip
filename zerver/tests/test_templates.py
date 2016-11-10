@@ -10,7 +10,10 @@ from django.template import Template, Context
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_helpers import get_all_templates, ZulipTestCase
+from zerver.lib.test_helpers import get_all_templates
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 
 class get_form_value(object):
     def __init__(self, value):

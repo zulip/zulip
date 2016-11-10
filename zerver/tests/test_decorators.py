@@ -11,7 +11,11 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    HostRequestMock, ZulipTestCase, WebhookTestCase
+    HostRequestMock,
+)
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+    WebhookTestCase,
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \

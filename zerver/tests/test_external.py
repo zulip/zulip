@@ -14,7 +14,9 @@ from zerver.lib.rate_limiter import (
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_runner import slow
 

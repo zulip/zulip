@@ -5,7 +5,10 @@ import ujson
 from typing import Any, Dict, List
 from six import string_types
 
-from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list, get_display_recipient
+from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.models import get_user_profile_by_email
 
 class TypingNotificationOperatorTest(ZulipTestCase):

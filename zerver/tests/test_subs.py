@@ -9,7 +9,11 @@ from django.utils.translation import ugettext as _
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
-    ZulipTestCase, queries_captured, tornado_redirected_to_list
+    queries_captured, tornado_redirected_to_list
+)
+
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 
 from zerver.decorator import (

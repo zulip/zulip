@@ -13,6 +13,9 @@ from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     most_recent_message,
     most_recent_usermessage,
+)
+
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 

@@ -2,7 +2,7 @@
 from six import text_type
 from typing import Union
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class Bitbucket2HookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket2'

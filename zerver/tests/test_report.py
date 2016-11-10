@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from typing import Any, Callable, Iterable, Tuple
 
-from zerver.lib.test_helpers import (
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.utils import statsd

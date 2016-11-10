@@ -7,6 +7,9 @@ from typing import Any, Dict
 from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     most_recent_message,
+)
+
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 

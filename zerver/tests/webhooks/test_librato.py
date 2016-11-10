@@ -2,7 +2,7 @@
 from six import text_type
 from six.moves import urllib
 from typing import Optional
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class LibratoHookTests(WebhookTestCase):
     STREAM_NAME = 'librato'

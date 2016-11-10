@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from six import text_type
 from six.moves import urllib
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class TravisHookTests(WebhookTestCase):
     STREAM_NAME = 'travis'

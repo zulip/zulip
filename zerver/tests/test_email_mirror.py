@@ -4,9 +4,12 @@ from __future__ import absolute_import
 from django.test import TestCase
 
 from zerver.lib.test_helpers import (
-    ZulipTestCase,
     most_recent_message,
     most_recent_usermessage,
+)
+
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 
 from zerver.models import (
