@@ -11,6 +11,7 @@ from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from jinja2 import Markup as mark_safe
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
+from zerver.lib.response import json_success
 from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
 from zerver.lib.timestamp import timestamp_to_datetime
 
@@ -923,3 +924,12 @@ def get_user_activity(request, email):
         dict(data=data, title=title),
         request=request
     )
+
+def get_messages_chart_data(request, object):
+    # type (HttpRequest, SimpleLazyObject) -> HttpResponse
+    data = sent_messages_report(object.realm.name)
+    return json_success(data=data)
+
+def get_stats(request):
+    # type (HttpRequest) -> HttpResponse
+    return render_to_response('analytics/stats.html', request=request)
