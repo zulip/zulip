@@ -457,6 +457,12 @@ def run():
 
     with bright_red_output():
         @lint
+        def check_urls():
+            # type: () -> int
+            result = subprocess.call(['tools/check-urls'])
+            return result
+
+        @lint
         def templates():
             # type: () -> int
             args = ['tools/check-templates']
