@@ -50,15 +50,21 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
         ul.attr('data-stream', stream);
 
         _.each(topics, function (subject_obj, idx) {
+            var show_topic;
             var topic_name = subject_obj.subject;
             var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
-            // Show the most recent topics, as well as any with unread messages
-            var always_visible = (idx < max_topics) || (num_unread > 0) ||
-                                 (active_topic === topic_name);
+            if (zoomed) {
+                show_topic = true;
+            } else {
+                // Show the most recent topics, as well as any with unread messages
+                show_topic = (idx < max_topics) || (num_unread > 0) ||
+                             (active_topic === topic_name);
 
-            if (!always_visible) {
-                hiding_topics = true;
+                if (!show_topic) {
+                    hiding_topics = true;
+                    return;
+                }
             }
 
             var topic_info = {
@@ -66,7 +72,6 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
                 unread: num_unread,
                 is_zero: num_unread === 0,
                 is_muted: muting.is_topic_muted(stream, topic_name),
-                zoom_out_hide: !always_visible,
                 url: narrow.by_stream_subject_uri(stream, topic_name)
             };
             var li = $(templates.render('topic_list_item', topic_info));
@@ -154,12 +159,21 @@ exports.rebuild = function (stream_li, stream) {
 // handle hiding/showing the non-narrowed streams
 exports.zoom_in = function () {
     zoomed = true;
+
+    if (!active_widget) {
+        blueslip.error('Cannot find widget for topic history zooming.');
+        return;
+    }
+
+    exports.rebuild(active_widget.get_parent(), active_widget.get_stream_name());
 };
 
 exports.zoom_out = function (options) {
     zoomed = false;
     if (options && options.clear_topics) {
         exports.remove_expanded_topics();
+    } else {
+        exports.rebuild(active_widget.get_parent(), active_widget.get_stream_name());
     }
 };
 
