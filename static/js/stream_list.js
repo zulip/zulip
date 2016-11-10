@@ -2,7 +2,6 @@ var stream_list = (function () {
 
 var exports = {};
 
-var zoomed_to_topics = false;
 var zoomed_stream = '';
 var private_messages_open = false;
 var last_private_message_count = 0;
@@ -156,7 +155,7 @@ function get_filter_li(type, name) {
 
 function zoom_in() {
     popovers.hide_all();
-    zoomed_to_topics = true;
+    topic_list.zoom_in();
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
     zoomed_stream = narrow.stream();
 
@@ -181,7 +180,8 @@ function zoom_in() {
 
 function zoom_out() {
     popovers.hide_all();
-    zoomed_to_topics = false;
+    topic_list.zoom_out();
+
     // Show stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
         $(this).show();
@@ -201,7 +201,7 @@ function remove_expanded_private_messages() {
 }
 
 function reset_to_unnarrowed(narrowed_within_same_stream) {
-    if (zoomed_to_topics && narrowed_within_same_stream !== true) {
+    if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
         zoom_out();
     }
 
