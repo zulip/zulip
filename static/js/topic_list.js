@@ -151,8 +151,11 @@ exports.zoom_in = function () {
     zoomed = true;
 };
 
-exports.zoom_out = function () {
+exports.zoom_out = function (options) {
     zoomed = false;
+    if (options && options.clear_topics) {
+        exports.remove_expanded_topics();
+    }
 };
 
 exports.is_zoomed = function () {
@@ -168,7 +171,7 @@ exports.set_click_handlers = function (callbacks) {
     });
 
     $('.show-all-streams').on('click', function (e) {
-        callbacks.zoom_out();
+        callbacks.zoom_out({clear_topics: false});
 
         e.preventDefault();
         e.stopPropagation();
