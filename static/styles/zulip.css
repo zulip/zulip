@@ -702,7 +702,7 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -38px;
+    right: -55px;
 }
 
 .include-sender .message_controls {
@@ -1119,10 +1119,10 @@ a.message_label_clickable:hover {
 .edit_content {
     display: inline-block;
     position: relative;
-    left: 15px;
+    left: 22px;
     width: 0px;
     height: 0px;
-    opacity: .4;
+    color: #bbb;
 }
 
 .edit_content i {
@@ -1185,7 +1185,7 @@ a.dark_background:hover,
 .info {
     display: inline-block;
     position: relative;
-    left: 40px;
+    left: 3px;
     font-size: 15px;
     color: #bbb;
     visibility: hidden;
