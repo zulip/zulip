@@ -94,6 +94,10 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
         return stream === stream_name;
     };
 
+    self.get_stream_name = function () {
+        return stream;
+    };
+
     self.get_dom = function () {
         return self.dom;
     };
