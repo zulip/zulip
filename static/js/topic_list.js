@@ -120,8 +120,10 @@ exports.build_widget = function (stream, active_topic, max_topics) {
     return self;
 };
 
-exports.rebuild = function (stream_li, stream, active_topic) {
+exports.rebuild = function (stream_li, stream) {
     var max_topics = 5;
+
+    var active_topic = narrow.topic();
 
     exports.remove_expanded_topics();
 
