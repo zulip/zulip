@@ -327,6 +327,18 @@ function handleUserMentions(username) {
     }
 }
 
+function handleStream(streamName) {
+    var stream = stream_data.get_sub(streamName);
+    if (stream === undefined) {
+        return undefined;
+    }
+    return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
+        'href="' + window.location.origin + '/#narrow/stream/' +
+        hashchange.encodeHashComponent(stream.name) + '"' +
+        '>' + '#' + stream.name + '</a>';
+
+}
+
 function handleRealmFilter(pattern, matches) {
     var url = realm_filter_map[pattern];
 
@@ -338,10 +350,6 @@ function handleRealmFilter(pattern, matches) {
     });
 
     return url;
-}
-
-function handleStreamLinks(stream_name) {
-    return '<a href="' + window.location.origin + '#narrow/stream/' + hashchange.encodeHashComponent(stream_name) + '">#' + stream_name + '</a>';
 }
 
 function python_to_js_filter(pattern, url) {
@@ -481,7 +489,7 @@ $(function () {
         avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
         userMentionHandler: handleUserMentions,
-        streamLinkHandler: handleStreamLinks,
+        streamHandler: handleStream,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
         preprocessors: [preprocess_code_blocks]

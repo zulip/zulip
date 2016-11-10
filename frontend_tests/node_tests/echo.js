@@ -1,6 +1,8 @@
 /*global Dict */
 var path = require('path');
 var fs = require('fs');
+var jsdom = require("jsdom");
+var window = jsdom.jsdom().defaultView;
 
 global.stub_out_jquery();
 
@@ -30,6 +32,8 @@ add_dependencies({
     marked: 'third/marked/lib/marked.js',
     emoji: 'js/emoji.js',
     people: 'js/people.js',
+    stream_data: 'js/stream_data.js',
+    hashchange: 'js/hashchange',
     fenced_code: 'js/fenced_code.js'
 });
 
@@ -49,6 +53,9 @@ set_global('$', function (obj) {
 
 set_global('feature_flags', {local_echo: true});
 
+jsdom.changeURL(window, 'http://zulip.zulipdev.com');
+set_global('window', window);
+
 var people = global.people;
 
 people.add({
@@ -56,6 +63,25 @@ people.add({
     user_id: 101,
     email: 'cordelia@zulip.com'
 });
+
+var stream_data = global.stream_data;
+var denmark = {
+    subscribed: false,
+    color: 'blue',
+    name: 'Denmark',
+    stream_id: 1,
+    in_home_view: false
+};
+var social = {
+    subscribed: true,
+    color: 'red',
+    name: 'social',
+    stream_id: 2,
+    in_home_view: true,
+    invite_only: true
+};
+stream_data.add_sub('Denmark', denmark);
+stream_data.add_sub('social', social);
 
 var echo = require('js/echo.js');
 
@@ -79,6 +105,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                      "User Mention @**leo**",
                      "User Mention @**leo f**",
                      "User Mention @**leo with some name**",
+                     "Stream #**Verona**",
                      "This contains !gravatar(leo@zulip.com)",
                      "And an avatar !avatar(leo@zulip.com) is here"
                     ];
@@ -138,6 +165,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
      expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
      expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
+    {input: 'This is a #**Denmark** stream link',
+     expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
+    {input: 'This is #**Denmark** and #**social** stream links',
+     expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
+    {input: 'And this is a #**wrong** stream link',
+     expected: '<p>And this is a #**wrong** stream link</p>'},
     {input: 'mmm...:burrito:s',
      expected: '<p>mmm...<img alt=\":burrito:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/burrito.png\" title=\":burrito:\">s</p>'},
     {input: 'This is an :poop: message',

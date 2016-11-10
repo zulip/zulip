@@ -477,6 +477,7 @@ var inline = {
   emoji: noop,
   unicodeemoji: noop,
   usermention: noop,
+  stream: noop,
   avatar: noop,
   gravatar: noop,
   realm_filters: [],
@@ -537,13 +538,13 @@ inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
   usermention: /^(@(?:\*\*([^\*]+)?\*\*|(\w+)?))/m, // Match multi-word string between @** ** or match any one-word
-  streamlink: /^(#\*\*([^\*]+)\*\*)/,
+  stream: /^#\*\*([^\*]+)\*\*/m,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])|')
-    (']|', '@:]|')
+    (']|', '#@:]|')
     ()
 });
 
@@ -725,10 +726,11 @@ InlineLexer.prototype.output = function(src) {
       out += this.usermention(cap[2] || cap[3], cap[1]);
       continue;
     }
-    // streamlink (zulip)
-    if (cap = this.rules.streamlink.exec(src)) {
+
+    // stream (zulip)
+    if (cap = this.rules.stream.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.streamlink(cap[2], cap[1]);
+      out += this.stream(cap[1], cap[0]);
       continue;
     }
 
@@ -870,22 +872,16 @@ InlineLexer.prototype.usermention = function (username, orig) {
   return orig;
 };
 
-InlineLexer.prototype.streamlink = function(stream_name, orig) {
-  if (stream_data.get_sub(stream_name) === undefined) {
+InlineLexer.prototype.stream = function (streamName, orig) {
+  if (typeof this.options.streamHandler !== 'function')
     return orig;
-  }
-  if (typeof this.options.streamLinkHandler !== 'function')
-  {
-    return orig;
-  }
 
-  var handled = this.options.streamLinkHandler(stream_name);
+  var handled = this.options.streamHandler(streamName);
   if (handled !== undefined) {
     return handled;
   }
-
   return orig;
-}
+};
 
 /**
  * Smartypants Transformations
