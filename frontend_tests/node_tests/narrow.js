@@ -19,6 +19,7 @@ function set_filter(operators) {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']]);
 
     assert.equal(narrow.stream(), 'Foo');
+    assert.equal(narrow.topic(), 'Bar');
 }());
 
 
