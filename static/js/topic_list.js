@@ -2,13 +2,16 @@ var topic_list = (function () {
 
 var exports = {};
 
-var widgets = new Dict({fold_case: true}); // key is stream_name
+// We can only ever have one active widget.
+var active_widget;
 
 exports.remove_expanded_topics = function () {
     popovers.hide_topic_sidebar_popover();
-    $("ul.topic-list").remove();
-};
 
+    if (active_widget) {
+        active_widget.remove();
+    }
+};
 
 function update_count_in_dom(count_span, value_span, count) {
     if (count === 0) {
@@ -22,14 +25,9 @@ function update_count_in_dom(count_span, value_span, count) {
 }
 
 exports.set_count = function (stream_name, topic, count) {
-    if (!widgets.has(stream_name)) {
-        // fail silently here...sometimes we haven't build
-        // the widget yet, especially during page loading
-        return;
+    if (active_widget && active_widget.is_for_stream(stream_name)) {
+        active_widget.set_count(topic, count);
     }
-
-    var widget = widgets.get(stream_name);
-    widget.set_count(topic, count);
 };
 
 exports.build_widget = function (stream, active_topic, max_topics) {
@@ -82,13 +80,19 @@ exports.build_widget = function (stream, active_topic, max_topics) {
             ul.append(show_more);
         }
 
-        widgets.set(stream, self);
-
         return ul;
     }
 
+    self.is_for_stream = function (stream_name) {
+        return stream === stream_name;
+    };
+
     self.get_dom = function () {
         return self.dom;
+    };
+
+    self.remove = function () {
+        self.dom.remove();
     };
 
     self.set_count = function (topic, count) {
@@ -128,11 +132,14 @@ exports.rebuild = function (stream_li, stream) {
     exports.remove_expanded_topics();
 
     var widget = exports.build_widget(stream, active_topic, max_topics);
+
     stream_li.append(widget.get_dom());
 
     if (active_topic) {
         widget.activate_topic(active_topic);
     }
+
+    active_widget = widget; // set our global
 };
 
 exports.set_click_handlers = function (callbacks) {
