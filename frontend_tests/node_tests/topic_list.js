@@ -35,6 +35,7 @@ global.compile_template('topic_list_item');
     var topic_html = widget.get_dom();
 
     assert.equal(widget.get_parent(), parent_elem);
+    assert.equal(widget.get_stream_name(), 'devel');
 
     var topic = $(topic_html).find('a').text().trim();
     assert.equal(topic, 'coding');
