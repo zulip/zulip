@@ -151,8 +151,6 @@ function iterate_to_find(selector, name_to_find, context) {
     return found ? $(found) : $();
 }
 
-// TODO: Now that the unread count functions support the user sidebar
-// as well, we probably should consider moving them to a different file.
 function get_filter_li(type, name) {
     if (type === 'stream') {
         var sub = stream_data.get_sub(name);
@@ -307,10 +305,6 @@ function update_count_in_dom(count_span, value_span, count) {
         count_span.hide();
         if (count_span.parent().hasClass("subscription_block")) {
             count_span.parent(".subscription_block").removeClass("stream-with-count");
-        } else if (count_span.parent().hasClass("user_sidebar_entry")) {
-            count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
-        } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
-            count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
         }
         value_span.text('');
         return;
@@ -320,10 +314,6 @@ function update_count_in_dom(count_span, value_span, count) {
 
     if (count_span.parent().hasClass("subscription_block")) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
-    } else if (count_span.parent().hasClass("user_sidebar_entry")) {
-        count_span.parent(".user_sidebar_entry").addClass("user-with-count");
-    } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
-            count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
     }
     value_span.text(count);
 }
@@ -413,10 +403,6 @@ function animate_mention_changes(new_mention_count) {
 }
 
 
-exports.set_presence_list_count = function (person, count) {
-    set_count("private", person, count);
-};
-
 exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
@@ -434,7 +420,6 @@ exports.update_dom_with_unread_counts = function (counts) {
     });
 
     counts.pm_count.each(function (count, person) {
-        exports.set_presence_list_count(person, count);
         exports.set_pm_conversation_count(person, count);
     });
 
