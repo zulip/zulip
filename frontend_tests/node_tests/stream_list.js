@@ -17,6 +17,8 @@ set_global('message_store', {
     recent_private_messages: new global.Array()
 });
 
+// TODO: move pm_list-related tests to their own module
+var pm_list = require('js/pm_list.js');
 var stream_list = require('js/stream_list.js');
 
 var jsdom = require("jsdom");
@@ -46,7 +48,7 @@ global.compile_template('stream_privacy');
         return 1;
     };
 
-    var convos_html = stream_list._build_private_messages_list(active_conversation, max_conversations);
+    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations);
     global.write_test_output("test_build_private_messages_list", convos_html);
 
     var conversation = $(convos_html).find('a').text().trim();
