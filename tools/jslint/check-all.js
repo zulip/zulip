@@ -29,7 +29,7 @@ var globals =
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
     + ' Filter summary admin stream_data muting WinChan muting_ui Socket channel gear_menu'
     + ' message_flags bot_data loading favicon resize scroll_bar condense floating_recipient_bar'
-    + ' copy_and_paste click_handlers topic_list'
+    + ' copy_and_paste click_handlers topic_list pm_list'
 
     // colorspace.js
     + ' colorspace'

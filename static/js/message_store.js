@@ -334,7 +334,7 @@ exports.update_messages = function update_messages(events) {
     }
     unread.update_unread_counts();
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 };
 
 
@@ -394,7 +394,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
     unread.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 };
 
 function process_result(messages, opts) {
@@ -423,7 +423,7 @@ function process_result(messages, opts) {
 
     activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 
     if (opts.cont !== undefined) {
         opts.cont(messages);

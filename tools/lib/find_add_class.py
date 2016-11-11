@@ -21,6 +21,8 @@ GENERIC_KEYWORDS = [
     'success',
     'text-error',
     'warning',
+    'zoom-in',  # TODO: clean these up, they are confusing
+    'zoom-out',
 ]
 
 def raise_error(fn, i, line):
