@@ -175,7 +175,8 @@ def get_normal_push_body(payload, change):
         get_user_username(payload),
         change['links']['html']['href'],
         change['new']['name'],
-        commits_data
+        commits_data,
+        is_truncated=change['truncated']
     )
 
 def get_fork_body(payload):
