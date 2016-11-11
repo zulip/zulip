@@ -3,7 +3,6 @@ var stream_list = (function () {
 var exports = {};
 
 var zoomed_stream = '';
-var private_messages_open = false;
 var last_private_message_count = 0;
 var last_mention_count = 0;
 var previous_sort_order;
@@ -35,6 +34,36 @@ function filter_streams_by_search(streams) {
     return filtered_streams;
 }
 
+exports.stream_sidebar = (function () {
+    var self = {};
+
+    self.rows = new Dict(); // stream id -> row widget
+
+    self.set_row = function (stream_id, widget) {
+        self.rows.set(stream_id, widget);
+    };
+
+    self.get_row = function (stream_id) {
+        return self.rows.get(stream_id);
+    };
+
+    self.has_row_for = function (stream_id) {
+        return self.rows.has(stream_id);
+    };
+
+    self.remove_row = function (stream_id) {
+        var widget = self.rows.get(stream_id);
+        if (!widget) {
+            blueslip.warn('Cannot remove stream id ' + stream_id);
+            return;
+        }
+        widget.remove();
+        self.rows.del(stream_id);
+    };
+
+    return self;
+}());
+
 exports.create_initial_sidebar_rows = function () {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
@@ -65,15 +94,12 @@ exports.build_stream_list = function () {
     var elems = [];
 
     function add_sidebar_li(stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
+        var sub = stream_data.get_sub(stream);
+        var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
         if (sort_recent) {
-            if (stream_data.is_active(stream)) {
-                li.removeClass('inactive_stream');
-            } else {
-                li.addClass('inactive_stream');
-            }
+            sidebar_row.update_whether_active();
         }
-        elems.push(li.get(0));
+        elems.push(sidebar_row.get_li().get(0));
     }
 
     _.each(streams, function (stream) {
@@ -106,18 +132,6 @@ exports.build_stream_list = function () {
     previous_unpinned_order = unpinned_streams;
     parent.empty();
 
-    _.each(pinned_streams, function (stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
-        if (sort_recent) {
-            if (! stream_data.is_active(stream)) {
-                li.addClass('inactive_stream');
-            } else {
-                li.removeClass('inactive_stream');
-            }
-        }
-        elems.push(li.get(0));
-    });
-
     if (pinned_streams.length > 0) {
         _.each(pinned_streams, add_sidebar_li);
         elems.push($('<hr class="pinned-stream-split">').get(0));
@@ -137,8 +151,6 @@ function iterate_to_find(selector, name_to_find, context) {
     return found ? $(found) : $();
 }
 
-// TODO: Now that the unread count functions support the user sidebar
-// as well, we probably should consider moving them to a different file.
 function get_filter_li(type, name) {
     if (type === 'stream') {
         var sub = stream_data.get_sub(name);
@@ -194,12 +206,6 @@ function zoom_out(options) {
     $("#stream_filters li.narrow-filter").show();
 }
 
-function remove_expanded_private_messages() {
-    popovers.hide_topic_sidebar_popover();
-    $("ul.expanded_private_messages").remove();
-    resize.resize_stream_filters_container();
-}
-
 function reset_to_unnarrowed(narrowed_within_same_stream) {
     if (topic_list.is_zoomed() && narrowed_within_same_stream !== true) {
         zoom_out({clear_topics: true});
@@ -207,15 +213,7 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
         topic_list.remove_expanded_topics();
     }
 
-    private_messages_open = false;
-    $("ul.filters li").removeClass('active-filter active-sub-filter');
-    remove_expanded_private_messages();
-}
-
-function get_private_message_filter_li(conversation) {
-    var pm_li = get_filter_li('global', 'private');
-    return iterate_to_find(".expanded_private_messages li.expanded_private_message",
-        conversation, pm_li);
+    pm_list.reset_to_unnarrowed();
 }
 
 exports.set_in_home_view = function (stream, in_home) {
@@ -227,8 +225,8 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_stream_sidebar_row(name) {
-    var sub = stream_data.get_sub(name);
+function build_stream_sidebar_li(sub) {
+    var name = sub.name;
     var args = {name: name,
                 id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
@@ -239,21 +237,40 @@ function build_stream_sidebar_row(name) {
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
-    $("#stream_filters").append(list_item);
     return list_item;
 }
 
-exports.create_sidebar_row = function (sub) {
+function build_stream_sidebar_row(sub) {
+    var self = {};
+    var list_item = build_stream_sidebar_li(sub);
     var stream_name = sub.name;
 
-    if (exports.get_stream_li(stream_name).length) {
+    self.update_whether_active = function () {
+        if (stream_data.is_active(stream_name)) {
+            list_item.removeClass('inactive_stream');
+        } else {
+            list_item.addClass('inactive_stream');
+        }
+    };
+
+    self.get_li = function () {
+        return list_item;
+    };
+
+    self.remove = function () {
+        list_item.remove();
+    };
+
+    exports.stream_sidebar.set_row(sub.stream_id, self);
+}
+
+exports.create_sidebar_row = function (sub) {
+    if (exports.stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
+        blueslip.warn('Dup try to build sidebar row for stream ' + sub.stream_id);
         return;
     }
-    var li = build_stream_sidebar_row(stream_name);
-    if (li) {
-        sub.sidebar_li = li;
-    }
+    build_stream_sidebar_row(sub);
 };
 
 exports.redraw_stream_privacy = function (stream_name) {
@@ -283,19 +300,11 @@ exports.get_stream_li = function (stream_name) {
     return get_filter_li('stream', stream_name);
 };
 
-exports.get_count = function (type, name) {
-    return get_filter_li(type, name).find('.count .value').text();
-};
-
 function update_count_in_dom(count_span, value_span, count) {
     if (count === 0) {
         count_span.hide();
         if (count_span.parent().hasClass("subscription_block")) {
             count_span.parent(".subscription_block").removeClass("stream-with-count");
-        } else if (count_span.parent().hasClass("user_sidebar_entry")) {
-            count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
-        } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
-            count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
         }
         value_span.text('');
         return;
@@ -305,10 +314,6 @@ function update_count_in_dom(count_span, value_span, count) {
 
     if (count_span.parent().hasClass("subscription_block")) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
-    } else if (count_span.parent().hasClass("user_sidebar_entry")) {
-        count_span.parent(".user_sidebar_entry").addClass("user-with-count");
-    } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
-            count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
     }
     value_span.text(count);
 }
@@ -335,7 +340,7 @@ function set_count_toggle_button(elem, count) {
 }
 
 exports.set_pm_conversation_count = function (conversation, count) {
-    var pm_li = get_private_message_filter_li(conversation);
+    var pm_li = pm_list.get_private_message_filter_li(conversation);
     var count_span = pm_li.find('.private_message_count');
     var value_span = count_span.find('.value');
 
@@ -347,67 +352,11 @@ exports.set_pm_conversation_count = function (conversation, count) {
     update_count_in_dom(count_span, value_span, count);
 };
 
-exports.remove_narrow_filter = function (name, type) {
-    get_filter_li(type, name).remove();
-};
-
-exports._build_private_messages_list = function (active_conversation, max_private_messages) {
-
-    var private_messages = message_store.recent_private_messages || [];
-    var display_messages = [];
-    var hiding_messages = false;
-
-    _.each(private_messages, function (private_message_obj, idx) {
-        var recipients_string = private_message_obj.display_reply_to;
-        var replies_to = private_message_obj.reply_to;
-        var num_unread = unread.num_unread_for_person(private_message_obj.reply_to);
-
-        var always_visible = (idx < max_private_messages) || (num_unread > 0)
-            || (replies_to === active_conversation);
-
-        if (!always_visible) {
-            hiding_messages = true;
-        }
-
-        var display_message = {
-            recipients: recipients_string,
-            reply_to: replies_to,
-            unread: num_unread,
-            is_zero: num_unread === 0,
-            zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(private_message_obj.reply_to)
-        };
-        display_messages.push(display_message);
-    });
-
-    var recipients_dom = templates.render('sidebar_private_message_list',
-                                  {messages: display_messages,
-                                   want_show_more_messages_links: hiding_messages});
-    return recipients_dom;
-};
-
 function rebuild_recent_topics(stream) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
     var stream_li = get_filter_li('stream', stream);
     topic_list.rebuild(stream_li, stream);
-}
-
-function rebuild_recent_private_messages(active_conversation) {
-    remove_expanded_private_messages();
-    if (private_messages_open)
-    {
-        var max_private_messages = 5;
-        var private_li = get_filter_li('global', 'private');
-        var private_messages_dom = exports._build_private_messages_list(active_conversation,
-            max_private_messages);
-        private_li.append(private_messages_dom);
-    }
-    if (active_conversation) {
-        get_private_message_filter_li(active_conversation).addClass('active-sub-filter');
-    }
-
-    resize.resize_stream_filters_container();
 }
 
 exports.update_streams_sidebar = function () {
@@ -422,25 +371,6 @@ exports.update_streams_sidebar = function () {
         if (stream_data.is_subscribed(op_stream[0])) {
             rebuild_recent_topics(op_stream[0]);
         }
-    }
-};
-
-exports.update_private_messages = function () {
-    exports._build_private_messages_list();
-
-    if (! narrow.active()) {
-        return;
-    }
-
-    var is_pm_filter = _.contains(narrow.filter().operands('is'), "private");
-    var conversation = narrow.filter().operands('pm-with');
-    if (conversation.length === 1) {
-        rebuild_recent_private_messages(conversation[0]);
-    } else if (conversation.length !== 0) {
-        // TODO: This should be the reply-to of the thread.
-        rebuild_recent_private_messages("");
-    } else if (is_pm_filter) {
-        rebuild_recent_private_messages("");
     }
 };
 
@@ -473,10 +403,6 @@ function animate_mention_changes(new_mention_count) {
 }
 
 
-exports.set_presence_list_count = function (person, count) {
-    set_count("private", person, count);
-};
-
 exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
@@ -494,7 +420,6 @@ exports.update_dom_with_unread_counts = function (counts) {
     });
 
     counts.pm_count.each(function (count, person) {
-        exports.set_presence_list_count(person, count);
         exports.set_pm_conversation_count(person, count);
     });
 
@@ -511,15 +436,16 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 exports.rename_stream = function (sub, new_name) {
-    sub.sidebar_li = build_stream_sidebar_row(new_name);
+    // TODO: we don't actually need new_name, since the sub
+    //       will have been updated
+    build_stream_sidebar_row(sub);
     exports.build_stream_list(); // big hammer
 };
 
 exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
-    sub.sidebar_li = build_stream_sidebar_row(sub.name);
-    exports.build_stream_list();
+    build_stream_sidebar_row(sub);
     exports.update_streams_sidebar();
 };
 
@@ -531,6 +457,8 @@ $(function () {
         zoom_in: zoom_in,
         zoom_out: zoom_out
     });
+
+    pm_list.set_click_handlers();
 
     $(document).on('narrow_activated.zulip', function (event) {
         reset_to_unnarrowed(narrow.stream() === zoomed_stream);
@@ -551,17 +479,7 @@ $(function () {
 
         var op_pm = event.filter.operands('pm-with');
         if ((op_is.length !== 0 && _.contains(op_is, "private")) || op_pm.length !== 0) {
-            private_messages_open = true;
-            if (op_pm.length === 1) {
-                $("#user_presences li[data-email='" + op_pm[0] + "']").addClass('active-filter');
-                rebuild_recent_private_messages(op_pm[0]);
-            } else if (op_pm.length !== 0) {
-                // TODO: Should pass the reply-to of the thread
-                rebuild_recent_private_messages("");
-            } else {
-                $("#global_filters li[data-name='private']").addClass('active-filter zoom-out');
-                rebuild_recent_private_messages("");
-            }
+            pm_list.expand(op_pm);
         }
 
         var op_stream = event.filter.operands('stream');
@@ -587,22 +505,10 @@ $(function () {
     });
 
     $(document).on('subscription_remove_done.zulip', function (event) {
-        var stream_name = event.sub.name;
-        exports.remove_narrow_filter(stream_name, 'stream');
+        exports.stream_sidebar.remove_row(event.sub.stream_id);
         // We need to make sure we resort if the removed sub gets added again
         previous_sort_order = undefined;
         previous_unpinned_order = undefined;
-    });
-
-    $('#global_filters').on('click', '.show-more-private-messages', function (e) {
-        popovers.hide_all();
-        $(".expanded_private_messages").expectOne().removeClass("zoom-out").addClass("zoom-in");
-        $(".expanded_private_messages li.expanded_private_message").each(function () {
-            $(this).show();
-        });
-
-        e.preventDefault();
-        e.stopPropagation();
     });
 
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {

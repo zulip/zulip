@@ -51,6 +51,50 @@ exports.presence_info = {};
 
 var huddle_timestamps = new Dict();
 
+function update_count_in_dom(count_span, value_span, count) {
+    if (count === 0) {
+        count_span.hide();
+        if (count_span.parent().hasClass("user_sidebar_entry")) {
+            count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
+        } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+            count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
+        }
+        value_span.text('');
+        return;
+    }
+
+    count_span.show();
+
+    if (count_span.parent().hasClass("user_sidebar_entry")) {
+        count_span.parent(".user_sidebar_entry").addClass("user-with-count");
+    } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+            count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
+    }
+    value_span.text(count);
+}
+
+function get_filter_li(name) {
+    if (name.indexOf(",") < 0) {
+        return $("li.user_sidebar_entry[data-email='" + name + "']");
+    } else {
+        return $("li.group-pms-sidebar-entry[data-emails='" + name + "']");
+    }
+}
+
+function set_count(name, count) {
+    var count_span = get_filter_li(name).find('.count');
+    var value_span = count_span.find('.value');
+    update_count_in_dom(count_span, value_span, count);
+}
+
+exports.update_dom_with_unread_counts = function (counts) {
+    // counts is just a data object that gets calculated elsewhere
+    // Our job is to update some DOM elements.
+
+    counts.pm_count.each(function (count, person) {
+        set_count(person, count);
+    });
+};
 
 exports.process_loaded_messages = function (messages) {
     var need_resize = false;
@@ -320,7 +364,7 @@ exports.update_huddles = function () {
 
     _.each(huddles, function (huddle) {
         var count = unread.num_unread_for_person(huddle);
-        stream_list.set_presence_list_count(huddle, count);
+        set_count(huddle, count);
     });
 
     show_huddles();
