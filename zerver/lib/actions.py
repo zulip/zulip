@@ -257,13 +257,22 @@ def add_new_user_history(user_profile, streams):
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                           type_id__in=[stream.id for stream in streams
                                                        if not stream.invite_only])
-    messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-    if len(messages) > 0:
-        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                     flags=UserMessage.flags.read)
-                         for message in messages]
+    recent_messages = Message.objects.filter(recipient_id__in=recipients,
+                                             pub_date__gt=one_week_ago).order_by("-id")
+    message_ids_to_use = list(recent_messages.values_list('id', flat=True)[0:100])
+    if len(message_ids_to_use) == 0:
+        return
 
-        UserMessage.objects.bulk_create(ums_to_create)
+    # Handle the race condition where a message arrives between
+    # bulk_add_subscriptions above and the Message query just above
+    already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
+                                                 user_profile=user_profile).values_list("message_id", flat=True))
+    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id,
+                                 flags=UserMessage.flags.read)
+                     for message_id in message_ids_to_use
+                     if message_id not in already_ids]
+
+    UserMessage.objects.bulk_create(ums_to_create)
 
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams

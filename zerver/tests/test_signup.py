@@ -14,6 +14,7 @@ from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
+    Stream, Subscription,
 )
 
 from zerver.lib.actions import (
@@ -22,7 +23,8 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language
+from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language, \
+    add_new_user_history
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
@@ -123,6 +125,22 @@ class PublicURLTest(ZulipTestCase):
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
+
+class AddNewUserHistoryTest(ZulipTestCase):
+    def test_add_new_user_history_race(self):
+        # type: () -> None
+        """Sends a message during user creation"""
+        # Create a user who hasn't had historical messages added
+        set_default_streams(get_realm_by_string_id("zulip"), ["Denmark", "Verona"])
+        with patch("zerver.lib.actions.add_new_user_history"):
+            self.register("test", "test")
+        user_profile = get_user_profile_by_email("test@zulip.com")
+
+        subs = Subscription.objects.select_related("recipient").filter(
+            user_profile=user_profile, recipient__type=Recipient.STREAM)
+        streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
+        self.send_message("hamlet@zulip.com", streams[0].name, Recipient.STREAM, "test")
+        add_new_user_history(user_profile, streams)
 
 class PasswordResetTest(ZulipTestCase):
     """
