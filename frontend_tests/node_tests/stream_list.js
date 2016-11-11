@@ -8,6 +8,7 @@ add_dependencies({
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     subs: 'js/subs',
+    util: 'js/util',
     hashchange: 'js/hashchange'
 });
 
@@ -52,20 +53,26 @@ global.compile_template('stream_privacy');
     assert.equal(conversation, active_conversation);
 }());
 
+function clear_filters() {
+    var stream_search_box = $('<input class="stream-list-filter" type="text" placeholder="Search streams">');
+    var stream_filters = $('<ul id="stream_filters">');
+    $("body").empty();
+    $("body").append(stream_search_box);
+    $("body").append(stream_filters);
+
+}
 
 (function test_create_sidebar_row() {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
 
-    var stream_filters = $('<ul id="stream_filters">');
-    $("body").append(stream_filters);
-
-    var stream = "devel";
+    clear_filters();
 
     var devel = {
         name: 'devel',
         stream_id: 1000,
         color: 'blue',
+        subscribed: true,
         id: 5
     };
     global.stream_data.add_sub('devel', devel);
@@ -74,12 +81,14 @@ global.compile_template('stream_privacy');
         name: 'social',
         stream_id: 2000,
         color: 'green',
+        subscribed: true,
         id: 6
     };
     global.stream_data.add_sub('social', social);
 
     stream_list.create_sidebar_row(devel);
     stream_list.create_sidebar_row(social);
+    stream_list.build_stream_list();
 
     var html = $("body").html();
     global.write_test_output("test_create_sidebar_row", html);
@@ -92,6 +101,7 @@ global.compile_template('stream_privacy');
 
     global.append_test_output("Then make 'social' private.");
     global.stream_data.get_sub('social').invite_only = true;
+
     stream_list.redraw_stream_privacy('social');
 
     html = $("body").html();
@@ -102,12 +112,7 @@ global.compile_template('stream_privacy');
 
 
 (function test_sort_pin_to_top_streams() {
-
-    var stream_search_box = $('<input class="stream-list-filter" type="text" placeholder="Search streams">');
-    var stream_filters = $('<ul id="stream_filters">');
-    $("body").empty();
-    $("body").append(stream_search_box);
-    $("body").append(stream_filters);
+    clear_filters();
 
     var develSub = {
         name: 'devel',
@@ -131,5 +136,6 @@ global.compile_template('stream_privacy');
     stream_list.create_sidebar_row(socialSub);
     global.stream_data.add_sub('social', socialSub);
     stream_list.build_stream_list();
-    assert.equal(socialSub.sidebar_li.nextAll().find('[ data-name="devel"]').length, 1);
+    var li = socialSub.stream_sidebar_row.get_li();
+    assert.equal(li.nextAll().find('[ data-name="devel"]').length, 1);
 }());
