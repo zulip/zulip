@@ -507,7 +507,6 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
     sub.sidebar_li = build_stream_sidebar_row(sub.name);
-    exports.build_stream_list();
     exports.update_streams_sidebar();
 };
 
