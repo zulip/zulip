@@ -169,6 +169,19 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.do_test_subject(msg, self.EXPECTED_SUBJECT)
         self.do_test_message(msg, expected_message.format(name='a'))
 
+    def test_bitbucket2_on_more_than_one_push_event(self):
+        # type: () -> None
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_more_than_one_push_event', **kwargs)
+        msg = self.get_second_to_last_message()
+        self.do_test_message(msg, 'kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit')
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT_BRANCH_EVENTS)
+        msg = self.get_last_message()
+        self.do_test_message(msg, 'kolaszek pushed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag')
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+
 class BitbucketHookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket'
     URL_TEMPLATE = "/api/v1/external/bitbucket?payload={payload}&stream={stream}"
