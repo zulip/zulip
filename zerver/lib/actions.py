@@ -248,6 +248,23 @@ def notify_new_user(user_profile, internal=False):
         send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
 
+def add_new_user_history(user_profile, streams):
+    # type: (UserProfile, Iterable[Stream]) -> None
+    """Give you the last 100 messages on your public streams, so you have
+    something to look at in your home view once you finish the
+    tutorial."""
+    one_week_ago = now() - datetime.timedelta(weeks=1)
+    recipients = Recipient.objects.filter(type=Recipient.STREAM,
+                                          type_id__in=[stream.id for stream in streams
+                                                       if not stream.invite_only])
+    messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
+    if len(messages) > 0:
+        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
+                                     flags=UserMessage.flags.read)
+                         for message in messages]
+
+        UserMessage.objects.bulk_create(ums_to_create)
+
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
 # * Fills in some recent historical messages
@@ -270,20 +287,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         streams = get_default_subs(user_profile)
     bulk_add_subscriptions(streams, [user_profile])
 
-    # Give you the last 100 messages on your public streams, so you have
-    # something to look at in your home view once you finish the
-    # tutorial.
-    one_week_ago = now() - datetime.timedelta(weeks=1)
-    recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                          type_id__in=[stream.id for stream in streams
-                                                       if not stream.invite_only])
-    messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-    if len(messages) > 0:
-        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                     flags=UserMessage.flags.read)
-                         for message in messages]
-
-        UserMessage.objects.bulk_create(ums_to_create)
+    add_new_user_history(user_profile, streams)
 
     # mit_beta_users don't have a referred_by field
     if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None \
