@@ -263,7 +263,6 @@ def accounts_register(request):
 
     return render_to_response('zerver/register.html',
             {'form': form,
-             'company_name': realm.name if realm is not None else '',
              'email': email,
              'key': key,
              'full_name': request.session.get('authenticated_full_name', None),
@@ -289,13 +288,11 @@ def accounts_accept_terms(request):
         form = ToSForm()
 
     email = request.user.email
-    domain = resolve_email_to_domain(email)
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
         special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
     return render_to_response('zerver/accounts_accept_terms.html',
-        { 'form': form, 'company_name': domain, 'email': email, \
-          'special_message_template' : special_message_template },
+        {'form': form, 'email': email, 'special_message_template': special_message_template},
         request=request)
 
 def create_homepage_form(request, user_info=None):
