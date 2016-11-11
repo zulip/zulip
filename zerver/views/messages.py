@@ -780,11 +780,9 @@ def same_realm_jabber_user(user_profile, email):
         return False
 
     domain = resolve_email_to_domain(email)
-    # The ist.mit.edu realm uses mit.edu email addresses so that their accounts
-    # can receive mail.
-    if user_profile.realm.domain == 'ist.mit.edu' and domain == 'mit.edu':
-        return True
 
+    # If your Jabber users have a different email domain than the
+    # Zulip users, this is where you would do any translation.
     return user_profile.realm.domain == domain
 
 # We do not @require_login for send_message_backend, since it is used
