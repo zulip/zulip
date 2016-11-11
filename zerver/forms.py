@@ -15,7 +15,7 @@ from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_do
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open, get_realm, get_realm_by_email_domain, get_realm_by_string_id, \
-    get_unique_open_realm, split_email_to_domain, email_allowed_for_realm
+    get_unique_open_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
 import logging
@@ -151,7 +151,7 @@ class HomepageForm(forms.Form):
 
 def email_is_not_disposable(email):
     # type: (text_type) -> None
-    if is_disposable_domain(split_email_to_domain(email)):
+    if is_disposable_domain(email_to_domain(email)):
         raise ValidationError(_("Please use your real email address."))
 
 class RealmCreationForm(forms.Form):

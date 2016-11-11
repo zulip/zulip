@@ -315,7 +315,7 @@ def email_to_username(email):
     return "@".join(email.split("@")[:-1]).lower()
 
 # Returns the raw domain portion of the desired email address
-def split_email_to_domain(email):
+def email_to_domain(email):
     # type: (text_type) -> text_type
     return email.split("@")[-1].lower()
 
@@ -328,7 +328,7 @@ def get_realm_by_email_domain(email):
         raise GetRealmByDomainException(
             "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
     try:
-        alias = RealmAlias.objects.select_related('realm').get(domain = split_email_to_domain(email))
+        alias = RealmAlias.objects.select_related('realm').get(domain = email_to_domain(email))
         return alias.realm
     except RealmAlias.DoesNotExist:
         return None
@@ -341,7 +341,7 @@ def email_allowed_for_realm(email, realm):
     # type: (text_type, Realm) -> bool
     if not realm.restricted_to_domain:
         return True
-    domain = split_email_to_domain(email)
+    domain = email_to_domain(email)
     return RealmAlias.objects.filter(realm = realm, domain = domain).exists()
 
 def list_of_domains_for_realm(realm):
