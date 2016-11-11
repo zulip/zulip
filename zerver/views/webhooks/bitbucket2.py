@@ -4,7 +4,7 @@ import re
 from functools import partial
 from six import text_type
 from six.moves import zip
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
@@ -62,11 +62,11 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
 
     return json_success()
 
-def get_subject_for_branch_specified_events(payload):
-    # type: (Dict[str, Any]) -> text_type
+def get_subject_for_branch_specified_events(payload, branch_name=None):
+    # type: (Dict[str, Any], Optional[text_type]) -> text_type
     return SUBJECT_WITH_BRANCH_TEMPLATE.format(
         repo=get_repository_name(payload['repository']),
-        branch=get_branch_name_for_push_event(payload)
+        branch=get_branch_name_for_push_event(payload) if branch_name is None else branch_name
     )
 
 def get_push_subjects(payload):
@@ -77,7 +77,11 @@ def get_push_subjects(payload):
         if potential_tag == 'tag':
             subjects_list.append(str(get_subject(payload)))
         else:
-            subjects_list.append(str(get_subject_for_branch_specified_events(payload)))
+            if change.get('new'):
+                branch_name = change['new']['name']
+            else:
+                branch_name = change['old']['name']
+            subjects_list.append(str(get_subject_for_branch_specified_events(payload, branch_name)))
     return subjects_list
 
 def get_subject(payload):
