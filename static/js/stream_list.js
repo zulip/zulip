@@ -106,18 +106,6 @@ exports.build_stream_list = function () {
     previous_unpinned_order = unpinned_streams;
     parent.empty();
 
-    _.each(pinned_streams, function (stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
-        if (sort_recent) {
-            if (! stream_data.is_active(stream)) {
-                li.addClass('inactive_stream');
-            } else {
-                li.removeClass('inactive_stream');
-            }
-        }
-        elems.push(li.get(0));
-    });
-
     if (pinned_streams.length > 0) {
         _.each(pinned_streams, add_sidebar_li);
         elems.push($('<hr class="pinned-stream-split">').get(0));
