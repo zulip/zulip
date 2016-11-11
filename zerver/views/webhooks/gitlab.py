@@ -6,7 +6,7 @@ from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variabl
 from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
     get_remove_branch_event_message, get_pull_request_event_message,\
     get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
-    get_commits_comment_action_message
+    get_commits_comment_action_message, get_push_tag_event_message
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
@@ -57,10 +57,10 @@ def get_remove_branch_event_body(payload):
 
 def get_tag_push_event_body(payload):
     # type: (Dict[str, Any]) -> text_type
-    return u"{} {} {} tag.".format(
+    return get_push_tag_event_message(
         get_user_name(payload),
-        "pushed" if payload.get('checkout_sha') else "removed",
-        get_tag_name(payload)
+        get_tag_name(payload),
+        action="pushed" if payload.get('checkout_sha') else "removed"
     )
 
 def get_issue_created_event_body(payload):

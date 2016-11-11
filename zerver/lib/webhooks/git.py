@@ -28,8 +28,12 @@ CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
 
 COMMITS_COMMENT_MESSAGE_TEMPLATE = u"{user_name} {action} on [{sha}]({url})"
 
-def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data):
-    # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]]) -> text_type
+PUSH_TAGS_MESSAGE_TEMPLATE = u"""{user_name} {action} {tag} tag"""
+TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
+TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
+
+def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False):
+    # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]], Optional[bool]) -> text_type
     if compare_url:
         pushed_text_message = PUSH_PUSHED_TEXT_WITH_URL.format(compare_url=compare_url)
     else:
@@ -39,7 +43,7 @@ def get_push_commits_event_message(user_name, compare_url, branch_name, commits_
         user_name=user_name,
         pushed_text=pushed_text_message,
         branch_name=branch_name,
-        commits_data=get_commits_content(commits_data),
+        commits_data=get_commits_content(commits_data, is_truncated),
     ).rstrip()
 
 def get_force_push_commits_event_message(user_name, url, branch_name, head):
@@ -95,6 +99,18 @@ def get_issue_event_message(user_name, action, url, number=None, message=None, a
         type='Issue'
     )
 
+def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed'):
+    # type: (text_type, text_type, Optional[text_type], Optional[text_type]) -> text_type
+    if tag_url:
+        tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
+    else:
+        tag_part = TAG_WITHOUT_URL_TEMPLATE.format(tag_name=tag_name)
+    return PUSH_TAGS_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        action=action,
+        tag=tag_part
+    )
+
 def get_commits_comment_action_message(user_name, action, commit_url, sha, message=None):
     # type: (text_type, text_type, text_type, text_type, Optional[text_type]) -> text_type
     content = COMMITS_COMMENT_MESSAGE_TEMPLATE.format(
@@ -109,8 +125,8 @@ def get_commits_comment_action_message(user_name, action, commit_url, sha, messa
         )
     return content
 
-def get_commits_content(commits_data):
-    # type: (List[Dict[str, Any]]) -> text_type
+def get_commits_content(commits_data, is_truncated=False):
+    # type: (List[Dict[str, Any]], Optional[bool]) -> text_type
     commits_content = u''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
@@ -121,7 +137,12 @@ def get_commits_content(commits_data):
 
     if len(commits_data) > COMMITS_LIMIT:
         commits_content += COMMITS_MORE_THAN_LIMIT_TEMPLATE.format(
-            commits_number=len(commits_data) - COMMITS_LIMIT)
+            commits_number=len(commits_data) - COMMITS_LIMIT
+        )
+    elif is_truncated:
+        commits_content += COMMITS_MORE_THAN_LIMIT_TEMPLATE.format(
+            commits_number=''
+        ).replace('  ', ' ')
     return commits_content.rstrip()
 
 def get_short_sha(sha):
