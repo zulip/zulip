@@ -96,43 +96,9 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
              'id': user_profile.id,
              'is_mirror_dummy': user_profile.is_mirror_dummy,} for user_profile in user_profile_list]
 
-def completely_open(domain):
-    # type: (text_type) -> bool
-    # This domain is completely open to everyone on the internet to
-    # join. E-mail addresses do not need to match the domain and
-    # an invite from an existing user is not required.
-    realm = get_realm(domain)
-    if not realm:
-        return False
-    return not realm.invite_required and not realm.restricted_to_domain
-
-def get_unique_open_realm():
-    # type: () -> Optional[Realm]
-    """We only return a realm if there is a unique non-system-only realm,
-    it is completely open, and there are no subdomains."""
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        return None
-    realms = Realm.objects.filter(deactivated=False)
-    # On production installations, the (usually "zulip.com") system
-    # realm is an empty realm just used for system bots, so don't
-    # include it in this accounting.
-    realms = realms.exclude(domain__in=settings.SYSTEM_ONLY_REALMS)
-    if len(realms) != 1:
-        return None
-    realm = realms[0]
-    if realm.invite_required or realm.restricted_to_domain:
-        return None
-    return realm
-
 def get_realm_emoji_cache_key(realm):
     # type: (Realm) -> text_type
     return u'realm_emoji:%s' % (realm.id,)
-
-def name_changes_disabled(realm):
-    # type: (Optional[Realm]) -> bool
-    if realm is None:
-        return settings.NAME_CHANGES_DISABLED
-    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class Realm(ModelReprMixin, models.Model):
     # domain is a domain in the Internet sense. It must be structured like a
@@ -271,6 +237,60 @@ class Realm(ModelReprMixin, models.Model):
 
 post_save.connect(flush_realm, sender=Realm)
 
+def get_realm(domain):
+    # type: (text_type) -> Optional[Realm]
+    if not domain:
+        return None
+    try:
+        return Realm.objects.get(domain__iexact=domain.strip())
+    except Realm.DoesNotExist:
+        return None
+
+# Added to assist with the domain to string_id transition. Will eventually
+# be renamed and replace get_realm.
+def get_realm_by_string_id(string_id):
+    # type: (text_type) -> Optional[Realm]
+    if not string_id:
+        return None
+    try:
+        return Realm.objects.get(string_id=string_id)
+    except Realm.DoesNotExist:
+        return None
+
+def completely_open(domain):
+    # type: (text_type) -> bool
+    # This domain is completely open to everyone on the internet to
+    # join. E-mail addresses do not need to match the domain and
+    # an invite from an existing user is not required.
+    realm = get_realm(domain)
+    if not realm:
+        return False
+    return not realm.invite_required and not realm.restricted_to_domain
+
+def get_unique_open_realm():
+    # type: () -> Optional[Realm]
+    """We only return a realm if there is a unique non-system-only realm,
+    it is completely open, and there are no subdomains."""
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        return None
+    realms = Realm.objects.filter(deactivated=False)
+    # On production installations, the (usually "zulip.com") system
+    # realm is an empty realm just used for system bots, so don't
+    # include it in this accounting.
+    realms = realms.exclude(domain__in=settings.SYSTEM_ONLY_REALMS)
+    if len(realms) != 1:
+        return None
+    realm = realms[0]
+    if realm.invite_required or realm.restricted_to_domain:
+        return None
+    return realm
+
+def name_changes_disabled(realm):
+    # type: (Optional[Realm]) -> bool
+    if realm is None:
+        return settings.NAME_CHANGES_DISABLED
+    return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
+
 class RealmAlias(models.Model):
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
     # should always be stored lowercase
@@ -330,12 +350,6 @@ def alias_for_realm(domain):
 def list_of_domains_for_realm(realm):
     # type: (Realm) -> List[text_type]
     return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
-
-def remote_user_to_email(remote_user):
-    # type: (text_type) -> text_type
-    if settings.SSO_APPEND_DOMAIN is not None:
-        remote_user += "@" + settings.SSO_APPEND_DOMAIN
-    return remote_user
 
 class RealmEmoji(ModelReprMixin, models.Model):
     realm = models.ForeignKey(Realm) # type: Realm
@@ -592,6 +606,12 @@ def receives_online_notifications(user_profile):
     # type: (UserProfile) -> bool
     return (user_profile.enable_online_push_notifications and
             not user_profile.is_bot)
+
+def remote_user_to_email(remote_user):
+    # type: (text_type) -> text_type
+    if settings.SSO_APPEND_DOMAIN is not None:
+        remote_user += "@" + settings.SSO_APPEND_DOMAIN
+    return remote_user
 
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
@@ -1158,26 +1178,6 @@ def get_huddle_backend(huddle_hash, id_list):
                               for user_profile_id in id_list]
             Subscription.objects.bulk_create(subs_to_create)
     return huddle
-
-def get_realm(domain):
-    # type: (text_type) -> Optional[Realm]
-    if not domain:
-        return None
-    try:
-        return Realm.objects.get(domain__iexact=domain.strip())
-    except Realm.DoesNotExist:
-        return None
-
-# Added to assist with the domain to string_id transition. Will eventually
-# be renamed and replace get_realm.
-def get_realm_by_string_id(string_id):
-    # type: (text_type) -> Optional[Realm]
-    if not string_id:
-        return None
-    try:
-        return Realm.objects.get(string_id=string_id)
-    except Realm.DoesNotExist:
-        return None
 
 def clear_database():
     # type: () -> None
