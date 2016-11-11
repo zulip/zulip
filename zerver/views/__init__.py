@@ -20,7 +20,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
-    split_email_to_domain, email_to_username, get_realm, \
+    email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \

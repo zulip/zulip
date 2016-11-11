@@ -41,7 +41,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmAlias, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, \
-    split_email_to_domain, get_realm, get_active_streams, \
+    email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
@@ -754,7 +754,7 @@ def same_realm_zephyr_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = split_email_to_domain(email)
+    domain = email_to_domain(email)
 
     return user_profile.realm.is_zephyr_mirror_realm and \
         RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
@@ -769,7 +769,7 @@ def same_realm_irc_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = split_email_to_domain(email).replace("irc.", "")
+    domain = email_to_domain(email).replace("irc.", "")
 
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
@@ -782,7 +782,7 @@ def same_realm_jabber_user(user_profile, email):
 
     # If your Jabber users have a different email domain than the
     # Zulip users, this is where you would do any translation.
-    domain = split_email_to_domain(email)
+    domain = email_to_domain(email)
 
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 

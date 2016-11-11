@@ -15,7 +15,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import (
-    split_email_to_domain,
+    email_to_domain,
     Client,
     UserActivity,
     UserProfile,
@@ -162,4 +162,4 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
         # We only want @zulip.com emails
         for email in json['presences'].keys():
-            self.assertEqual(split_email_to_domain(email), 'zulip.com')
+            self.assertEqual(email_to_domain(email), 'zulip.com')
