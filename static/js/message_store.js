@@ -340,8 +340,6 @@ exports.update_messages = function update_messages(events) {
 
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
-    activity.process_loaded_messages(messages);
-    activity.update_huddles();
     unread.process_loaded_messages(messages);
     unread.update_unread_counts();
     resize.resize_page_components();
@@ -367,6 +365,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
         notifications.possibly_notify_new_messages_outside_viewport(messages);
     }
 
+    activity.process_loaded_messages(messages);
     exports.do_unread_count_updates(messages);
 
     if (narrow.narrowed_by_reply()) {
@@ -422,6 +421,7 @@ function process_result(messages, opts) {
         exports.add_messages(messages, opts.msg_list, {messages_are_new: false});
     }
 
+    activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     stream_list.update_private_messages();
 
