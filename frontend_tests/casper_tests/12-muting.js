@@ -72,17 +72,17 @@ casper.then(function () {
     casper.test.info('First mute command sent, waiting...');
 });
 
-casper.waitForSelector('.topic_muted', function () {
-        common.expected_messages('zhome', [
-            'Verona > mute test left bracket',
-            'Verona > mute test right bracket'
+casper.then(function () {
+    common.expected_messages('zhome', [
+        'Verona > mute test left bracket',
+        'Verona > mute test right bracket'
     ], [
         '<p>left bracket test message A</p>',
         '<p>right bracket test message C</p>'
     ]);
-    casper.test.info('Message list is correct - unmuting via the button...');
+    casper.test.info('Message list is correct - unmuting via the unmute button...');
     casper.evaluate(function () {
-        var unmute_btn = $('#topic_muted .topic_muted:last .topic_unmute_link');
+        var unmute_btn = $('#unmute_muted_topic_notification #unmute');
         unmute_btn.click();
     });
 });
@@ -102,8 +102,8 @@ common.wait_for_receive(function () {
     casper.test.info('First unmute successful, now unmuting via key bindings...');
 });
 
-casper.thenClick('#stream_filters [data-name="Verona"]  a', function () {
-    casper.thenClick('#stream_filters [data-name="Verona"] ul.expanded_subjects .muted_topic a', function () {
+casper.thenClick('#stream_filters [data-name="Verona"] a.stream-name', function () {
+    casper.thenClick('#stream_filters [data-name="Verona"] ul.topic-list .muted_topic a', function () {
         common.keypress(27); // Escape to deactivate the message edit box
         casper.page.sendEvent('keypress', 'U');
         common.un_narrow();
