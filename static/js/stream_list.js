@@ -34,6 +34,26 @@ function filter_streams_by_search(streams) {
     return filtered_streams;
 }
 
+exports.stream_sidebar = (function () {
+    var self = {};
+
+    self.rows = new Dict(); // stream id -> row widget
+
+    self.set_row = function (stream_id, widget) {
+        self.rows.set(stream_id, widget);
+    };
+
+    self.get_row = function (stream_id) {
+        return self.rows.get(stream_id);
+    };
+
+    self.has_row_for = function (stream_id) {
+        return self.rows.has(stream_id);
+    };
+
+    return self;
+}());
+
 exports.create_initial_sidebar_rows = function () {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
@@ -64,7 +84,8 @@ exports.build_stream_list = function () {
     var elems = [];
 
     function add_sidebar_li(stream) {
-        var sidebar_row = stream_data.get_sub(stream).stream_sidebar_row;
+        var sub = stream_data.get_sub(stream);
+        var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
         if (sort_recent) {
             sidebar_row.update_whether_active();
         }
@@ -228,17 +249,13 @@ function build_stream_sidebar_row(sub) {
         return list_item;
     };
 
-    // TODO: make it so that we don't have to hack UI objects on to
-    //       our subs from stream_data.js; we can keep track of the UI
-    //       objects in this module with a simple Dict
-    sub.stream_sidebar_row = self;
+    exports.stream_sidebar.set_row(sub.stream_id, self);
 }
 
 exports.create_sidebar_row = function (sub) {
-    var stream_name = sub.name;
-
-    if (exports.get_stream_li(stream_name).length) {
+    if (exports.stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
+        blueslip.warn('Dup try to build sidebar row for stream ' + sub.stream_id);
         return;
     }
     build_stream_sidebar_row(sub);

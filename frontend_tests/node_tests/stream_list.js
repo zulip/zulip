@@ -72,7 +72,7 @@ function clear_filters() {
 
     var devel = {
         name: 'devel',
-        stream_id: 1000,
+        stream_id: 100,
         color: 'blue',
         subscribed: true,
         id: 5
@@ -81,7 +81,7 @@ function clear_filters() {
 
     var social = {
         name: 'social',
-        stream_id: 2000,
+        stream_id: 200,
         color: 'green',
         subscribed: true,
         id: 6
@@ -138,6 +138,6 @@ function clear_filters() {
     stream_list.create_sidebar_row(socialSub);
     global.stream_data.add_sub('social', socialSub);
     stream_list.build_stream_list();
-    var li = socialSub.stream_sidebar_row.get_li();
+    var li = stream_list.stream_sidebar.get_row(socialSub.stream_id).get_li();
     assert.equal(li.nextAll().find('[ data-name="devel"]').length, 1);
 }());
