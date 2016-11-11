@@ -65,15 +65,11 @@ exports.build_stream_list = function () {
     var elems = [];
 
     function add_sidebar_li(stream) {
-        var li = $(stream_data.get_sub(stream).sidebar_li);
+        var sidebar_row = stream_data.get_sub(stream).stream_sidebar_row;
         if (sort_recent) {
-            if (stream_data.is_active(stream)) {
-                li.removeClass('inactive_stream');
-            } else {
-                li.addClass('inactive_stream');
-            }
+            sidebar_row.update_whether_active();
         }
-        elems.push(li.get(0));
+        elems.push(sidebar_row.get_li().get(0));
     }
 
     _.each(streams, function (stream) {
@@ -215,8 +211,8 @@ exports.set_in_home_view = function (stream, in_home) {
     }
 };
 
-function build_stream_sidebar_row(name) {
-    var sub = stream_data.get_sub(name);
+function build_stream_sidebar_li(sub) {
+    var name = sub.name;
     var args = {name: name,
                 id: sub.stream_id,
                 uri: narrow.by_stream_uri(name),
@@ -227,8 +223,30 @@ function build_stream_sidebar_row(name) {
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
-    $("#stream_filters").append(list_item);
     return list_item;
+}
+
+function build_stream_sidebar_row(sub) {
+    var self = {};
+    var list_item = build_stream_sidebar_li(sub);
+    var stream_name = sub.name;
+
+    self.update_whether_active = function () {
+        if (stream_data.is_active(stream_name)) {
+            list_item.removeClass('inactive_stream');
+        } else {
+            list_item.addClass('inactive_stream');
+        }
+    };
+
+    self.get_li = function () {
+        return list_item;
+    };
+
+    // TODO: make it so that we don't have to hack UI objects on to
+    //       our subs from stream_data.js; we can keep track of the UI
+    //       objects in this module with a simple Dict
+    sub.stream_sidebar_row = self;
 }
 
 exports.create_sidebar_row = function (sub) {
@@ -238,10 +256,7 @@ exports.create_sidebar_row = function (sub) {
         // already exists
         return;
     }
-    var li = build_stream_sidebar_row(stream_name);
-    if (li) {
-        sub.sidebar_li = li;
-    }
+    build_stream_sidebar_row(sub);
 };
 
 exports.redraw_stream_privacy = function (stream_name) {
@@ -499,14 +514,16 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 exports.rename_stream = function (sub, new_name) {
-    sub.sidebar_li = build_stream_sidebar_row(new_name);
+    // TODO: we don't actually need new_name, since the sub
+    //       will have been updated
+    build_stream_sidebar_row(sub);
     exports.build_stream_list(); // big hammer
 };
 
 exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
-    sub.sidebar_li = build_stream_sidebar_row(sub.name);
+    build_stream_sidebar_row(sub);
     exports.update_streams_sidebar();
 };
 
