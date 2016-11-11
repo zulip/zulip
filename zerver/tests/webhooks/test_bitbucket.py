@@ -21,11 +21,9 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_commits_above_limit_event(self):
         # type: () -> None
-        number_of_hidden_commits = 50 - COMMITS_LIMIT
-        commit_info = '* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit\n'
-        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n{}[and {} more commit(s)]".format(
-            (commit_info * 10),
-            number_of_hidden_commits
+        commit_info = '* [6f161a7](https://bitbucket.org/kolaszek/repository-name/commits/6f161a7bced94430ac8947d87dbf45c6deee3fb0): a\n'
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) to branch master\n\n{}[and more commit(s)]".format(
+            (commit_info * 5),
         )
         self.send_and_test_stream_message('v2_push_commits_above_limit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
