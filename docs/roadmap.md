@@ -7,52 +7,54 @@ Zulip has received a great deal of interest and attention since it was
 released as free and open source software by Dropbox.  That attention
 has come with a lot of active development work from members of the
 Zulip community.  From when Zulip was released as open source in late
-September 2015 through today (early November, 2016), over 1000 pull
-requests have been submitted to the various Zulip repositories (and
-nearly 1000 have been merged!), the vast majority of which are
-submitted by Zulip's users around the world (as opposed to the small
-core team that reviews and merges the pull requests).
+September 2015 through today (early November, 2016), more than 150
+people have contributed over 1000 pull requests to the various Zulip
+repositories, the vast majority of which were submitted by Zulip's
+users around the world (as opposed to the small core team that reviews
+and merges the pull requests).
 
 In any project, there can be a lot of value in periodically putting
 together a roadmap detailing the major areas where the project is
 hoping to improve.  This can be especially important in an open source
-project like Zulip where development is distributed across many people
+project like Zulip, where development is distributed across many people
 around the world.  This roadmap is intended to organize a list of the
 most important improvements that should be made to Zulip in the
 relatively near future.  Our aim is to complete most of these
-improvements in 2016.
+improvements by February 2017 and then prepare a new roadmap then.
 
 This document is not meant to constrain in any way what contributions
 to Zulip will be accepted; instead, it will be used by the Zulip core
 team to prioritize our efforts, measure progress on improving the
-Zulip product, hold ourselves accountable for making Zulip improve
-rapidly, and celebrate members of the community who contribute to
-projects on the roadmap.
+Zulip product and hold ourselves accountable for making Zulip improve
+rapidly.
 
-If you're someone interested in making a larger contribution to Zulip
-and looking for somewhere to start, this roadmap is the best place to
-look for substantial projects that will definitely be of value to the
-community (if you're looking for a starter project, see the [guide to
-getting involved with
-Zulip](https://github.com/zulip/zulip#how-to-get-involved-with-contributing-to-zulip)).
+This roadmap is the best place for contributors to look for
+substantial projects that will definitely be of value to the community
+(if you're looking for a starter project, see the
+[guide to getting involved with Zulip](https://github.com/zulip/zulip#how-to-get-involved-with-contributing-to-zulip)).
 
-We occasionally update this roadmap by adding strikethrough for issues
-that have been resolved.
+We periodically update this roadmap by adding strikethrough to issues
+that have been resolved, but the linked GitHub issues are the most
+up-to-date source for that information.
 
-Without further ado, below is the Zulip roadmap for late 2016.
+Without further ado, below is the current Zulip roadmap.
 
-## Burning problems
+## Major projects
 
-The top problem for the Zulip project is the state of the mobile apps.
-The Android app has started seeing rapid progress thanks to a series
-of contributions by Lisa Neigut of Recurse Center, and we believe it
-is on a good path.  The iOS app has fewer features than Android and
-has more bugs, but more importantly is in need of an experienced iOS
-developer who has time to drive the project.
+There are 2 huge projects that Zulip is working on right now that are
+too big to have a coherent GitHub issue:
 
-Update: Neeraj Wahi is leading an effort to write a [new React Native
-iOS app for Zulip](https://github.com/zulip/zulip-mobile) to replace
-the old iOS app. We aim to have this launched by early January 2017.
+* We are working with a world-class designer on a major visual
+redesign of the Zulip webapp.  This will dramatically improve the
+usability of the streams and settings UIs, and make the entire webapp
+feel like a modern web experience.  We plan to make the first release
+containing this redesign Zulip 2.0, likely in early 2017.
+
+* We are writing a
+[new React Native iOS app for Zulip](https://github.com/zulip/zulip-mobile)
+to replace the old iOS app.  The new app is progressing rapidly, but
+is not yet feature complete.  We expect it to be in the app store by
+the end of 2016.
 
 ## Core User Experience
 
@@ -266,4 +268,3 @@ but they are important goals for the project.
 * Expand the number of core developers able to do code reviews
 * Have a successful season with Zulip's Outreachy participants
 * Have a successful season with Google Code In.
-
