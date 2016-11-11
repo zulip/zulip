@@ -286,10 +286,6 @@ exports.get_stream_li = function (stream_name) {
     return get_filter_li('stream', stream_name);
 };
 
-exports.get_count = function (type, name) {
-    return get_filter_li(type, name).find('.count .value').text();
-};
-
 function update_count_in_dom(count_span, value_span, count) {
     if (count === 0) {
         count_span.hide();
