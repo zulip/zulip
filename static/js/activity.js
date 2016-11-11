@@ -64,6 +64,8 @@ exports.process_loaded_messages = function (messages) {
             }
         }
     });
+
+    exports.update_huddles();
 };
 
 exports.get_huddles = function () {

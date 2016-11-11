@@ -341,7 +341,6 @@ exports.update_messages = function update_messages(events) {
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     activity.process_loaded_messages(messages);
-    activity.update_huddles();
     unread.process_loaded_messages(messages);
     unread.update_unread_counts();
     resize.resize_page_components();
