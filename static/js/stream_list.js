@@ -51,6 +51,16 @@ exports.stream_sidebar = (function () {
         return self.rows.has(stream_id);
     };
 
+    self.remove_row = function (stream_id) {
+        var widget = self.rows.get(stream_id);
+        if (!widget) {
+            blueslip.warn('Cannot remove stream id ' + stream_id);
+            return;
+        }
+        widget.remove();
+        self.rows.del(stream_id);
+    };
+
     return self;
 }());
 
@@ -249,6 +259,10 @@ function build_stream_sidebar_row(sub) {
         return list_item;
     };
 
+    self.remove = function () {
+        list_item.remove();
+    };
+
     exports.stream_sidebar.set_row(sub.stream_id, self);
 }
 
@@ -346,10 +360,6 @@ exports.set_pm_conversation_count = function (conversation, count) {
 
     count_span.removeClass("zero_count");
     update_count_in_dom(count_span, value_span, count);
-};
-
-exports.remove_narrow_filter = function (name, type) {
-    get_filter_li(type, name).remove();
 };
 
 function rebuild_recent_topics(stream) {
@@ -510,8 +520,7 @@ $(function () {
     });
 
     $(document).on('subscription_remove_done.zulip', function (event) {
-        var stream_name = event.sub.name;
-        exports.remove_narrow_filter(stream_name, 'stream');
+        exports.stream_sidebar.remove_row(event.sub.stream_id);
         // We need to make sure we resort if the removed sub gets added again
         previous_sort_order = undefined;
         previous_unpinned_order = undefined;
