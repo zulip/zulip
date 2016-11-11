@@ -53,6 +53,8 @@ var huddle_timestamps = new Dict();
 
 
 exports.process_loaded_messages = function (messages) {
+    var need_resize = false;
+
     _.each(messages, function (message) {
         if (message.type === 'private') {
             if (message.reply_to.indexOf(',') > 0) {
@@ -60,12 +62,17 @@ exports.process_loaded_messages = function (messages) {
 
                 if (!old_timestamp || (old_timestamp < message.timestamp)) {
                     huddle_timestamps.set(message.reply_to, message.timestamp);
+                    need_resize = true;
                 }
             }
         }
     });
 
     exports.update_huddles();
+
+    if (need_resize) {
+        resize.resize_page_components(); // big hammer
+    }
 };
 
 exports.get_huddles = function () {
@@ -279,17 +286,23 @@ function actually_update_users_for_search() {
 
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
+function show_huddles () {
+    $('#group-pm-list').expectOne().show();
+}
+
+function hide_huddles () {
+    $('#group-pm-list').expectOne().hide();
+}
+
 exports.update_huddles = function () {
     if (page_params.presence_disabled) {
         return;
     }
 
-    var section = $('#group-pm-list').expectOne();
-
     var huddles = exports.get_huddles().slice(0, 10);
 
     if (huddles.length === 0) {
-        section.hide();
+        hide_huddles();
         return;
     }
 
@@ -310,7 +323,7 @@ exports.update_huddles = function () {
         stream_list.set_presence_list_count(huddle, count);
     });
 
-    section.show();
+    show_huddles();
 };
 
 function status_from_timestamp(baseline_time, presence) {

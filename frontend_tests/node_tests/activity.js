@@ -9,6 +9,10 @@ add_dependencies({
     people: 'js/people.js'
 });
 
+set_global('resize', {
+    resize_page_components: function () {}
+});
+
 set_global('document', {
     hasFocus: function () {
         return true;
