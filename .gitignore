@@ -25,3 +25,4 @@ npm-debug.log
 *.mo
 var/*
 api/zulip.egg-info/*
+.vscode/
