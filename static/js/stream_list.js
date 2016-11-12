@@ -155,12 +155,6 @@ function get_filter_li(type, name) {
     if (type === 'stream') {
         var sub = stream_data.get_sub(name);
         return $("#stream_sidebar_" + sub.stream_id);
-    } else if (type === "private") {
-        if (name.indexOf(",") < 0) {
-            return $("li.user_sidebar_entry[data-email='" + name + "']");
-        } else {
-            return $("li.group-pms-sidebar-entry[data-emails='" + name + "']");
-        }
     }
     return iterate_to_find("#" + type + "_filters > li", name);
 }
