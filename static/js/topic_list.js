@@ -16,13 +16,25 @@ exports.remove_expanded_topics = function () {
     }
 };
 
-function update_count_in_dom(count_span, value_span, count) {
+function update_unread_count(unread_count_elem, count) {
+    // unread_count_elem is a jquery element...we expect DOM
+    // to look like this:
+    //   <div class="subject_count {{#if is_zero}}zero_count{{/if}}">
+    //        <div class="value">{{unread}}</div>
+    //   </div>
+    var value_span = unread_count_elem.find('.value');
+
+    if (value_span.length === 0) {
+        blueslip.error('malformed dom for unread count');
+        return;
+    }
+
     if (count === 0) {
-        count_span.hide();
+        unread_count_elem.hide();
         value_span.text('');
     } else {
-        count_span.removeClass("zero_count");
-        count_span.show();
+        unread_count_elem.removeClass("zero_count");
+        unread_count_elem.show();
         value_span.text(count);
     }
 }
@@ -117,15 +129,9 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
             return;
         }
         var topic_li = self.topic_items.get(topic);
+        var unread_count_elem = topic_li.find('.subject_count').expectOne();
 
-        var count_span = topic_li.find('.subject_count');
-        var value_span = count_span.find('.value');
-
-        if (count_span.length === 0 || value_span.length === 0) {
-            return;
-        }
-
-        update_count_in_dom(count_span, value_span, count);
+        update_unread_count(unread_count_elem, count);
     };
 
     self.activate_topic = function (active_topic) {
