@@ -19,7 +19,7 @@ exports.remove_expanded_topics = function () {
 function update_unread_count(unread_count_elem, count) {
     // unread_count_elem is a jquery element...we expect DOM
     // to look like this:
-    //   <div class="subject_count {{#if is_zero}}zero_count{{/if}}">
+    //   <div class="topic-unread-count {{#if is_zero}}zero_count{{/if}}">
     //        <div class="value">{{unread}}</div>
     //   </div>
     var value_span = unread_count_elem.find('.value');
@@ -129,7 +129,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
             return;
         }
         var topic_li = self.topic_items.get(topic);
-        var unread_count_elem = topic_li.find('.subject_count').expectOne();
+        var unread_count_elem = topic_li.find('.topic-unread-count').expectOne();
 
         update_unread_count(unread_count_elem, count);
     };
