@@ -1046,7 +1046,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
-            u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
+            u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),
             '_end')
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
