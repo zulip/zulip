@@ -148,7 +148,7 @@ li.hidden-filter {
     text-overflow: ellipsis;
 }
 
-.subject_count {
+.topic-unread-count {
     display: block;
     position: absolute;
     line-height: 1em;
