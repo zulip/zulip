@@ -253,6 +253,12 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "miscellaneous_and_dingbats_emoji",
+      "input": "\u2693\u2797",
+      "expected_output":"<p><img alt=\"\u2693\" class=\"emoji\" src=\"\/static\/third\/gemoji\/images\/emoji\/unicode\/2693.png\" title=\"\u2693\"><img alt=\"\u2797\" class=\"emoji\" src=\"\/static\/third\/gemoji\/images\/emoji\/unicode\/2797.png\" title=\"\u2797\"><\/p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
       "expected_output": "<p><img alt=\":smile:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/smile.png\" title=\":smile:\">, <img alt=\":smile:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/smile.png\" title=\":smile:\">; <img alt=\":smile:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/smile.png\" title=\":smile:\"></p>",
