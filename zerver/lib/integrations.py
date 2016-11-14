@@ -90,6 +90,15 @@ class HubotLozenge(Integration):
         self.git_url = git_url
         super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
 
+class GithubIntegration(WebhookIntegration):
+    """
+    We need this class to don't creating url object for git integrations.
+    We want to have one generic url with dispatch function for github service and github webhook.
+    """
+    @property
+    def url_object(self):
+        # type: () -> None
+        return
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake'),
@@ -101,16 +110,15 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('crashlytics'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
-    WebhookIntegration(
+    GithubIntegration(
         'github',
         function='zerver.views.webhooks.github.api_github_landing',
         display_name='GitHub',
         secondary_line_text='(deprecated)'
     ),
-    WebhookIntegration(
+    GithubIntegration(
         'github_webhook',
         display_name='GitHub',
-        url='api/v1/external/webhook_github',
         logo='static/images/integrations/logos/github.png',
         secondary_line_text='(webhook)',
         function='zerver.views.webhooks.github_webhook.api_github_webhook'
