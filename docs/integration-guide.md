@@ -84,6 +84,13 @@ products, ordered here by which types we prefer to write:
 
 ## Webhook integrations
 
+A webhook allows a third-party service to push data to you when something
+happens. It's different from making a REST API call, where you send a request
+to the service's API and wait for a response. With a webhook, the third-party
+service sends you an HTTP POST when it has something for you. Your webhook
+integration defines the URI the service uses to communicate with Zulip, and
+handles that incoming data.
+
 New Zulip webhook integrations can take just a few hours to write,
 including tests and documentation, if you use the right process.
 Here's how we recommend doing it:
