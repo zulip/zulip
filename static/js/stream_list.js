@@ -3,8 +3,6 @@ var stream_list = (function () {
 var exports = {};
 
 var zoomed_stream = '';
-var last_private_message_count = 0;
-var last_mention_count = 0;
 var previous_sort_order;
 var previous_unpinned_order;
 
@@ -318,34 +316,6 @@ function set_count(type, name, count) {
     update_count_in_dom(count_span, value_span, count);
 }
 
-function set_count_toggle_button(elem, count) {
-    if (count === 0) {
-        if (elem.is(':animated')) {
-            return elem.stop(true, true).hide();
-        }
-        return elem.hide(500);
-    } else if ((count > 0) && (count < 1000)) {
-        elem.show(500);
-        return elem.text(count);
-    } else {
-        elem.show(500);
-        return elem.text("1k+");
-    }
-}
-
-exports.set_pm_conversation_count = function (conversation, count) {
-    var pm_li = pm_list.get_private_message_filter_li(conversation);
-    var count_span = pm_li.find('.private_message_count');
-    var value_span = count_span.find('.value');
-
-    if (count_span.length === 0 || value_span.length === 0) {
-        return;
-    }
-
-    count_span.removeClass("zero_count");
-    update_count_in_dom(count_span, value_span, count);
-};
-
 function rebuild_recent_topics(stream) {
     // TODO: Call rebuild_recent_topics less, not on every new
     // message.
@@ -368,38 +338,13 @@ exports.update_streams_sidebar = function () {
     }
 };
 
-function do_new_messages_animation(message_type) {
-    var li = get_filter_li("global", message_type);
-    li.addClass("new_messages");
-    function mid_animation() {
-        li.removeClass("new_messages");
-        li.addClass("new_messages_fadeout");
-    }
-    function end_animation() {
-        li.removeClass("new_messages_fadeout");
-    }
-    setTimeout(mid_animation, 3000);
-    setTimeout(end_animation, 6000);
-}
-
-function animate_private_message_changes(new_private_message_count) {
-    if (new_private_message_count > last_private_message_count) {
-        do_new_messages_animation('private');
-    }
-    last_private_message_count = new_private_message_count;
-}
-
-function animate_mention_changes(new_mention_count) {
-    if (new_mention_count > last_mention_count) {
-        do_new_messages_animation('mentioned');
-    }
-    last_mention_count = new_mention_count;
-}
-
-
 exports.update_dom_with_unread_counts = function (counts) {
-    // counts is just a data object that gets calculated elsewhere
-    // Our job is to update some DOM elements.
+    // We currently handle these message categories:
+    //    home, starred, mentioned, streams, and topics
+    //
+    // Note that similar methods elsewhere in the code update
+    // the "Private Message" section in the upper left corner
+    // and the buddy lists in the right sidebar.
 
     // counts.stream_count maps streams to counts
     counts.stream_count.each(function (count, stream) {
@@ -413,20 +358,15 @@ exports.update_dom_with_unread_counts = function (counts) {
         });
     });
 
-    counts.pm_count.each(function (count, person) {
-        exports.set_pm_conversation_count(person, count);
-    });
-
     // integer counts
-    set_count("global", "private", counts.private_message_count);
     set_count("global", "mentioned", counts.mentioned_message_count);
     set_count("global", "home", counts.home_unread_messages);
 
-    set_count_toggle_button($("#streamlist-toggle-unreadcount"), counts.home_unread_messages);
-    set_count_toggle_button($("#userlist-toggle-unreadcount"), counts.private_message_count);
+    unread_ui.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
+                                      counts.home_unread_messages);
 
-    animate_private_message_changes(counts.private_message_count);
-    animate_mention_changes(counts.mentioned_message_count);
+    unread_ui.animate_mention_changes(get_filter_li('global', 'mentioned'),
+                                      counts.mentioned_message_count);
 };
 
 exports.rename_stream = function (sub, new_name) {

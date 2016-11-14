@@ -188,6 +188,7 @@ exports.update_unread_counts = function () {
     // avoid excessive calls to this.
     activity.update_dom_with_unread_counts(res);
     stream_list.update_dom_with_unread_counts(res);
+    pm_list.update_dom_with_unread_counts(res);
     notifications.update_title_count(res.home_unread_messages);
     notifications.update_pm_count(res.private_message_count);
 };

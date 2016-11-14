@@ -765,6 +765,7 @@ JS_SPECS = {
             'js/localstorage.js',
             'js/channel.js',
             'js/setup.js',
+            'js/unread_ui.js',
             'js/muting.js',
             'js/muting_ui.js',
             'js/viewport.js',
