@@ -73,14 +73,21 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
         var filtered_users = {};
 
         var matchers = _.map(search_terms, function (search_term) {
+            var termlets = search_term.toLowerCase().split(/\s+/);
+            termlets = _.map(termlets, function (termlet) {
+                return termlet.trim();
+            });
+
             return function (email, names) {
                 if (email.indexOf(search_term.trim()) === 0) {
                     return true;
                 }
-                return _.any(names, function (name) {
-                    if (name.indexOf(search_term.trim()) === 0) {
-                        return true;
-                    }
+                return _.all(termlets, function (termlet) {
+                    return _.any(names, function (name) {
+                        if (name.indexOf(termlet) === 0) {
+                            return true;
+                        }
+                    });
                 });
             };
         });

@@ -217,6 +217,11 @@ var _ = global._;
     assert.equal(_.keys(filtered_people).length, 1);
     assert(_.has(filtered_people, 'ltorvalds@example.com'));
 
+    filtered_people = people.filter_people_by_search_terms(users, ['ch di', 'maria']);
+    assert.equal(_.keys(filtered_people).length, 2);
+    assert(_.has(filtered_people, 'charles@example.com'));
+    assert(_.has(filtered_people, 'athens@example.com'));
+
     people.remove(charles);
     people.remove(maria);
     people.remove(ashton);
