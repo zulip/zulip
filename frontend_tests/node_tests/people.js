@@ -187,10 +187,17 @@ var _ = global._;
         user_id: 303,
         full_name: 'Ashton Smith'
     };
+    var linus = {
+        email: 'ltorvalds@example.com',
+        user_id: 304,
+        full_name: 'Linus Torvalds'
+    };
 
     people.add_in_realm(charles);
     people.add_in_realm(maria);
     people.add_in_realm(ashton);
+    people.add_in_realm(linus);
+
     var search_term = 'a';
     var users = people.get_rest_of_realm();
     var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
@@ -206,7 +213,12 @@ var _ = global._;
     filtered_people = people.filter_people_by_search_terms(users, []);
     assert(_.isEmpty(filtered_people));
 
+    filtered_people = people.filter_people_by_search_terms(users, ['ltorv']);
+    assert.equal(_.keys(filtered_people).length, 1);
+    assert(_.has(filtered_people, 'ltorvalds@example.com'));
+
     people.remove(charles);
     people.remove(maria);
     people.remove(ashton);
+    people.remove(linus);
 }());
