@@ -414,7 +414,12 @@ re-provision your vagrant machine using `vagrant provision`
 guest); this should be pretty fast and we're working to make it faster.
 After `vagrant up` has finished,get connected to the vagrant environment using 
 `vagrant ssh` as done before.This will get you inside the Zulip dev Environment.
-Next,start Zulip server using `/srv/zulip/tools/run-dev.py`.
+Next,start Zulip server using `/srv/zulip/tools/run-dev.py` and execute Django's 
+command line utilities as 
+
+```
+/srv/zulip/
+```
 Reconnect to the local host as your Zulip server is running and accessible now.
 See also the documentation on the [testing
 page](http://zulip.readthedocs.io/en/latest/testing.html#manual-testing-local-app-web-browser)
