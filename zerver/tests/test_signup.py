@@ -187,6 +187,26 @@ class PasswordResetTest(ZulipTestCase):
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
 
+    def test_redirect_endpoints(self):
+        # type: () -> None
+        '''
+        These tests are mostly designed to give us 100% URL coverage
+        in our URL coverage reports.  Our mechanism for finding URL
+        coverage doesn't handle redirects, so we just have a few quick
+        tests here.
+        '''
+        result = self.client_get('/accounts/password/reset/done/')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Check your email', result.content.decode("utf-8"))
+
+        result = self.client_get('/accounts/password/done/')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("We've reset your password!", result.content.decode("utf-8"))
+
+        result = self.client_get('/accounts/send_confirm/alice@example.com')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("Still no email?", result.content.decode("utf-8"))
+
 class LoginTest(ZulipTestCase):
     """
     Logging in, registration, and logging out.
