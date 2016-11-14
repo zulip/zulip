@@ -29,6 +29,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.core.validators import MinLengthValidator, RegexValidator
 from django.utils.translation import ugettext_lazy as _
+from zerver.lib import cache
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -750,10 +751,13 @@ class Client(ModelReprMixin, models.Model):
 get_client_cache = {} # type: Dict[text_type, Client]
 def get_client(name):
     # type: (text_type) -> Client
-    if name not in get_client_cache:
+    # Accessing KEY_PREFIX through the module is necessary
+    # because we need the updated value of the variable.
+    cache_name = cache.KEY_PREFIX + name
+    if cache_name not in get_client_cache:
         result = get_client_remote_cache(name)
-        get_client_cache[name] = result
-    return get_client_cache[name]
+        get_client_cache[cache_name] = result
+    return get_client_cache[cache_name]
 
 def get_client_cache_key(name):
     # type: (text_type) -> text_type
