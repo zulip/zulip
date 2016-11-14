@@ -1,0 +1,208 @@
+a.style-guide {
+    color: #24cac2;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+a.style-guide:hover {
+    text-decoration: underline;
+}
+
+h1.style-guide, h2.style-guide {
+    transition: all 0.2s ease;
+}
+
+label.style-guide {
+    font-weight: 600;
+    margin: 0;
+}
+
+label.style-guide.checkbox {
+    padding: 0px;
+    display: inline-block;
+}
+
+label.style-guide.checkbox span {
+    transition: all 0.2s ease;
+}
+
+label.style-guide.checkbox.square span {
+    border-radius: 4px !important;
+}
+
+label.style-guide.checkbox input[type=checkbox] {
+    display: none;
+}
+
+label.style-guide.checkbox input[type=checkbox] ~ span {
+    display: inline-block;
+    vertical-align: middle;
+
+    padding: 1px;
+    margin: 0px 10px 0px 0px;
+    height: 20px;
+    width: 20px;
+
+    font-weight: 300;
+    line-height: 0.85;
+    font-size: 1.4rem;
+    text-align: center;
+    background-color: #24cac2;
+    color: #fff;
+
+    border-radius: 20px;
+
+    cursor: pointer;
+}
+
+label.style-guide.checkbox input[type=checkbox] ~ span {
+    background-image: url(../assets/uncheckbox.png);
+
+    background-size: 70%;
+    background-position: 40% 50%;
+    background-repeat: no-repeat;
+}
+
+label.style-guide.checkbox.unchecked-danger input[type=checkbox] ~ span {
+    background-color: #b54b4b;
+}
+
+label.style-guide.checkbox.unchecked-danger input[type=checkbox]:checked ~ span {
+    background-color: #24cac2;
+}
+
+label.style-guide.checkbox input[type=checkbox]:checked ~ span {
+    background-image: url(../assets/checkbox.png);
+    color: transparent;
+}
+
+button.style-guide, input.style-guide {
+    font-family: "Circular", "Yantramanav", "Helvetica Neue", sans-serif;
+
+    color: #444349;
+}
+
+input.style-guide, select.style-guide {
+    width: 250px;
+    background-color: #fafafa;
+
+    font-size: 1rem;
+    font-weight: 400;
+
+    padding: 5px;
+
+    border: 1px solid #CCC;
+    border-radius: 4px;
+    outline: none;
+
+    transition: all 0.2s ease;
+}
+
+select.style-guide {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    background-image: url(../assets/arrows.png);
+    background-size: auto 60%;
+    background-position: 99% 50%;
+    background-repeat: no-repeat;
+}
+
+input.style-guide:focus,
+select.style-guide:focus {
+    border: 1px solid #888;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+}
+
+input.style-guide.dark,
+select.style-guide.dark {
+    background-color: #444349;
+    border: 1px solid #444349;
+
+    color: #fafafa;
+}
+
+select.style-guide.dark {
+    background-image: url(../assets/arrows-white.png);
+}
+
+.style-guide.no-margin {
+    margin: 0;
+}
+
+.style-guide.no-margin-bottom {
+    margin-bottom: 0;
+}
+
+.style-guide.normal {
+    font-weight: 400;
+}
+
+.style-guide.bold {
+    font-weight: 600;
+}
+/* selector: h1, h2, li */
+
+.style-guide.button {
+    padding: 6px 20px;
+
+    font-size: 1.1em;
+    font-weight: 400;
+
+    border: 2px solid #444349;
+    border-radius: 2px;
+    outline: none;
+    background-color: transparent;
+
+    transition: all 0.1s ease;
+    cursor: pointer;
+}
+
+.style-guide.button:focus {
+    box-shadow: 0px 0px 5px #27b2e0;
+}
+
+.style-guide.button.small {
+    font-size: 0.9rem;
+    padding: 0px 4px;
+}
+
+.style-guide.button.rounded {
+    border-radius: 4px;
+}
+
+.style-guide.button.black,
+.style-guide.button.black:hover {
+    background-color: #444349;
+    border: 2px solid #444349;
+    color: #fff;
+}
+
+.style-guide.button.dark-grey,
+.style-guide.button.dark-grey:hover {
+    background-color: #888;
+    border: 2px solid #888;
+}
+
+.style-guide.button:hover {
+    background-color: #444349;
+    color: #FFF;
+}
+
+.style-guide.button.sea-green.solid {
+    background-color: #24cac2;
+    color: #fff;
+}
+
+.style-guide.button.sea-green {
+    color: #24cac2;
+
+    border: 2px solid #24cac2;
+}
+
+.style-guide.button.sea-green:hover {
+    color: #fff;
+    background-color: #24cac2;
+}

@@ -1,0 +1,112 @@
+<div b-template="font-block" class="component font-block">
+  <div class="title-block">
+    <span class="font-block-color arrow">Font</span>
+    <span b-prop="title" class="font-block-color lighter arrow"></span>
+    <span class="dark-grey">
+      <span b-prop="family"></span>
+      <span b-prop="weight"></span>
+    </span>
+  </div>
+
+  <div class="section sides">
+    <div class="section">
+      <span b-prop="fragment" contenteditable="true"></span>
+    </div>
+
+    <div class="section hidden dark-grey alphabet">
+      <span b-prop="alphabet"></span>
+    </div>
+
+    <button b-prop="show-more" class="style-guide button small black rounded">Show More</button>
+  </div>
+</div>
+
+<div b-template="component-block" class="component">
+  <div class="title-block">
+    <span class="component-block-color arrow">Component</span>
+    <span b-prop="title"></span>
+  </div>
+
+  <div class="section sides">
+    <div class="left-side">
+      <div class="section">
+        <div class="title">Preview</div>
+        <div b-prop="preview" class="preview box-shadow faint"></div>
+      </div>
+
+      <div class="section">
+        <div class="title">Markup</div>
+        <pre b-prop="code" class="html box-shadow faint"></pre>
+        <!--
+        <a b-prop="copy-button" class="style-guide block">Copy</a>
+        -->
+      </div>
+
+      <div class="section">
+        <div class="title">Classes</div>
+        <div b-prop="class-list" class="class-list"></div>
+      </div>
+    </div>
+
+    <div class="right-side">
+      <div class="section">
+        <div class="title">Set Properties</div>
+        <div b-prop="set-props" class="set-props-table box-shadow faint"></div>
+      </div>
+
+      <div class="section">
+        <div class="title">Description</div>
+        <div b-prop="description" class="description"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div b-template="color-block" class="component color-block" data-name="color_palette">
+  <div class="title-block">
+    <span class="color-block-color arrow">Color Palette</span>
+    <span b-prop="title"></span>
+  </div>
+  <div class="section sides" b-prop="body">
+
+  </div>
+</div>
+
+<div b-template="color-group" class="color-group">
+  <div b-prop="title" class="title"></div>
+  <hr>
+  <div b-prop="content" class="content"></div>
+</div>
+
+<div b-template="ind-color" class="ind-color box-shadow faint">
+  <div b-prop="swatch" class="swatch inline-block"></div>
+  <div class="inline-block right color-info">
+    <div b-prop="name" class="name"></div>
+    <button b-prop="color" class="style-guide button small black color inline-block"></button>
+  </div>
+</div>
+
+<button b-template="ind-class" class="style-guide button small black rounded ind-class">
+  <span b-prop="name"></span>
+</button>
+
+<div b-template="sidebar-group" class="sidebar-group">
+  <h1 b-prop="title" class="style-guide white light no-margin sidebar-group-title"></h1>
+  <div b-prop="list" class="list"></div>
+</div>
+
+<div b-template="ind-sidebar-component" class="ind-sidebar-component">
+  <span class="component-block-color arrow"></span>
+  <span b-prop="title" class="white"></span>
+</div>
+
+<div b-template="ind-sidebar-font" class="ind-sidebar-component">
+  <span class="font-block-color arrow"></span>
+  <span b-prop="name" class="font-block-color arrow lighter"></span>
+  <span b-prop="style" class="white"></span>
+</div>
+
+<div b-template="ind-sidebar-color" class="ind-sidebar-component">
+  <span class="color-block-color arrow"></span>
+  <span class="white">Main</span>
+</div>

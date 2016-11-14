@@ -1,0 +1,538 @@
+* {  
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@font-face {
+    font-family: "Circular";
+    font-weight: 400;
+    src: url("fonts/Circular-Book.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Circular";
+    font-weight: 600;
+    src: url("fonts/Circular-Bold.woff2") format("woff2");
+}
+
+#main {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-scrolling: touch;
+}
+
+nav {
+    position: fixed;
+    padding: 20px 0px 20px 25px;
+    color: #fff;
+
+    cursor: pointer;
+}
+
+nav * {
+    vertical-align: top;
+}
+
+nav .logo {
+    width: 30px;
+  -webkit-filter: saturate(0) contrast(1.2);
+}
+
+nav .header {
+    display: inline-block;
+    padding: 5px 0px 0px 10px;
+}
+
+body {
+    margin: 0;
+    color: #444349;
+
+    font-family: "Circular", sans-serif;
+
+    background-image: url(../assets/stardust-blue.png);
+    background-attachment: fixed;
+
+    transition-property: background-position;
+    transition-duration: 0.1s;
+
+    background-color: #3e414e;
+}
+
+#main {
+    display: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+#sidebar {
+    position: fixed;
+    top: 60px;
+    width: calc(260px);
+    height: calc(100vh - 70px);
+    padding: 0px 20px;
+    
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+
+    z-index: 2;
+}
+
+#sidebar .sidebar-group-title {
+    font-size: 1.5rem;
+    margin-left: 5px;
+    margin: 30px 0px 10px 5px;
+    font-weight: 400;
+}
+
+#sidebar .ind-sidebar-component {
+    padding: 5px 5px;
+    margin: 5px 0px;
+    border-radius: 4px;
+
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+#sidebar .ind-sidebar-component .arrow {
+    margin-right: 5px;
+    color: #fff !important;
+}
+
+#sidebar .ind-sidebar-component:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+#sidebar .ind-sidebar-component.selected {
+    background-color: rgba(255,255,255,0.8);
+}
+
+#sidebar .ind-sidebar-component.selected span {
+    color: #444349;
+}
+
+.title {
+    font-weight: 400;
+    font-size: 1.3rem;
+
+    margin-bottom: 10px;
+}
+
+.white {
+    color: #fff;
+}
+
+.dark-grey {
+    color: #888;
+}
+
+.arrow {  
+    color: #fff;
+    border-radius: 20px;
+    padding: 0px 10px;
+}
+
+.component .arrow {
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.component-block-color {
+    background-color: #bd4a65;
+}
+
+Hotkey Second Download Fix. 
+
+This fixed additional downloads of a downloaded photo by following the
+keypress pattern of “Download” -> Esc -> Enter -> Enter -> … where each
+enter downloads the photo again.
+
+It is necessary to blur the focus on the link when closing the overlay
+to prevent this.
+
+
+Hotkey Fix
+
+ There is an issue where the unnarrow on escape was firing  before the
+overlay would escape. This shouldn’t happen because then when you try
+to close out the overlay you also lose your spot on the page.
+
+By changing the order, all is restored with the world.
+
+.component-block-color.lighter {
+    background-color: #dc788f;
+}
+
+.font-block-color {
+    background-color: #e6c377;
+}
+
+.font-block-color.lighter {
+    background-color: #6c7279;
+}
+
+.color-block-color {
+    background-color: #64b779;
+}
+
+.component {
+    margin: 20px 0px 20px 300px;
+    width: calc(100vw - 340px);
+
+    background-color: #f0f0f0;
+    border-bottom: 1px solid transparent;
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.2);
+}
+
+.component .title-block {
+    padding: 20px;
+
+    font-size: 1.2rem;
+    font-weight: 400;
+    background-color: #fff;
+}
+
+.title-block .arrow {
+  color: transparent;
+  white-space: nowrap;
+  
+  border-radius: 20px;
+  padding: 2px 12px;
+  font-size: 1rem;
+  max-width: 0px;
+  
+  display: inline-block;
+  transition: all 0.5s ease;
+}
+
+.component .arrow {
+  position: relative;
+  top: -2px;
+}
+
+.component:hover .arrow {
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: #fff;
+  max-width: 100px;
+}
+
+.component .section {
+    margin: 20px 0px;
+}
+
+.component .section.sides {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.component .left-side,
+.component .right-side {
+    width: calc(50% - 40px);
+    vertical-align: top;
+    display: inline-block;
+}
+
+.component .left-side {
+    width: 50%;
+    min-width: 400px;
+}
+
+.component .right-side {
+  /* 100% - 520px - 5px (mystery) - 20px (padding) */
+    min-width: 300px;
+    padding-left: 10px;
+}
+
+.component pre,
+.component .preview {
+    min-width: 0px;
+    width: calc(100% - 20px) !important;
+    height: auto !important;
+    overflow: auto !important;
+    padding: 10px !important;
+}
+
+.component pre {
+    font-family: "Menlo", monospace;
+    font-size: 0.7rem;
+
+    background-color: #fff;
+
+    margin-bottom: 0px;
+
+    border-radius: 4px;
+}
+
+.component .preview {
+    background-color: #fff !important;
+    border-radius: 4px !important;
+}
+
+.component .class-list .ind-class {
+    margin-right: 5px;
+}
+
+.component .description,
+.component .class-list {
+    color: #888;
+}
+
+.component .description {
+    max-height: 230px;
+    padding: 0px;
+
+    overflow: auto;
+}
+
+.component .set-props-table {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+.color-block .ind-color {
+    display: inline-block;
+    width: 290px;
+    padding: 10px 20px;
+    margin: 10px;
+
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.ind-color .swatch {
+    background-color: #444349;
+    border-radius: 50%;
+    padding: 30px;
+}
+
+.ind-color .color-info {
+    float: right;
+    margin: 0px 0px 0px 40px;
+}
+
+.ind-color .name {
+    max-width: 250px;
+    font-weight: 300;
+    font-size: 1.8rem;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ind-color .color {
+    padding: 2px 5px;
+
+    font-size: 0.8rem;
+
+    background-color: #444349;
+    color: #fff;
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    border-bottom: 2px solid #ddd;
+
+    font-weight: 600;
+}
+
+tr {  
+    border-bottom: 1px solid #eee;
+}
+
+tr:last-of-type {
+    border-bottom: 2px solid #ddd;
+}
+
+td {
+    padding: 5px;
+}
+
+.set-props-table td:first-of-type {
+    width: 150px;
+}
+
+.set-props-table tbody td:nth-of-type(2) {
+    color: #24cac2;
+    outline: none;
+}
+
+.box-shadow.faint {
+    box-shadow: 0px 0px 20px rgba(0,0,0,0.05);
+}
+
+.inline-block {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.block {
+    display: block;
+}
+
+.left {
+    text-align: left;
+}
+
+.right {
+    text-align: right;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.alphabet {
+    word-wrap: break-word;
+}
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+      user-select: none;           /* Non-prefixed version, currently
+                                    not supported by any browser */
+}
+
+#note {
+    display: none;
+    position: absolute;
+    width: 200px;
+    padding: 5px;
+
+    font-size: 0.8rem;
+    text-align: center;
+
+    background-color: #444349;
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 4px;
+
+    z-index: 2;
+}
+
+#note::before {
+    font-family: "Circular", Helvetica Neue, sans-serif;
+    content: "\25b2";
+
+    -webkit-transform: scale(2, 1);
+
+    position: absolute;
+    top: -16px;
+    left: calc(50% - 5px);
+
+    font-size: 1rem;
+    color: #444349;
+}
+
+hr {
+    border: none;
+    border-bottom: 1px solid #DDD;
+}
+
+[contenteditable=true] {
+    position: relative;
+    outline: none;
+    cursor: pointer;
+}
+
+[contenteditable=true]:focus {
+    color: #24cac2;
+}
+
+@media (max-width: 1128px) {
+    .component .right-side {
+        padding-left: 0;
+    }
+
+    .component .left-side,
+    .component .right-side {
+        width: 100%;
+    }
+}
+
+@media (max-width: 786px) {
+    nav {
+        position: fixed;
+        top: 0;
+        width: calc(100% - 30px);
+        padding: 15px 15px;
+
+        background-color: #8ba5af;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+
+        z-index: 2;
+    }
+
+    nav .menu-burger {
+        float: right;
+
+        margin-top: 5px;
+
+        width: 20px;
+        height: 20px;
+
+        background-image: url(../assets/hamburger.png);
+        background-size: 100% 100%;
+    }
+
+    .components {
+        margin-top: 70px;
+
+        transition: all 0.5s ease;
+    }
+
+    .components.dark {
+        -webkit-filter: brightness(0.7);
+    }
+
+    #sidebar {
+        height: calc(100vh - 70px);
+        overflow-y: scroll;
+        -webkit-overflow-scrolling: touch;
+        padding-top: 10px;
+        left: -300px;
+        background-color: #444349;
+
+        transition: all 0.5s ease;
+    }
+
+    #sidebar.show {
+        left: 0px;
+    }
+
+    .component {
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+
+    .component .left-side {
+        min-width: inherit;
+    }
+
+    .left-side div:first-of-type,
+    .right-side div:first-of-type {
+        margin-top: 0px;
+    }
+
+    .ind-class {
+        margin-top: 5px;
+    }
+
+    .color-block .ind-color {
+        width: calc(100% - 20px);
+        padding: 10px 10px;
+        margin: 10px 0px;
+    }
+}

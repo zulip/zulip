@@ -1,0 +1,104 @@
+{
+    "css": [
+    "/static/styles/components.css",
+    "/static/styles/zulip.css",
+    "/static/styles/settings.css"
+    ],
+    "templates": [
+    "public/templates/components.html"
+    ],
+    "resources": {
+        "colors": {
+          "primary": [{
+              "name": "Sea Green",
+              "color": "#24cac2"
+          }, {
+              "name": "Grey",
+              "color": "#444"
+          }],
+          "secondary": [{
+              "name": "Gold",
+              "color": "#e6c377"
+          }, {
+              "name": "Magenta",
+              "color": "#bd4a65"
+          }, {
+              "name": "Forest Green",
+              "color": "#64b779"
+          }, {
+              "name": "Lime",
+              "color": "#b4d87e"
+          }, {
+              "name": "Silver",
+              "color": "#aabbbf"
+          }]
+        },
+        "fonts": [{
+            "name": "Headers",
+            "family": "Circular",
+            "weight": 300,
+            "size": "3rem",
+            "sample": "1987 &amp; Black Swans"
+        }, {
+            "name": "Paragraphs",
+            "family": "Circular",
+            "weight": 400,
+            "size": "1rem",
+            "sample": "We the People of the United States of America, in Order to form a more perfect Union."
+        }, {
+            "name": "Subtext",
+            "family": "Circular",
+            "weight": 400,
+            "size": "0.7rem",
+            "sample": "*Subject to availability. Limited to three (3) products per family. This offer cannot be combined with any other offers."
+        }, {
+            "name": "Code",
+            "family": "Menlo, monospace",
+            "weight": 400,
+            "size": "0.8rem",
+            "sample": "var x = function () {<br>&nbsp; return {<br>&nbsp; &nbsp; a: function (a, b) {<br>&nbsp; &nbsp; &nbsp; return a * b;<br>&nbsp; &nbsp; }<br>&nbsp; }<br>};<br>"
+        }],
+        "components": {
+            ".button": {
+                "name": "Button",
+                "modifiers": ["innerHTML"],
+                "description": "The standard button format comes with a minimal outline and transparent background and has a hover property."
+            },
+            "label": {
+                "name": "Label",
+                "modifiers": ["innerHTML", "for"],
+                "description": "This is a standard label that should be combined with input and select."
+            },
+            "input": {
+                "name": "Text Input",
+                "modifiers": ["value", "placeholder", "type"],
+                "description": "This is a standard text[type=input] field."
+            },
+            "label.checkbox": {
+                "name": "Checkbox",
+                "modifiers": [],
+                "description": "This is a custom checkbox that is formed with an input[type=checkbox] that is hidden, a span element for styling, wrapped in a label."
+            },
+            "select": {
+                "name": "Select",
+                "modifiers": [],
+                "description": "This is a standard select with several options"
+            },
+            "a": {
+                "name": "Link",
+                "modifiers": ["innerHTML", "href", "target"],
+                "description": "This is a standard external link."
+            },
+            "h1": {
+                "name": "H1 Header",
+                "modifiers": ["innerHTML"],
+                "description": "A standard h1 element for article titles."
+            },
+            "h2": {
+                "name": "H2 Header",
+                "modifiers": ["innerHTML"],
+                "description": "A standard h2 element for section titles"
+            }
+        }
+    }
+}

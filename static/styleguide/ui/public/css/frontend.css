@@ -1,0 +1,144 @@
+.input-group {
+    display: inline-block;
+    vertical-align: top;
+    margin: 5px 10px;
+}
+
+.tab-menu {
+    width: 100%;
+    background-color: transparent;
+}
+
+.ind-tab {
+    display: inline-block;
+    width: 100px;
+    margin: 5px -2px 0px -2px;
+    padding: 10px 20px;
+    text-align: center;
+    color: #fff;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+    border-top-right-radius: 40px;
+    border-top-left-radius: 40px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-filter: saturate(0);
+}
+
+.ind-tab.color {
+    -webkit-filter: saturate(1);
+}
+
+.ind-tab.color:hover {
+    -webkit-filter: saturate(1) brightness(1.1);
+}
+
+.ind-tab:hover {
+    -webkit-filter: saturate(0.2) brightness(1.1);
+}
+
+.ind-tab.red {
+    background-color: #bd4a65;
+}
+
+.ind-tab.gold {
+    background-color: #e6c377;
+}
+
+.ind-tab.green {
+    background-color: #64b779;
+}
+
+form.component {
+    position: absolute;
+    top: 45px;
+  
+    white-space: normal;
+    display: inline-block;
+    width: calc(568px + 40px);
+    height: calc(100% - 46px);
+    margin: 0px;
+    box-shadow: none;
+    transition: all 0.5s ease;
+}
+
+.primary {
+    z-index: 3;
+    -webkit-filter: brightness(1);
+    transition: all 0s ease;
+}
+
+.secondary {
+    z-index: 2;
+    -webkit-filter: brightness(0.5);
+}
+
+.component:not(form) {
+    margin: 20px 20px;
+    width: calc(100% - 40px);
+}
+
+form.component .button {
+    position: absolute;
+    bottom: 10px;
+}
+
+form.component textarea {
+    width: 536px;
+}
+
+.control-group {
+    display: inline-block;
+    width: 568px;
+}
+
+.sides {
+    margin: 10px;
+}
+
+.builder #main {
+    overflow-y: auto;
+}
+
+code.hljs {
+    font-family: "Roboto Mono";
+    font-size: 0.8em;
+    background-position: #fff;
+    height: calc(100vh - 10px);
+}
+
+code.hljs .hljs-attr {
+    color: #da1d4e;
+}
+
+code.hljs .hljs-string {
+    color: #258eb1;
+}
+
+#config_preview {
+    position: relative;
+    width: calc(100% - 608px);
+    max-height: calc(100vh);
+    overflow: auto;
+    float: right;
+    vertical-align: top;
+    background-color: #444;
+    padding: 0px;
+    z-index: 2;
+}
+
+pre, code {
+    margin: 0;
+    width: 100%;
+}
+
+code {
+    padding: 10px;
+}
+
+#init_block {
+    width: 100%;
+    display: inline-block;
+    max-width: 608px;
+    height: 100vh;
+    overflow-x: scroll;
+}
