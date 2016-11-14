@@ -193,7 +193,7 @@ var _ = global._;
     people.add_in_realm(ashton);
     var search_term = 'a';
     var users = people.get_rest_of_realm();
-    var filtered_people = people.filter_people_by_search_terms(users, search_term);
+    var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
     var expected = [
         { email: 'athens@example.com', full_name: 'Maria Athens' },
         { email: 'ashton@example.com', full_name: 'Ashton Smith' }
@@ -203,8 +203,7 @@ var _ = global._;
     assert.equal(_.keys(filtered_people).length, 2);
     assert(!_.has(filtered_people, 'charles@example.com'));
 
-    search_term = '';
-    filtered_people = people.filter_people_by_search_terms(users, search_term);
+    filtered_people = people.filter_people_by_search_terms(users, []);
     assert(_.isEmpty(filtered_people));
 
     people.remove(charles);
