@@ -148,5 +148,5 @@ class GithubWebhookTest(WebhookTestCase):
 
     def test_push_tag_msg(self):
         # type: () -> None
-        expected_message = u"baxterthehacker pushed abc tag"
+        expected_message = u"baxterthehacker pushed tag abc"
         self.send_and_test_stream_message('push_tag', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')

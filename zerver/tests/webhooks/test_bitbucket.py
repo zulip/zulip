@@ -141,7 +141,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_one_tag_event(self):
         # type: () -> None
-        expected_message = u"kolaszek pushed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag"
+        expected_message = u"kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)"
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push'
         }
@@ -149,7 +149,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_remove_tag_event(self):
         # type: () -> None
-        expected_message = u"kolaszek removed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag"
+        expected_message = u"kolaszek removed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)"
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push'
         }
@@ -157,7 +157,7 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_more_than_one_tag_event(self):
         # type: () -> None
-        expected_message = u"kolaszek pushed [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name}) tag"
+        expected_message = u"kolaszek pushed tag [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name})"
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:push'
         }
@@ -179,7 +179,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.do_test_message(msg, 'kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit')
         self.do_test_subject(msg, self.EXPECTED_SUBJECT_BRANCH_EVENTS)
         msg = self.get_last_message()
-        self.do_test_message(msg, 'kolaszek pushed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag')
+        self.do_test_message(msg, 'kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)')
         self.do_test_subject(msg, self.EXPECTED_SUBJECT)
 
 class BitbucketHookTests(WebhookTestCase):

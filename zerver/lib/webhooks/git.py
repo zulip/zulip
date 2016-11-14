@@ -28,7 +28,7 @@ CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
 
 COMMITS_COMMENT_MESSAGE_TEMPLATE = u"{user_name} {action} on [{sha}]({url})"
 
-PUSH_TAGS_MESSAGE_TEMPLATE = u"""{user_name} {action} {tag} tag"""
+PUSH_TAGS_MESSAGE_TEMPLATE = u"""{user_name} {action} tag {tag}"""
 TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 
