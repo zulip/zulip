@@ -41,6 +41,8 @@ tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
 zproject/test_settings.py
 zerver/tests/test_decorators.py
+zthumbor/loaders/helpers.py
+zthumbor/loaders/s3_loader.py
 """.split()
 
 # We don't run mypy on contrib_bots, since the code there will

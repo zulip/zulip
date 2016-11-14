@@ -12,6 +12,9 @@ from scripts.lib.setup_venv import setup_virtualenv
 
 def main():
     # type: () -> None
+    THUMBOR_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "thumbor.txt")
+    setup_virtualenv("/srv/thumbor-venv", THUMBOR_REQS_FILE, patch_activate_script=True)
+
     PY2_DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py2_dev.txt")
     setup_virtualenv("/srv/zulip-venv", PY2_DEV_REQS_FILE, patch_activate_script=True)
 

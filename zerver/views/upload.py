@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from six.moves import urllib
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, FileResponse, \
     HttpResponseNotFound
 from django.shortcuts import redirect
@@ -10,7 +11,8 @@ from zerver.decorator import authenticated_json_post_view, zulip_login_required
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
-    get_signed_upload_url, get_realm_for_filename
+    get_signed_upload_url, get_realm_for_filename, get_thumbor_link, thumbor_is_enabled,\
+    THUMBOR_S3_TYPE, THUMBOR_LOCAL_FILE_TYPE
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile
 from django.conf import settings
@@ -29,6 +31,10 @@ def serve_s3(request, user_profile, realm_id_str, filename):
 
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
     if user_profile.realm.id == realm_id or user_profile.realm.domain == 'zulip.com':
+        if thumbor_is_enabled():
+            size = request.GET.get('size') or '0x0'
+            thumbor_url = get_thumbor_link(url_path, THUMBOR_S3_TYPE, size=size)
+            return redirect(thumbor_url)
         uri = get_signed_upload_url(url_path)
         return redirect(uri)
     else:
@@ -42,6 +48,14 @@ def serve_local(request, path_id):
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
+    if thumbor_is_enabled():
+        size = request.GET.get('size') or '0x0'
+        local_path = local_path.split(settings.LOCAL_UPLOADS_DIR)[1]
+        # remove first /
+        if local_path.startswith('/'):
+            local_path = local_path[1:]
+        thumbor_url = get_thumbor_link(local_path, THUMBOR_LOCAL_FILE_TYPE, size=size)
+        return redirect(thumbor_url)
     filename = os.path.basename(local_path)
     response = FileResponse(open(local_path, 'rb'),
                             content_type = mimetypes.guess_type(filename))  # type: ignore # https://github.com/python/typeshed/issues/559

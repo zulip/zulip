@@ -1,5 +1,9 @@
 from __future__ import absolute_import
-from typing import Optional, Tuple, Mapping, Any
+import time
+import hmac
+import base64
+from hashlib import sha1
+from typing import Optional, Tuple, Mapping, Any, Dict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -34,6 +38,10 @@ import logging
 
 DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
+
+THUMBOR_EXTERNAL_TYPE = 'external'
+THUMBOR_S3_TYPE = 's3'
+THUMBOR_LOCAL_FILE_TYPE = 'local_file'
 
 # Performance Note:
 #
@@ -413,3 +421,44 @@ def upload_message_image_from_request(request, user_file, user_profile):
     # type: (HttpRequest, File, UserProfile) -> text_type
     uploaded_file_name, content_type = get_file_info(request, user_file)
     return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile)
+
+
+def is_external_url(url):
+    # type: (text_type) -> bool
+    return url.startswith('http')
+
+
+def get_sign_hash(raw, key):
+    # type: (text_type, text_type) -> text_type
+    hashed = hmac.new(key.encode('utf-8'), raw.encode('utf-8'), sha1)
+    return base64.b64encode(hashed.digest()).decode()
+
+
+def get_thumbor_link(source, source_type, size='0x0'):
+    # type: (text_type, text_type, text_type) -> text_type
+    # source - URL/S3 Key/File path
+    # source_type - external/s3/local_file
+    host = getattr(settings, 'THUMBOR_HOST', '')
+    thumbor_expire = getattr(settings, 'THUMBOR_EXPIRE_DURATION', 60 * 60)
+    if source_type == THUMBOR_EXTERNAL_TYPE:
+        expired = 0
+    else:
+        expired = int(time.time() + thumbor_expire)
+    raw = u'_'.join([source, str(expired), size])
+    sign_hash = get_sign_hash(raw, settings.THUMBOR_SIGN_KEY)
+    query_params = urllib.parse.urlencode({
+        'expired': expired,
+        'sign': sign_hash,
+        'source_type': source_type})
+    file_path = u'{path}?{query}'.format(path=source, query=query_params)
+    url = u'http://{host}/unsafe/{size}/smart/{file_path}'
+    return url.format(
+        host=host,
+        size=size,
+        file_path=urllib.parse.quote(file_path.encode('utf-8')))
+
+
+def thumbor_is_enabled():
+    # type: () -> bool
+    # Currently we can use the Thumbor only with S3 backend
+    return getattr(settings, 'THUMBOR_HOST', None)
