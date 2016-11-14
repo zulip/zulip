@@ -269,6 +269,7 @@ data allows you to do two things:
    message types your integration should support and how; and,
 2. Create fixtures for your webook tests.
 
+A test fixture is a small file containing test data, one for each test. 
 Fixtures enable the testing of webhook integration code without the need to
 actually contact the service being integrated.
 
