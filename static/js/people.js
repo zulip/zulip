@@ -87,14 +87,23 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
                 return name.trim();
             });
 
+            var email = user.email.toLowerCase();
+
             // Return user emails that include search terms
-            return _.any(search_terms, function (search_term) {
+            var match_found = _.any(search_terms, function (search_term) {
+                if (email.indexOf(search_term.trim()) === 0) {
+                    return true;
+                }
                 return _.any(names, function (name) {
                     if (name.indexOf(search_term.trim()) === 0) {
-                        filtered_users[user.email] = true;
+                        return true;
                     }
                 });
             });
+
+            if (match_found) {
+                filtered_users[user.email] = true;
+            }
         });
         return filtered_users;
 };
