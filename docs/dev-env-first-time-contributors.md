@@ -421,7 +421,6 @@ command line utilities as
 /srv/zulip/
 ```
 Reconnect to the local host as your Zulip server is running and accessible now.
-
 See also the documentation on the [testing
 page](http://zulip.readthedocs.io/en/latest/testing.html#manual-testing-local-app-web-browser)
 for how to destroy and rebuild your database if you want to clear out test data.
