@@ -10,9 +10,9 @@
  * **Inicio**: Una "vista" en la que todos los temas en todos los canales suscritos son visibles, ordenados por fecha y hora de publicación.
  * **me**: una referencia a su propio nombre, formateado `/me`.
  * **mención**: el acto de notificar a otro usuario de un mensaje, poniendo su nombre en el cuerpo del mensaje después de una `@` arroba.
- * **tabla de mensajes**: es el canal de mensajes en el panel de enmedio de una ventana del navegador completamente abierta.
- * **silenciar un canal**: El acto de apagar un canal manteniendo la suscripción del usuario.
- * **filtrar**: alterar una vista para que solo un canal, tema, or mensaje privado esté visible.
+ * **tabla de mensajes**: es el canal de mensajes en el panel de en medio de una ventana del navegador completamente abierta.
+ * **silenciar un canal**: El acto de ocultar un canal manteniendo la suscripción del usuario.
+ * **filtrar**: alterar una vista para que solo un canal, tema, o mensaje privado esté visible.
  * **fijar**: un canal: el mover un canal en particular al principio de la lista de canales.
  * **MP / PM**: mensaje privado — un mensaje enviado directamente a uno o más usuarios sin hacer uso de un canal.
  * **canal privado**: un canal que solo puede ser visualizado con una invitación previa.
