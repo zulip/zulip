@@ -47,9 +47,19 @@ class Command(BaseCommand):
             result.write('[')
             messages = Message.objects.filter(id__gt=latest - amount, id__lte=latest).order_by('id')
             for message in queryset_iterator(messages):
+                content = message.content
+                # In order to ensure that the output of this tool is
+                # consistent across the time, even if messages are
+                # edited, we always render the original content
+                # version, extracting it from the edit history if
+                # necessary.
+                if message.edit_history:
+                    history = ujson.loads(message.edit_history)
+                    history = sorted(history, key=lambda i: i['timestamp'])
+                    content = history[0]['prev_content']
                 result.write(ujson.dumps({
                     'id': message.id,
-                    'content': render_markdown(message, message.content)
+                    'content': render_markdown(message, content)
                 }))
                 if message.id != latest:
                     result.write(',')
