@@ -9,6 +9,8 @@ from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 from zerver.views.integrations import IntegrationView, APIView, HelpView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.views.webhooks import github_dispatcher
+
 
 from django.contrib.auth.views import (login, password_reset,
                                        password_reset_done, password_reset_confirm, password_reset_complete)
@@ -303,8 +305,13 @@ urls += url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)',
                      {'override_api_url_scheme'})}),
 
 # Incoming webhook URLs
+# We don't create urls for particular git integrations here
+# because of generic one below
 for incoming_webhook in WEBHOOK_INTEGRATIONS:
-    urls.append(incoming_webhook.url_object)
+    if incoming_webhook.url_object:
+        urls.append(incoming_webhook.url_object)
+
+urls.append(url(r'^api/v1/external/github', github_dispatcher.api_github_webhook_dispatch))
 
 # Mobile-specific authentication URLs
 urls += [
