@@ -73,7 +73,7 @@ the end of 2016.
 * [Add support for showing "user is typing" notifications, at least
   for private messages](https://github.com/zulip/zulip/issues/150)
 * [Support lightweight emoji
-  "reactions](https://github.com/zulip/zulip/issues/541)
+  "reactions"](https://github.com/zulip/zulip/issues/541)
 * [Open graph previews of generic
   websites](https://github.com/zulip/zulip/issues/406)
 * [Add a "join Zulip chat" badge for projects that use Zulip to document that nicely](https://github.com/zulip/zulip/issues/2270)
