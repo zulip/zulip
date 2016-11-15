@@ -3,7 +3,7 @@ var search_suggestion = (function () {
 var exports = {};
 
 function phrase_match(phrase, q) {
-    // match "tes" to "test" and "stream test" but not "hostess"
+    // match "tes" to "test", "stream test" and "hostess"
     q = q.toLowerCase();
 
     phrase = phrase.toLowerCase();
