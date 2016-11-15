@@ -72,7 +72,7 @@
         <button class="button white" id="api_key_button">{{t "Show/change your API key" }}</button>
       </div>
     </div>
-    <div id="get_api_key_box">
+    <div id="get_api_key_box" class="side-padded-container">
       {{#tr this}}
       <p>Please re-enter your password to confirm your identity.
         (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
@@ -89,7 +89,7 @@
         </div>
       </form>
     </div>
-    <div id="show_api_key_box">
+    <div id="show_api_key_box" class="side-padded-container">
       <p>{{t "Your API key:" }}</p>
       <p><b><span id="api_key_value"></span></b></p>
       <button type="submit" class="btn btn-primary regenerate_api_key">
