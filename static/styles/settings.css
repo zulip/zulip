@@ -405,3 +405,7 @@ input[type=checkbox].inline-block {
 .open-user-form {
     min-width: initial !important;
 }
+
+#show_api_key_box {
+    padding-bottom: 20px;
+}
