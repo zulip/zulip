@@ -227,3 +227,25 @@ var _ = global._;
     people.remove(ashton);
     people.remove(linus);
 }());
+
+(function test_multi_user_methods() {
+     var emp401 = {
+        email: 'emp401@example.com',
+        user_id: 401,
+        full_name: 'whatever 401'
+    };
+    var emp402 = {
+        email: 'emp402@example.com',
+        user_id: 402,
+        full_name: 'whatever 402'
+    };
+
+    people.add_in_realm(emp401);
+    people.add_in_realm(emp402);
+
+    var emails_string = people.user_ids_string_to_emails_string('401,402');
+    assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
+
+    var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+    assert.equal(user_ids_string, '401,402');
+}());
