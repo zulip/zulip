@@ -6,6 +6,13 @@ from typing import Any, Union, Mapping, Optional
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.sessions.models import Session as djSession
+try:
+    from django.middleware.csrf import _compare_salted_tokens
+except ImportError:
+    # This function was added in Django 1.10.
+    def _compare_salted_tokens(token1, token2):
+        # type: (str, str) -> bool
+        return token1 == token2
 
 import sockjs.tornado
 from sockjs.tornado.session import ConnectionInfo
@@ -126,7 +133,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             raise SocketAuthError('Unknown or missing session')
         self.session.user_profile = user_profile
 
-        if msg['request']['csrf_token'] != self.csrf_token:
+        if not _compare_salted_tokens(msg['request']['csrf_token'], self.csrf_token):
             raise SocketAuthError('CSRF token does not match that in cookie')
 
         if 'queue_id' not in msg['request']:
