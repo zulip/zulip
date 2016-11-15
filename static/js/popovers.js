@@ -349,22 +349,28 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+
         popovers.hide_user_sidebar_popover();
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.user_popover .narrow_to_messages_sent', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+
         popovers.hide_user_sidebar_popover();
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.user_popover .compose_private_message', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         popovers.hide_user_sidebar_popover();
+
         compose.start('private', {"private_message_recipient": email, trigger: 'sidebar user actions'});
         e.stopPropagation();
     });
@@ -393,6 +399,7 @@ exports.register_click_handlers = function () {
         var target = $(this).closest('li');
         var email = target.find('a').attr('data-email');
         var name = target.find('a').attr('data-name');
+        var user_id = people.get_user_id(email);
 
         if (current_user_sidebar_email === email) {
             // If the popover is already shown, clicking again should toggle it.
@@ -404,7 +411,7 @@ exports.register_click_handlers = function () {
         if (userlist_placement === "right") {
             popovers.show_userlist_sidebar();
         }
-        var template_vars = {email: email, name: name};
+        var template_vars = {user_id: user_id, name: name};
         var content = templates.render('user_sidebar_actions', template_vars);
 
         target.popover({
