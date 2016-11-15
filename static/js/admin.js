@@ -21,6 +21,11 @@ function get_user_info(email) {
     return self;
 }
 
+function get_email_for_user_row(row) {
+    var email = row.find('.email').text();
+    return email;
+}
+
 exports.update_user_full_name = function (email, new_full_name) {
     var user_info = get_user_info(email);
 
@@ -314,7 +319,7 @@ function _setup_page() {
         var row = $(e.target).closest(".user_row");
 
         var user_name = row.find('.user_name').text();
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
 
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
@@ -389,7 +394,8 @@ function _setup_page() {
         var row = $(e.target).closest(".user_row");
 
         var user_name = row.find('.user_name').text();
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
+
         channel.del({
             url: '/json/bots/' + email,
             error: function (xhr, error_type) {
@@ -419,8 +425,8 @@ function _setup_page() {
 
         // Go up the tree until we find the user row, then grab the email element
         var row = $(e.target).closest(".user_row");
+        var email = get_email_for_user_row(row);
 
-        var email = row.find('.email').text();
         channel.post({
             url: '/json/users/' + email + "/reactivate",
             error: function (xhr, error_type) {
@@ -606,7 +612,7 @@ function _setup_page() {
 
         // Go up the tree until we find the user row, then grab the email element
         var row = $(e.target).closest(".user_row");
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
 
         var url = "/json/users/" + email;
         var data = {
@@ -637,7 +643,7 @@ function _setup_page() {
 
         // Go up the tree until we find the user row, then grab the email element
         var row = $(e.target).closest(".user_row");
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
 
         var url = "/json/users/" + email;
         var data = {
