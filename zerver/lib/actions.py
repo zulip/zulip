@@ -1112,7 +1112,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
         # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
         # EMAIL_GATEWAY_BOT is probably the server administrator, not
         # the owner of the bot who could potentially fix the problem.
-        if stream.realm != sender.realm:
+        if stream is not None and stream.realm != sender.realm:
             return
 
         if stream:
