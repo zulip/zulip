@@ -7,7 +7,7 @@ var exports = {};
 
 var unread_mentioned = new Dict();
 var unread_topics = new Dict({fold_case: true});
-var unread_privates = new Dict();
+var unread_privates = new Dict(); // indexed by user_ids_string like 5,7,9
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
 
@@ -46,8 +46,11 @@ exports.process_loaded_messages = function (messages) {
         }
 
         if (message.type === 'private') {
-            unread_privates.setdefault(message.reply_to, new Dict());
-            unread_privates.get(message.reply_to).set(message.id, true);
+            var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+            if (user_ids_string) {
+                unread_privates.setdefault(user_ids_string, new Dict());
+                unread_privates.get(user_ids_string).set(message.id, true);
+            }
         }
 
         if (message.type === 'stream') {
@@ -68,9 +71,12 @@ exports.process_loaded_messages = function (messages) {
 exports.process_read_message = function (message) {
 
     if (message.type === 'private') {
-        var dict = unread_privates.get(message.reply_to);
-        if (dict) {
-            dict.del(message.id);
+        var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+        if (user_ids_string) {
+            var dict = unread_privates.get(user_ids_string);
+            if (dict) {
+                dict.del(message.id);
+            }
         }
     }
 
@@ -142,9 +148,9 @@ exports.get_counts = function () {
     });
 
     var pm_count = 0;
-    unread_privates.each(function (obj, index) {
+    unread_privates.each(function (obj, user_ids_string) {
         var count = obj.num_items();
-        res.pm_count.set(index, count);
+        res.pm_count.set(user_ids_string, count);
         pm_count += count;
     });
     res.private_message_count = pm_count;
@@ -168,11 +174,16 @@ exports.num_unread_for_subject = function (stream, subject) {
     return num_unread;
 };
 
-exports.num_unread_for_person = function (email) {
-    if (!unread_privates.has(email)) {
+exports.num_unread_for_person = function (emails_string) {
+    var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+    if (!user_ids_string) {
         return 0;
     }
-    return unread_privates.get(email).num_items();
+
+    if (!unread_privates.has(user_ids_string)) {
+        return 0;
+    }
+    return unread_privates.get(user_ids_string).num_items();
 };
 
 exports.update_unread_counts = function () {

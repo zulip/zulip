@@ -91,8 +91,10 @@ exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
 
-    counts.pm_count.each(function (count, person) {
-        set_count(person, count);
+    counts.pm_count.each(function (count, user_ids_string) {
+        // TODO: just use user_ids_string in our markup
+        var emails_string = people.user_ids_string_to_emails_string(user_ids_string);
+        set_count(emails_string, count);
     });
 };
 

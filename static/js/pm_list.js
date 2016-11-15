@@ -159,8 +159,10 @@ exports.expand = function (op_pm) {
 
 exports.update_dom_with_unread_counts = function (counts) {
     set_count("global", "private", counts.private_message_count);
-    counts.pm_count.each(function (count, person) {
-        set_pm_conversation_count(person, count);
+    counts.pm_count.each(function (count, user_ids_string) {
+        // TODO: just use user_ids_string in our markup
+        var emails_string = people.user_ids_string_to_emails_string(user_ids_string);
+        set_pm_conversation_count(emails_string, count);
     });
 
 
