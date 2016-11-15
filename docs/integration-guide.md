@@ -446,9 +446,9 @@ Using either method will create a message in Zulip:
 Every webhook integration should have a corresponding test file in
 `zerver/tests/webhooks/`.
 
-You should name the class `<WebhookName>HookTests` and this class should accept
-`WebhookTestCase`. For our HelloWorld webhook, we name the test class
-`HelloWorldHookTests`:
+You should name the class `<WebhookName>HookTests` and have it inherit from
+the base class `WebhookTestCase`. For our HelloWorld webhook, we name the test
+class `HelloWorldHookTests`:
 
 ```
 class HelloWorldHookTests(WebhookTestCase):
@@ -471,6 +471,10 @@ class HelloWorldHookTests(WebhookTestCase):
         return self.fixture_data("helloworld", fixture_name, file_type="json")
 
 ```
+
+In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `FIXTURE_DIR_NAME` refer
+to class attributes from the base class, `WebhookTestCase`. These are needed by
+`send_and_test_stream_message` to determine how to execute your test.
 
 When writing tests for your webook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
@@ -509,7 +513,9 @@ the Zulip dev environment with this command:
 ./tools/test-backend zerver.tests.webhooks.test_hello_world.HelloWorldHookTests
 ```
 
-(Note: You must run the tests from the `/srv/zulip` directory.)
+(Note: You must run the tests from the top level of your development directory.
+The standard location in a Vagrant environment is `/srv/zulip`. If you are not
+using Vagrant, use the directory where you have your development environment.)
 
 You will see some script output and if all the tests have passed, you will see:
 
