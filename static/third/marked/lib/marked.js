@@ -543,7 +543,7 @@ inline.zulip = merge({}, inline.breaks, {
   gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
   text: replace(inline.breaks.text)
-    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])|')
+    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])|')
     (']|', '#@:]|')
     ()
 });
