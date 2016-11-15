@@ -1101,9 +1101,11 @@ def check_stream_name(stream_name):
     if not valid_stream_name(stream_name):
         raise JsonableError(_("Invalid stream name"))
 
-def send_pm_if_empty_stream(sender, stream, stream_name):
-    # type: (UserProfile, Stream, text_type) -> None
-    # TODO: It's not clear whether stream can be None.  Some cleanup is needed.
+def send_pm_if_empty_stream(sender, stream, stream_name, realm):
+    # type: (UserProfile, Stream, text_type, Realm) -> None
+    """If a bot sends a message to a stream that doesn't exist or has no
+    subscribers, sends a notification to the bot owner (if not a
+    cross-realm bot) so that the owner can correct the issue."""
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
 
@@ -1112,7 +1114,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name):
         # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
         # EMAIL_GATEWAY_BOT is probably the server administrator, not
         # the owner of the bot who could potentially fix the problem.
-        if stream is not None and stream.realm != sender.realm:
+        if sender.realm != realm:
             return
 
         if stream:
@@ -1182,7 +1184,7 @@ def check_message(sender, client, message_type_name, message_to,
 
         stream = get_stream(stream_name, realm)
 
-        send_pm_if_empty_stream(sender, stream, stream_name)
+        send_pm_if_empty_stream(sender, stream, stream_name, realm)
 
         if stream is None:
             raise JsonableError(_("Stream does not exist"))
