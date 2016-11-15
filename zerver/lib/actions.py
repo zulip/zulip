@@ -1109,41 +1109,45 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
 
-    if sender.is_bot and sender.bot_owner is not None:
-        # Don't send these notifications for cross-realm bot messages
-        # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
-        # EMAIL_GATEWAY_BOT is probably the server administrator, not
-        # the owner of the bot who could potentially fix the problem.
-        if sender.realm != realm:
+    if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    # Don't send these notifications for cross-realm bot messages
+    # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
+    # EMAIL_GATEWAY_BOT is probably the server administrator, not
+    # the owner of the bot who could potentially fix the problem.
+    if sender.realm != realm:
+        return
+
+    if stream is not None:
+        num_subscribers = stream.num_subscribers()
+        if num_subscribers > 0:
             return
 
-        if stream:
-            num_subscribers = stream.num_subscribers()
+    # We warn the user once every 5 minutes to avoid a flood of
+    # PMs on a misconfigured integration, re-using the
+    # UserProfile.last_reminder field, which is not used for bots.
+    last_reminder = sender.last_reminder
+    waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
+    if last_reminder and timezone.now() - last_reminder <= waitperiod:
+        return
 
-        if stream is None or num_subscribers == 0:
-            # Warn a bot's owner if they are sending a message to a stream
-            # that does not exist, or has no subscribers
-            # We warn the user once every 5 minutes to avoid a flood of
-            # PMs on a misconfigured integration, re-using the
-            # UserProfile.last_reminder field, which is not used for bots.
-            last_reminder = sender.last_reminder
-            waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
-            if not last_reminder or timezone.now() - last_reminder > waitperiod:
-                if stream is None:
-                    error_msg = "that stream does not yet exist. To create it, "
-                elif num_subscribers == 0:
-                    error_msg = "there are no subscribers to that stream. To join it, "
+    if stream is None:
+        error_msg = "that stream does not yet exist. To create it, "
+    else:
+        # num_subscribers == 0
+        error_msg = "there are no subscribers to that stream. To join it, "
 
-                content = ("Hi there! We thought you'd like to know that your bot **%s** just "
-                           "tried to send a message to stream `%s`, but %s"
-                           "click the gear in the left-side stream list." %
-                           (sender.full_name, stream_name, error_msg))
-                message = internal_prep_message(settings.NOTIFICATION_BOT, "private",
-                                                sender.bot_owner.email, "", content)
-                do_send_messages([message])
+    content = ("Hi there! We thought you'd like to know that your bot **%s** just "
+               "tried to send a message to stream `%s`, but %s"
+               "click the gear in the left-side stream list." %
+               (sender.full_name, stream_name, error_msg))
+    message = internal_prep_message(settings.NOTIFICATION_BOT, "private",
+                                    sender.bot_owner.email, "", content)
+    do_send_messages([message])
 
-                sender.last_reminder = timezone.now()
-                sender.save(update_fields=['last_reminder'])
+    sender.last_reminder = timezone.now()
+    sender.save(update_fields=['last_reminder'])
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
