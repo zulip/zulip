@@ -6,22 +6,9 @@ var private_messages_open = false;
 
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
-//
-// TODO: We want to manage our own unread counts, but that logic is
-//       still in stream_list.js.
-
-// This is a copy of a similar method in stream_list.js, but
-// we don't want to de-dup this, we want to simplify it.
-function iterate_to_find(selector, name_to_find, context) {
-    var lowercase_name = name_to_find.toLowerCase();
-    var found = _.find($(selector, context), function (elem) {
-        return $(elem).attr('data-name').toLowerCase() === lowercase_name;
-    });
-    return found ? $(found) : $();
-}
 
 function get_filter_li() {
-    return iterate_to_find("#global_filters > li", "private");
+    return $("#global_filters > li[data-name='private']");
 }
 
 function update_count_in_dom(count_span, value_span, count) {
@@ -40,14 +27,15 @@ function set_count(type, name, count) {
     update_count_in_dom(count_span, value_span, count);
 }
 
-exports.get_private_message_filter_li = function (conversation) {
+exports.get_conversation_li = function (conversation) {
+    // conversation is something like "foo@example.com,bar@example.com"
     var pm_li = get_filter_li();
-    return iterate_to_find(".expanded_private_messages li.expanded_private_message",
-        conversation, pm_li);
+    var convo_li = pm_li.find("li[data-name='" + conversation + "']");
+    return convo_li;
 };
 
 function set_pm_conversation_count (conversation, count) {
-    var pm_li = pm_list.get_private_message_filter_li(conversation);
+    var pm_li = pm_list.get_conversation_li(conversation);
     var count_span = pm_li.find('.private_message_count');
     var value_span = count_span.find('.value');
 
@@ -117,7 +105,7 @@ exports.rebuild_recent = function (active_conversation) {
         private_li.append(private_messages_dom);
     }
     if (active_conversation) {
-        exports.get_private_message_filter_li(active_conversation).addClass('active-sub-filter');
+        exports.get_conversation_li(active_conversation).addClass('active-sub-filter');
     }
 
     resize.resize_stream_filters_container();
