@@ -7,8 +7,11 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies (except _).
 
+global.stub_out_jquery();
+
 add_dependencies({
     muting: 'js/muting.js',
+    people: 'js/people.js',
     unread: 'js/unread.js'
 });
 
@@ -18,9 +21,12 @@ stream_data = {
     canonicalized_name: stream_data.canonicalized_name
 };
 set_global('stream_data', stream_data);
+set_global('blueslip', {});
 
 var Dict = global.Dict;
 var muting = global.muting;
+var people = global.people;
+
 var unread = require('js/unread.js');
 
 var narrow = {};
@@ -277,39 +283,48 @@ var zero_counts = {
     var message = {
         id: 15,
         type: 'private',
-        reply_to: 'alice@zulip.com'
+        reply_to: 'anybody@example.com'
     };
+
+    var anybody = {
+        email: 'anybody@example.com',
+        user_id: 999,
+        full_name: 'Any Body'
+    };
+    people.add_in_realm(anybody);
 
     unread.process_loaded_messages([message]);
 
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 1);
+    assert.equal(counts.pm_count.get('999'), 1);
     unread.process_read_message(message);
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
-
-    // Test unknown message is harmless
-    message = {
-        id: 9,
-        type: 'private',
-        reply_to: 'unknown@zulip.com'
-    };
-
-    unread.process_read_message(message);
-    counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.pm_count.get('999'), 0);
 }());
 
 (function test_num_unread_for_person() {
-    var email = 'unknown@zulip.com';
-    assert.equal(unread.num_unread_for_person(email), 0);
+    var alice = {
+        email: 'alice@example.com',
+        user_id: 101,
+        full_name: 'Alice'
+    };
+    people.add_in_realm(alice);
 
-    email = 'alice@zulip.com';
-    assert.equal(unread.num_unread_for_person(email), 0);
+    var bob = {
+        email: 'bob@example.com',
+        user_id: 102,
+        full_name: 'Bob'
+    };
+    people.add_in_realm(bob);
+
+    assert.equal(unread.num_unread_for_person('alice@example.com'), 0);
+    assert.equal(unread.num_unread_for_person('bob@example.com'), 0);
 
     var message = {
         id: 15,
-        reply_to: email,
+        reply_to: 'alice@example.com',
         type: 'private'
     };
 
@@ -317,7 +332,7 @@ var zero_counts = {
         flags: ['read']
     };
     unread.process_loaded_messages([message, read_message]);
-    assert.equal(unread.num_unread_for_person(email), 1);
+    assert.equal(unread.num_unread_for_person('alice@example.com'), 1);
 }());
 
 
@@ -387,3 +402,19 @@ var zero_counts = {
     assert(unread.message_unread({flags: []}));
     assert(!unread.message_unread({flags: ['read']}));
 }());
+
+(function test_errors() {
+    global.blueslip.error = function () {};
+
+    // Test unknown message leads to zero count
+    var message = {
+        id: 9,
+        type: 'private',
+        reply_to: 'unknown@zulip.com'
+    };
+
+    unread.process_read_message(message);
+    var counts = unread.get_counts();
+    assert.equal(counts.private_message_count, 0);
+}());
+
