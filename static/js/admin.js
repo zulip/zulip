@@ -12,13 +12,23 @@ exports.show_or_hide_menu_item = function () {
     }
 };
 
+function get_user_info(email) {
+    var self = {};
+    self.user_row = $("tr[id='user_" + email + "']");
+    self.form_row = $("tr[id='user_form_" + email + "']");
+
+    return self;
+}
+
 exports.update_user_full_name = function (email, new_full_name) {
-    var user_row = $("tr[id='user_" + email + "']");
-    var user_name = user_row.find(".user_name");
-    var form_row = $("tr[id='user_form_" + email + "']");
+    var user_info = get_user_info(email);
+
+    var user_row = user_info.user_row;
+    var form_row = user_info.form_row;
 
     // Update the full name in the table
-    user_name.text(new_full_name);
+    user_row.find(".user_name").text(new_full_name);
+    form_row.find("input[name='full_name']").val(new_full_name);
 
     // Hide name change form
     form_row.hide();
