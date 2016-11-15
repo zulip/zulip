@@ -670,8 +670,9 @@ function _setup_page() {
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
         var email = $(e.currentTarget).data("email");
-        var user_row = $("tr[id='user_" + email + "']");
-        var form_row = $("tr[id='user_form_" + email + "'");
+        var user_info = get_user_info(email);
+        var user_row = user_info.user_row;
+        var form_row = user_info.form_row;
         var reset_button = form_row.find(".reset_edit_user");
         var submit_button = form_row.find(".submit_name_changes");
         var full_name = form_row.find("input[name='full_name']");
