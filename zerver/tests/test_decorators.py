@@ -17,6 +17,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
     WebhookTestCase,
 )
+from zerver.lib.response import json_response
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
@@ -25,7 +26,8 @@ from zerver.decorator import (
     authenticated_json_post_view, authenticated_json_view,
     authenticate_notify,
     get_client_name, internal_notify_view, is_local_addr,
-    rate_limit, validate_api_key, logged_in_and_active
+    rate_limit, validate_api_key, logged_in_and_active,
+    return_success_on_head_request
     )
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
@@ -872,3 +874,31 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             with mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
                 result = self.client_get('/accounts/accept_terms/')
                 self.assertEqual(result.status_code, 302)
+
+class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
+    def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
+        class HeadRequest(object):
+            method = 'HEAD'
+
+        request = HeadRequest()
+
+        @return_success_on_head_request
+        def test_function(request):
+            return json_response(msg=u'from_test_function')
+
+        response = test_function(request)
+        self.assert_json_success(response)
+        self.assertNotEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+
+    def test_return_success_on_head_request_returns_normal_response_if_request_method_is_not_head(self):
+            class HeadRequest(object):
+                method = 'POST'
+
+            request = HeadRequest()
+
+            @return_success_on_head_request
+            def test_function(request):
+                return json_response(msg=u'from_test_function')
+
+            response = test_function(request)
+            self.assertEqual(ujson.loads(response.content).get('msg'), u'from_test_function')

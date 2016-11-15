@@ -6,6 +6,11 @@ class TrelloHookTests(WebhookTestCase):
     URL_TEMPLATE = u"/api/v1/external/trello?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'trello'
 
+    def test_trello_confirmation_request(self):
+        # type: () -> None
+        response = self.client.head(self.build_webhook_url())
+        self.assertEqual(response.status_code, 200, response)
+
     def test_trello_webhook_when_card_was_moved_to_another_list(self):
         # type: () -> None
         expected_message = u"TomaszKolek moved [This is a card.](https://trello.com/c/r33ylX2Z) from Basics to Intermediate."
