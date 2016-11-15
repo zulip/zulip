@@ -3,22 +3,16 @@ var search_suggestion = (function () {
 var exports = {};
 
 function phrase_match(phrase, q) {
-    // match "tes" to "test" and "stream test" but not "hostess"
-    var i;
+    // match "tes" to "test", "stream test" and "hostess"
     q = q.toLowerCase();
 
     phrase = phrase.toLowerCase();
-    if (phrase.indexOf(q) === 0) {
+    if (phrase.includes(q)) {
         return true;
     }
-
-    var parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i++) {
-        if (parts[i].indexOf(q) === 0) {
-            return true;
-        }
+    else {
+        return false;
     }
-    return false;
 }
 
 function person_matches_query(person, q) {
