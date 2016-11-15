@@ -2,6 +2,7 @@ var admin = (function () {
 
 var exports = {};
 var all_streams = [];
+var user_row_to_deactivate;
 
 exports.show_or_hide_menu_item = function () {
     var item = $('.admin-menu-item').expectOne();
@@ -198,6 +199,43 @@ exports.populate_auth_methods = function (auth_methods) {
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
+exports.set_up_deactivate_user_modal = function (row) {
+    $("#do_deactivate_user_button").expectOne().click(function (e) {
+        var email = row.find(".email").text();
+        if ($("#deactivation_user_modal .email").html() !== email) {
+            blueslip.error("User deactivation canceled due to non-matching fields.");
+            ui.report_message("Deactivation encountered an error. Please reload and try again.",
+               $("#home-error"), 'alert-error');
+        }
+        $("#deactivation_user_modal").modal("hide");
+        row.find("button").prop("disabled", true).text("Working…");
+        channel.del({
+            url: '/json/users/' + email,
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    row.find("button").closest("td").html(
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                    );
+                } else {
+                     row.find("button").text("Failed!");
+                }
+            },
+            success: function () {
+                var button = row.find("button.deactivate");
+                button.prop("disabled", false);
+                button.addClass("btn-warning");
+                button.removeClass("btn-danger");
+                button.addClass("reactivate");
+                button.removeClass("deactivate");
+                button.text(i18n.t("Reactivate"));
+                row.addClass("deactivated_user");
+                row.find(".user-admin-settings").hide();
+            }
+        });
+    });
+};
+
+
 function _setup_page() {
     var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
     var atdomains = page_params.domains.slice();
@@ -283,6 +321,8 @@ function _setup_page() {
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
         $("#deactivation_user_modal").modal("show");
+
+        exports.set_up_deactivate_user_modal(row);
     });
 
     $(".admin_stream_table").on("click", ".deactivate", function (e) {
@@ -667,41 +707,6 @@ function _setup_page() {
                 },
                 error: failed_changing_name
             });
-        });
-    });
-
-    $("#do_deactivate_user_button").click(function (e) {
-        var row = $(".active_user_row");
-        var email = row.find(".email").text();
-        if ($("#deactivation_user_modal .email").html() !== email) {
-            blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui.report_message("Deactivation encountered an error. Please reload and try again.",
-               $("#home-error"), 'alert-error');
-        }
-        $("#deactivation_user_modal").modal("hide");
-        row.find("button").prop("disabled", true).text("Working…");
-        channel.del({
-            url: '/json/users/' + email,
-            error: function (xhr, error_type) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                     row.find("button").text("Failed!");
-                }
-            },
-            success: function () {
-                var button = row.find("button.deactivate");
-                button.prop("disabled", false);
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("reactivate");
-                button.removeClass("deactivate");
-                button.text(i18n.t("Reactivate"));
-                row.addClass("deactivated_user");
-                row.find(".user-admin-settings").hide();
-            }
         });
     });
 
