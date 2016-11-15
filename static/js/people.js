@@ -35,6 +35,38 @@ exports.get_user_id = function (email) {
     return user_id;
 };
 
+exports.user_ids_string_to_emails_string = function (user_ids_string) {
+    var user_ids = user_ids_string.split(',');
+    var emails = _.map(user_ids, function (user_id) {
+        var person = people_by_user_id_dict.get(user_id);
+        if (person) {
+            return person.email;
+        }
+    });
+
+    if (!_.all(emails)) {
+        blueslip.error('Unknown user ids: ' + user_ids_string);
+        return;
+    }
+    return emails.join(',');
+};
+
+exports.emails_strings_to_user_ids_string = function (emails_string) {
+    var emails = emails_string.split(',');
+    var user_ids = _.map(emails, function (email) {
+        var person = people_dict.get(email);
+        if (person) {
+            return person.user_id;
+        }
+    });
+
+    if (!_.all(user_ids)) {
+        blueslip.error('Unknown emails: ' + emails_string);
+        return;
+    }
+    return user_ids.join(',');
+};
+
 exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(email);
 };
