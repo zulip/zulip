@@ -311,9 +311,7 @@ function _setup_page() {
         e.preventDefault();
         e.stopPropagation();
 
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
 
         var user_name = row.find('.user_name').text();
         var email = row.find('.email').text();
@@ -388,9 +386,7 @@ function _setup_page() {
         e.preventDefault();
         e.stopPropagation();
 
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
 
         var user_name = row.find('.user_name').text();
         var email = row.find('.email').text();
@@ -422,9 +418,7 @@ function _setup_page() {
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
 
         var email = row.find('.email').text();
         channel.post({
@@ -611,9 +605,7 @@ function _setup_page() {
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
         var email = row.find('.email').text();
 
         var url = "/json/users/" + email;
@@ -644,9 +636,7 @@ function _setup_page() {
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
         var email = row.find('.email').text();
 
         var url = "/json/users/" + email;
