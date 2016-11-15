@@ -8,6 +8,7 @@ from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.utils import timezone
 from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.models import (
     Recipient,
@@ -234,6 +235,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     `missed_messages` is a list of Message objects to remind about they should
                       all have the same recipient and subject
     """
+    from zerver.context_processors import common_context
     # Disabled missedmessage emails internally
     if not user_profile.enable_offline_email_notifications:
         return
@@ -246,19 +248,16 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         )
 
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
-    template_payload = {
+    template_payload = common_context(user_profile)
+    template_payload.update({
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
         'reply_warning': False,
-        'external_host': settings.EXTERNAL_HOST,
-        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-        'server_uri': settings.SERVER_URI,
-        'realm_uri': user_profile.realm.uri,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
         'reply_to_zulip': True,
         'unsubscribe_link': unsubscribe_link,
-    }
+    })
 
     headers = {}
     from zerver.lib.email_mirror import create_missed_message_address
@@ -289,7 +288,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
-    user_profile.last_reminder = datetime.datetime.now()
+    user_profile.last_reminder = timezone.now()
     user_profile.save(update_fields=['last_reminder'])
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
@@ -402,7 +401,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                             'sender_name': sender['name']}
             ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
                                         data=ujson.dumps(email_fields),
-                                        scheduled_timestamp=datetime.datetime.utcnow() + delay)
+                                        scheduled_timestamp=timezone.now() + delay)
         return
 
     # Mandrill implementation
@@ -423,7 +422,7 @@ def send_future_email(recipients, email_html, email_text, subject,
     if delay < datetime.timedelta(minutes=1):
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")
     else:
-        send_time = (datetime.datetime.utcnow() + delay).__format__("%Y-%m-%d %H:%M:%S")
+        send_time = (timezone.now() + delay).__format__("%Y-%m-%d %H:%M:%S")
         results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
 
@@ -468,6 +467,7 @@ def send_local_email_template_with_delay(recipients, template_prefix,
 
 def enqueue_welcome_emails(email, name):
     # type: (text_type, text_type) -> None
+    from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
         sender = settings.WELCOME_EMAIL_SENDER # type: Dict[str, text_type]
     else:
@@ -475,13 +475,11 @@ def enqueue_welcome_emails(email, name):
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-
-    template_payload = {'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
-                        'external_host': settings.EXTERNAL_HOST,
-                        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-                        'server_uri': settings.SERVER_URI,
-                        'realm_uri': user_profile.realm.uri,
-                        'unsubscribe_link': unsubscribe_link}
+    template_payload = common_context(user_profile)
+    template_payload.update({
+        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+        'unsubscribe_link': unsubscribe_link
+    })
 
     # Send day 1 email
     send_local_email_template_with_delay([{'email': email, 'name': name}],

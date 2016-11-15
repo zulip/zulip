@@ -128,7 +128,7 @@ class TestProcessCountStat(AnalyticsTestCase):
     def make_dummy_count_stat(self, current_time):
         # type: (datetime) -> CountStat
         dummy_query = """INSERT INTO analytics_realmcount (realm_id, property, end_time, interval, value)
-                                VALUES (222, 'test stat', '%(end_time)s','hour', 22)""" % {'end_time': current_time}
+                                VALUES (1, 'test stat', '%(end_time)s','hour', 22)""" % {'end_time': current_time}
         count_stat = CountStat('test stat', ZerverCountQuery(Recipient, UserCount, dummy_query),
                                {}, None, CountStat.HOUR, False)
         return count_stat

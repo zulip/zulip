@@ -328,6 +328,11 @@ code {
     font-size: 0.857em;
 }
 
+.message_content p code {
+    white-space: pre-wrap;
+    padding: 0px 4px;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
@@ -702,7 +707,7 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -38px;
+    right: -55px;
 }
 
 .include-sender .message_controls {
@@ -735,6 +740,10 @@ td.pointer {
     border-bottom: 1px solid #e2e2e2;
     border-top: 1px solid #e2e2e2;
     margin-bottom: 10px;
+}
+
+.message_list .message_row:hover .message_time {
+    display: none;
 }
 
 .stream_label {
@@ -1113,22 +1122,21 @@ a.message_label_clickable:hover {
 }
 
 .edit_content {
-    opacity: .4;
-    width: 0px;
-    height: 0px;
     display: inline-block;
     position: relative;
+    left: 22px;
+    width: 0px;
+    height: 0px;
+    color: #bbb;
 }
 
 .edit_content i {
     position: absolute;
     display: block;
-    background: #ffffff;
     top: -0.9em;
     left: 0.4em;
     border-radius: 1px;
     padding: 1px 2px;
-    border: 1px dotted #ccc;
 }
 
 .edit_content:hover {
@@ -1179,6 +1187,15 @@ a.dark_background:hover,
     visibility: visible;
 }
 
+.info {
+    display: inline-block;
+    position: relative;
+    left: 3px;
+    font-size: 15px;
+    color: #bbb;
+    visibility: hidden;
+}
+
 .actions_hovered .actions_link {
     text-decoration: underline;
 }
@@ -1214,11 +1231,6 @@ div.focused_table {
     padding-left: 46px;
     display: block;
     position: relative;
-}
-
-.message_content p {
-    overflow-x: auto;
-    overflow-y: hidden;
 }
 
 .message_edit_content {
@@ -2244,13 +2256,6 @@ button.topic_edit_cancel {
 .empty-star:hover {
     cursor: pointer;
     color: #565656;
-}
-
-.info {
-    display: inline-block;
-    font-size: 15px;
-    color: #bbb;
-    visibility: hidden;
 }
 
 .star:hover {

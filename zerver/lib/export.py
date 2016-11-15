@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.db.models.query import QuerySet
 import glob
 import logging
 import os
@@ -151,7 +152,23 @@ def make_raw(query, exclude=None):
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
     '''
-    return [model_to_dict(x, exclude=exclude) for x in query]
+    rows = []
+    for instance in query:
+        data = model_to_dict(instance, exclude=exclude)
+        """
+        In Django 1.10, model_to_dict resolves ManyToManyField as a QuerySet.
+        Previously, we used to get primary keys. Following code converts the
+        QuerySet into primary keys.
+        For reference: https://www.mail-archive.com/django-updates@googlegroups.com/msg163020.html
+        """
+        for field in instance._meta.many_to_many:
+            value = data[field.name]
+            if isinstance(value, QuerySet):
+                data[field.name] = [row.pk for row in value]
+
+        rows.append(data)
+
+    return rows
 
 def floatify_datetime_fields(data, table):
     # type: (TableData, TableName) -> None

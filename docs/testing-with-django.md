@@ -63,9 +63,11 @@ that a test fails before you implement the feature ensures that if somebody
 accidentally regresses the feature in the future, the test will catch
 the regression.
 
-Another important file to skim is
+Another important files to skim are
 [zerver/lib/test_helpers.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_helpers.py),
-which contains test helpers and our `ZulipTestCase` class.
+which contains test helpers.
+[zerver/lib/test_classes.py](https://github.com/zulip/zulip/blob/master/zerver/lib/test_classes.py),
+which contains our `ZulipTestCase` and `WebhookTestCase` classes.
 
 ### Setting up data for tests
 

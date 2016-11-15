@@ -11,7 +11,11 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    HostRequestMock, ZulipTestCase, WebhookTestCase
+    HostRequestMock,
+)
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+    WebhookTestCase,
 )
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
@@ -603,8 +607,9 @@ class InactiveUserTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         test_password = "abcd1234"
         user_profile.set_password(test_password)
+        user_profile.save()
 
-        self.login(email)
+        self.login(email, password=test_password)
         user_profile.is_active = False
         user_profile.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
@@ -786,8 +791,9 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def test_authenticated_json_post_view_if_user_is_not_active(self):
         user_email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(user_email)
         self._login(user_email, password="test")
+        # Get user_profile after _login so that we have the latest data.
+        user_profile = get_user_profile_by_email(user_email)
         # we deactivate user manually because do_deactivate_user removes user session
         user_profile.is_active = False
         user_profile.save()

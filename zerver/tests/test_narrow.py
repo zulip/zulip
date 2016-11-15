@@ -20,9 +20,12 @@ from zerver.lib.narrow import (
 )
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
-    ZulipTestCase, POSTRequestMock,
+    POSTRequestMock,
     TestCase,
     get_user_messages, message_ids, queries_captured,
+)
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 from zerver.views.messages import (
     exclude_muting_conditions,

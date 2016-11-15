@@ -1,0 +1,13 @@
+{% extends "zerver/portico.html" %}
+
+{# Zulip User Documentation. #}
+
+{% block portico_content %}
+
+<div class="app terms-page">
+  <div class="app-main terms-page-container">
+  {{ article|render_markdown_path }}
+  </div>
+</div>
+
+{% endblock %}

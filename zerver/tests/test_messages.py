@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
+from django.utils import timezone
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
@@ -15,13 +16,16 @@ from zerver.lib.message import (
 )
 
 from zerver.lib.test_helpers import (
-    ZulipTestCase,
     get_user_messages,
     make_client,
     message_ids, message_stream_count,
     most_recent_message,
     most_recent_usermessage,
     queries_captured,
+)
+
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 
 from zerver.models import (
@@ -34,6 +38,7 @@ from zerver.lib.actions import (
     check_message, check_send_message,
     do_create_user,
     get_client,
+    get_recipient,
 )
 
 from zerver.lib.upload import create_attachment
@@ -48,6 +53,95 @@ import ujson
 from six import text_type
 from six.moves import range
 from typing import Any, Optional
+
+class TopicHistoryTest(ZulipTestCase):
+    def test_topics_history(self):
+        # type: () -> None
+        # verified: int(UserMessage.flags.read) == 1
+        email = 'iago@zulip.com'
+        stream_name = 'Verona'
+        self.login(email)
+
+        user_profile = get_user_profile_by_email(email)
+        stream = Stream.objects.get(name=stream_name)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+
+        def create_test_message(topic, read, starred=False):
+            # type: (str, bool, bool) -> None
+
+            hamlet = get_user_profile_by_email('hamlet@zulip.com')
+            message = Message.objects.create(
+                sender=hamlet,
+                recipient=recipient,
+                subject=topic,
+                content='whatever',
+                pub_date=timezone.now(),
+                sending_client=get_client('whatever'),
+            )
+            flags = 0
+            if read:
+                flags |= UserMessage.flags.read
+
+            # use this to make sure our query isn't confused
+            # by other flags
+            if starred:
+                flags |= UserMessage.flags.starred
+
+            UserMessage.objects.create(
+                user_profile=user_profile,
+                message=message,
+                flags=flags,
+            )
+
+        create_test_message('topic2', read=False)
+        create_test_message('toPIc1', read=False, starred=True)
+        create_test_message('topic2', read=False)
+        create_test_message('topic2', read=True)
+        create_test_message('topic2', read=False, starred=True)
+        create_test_message('Topic2', read=False)
+        create_test_message('already_read', read=True)
+
+        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        result = self.client_get(endpoint, dict())
+        self.assert_json_success(result)
+        history = ujson.loads(result.content)['topics']
+
+        # We only look at the most recent three topics, because
+        # the prior fixture data may be unreliable.
+        self.assertEqual(history[:3], [
+            [u'already_read', 0],
+            [u'Topic2', 4],
+            [u'toPIc1', 1],
+        ])
+
+    def test_bad_stream_id(self):
+        # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        # non-sensible stream id
+        endpoint = '/json/users/me/9999999999/topics'
+        result = self.client_get(endpoint, dict())
+        self.assert_json_error(result, 'Invalid stream id')
+
+        # out of realm
+        bad_stream = self.make_stream(
+            'mit_stream',
+            realm=get_realm('mit.edu')
+        )
+        endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
+        result = self.client_get(endpoint, dict())
+        self.assert_json_error(result, 'Invalid stream id')
+
+        # private stream to which I am not subscribed
+        private_stream = self.make_stream(
+            'private_stream',
+            invite_only=True
+        )
+        endpoint = '/json/users/me/%s/topics' % (private_stream.id,)
+        result = self.client_get(endpoint, dict())
+        self.assert_json_error(result, 'Invalid stream id')
+
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain):
@@ -441,9 +535,9 @@ class MessageDictTest(ZulipTestCase):
                     recipient=recipient,
                     subject='whatever',
                     content='whatever %d' % i,
-                    pub_date=datetime.datetime.now(),
+                    pub_date=timezone.now(),
                     sending_client=sending_client,
-                    last_edit_time=datetime.datetime.now(),
+                    last_edit_time=timezone.now(),
                     edit_history='[]'
                 )
                 message.save()
@@ -476,9 +570,9 @@ class MessageDictTest(ZulipTestCase):
             recipient=recipient,
             subject='whatever',
             content='hello **world**',
-            pub_date=datetime.datetime.now(),
+            pub_date=timezone.now(),
             sending_client=sending_client,
-            last_edit_time=datetime.datetime.now(),
+            last_edit_time=timezone.now(),
             edit_history='[]'
         )
         message.save()
@@ -893,7 +987,9 @@ class EditMessageTest(ZulipTestCase):
             'message_id': msg_id,
             'content': ' '
         })
-        self.assert_json_error(result, "Content can't be empty")
+        self.assert_json_success(result)
+        content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
+        self.assertEqual(content, "(deleted)")
 
     def test_edit_message_content_limit(self):
         # type: () -> None
@@ -1445,15 +1541,38 @@ class CheckMessageTest(ZulipTestCase):
         sender = bot
         client = make_client(name="test suite")
         stream_name = u'Россия'
-        self.make_stream(stream_name)
         message_type_name = 'stream'
         message_to = None
         message_to = [stream_name]
         subject_name = 'issue'
         message_content = 'whatever'
         old_count = message_stream_count(parent)
-        ret = check_message(sender, client, message_type_name, message_to,
-                      subject_name, message_content)
+
+        # Try sending to stream that doesn't exist sends a reminder to
+        # the sender
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, message_type_name, message_to,
+                          subject_name, message_content)
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
+        self.assertIn("that stream does not yet exist.", most_recent_message(parent).content)
+
+        # Try sending to stream that exists with no subscribers soon
+        # after; due to rate-limiting, this should send nothing.
+        self.make_stream(stream_name)
+        ret = check_message(sender, client, message_type_name, message_to,
+                            subject_name, message_content)
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 1)
+
+        # Try sending to stream that exists with no subscribers longer
+        # after; this should send an error to the bot owner that the
+        # stream doesn't exist
+        sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
+        sender.save(update_fields=["last_reminder"])
+        ret = check_message(sender, client, message_type_name, message_to,
+                            subject_name, message_content)
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
+        self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)

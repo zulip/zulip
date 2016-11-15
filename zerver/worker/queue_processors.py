@@ -23,6 +23,7 @@ from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
 from django.core.mail import EmailMessage
 from zerver.lib.redis_utils import get_redis_client
+from zerver.context_processors import common_context
 
 import os
 import sys
@@ -152,19 +153,20 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
 
         # queue invitation reminder for two days from now.
         link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
-        send_local_email_template_with_delay([{'email': data["email"], 'name': ""}],
-                                             "zerver/emails/invitation/invitation_reminder_email",
-                                             {'activate_url': link,
-                                              'referrer': referrer,
-                                              'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
-                                              'external_host': settings.EXTERNAL_HOST,
-                                              'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-                                              'server_uri': settings.SERVER_URI,
-                                              'realm_uri': referrer.realm.uri,
-                                              'support_email': settings.ZULIP_ADMINISTRATOR},
-                                             datetime.timedelta(days=2),
-                                             tags=["invitation-reminders"],
-                                             sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
+        context = common_context(referrer)
+        context.update({
+            'activate_url': link,
+            'referrer': referrer,
+            'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+            'support_email': settings.ZULIP_ADMINISTRATOR
+        })
+        send_local_email_template_with_delay(
+            [{'email': data["email"], 'name': ""}],
+            "zerver/emails/invitation/invitation_reminder_email",
+            context,
+            datetime.timedelta(days=2),
+            tags=["invitation-reminders"],
+            sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
@@ -357,7 +359,7 @@ class MessageSenderWorker(QueueProcessingWorker):
 
         redis_key = req_redis_key(event['req_id'])
         self.redis_client.hmset(redis_key, {'status': 'complete',
-                                            'response': resp_content});
+                                            'response': resp_content})
 
         queue_json_publish(server_meta['return_queue'], result, lambda e: None)
 

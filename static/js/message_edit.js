@@ -18,8 +18,16 @@ exports.editability_types = editability_types;
 
 function get_editability (message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
-    if (!message || !message.sent_by_me || message.local_id !== undefined ||
-        !page_params.realm_allow_message_editing) {
+    if (!(message && message.sent_by_me)) {
+        return editability_types.NO;
+    }
+    if (message.failed_request) {
+        return editability_types.FULL;
+    }
+    if (message.local_id !== undefined) {
+        return editability_types.NO;
+    }
+    if (!page_params.realm_allow_message_editing) {
         return editability_types.NO;
     }
     if (page_params.realm_message_content_edit_limit_seconds === 0) {
@@ -68,6 +76,7 @@ exports.save = function (row, from_topic_edited_only) {
     if (message.local_id !== undefined) {
         if (new_content !== message.raw_content || topic_changed) {
             echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
+            row = current_msg_list.get_row(message_id);
         }
         message_edit.end(row);
         return;

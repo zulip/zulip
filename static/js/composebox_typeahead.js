@@ -248,7 +248,7 @@ exports.compose_content_begins_typeahead = function (query) {
             email: "everyone",
             full_name: "everyone"
         };
-        var persons = people.get_all_persons();
+        var persons = people.get_realm_persons();
         return [].concat(persons, [all_item, everyone_item]);
     }
 

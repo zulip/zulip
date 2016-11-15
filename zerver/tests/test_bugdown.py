@@ -17,7 +17,7 @@ from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
-from zerver.lib.test_helpers import (
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.str_utils import force_str
@@ -26,6 +26,7 @@ from zerver.models import (
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
+    get_realm_by_string_id,
     get_user_profile_by_email,
     get_stream,
     realm_filters_for_domain,
@@ -841,6 +842,20 @@ class BugdownApiTests(ZulipTestCase):
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
             u'<p>That is a <strong>bold</strong> statement</p>')
+
+    def test_render_mention_stream_api(self):
+        # type: () -> None
+        """Determines whether we're correctly passing the realm context"""
+        content = 'This mentions #**Denmark** and @**King Hamlet**.'
+        result = self.client_get(
+            '/api/v1/messages/render',
+            dict(content=content),
+            **self.api_auth('othello@zulip.com')
+        )
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['rendered'],
+            u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):

@@ -20,9 +20,9 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
-    split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
+    email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm_by_string_id, list_of_domains_for_realm
+    get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -104,45 +104,24 @@ def accounts_register(request):
     unique_open_realm = get_unique_open_realm()
     if unique_open_realm is not None:
         realm = unique_open_realm
-        domain = realm.domain
     elif prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
         realm = prereg_user.referred_by.realm
-        domain = realm.domain
-        if not email_allowed_for_realm(email, realm):
-            return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     elif prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
-        # happens if you sign up through a special URL for an open
-        # realm.
-        domain = prereg_user.realm.domain
-        realm = get_realm(domain)
+        # happens if you sign up through a special URL for an open realm.
+        realm = prereg_user.realm
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None
-        domain = None
     elif settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain_realm = get_realm_by_string_id(get_subdomain(request))
-        domain = resolve_email_to_domain(email)
-        domain = subdomain_realm.domain if subdomain_realm else domain
-        if completely_open(domain):
-            # When subdomains are enabled and the user is registering into a
-            # completely open subdomain without going through the correct url
-            # for the completely open domains.
-            # NOTE: When the user comes through the correct url then
-            # `prereg_user.realm` will have the correct value and this branch
-            # will not run.
-            path = reverse('zerver.views.accounts_home_with_domain',
-                           kwargs={'domain': subdomain_realm.domain})
-            ctx = {"link": "%s%s" % (subdomain_realm.uri, path)}
-            return render_to_response("zerver/completely_open_link.html", ctx)
-        else:
-            realm = get_realm(domain)
+        realm = get_realm_by_string_id(get_subdomain(request))
     else:
-        domain = resolve_email_to_domain(email)
-        realm = get_realm(domain)
+        realm = get_realm_by_email_domain(email)
 
+    if realm and not email_allowed_for_realm(email, realm):
+        return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
@@ -170,8 +149,11 @@ def accounts_register(request):
             del request.session['authenticated_full_name']
         except KeyError:
             pass
-        if realm is not None and realm.is_zephyr_mirror_realm and domain == "mit.edu":
-            # for MIT users, we can get an authoritative name from Hesiod
+        if realm is not None and realm.is_zephyr_mirror_realm:
+            # For MIT users, we can get an authoritative name from Hesiod.
+            # Technically we should check that this is actually an MIT
+            # realm, but we can cross that bridge if we ever get a non-MIT
+            # zephyr mirroring realm.
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
@@ -281,7 +263,6 @@ def accounts_register(request):
 
     return render_to_response('zerver/register.html',
             {'form': form,
-             'company_name': domain,
              'email': email,
              'key': key,
              'full_name': request.session.get('authenticated_full_name', None),
@@ -307,23 +288,29 @@ def accounts_accept_terms(request):
         form = ToSForm()
 
     email = request.user.email
-    domain = resolve_email_to_domain(email)
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
         special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
     return render_to_response('zerver/accounts_accept_terms.html',
-        { 'form': form, 'company_name': domain, 'email': email, \
-          'special_message_template' : special_message_template },
+        {'form': form, 'email': email, 'special_message_template': special_message_template},
         request=request)
 
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        string_id = get_subdomain(request)
+    else:
+        realm = get_realm(request.session.get("domain"))
+        if realm is not None:
+            string_id = realm.string_id
+        else:
+            string_id = ''
+
     if user_info:
-        return HomepageForm(user_info, domain=request.session.get("domain"),
-                            subdomain=get_subdomain(request))
+        return HomepageForm(user_info, string_id = string_id)
     # An empty fields dict is not treated the same way as not
     # providing it.
-    return HomepageForm(domain=request.session.get("domain"), subdomain=get_subdomain(request))
+    return HomepageForm(string_id = string_id)
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
@@ -342,7 +329,7 @@ def create_preregistration_user(email, request, realm_creation=False):
 
 def accounts_home_with_domain(request, domain):
     # type: (HttpRequest, str) -> HttpResponse
-    if completely_open(domain):
+    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(domain):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
         # URL. We store this information in the session rather than

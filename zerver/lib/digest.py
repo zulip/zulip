@@ -14,6 +14,7 @@ from zerver.lib.notifications import build_message_list, hashchange_encode, \
     send_future_email, one_click_unsubscribe_link
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams
+from zerver.context_processors import common_context
 
 import logging
 
@@ -166,15 +167,13 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile=user_profile,
         message__pub_date__gt=cutoff_date).order_by("message__pub_date")
 
+    template_payload = common_context(user_profile)
+
     # Start building email template data.
-    template_payload = {
+    template_payload.update({
         'name': user_profile.full_name,
-        'external_host': settings.EXTERNAL_HOST,
-        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-        'server_uri': settings.SERVER_URI,
-        'realm_uri': user_profile.realm.uri,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
-        } # type: Dict[str, Any]
+        })
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     # You can't have an unread message that you sent, but when testing

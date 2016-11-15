@@ -102,7 +102,7 @@ class Command(BaseCommand):
             translation.activate(settings.LANGUAGE_CODE)
 
             print("Validating Django models.py...")
-            self.validate(display_num_errors=True)
+            self.check(display_num_errors=True)
             print("\nDjango version %s" % (django.get_version()))
             print("Tornado server is running at http://%s:%s/" % (addr, port))
             print("Quit the server with %s." % (quit_command,))
@@ -354,7 +354,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:
                 response = middleware_method(request, response)
-            response = self.apply_response_fixes(request, response)
+            if hasattr(self, 'apply_response_fixes'):
+                response = self.apply_response_fixes(request, response)
         except: # Any exception should be gathered and handled
             signals.got_request_exception.send(sender=self.__class__, request=request)
             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())

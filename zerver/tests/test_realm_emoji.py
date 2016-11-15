@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+<<<<<<< HEAD
 from zerver.lib.actions import get_realm_by_string_id, check_add_realm_emoji
 from zerver.lib.test_helpers import ZulipTestCase
+=======
+from zerver.lib.actions import get_realm, check_add_realm_emoji
+from zerver.lib.test_classes import ZulipTestCase
+>>>>>>> master
 from zerver.models import RealmEmoji
 import ujson
 

@@ -120,6 +120,9 @@ function dispatch_normal_event(event) {
         break;
 
     case 'subscription':
+        var person;
+        var email;
+
         if (event.op === 'add') {
             _.each(event.subscriptions, function (sub) {
                 subs.mark_subscribed(sub.name, sub);
@@ -127,17 +130,20 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'peer_add') {
             // TODO: remove email shim here and fix called functions
             //       to use user_ids
-            var person = people.get_person_from_user_id(event.user_id);
-            var email = person.email;
+            person = people.get_person_from_user_id(event.user_id);
+            email = person.email;
             _.each(event.subscriptions, function (sub) {
-                stream_data.add_subscriber(sub, email);
+                stream_data.add_subscriber(sub, event.user_id);
                 $(document).trigger('peer_subscribe.zulip',
                                     {stream_name: sub, user_email: email});
             });
         } else if (event.op === 'peer_remove') {
+            // TODO: remove email shim here and fix called functions
+            //       to use user_ids
+            person = people.get_person_from_user_id(event.user_id);
+            email = person.email;
             _.each(event.subscriptions, function (sub) {
-                var email = event.user_email;
-                stream_data.remove_subscriber(sub, email);
+                stream_data.remove_subscriber(sub, event.user_id);
                 $(document).trigger('peer_unsubscribe.zulip',
                                     {stream_name: sub, user_email: email});
             });

@@ -442,11 +442,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         // We don't know about this stream
         return;
     } else if (sub.subscribed) {
-        stream_list.remove_narrow_filter(sub.name, 'stream');
-        // Remove user from subscriber's list
-        stream_data.remove_subscriber(sub.name, page_params.email);
-
-        sub.subscribed = false;
+        stream_data.unsubscribe_myself(sub);
 
         var button = button_for_sub(sub);
         button.toggleClass("checked");

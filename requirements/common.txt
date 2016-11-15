@@ -40,11 +40,11 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.8
 
 # Django extension providing bitfield support
-django-bitfield==1.8.0
+git+https://github.com/lutris/django-bitfield.git@c866ea31e6e33ed3f5913e362e84e295eb44ab05#egg=django-bitfield==1.9.0
 
 # Django-guardian is actually no longer used; just needed for the
 # migration that removes it.
-git+https://github.com/rwbarton/django-guardian.git@caf9f0c8c035feb3dff5542fb042dd13126cdd69#egg=django-guardian==1.3
+git+https://github.com/umairwaheed/django-guardian.git@a81edc9f8ef8268f3edb73dea61918f0e6e2e40d#egg=django-guardian==1.3.1
 
 # Django extension for sending data to statsd
 django-statsd-mozilla==0.3.16
@@ -165,3 +165,6 @@ git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtua
 
 # Needed for reading json as stream
 ijson==2.3
+
+#for pep8 linter
+pycodestyle==2.1.0

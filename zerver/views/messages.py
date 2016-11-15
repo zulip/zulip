@@ -29,6 +29,7 @@ from zerver.lib.message import (
     access_message,
     MessageDict,
     extract_message_dict,
+    render_markdown,
     stringify_message_dict,
 )
 from zerver.lib.response import json_success, json_error
@@ -37,10 +38,10 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
+    Realm, RealmAlias, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, \
-    resolve_email_to_domain, get_realm, get_active_streams, \
+    email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
@@ -753,9 +754,10 @@ def same_realm_zephyr_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = resolve_email_to_domain(email)
+    domain = email_to_domain(email)
 
-    return user_profile.realm.domain == domain and user_profile.realm.is_zephyr_mirror_realm
+    return user_profile.realm.is_zephyr_mirror_realm and \
+        RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_irc_user(user_profile, email):
     # type: (UserProfile, text_type) -> bool
@@ -767,9 +769,9 @@ def same_realm_irc_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = resolve_email_to_domain(email)
+    domain = email_to_domain(email).replace("irc.", "")
 
-    return user_profile.realm.domain == domain.replace("irc.", "")
+    return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_jabber_user(user_profile, email):
     # type: (UserProfile, text_type) -> bool
@@ -778,13 +780,11 @@ def same_realm_jabber_user(user_profile, email):
     except ValidationError:
         return False
 
-    domain = resolve_email_to_domain(email)
-    # The ist.mit.edu realm uses mit.edu email addresses so that their accounts
-    # can receive mail.
-    if user_profile.realm.domain == 'ist.mit.edu' and domain == 'mit.edu':
-        return True
+    # If your Jabber users have a different email domain than the
+    # Zulip users, this is where you would do any translation.
+    domain = email_to_domain(email)
 
-    return user_profile.realm.domain == domain
+    return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
@@ -910,7 +910,7 @@ def update_message_backend(request, user_profile,
     if content is not None:
         content = content.strip()
         if content == "":
-            raise JsonableError(_("Content can't be empty"))
+            content = "(deleted)"
         content = truncate_body(content)
 
         # We exclude UserMessage.flags.historical rows since those
@@ -940,7 +940,12 @@ def json_fetch_raw_message(request, user_profile,
 @has_request_variables
 def render_message_backend(request, user_profile, content=REQ()):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
-    rendered_content = bugdown.convert(content, user_profile.realm.domain)
+    message = Message()
+    message.sender = user_profile
+    message.content = content
+    message.sending_client = request.client
+
+    rendered_content = render_markdown(message, content, domain=user_profile.realm.domain)
     return json_success({"rendered": rendered_content})
 
 @authenticated_json_post_view

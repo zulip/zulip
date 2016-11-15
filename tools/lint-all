@@ -77,6 +77,27 @@ def check_pyflakes(options, by_lang):
                 failed = True
     return failed
 
+
+def check_pep8(files):
+    # type: (List[str]) -> bool
+    failed = False
+    ignored_rules = [
+        'E402', 'E501', 'W503', 'E711', 'E201', 'E203', 'E202', 'E128', 'E226', 'E124', 'E125',
+        'E126', 'E127', 'E121', 'E122', 'E123', 'E266', 'E265', 'E261', 'E301', 'E221', 'E303',
+        'E241', 'E712', 'E225', 'E401', 'E115', 'E114', 'E111', 'E222', 'E731', 'E302', 'E129',
+        'E741', 'E714', 'W391', 'E211', 'E713', 'E502', 'E131', 'E305', 'E251', 'E306', 'E231',
+        'E701', 'E702',
+    ]
+    pep8 = subprocess.Popen(
+        ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    for pipe in (pep8.stdout, pep8.stderr):
+        for ln in pipe:
+            sys.stdout.write(ln)
+            failed = True
+    return failed
+
+
 def run_parallel(lint_functions):
     # type: (Dict[str, Callable[[], int]]) -> bool
     pids = []
@@ -397,6 +418,9 @@ def run():
     parser.add_option('--full',
         action='store_true',
         help='Check some things we typically ignore')
+    parser.add_option('--pep8',
+        action='store_true',
+        help='Run the pep8 checker')
     parser.add_option('--modified', '-m',
         action='store_true',
         help='Only check modified files')
@@ -432,6 +456,12 @@ def run():
         return func
 
     with bright_red_output():
+        @lint
+        def check_urls():
+            # type: () -> int
+            result = subprocess.call(['tools/check-urls'])
+            return result
+
         @lint
         def templates():
             # type: () -> int
@@ -485,6 +515,13 @@ def run():
             # type: () -> int
             failed = check_pyflakes(options, by_lang)
             return 1 if failed else 0
+
+        if options.pep8:
+            @lint
+            def pep8():
+                # type: () -> int
+                failed = check_pep8(by_lang['py'])
+                return 1 if failed else 0
 
         failed = run_parallel(lint_functions)
 

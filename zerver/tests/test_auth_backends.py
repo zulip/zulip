@@ -17,8 +17,8 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.session_user import get_session_dict_user
-from zerver.lib.test_helpers import (
-    ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 from zerver.models import \
     get_realm_by_string_id, get_user_profile_by_email, email_to_username, UserProfile, \
@@ -490,8 +490,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response=dict(email='nonexisting@phantom.com', name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('Your e-mail does not match any '
-                                    'existing open organization.', result)
+            self.assert_in_response('Your email address does not correspond to any '
+                                    'existing organization.', result)
 
 class ResponseMock(object):
     def __init__(self, status_code, data):
@@ -520,6 +520,7 @@ class GoogleOAuthTest(ZulipTestCase):
         if 'google' not in result.url:
             return result
 
+        self.client.cookies = result.cookies
         # Now extract the CSRF token from the redirect URL
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
@@ -626,7 +627,10 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
     def test_google_oauth2_registration(self):
         # type: () -> None
         """If the user doesn't exist yet, Google auth can be used to register an account"""
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True), \
+             mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'), \
+             mock.patch('zerver.views.get_subdomain', return_value='zulip'):
+
             email = "newuser@zulip.com"
             token_response = ResponseMock(200, {'access_token': "unique_token"})
             account_data = dict(name=dict(formatted="Full Name"),
@@ -645,9 +649,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                      parsed_url.path)
             self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
-            with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
-                result = self.client_get(result.url)
-
+            result = self.client_get(result.url)
             result = self.client_get(result.url)  # Call the confirmation url.
             key_match = re.search('value="(?P<key>[0-9a-f]+)" name="key"', result.content.decode("utf-8"))
             name_match = re.search('value="(?P<name>[^"]+)" name="full_name"', result.content.decode("utf-8"))
@@ -787,7 +789,8 @@ class GoogleLoginTest(GoogleOAuthTest):
         # type: () -> None
         result = self.client_get("/accounts/login/google/done/?error=access_denied")
         self.assertEquals(result.status_code, 302)
-        self.assertEquals(result.url, "http://testserver/")
+        path = urllib.parse.urlparse(result.url).path
+        self.assertEquals(path, "/")
 
     def test_google_oauth2_error_other(self):
         # type: () -> None
@@ -982,16 +985,24 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             with self.assertRaisesRegexp(Exception, 'Direct login not supported.'):
-                with mock.patch('django.core.handlers.base.logger'):
-                    self.client_post('/accounts/login/local/', data)
+                try:
+                    with mock.patch('django.core.handlers.exception.logger'):
+                        self.client_post('/accounts/login/local/', data)
+                except ImportError:
+                    with mock.patch('django.core.handlers.base.logger'):
+                        self.client_post('/accounts/login/local/', data)
 
     def test_login_failure_due_to_nonexistent_user(self):
         # type: () -> None
         email = 'nonexisting@zulip.com'
         data = {'direct_email': email}
         with self.assertRaisesRegexp(Exception, 'User cannot login'):
-            with mock.patch('django.core.handlers.base.logger'):
-                self.client_post('/accounts/login/local/', data)
+            try:
+                with mock.patch('django.core.handlers.exception.logger'):
+                    self.client_post('/accounts/login/local/', data)
+            except ImportError:
+                with mock.patch('django.core.handlers.base.logger'):
+                    self.client_post('/accounts/login/local/', data)
 
 class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_success(self):
@@ -1491,7 +1502,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assert_json_success(result)
         realm = get_realm_by_string_id('zulip')
         self.assertFalse(password_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled())
+        self.assertTrue(dev_auth_enabled(realm))
 
     def test_disable_all_backends(self):
         # type: () -> None
@@ -1502,7 +1513,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
         realm = get_realm_by_string_id('zulip')
         self.assertTrue(password_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled())
+        self.assertTrue(dev_auth_enabled(realm))
 
     def test_supported_backends_only_updated(self):
         # type: () -> None
@@ -1515,5 +1526,5 @@ class TestAdminSetBackends(ZulipTestCase):
         realm = get_realm_by_string_id('zulip')
         # Check that unsupported backend is not enabled
         self.assertFalse(github_auth_enabled(realm))
-        self.assertTrue(dev_auth_enabled())
+        self.assertTrue(dev_auth_enabled(realm))
         self.assertFalse(password_auth_enabled(realm))

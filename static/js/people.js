@@ -72,6 +72,27 @@ exports.incr_recipient_count = function (email) {
 exports.filter_people_by_search_terms = function (users, search_terms) {
         var filtered_users = {};
 
+        var matchers = _.map(search_terms, function (search_term) {
+            var termlets = search_term.toLowerCase().split(/\s+/);
+            termlets = _.map(termlets, function (termlet) {
+                return termlet.trim();
+            });
+
+            return function (email, names) {
+                if (email.indexOf(search_term.trim()) === 0) {
+                    return true;
+                }
+                return _.all(termlets, function (termlet) {
+                    return _.any(names, function (name) {
+                        if (name.indexOf(termlet) === 0) {
+                            return true;
+                        }
+                    });
+                });
+            };
+        });
+
+
         // Loop through users and populate filtered_users only
         // if they include search_terms
         _.each(users, function (user) {
@@ -81,20 +102,23 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
                 return;
             }
 
+            var email = user.email.toLowerCase();
+
             // Remove extra whitespace
             var names = person.full_name.toLowerCase().split(/\s+/);
             names = _.map(names, function (name) {
                 return name.trim();
             });
 
+
             // Return user emails that include search terms
-            return _.any(search_terms, function (search_term) {
-                return _.any(names, function (name) {
-                    if (name.indexOf(search_term.trim()) === 0) {
-                        filtered_users[user.email] = true;
-                    }
-                });
+            var match = _.any(matchers, function (matcher) {
+                return matcher(email, names);
             });
+
+            if (match) {
+                filtered_users[email] = true;
+            }
         });
         return filtered_users;
 };

@@ -52,7 +52,10 @@ from zerver.lib.actions import (
 
 from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.message import render_markdown
-from zerver.lib.test_helpers import ZulipTestCase, POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.lib.validator import (
     check_bool, check_dict, check_int, check_list, check_string,
     equals, check_none_or, Validator
@@ -820,7 +823,7 @@ class EventsRegisterTest(ZulipTestCase):
         peer_remove_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_remove')),
-            ('user_email', check_string),
+            ('user_id', check_int),
             ('subscriptions', check_list(check_string)),
         ])
         stream_update_schema_checker = check_dict([

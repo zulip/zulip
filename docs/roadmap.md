@@ -98,7 +98,7 @@ teams.
 
 * [Make the buddy list work better for large teams](https://github.com/zulip/zulip/issues/236)
 * [Improve @-mentioning syntax based on stronger unique identifiers](https://github.com/zulip/zulip/issues/374)
-* [Show subscriber counts on streams](https://github.com/zulip/zulip/pull/525)
+* <strike>[Show subscriber counts on streams](https://github.com/zulip/zulip/pull/525)</strike>
 * <strike>[Make the streams page easier to navigate with 100s of streams](https://github.com/zulip/zulip/issues/563)</strike>
 * <strike>[Add support for filtering long lists of streams](https://github.com/zulip/zulip/issues/565)</strike>
 
@@ -154,7 +154,7 @@ While the Zulip server has a great codebase compared to most projects
 of its size, it takes work to keep it that way.
 
 * [Migrate most web routes to REST API](https://github.com/zulip/zulip/issues/611)
-* [Finish purging global variables from the Zulip JavaScript](https://github.com/zulip/zulip/issues/610)
+* <strike>[Finish purging global variables from the Zulip JavaScript](https://github.com/zulip/zulip/issues/610)</strike>
 * <strike>[Finish deprecating and remove the pre-REST Zulip /send_message API](https://github.com/zulip/zulip/issues/730)</strike>
 * [Split Tornado subsystem into a separate Django app](https://github.com/zulip/zulip/issues/729)
 * <strike>[Clean up clutter in the root of the zulip.git repository](https://github.com/zulip/zulip/issues/707)</strike>
@@ -163,13 +163,13 @@ of its size, it takes work to keep it that way.
 ## Deployment and upgrade process
 
 * <strike>[Support backwards-incompatible upgrades to Python libraries](https://github.com/zulip/zulip/issues/717)</strike>
-* [Minimize the downtime required in the Zulip upgrade process](https://github.com/zulip/zulip/issues/646)
+* <strike>[Minimize the downtime required in the Zulip upgrade process](https://github.com/zulip/zulip/issues/646)</strike>
 
 ## Security
 
 * [Add support for 2-factor authentication on all platforms](https://github.com/zulip/zulip/pull/451)
 * [Add a retention policy feature that automatically deletes old messages](https://github.com/zulip/zulip/issues/106)
-* [Upgrade every Zulip dependency to a modern version](https://github.com/zulip/zulip/issues/1331)
+* <strike>[Upgrade every Zulip dependency to a modern version](https://github.com/zulip/zulip/issues/1331)</strike>
 * [The LOCAL_UPLOADS_DIR file uploads backend only supports world-readable uploads](https://github.com/zulip/zulip/issues/320)
 * [Add support for stronger security controls for uploaded files](https://github.com/zulip/zulip/issues/320)
 
@@ -197,10 +197,10 @@ of its size, it takes work to keep it that way.
   with Zulip.](https://github.com/zulip/zulip/issues/672)
 * [Expand library of documentation on Zulip's feature set.  Currently
   most documentation is for either developers or system administrators.](https://github.com/zulip/zulip/issues/675)
-* [Expand developer documentation with more tutorials explaining how to do
-  various types of projects.](https://github.com/zulip/zulip/issues/676)
-* [Overhaul new contributor documentation, especially on coding style,
-  to better highlight and teach the important pieces.](https://github.com/zulip/zulip/issues/677)
+* <strike>[Expand developer documentation with more tutorials explaining how to do
+  various types of projects.](https://github.com/zulip/zulip/issues/676)</strike>
+* <strike>[Overhaul new contributor documentation, especially on coding style,
+  to better highlight and teach the important pieces.](https://github.com/zulip/zulip/issues/677)</strike>
 * [Update all screenshots to show the current Zulip UI](https://github.com/zulip/zulip/issues/599)
 
 ## Integrations
@@ -243,7 +243,7 @@ Android.  The top priority here is recruiting a lead developer for the
 iOS app.  Once we have that resolved, we'll expand our ambitions for
 the app with more specific improvements.
 
-* [iOS app needs maintainer](https://github.com/zulip/zulip-ios/issues/12)
+* <strike>[iOS app needs maintainer](https://github.com/zulip/zulip-ios/issues/12)</strike>
 * <strike>[APNS notifications are broken](https://github.com/zulip/zulip/issues/538)</strike>
 
 ## Desktop apps

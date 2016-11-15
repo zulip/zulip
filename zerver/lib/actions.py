@@ -40,7 +40,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
 
-from django.db import transaction, IntegrityError
+from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
@@ -167,6 +167,52 @@ def realm_user_count(realm):
     # type: (Realm) -> int
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
+def get_topic_history_for_stream(user_profile, recipient):
+    # type: (UserProfile, Recipient) -> List[Tuple[str, int]]
+
+    # We tested the below query on some large prod datasets, and we never
+    # saw more than 50ms to execute it, so we think that's acceptable,
+    # but we will monitor it, and we may later optimize it further.
+    query = '''
+        SELECT topic, read, count(*)
+        FROM (
+            SELECT
+                ("zerver_usermessage"."flags" & 1) as read,
+                "zerver_message"."subject" as topic,
+                "zerver_message"."id" as message_id
+            FROM "zerver_usermessage"
+            INNER JOIN "zerver_message" ON (
+                "zerver_usermessage"."message_id" = "zerver_message"."id"
+            ) WHERE (
+                "zerver_usermessage"."user_profile_id" = %s AND
+                "zerver_message"."recipient_id" = %s
+            ) ORDER BY "zerver_usermessage"."message_id" DESC
+        ) messages_for_stream
+        GROUP BY topic, read
+        ORDER BY max(message_id) desc
+    '''
+    cursor = connection.cursor()
+    cursor.execute(query, [user_profile.id, recipient.id])
+    rows = cursor.fetchall()
+    cursor.close()
+
+    topic_names = dict() # type: Dict[str, str]
+    topic_counts = dict() # type: Dict[str, int]
+    topics = []
+    for row in rows:
+        topic_name, read, count = row
+        if topic_name.lower() not in topic_names:
+            topic_names[topic_name.lower()] = topic_name
+        topic_name = topic_names[topic_name.lower()]
+        if topic_name not in topic_counts:
+            topic_counts[topic_name] = 0
+            topics.append(topic_name)
+        if not read:
+            topic_counts[topic_name] += count
+
+    history = [(topic, topic_counts[topic]) for topic in topics]
+    return history
+
 def send_signup_message(sender, signups_stream, user_profile,
                         internal=False, realm=None):
     # type: (UserProfile, text_type, UserProfile, bool, Optional[Realm]) -> None
@@ -202,6 +248,32 @@ def notify_new_user(user_profile, internal=False):
         send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
 
+def add_new_user_history(user_profile, streams):
+    # type: (UserProfile, Iterable[Stream]) -> None
+    """Give you the last 100 messages on your public streams, so you have
+    something to look at in your home view once you finish the
+    tutorial."""
+    one_week_ago = now() - datetime.timedelta(weeks=1)
+    recipients = Recipient.objects.filter(type=Recipient.STREAM,
+                                          type_id__in=[stream.id for stream in streams
+                                                       if not stream.invite_only])
+    recent_messages = Message.objects.filter(recipient_id__in=recipients,
+                                             pub_date__gt=one_week_ago).order_by("-id")
+    message_ids_to_use = list(reversed(recent_messages.values_list('id', flat=True)[0:100]))
+    if len(message_ids_to_use) == 0:
+        return
+
+    # Handle the race condition where a message arrives between
+    # bulk_add_subscriptions above and the Message query just above
+    already_ids = set(UserMessage.objects.filter(message_id__in=message_ids_to_use,
+                                                 user_profile=user_profile).values_list("message_id", flat=True))
+    ums_to_create = [UserMessage(user_profile=user_profile, message_id=message_id,
+                                 flags=UserMessage.flags.read)
+                     for message_id in message_ids_to_use
+                     if message_id not in already_ids]
+
+    UserMessage.objects.bulk_create(ums_to_create)
+
 # Does the processing for a new user account:
 # * Subscribes to default/invitation streams
 # * Fills in some recent historical messages
@@ -224,20 +296,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         streams = get_default_subs(user_profile)
     bulk_add_subscriptions(streams, [user_profile])
 
-    # Give you the last 100 messages on your public streams, so you have
-    # something to look at in your home view once you finish the
-    # tutorial.
-    one_week_ago = now() - datetime.timedelta(weeks=1)
-    recipients = Recipient.objects.filter(type=Recipient.STREAM,
-                                          type_id__in=[stream.id for stream in streams
-                                                       if not stream.invite_only])
-    messages = Message.objects.filter(recipient_id__in=recipients, pub_date__gt=one_week_ago).order_by("-id")[0:100]
-    if len(messages) > 0:
-        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
-                                     flags=UserMessage.flags.read)
-                         for message in messages]
-
-        UserMessage.objects.bulk_create(ums_to_create)
+    add_new_user_history(user_profile, streams)
 
     # mit_beta_users don't have a referred_by field
     if not mit_beta_user and prereg_user is not None and prereg_user.referred_by is not None \
@@ -526,7 +585,7 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
     if not user_profile.is_active:
         return
 
-    user_profile.is_active = False;
+    user_profile.is_active = False
     user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
@@ -851,17 +910,18 @@ def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],
                                                           notification['sender'].id)
-    recipients = [{'id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
-    active_recipients = [profile for profile in recipient_user_profiles if profile.is_active]
-    sender = {'id': notification['sender'].id, 'email': notification['sender'].email}
+    # Only deliver the notification to active user recipients
+    user_ids_to_notify = [profile.id for profile in recipient_user_profiles if profile.is_active]
+    sender_dict = {'user_id': notification['sender'].id, 'email': notification['sender'].email}
+    # Include a list of recipients in the event body to help identify where the typing is happening
+    recipient_dicts = [{'user_id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
     event = dict(
             type            = 'typing',
             op              = notification['op'],
-            sender          = sender,
-            recipients      = recipients)
+            sender          = sender_dict,
+            recipients      = recipient_dicts)
 
-    # Only deliver the notification to active user recipients
-    send_event(event, active_recipients)
+    send_event(event, user_ids_to_notify)
 
 # check_send_typing_notification:
 # Checks the typing notification and sends it
@@ -1041,47 +1101,53 @@ def check_stream_name(stream_name):
     if not valid_stream_name(stream_name):
         raise JsonableError(_("Invalid stream name"))
 
-def send_pm_if_empty_stream(sender, stream, stream_name):
-    # type: (UserProfile, Stream, text_type) -> None
-    # TODO: It's not clear whether stream can be None.  Some cleanup is needed.
+def send_pm_if_empty_stream(sender, stream, stream_name, realm):
+    # type: (UserProfile, Stream, text_type, Realm) -> None
+    """If a bot sends a message to a stream that doesn't exist or has no
+    subscribers, sends a notification to the bot owner (if not a
+    cross-realm bot) so that the owner can correct the issue."""
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
 
-    if sender.is_bot and sender.bot_owner is not None:
-        # Don't send these notifications for cross-realm bot messages
-        # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
-        # EMAIL_GATEWAY_BOT is probably the server administrator, not
-        # the owner of the bot who could potentially fix the problem.
-        if stream.realm != sender.realm:
+    if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    # Don't send these notifications for cross-realm bot messages
+    # (e.g. from EMAIL_GATEWAY_BOT) since the owner for
+    # EMAIL_GATEWAY_BOT is probably the server administrator, not
+    # the owner of the bot who could potentially fix the problem.
+    if sender.realm != realm:
+        return
+
+    if stream is not None:
+        num_subscribers = stream.num_subscribers()
+        if num_subscribers > 0:
             return
 
-        if stream:
-            num_subscribers = stream.num_subscribers()
+    # We warn the user once every 5 minutes to avoid a flood of
+    # PMs on a misconfigured integration, re-using the
+    # UserProfile.last_reminder field, which is not used for bots.
+    last_reminder = sender.last_reminder
+    waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
+    if last_reminder and timezone.now() - last_reminder <= waitperiod:
+        return
 
-        if stream is None or num_subscribers == 0:
-            # Warn a bot's owner if they are sending a message to a stream
-            # that does not exist, or has no subscribers
-            # We warn the user once every 5 minutes to avoid a flood of
-            # PMs on a misconfigured integration, re-using the
-            # UserProfile.last_reminder field, which is not used for bots.
-            last_reminder = sender.last_reminder
-            waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
-            if not last_reminder or timezone.now() - last_reminder > waitperiod:
-                if stream is None:
-                    error_msg = "that stream does not yet exist. To create it, "
-                elif num_subscribers == 0:
-                    error_msg = "there are no subscribers to that stream. To join it, "
+    if stream is None:
+        error_msg = "that stream does not yet exist. To create it, "
+    else:
+        # num_subscribers == 0
+        error_msg = "there are no subscribers to that stream. To join it, "
 
-                content = ("Hi there! We thought you'd like to know that your bot **%s** just "
-                           "tried to send a message to stream `%s`, but %s"
-                           "click the gear in the left-side stream list." %
-                           (sender.full_name, stream_name, error_msg))
-                message = internal_prep_message(settings.NOTIFICATION_BOT, "private",
-                                                sender.bot_owner.email, "", content)
-                do_send_messages([message])
+    content = ("Hi there! We thought you'd like to know that your bot **%s** just "
+               "tried to send a message to stream `%s`, but %s"
+               "click the gear in the left-side stream list." %
+               (sender.full_name, stream_name, error_msg))
+    message = internal_prep_message(settings.NOTIFICATION_BOT, "private",
+                                    sender.bot_owner.email, "", content)
+    do_send_messages([message])
 
-                sender.last_reminder = timezone.now()
-                sender.save(update_fields=['last_reminder'])
+    sender.last_reminder = timezone.now()
+    sender.save(update_fields=['last_reminder'])
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
@@ -1122,7 +1188,7 @@ def check_message(sender, client, message_type_name, message_to,
 
         stream = get_stream(stream_name, realm)
 
-        send_pm_if_empty_stream(sender, stream, stream_name)
+        send_pm_if_empty_stream(sender, stream, stream_name, realm)
 
         if stream is None:
             raise JsonableError(_("Stream does not exist"))
@@ -1613,7 +1679,7 @@ def bulk_remove_subscriptions(users, streams):
                 event = dict(type="subscription",
                              op="peer_remove",
                              subscriptions=[stream.name],
-                             user_email=removed_user.email)
+                             user_id=removed_user.id)
                 send_event(event, peer_user_ids)
 
     return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
@@ -2576,7 +2642,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             if propagate_mode == 'change_later':
                 propagate_query = propagate_query & Q(id__gt = message.id)
 
-            messages = Message.objects.filter(propagate_query).select_related();
+            messages = Message.objects.filter(propagate_query).select_related()
 
             # Evaluate the query before running the update
             messages_list = list(messages)
@@ -3058,7 +3124,7 @@ def apply_events(state, events, user_profile):
                         user_id not in sub['subscribers']):
                         sub['subscribers'].append(user_id)
             elif event['op'] == 'peer_remove':
-                user_id = get_user_profile_by_email(event['user_email']).id
+                user_id = event['user_id']
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
                         user_id in sub['subscribers']):

@@ -10,7 +10,10 @@ from django.template import Template, Context
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_helpers import get_all_templates, ZulipTestCase
+from zerver.lib.test_helpers import get_all_templates
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 
 class get_form_value(object):
     def __init__(self, value):
@@ -86,6 +89,7 @@ class TemplateTestCase(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
 
         context = dict(
+            article="templates/zerver/help/index.md",
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
@@ -122,7 +126,7 @@ class TemplateTestCase(ZulipTestCase):
 
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         self.assertEqual(content_sans_whitespace,
-                         'header<h1>Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
+                         'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
     def test_custom_tos_template(self):
         # type: () -> None

@@ -2,37 +2,50 @@ var topic_list = (function () {
 
 var exports = {};
 
-var widgets = new Dict({fold_case: true}); // key is stream_name
+// We can only ever have one active widget.
+var active_widget;
+
+// We know whether we're zoomed or not.
+var zoomed = false;
 
 exports.remove_expanded_topics = function () {
     popovers.hide_topic_sidebar_popover();
-    $("ul.topic-list").remove();
+
+    if (active_widget) {
+        active_widget.remove();
+    }
 };
 
+function update_unread_count(unread_count_elem, count) {
+    // unread_count_elem is a jquery element...we expect DOM
+    // to look like this:
+    //   <div class="topic-unread-count {{#if is_zero}}zero_count{{/if}}">
+    //        <div class="value">{{unread}}</div>
+    //   </div>
+    var value_span = unread_count_elem.find('.value');
 
-function update_count_in_dom(count_span, value_span, count) {
+    if (value_span.length === 0) {
+        blueslip.error('malformed dom for unread count');
+        return;
+    }
+
     if (count === 0) {
-        count_span.hide();
+        unread_count_elem.hide();
         value_span.text('');
     } else {
-        count_span.removeClass("zero_count");
-        count_span.show();
+        unread_count_elem.removeClass("zero_count");
+        unread_count_elem.show();
         value_span.text(count);
     }
 }
 
 exports.set_count = function (stream_name, topic, count) {
-    if (!widgets.has(stream_name)) {
-        // fail silently here...sometimes we haven't build
-        // the widget yet, especially during page loading
-        return;
+    if (active_widget && active_widget.is_for_stream(stream_name)) {
+        active_widget.set_count(topic, count);
     }
-
-    var widget = widgets.get(stream_name);
-    widget.set_count(topic, count);
 };
 
-exports.build_widget = function (stream, active_topic, max_topics) {
+exports.build_widget = function (parent_elem, stream, active_topic, max_topics) {
     var self = {};
     self.topic_items = new Dict({fold_case: true});
 
@@ -49,15 +62,21 @@ exports.build_widget = function (stream, active_topic, max_topics) {
         ul.attr('data-stream', stream);
 
         _.each(topics, function (subject_obj, idx) {
+            var show_topic;
             var topic_name = subject_obj.subject;
             var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
 
-            // Show the most recent topics, as well as any with unread messages
-            var always_visible = (idx < max_topics) || (num_unread > 0) ||
-                                 (active_topic === topic_name);
+            if (zoomed) {
+                show_topic = true;
+            } else {
+                // Show the most recent topics, as well as any with unread messages
+                show_topic = (idx < max_topics) || (num_unread > 0) ||
+                             (active_topic === topic_name);
 
-            if (!always_visible) {
-                hiding_topics = true;
+                if (!show_topic) {
+                    hiding_topics = true;
+                    return;
+                }
             }
 
             var topic_info = {
@@ -65,7 +84,6 @@ exports.build_widget = function (stream, active_topic, max_topics) {
                 unread: num_unread,
                 is_zero: num_unread === 0,
                 is_muted: muting.is_topic_muted(stream, topic_name),
-                zoom_out_hide: !always_visible,
                 url: narrow.by_stream_subject_uri(stream, topic_name)
             };
             var li = $(templates.render('topic_list_item', topic_info));
@@ -82,13 +100,27 @@ exports.build_widget = function (stream, active_topic, max_topics) {
             ul.append(show_more);
         }
 
-        widgets.set(stream, self);
-
         return ul;
     }
 
+    self.get_parent = function () {
+        return parent_elem;
+    };
+
+    self.is_for_stream = function (stream_name) {
+        return stream === stream_name;
+    };
+
+    self.get_stream_name = function () {
+        return stream;
+    };
+
     self.get_dom = function () {
         return self.dom;
+    };
+
+    self.remove = function () {
+        self.dom.remove();
     };
 
     self.set_count = function (topic, count) {
@@ -97,15 +129,9 @@ exports.build_widget = function (stream, active_topic, max_topics) {
             return;
         }
         var topic_li = self.topic_items.get(topic);
+        var unread_count_elem = topic_li.find('.topic-unread-count').expectOne();
 
-        var count_span = topic_li.find('.subject_count');
-        var value_span = count_span.find('.value');
-
-        if (count_span.length === 0 || value_span.length === 0) {
-            return;
-        }
-
-        update_count_in_dom(count_span, value_span, count);
+        update_unread_count(unread_count_elem, count);
     };
 
     self.activate_topic = function (active_topic) {
@@ -117,20 +143,48 @@ exports.build_widget = function (stream, active_topic, max_topics) {
 
     self.dom = build_list(stream, active_topic, max_topics);
 
+    parent_elem.append(self.dom);
+
+    if (active_topic) {
+        self.activate_topic(active_topic);
+    }
+
+
     return self;
 };
 
-exports.rebuild = function (stream_li, stream, active_topic) {
+exports.rebuild = function (stream_li, stream) {
     var max_topics = 5;
 
+    var active_topic = narrow.topic();
     exports.remove_expanded_topics();
+    active_widget = exports.build_widget(stream_li, stream, active_topic, max_topics);
+};
 
-    var widget = exports.build_widget(stream, active_topic, max_topics);
-    stream_li.append(widget.get_dom());
+// For zooming, we only do topic-list stuff here...let stream_list
+// handle hiding/showing the non-narrowed streams
+exports.zoom_in = function () {
+    zoomed = true;
 
-    if (active_topic) {
-        widget.activate_topic(active_topic);
+    if (!active_widget) {
+        blueslip.error('Cannot find widget for topic history zooming.');
+        return;
     }
+
+    exports.rebuild(active_widget.get_parent(), active_widget.get_stream_name());
+};
+
+exports.zoom_out = function (options) {
+    zoomed = false;
+    if (options && options.clear_topics) {
+        exports.remove_expanded_topics();
+    } else {
+        exports.rebuild(active_widget.get_parent(), active_widget.get_stream_name());
+    }
+};
+
+exports.is_zoomed = function () {
+    return zoomed;
 };
 
 exports.set_click_handlers = function (callbacks) {
@@ -142,7 +196,7 @@ exports.set_click_handlers = function (callbacks) {
     });
 
     $('.show-all-streams').on('click', function (e) {
-        callbacks.zoom_out();
+        callbacks.zoom_out({clear_topics: false});
 
         e.preventDefault();
         e.stopPropagation();

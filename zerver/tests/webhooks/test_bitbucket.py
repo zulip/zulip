@@ -2,7 +2,7 @@
 from six import text_type
 from typing import Union
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class Bitbucket2HookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket2'
@@ -21,11 +21,9 @@ class Bitbucket2HookTests(WebhookTestCase):
 
     def test_bitbucket2_on_push_commits_above_limit_event(self):
         # type: () -> None
-        number_of_hidden_commits = 50 - COMMITS_LIMIT
-        commit_info = '* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit\n'
-        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n{}[and {} more commit(s)]".format(
-            (commit_info * 10),
-            number_of_hidden_commits
+        commit_info = '* [6f161a7](https://bitbucket.org/kolaszek/repository-name/commits/6f161a7bced94430ac8947d87dbf45c6deee3fb0): a\n'
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) to branch master\n\n{}[and more commit(s)]".format(
+            (commit_info * 5),
         )
         self.send_and_test_stream_message('v2_push_commits_above_limit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
@@ -140,6 +138,49 @@ class Bitbucket2HookTests(WebhookTestCase):
             "HTTP_X_EVENT_KEY": 'pullrequest:comment_deleted'
         }
         self.send_and_test_stream_message('v2_pull_request_comment_action', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
+
+    def test_bitbucket2_on_push_one_tag_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek pushed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_push_one_tag', self.EXPECTED_SUBJECT, expected_message, **kwargs)
+
+    def test_bitbucket2_on_push_remove_tag_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek removed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_push_remove_tag', self.EXPECTED_SUBJECT, expected_message, **kwargs)
+
+    def test_bitbucket2_on_push_more_than_one_tag_event(self):
+        # type: () -> None
+        expected_message = u"kolaszek pushed [{name}](https://bitbucket.org/kolaszek/repository-name/commits/tag/{name}) tag"
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_push_more_than_one_tag', **kwargs)
+        msg = self.get_last_message()
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+        self.do_test_message(msg, expected_message.format(name='b'))
+        msg = self.get_second_to_last_message()
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+        self.do_test_message(msg, expected_message.format(name='a'))
+
+    def test_bitbucket2_on_more_than_one_push_event(self):
+        # type: () -> None
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_more_than_one_push_event', **kwargs)
+        msg = self.get_second_to_last_message()
+        self.do_test_message(msg, 'kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master\n\n* [84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed): first commit')
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT_BRANCH_EVENTS)
+        msg = self.get_last_message()
+        self.do_test_message(msg, 'kolaszek pushed [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a) tag')
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
 
 class BitbucketHookTests(WebhookTestCase):
     STREAM_NAME = 'bitbucket'

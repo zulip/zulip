@@ -1009,6 +1009,18 @@ class Bugdown(markdown.Extension):
             markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
             '>not_strong')
 
+        # Custom strikethrough syntax: ~~foo~~
+        md.inlinePatterns.add('del',
+            markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
+            '>strong')
+
+        # Text inside ** must start and end with a word character
+        # it need for things like "const char *x = (char *)y"
+        md.inlinePatterns.add(
+            'emphasis',
+            markdown.inlinepatterns.SimpleTagPattern(r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*', 'em'),
+            '>strong')
+
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
             del md.parser.blockprocessors[k]
 
@@ -1032,9 +1044,9 @@ class Bugdown(markdown.Extension):
                         \*\*                         # ends by double asterisks
                        """
         md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
+        md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
-            u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
+            u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),
             '_end')
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')

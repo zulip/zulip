@@ -9,7 +9,11 @@ from django.utils.translation import ugettext as _
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
-    ZulipTestCase, queries_captured, tornado_redirected_to_list
+    queries_captured, tornado_redirected_to_list
+)
+
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 
 from zerver.decorator import (
@@ -1513,37 +1517,37 @@ class SubscriptionAPITest(ZulipTestCase):
         for event in peer_events:
             for user_id in event['users']:
                 for stream_name in event['event']['subscriptions']:
-                    email = event['event']['user_email']
-                    notifications.add((user_id, email, stream_name))
+                    removed_user_id = event['event']['user_id']
+                    notifications.add((user_id, removed_user_id, stream_name))
 
         # POSITIVE CASES FIRST
-        self.assertIn((user3.id, email1, 'stream1'), notifications)
-        self.assertIn((user4.id, email1, 'stream1'), notifications)
+        self.assertIn((user3.id, user1.id, 'stream1'), notifications)
+        self.assertIn((user4.id, user1.id, 'stream1'), notifications)
 
-        self.assertIn((user3.id, email2, 'stream1'), notifications)
-        self.assertIn((user4.id, email2, 'stream1'), notifications)
+        self.assertIn((user3.id, user2.id, 'stream1'), notifications)
+        self.assertIn((user4.id, user2.id, 'stream1'), notifications)
 
-        self.assertIn((user1.id, email2, 'stream2'), notifications)
-        self.assertIn((user3.id, email2, 'stream2'), notifications)
-        self.assertIn((user4.id, email2, 'stream2'), notifications)
+        self.assertIn((user1.id, user2.id, 'stream2'), notifications)
+        self.assertIn((user3.id, user2.id, 'stream2'), notifications)
+        self.assertIn((user4.id, user2.id, 'stream2'), notifications)
 
-        self.assertIn((user3.id, email1, 'private_stream'), notifications)
-        self.assertIn((user3.id, email2, 'private_stream'), notifications)
+        self.assertIn((user3.id, user1.id, 'private_stream'), notifications)
+        self.assertIn((user3.id, user2.id, 'private_stream'), notifications)
 
         # NEGATIVE
 
         # don't be notified if you are being removed yourself
-        self.assertNotIn((user1.id, email1, 'stream1'), notifications)
+        self.assertNotIn((user1.id, user1.id, 'stream1'), notifications)
 
         # don't send false notifications for folks that weren't actually
         # subscribed int he first place
-        self.assertNotIn((user3.id, email1, 'stream2'), notifications)
+        self.assertNotIn((user3.id, user1.id, 'stream2'), notifications)
 
         # don't send notifications for random people
-        self.assertNotIn((user3.id, email4, 'stream2'), notifications)
+        self.assertNotIn((user3.id, user4.id, 'stream2'), notifications)
 
         # don't send notifications to unsubscribed people for private streams
-        self.assertNotIn((user4.id, email1, 'private_stream'), notifications)
+        self.assertNotIn((user4.id, user1.id, 'private_stream'), notifications)
 
     def test_bulk_subscribe_MIT(self):
         # type: () -> None

@@ -10,17 +10,24 @@ from django.test import TestCase, override_settings
 
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
-    simulated_queue_client, tornado_redirected_to_list, ZulipTestCase,
+    simulated_queue_client, tornado_redirected_to_list,
     most_recent_message, make_client
+)
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
 from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
+<<<<<<< HEAD
     get_user_profile_by_email, get_realm_by_string_id, \
+=======
+    get_user_profile_by_email, get_realm, get_realm_by_email_domain, \
+>>>>>>> master
     get_client, get_stream, Message, get_unique_open_realm, \
-    completely_open
+    completely_open, GetRealmByDomainException
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
@@ -39,7 +46,7 @@ from zerver.worker import queue_processors
 from django.conf import settings
 from django.core import mail
 from six import text_type
-from six.moves import range
+from six.moves import range, urllib
 import os
 import re
 import sys
@@ -260,6 +267,16 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
         realm = get_realm_by_string_id('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
+
+
+class RealmAliasTest(ZulipTestCase):
+    def test_get_realm_by_email_domain(self):
+        # type: () -> None
+        self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
+        self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True), \
+             self.assertRaises(GetRealmByDomainException):
+            get_realm_by_email_domain('user@zulip.com')
 
 
 class PermissionTest(ZulipTestCase):
@@ -1747,6 +1764,13 @@ class GetProfileTest(ZulipTestCase):
                     get_avatar_url(user_profile.avatar_source, user_profile.email),
                 )
 
+class HelpTest(ZulipTestCase):
+    def test_browser_window_help(self):
+        # type: () -> None
+        result = self.client_get('/help/#the-browser-window')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("There are three panes", result.content.decode("utf-8"))
+
 class HomeTest(ZulipTestCase):
     @slow('big method')
     def test_home(self):
@@ -2044,7 +2068,8 @@ class HomeTest(ZulipTestCase):
         self.assertTrue(result["Location"].endswith("/desktop_home/"))
         result = self.client_get("/desktop_home/")
         self.assertEquals(result.status_code, 302)
-        self.assertEquals(result["Location"], "http://testserver/")
+        path = urllib.parse.urlparse(result['Location']).path
+        self.assertEquals(path, "/")
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):

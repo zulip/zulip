@@ -8,6 +8,7 @@ from six import text_type
 from six.moves import cStringIO as StringIO
 
 from django.db import connections, DEFAULT_DB_ALIAS
+from django.db.utils import OperationalError
 from django.apps import apps
 from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
@@ -18,13 +19,16 @@ TEST_DB_STATUS_DIR = 'var/test_db_status'
 def database_exists(database_name, **options):
     # type: (text_type, **Any) -> bool
     db = options.get('database', DEFAULT_DB_ALIAS)
-    connection = connections[db]
+    try:
+        connection = connections[db]
 
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT 1 from pg_database WHERE datname='{}';".format(database_name))
-        return_value = bool(cursor.fetchone())
-    connections.close_all()
-    return return_value
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 from pg_database WHERE datname='{}';".format(database_name))
+            return_value = bool(cursor.fetchone())
+        connections.close_all()
+        return return_value
+    except OperationalError:
+        return False
 
 def get_migration_status(**options):
     # type: (**Any) -> str

@@ -148,11 +148,11 @@ li.hidden-filter {
     text-overflow: ellipsis;
 }
 
-.subject_count {
+.topic-unread-count,
+.private_message_count {
     display: block;
     position: absolute;
     line-height: 1em;
-    right: 20px;
     top: 2px;
     padding: 2px 3px 0px 3px;
     background: #a6ada4;
@@ -163,19 +163,12 @@ li.hidden-filter {
     letter-spacing: 0.6px;
 }
 
+.topic-unread-count {
+    right: 20px;
+}
+
 .private_message_count {
-    display: block;
-    position: absolute;
-    line-height: 1em;
     right: 10px;
-    top: 2px;
-    padding: 2px 3px 0px 3px;
-    background: #a6ada4;
-    color: #ffffff;
-    border-radius: 1px;
-    font-size: 12px;
-    font-weight: normal;
-    letter-spacing: 0.6px;
 }
 
 ul.filters i {

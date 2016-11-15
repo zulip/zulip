@@ -9,11 +9,12 @@ from fakeldap import MockLDAP
 
 from zilencer.models import Deployment
 
-from zerver.views import do_change_password
+from zerver.views import do_change_password, create_homepage_form
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
+    Stream, Subscription,
 )
 
 from zerver.lib.actions import (
@@ -22,10 +23,15 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language
+from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language, \
+    add_new_user_history
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
-from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured
+from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
+    HostRequestMock
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
 
@@ -62,7 +68,8 @@ class PublicURLTest(ZulipTestCase):
         # through Tornado.
         get_urls = {200: ["/accounts/home/", "/accounts/login/"
                           "/en/accounts/home/", "/ru/accounts/home/",
-                          "/en/accounts/login/", "/ru/accounts/login/"],
+                          "/en/accounts/login/", "/ru/accounts/login/",
+                          "/help/"],
                     302: ["/", "/en/", "/ru/"],
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
@@ -70,6 +77,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
+                    404: ["/help/nonexistent",],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
@@ -118,6 +126,22 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
 
+class AddNewUserHistoryTest(ZulipTestCase):
+    def test_add_new_user_history_race(self):
+        # type: () -> None
+        """Sends a message during user creation"""
+        # Create a user who hasn't had historical messages added
+        set_default_streams(get_realm_by_string_id("zulip"), ["Denmark", "Verona"])
+        with patch("zerver.lib.actions.add_new_user_history"):
+            self.register("test", "test")
+        user_profile = get_user_profile_by_email("test@zulip.com")
+
+        subs = Subscription.objects.select_related("recipient").filter(
+            user_profile=user_profile, recipient__type=Recipient.STREAM)
+        streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
+        self.send_message("hamlet@zulip.com", streams[0].name, Recipient.STREAM, "test")
+        add_new_user_history(user_profile, streams)
+
 class PasswordResetTest(ZulipTestCase):
     """
     Log in, reset password, log out, log in with new password.
@@ -163,6 +187,26 @@ class PasswordResetTest(ZulipTestCase):
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
 
+    def test_redirect_endpoints(self):
+        # type: () -> None
+        '''
+        These tests are mostly designed to give us 100% URL coverage
+        in our URL coverage reports.  Our mechanism for finding URL
+        coverage doesn't handle redirects, so we just have a few quick
+        tests here.
+        '''
+        result = self.client_get('/accounts/password/reset/done/')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('Check your email', result.content.decode("utf-8"))
+
+        result = self.client_get('/accounts/password/done/')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("We've reset your password!", result.content.decode("utf-8"))
+
+        result = self.client_get('/accounts/send_confirm/alice@example.com')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("Still no email?", result.content.decode("utf-8"))
+
 class LoginTest(ZulipTestCase):
     """
     Logging in, registration, and logging out.
@@ -198,6 +242,7 @@ class LoginTest(ZulipTestCase):
         self.assert_max_length(queries, 69)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assertFalse(user_profile.enable_stream_desktop_notifications)
 
     def test_register_deactivated(self):
         # type: () -> None
@@ -764,6 +809,7 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         outbox.pop()
 
+<<<<<<< HEAD
     def test_completely_open_domain_under_subdomains(self):
         # type: () -> None
         username = "user1"
@@ -810,6 +856,8 @@ class UserSignUpTest(ZulipTestCase):
             self.assertEquals(result.status_code, 200)
             self.assertIn('Register through proper link', result.content.decode('utf8'))
 
+=======
+>>>>>>> master
     def test_unique_completely_open_domain(self):
         # type: () -> None
         username = "user1"
@@ -901,6 +949,33 @@ class UserSignUpTest(ZulipTestCase):
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEquals(result.status_code, 200)
         self.assertIn("You're almost there.", result.content.decode('utf8'))
+
+    def test_failed_signup_due_to_restricted_domain(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True):
+            request = HostRequestMock(host = realm.host)
+            request.session = {} # type: ignore
+            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            self.assertIn("trying to join, zulip, only allows users with e-mail", form.errors['email'][0])
+
+    def test_failed_signup_due_to_invite_required(self):
+        # type: () -> None
+        realm = get_realm('zulip.com')
+        realm.invite_required = True
+        realm.save()
+        request = HostRequestMock(host = realm.host)
+        request.session = {} # type: ignore
+        form = create_homepage_form(request, {'email': 'user@zulip.com'})
+        self.assertIn("Please request an invite from", form.errors['email'][0])
+
+    def test_failed_signup_due_to_nonexistent_realm(self):
+        # type: () -> None
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True):
+            request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
+            request.session = {} # type: ignore
+            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            self.assertIn("organization you are trying to join does not exist", form.errors['email'][0])
 
     def test_registration_through_ldap(self):
         # type: () -> None

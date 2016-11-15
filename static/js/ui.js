@@ -99,7 +99,7 @@ function message_unhover() {
     }
     message = current_msg_list.get(rows.id(current_message_hover));
     if (message && message.sent_by_me) {
-        current_message_hover.find('.message_content').find('span.edit_content').remove();
+        current_message_hover.find('span.edit_content').html("");
     }
     current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
@@ -107,7 +107,8 @@ function message_unhover() {
 
 function message_hover(message_row) {
     var message;
-    var edit_content_button = '<span class="edit_content"><i class="icon-vector-pencil edit_content_button"></i></span>';
+
+    var id = parseInt(message_row.attr("zid"), 10);
     if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
         return;
     }
@@ -118,9 +119,10 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
-        !message.status_message) {
-        message_row.find('.message_content').find('p:last').append(edit_content_button);
+    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) && !message.status_message) {
+        message_row.find(".edit_content").html('<i class="icon-vector-pencil edit_content_button"></i>');
+    } else {
+        message_row.find(".edit_content").html('<i class="icon-vector-file-text-alt edit_content_button" data-msgid="' + id + '"></i>');
     }
     current_message_hover = message_row;
 }

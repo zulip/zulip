@@ -29,7 +29,7 @@ from zerver.lib.utils import (
     mkdir_p,
     query_chunker,
 )
-from zerver.lib.test_helpers import (
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 

@@ -3,16 +3,19 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from django.http import HttpResponse
+from django.utils import timezone
 
 from typing import Any, Dict
 from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     make_client,
     queries_captured,
+)
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import (
-    split_email_to_domain,
+    email_to_domain,
     Client,
     UserActivity,
     UserProfile,
@@ -27,7 +30,7 @@ class ActivityTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
-        last_visit = datetime.datetime.now()
+        last_visit = timezone.now()
         count=150
         for user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(
@@ -133,7 +136,7 @@ class UserPresenceTests(ZulipTestCase):
 
     def _simulate_mirror_activity_for_user(self, user_profile):
         # type: (UserProfile) -> None
-        last_visit = datetime.datetime.now()
+        last_visit = timezone.now()
         client = make_client('zephyr_mirror')
 
         UserActivity.objects.get_or_create(
@@ -159,4 +162,4 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
         # We only want @zulip.com emails
         for email in json['presences'].keys():
-            self.assertEqual(split_email_to_domain(email), 'zulip.com')
+            self.assertEqual(email_to_domain(email), 'zulip.com')

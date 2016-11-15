@@ -30,6 +30,13 @@ exports.rename_sub = function (stream_id, new_name) {
     return sub;
 };
 
+exports.unsubscribe_myself = function (sub) {
+    // Remove user from subscriber's list
+    var user_id = people.get_user_id(page_params.email);
+    exports.remove_subscriber(sub.name, user_id);
+    sub.subscribed = false;
+};
+
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
         sub.subscribers = Dict.from_array([]);
@@ -146,29 +153,28 @@ exports.set_subscriber_emails = function (sub, emails) {
     });
 };
 
-exports.add_subscriber = function (stream_name, user_email) {
+exports.add_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return;
     }
-    var user_id = people.get_user_id(user_email);
-    if (!user_id) {
-        blueslip.error("We tried to add invalid subscriber: " + user_email);
+    var person = people.get_person_from_user_id(user_id);
+    if (person === undefined) {
+        blueslip.error("We tried to add invalid subscriber: " + user_id);
         return;
     }
     sub.subscribers.set(user_id, true);
 };
 
-exports.remove_subscriber = function (stream_name, user_email) {
+exports.remove_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_name);
         return;
     }
-    var user_id = people.get_user_id(user_email);
-    if (!user_id) {
-        blueslip.error("We tried to remove invalid subscriber: " + user_email);
+    if (!sub.subscribers.has(user_id)) {
+        blueslip.warn("We tried to remove invalid subscriber: " + user_id);
         return;
     }
 

@@ -146,8 +146,11 @@ function insert_local_message(message_request, local_id) {
     if (message.type === 'stream') {
         message.display_recipient = message.stream;
     } else {
-        // Build a display recipient with the full names of each recipient
-        var emails = message_request.private_message_recipient.split(',');
+        // Build a display recipient with the full names of each
+        // recipient.  Note that it's important that use
+        // util.extract_pm_recipients, which filters out any spurious
+        // ", " at the end of the recipient list
+        var emails = util.extract_pm_recipients(message_request.private_message_recipient);
         message.display_recipient = _.map(emails, function (email) {
             email = email.trim();
             var person = people.get_by_email(email);
@@ -327,6 +330,18 @@ function handleUserMentions(username) {
     }
 }
 
+function handleStream(streamName) {
+    var stream = stream_data.get_sub(streamName);
+    if (stream === undefined) {
+        return undefined;
+    }
+    return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
+        'href="' + window.location.origin + '/#narrow/stream/' +
+        hashchange.encodeHashComponent(stream.name) + '"' +
+        '>' + '#' + stream.name + '</a>';
+
+}
+
 function handleRealmFilter(pattern, matches) {
     var url = realm_filter_map[pattern];
 
@@ -447,10 +462,17 @@ $(function () {
     disable_markdown_regex(marked.Lexer.rules.tables, 'heading');
     disable_markdown_regex(marked.Lexer.rules.tables, 'lheading');
 
-    // Disable __strong__, all <em>
+    // Disable __strong__ (keeping **strong**)
     marked.InlineLexer.rules.zulip.strong = /^\*\*([\s\S]+?)\*\*(?!\*)/;
-    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'em');
-    disable_markdown_regex(marked.InlineLexer.rules.zulip, 'del');
+
+    // Make sure <del> syntax matches the backend processor
+    marked.InlineLexer.rules.zulip.del = /^(?!<\~)\~\~([^~]+)\~\~(?!\~)/;
+
+    // Disable _emphasis_ (keeping *emphasis*)
+    // Text inside ** must start and end with a word character
+    // it need for things like "const char *x = (char *)y"
+    marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\s\S])+?)((?:[\S]))\*(?!\*)/;
+
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, 'autolink');
 
@@ -476,6 +498,7 @@ $(function () {
         avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
         userMentionHandler: handleUserMentions,
+        streamHandler: handleStream,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
         preprocessors: [preprocess_code_blocks]

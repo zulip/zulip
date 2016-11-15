@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 print(alias)
             sys.exit(0)
 
-        alias = options['alias']
+        alias = options['alias'].lower()
         if options["op"] == "add":
             if not can_add_alias(alias):
                 print("A Realm already exists for this domain, cannot add it as an alias for another realm!")

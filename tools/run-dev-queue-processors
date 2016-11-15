@@ -8,9 +8,12 @@
 
 import sys
 import os
+import django
 import subprocess
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+django.setup()
+
 from zerver.worker.queue_processors import get_active_worker_queues
 
 queues = get_active_worker_queues()
