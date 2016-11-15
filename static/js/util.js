@@ -70,7 +70,9 @@ exports.is_pm_recipient = function (email, message) {
 };
 
 exports.extract_pm_recipients = function (recipients) {
-    return recipients.split(/\s*[,;]\s*/);
+    return _.filter(recipients.split(/\s*[,;]\s*/), function (recipient) {
+        return recipient.trim() !== "";
+    });
 };
 
 exports.same_major_recipient = function (a, b) {

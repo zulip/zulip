@@ -25,6 +25,11 @@ var _ = global._;
 
 }());
 
+(function test_extract_pm_recipients() {
+    assert.equal(util.extract_pm_recipients('bob@foo.com, alice@foo.com').length, 2);
+    assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
+}());
+
 (function test_lower_bound() {
     var arr = [10, 20, 30, 40, 50];
     assert.equal(util.lower_bound(arr, 5), 0);

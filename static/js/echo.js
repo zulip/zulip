@@ -146,8 +146,11 @@ function insert_local_message(message_request, local_id) {
     if (message.type === 'stream') {
         message.display_recipient = message.stream;
     } else {
-        // Build a display recipient with the full names of each recipient
-        var emails = message_request.private_message_recipient.split(',');
+        // Build a display recipient with the full names of each
+        // recipient.  Note that it's important that use
+        // util.extract_pm_recipients, which filters out any spurious
+        // ", " at the end of the recipient list
+        var emails = util.extract_pm_recipients(message_request.private_message_recipient);
         message.display_recipient = _.map(emails, function (email) {
             email = email.trim();
             var person = people.get_by_email(email);
