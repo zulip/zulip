@@ -23,6 +23,47 @@ exports.home_tab_obscured = function () {
 
 exports.change_tab_to = function (tabname) {
     $('#gear-menu a[href="' + tabname + '"]').tab('show');
+
+    if (tabname === "#administration") {
+        exports.deploy_focused_path(tabname, window.location.hash.split(/\//)[1]);
+    }
+};
+
+exports.is_tab_focusable = (function () {
+    var tab_focus_regex = (function () {
+        var focus_paths = ["administration", "settings"];
+        var regex = new RegExp("^#(" + focus_paths.join("|") + ")", "i");
+
+        return regex;
+    }());
+
+    var func = function (hash) {
+      return tab_focus_regex.test(hash);
+    };
+
+    func.regex = tab_focus_regex;
+    return func;
+}());
+
+exports.set_focus_hash = function (e) {
+    var target = e.target;
+    var hash = window.location.hash.split(/\//);
+
+    hash[1] = target.dataset.name;
+    window.location.hash = hash.join("/");
+};
+
+exports.deploy_focused_path = function (page, tab) {
+    if (tab) {
+        if (page === "#administration") {
+            setTimeout(function () {
+                $("#administration [data-name='" + tab + "']").click();
+            }, 5);
+        } else if (page === "#settings") {
+            // settings page doesn't have tabs YET, but will soon.
+            return;
+        }
+    }
 };
 
 exports.focus_on = function (field_id) {
