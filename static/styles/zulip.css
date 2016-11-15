@@ -12,6 +12,8 @@ html {
 
 body {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 0.93rem;
 }
 
 /* Common background color */
@@ -460,7 +462,8 @@ a:hover code {
 }
 
 .sidebar-title {
-    font-size: 11px;
+    font-size: 1em;
+    color: #aaa;
     font-weight: normal;
     display: inline;
 }

@@ -11,10 +11,10 @@
 #streams_filter_icon,
 #join_unsub_stream {
     float: right;
-    color: #000;
+    color: #aaa;
     font-size: 13px;
     margin-top: 3px;
-    margin-left: 6px;
+    margin-left: 10px;
     opacity: 0.5;
 }
 
@@ -27,9 +27,20 @@
     margin-top: 1px;
 }
 
+#streams_inline_cog {
+    margin-right: 10px;
+}
+
 #streams_header a {
     color: inherit;
     text-decoration: none;
+}
+
+.hashtag:empty:after {
+    content: "#";
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1;
 }
 
 .tooltip {
@@ -63,11 +74,6 @@
     margin-left: 1ex;
 }
 
-#global_filters li:hover,
-#stream_filters li:hover {
-    background-color: #e2e8dd;
-}
-
 #stream_filters li.active-sub-filter:hover {
     background-color: #ccd6cc;
 }
@@ -89,8 +95,12 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: #ddedf6;
+    background: #eee;
     position: relative;
+}
+
+li.narrow-filter:hover {
+    background-color: #fafafa;
 }
 
 li.hidden-filter {
@@ -112,9 +122,18 @@ li.hidden-filter {
 
 #global_filters .global-filter {
     position: relative;
-    padding: 1px 10px;
-    font-size: 16px;
-    font-weight: 300;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.left-sidebar li a {
+    color: #555
+}
+
+.left-sidebar li {
+    font-size: 1em;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 #global_filters .global-filter i {
