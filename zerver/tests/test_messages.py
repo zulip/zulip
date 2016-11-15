@@ -127,7 +127,7 @@ class TopicHistoryTest(ZulipTestCase):
         # out of realm
         bad_stream = self.make_stream(
             'mit_stream',
-            realm=get_realm('mit.edu')
+            realm=get_realm_by_string_id('mit')
         )
         endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
         result = self.client_get(endpoint, dict())

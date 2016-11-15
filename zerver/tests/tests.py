@@ -21,11 +21,7 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
-<<<<<<< HEAD
-    get_user_profile_by_email, get_realm_by_string_id, \
-=======
-    get_user_profile_by_email, get_realm, get_realm_by_email_domain, \
->>>>>>> master
+    get_user_profile_by_email, get_realm_by_string_id, get_realm_by_email_domain, \
     get_client, get_stream, Message, get_unique_open_realm, \
     completely_open, GetRealmByDomainException
 

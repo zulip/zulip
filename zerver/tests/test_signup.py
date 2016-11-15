@@ -809,55 +809,6 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         outbox.pop()
 
-<<<<<<< HEAD
-    def test_completely_open_domain_under_subdomains(self):
-        # type: () -> None
-        username = "user1"
-        password = "test"
-        email = "user1@acme.com"
-        subdomain = "zulip"
-        realm_name = "Zulip"
-
-        realm = get_realm_by_string_id("zulip")
-        realm.restricted_to_domain = False
-        realm.invite_required = False
-        realm.save()
-
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            with patch('zerver.views.get_subdomain', return_value=subdomain):
-                result = self.client_post('/register/', {'email': email})
-
-            self.assertEquals(result.status_code, 302)
-            self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s" % (email,)))
-            result = self.client_get(result["Location"])
-            self.assert_in_response("Check your email so we can get started.", result)
-            # Visit the confirmation link.
-            from django.core.mail import outbox
-            for message in reversed(outbox):
-                if email in message.to:
-                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                    confirmation_url = confirmation_link_pattern.search(
-                        message.body).groups()[0]
-                    break
-            else:
-                raise ValueError("Couldn't find a confirmation email.")
-
-            result = self.client_get(confirmation_url)
-            self.assertEquals(result.status_code, 200)
-
-            result = self.submit_reg_form_for_user(username,
-                                                   password,
-                                                   domain='acme.com',
-                                                   realm_name=realm_name,
-                                                   realm_subdomain=subdomain,
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
-            self.assertEquals(result.status_code, 200)
-            self.assertIn('Register through proper link', result.content.decode('utf8'))
-
-=======
->>>>>>> master
     def test_unique_completely_open_domain(self):
         # type: () -> None
         username = "user1"
@@ -952,7 +903,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_failed_signup_due_to_restricted_domain(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = realm.host)
             request.session = {} # type: ignore
@@ -961,7 +912,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_failed_signup_due_to_invite_required(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         realm.invite_required = True
         realm.save()
         request = HostRequestMock(host = realm.host)
