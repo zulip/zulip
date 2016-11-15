@@ -1,9 +1,9 @@
 Scrapy==1.2.1
-cryptography==1.5.2
+cryptography==1.5.3
 parsel==1.0.3
 pyOpenSSL==16.2.0
 w3lib==1.15.0
 PyDispatcher==2.0.5
 queuelib==1.4.2
-cffi==1.8.3
+cffi==1.9.1
 pycparser==2.17
