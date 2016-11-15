@@ -151,7 +151,7 @@ def send_zulip(entry, feed_name):
                                   strip_tags(entry.summary),
                                   entry.link)
     message = {"type": "stream",
-               "sender": opts.email,
+               "sender": opts.zulip_email,
                "to": opts.stream,
                "subject": elide_subject(feed_name),
                "content": content,
@@ -164,8 +164,8 @@ try:
 except IOError:
     log_error_and_exit("Unable to read feed file at %s." % (opts.feed_file,))
 
-client = zulip.Client(email=opts.email, api_key=opts.api_key,
-                       site=opts.site, client="ZulipRSS/" + VERSION)
+client = zulip.Client(email=opts.zulip_email, api_key=opts.zulip_api_key,
+                      site=opts.zulip_site, client="ZulipRSS/" + VERSION)
 
 first_message = True
 
