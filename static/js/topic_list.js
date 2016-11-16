@@ -108,7 +108,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
     };
 
     self.is_for_stream = function (stream_name) {
-        return stream === stream_name;
+        return stream.toLowerCase() === stream_name.toLowerCase();
     };
 
     self.get_stream_name = function () {
