@@ -125,7 +125,8 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
 
     self.set_count = function (topic, count) {
         if (!self.topic_items.has(topic)) {
-            blueslip.error('set_count fails for topic ' + topic);
+            // This can happen for truncated topic lists.  No need
+            // to warn about it.
             return;
         }
         var topic_li = self.topic_items.get(topic);
