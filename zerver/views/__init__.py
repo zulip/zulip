@@ -219,6 +219,12 @@ def accounts_register(request):
         short_name = email_to_username(email)
         first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
+        if settings.GCI_MODE_ENABLED and form.cleaned_data["gci"] is True:
+            gci_streams = []
+            for stream in settings.GCI_STREAMS:
+                gci_streams.append(get_stream(stream, realm))
+            prereg_user.streams = gci_streams
+
         # FIXME: sanitize email addresses and fullname
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             try:
@@ -273,6 +279,7 @@ def accounts_register(request):
              'creating_new_team': realm_creation,
              'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
              'password_auth_enabled': password_auth_enabled(realm),
+             'gci_mode_enabled': settings.GCI_MODE_ENABLED
             },
         request=request)
 

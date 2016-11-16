@@ -66,6 +66,9 @@ class RegistrationForm(forms.Form):
                                         (Realm.CORPORATE, 'Corporate')), \
                                        initial=Realm.COMMUNITY, required=False)
 
+    if settings.GCI_MODE_ENABLED:
+        gci = forms.BooleanField(required=False)
+
     if settings.TERMS_OF_SERVICE:
         terms = forms.BooleanField(required=True)
 
