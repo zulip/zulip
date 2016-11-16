@@ -26,7 +26,7 @@ to share your ideas!
 
 ## Types of integrations
 
-We have several different ways that we integrate with 3rd part
+We have several different ways that we integrate with 3rd party
 products, ordered here by which types we prefer to write:
 
 1. **[Webhook integrations](#webhook-integrations)** (examples:
@@ -269,7 +269,7 @@ data allows you to do two things:
    message types your integration should support and how; and,
 2. Create fixtures for your webook tests.
 
-A test fixture is a small file containing test data, one for each test. 
+A test fixture is a small file containing test data, one for each test.
 Fixtures enable the testing of webhook integration code without the need to
 actually contact the service being integrated.
 
@@ -473,8 +473,8 @@ class HelloWorldHookTests(WebhookTestCase):
 ```
 
 In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `FIXTURE_DIR_NAME` refer
-to class attributes from the base class, `WebhookTestCase`. These are needed by 
-`send_and_test_stream_message` to determine how to execute your test. 
+to class attributes from the base class, `WebhookTestCase`. These are needed by
+`send_and_test_stream_message` to determine how to execute your test.
 
 When writing tests for your webook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
