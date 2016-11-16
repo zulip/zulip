@@ -10,11 +10,10 @@ either [install directly](install-ubuntu-without-vagrant-dev.html) or
 use [the manual install process](install-generic-unix-dev.html)
 instead.  Note that those options only support Linux.
 
-An alternative option with poor network connectivity is to rent a
-cloud server (with at least 2GB of RAM), install the development
-environment there (we'd recommend the
-[install directly](install-ubuntu-without-vagrant-dev.html) approach),
-and connect to the development environment over SSH.
+An alternative option with poor network connectivity is to rent a cloud server
+(with at least 2GB of RAM), install
+the [remote development environment](dev-remote.html), and connect to the
+development environment over mosh or SSH.
 
 #### For OS X
 
@@ -33,7 +32,8 @@ and connect to the development environment over SSH.
 
 #### For Windows
 
-* [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html).  Recommended for first-time contributors.
+* [Development on a Remove Environment](dev-remote.html).  Recommended for first-time contributors. Vagrant is usable on windows but can be tricky to setup.
+* [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html)
 * [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html)
 
 ## Using the Development Environment & Testing
