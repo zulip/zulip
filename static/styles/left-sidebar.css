@@ -300,7 +300,10 @@ ul.topic-list {
     list-style-type: none;
     font-weight: normal;
     margin-left: 0px;
-    padding-bottom: 2px;
+}
+
+ul.topic-list:not(:empty) {
+    padding-top: 2px;
 }
 
 ul.expanded_private_messages {
