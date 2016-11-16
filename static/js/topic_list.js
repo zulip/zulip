@@ -71,7 +71,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
             } else {
                 // Show the most recent topics, as well as any with unread messages
                 show_topic = (idx < max_topics) || (num_unread > 0) ||
-                             (active_topic === topic_name);
+                             (active_topic === topic_name.toLowerCase());
 
                 if (!show_topic) {
                     hiding_topics = true;
