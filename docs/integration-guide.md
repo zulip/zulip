@@ -528,7 +528,9 @@ DONE!
 ### Step 4: Create documentation
 
 Next, we add end-user documentation for our webhook integration to
-`templates/zerver/integrations.html`.
+`templates/zerver/integrations.html`. This is what generates the page
+displayed for your webhook from the Integrations page (in the gear menu.)
+You can see an example at [https://zulipchat.com/integrations](https://zulipchat.com/integrations).
 
 There are two parts to the end-user documentation on this page.
 
