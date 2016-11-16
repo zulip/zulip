@@ -7,7 +7,7 @@ import pytz
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from zerver.models import UserProfile, Realm, Stream, Message, get_realm
+from zerver.models import UserProfile, Realm, Stream, Message, get_realm_by_string_id
 from six.moves import range
 
 class Command(BaseCommand):
@@ -28,7 +28,7 @@ class Command(BaseCommand):
         # type: (*Any, **Any) -> None
         if options['realms']:
             try:
-                realms = [get_realm(domain) for domain in options['realms']]
+                realms = [get_realm_by_string_id(string_id) for string_id in options['realms']]
             except Realm.DoesNotExist as e:
                 print(e)
                 exit(1)
@@ -36,7 +36,7 @@ class Command(BaseCommand):
             realms = Realm.objects.all()
 
         for realm in realms:
-            print(realm.domain)
+            print(realm.string_id)
             user_profiles = UserProfile.objects.filter(realm=realm, is_active=True)
             print("%d users" % (len(user_profiles),))
             print("%d streams" % (len(Stream.objects.filter(realm=realm)),))
