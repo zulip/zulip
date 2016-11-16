@@ -40,10 +40,14 @@ class Command(BaseCommand):
 
         def run_threaded_workers(logger):
             # type: (logging.Logger) -> None
+            cnt = 0
             for queue_name in get_active_worker_queues():
-                logger.info('launching queue worker thread ' + queue_name)
+                if not settings.DEVELOPMENT:
+                    logger.info('launching queue worker thread ' + queue_name)
+                cnt += 1
                 td = Threaded_worker(queue_name)
                 td.start()
+            logger.info('%d queue worker threads were launched' % (cnt,))
 
         if options['all']:
             autoreload.main(run_threaded_workers, (logger,))
