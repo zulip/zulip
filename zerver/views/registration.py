@@ -14,7 +14,7 @@ from django.core import validators
 from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
-    get_realm, get_user, get_default_stream_groups
+    get_realm, get_user, get_default_stream_groups, get_stream
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -195,6 +195,14 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         else:
             existing_user_profile = None
 
+        if settings.GCI_MODE_ENABLED and form.cleaned_data["gci"] is True:
+            # If we're in GCI mode, subscribe the GCI users to only
+            # the special GCI streams.
+            gci_streams = []
+            for stream in settings.GCI_STREAMS:
+                gci_streams.append(get_stream(stream, realm))
+            prereg_user.streams = gci_streams
+
         return_data = {}  # type: Dict[str, bool]
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
@@ -279,6 +287,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
                  'default_stream_groups': get_default_stream_groups(realm),
+                 'gci_mode_enabled': settings.GCI_MODE_ENABLED,
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),

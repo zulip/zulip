@@ -393,6 +393,7 @@ def build_custom_checkers(by_lang):
          },
         {'pattern': 'get_stream[(]',
          'include_only': set(["zerver/views/", "zerver/lib/actions.py"]),
+         'exclude': set(['zerver/views/registration.py']),
          'exclude_line': set([
              # This one in check_message is kinda terrible, since it's
              # how most instances are written, but better to exclude something than nothing
@@ -536,7 +537,7 @@ def build_custom_checkers(by_lang):
              ('templates/zerver/markdown_help.html',
               '<td><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
-         'exclude': set(["templates/zerver/emails"]),
+         'exclude': set(["templates/zerver/emails", "templates/zerver/register.html"]),
          'description': "`title` value should be translatable."},
         {'pattern': '\Walt=["\'][^{"\']',
          'description': "alt argument should be enclosed by _() or it should be an empty string.",

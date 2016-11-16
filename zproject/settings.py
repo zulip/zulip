@@ -298,6 +298,10 @@ DEFAULT_SETTINGS.update({
     'LOGIN_LINK_DISABLED': False,
     'FIND_TEAM_LINK_DISABLED': True,
 
+    # Settings for GCI.
+    'GCI_MODE_ENABLED': False,
+    'GCI_STREAMS': [],
+
     # What domains to treat like the root domain
     'ROOT_SUBDOMAIN_ALIASES': ["www"],
     # Whether the root domain is a landing page or can host a realm.

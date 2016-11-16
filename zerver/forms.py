@@ -93,6 +93,8 @@ class RegistrationForm(forms.Form):
         super().__init__(*args, **kwargs)
         if settings.TERMS_OF_SERVICE:
             self.fields['terms'] = forms.BooleanField(required=True)
+        if settings.GCI_MODE_ENABLED:
+            self.fields['gci'] = forms.BooleanField(required=False)
         self.fields['realm_name'] = forms.CharField(
             max_length=Realm.MAX_REALM_NAME_LENGTH,
             required=self.realm_creation)

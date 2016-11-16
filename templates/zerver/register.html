@@ -149,6 +149,19 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </section>
 
             <div class="input-group margin terms-of-service">
+                {% if gci_mode_enabled %}
+                <div class="input-group">
+                    <label class="inline-block checkbox" for="gci_checkbox">
+                        <input id="gci_checkbox" name="gci" type="checkbox" {% if form.gci.value() %}checked="checked"{% endif %} />
+                        <span></span>
+                        I am a Google Code-in
+                        <i class="icon-vector-question-sign"
+                            data-toggle="tooltip"
+                            title="Google Code-in students should check this so that they get the best initial subscriptions for the GCI program. If you are not a Google Code-in student or don't know what it is, you shouldn't check this."></i> student.
+                    </label>
+                </div>
+                {% endif %}
+
                 {% if terms_of_service %}
                 <div class="input-group">
                     {#
