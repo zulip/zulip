@@ -83,7 +83,7 @@ else:
 
 #Exit if RAM Size is less than 2GB
 ram_size = commands.getoutput("cat /proc/meminfo | head -1")
-if int(ram_size.split(' ')[-2])/(1024*1024) > 2:
+if int(ram_size.split(' ')[-2])/(1024*1024) < 2:
     print("The RAM on your machine is less than 2GB.")
     sys.exit(1)
 
