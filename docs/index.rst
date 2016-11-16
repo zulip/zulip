@@ -68,6 +68,7 @@ Contents:
    install-ubuntu-without-vagrant-dev
    install-generic-unix-dev
    install-docker-dev
+   dev-remote
    using-dev-environment
 
 .. _tutorial-docs:
