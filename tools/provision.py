@@ -6,6 +6,7 @@ import logging
 import argparse
 import platform
 import subprocess
+import commands
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -78,6 +79,12 @@ elif platform.architecture()[0] == '32bit':
     arch = "i386"
 else:
     logging.critical("Only x86 is supported; ping zulip-devel@googlegroups.com if you want another architecture.")
+    sys.exit(1)
+
+#Exit if RAM Size is less than 2GB
+ram_size = commands.getoutput("cat /proc/meminfo | head -1")
+if int(ram_size.split(' ')[-2])/(1024*1024) > 2:
+    print("The RAM on your machine is less than 2GB.")
     sys.exit(1)
 
 # Ideally we wouldn't need to install a dependency here, before we
