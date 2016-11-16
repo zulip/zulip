@@ -98,9 +98,7 @@ function message_unhover() {
         return;
     }
     message = current_msg_list.get(rows.id(current_message_hover));
-    if (message && message.sent_by_me) {
-        current_message_hover.find('span.edit_content').html("");
-    }
+    current_message_hover.find('span.edit_content').html("");
     current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
 }
