@@ -88,8 +88,7 @@ ul.filters a {
 }
 
 ul.filters hr {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 10px;
 }
 
 li.active-filter,

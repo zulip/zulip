@@ -153,12 +153,14 @@ p.n-margin {
 }
 
 .header {
-    position: fixed;
+    position: relative;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     background: #ffffff;
-    border-bottom: 1px solid #dadada;
+    border-bottom: 1px solid #eee;
     height: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .app {
@@ -212,12 +214,11 @@ p.n-margin {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
     z-index: 100;
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
+    width: 250px;
     padding-left: 0px;
 }
 
@@ -229,6 +230,8 @@ p.n-margin {
 .app-main .column-middle {
     min-height: 100%;
     background-color: #ffffff;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
 }
 
 .column-middle {
@@ -507,7 +510,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 100px;
+    margin-top: 13px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
@@ -1552,7 +1555,7 @@ blockquote p {
 #tab_bar_underpadding {
     position: absolute;
     width: 100%;
-    top: 40px;
+    top: 0px;
     height: 20px;
     z-index: 99;
 }
@@ -1720,7 +1723,7 @@ nav a .no-style {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid #dadada;
+    border-right: 1px solid #eee;
     height: 40px;
 }
 
@@ -2035,6 +2038,10 @@ div.floating_recipient {
 
 .help-table {
     table-layout: fixed;
+}
+
+.administration {
+    padding-left: 15px;
 }
 
 .conversation-partners {
@@ -2455,10 +2462,6 @@ button.topic_edit_cancel {
 #settings .settings-icon {
     margin-right: 10px;
     font-size: 20px;
-}
-
-#home {
-    margin-top: 41px;
 }
 
 .message-pane {

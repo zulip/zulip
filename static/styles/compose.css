@@ -172,11 +172,11 @@ table.compose_table {
 }
 
 .compose-content {
-    padding: 8px 10px 8px 10px;
+    border-top: 1px solid #eee;
+    padding: 8px 15px 8px 10px;
     margin-left: 250px;
     margin-right: 250px;
     position: relative;
-
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
 }
