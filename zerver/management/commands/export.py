@@ -16,7 +16,7 @@ import ujson
 from zerver.lib.export import (
     do_export_realm, do_write_stats_file_for_realm_export
 )
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 
 class Command(BaseCommand):
     help = """Exports all data from a Zulip realm
@@ -112,7 +112,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         try:
-            realm = get_realm(options["realm"])
+            realm = get_realm_by_string_id(options["realm"])
         except ValidationError:
             raise CommandError("No such realm.")
 

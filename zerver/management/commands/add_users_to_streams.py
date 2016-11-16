@@ -8,7 +8,7 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
-from zerver.models import UserProfile, get_realm, get_user_profile_by_email
+from zerver.models import UserProfile, get_realm_by_string_id, get_user_profile_by_email
 
 class Command(BaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
@@ -16,8 +16,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
         parser.add_argument(
-            '-d', '--domain',
-            dest='domain',
+            '-r', '--realm',
+            dest='string_id',
             type=str,
             help='The name of the realm in which you are adding people to streams.')
 
@@ -42,13 +42,13 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         # type: (**Any) -> None
-        if options["domain"] is None or options["streams"] is None or \
+        if options["string_id"] is None or options["streams"] is None or \
                 (options["users"] is None and options["all_users"] is None):
             self.print_help("python manage.py", "add_users_to_streams")
             exit(1)
 
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])
-        realm = get_realm(options["domain"])
+        realm = get_realm_by_string_id(options["string_id"])
 
         if options["all_users"]:
             user_profiles = UserProfile.objects.filter(realm=realm)

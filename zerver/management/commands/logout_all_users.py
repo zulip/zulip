@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import delete_all_user_sessions, \
     delete_realm_user_sessions, delete_all_deactivated_user_sessions
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 
 class Command(BaseCommand):
     help = "Log out all users."
@@ -28,7 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         if options["realm"]:
-            realm = get_realm(options["realm"])
+            realm = get_realm_by_string_id(options["realm"])
             delete_realm_user_sessions(realm)
         elif options["deactivated_only"]:
             delete_all_deactivated_user_sessions()

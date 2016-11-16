@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
-from zerver.models import UserActivity, UserProfile, get_realm, Realm
+from zerver.models import UserActivity, UserProfile, get_realm_by_string_id, Realm
 
 ## Logging setup ##
 
@@ -102,8 +102,9 @@ in a while.
             if not should_process_digest(domain, deployment_domains):
                 continue
 
+            string_id = realm.string_id
             user_profiles = UserProfile.objects.filter(
-                realm=get_realm(domain), is_active=True, is_bot=False,
+                realm=get_realm_by_string_id(string_id), is_active=True, is_bot=False,
                 enable_digest_emails=True)
 
             for user_profile in user_profiles:

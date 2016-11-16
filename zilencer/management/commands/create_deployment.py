@@ -7,7 +7,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 from zerver.lib.create_user import random_api_key
 from zerver.management.commands.create_realm import Command as CreateRealm
 
@@ -24,15 +24,15 @@ class Command(BaseCommand):
                             default=False,
                             help='Do not create a new realm; associate with '
                                  'an existing one. In this case, only the '
-                                 'domain and URLs need to be specified.')
+                                 'realm and URLs need to be specified.')
 
         parser.add_argument('-a', '--api-url', dest='api', type=str)
         parser.add_argument('-w', '--web-url', dest='web', type=str)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        if None in (options["api"], options["web"], options["domain"]):
-            print("\033[1;31mYou must provide a domain, an API URL, and a web URL.\033[0m\n", file=sys.stderr)
+        if None in (options["api"], options["web"], options["string_id"]):
+            print("\033[1;31mYou must provide a subdomain or string_id, an API URL, and a web URL.\033[0m\n", file=sys.stderr)
             self.print_help("python manage.py", "create_realm")
             exit(1)
 
@@ -40,7 +40,7 @@ class Command(BaseCommand):
             CreateRealm().handle(*args, **options)
             print() # Newline
 
-        realm = get_realm(options["domain"])
+        realm = get_realm_by_string_id(options["string_id"])
         if realm is None:
             print("\033[1;31mRealm does not exist!\033[0m\n", file=sys.stderr)
             exit(2)
