@@ -26,7 +26,7 @@ to share your ideas!
 
 ## Types of integrations
 
-We have several different ways that we integrate with 3rd part
+We have several different ways that we integrate with 3rd party
 products, ordered here by which types we prefer to write:
 
 1. **[Webhook integrations](#webhook-integrations)** (examples:
