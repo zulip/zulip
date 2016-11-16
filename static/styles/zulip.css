@@ -19,12 +19,9 @@ body {
 /* Common background color */
 body,
 #tab_bar_underpadding {
-    background-color: #ffffff;
-    -webkit-transition: background-color 200ms linear;
-    -moz-transition: background-color 200ms linear;
-    -o-transition: background-color 200ms linear;
-    -ms-transition: background-color 200ms linear;
-    transition: background-color 200ms linear;
+    background: -moz-linear-gradient(top,  rgba(255,255,255,1) 40%, rgba(255,255,255,0) 100%);
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 40%,rgba(255,255,255,0) 100%);
+    background: linear-gradient(to bottom,  rgba(255,255,255,1) 40%,rgba(255,255,255,0) 100%);
 }
 
 input,
