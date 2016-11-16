@@ -1035,8 +1035,7 @@ def parse_usermessage_flags(val):
     return flags
 
 class Attachment(ModelReprMixin, models.Model):
-    MAX_FILENAME_LENGTH = 100
-    file_name = models.CharField(max_length=MAX_FILENAME_LENGTH, db_index=True) # type: text_type
+    file_name = models.TextField(db_index=True) # type: text_type
     # path_id is a storage location agnostic representation of the path of the file.
     # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
     # then its path_id will be a/b/abc/temp_file.py.
