@@ -41,7 +41,7 @@ def write_config(config, since_id, user):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
+%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle --site=https://zulip.example.com
 
     Slurp tweets on your timeline into a specific zulip stream.
 

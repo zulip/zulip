@@ -2277,7 +2277,10 @@ access_token_secret =</pre>
         <li>
           Test the script by running it manually:
 
-          <pre>/usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"</pre>
+          <pre>
+            /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics" --site={{ external_api_uri_subdomain }}
+
+          </pre>
 
           Note: <code>twitter-search-bot</code> may install to a different
           location on your operating system distribution.
@@ -2286,7 +2289,9 @@ access_token_secret =</pre>
           Configure a crontab entry for this script. A sample crontab entry that
           will process tweets every minute is:
 
-          <pre>* * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics"</pre>
+          <pre>
+            * * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics" --site={{ external_api_uri_subdomain }}
+          </pre>
         </li>
       </ol>
 
