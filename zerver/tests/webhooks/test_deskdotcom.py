@@ -20,8 +20,8 @@ class DeskDotComHookTests(WebhookTestCase):
     def test_static_text_message(self):
         # type: () -> None
 
-        expected_subject = u"static text notification";
-        expected_message = u"This is a custom action.\n";
+        expected_subject = u"static text notification"
+        expected_message = u"This is a custom action.\n"
 
         self.send_and_test_stream_message('static_text', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
@@ -29,7 +29,7 @@ class DeskDotComHookTests(WebhookTestCase):
 
     def test_case_updated_message(self):
         # type: () -> None
-        expected_subject = u"case updated notification";
+        expected_subject = u"case updated notification"
         expected_message = (u"Case 2 updated. "
            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
            u"I have a question</a>\n")
