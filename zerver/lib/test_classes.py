@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
 
+from django.core.urlresolvers import resolve
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
@@ -133,6 +134,21 @@ class ZulipTestCase(TestCase):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.post(url, info, **kwargs)
+
+    @instrument_url
+    def client_post_request(self, url, req):
+        # type: (text_type, Any) -> HttpResponse
+        """
+        We simulate hitting an endpoint here, although we
+        actually resolve the URL manually and hit the view
+        directly.  We have this helper method to allow our
+        instrumentation to work for /notify_tornado and
+        future similar methods that require doing funny
+        things to a request object.
+        """
+
+        match = resolve(url)
+        return match.func(req)
 
     @instrument_url
     def client_get(self, url, info={}, **kwargs):
