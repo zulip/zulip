@@ -54,18 +54,12 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/emails/invitation/invitation_reminder_email.text',
         ]
         logged_out = [
-            '404.html',
-            '500.html',
-            'confirmation/confirm.html',
-            'confirmation/confirm_mituser.html',
-            'zerver/reset_confirm.html',
-            'zerver/reset_done.html',
-            'zerver/reset_emailed.html',
-            'zerver/reset.html',
-            'zerver/unsubscribe_link_error.html',
-            'zerver/portico.html',
-            'zerver/portico_signup.html',
-            'zerver/register.html',
+            '404.html',  # seems unused
+            '500.html',  # seems unused
+            'confirmation/confirm_mituser.html',  # seems unused
+            'zerver/portico.html',  # seems unused
+            'zerver/portico_signup.html',  # seems unused
+            'zerver/register.html',  # need separate test
         ]
         logged_in = [
             'zerver/home.html',

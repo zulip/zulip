@@ -69,6 +69,11 @@ class PublicURLTest(ZulipTestCase):
         get_urls = {200: ["/accounts/home/", "/accounts/login/"
                           "/en/accounts/home/", "/ru/accounts/home/",
                           "/en/accounts/login/", "/ru/accounts/login/",
+                          "/accounts/do_confirm/something",
+                          "/accounts/password/done/",
+                          "/accounts/password/reset/",
+                          "/accounts/password/reset/done/",
+                          "/accounts/unsubscribe/type/token"
                           "/help/"],
                     302: ["/", "/en/", "/ru/"],
                     401: ["/api/v1/streams/Denmark/members",
@@ -79,7 +84,8 @@ class PublicURLTest(ZulipTestCase):
                           ],
                     404: ["/help/nonexistent",],
                 }
-        post_urls = {200: ["/accounts/login/"],
+        post_urls = {200: ["/accounts/login/",
+                           "/accounts/password/reset/uidb64/token/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
                            "/json/invite_users",
