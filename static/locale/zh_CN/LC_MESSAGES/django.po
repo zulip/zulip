@@ -19,6 +19,9 @@ msgstr ""
 "Language: zh-Hans\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgid "Simplified Chinese"
+msgstr "简体中文"
+
 #: confirmation/models.py:136
 msgid "sent"
 msgstr "已发送"
