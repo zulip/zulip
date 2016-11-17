@@ -1,6 +1,6 @@
 {{! User Presence rows }}
 {{#each group_pms}}
-<li data-emails="{{emails}}" class="group-pms-sidebar-entry narrow-filter">
+<li data-user-ids="{{user_ids_string}}" class="group-pms-sidebar-entry narrow-filter">
   <span class="selectable_sidebar_block">
     <span class="group-pm-status-indicator" style="background:rgba(68,194,29,{{fraction_present}});"></span>
     <a href="#" data-name="{{name}}" title="{{name}}" class="group-pm-link">{{short_name}}</a>

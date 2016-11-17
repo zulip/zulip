@@ -1,8 +1,8 @@
-<li data-email="{{email}}" class="user_sidebar_entry {{#if num_unread}}user-with-count {{/if}}narrow-filter user_{{type}}">
+<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if num_unread}}user-with-count {{/if}}narrow-filter user_{{type}}">
   <span class="selectable_sidebar_block{{#if mobile}}{{/if}}">
     <span class="user-status-indicator"></span>
     <span class="user-device-indicator">{{#if mobile}}{{/if}}</span>
-      <a href="#" data-email="{{email}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
+      <a href="#" data-user-id="{{user_id}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
          class="{{#if my_fullname}} my_fullname{{/if}}">{{name}}</a>
   </span>
   <span class="count"><span class="value">{{#if num_unread}}{{num_unread}}{{/if}}</span></span>
