@@ -311,7 +311,7 @@ function render(template_name, args) {
     var button = $(html).find("button:first");
     assert.equal(button.text(), "YES");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
-    assert.equal(error_msg, "Are you sure you want to message all 101 people in this stream?");
+    assert.equal(error_msg, "Are you sure you want to mention all 101 people in this stream?");
 }());
 
 (function compose_notification() {

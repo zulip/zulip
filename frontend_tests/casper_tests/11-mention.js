@@ -16,9 +16,9 @@ casper.then(function () {
 });
 common.select_item_via_typeahead('#new_message_content', '@all', 'all');
 
-casper.waitForText("Are you sure you want to message all", function () {
+casper.waitForText("Are you sure you want to mention all", function () {
     casper.test.info('Warning message appears when mentioning @all');
-    casper.test.assertSelectorHasText('.compose-all-everyone', 'Are you sure you want to message all');
+    casper.test.assertSelectorHasText('.compose-all-everyone', 'Are you sure you want to mention all');
 });
 
 casper.then( function () {
