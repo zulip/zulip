@@ -164,8 +164,9 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
 
     var num_present = 0;
     _.each(emails, function (email) {
-        if (presence_info[email]) {
-            var status = presence_info[email].status;
+        var user_id = people.get_user_id(email);
+        if (presence_info[user_id]) {
+            var status = presence_info[user_id].status;
             if (status && (status !== 'offline')) {
                 ++num_present;
             }
@@ -177,9 +178,9 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
     return ratio.toFixed(2);
 };
 
-function sort_users(users, presence_info) {
+function sort_users(user_ids, presence_info) {
     // TODO sort by unread count first, once we support that
-    users.sort(function (a, b) {
+    user_ids.sort(function (a, b) {
         if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
             return -1;
         } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
@@ -195,16 +196,16 @@ function sort_users(users, presence_info) {
         // Sort equivalent PM names alphabetically
         var full_name_a = a;
         var full_name_b = b;
-        if (people.get_by_email(a)) {
-            full_name_a = people.get_by_email(a).full_name;
+        if (people.get_person_from_user_id(a)) {
+            full_name_a = people.get_person_from_user_id(a).full_name;
         }
-        if (people.get_by_email(b)) {
-            full_name_b = people.get_by_email(b).full_name;
+        if (people.get_person_from_user_id(b)) {
+            full_name_b = people.get_person_from_user_id(b).full_name;
         }
         return util.strcmp(full_name_a, full_name_b);
     });
 
-    return users;
+    return user_ids;
 }
 
 // for testing:
@@ -218,19 +219,19 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
-function filter_emails(emails) {
+function filter_user_ids(user_ids) {
     var user_list = $(".user-list-filter");
     if (user_list.length === 0) {
         // We may have received an activity ping response after
         // initiating a reload, in which case the user list may no
         // longer be available.
         // Return user list: useful for testing user list performance fix
-        return emails;
+        return user_ids;
     }
 
     var search_term = user_list.expectOne().val().trim();
     if (search_term === '') {
-        return emails;
+        return user_ids;
     }
 
     var search_terms = search_term.toLowerCase().split(",");
@@ -238,23 +239,22 @@ function filter_emails(emails) {
         return s.trim();
     });
 
-    var persons = _.map(emails, function (email) {
-        return people.get_by_email(email);
+    var persons = _.map(user_ids, function (user_id) {
+        return people.get_person_from_user_id(user_id);
     });
 
     var email_dict = people.filter_people_by_search_terms(persons, search_terms);
-    emails = _.keys(email_dict);
-    return emails;
+    user_ids = _.map(_.keys(email_dict), function (email) {
+        return people.get_user_id(email);
+    });
+    return user_ids;
 }
 
 function filter_and_sort(users) {
-    var emails = Object.keys(users);
-    emails = _.filter(emails, function (email) {
-        return people.get_by_email(email);
-    });
-    emails = filter_emails(emails);
-    emails = sort_users(emails, exports.presence_info);
-    return emails;
+    var user_ids = Object.keys(users);
+    user_ids = filter_user_ids(user_ids);
+    user_ids = sort_users(user_ids, exports.presence_info);
+    return user_ids;
 }
 
 exports._filter_and_sort = filter_and_sort;
@@ -283,15 +283,17 @@ exports.update_users = function (user_list) {
     // If you want to figure out how to get details for "me", then revert
     // the commit that added this comment.
 
-    function info_for(email) {
-        var presence = exports.presence_info[email].status;
+    function info_for(user_id) {
+        var presence = exports.presence_info[user_id].status;
+        var person = people.get_person_from_user_id(user_id);
+        var email = person.email;
         return {
-            name: people.get_by_email(email).full_name,
+            name: person.full_name,
             email: email,
             num_unread: get_num_unread(email),
             type: presence,
             type_desc: presence_descriptions[presence],
-            mobile: exports.presence_info[email].mobile
+            mobile: exports.presence_info[user_id].mobile
         };
     }
 
@@ -422,7 +424,12 @@ function focus_ping() {
             // Ping returns the active peer list
             _.each(data.presences, function (presence, this_email) {
                 if (!util.is_current_user(this_email)) {
-                    exports.presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
+                    var user_id = people.get_user_id(this_email);
+                    if (user_id) {
+                        var status = status_from_timestamp(data.server_timestamp,
+                                                           presence);
+                        exports.presence_info[user_id] = status;
+                    }
                 }
             });
             exports.update_users();
@@ -470,8 +477,13 @@ exports.set_user_statuses = function (users, server_time) {
             return;
         }
         status = status_from_timestamp(server_time, presence);
-        exports.presence_info[email] = status;
-        updated_users[email] = status;
+        var user_id = people.get_user_id(email);
+        if (user_id) {
+            exports.presence_info[user_id] = status;
+            updated_users[user_id] = status;
+        } else {
+            blueslip.warn('unknown email: ' + email);
+        }
     });
 
     exports.update_users(updated_users);

@@ -37,41 +37,48 @@ global.compile_template('user_presence_rows');
 
 var people = require("js/people.js");
 var activity = require('js/activity.js');
-activity.presence_info = {
-    'alice@zulip.com': {status: activity.IDLE},
-    'fred@zulip.com': {status: activity.ACTIVE},
-    'jill@zulip.com': {status: activity.ACTIVE},
-    'mark@zulip.com': {status: activity.IDLE},
-    'norbert@zulip.com': {status: activity.ACTIVE}
-};
-
 
 // TODO: de-dup with activity.js
-global.people.add({
+var alice = {
     email: 'alice@zulip.com',
     user_id: 1,
     full_name: 'Alice Smith'
-});
-global.people.add({
+};
+var fred = {
     email: 'fred@zulip.com',
     user_id: 2,
     full_name: "Fred Flintstone"
-});
-global.people.add({
+};
+var jill = {
     email: 'jill@zulip.com',
     user_id: 3,
     full_name: 'Jill Hill'
-});
-global.people.add({
+};
+var mark = {
     email: 'mark@zulip.com',
     user_id: 4,
     full_name: 'Marky Mark'
-});
-global.people.add({
+};
+var norbert = {
     email: 'norbert@zulip.com',
     user_id: 5,
     full_name: 'Norbert Oswald'
-});
+};
+
+global.people.add(alice);
+global.people.add(fred);
+global.people.add(jill);
+global.people.add(mark);
+global.people.add(norbert);
+
+activity.presence_info = {};
+activity.presence_info[alice.user_id] = {status: activity.IDLE};
+activity.presence_info[fred.user_id] = {status: activity.ACTIVE};
+activity.presence_info[jill.user_id] = {status: activity.ACTIVE};
+activity.presence_info[mark.user_id] = {status: activity.IDLE};
+activity.presence_info[norbert.user_id] = {status: activity.ACTIVE};
+
+// console.info(activity.presence_info);
 
 (function test_presence_list_full_update() {
     var users = activity.update_users();
@@ -110,11 +117,12 @@ global.people.add({
 }());
 
 (function test_presence_list_partial_update() {
-    var users = {
-        'alice@zulip.com': {status: 'active'}
-    };
-    activity.presence_info['alice@zulip.com'] = users['alice@zulip.com'];
+    activity.presence_info[alice.user_id] = {status: 'active'};
+    activity.presence_info[mark.user_id] = {status: 'active'};
 
+    var users = {};
+
+    users[alice.user_id] = {status: 'active'};
     users = activity.update_users(users);
     assert.deepEqual(users, [
         { name: 'Alice Smith',
@@ -127,13 +135,11 @@ global.people.add({
 
     // Test if user index in presence_info is the expected one
     var all_users = activity._filter_and_sort(activity.presence_info);
-    assert.equal(all_users.indexOf('alice@zulip.com'), 0);
+    assert.equal(all_users.indexOf(alice.user_id.toString()), 0);
 
     // Test another user
-    users = {
-        'mark@zulip.com': {status: 'active'}
-    };
-    activity.presence_info['mark@zulip.com'] = users['mark@zulip.com'];
+    users = {};
+    users[mark.user_id] = {status: 'active'};
     users = activity.update_users(users);
     assert.deepEqual(users, [
         { name: 'Marky Mark',
@@ -145,6 +151,6 @@ global.people.add({
     ]);
 
     all_users = activity._filter_and_sort(activity.presence_info);
-    assert.equal(all_users.indexOf('mark@zulip.com'), 3);
+    assert.equal(all_users.indexOf(mark.user_id.toString()), 3);
 
 }());
