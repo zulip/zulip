@@ -1048,6 +1048,12 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
             u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),
             '_end')
+        # The equalent JS regex is \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
+        # [\u2600-\u26FF]|[\u2700-\u27BF]. See below comments for explanation. The JS regex is used
+        # by marked.js for frontend unicode emoji processing.
+        # The JS regex \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001F300-\U0001F64F
+        # The JS regex \ud83d[\ude80-\udeff] represents \U0001F680-\U0001F6FF
+        # Similiarly [\u2600-\u26FF]|[\u2700-\u27BF] represents \u2600-\u26FF\u2700-\u27BF
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
