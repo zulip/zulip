@@ -386,7 +386,7 @@ code {
 pre {
     /* code block text is a bit smaller than normal text */
     font-size: 0.8em;
-    line-height: 1.4;
+    line-height: 1.5;
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
