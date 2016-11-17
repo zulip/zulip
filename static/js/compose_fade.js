@@ -130,7 +130,9 @@ function _fade_users() {
     }
     _.forEach($('.user_sidebar_entry'), function (elt) {
         elt = $(elt);
-        var would_receive = exports.would_receive_message(elt.attr('data-email'));
+        var user_id = elt.attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+        var would_receive = exports.would_receive_message(email);
         if (would_receive === true) {
             elt.addClass('unfaded').removeClass('faded');
         } else if (would_receive === false) {

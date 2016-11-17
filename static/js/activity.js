@@ -73,16 +73,16 @@ function update_count_in_dom(count_span, value_span, count) {
     value_span.text(count);
 }
 
-function get_filter_li(name) {
+function get_filter_li(user_ids_string) {
     if (name.indexOf(",") < 0) {
-        return $("li.user_sidebar_entry[data-email='" + name + "']");
+        return $("li.user_sidebar_entry[data-user-id='" + user_ids_string + "']");
     } else {
-        return $("li.group-pms-sidebar-entry[data-emails='" + name + "']");
+        return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
     }
 }
 
-function set_count(name, count) {
-    var count_span = get_filter_li(name).find('.count');
+function set_count(user_ids_string, count) {
+    var count_span = get_filter_li(user_ids_string).find('.count');
     var value_span = count_span.find('.value');
     update_count_in_dom(count_span, value_span, count);
 }
@@ -93,8 +93,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     counts.pm_count.each(function (count, user_ids_string) {
         // TODO: just use user_ids_string in our markup
-        var emails_string = people.user_ids_string_to_emails_string(user_ids_string);
-        set_count(emails_string, count);
+        set_count(user_ids_string, count);
     });
 };
 
@@ -104,10 +103,17 @@ exports.process_loaded_messages = function (messages) {
     _.each(messages, function (message) {
         if (message.type === 'private') {
             if (message.reply_to.indexOf(',') > 0) {
-                var old_timestamp = huddle_timestamps.get(message.reply_to);
+                var user_ids_string = people.emails_strings_to_user_ids_string(
+                    message.reply_to);
+
+                if (!user_ids_string) {
+                    blueslip.warn('Bad reply_to for huddle: ' + message.reply_to);
+                }
+
+                var old_timestamp = huddle_timestamps.get(user_ids_string);
 
                 if (!old_timestamp || (old_timestamp < message.timestamp)) {
-                    huddle_timestamps.set(message.reply_to, message.timestamp);
+                    huddle_timestamps.set(user_ids_string, message.timestamp);
                     need_resize = true;
                 }
             }
@@ -130,25 +136,25 @@ exports.get_huddles = function () {
 };
 
 exports.full_huddle_name = function (huddle) {
-    var emails = huddle.split(',');
+    var user_ids = huddle.split(',');
 
-    var names = _.map(emails, function (email) {
-        var person = people.get_by_email(email);
-        return person ? person.full_name : email;
+    var names = _.map(user_ids, function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        return person.full_name;
     });
 
     return names.join(', ');
 };
 
 exports.short_huddle_name = function (huddle) {
-    var emails = huddle.split(',');
+    var user_ids = huddle.split(',');
 
     var num_to_show = 3;
-    var names = _.map(emails.slice(0, num_to_show), function (email) {
-        var person = people.get_by_email(email);
-        return person ? person.full_name : email;
+    var names = _.map(user_ids.slice(0, num_to_show), function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        return person.full_name;
     });
-    var others = emails.length - num_to_show;
+    var others = user_ids.length - num_to_show;
 
     if (others === 1) {
         names.push("+ 1 other");
@@ -160,11 +166,10 @@ exports.short_huddle_name = function (huddle) {
 };
 
 exports.huddle_fraction_present = function (huddle, presence_info) {
-    var emails = huddle.split(',');
+    var user_ids = huddle.split(',');
 
     var num_present = 0;
-    _.each(emails, function (email) {
-        var user_id = people.get_user_id(email);
+    _.each(user_ids, function (user_id) {
         if (presence_info[user_id]) {
             var status = presence_info[user_id].status;
             if (status && (status !== 'offline')) {
@@ -173,7 +178,7 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
         }
     });
 
-    var ratio = num_present / emails.length;
+    var ratio = num_present / user_ids.length;
 
     return ratio.toFixed(2);
 };
@@ -289,7 +294,7 @@ exports.update_users = function (user_list) {
         var email = person.email;
         return {
             name: person.full_name,
-            email: email,
+            user_id: user_id,
             num_unread: get_num_unread(email),
             type: presence,
             type_desc: presence_descriptions[presence],
@@ -300,9 +305,9 @@ exports.update_users = function (user_list) {
     var user_info = _.map(users, info_for);
     if (user_list !== undefined) {
         // Render right panel partially
-        $.each(user_info, function (index, user) {
-            var user_index = all_users.indexOf(user.email);
-            $('#user_presences').find('[data-email="' + user.email + '"]').remove();
+        _.each(user_info, function (user, index) {
+            var user_index = all_users.indexOf(user.user_id);
+            $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
             $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
         });
     } else {
@@ -345,7 +350,7 @@ exports.update_huddles = function () {
 
     var group_pms = _.map(huddles, function (huddle) {
         return {
-            emails: huddle,
+            user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
             fraction_present: exports.huddle_fraction_present(huddle, exports.presence_info),
             short_name: exports.short_huddle_name(huddle)
@@ -355,9 +360,10 @@ exports.update_huddles = function () {
     var html = templates.render('group_pms', {group_pms: group_pms});
     $('#group-pms').expectOne().html(html);
 
-    _.each(huddles, function (huddle) {
-        var count = unread.num_unread_for_person(huddle);
-        set_count(huddle, count);
+    _.each(huddles, function (user_ids_string) {
+        var emails_string = people.user_ids_string_to_emails_string(user_ids_string);
+        var count = unread.num_unread_for_person(emails_string);
+        set_count(user_ids_string, count);
     });
 
     show_huddles();
@@ -520,11 +526,12 @@ function maybe_select_person (e) {
         // Prevent a newline from being entered into the soon-to-be-opened composebox
         e.preventDefault();
 
-        var topPerson = $('#user_presences li.user_sidebar_entry').first().data('email');
+        var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
         if (topPerson !== undefined) {
             // undefined if there are no results
+            var email = people.get_person_from_user_id(topPerson).email;
             compose.start('private',
-                    {trigger: 'sidebar enter key', "private_message_recipient": topPerson});
+                    {trigger: 'sidebar enter key', "private_message_recipient": email});
         }
         // Clear the user filter
         exports.escape_search();
