@@ -141,10 +141,10 @@ if since_id < 0 or options.twitter_id != user_id:
     # No since id yet, fetch the latest and then start monitoring from next time
     # Or, a different user id is being asked for, so start from scratch
     # Either way, fetch last 5 tweets to start off
-    statuses = api.GetFriendsTimeline(user=options.twitter_id, count=5)
+    statuses = api.GetUserTimeline(screen_name=options.twitter_id, count=5)
 else:
     # We have a saved last id, so insert all newer tweets into the zulip stream
-    statuses = api.GetFriendsTimeline(user=options.twitter_id, since_id=since_id)
+    statuses = api.GetUserTimeline(screen_name=options.twitter_id, since_id=since_id)
 
 for status in statuses[::-1][:options.limit_tweets]:
     composed = "%s (%s)" % (status.user.name, status.user.screen_name)
