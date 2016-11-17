@@ -1185,8 +1185,8 @@ a.bottom-signup-button {
 }
 
 .emoji {
-    height: 25px;
-    width: 25px;
+    max-width: 25px;
+    max-height: 25px;
     vertical-align: text-bottom;
 }
 
