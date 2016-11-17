@@ -299,11 +299,13 @@ def filter_stream_authorization(user_profile, streams):
                stream.id not in set(stream.id for stream in unauthorized_streams)]
     return authorized_streams, unauthorized_streams
 
+#fixme: seems useless, can be removed
 def stream_link(stream_name):
     # type: (text_type) -> text_type
     "Escapes a stream name to make a #narrow/stream/stream_name link"
     return u"#narrow/stream/%s" % (urllib.parse.quote(stream_name.encode('utf-8')),)
 
+#fixme: seems useless, can be removed
 def stream_button(stream_name):
     # type: (text_type) -> text_type
     stream_name = stream_name.replace('\\', '\\\\')
@@ -373,20 +375,18 @@ def add_subscriptions_backend(request, user_profile,
 
             if len(subscriptions) == 1:
                 msg = ("Hi there!  We thought you'd like to know that %s just "
-                       "subscribed you to the%s stream [%s](%s)."
+                       "subscribed you to the%s stream #**%s**."
                        % (user_profile.full_name,
                           " **invite-only**" if private_streams[subscriptions[0]] else "",
                           subscriptions[0],
-                          stream_link(subscriptions[0]),
                         ))
             else:
                 msg = ("Hi there!  We thought you'd like to know that %s just "
                        "subscribed you to the following streams: \n\n"
                        % (user_profile.full_name,))
                 for stream in subscriptions:
-                    msg += "* [%s](%s)%s\n" % (
+                    msg += "* #**%s**%s\n" % (
                         stream,
-                        stream_link(stream),
                         " (**invite-only**)" if private_streams[stream] else "")
 
             if len([s for s in subscriptions if not private_streams[s]]) > 0:
@@ -398,21 +398,17 @@ def add_subscriptions_backend(request, user_profile,
         notifications_stream = user_profile.realm.notifications_stream
         if notifications_stream is not None:
             if len(created_streams) > 1:
-                stream_msg = "the following streams: %s" % \
-                              (", ".join('`%s`' % (s.name,) for s in created_streams),)
+                stream_msg = "the following streams: %s" % (", ".join('#**%s**' % s.name for s in created_streams))
             else:
-                stream_msg = "a new stream `%s`" % (created_streams[0].name)
-
-            stream_buttons = ' '.join(stream_button(s.name) for s in created_streams)
-            msg = ("%s just created %s. %s" % (user_profile.full_name,
-                                                stream_msg, stream_buttons))
+                stream_msg = "a new stream #**%s**." % created_streams[0].name
+            msg = ("%s just created %s" % (user_profile.full_name, stream_msg))
             notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
                                    "stream",
                                    notifications_stream.name, "Streams", msg,
                                    realm=notifications_stream.realm))
         else:
-            msg = ("Hi there!  %s just created a new stream '%s'. %s"
-                       % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
+            msg = ("Hi there!  %s just created a new stream #**%s**."
+                   % (user_profile.full_name, created_streams[0].name))
             for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).
