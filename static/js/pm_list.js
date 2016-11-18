@@ -84,7 +84,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         var user_ids_string = private_message_obj.user_ids_string;
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
 
-        var num_unread = unread.num_unread_for_person(reply_to);
+        var num_unread = unread.num_unread_for_person(user_ids_string);
 
         var always_visible = (idx < max_private_messages) || (num_unread > 0)
             || (user_ids_string === active_conversation);

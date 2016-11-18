@@ -277,11 +277,11 @@ exports.update_users = function (user_list) {
     }
     users = filter_and_sort(users);
 
-    function get_num_unread(email) {
+    function get_num_unread(user_id) {
         if (unread.suppress_unread_counts) {
             return 0;
         }
-        return unread.num_unread_for_person(email);
+        return unread.num_unread_for_person(user_id);
     }
 
     // Note that we do not include ourselves in the user list any more.
@@ -291,11 +291,10 @@ exports.update_users = function (user_list) {
     function info_for(user_id) {
         var presence = exports.presence_info[user_id].status;
         var person = people.get_person_from_user_id(user_id);
-        var email = person.email;
         return {
             name: person.full_name,
             user_id: user_id,
-            num_unread: get_num_unread(email),
+            num_unread: get_num_unread(user_id),
             type: presence,
             type_desc: presence_descriptions[presence],
             mobile: exports.presence_info[user_id].mobile
@@ -361,8 +360,7 @@ exports.update_huddles = function () {
     $('#group-pms').expectOne().html(html);
 
     _.each(huddles, function (user_ids_string) {
-        var emails_string = people.user_ids_string_to_emails_string(user_ids_string);
-        var count = unread.num_unread_for_person(emails_string);
+        var count = unread.num_unread_for_person(user_ids_string);
         set_count(user_ids_string, count);
     });
 
