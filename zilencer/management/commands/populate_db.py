@@ -133,9 +133,15 @@ class Command(BaseCommand):
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
-            names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
-                     ("Prospero from The Tempest", "prospero@zulip.com"),
-                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
+            names = [
+                ("Zoe", "ZOE@zulip.com"),
+                ("Othello, the Moor of Venice", "othello@zulip.com"),
+                ("Iago", "iago@zulip.com"),
+                ("Prospero from The Tempest", "prospero@zulip.com"),
+                ("Cordelia Lear", "cordelia@zulip.com"),
+                ("King Hamlet", "hamlet@zulip.com"),
+                ("aaron", "AARON@zulip.com"),
+            ]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
