@@ -42,13 +42,20 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
 exports.process_message_for_recent_private_messages = function process_message_for_recent_private_messages(message, remove_message) {
     var current_timestamp = 0;
 
+    var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+
+    if (!user_ids_string) {
+        blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
+        return;
+    }
+
     // If this conversation is already tracked, we'll replace with new timestamp,
     // so remove it from the current list.
     exports.recent_private_messages = _.filter(exports.recent_private_messages, function (recent_pm) {
-        return recent_pm.reply_to !== message.reply_to;
+        return recent_pm.user_ids_string !== user_ids_string;
     });
 
-    var new_conversation = {reply_to: message.reply_to,
+    var new_conversation = {user_ids_string: user_ids_string,
                             display_reply_to: message.display_reply_to,
                             timestamp: Math.max(message.timestamp, current_timestamp)};
 
