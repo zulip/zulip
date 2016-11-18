@@ -29,8 +29,17 @@ function set_count(type, name, count) {
 
 exports.get_conversation_li = function (conversation) {
     // conversation is something like "foo@example.com,bar@example.com"
+    var user_ids_string = people.emails_strings_to_user_ids_string(conversation);
+    if (!user_ids_string) {
+        blueslip.warn('Unknown conversation: ' + conversation);
+        return;
+    }
+    return exports.get_li_for_user_ids_string(user_ids_string);
+};
+
+exports.get_li_for_user_ids_string = function (user_ids_string) {
     var pm_li = get_filter_li();
-    var convo_li = pm_li.find("li[data-name='" + conversation + "']");
+    var convo_li = pm_li.find("li[data-user-ids-string='" + user_ids_string + "']");
     return convo_li;
 };
 
@@ -65,13 +74,20 @@ exports._build_private_messages_list = function (active_conversation, max_privat
     var display_messages = [];
     var hiding_messages = false;
 
+    // SHIM
+    if (active_conversation) {
+        active_conversation = people.emails_strings_to_user_ids_string(active_conversation);
+    }
+
     _.each(private_messages, function (private_message_obj, idx) {
         var recipients_string = private_message_obj.display_reply_to;
-        var replies_to = private_message_obj.reply_to;
-        var num_unread = unread.num_unread_for_person(private_message_obj.reply_to);
+        var user_ids_string = private_message_obj.user_ids_string;
+        var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
+
+        var num_unread = unread.num_unread_for_person(reply_to);
 
         var always_visible = (idx < max_private_messages) || (num_unread > 0)
-            || (replies_to === active_conversation);
+            || (user_ids_string === active_conversation);
 
         if (!always_visible) {
             hiding_messages = true;
@@ -79,11 +95,11 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 
         var display_message = {
             recipients: recipients_string,
-            reply_to: replies_to,
+            user_ids_string: user_ids_string,
             unread: num_unread,
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(private_message_obj.reply_to)
+            url: narrow.pm_with_uri(reply_to)
         };
         display_messages.push(display_message);
     });
