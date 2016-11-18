@@ -31,19 +31,15 @@ import six.moves.configparser
 
 import zulip
 VERSION = "0.9"
-CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
-
-def write_config(config, since_id, user):
-    config.set('twitter', 'since_id', since_id)
-    config.set('twitter', 'user_id', user)
-    with open(CONFIGFILE, 'wb') as configfile:
-        config.write(configfile)
 
 parser = optparse.OptionParser(r"""
 
 %prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
 
     Slurp tweets on your timeline into a specific zulip stream.
+    You can specify a different twitter_handle to slurp tweets from other Twitter users timeline 
+    Default stream name is 'twitter-bot'
+    Default config-file is ~/.zulip_twitterrc
 
     Run this on your personal machine.  Your API key and twitter id
     are revealed to local users through the command line or config
@@ -82,9 +78,21 @@ parser.add_option('--limit-tweets',
     default=15,
     type='int',
     help='Maximum number of tweets to push at once')
+parser.add_option('--config', 
+    default=os.path.expanduser("~/.zulip_twitterrc"))
 
 parser.add_option_group(zulip.generate_option_group(parser))
 (options, args) = parser.parse_args()
+
+CONFIGFILE = options.config
+SINCEID = 'since_id' + options.twitter_id
+USERID = 'user_id' + options.twitter_id
+
+def write_config(config, since_id, user):
+    config.set('twitter', SINCEID, since_id)
+    config.set('twitter', USERID, user)
+    with open(CONFIGFILE, 'wb') as configfile:
+        config.write(configfile)
 
 if not options.twitter_id:
     parser.error('You must specify --twitter-id')
@@ -121,12 +129,12 @@ if not user.id:
     sys.exit()
 
 try:
-    since_id = config.getint('twitter', 'since_id')
+    since_id = config.getint('twitter', SINCEID)
 except six.moves.configparser.NoOptionError:
     since_id = -1
 
 try:
-    user_id = config.get('twitter', 'user_id')
+    user_id = config.get('twitter', USERID)
 except six.moves.configparser.NoOptionError:
     user_id = options.twitter_id
 
