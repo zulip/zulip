@@ -84,7 +84,7 @@ class ZulipTestCase(TestCase):
     django_client to fool the regext.
     '''
 
-    DEFAULT_REALM_NAME = 'zulip.com'
+    DEFAULT_REALM = Realm.objects.get(string_id='zulip')
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
@@ -333,7 +333,7 @@ class ZulipTestCase(TestCase):
     def make_stream(self, stream_name, realm=None, invite_only=False):
         # type: (text_type, Optional[Realm], Optional[bool]) -> Stream
         if realm is None:
-            realm = get_realm(self.DEFAULT_REALM_NAME)
+            realm = self.DEFAULT_REALM
 
         try:
             stream = Stream.objects.create(
