@@ -641,6 +641,9 @@ util.execute_early(function () {
     });
 });
 
+// This is for testing.
+exports._add_message_metadata = add_message_metadata;
+
 return exports;
 
 }());

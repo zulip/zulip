@@ -49,6 +49,7 @@ exports.stub_out_jquery = function () {
     });
     $.fn = {};
     $.now = function () {};
+    $.trim = function (s) { return s.trim(); };
 };
 
 return exports;
