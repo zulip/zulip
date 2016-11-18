@@ -106,7 +106,10 @@ var _ = global._;
 }());
 
 (function test_normalize_recipients() {
-    assert(util.normalize_recipients(' bob@foo.com, alice@foo.com '), 'alice@foo.com,bob@foo.com');
+    assert.equal(
+        util.normalize_recipients('ZOE@foo.com, bob@foo.com, alice@foo.com, AARON@foo.com '),
+        'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com'
+    );
 }());
 
 (function test_random_int() {
