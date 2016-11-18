@@ -299,18 +299,6 @@ def filter_stream_authorization(user_profile, streams):
                stream.id not in set(stream.id for stream in unauthorized_streams)]
     return authorized_streams, unauthorized_streams
 
-#fixme: seems useless, can be removed
-def stream_link(stream_name):
-    # type: (text_type) -> text_type
-    "Escapes a stream name to make a #narrow/stream/stream_name link"
-    return u"#narrow/stream/%s" % (urllib.parse.quote(stream_name.encode('utf-8')),)
-
-#fixme: seems useless, can be removed
-def stream_button(stream_name):
-    # type: (text_type) -> text_type
-    stream_name = stream_name.replace('\\', '\\\\')
-    stream_name = stream_name.replace(')', '\\)')
-    return '!_stream_subscribe_button(%s)' % (stream_name,)
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
