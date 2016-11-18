@@ -48,6 +48,7 @@ class RealmFilterTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_not_realm_admin(self):
+        # type: () -> None
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/realm/filters")
         self.assert_json_error(result, 'Must be a realm administrator')
