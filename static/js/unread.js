@@ -174,8 +174,7 @@ exports.num_unread_for_subject = function (stream, subject) {
     return num_unread;
 };
 
-exports.num_unread_for_person = function (emails_string) {
-    var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+exports.num_unread_for_person = function (user_ids_string) {
     if (!user_ids_string) {
         return 0;
     }
