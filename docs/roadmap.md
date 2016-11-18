@@ -101,7 +101,7 @@ Zulip server, setting up a new Zulip realm, or starting to use Zulip.
 * [Add a mechanism for deleting early test messages (e.g.,
   administrators can hard-delete
   messages)](https://github.com/zulip/zulip/issues/135)
-* [Allow customizing emails when inviting new users](https://github.com/zulip/zulip/pull/2252)
+* [Allow customizing emails when inviting new users](https://github.com/zulip/zulip/pull/1409)
 
 ## Production installation issues
 
@@ -173,7 +173,7 @@ of its size, it takes work to keep it that way.
 ## Security
 
 * [Add support for 2-factor authentication on all
-  platforms](https://github.com/zulip/zulip/pull/451)
+  platforms](https://github.com/zulip/zulip/pull/1747)
 * [Add support for stronger security controls for uploaded files (The
   LOCAL_UPLOADS_DIR file uploads backend only supports world-readable
   uploads)](https://github.com/zulip/zulip/issues/320)
@@ -186,7 +186,7 @@ of its size, it takes work to keep it that way.
 
 ## Testing
 
-* [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/732)
+* [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/1441)
 * [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
 
