@@ -124,7 +124,8 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = _.map(recipients.split(','), $.trim);
+    recipients = _.map(recipients.split(','), function (s) { return s.trim(); });
+    recipients = _.map(recipients, function (s) { return s.toLowerCase(); });
     recipients = _.filter(recipients, function (s) { return s.length > 0; });
     recipients.sort();
     return recipients.join(',');

@@ -102,8 +102,10 @@ function message_matches_search_term(message, operator, operand) {
         return (message.sender_email.toLowerCase() === operand.toLowerCase());
 
     case 'pm-with':
+        // TODO: use user_ids, not emails here
         return (message.type === 'private') &&
-            (message.reply_to.toLowerCase() === operand.split(',').sort().join(',').toLowerCase());
+            (util.normalize_recipients(message.reply_to) ===
+            util.normalize_recipients(operand));
     }
 
     return true; // unknown operators return true (effectively ignored)
