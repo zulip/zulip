@@ -65,6 +65,7 @@ the end of 2016.
 * [Make clicking on desktop notifications renarrow
   properly](https://github.com/zulip/zulip/issues/1996)
 * [Add pretty bubbles for recipients in the compose box](https://github.com/zulip/zulip/issues/595)
+* [Make right sidebar buddy list UI scale well to large teams](https://github.com/zulip/zulip/issues/236)
 * [Display stream descriptions more prominently](https://github.com/zulip/zulip/issues/164)
 * [Add support for managing uploaded files](https://github.com/zulip/zulip/issues/454)
 
