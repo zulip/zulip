@@ -1,0 +1,36 @@
+<div id="filter-settings" class="settings-section">
+  <div class="settings-section-title"><i class="icon-vector-filter settings-section-icon"></i>{{t "Custom linkification filters" }}</div>
+  <div class="admin-table-wrapper">
+    <p>{{#tr this}}Configure patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example, you could make typing "#123" automatically become a link to issue #123 in an issue tracker.{{/tr}}</p>
+    <table class="table table-condensed table-striped admin_filters_table">
+      <tbody id="admin_filters_table">
+        <th>{{t "Pattern" }}</th>
+        <th>{{t "URL format string" }}</th>
+        <th>{{t "Actions" }}</th>
+      </tbody>
+    </table>
+  </div>
+  <form class="form-horizontal admin-filter-form">
+    <div class="add-new-filter-box grey-bg green-bg">
+      <div class="new-filter-form">
+        <div class="settings-section-title new-filter-section-title">{{t "Add a New Filter" }}</div>
+        <div class="alert" id="admin-filter-status"></div>
+        <div class="control-group">
+          <label for="filter_pattern" class="control-label">{{t "Regular expression" }}</label>
+          <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+          <div class="alert" id="admin-filter-pattern-status"></div>
+        </div>
+        <div class="control-group">
+          <label for="filter_format_string" class="control-label">{{t "URL format string" }}</label>
+          <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
+          <div class="alert" id="admin-filter-format-status"></div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" class="btn btn-big btn-primary" value="{{t 'Add filter' }}" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -186,6 +186,25 @@ exports.populate_emoji = function (emoji_data) {
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
 };
 
+exports.populate_filters = function (filters_data) {
+    var filters_table = $("#admin_filters_table").expectOne();
+    filters_table.find("tr.filter_row").remove();
+    _.each(filters_data, function (filter) {
+        filters_table.append(
+            templates.render(
+                "admin_filter_list", {
+                    filter: {
+                        pattern: filter[0],
+                        url_format_string: filter[1],
+                        id: filter[2]
+                    }
+                }
+            )
+        );
+    });
+    loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
+};
+
 exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
@@ -275,6 +294,9 @@ function _setup_page() {
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
+    $('#admin-filter-status').expectOne().hide();
+    $('#admin-filter-pattern-status').expectOne().hide();
+    $('#admin-filter-format-status').expectOne().hide();
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
@@ -285,6 +307,7 @@ function _setup_page() {
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
     loading.make_indicator($('#admin_page_emoji_loading_indicator'));
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
+    loading.make_indicator($('#admin_page_filters_loading_indicator'));
 
     // Populate users and bots tables
     channel.get({
@@ -310,6 +333,9 @@ function _setup_page() {
     // Populate emoji table
     exports.populate_emoji(page_params.realm_emoji);
     exports.update_default_streams_table();
+
+    // Populate filters table
+    exports.populate_filters(page_params.realm_filters);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -776,6 +802,66 @@ function _setup_page() {
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
                 ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
+            }
+        });
+    });
+
+    $('.admin_filters_table').on('click', '.delete', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+
+        channel.del({
+            url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    btn.closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                     btn.text("Failed!");
+                }
+            },
+            success: function () {
+                var row = btn.parents('tr');
+                row.remove();
+            }
+        });
+    });
+
+    $(".administration").on("submit", "form.admin-filter-form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var filter_status = $('#admin-filter-status');
+        var pattern_status = $('#admin-filter-pattern-status');
+        var format_status = $('#admin-filter-format-status');
+        filter_status.hide();
+        pattern_status.hide();
+        format_status.hide();
+        var filter = {};
+        $(this).serializeArray().map(function (x){filter[x.name] = x.value;});
+
+        channel.post({
+            url: "/json/realm/filters",
+            data: $(this).serialize(),
+            success: function (data) {
+                filter.id = data.id;
+                ui.report_success(i18n.t("Custom filter added!"), filter_status);
+            },
+            error: function (xhr, error) {
+                var errors = $.parseJSON(xhr.responseText).errors;
+                if (errors.pattern !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.pattern});
+                    ui.report_error(i18n.t("Failed"), xhr, pattern_status);
+                }
+                if (errors.url_format_string !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+                    ui.report_error(i18n.t("Failed"), xhr, format_status);
+                }
+                if (errors.__all__ !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.__all__});
+                    ui.report_error(i18n.t("Failed"), xhr, filter_status);
+                }
             }
         });
     });

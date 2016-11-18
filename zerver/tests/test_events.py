@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from typing import Any, Callable, Optional
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
@@ -66,10 +67,38 @@ from zerver.views.events_register import _default_all_public_streams, _default_n
 from zerver.tornadoviews import get_events_backend
 
 from collections import OrderedDict
+import mock
 import time
 import ujson
 from six.moves import range
 
+class TornadoTest(ZulipTestCase):
+    def test_tornado_endpoint(self):
+        # type: () -> None
+
+        # This test is mostly intended to get minimal coverage on
+        # the /notify_tornado endpoint, so we can have 100% URL coverage,
+        # but it does exercise a little bit of the codepath.
+        post_data = dict(
+            data=ujson.dumps(
+                dict(
+                    event=dict(
+                        type='other'
+                    ),
+                    users=[get_user_profile_by_email('hamlet@zulip.com').id],
+                ),
+            ),
+        )
+        req = POSTRequestMock(post_data, user_profile=None)
+        req.META['REMOTE_ADDR'] = '127.0.0.1'
+        result = self.client_post_request('/notify_tornado', req)
+        self.assert_json_error(result, 'Access denied', status_code=403)
+
+        post_data['secret'] = settings.SHARED_SECRET
+        req = POSTRequestMock(post_data, user_profile=None)
+        req.META['REMOTE_ADDR'] = '127.0.0.1'
+        result = self.client_post_request('/notify_tornado', req)
+        self.assert_json_success(result)
 
 class GetEventsTest(ZulipTestCase):
     def tornado_call(self, view_func, user_profile, post_data):
@@ -634,12 +663,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_filters')),
             ('realm_filters', check_list(None)), # TODO: validate tuples in the list
         ])
-        events = self.do_test(lambda: do_add_realm_filter(get_realm_by_string_id("zulip"), "#[123]",
+        events = self.do_test(lambda: do_add_realm_filter(get_realm_by_string_id("zulip"), "#(?P<id>[123])",
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        self.do_test(lambda: do_remove_realm_filter(get_realm_by_string_id("zulip"), "#[123]"))
+        self.do_test(lambda: do_remove_realm_filter(get_realm_by_string_id("zulip"), "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

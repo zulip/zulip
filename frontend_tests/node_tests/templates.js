@@ -129,6 +129,28 @@ function render(template_name, args) {
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
 }());
 
+(function admin_filter_list() {
+    var args = {
+        filter: {
+            "pattern": "#(?P<id>[0-9]+)",
+            "url_format_string": "https://trac.example.com/ticket/%(id)s"
+        }
+    };
+
+    var html = '';
+    html += '<tbody id="admin_filters_table">';
+    html += render('admin_filter_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_filter_list', html);
+
+    var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
+    var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+
+    assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
+    assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
+}());
+
 (function admin_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
@@ -311,7 +333,7 @@ function render(template_name, args) {
     var button = $(html).find("button:first");
     assert.equal(button.text(), "YES");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
-    assert.equal(error_msg, "Are you sure you want to message all 101 people in this stream?");
+    assert.equal(error_msg, "Are you sure you want to mention all 101 people in this stream?");
 }());
 
 (function compose_notification() {

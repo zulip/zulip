@@ -41,7 +41,7 @@ to this file.
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
-from tools.lib.test_script import(
+from tools.lib.test_script import (
     get_provisioning_status,
 )
 

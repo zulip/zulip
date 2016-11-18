@@ -3448,14 +3448,24 @@ def notify_realm_filters(realm):
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 def do_add_realm_filter(realm, pattern, url_format_string):
-    # type: (Realm, text_type, text_type) -> None
-    RealmFilter(realm=realm, pattern=pattern,
-                url_format_string=url_format_string).save()
+    # type: (Realm, text_type, text_type) -> int
+    pattern = pattern.strip()
+    url_format_string = url_format_string.strip()
+    realm_filter = RealmFilter(
+        realm=realm, pattern=pattern,
+        url_format_string=url_format_string)
+    realm_filter.full_clean()
+    realm_filter.save()
     notify_realm_filters(realm)
 
-def do_remove_realm_filter(realm, pattern):
-    # type: (Realm, text_type) -> None
-    RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
+    return realm_filter.id
+
+def do_remove_realm_filter(realm, pattern=None, id=None):
+    # type: (Realm, Optional[text_type], Optional[int]) -> None
+    if pattern is not None:
+        RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
+    else:
+        RealmFilter.objects.get(realm=realm, pk=id).delete()
     notify_realm_filters(realm)
 
 def get_emails_from_user_ids(user_ids):

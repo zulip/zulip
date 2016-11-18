@@ -119,7 +119,7 @@ Zulip server, setting up a new Zulip realm, or starting to use Zulip.
   emoji](https://github.com/zulip/zulip/issues/984)
 * [Add setting to enable any user to add new realm
   emoji](https://github.com/zulip/zulip/issues/978)
-* [Make realm filters web-configurable](https://github.com/zulip/zulip/pull/544)
+* <strike>[Make realm filters web-configurable](https://github.com/zulip/zulip/pull/544)</strike>
 * [Improve administrative controls for managing streams](https://github.com/zulip/zulip/issues/425)
 * [Enhance the LDAP integration and make it web-configurable](https://github.com/zulip/zulip/issues/715)
 * [Add a SAML integration for

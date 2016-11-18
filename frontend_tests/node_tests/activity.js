@@ -19,51 +19,57 @@ set_global('document', {
     }
 });
 
-global.people.add({
+var alice = {
     email: 'alice@zulip.com',
     user_id: 1,
     full_name: 'Alice Smith'
-});
-global.people.add({
+};
+var fred = {
     email: 'fred@zulip.com',
     user_id: 2,
     full_name: "Fred Flintstone"
-});
-global.people.add({
+};
+var jill = {
     email: 'jill@zulip.com',
     user_id: 3,
     full_name: 'Jill Hill'
-});
-global.people.add({
+};
+var mark = {
     email: 'mark@zulip.com',
     user_id: 4,
     full_name: 'Marky Mark'
-});
-global.people.add({
+};
+var norbert = {
     email: 'norbert@zulip.com',
     user_id: 5,
     full_name: 'Norbert Oswald'
-});
+};
+
+global.people.add(alice);
+global.people.add(fred);
+global.people.add(jill);
+global.people.add(mark);
+global.people.add(norbert);
+
 
 var activity = require('js/activity.js');
 
 activity.update_huddles = function () {};
 
 (function test_sort_users() {
-    var users = ['alice@zulip.com', 'fred@zulip.com', 'jill@zulip.com'];
+    var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    var user_info = {
-        'alice@zulip.com': {status: 'inactive'},
-        'fred@zulip.com': {status: 'active'},
-        'jill@zulip.com': {status: 'active'}
-    };
+    var user_info = {};
+    user_info[alice.user_id] = {status: 'inactive'};
+    user_info[fred.user_id] = {status: 'active'};
+    user_info[jill.user_id] = {status: 'active'};
 
-    activity._sort_users(users, user_info);
+    activity._sort_users(user_ids, user_info);
 
-    assert.deepEqual(users, [
-        'fred@zulip.com',
-        'jill@zulip.com',
-        'alice@zulip.com'
+    assert.deepEqual(user_ids, [
+        fred.user_id,
+        jill.user_id,
+        alice.user_id
     ]);
 }());
 
@@ -150,12 +156,11 @@ activity.update_huddles = function () {};
 (function test_huddle_fraction_present() {
     var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
 
-    var presence_list = {
-        'alice@zulip.com': {status: 'active'},
-        'fred@zulip.com': {status: 'idle'}, // counts as present
-        // jill not in list
-        'mark@zulip.com': {status: 'offline'} // does not count
-    };
+    var presence_list = {};
+    presence_list[alice.user_id] = {status: 'active'};
+    presence_list[fred.user_id] = {status: 'idle'}; // counts as present
+    // jill not in list
+    presence_list[mark.user_id] = {status: 'offline'}; // does not count
 
     assert.equal(
         activity.huddle_fraction_present(huddle, presence_list),

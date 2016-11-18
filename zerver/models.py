@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from typing import Any, Dict, List, Set, Tuple, TypeVar, \
-    Union, Optional, Sequence, AbstractSet
+    Union, Optional, Sequence, AbstractSet, Pattern, AnyStr
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
 
@@ -11,6 +11,8 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 import django.contrib.auth
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
@@ -384,10 +386,31 @@ def flush_realm_emoji(sender, **kwargs):
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
-class RealmFilter(ModelReprMixin, models.Model):
+def filter_pattern_validator(value):
+    # type: (text_type) -> None
+    regex = re.compile(r'(?:[\w\-#]+)(\(\?P<\w+>.+\))')
+    error_msg = 'Invalid filter pattern, you must use the following format PREFIX-(?P<id>.+)'
+
+    if not regex.match(str(value)):
+        raise ValidationError(error_msg)
+
+    try:
+        re.compile(value)
+    except:
+        # Regex is invalid
+        raise ValidationError(error_msg)
+
+def filter_format_validator(value):
+    # type: (str) -> None
+    regex = re.compile(r'^[\.\/:a-zA-Z0-9_-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
+
+    if not regex.match(value):
+        raise ValidationError('URL format string must be in the following format: `https://example.com/%(\w+)s`')
+
+class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm) # type: Realm
-    pattern = models.TextField() # type: text_type
-    url_format_string = models.TextField() # type: text_type
+    pattern = models.TextField(validators=[filter_pattern_validator]) # type: text_type
+    url_format_string = models.TextField(validators=[URLValidator, filter_format_validator]) # type: text_type
 
     class Meta(object):
         unique_together = ("realm", "pattern")
@@ -401,14 +424,14 @@ def get_realm_filters_cache_key(domain):
     return u'all_realm_filters:%s' % (domain,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+per_request_realm_filters_cache = {} # type: Dict[text_type, List[Tuple[text_type, text_type, int]]]
 
 def domain_in_local_realm_filters_cache(domain):
     # type: (text_type) -> bool
     return domain in per_request_realm_filters_cache
 
 def realm_filters_for_domain(domain):
-    # type: (text_type) -> List[Tuple[text_type, text_type]]
+    # type: (text_type) -> List[Tuple[text_type, text_type, int]]
     domain = domain.lower()
     if not domain_in_local_realm_filters_cache(domain):
         per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
@@ -416,18 +439,18 @@ def realm_filters_for_domain(domain):
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
 def realm_filters_for_domain_remote_cache(domain):
-    # type: (text_type) -> List[Tuple[text_type, text_type]]
+    # type: (text_type) -> List[Tuple[text_type, text_type, int]]
     filters = []
     for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
-       filters.append((realm_filter.pattern, realm_filter.url_format_string))
+        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def all_realm_filters():
-    # type: () -> Dict[text_type, List[Tuple[text_type, text_type]]]
-    filters = defaultdict(list) # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+    # type: () -> Dict[text_type, List[Tuple[text_type, text_type, int]]]
+    filters = defaultdict(list) # type: Dict[text_type, List[Tuple[text_type, text_type, int]]]
     for realm_filter in RealmFilter.objects.all():
-       filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string))
+        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 

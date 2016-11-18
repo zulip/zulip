@@ -92,6 +92,7 @@ function dispatch_normal_event(event) {
     case 'realm_filters':
         page_params.realm_filters = event.realm_filters;
         echo.set_realm_filters(page_params.realm_filters);
+        admin.populate_filters(page_params.realm_filters);
         break;
 
     case 'realm_user':

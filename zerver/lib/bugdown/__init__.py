@@ -1048,10 +1048,16 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
             u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),
             '_end')
+        # The equalent JS regex is \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
+        # [\u2600-\u26FF]|[\u2700-\u27BF]. See below comments for explanation. The JS regex is used
+        # by marked.js for frontend unicode emoji processing.
+        # The JS regex \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001F300-\U0001F64F
+        # The JS regex \ud83d[\ude80-\udeff] represents \U0001F680-\U0001F6FF
+        # Similiarly [\u2600-\u26FF]|[\u2700-\u27BF] represents \u2600-\u26FF\u2700-\u27BF
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
-        for (pattern, format_string) in self.getConfig("realm_filters"):
+        for (pattern, format_string, id) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
                                   RealmFilterPattern(pattern, format_string), '>link')
 
@@ -1129,7 +1135,7 @@ class Bugdown(markdown.Extension):
                     del md.parser.blockprocessors[k]
 
 md_engines = {}
-realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
@@ -1167,7 +1173,7 @@ def subject_links(domain, subject):
     return matches
 
 def make_realm_filters(domain, filters):
-    # type: (text_type, List[Tuple[text_type, text_type]]) -> None
+    # type: (text_type, List[Tuple[text_type, text_type, int]]) -> None
     global md_engines, realm_filter_data
     if domain in md_engines:
         del md_engines[domain]
