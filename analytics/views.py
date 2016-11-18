@@ -868,7 +868,7 @@ def get_realm_activity(request, realm):
     all_user_records = {} # type: Dict[str, Any]
 
     try:
-        admins = get_realm(realm).get_admin_users()
+        admins = Realm.objects.get(domain=realm).get_admin_users()
     except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm,))
 

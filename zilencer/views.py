@@ -13,8 +13,8 @@ from zerver.lib.actions import internal_send_message
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_dict
-from zerver.models import get_realm, get_user_profile_by_email, get_realm_by_email_domain, \
-        UserProfile, Realm
+from zerver.models import get_realm_by_string_id, get_user_profile_by_email, \
+    get_realm_by_email_domain, UserProfile, Realm
 from .error_notify import notify_server_error, notify_browser_error
 
 import time
@@ -50,7 +50,7 @@ def get_ticket_number():
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
     # type: (HttpRequest, Deployment, Dict[str, text_type]) -> HttpResponse
     domainish = message["sender_domain"]
-    if get_realm("zulip.com") not in deployment.realms.all():
+    if get_realm_by_string_id("zulip") not in deployment.realms.all():
         domainish += u" via " + deployment.name
     subject = "%s" % (message["sender_email"],)
 
