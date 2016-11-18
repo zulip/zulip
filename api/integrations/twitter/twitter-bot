@@ -37,7 +37,7 @@ parser = optparse.OptionParser(r"""
 %prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
 
     Slurp tweets on your timeline into a specific zulip stream.
-    You can specify a different twitter_handle to slurp tweets from other Twitter users timeline 
+    You can specify a different twitter_handle to slurp tweets from other Twitter users timeline
     Default stream name is 'twitter-bot'
     Default config-file is ~/.zulip_twitterrc
 
