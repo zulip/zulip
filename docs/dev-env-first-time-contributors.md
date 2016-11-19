@@ -379,9 +379,9 @@ to see your changes, all you usually have to do is reload your
 browser.  More details on how this works are available below.
 
 Don't forget to read through the [code style
-guidelines](https://zulip.readthedocs.io/en/latest/code-style.html#general) for
-details about how to configure your editor for Zulip. For example, indentation
-should be set to 4 spaces rather than tabs.
+guidelines](code-style.html#general) for details about how to configure your
+editor for Zulip. For example, indentation should be set to 4 spaces rather
+than tabs.
 
 #### Understanding run-dev.py debugging output
 
@@ -389,8 +389,8 @@ It's good to have the terminal running `run-dev.py` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 
-See [Logging](http://zulip.readthedocs.io/en/latest/logging.html) for
-further details on the run-dev.py console output.
+See [Logging](logging.html) for further details on the run-dev.py console
+output.
 
 #### Committing and pushing changes with git
 
@@ -414,8 +414,8 @@ re-provision your vagrant machine using `vagrant provision`
 guest); this should be pretty fast and we're working to make it faster.
 
 See also the documentation on the [testing
-page](http://zulip.readthedocs.io/en/latest/testing.html#manual-testing-local-app-web-browser)
-for how to destroy and rebuild your database if you want to clear out test data.
+page](testing.html#manual-testing-local-app-web-browser) for how to destroy and
+rebuild your database if you want to clear out test data.
 
 #### Rebuilding the dev environment
 
