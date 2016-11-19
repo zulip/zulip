@@ -47,6 +47,7 @@ import base64
 import mock
 import os
 import re
+import sys
 import time
 import ujson
 import unittest
@@ -249,8 +250,8 @@ def instrument_url(f):
             return result
         return wrapper
 
-def write_instrumentation_reports():
-    # type: () -> None
+def write_instrumentation_reports(full_suite):
+    # type: (bool) -> None
     if INSTRUMENTING:
         calls = INSTRUMENTED_CALLS
         var_dir = 'var' # TODO make sure path is robust here
@@ -270,8 +271,9 @@ def write_instrumentation_reports():
                         ''')
                     print(call)
 
-        print('URL coverage report is in %s' % (fn,))
-        print('Try running: ./tools/analyze-url-coverage')
+        if full_suite:
+            print('URL coverage report is in %s' % (fn,))
+            print('Try running: ./tools/analyze-url-coverage')
 
         # Find our untested urls.
         from zproject.urls import urlpatterns
@@ -286,12 +288,12 @@ def write_instrumentation_reports():
             else:
                 untested_patterns.append(pattern.regex.pattern)
 
-        fn = os.path.join(var_dir, 'untested_url_report.txt')
-        with open(fn, 'w') as f:
-            f.write('untested urls\n')
+
+        if full_suite and len(untested_patterns):
+            print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
-                f.write('  %s\n' % (untested_pattern,))
-        print('Untested-url report is in %s' % (fn,))
+                print("   %s" % (untested_pattern,))
+            sys.exit(1)
 
 def get_all_templates():
     # type: () -> List[str]

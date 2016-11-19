@@ -186,8 +186,9 @@ class Runner(DiscoverRunner):
                     return failed
         return failed
 
-    def run_tests(self, test_labels, extra_tests=None, **kwargs):
-        # type: (List[str], Optional[List[TestCase]], **Any) -> bool
+    def run_tests(self, test_labels, extra_tests=None,
+            full_suite=False, **kwargs):
+        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> bool
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -208,5 +209,5 @@ class Runner(DiscoverRunner):
         failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
         self.teardown_test_environment()
         if not failed:
-            write_instrumentation_reports()
+            write_instrumentation_reports(full_suite=full_suite)
         return failed
