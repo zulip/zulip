@@ -46,6 +46,8 @@ Anybody with a GitHub account should be able to create Issues there
 pertaining to bugs or enhancement requests.  We also use Pull
 Requests as our primary mechanism to receive code contributions.
 
+The Zulip community has a [Code of Conduct][code-of-conduct].
+
 ## Installing the Zulip Development environment
 
 The Zulip development environment is the recommended option for folks
@@ -108,6 +110,7 @@ and [Trello][]), plus [node.js API bindings][node], an [isomorphic
 contributing!
 
 [cla]: https://opensource.dropbox.com/cla/
+[code-of-conduct]: https://zulip.readthedocs.io/en/latest/code-of-conduct.html
 [dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
 [doc]: https://zulip.readthedocs.io/
 [doc-commit-style]: http://zulip.readthedocs.io/en/latest/version-control.html#commit-messages
