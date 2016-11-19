@@ -47,6 +47,7 @@ import base64
 import mock
 import os
 import re
+import sys
 import time
 import ujson
 import unittest
@@ -249,7 +250,7 @@ def instrument_url(f):
             return result
         return wrapper
 
-def write_instrumentation_reports():
+def write_instrumentation_reports(full_suite):
     # type: () -> None
     if INSTRUMENTING:
         calls = INSTRUMENTED_CALLS
@@ -286,12 +287,17 @@ def write_instrumentation_reports():
             else:
                 untested_patterns.append(pattern.regex.pattern)
 
-        fn = os.path.join(var_dir, 'untested_url_report.txt')
-        with open(fn, 'w') as f:
-            f.write('untested urls\n')
-            for untested_pattern in sorted(untested_patterns):
-                f.write('  %s\n' % (untested_pattern,))
-        print('Untested-url report is in %s' % (fn,))
+
+        if full_suite and len(untested_patterns):
+            print('\nUntested URLs!  Please get 100% coverage.\n')
+
+            fn = os.path.join(var_dir, 'untested_url_report.txt')
+            with open(fn, 'w') as f:
+                f.write('untested urls\n')
+                for untested_pattern in sorted(untested_patterns):
+                    f.write('  %s\n' % (untested_pattern,))
+            print('Untested-url report is in %s' % (fn,))
+            sys.exit(1)
 
 def get_all_templates():
     # type: () -> List[str]
