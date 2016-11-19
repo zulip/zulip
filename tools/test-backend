@@ -50,9 +50,6 @@ if __name__ == "__main__":
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
                       default=False, help='Compute test coverage.')
-    parser.add_option('--url-coverage', dest='url_coverage',
-                      action="store_true",
-                      default=False, help='Write url coverage data.')
     parser.add_option('--no-verbose-coverage', dest='verbose_coverage',
                       action="store_false",
                       default=True, help='Disable verbose print of coverage report.')
@@ -127,6 +124,8 @@ if __name__ == "__main__":
     for suite in args:
         args[args.index(suite)] = suite.replace("/", ".")
 
+    full_suite = len(args) == 0
+
     if len(args) == 0:
         suites = ["zerver.tests",
                   "analytics.tests"]
@@ -150,11 +149,11 @@ if __name__ == "__main__":
         import cProfile
         prof = cProfile.Profile()
         prof.enable()
-    if options.url_coverage:
-        # This is kind of hacky, but it's the most reliable way
-        # to make sure instrumentation decorators know the
-        # setting when they run.
-        os.environ['TEST_INSTRUMENT_URL_COVERAGE'] = 'TRUE'
+
+    # This is kind of hacky, but it's the most reliable way
+    # to make sure instrumentation decorators know the
+    # setting when they run.
+    os.environ['TEST_INSTRUMENT_URL_COVERAGE'] = 'TRUE'
 
     # setup() needs to be called after coverage is started to get proper coverage reports of model
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
@@ -169,7 +168,8 @@ if __name__ == "__main__":
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
-    failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors)
+    failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors,
+        full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
     if templates_not_rendered:
