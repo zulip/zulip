@@ -196,16 +196,13 @@ class PasswordResetTest(ZulipTestCase):
         tests here.
         '''
         result = self.client_get('/accounts/password/reset/done/')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn('Check your email', result.content.decode("utf-8"))
+        self.assert_in_success_response(["Check your email"], result)
 
         result = self.client_get('/accounts/password/done/')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("We've reset your password!", result.content.decode("utf-8"))
+        self.assert_in_success_response(["We've reset your password!"], result)
 
         result = self.client_get('/accounts/send_confirm/alice@example.com')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("Still no email?", result.content.decode("utf-8"))
+        self.assert_in_success_response(["Still no email?"], result)
 
 class LoginTest(ZulipTestCase):
     """
@@ -854,8 +851,7 @@ class UserSignUpTest(ZulipTestCase):
                                                realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
-        self.assertEquals(result.status_code, 200)
-        self.assertIn("You're almost there.", result.content.decode('utf8'))
+        self.assert_in_success_response(["You're almost there."], result)
 
     def test_completely_open_domain_success(self):
         # type: () -> None
@@ -898,8 +894,7 @@ class UserSignUpTest(ZulipTestCase):
                                                realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
-        self.assertEquals(result.status_code, 200)
-        self.assertIn("You're almost there.", result.content.decode('utf8'))
+        self.assert_in_success_response(["You're almost there."], result)
 
     def test_failed_signup_due_to_restricted_domain(self):
         # type: () -> None
@@ -987,10 +982,10 @@ class UserSignUpTest(ZulipTestCase):
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
 
-            self.assertEquals(result.status_code, 200)
-            self.assertIn("You're almost there.", result.content.decode('utf8'))
-            self.assertIn("New User Name", result.content.decode('utf8'))
-            self.assertIn("newuser@zulip.com", result.content.decode('utf8'))
+            self.assert_in_success_response(["You're almost there.",
+                                             "New User Name",
+                                             "newuser@zulip.com"],
+                                            result)
 
             # Test the TypeError exception handler
             mock_ldap.directory = {
@@ -1007,10 +1002,10 @@ class UserSignUpTest(ZulipTestCase):
                                                    from_confirmation='1',
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
+            self.assert_in_success_response(["You're almost there.",
+                                             "newuser@zulip.com"],
+                                            result)
 
-            self.assertEquals(result.status_code, 200)
-            self.assertIn("You're almost there.", result.content.decode('utf8'))
-            self.assertIn("newuser@zulip.com", result.content.decode('utf8'))
 
         mock_ldap.reset()
         mock_initialize.stop()

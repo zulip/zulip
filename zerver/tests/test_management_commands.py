@@ -76,8 +76,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         with self.settings(OPEN_REALM_CREATION=False):
             # Check realm creation page is accessible
             result = self.client_get(generated_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response(u"Let's get started…", result)
+            self.assert_in_success_response([u"Let's get started…"], result)
 
             # Create Realm with generated link
             self.assertIsNone(get_realm_by_string_id('test'))
@@ -90,8 +89,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
             # Generated link used for creating realm
             result = self.client_get(generated_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
+            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
 
     def test_realm_creation_with_random_link(self):
         # type: () -> None
@@ -99,8 +97,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             # Realm creation attempt with an invalid link should fail
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
             result = self.client_get(random_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
+            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
 
     def test_realm_creation_with_expired_link(self):
         # type: () -> None
@@ -113,5 +110,4 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             obj.save()
 
             result = self.client_get(generated_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
+            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
