@@ -1764,8 +1764,7 @@ class HelpTest(ZulipTestCase):
     def test_browser_window_help(self):
         # type: () -> None
         result = self.client_get('/help/#the-browser-window')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("There are three panes", result.content.decode("utf-8"))
+        self.assert_in_success_response(["There are three panes"], result)
 
 class HomeTest(ZulipTestCase):
     @slow('big method')

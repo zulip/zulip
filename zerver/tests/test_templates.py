@@ -194,6 +194,7 @@ class TemplateTestCase(ZulipTestCase):
     def test_custom_tos_template(self):
         # type: () -> None
         response = self.client_get("/terms/")
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_response(u"Thanks for using our products and services (\"Services\"). ", response)
-        self.assert_in_response(u"By using our Services, you are agreeing to these terms", response)
+
+        self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
+                                         u"By using our Services, you are agreeing to these terms"],
+                                        response)
