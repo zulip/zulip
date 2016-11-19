@@ -483,7 +483,9 @@ $ vagrant ssh
 #### Next Steps
 
 At this point you should [read about using the development
-environment][using-dev-environment.html].
+environment][using-dev].
+
+[using-dev]: using-dev-environment.html
 
 ### Troubleshooting & Common Errors
 
