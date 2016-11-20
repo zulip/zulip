@@ -963,11 +963,13 @@ def do_create_stream(realm, stream_name):
     subscribers = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
     bulk_add_subscriptions([stream], subscribers)
 
-def create_stream_if_needed(realm, stream_name, invite_only=False):
-    # type: (Realm, text_type, bool) -> Tuple[Stream, bool]
+def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
+    # type: (Realm, text_type, bool, text_type) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
-        defaults={'name': stream_name, 'invite_only': invite_only})
+        defaults={'name': stream_name,
+                  'description': stream_description,
+                  'invite_only': invite_only})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if not invite_only:
@@ -983,7 +985,9 @@ def create_streams_if_needed(realm, stream_dicts):
     for stream_dict in stream_dicts:
         stream, created = create_stream_if_needed(realm,
                                                   stream_dict["name"].strip(),
-                                                  invite_only=stream_dict.get("invite_only"))
+                                                  invite_only=stream_dict.get("invite_only", False),
+                                                  stream_description=stream_dict.get("description", ""))
+
         if created:
             added_streams.append(stream)
         else:

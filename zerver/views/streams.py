@@ -96,6 +96,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(realm=user_profile.realm,
                                                                 stream_dicts=missing_stream_dicts)
+
         existing_streams += dup_streams
 
     return existing_streams, created_streams
