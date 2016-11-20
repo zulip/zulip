@@ -493,9 +493,9 @@ Zulip's `vagrant` provisioning process logs useful debugging output to
 `/var/log/zulip_provision.log`; if you encounter a new issue, please
 attach a copy of that file to your bug report.
 
-#### The box 'ubuntu/trusty64' could not be found (Windows/Cygwin)
+#### The box 'ubuntu/trusty64' could not be found
 
-If you see the following error when you run `vagrant up` on Windows:
+If you see the following error when you run `vagrant up`:
 
 ```
 The box 'ubuntu/trusty64' could not be found or
@@ -506,8 +506,23 @@ URL and error message are shown below:
 URL: ["https://atlas.hashicorp.com/ubuntu/trusty64"]
 ```
 
-Then the version of curl that ships with Vagrant is not working on your
-machine. The fix is simple: replace it with the version from Cygwin.
+Then the version of `curl` that ships with Vagrant is not working on your
+machine. You are most likely to encounter this error on Windows/Cygwin and
+macOS.
+
+On **macOS** this error is most likely to occur with Vagrant version 1.8.7 and
+is a [known issue](https://github.com/mitchellh/vagrant/issues/7997).
+
+The solution is to downgrade Vagrant to version 1.8.6 ([available
+here](https://releases.hashicorp.com/vagrant/1.8.6/)), or to use your system's
+version of `curl` instead of the one that ships with Vagrant:
+
+```
+sudo ln -nsf /usr/bin/curl /opt/vagrant/embedded/bin/curl
+```
+
+On **Windows/Cygwin,** the fix is simple: replace it with the version from
+Cygwin.
 
 First, determine the location of Cygwin's curl with `which curl`:
 
