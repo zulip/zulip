@@ -37,8 +37,8 @@ def is_active_subscriber(user_profile, recipient):
                                        recipient=recipient,
                                        active=True).exists()
 
-def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    # type: (Iterable[Mapping[str, text_type]], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
+def list_to_streams(streams_raw, user_profile, autocreate=False):
+    # type: (Iterable[Mapping[str, Any]], UserProfile, Optional[bool]) -> Tuple[List[Stream], List[Stream]]
     """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
@@ -49,12 +49,12 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
 
-    @param streams_raw The list of stream names to process
+    @param streams_raw The list of stream dictionaries to process
     @param user_profile The user for whom we are retreiving the streams
     @param autocreate Whether we should create streams if they don't already exist
-    @param invite_only Whether newly created streams should have the invite_only bit set
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.
+
     stream_set = set(stream_dict["name"].strip() for stream_dict in streams_raw)
 
     for stream_name in stream_set:
@@ -65,7 +65,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
 
     existing_streams = [] # type: List[Stream]
     missing_stream_names = [] # type: List[text_type]
-    missing_stream_dicts = [] # type: List[Mapping[str, text_type]]
+    missing_stream_dicts = [] # type: List[Mapping[str, Any]]
 
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
@@ -95,8 +95,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         # paranoid approach, since often on Zulip two people will discuss
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(realm=user_profile.realm,
-                                                                stream_dicts=missing_stream_dicts,
-                                                                invite_only=invite_only)
+                                                                stream_dicts=missing_stream_dicts)
         existing_streams += dup_streams
 
     return existing_streams, created_streams
@@ -320,8 +319,16 @@ def add_subscriptions_backend(request, user_profile,
     # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, bool, Optional[List[text_type]], bool) -> HttpResponse
 
     # Enforcement of can_create_streams policy and valid_stream_name policy is inside list_to_streams.
+    stream_dicts = []
+    for streams_dict in streams_raw:
+        streams_dict_copy = {} # type: Dict[str, Any]
+        for field in streams_dict:
+            streams_dict_copy[field] = streams_dict[field]
+        streams_dict_copy["invite_only"] = invite_only
+        stream_dicts.append(streams_dict_copy)
+
     existing_streams, created_streams = \
-        list_to_streams(streams_raw, user_profile, autocreate=True, invite_only=invite_only)
+        list_to_streams(stream_dicts, user_profile, autocreate=True)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
