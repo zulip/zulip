@@ -73,14 +73,18 @@ if not options.force:
 if options.interface is None:
     user_id = os.getuid()
     user_name = pwd.getpwuid(user_id).pw_name
-    if user_name == "vagrant":
+    if user_name in ["vagrant", "zulipdev"]:
         # In the Vagrant development environment, we need to listen on
         # all ports, and it's safe to do so, because Vagrant is only
-        # exposing certain guest ports (by default just 9991) to the host.
-        options.interface = ""
+        # exposing certain guest ports (by default just 9991) to the
+        # host.  The same argument applies to the remote development
+        # servers using username "zulipdev".
+        options.interface = None
     else:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
+elif options.interface == "":
+    options.interface = None
 
 base_port = 9991
 if options.test:
@@ -360,7 +364,7 @@ print("".join((WARNING,
 
 try:
     app = Application()
-    app.listen(proxy_port)
+    app.listen(proxy_port, address=options.interface)
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
