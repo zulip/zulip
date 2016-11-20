@@ -36,7 +36,23 @@ fi
 mkdir -p /etc/zulip
 (
     echo -e "[machine]\npuppet_classes = $PUPPET_CLASSES\ndeploy_type = $DEPLOYMENT_TYPE";
-    if [ -n "$TRAVIS" ]; then
+
+    # Note: there are four dpkg-query outputs to consider:
+    #
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # root@host# apt install rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # install ok installed
+    # root@host# apt remove rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # deinstall ok config-files
+    # root@host# apt purge rabbitmq-server
+    # root@host# dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null
+    # unknown ok not-installed
+    #
+    # (There are more possibilities in the case of dpkg errors.)  Here
+    # we are checking for either empty or not-installed.
+    if [ -n "$TRAVIS" ] || ! dpkg-query --showformat '${Status}\n' -W rabbitmq-server 2>/dev/null | grep -vq ' not-installed$'; then
         echo -e "\n[rabbitmq]\nnodename = zulip@localhost"
     fi
 ) > /etc/zulip/zulip.conf
