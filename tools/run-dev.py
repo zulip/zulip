@@ -77,7 +77,7 @@ if options.interface is None:
         # In the Vagrant development environment, we need to listen on
         # all ports, and it's safe to do so, because Vagrant is only
         # exposing certain guest ports (by default just 9991) to the host.
-        options.interface = ""
+        options.interface = None
     else:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
@@ -360,7 +360,7 @@ print("".join((WARNING,
 
 try:
     app = Application()
-    app.listen(proxy_port)
+    app.listen(proxy_port, address=options.interface)
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
