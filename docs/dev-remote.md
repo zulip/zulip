@@ -9,7 +9,7 @@ We recommend a remote Ubuntu machine for ease of development.
 ## Connecting to the Remote Environment
 
 Set up your remote server and connect to it using SSH or Mosh.
-We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow network connections. 
+We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow network connections.
 
 ## Setting Up the Development Environment
 
