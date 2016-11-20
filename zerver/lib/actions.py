@@ -976,8 +976,8 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
             send_event(event, active_user_ids(realm))
     return stream, created
 
-def create_streams_if_needed(realm, stream_dicts, invite_only):
-    # type: (Realm, List[Mapping[str, text_type]], bool) -> Tuple[List[Stream], List[Stream]]
+def create_streams_if_needed(realm, stream_dicts):
+    # type: (Realm, List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]
     """Note that stream_dict["name"] is assumed to already be stripped of
     whitespace"""
     added_streams = [] # type: List[Stream]
@@ -985,7 +985,7 @@ def create_streams_if_needed(realm, stream_dicts, invite_only):
     for stream_dict in stream_dicts:
         stream, created = create_stream_if_needed(realm,
                                                   stream_dict["name"],
-                                                  invite_only=invite_only)
+                                                  invite_only=stream_dict.get("invite_only"))
         if created:
             added_streams.append(stream)
         else:
