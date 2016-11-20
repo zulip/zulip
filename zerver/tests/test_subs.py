@@ -63,7 +63,7 @@ class TestCreateStreams(ZulipTestCase):
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
-            stream_names,
+            [{"name": stream_name} for stream_name in stream_names],
             invite_only=True)
         self.assertEqual(len(new_streams), 3)
         self.assertEqual(len(existing_streams), 0)
@@ -73,7 +73,7 @@ class TestCreateStreams(ZulipTestCase):
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
-            stream_names,
+            [{"name": stream_name} for stream_name in stream_names],
             invite_only=True)
         self.assertEqual(len(new_streams), 0)
         self.assertEqual(len(existing_streams), 3)
