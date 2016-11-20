@@ -147,6 +147,9 @@ django-pipeline==1.6.9
 git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
 
 # Needed for Twitter card integration
+# Note that pytest-runner is a dependency of python-twitter's setup; ideally it
+# wouldn't be here. See: https://github.com/bear/python-twitter/issues/406
+pytest-runner==2.9
 git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c424d5#egg=python-twitter==3.1
 
 # Needed for the email mirror
