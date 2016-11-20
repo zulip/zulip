@@ -7,7 +7,7 @@ from [developing locally](dev-overview.html).
 
 ## Connecting to the Remote Environment
 
-Set up you remote server and connect to it.
+Set up your remote server and connect to it.
 
 We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow
 network connections.
@@ -19,7 +19,7 @@ development environment or just edit the zulip code base on the remote host.
 
 #### Editing Locally
 
-If you want to edit code locally you can install you favorite text editor:
+If you want to edit code locally you can install your favorite text editor:
 * [atom](https://atom.io/)
 * [emacs](https://www.gnu.org/software/emacs/)
 * [vim](http://www.vim.org/)
@@ -27,7 +27,7 @@ If you want to edit code locally you can install you favorite text editor:
 * [sublime](https://www.sublimetext.com/)
 * etc
 
-Next, [set up git](git-guide.html) on you local machine and clone the zulip
+Next, [set up git](git-guide.html) on your local machine and clone the zulip
 repository.
 
 Once you have your code locally you will need to sync your changes to your development server:
