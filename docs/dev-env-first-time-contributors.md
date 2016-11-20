@@ -17,14 +17,21 @@ Contents:
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 
-If you encounter errors installing the Zulip development environment,
-check [Troubleshooting & Common
-Errors](#troubleshooting-common-errors). If that doesn't help, please
-visit [the `provision` stream in the Zulip developers'
-chat](https://chat.zulip.org/#narrow/stream/provision) for realtime
-help, or send a note to the [Zulip-devel Google
-group](https://groups.google.com/forum/#!forum/zulip-devel) or [file
-an issue](https://github.com/zulip/zulip/issues).
+**If you encounter errors installing the Zulip development environment,** check
+[Troubleshooting & Common Errors](#troubleshooting-common-errors). If that
+doesn't help, please visit [the `provision` stream in the Zulip developers'
+chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help, or
+send a note to the [Zulip-devel Google
+group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an
+issue](https://github.com/zulip/zulip/issues).
+
+When reporting your issue, please include the following information:
+
+* host operating system
+* installation method (Vagrant or direct)
+* whether or not you are using a proxy
+* a copy of Zulip's `vagrant` provisioning logs, available in
+  `/var/log/zulip_provision.log` on your virtual machine
 
 ### Requirements
 
@@ -489,9 +496,24 @@ environment][using-dev].
 
 ### Troubleshooting & Common Errors
 
-Zulip's `vagrant` provisioning process logs useful debugging output to
-`/var/log/zulip_provision.log`; if you encounter a new issue, please
-attach a copy of that file to your bug report.
+Below you'll find a list of common errors and their solutions.
+
+If these solutions aren't working for you or you encounter an issue not
+documented below, there are a few ways to get further help:
+
+* visit [the `provision` stream in the Zulip developers'
+  chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help,
+* send a note to the [Zulip-devel Google
+  group](https://groups.google.com/forum/#!forum/zulip-devel), or
+* [file an issue](https://github.com/zulip/zulip/issues).
+
+When reporting your issue, please include the following information:
+
+* host operating system
+* installation method (Vagrant or direct)
+* whether or not you are using a proxy
+* a copy of Zulip's `vagrant` provisioning logs, available in
+  `/var/log/zulip_provision.log` on your virtual machine
 
 #### The box 'ubuntu/trusty64' could not be found
 
