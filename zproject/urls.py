@@ -146,7 +146,7 @@ urls = list(i18n_urls)
 # please add it here.
 # See rest_dispatch in zerver.lib.rest for an explanation of auth methods used
 #
-# All of these paths are accessed by either a /json or /api prefix
+# All of these paths are accessed by either a /json or /api/v1 prefix
 v1_api_and_json_patterns = [
     # realm-level calls
     url(r'^realm$', rest_dispatch,
