@@ -13,17 +13,17 @@ We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow ne
 
 ## Setting Up the Development Environment
 
-Install the development environment on your remote server.
+After you have connected to your remote server,
+you need to install the development environment.
 Follow the platform specific instructions for your specific remote instance:
 
-* [Installing on Ubuntu](install-ubuntu-without-vagrant-dev.html).
-  This offers the most convenient developer experience, if you are developing on a clean remote machine we recomend this.
-* [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html)
-* [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html)
+* [Ubuntu Installation](install-ubuntu-without-vagrant-dev.html) - this installs the Zulip development environment directly on your remote server.
+* [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html) - this installs the development environment in a self-contained environment that is easy to remove later.
+* [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html) - a shorter guide for the previous option.
 
 ## Running the Development Server
 
-You can start up the development instance of zulip with the command
+Once you have set up the development environment, you can start up the development instance of zulip with the command
 
 ```
 ./tools/run-dev.py
