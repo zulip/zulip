@@ -17,14 +17,21 @@ Contents:
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 
-If you encounter errors installing the Zulip development environment,
-check [Troubleshooting & Common
-Errors](#troubleshooting-common-errors). If that doesn't help, please
-visit [the `provision` stream in the Zulip developers'
-chat](https://chat.zulip.org/#narrow/stream/provision) for realtime
-help, or send a note to the [Zulip-devel Google
-group](https://groups.google.com/forum/#!forum/zulip-devel) or [file
-an issue](https://github.com/zulip/zulip/issues).
+**If you encounter errors installing the Zulip development environment,** check
+[Troubleshooting & Common Errors](#troubleshooting-common-errors). If that
+doesn't help, please visit [the `provision` stream in the Zulip developers'
+chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help, or
+send a note to the [Zulip-devel Google
+group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an
+issue](https://github.com/zulip/zulip/issues).
+
+When reporting your issue, please include the following information:
+
+* host operating system
+* installation method (Vagrant or direct)
+* whether or not you are using a proxy
+* a copy of Zulip's `vagrant` provisioning logs, available in
+  `/var/log/zulip_provision.log` on your virtual machine
 
 ### Requirements
 
@@ -489,13 +496,28 @@ environment][using-dev].
 
 ### Troubleshooting & Common Errors
 
-Zulip's `vagrant` provisioning process logs useful debugging output to
-`/var/log/zulip_provision.log`; if you encounter a new issue, please
-attach a copy of that file to your bug report.
+Below you'll find a list of common errors and their solutions.
 
-#### The box 'ubuntu/trusty64' could not be found (Windows/Cygwin)
+If these solutions aren't working for you or you encounter an issue not
+documented below, there are a few ways to get further help:
 
-If you see the following error when you run `vagrant up` on Windows:
+* visit [the `provision` stream in the Zulip developers'
+  chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help,
+* send a note to the [Zulip-devel Google
+  group](https://groups.google.com/forum/#!forum/zulip-devel), or
+* [file an issue](https://github.com/zulip/zulip/issues).
+
+When reporting your issue, please include the following information:
+
+* host operating system
+* installation method (Vagrant or direct)
+* whether or not you are using a proxy
+* a copy of Zulip's `vagrant` provisioning logs, available in
+  `/var/log/zulip_provision.log` on your virtual machine
+
+#### The box 'ubuntu/trusty64' could not be found
+
+If you see the following error when you run `vagrant up`:
 
 ```
 The box 'ubuntu/trusty64' could not be found or
@@ -506,8 +528,23 @@ URL and error message are shown below:
 URL: ["https://atlas.hashicorp.com/ubuntu/trusty64"]
 ```
 
-Then the version of curl that ships with Vagrant is not working on your
-machine. The fix is simple: replace it with the version from Cygwin.
+Then the version of `curl` that ships with Vagrant is not working on your
+machine. You are most likely to encounter this error on Windows/Cygwin and
+macOS.
+
+On **macOS** this error is most likely to occur with Vagrant version 1.8.7 and
+is a [known issue](https://github.com/mitchellh/vagrant/issues/7997).
+
+The solution is to downgrade Vagrant to version 1.8.6 ([available
+here](https://releases.hashicorp.com/vagrant/1.8.6/)), or to use your system's
+version of `curl` instead of the one that ships with Vagrant:
+
+```
+sudo ln -nsf /usr/bin/curl /opt/vagrant/embedded/bin/curl
+```
+
+On **Windows/Cygwin,** the fix is simple: replace it with the version from
+Cygwin.
 
 First, determine the location of Cygwin's curl with `which curl`:
 
