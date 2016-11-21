@@ -14,6 +14,8 @@ This document covers more general testing issues, such as how to run the
 entire test suite, how to troubleshoot database issues, how to manually
 test the front end, and how to plan for the future upgrade to Python3.
 
+We also document [how to manually test the app](manual-testing.html).
+
 ## Running tests
 
 Zulip tests must be run inside a Zulip development environment; if
@@ -109,9 +111,14 @@ it. On Ubuntu:
     sudo pg_dropcluster --stop 9.1 main
     sudo pg_createcluster --locale=en_US.utf8 --start 9.1 main
 
-## Manual testing (local app + web browser)
+## Local browser testing (local app + web browser)
 
-### Clearing the manual testing database
+This section is about troubleshooting your local dev environment.
+
+There is a [separate manual testing doc](manual-testing.html) that
+enumerates things you can test as part of manual QA.
+
+### Clearing the development database
 
 You can use:
 
