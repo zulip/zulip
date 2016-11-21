@@ -37,7 +37,7 @@ sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     puppet gettext postgresql
 
 # Next, install PGroonga from its PPA
-sudo add-apt-repository -y ppa:groonga/ppa
+sudo add-apt-repository -ys ppa:groonga/ppa
 sudo apt-get update
 # On 14.04
 sudo apt-get install postgresql-9.3-pgroonga
@@ -47,7 +47,7 @@ sudo apt-get install postgresql-9.5-pgroonga
 # Next, install Zulip's tsearch-extras postgresql extension
 # If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
 cd zulip
-sudo apt-add-repository -yus ppa:tabbott/zulip
+sudo apt-add-repository -ys ppa:tabbott/zulip
 # On 14.04
 sudo apt-get install postgresql-9.3-tsearch-extras
 # On 16.04
