@@ -13,6 +13,7 @@ var get_events_failures = 0;
 var get_events_params = {};
 
 function dispatch_normal_event(event) {
+    console.log(event);
     switch (event.type) {
     case 'alert_words':
         alert_words.words = event.alert_words;
@@ -195,7 +196,10 @@ function dispatch_normal_event(event) {
             unread.mark_messages_as_read(msgs_to_update, {from: "server"});
             break;
         }
-        break;
+    case 'emoji_reaction':
+      /* All emoji notification
+       */
+      break;
     }
 }
 

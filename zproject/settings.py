@@ -813,6 +813,7 @@ JS_SPECS = {
             'js/hashchange.js',
             'js/invite.js',
             'js/message_flags.js',
+            'js/reaction.js',
             'js/alert_words.js',
             'js/alert_words_ui.js',
             'js/message_store.js',

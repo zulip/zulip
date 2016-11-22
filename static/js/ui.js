@@ -227,6 +227,10 @@ exports.update_starred = function (message_id, starred) {
     });
 };
 
+exports.update_reaction = function (message_id, starred) {
+  console.log("update reaction UI");
+};
+
 var local_messages_to_show = [];
 var show_message_timestamps = _.throttle(function () {
     _.each(local_messages_to_show, function (message_id) {
