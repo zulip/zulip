@@ -39,6 +39,8 @@
             {{/if}}
           {{/if}}
 
+          <i class="icon-vector-eye-close on_hover_topic_mute" data-stream-name="{{#tr this}}__display_recipient__{{/tr}}" data-topic-name="{{#tr this}}__subject__{{/tr}}"></i>
+
           {{! exterior links (e.g. to a trac ticket) }}
           {{#each subject_links}}
           <a href="{{this}}" target="_blank">

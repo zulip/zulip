@@ -148,6 +148,14 @@ $(function () {
         meta.focusing = true;
     });
 
+    // MUTING
+
+    $('body').on('click','.always_visible_topic_mute,.on_hover_topic_mute', function (e) {
+        var stream = $(e.currentTarget).attr('data-stream-name');
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        popovers.topic_ops.mute(stream,topic);
+    });
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
