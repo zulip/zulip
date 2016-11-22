@@ -19,7 +19,18 @@ if ! ./tools/build-release-tarball travis; then
     cat /tmp/tmp.*/zulip-server-travis/update-prod-static.log || true
     exit 1
 fi
-mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
+
+py_version="$(python -c 'import sys; print(sys.version_info[0])')"
+if [ "$py_version" = 2 ]; then
+    NEW_SHEBANG='#!/usr/bin/env python'
+else
+    NEW_SHEBANG='#!/usr/bin/env python3'
+fi
+
+tools/replace-tarball-shebang \
+    '#!/usr/bin/env python' "$NEW_SHEBANG" \
+    < /tmp/tmp.*/zulip-server-travis.tar.gz \
+    > zulip-server-travis.tar.gz
 
 # Shut down all services so that restarting postgres and rebuilding
 # the postgres database to match the prod installation setup will work.
