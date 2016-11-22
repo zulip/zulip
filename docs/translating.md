@@ -54,7 +54,7 @@ The end-to-end process to get the translations working is as follows:
    [frontend](#frontend-translations) translations for details on
    this).
 
-2. Create translation [resource][] files using the `python manage
+2. Create translation [resource][] files using the `./manage.py
    makemessages` command. This command will create, for each language,
    a resource file called `translations.json` for the frontend strings
    and `django.po` for the backend strings.
@@ -79,7 +79,7 @@ The end-to-end process to get the translations working is as follows:
    download the resource files from Transifex and replace your local
    resource files with them.
 
-6. One runs `python manage.py compilemessages` to compile the
+6. One runs `./manage.py compilemessages` to compile the
    translation strings so that they are will be used in the Zulip
    development environment.  This is run automatically during Zulip
    development environment provisioning.
@@ -223,7 +223,7 @@ the `count` in the context.
 ## Testing Translations
 
 First of all make sure that you have compiled the translation strings
-using `python manage.py compilemessages`.
+using `./manage.py compilemessages`.
 
 Django figures out the effective language by going through the
 following steps:

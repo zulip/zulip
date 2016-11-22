@@ -44,7 +44,7 @@ class Command(BaseCommand):
         # type: (**Any) -> None
         if options["domain"] is None or options["streams"] is None or \
                 (options["users"] is None and options["all_users"] is None):
-            self.print_help("python manage.py", "add_users_to_streams")
+            self.print_help("./manage.py", "add_users_to_streams")
             exit(1)
 
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])

@@ -21,9 +21,9 @@ streams.
 
 For example:
 
-python manage.py set_default_streams --domain=foo.com --streams=foo,bar,baz
-python manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz with space"
-python manage.py set_default_streams --domain=foo.com --streams=
+./manage.py set_default_streams --domain=foo.com --streams=foo,bar,baz
+./manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz with space"
+./manage.py set_default_streams --domain=foo.com --streams=
 """
 
     def add_arguments(self, parser):

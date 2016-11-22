@@ -194,7 +194,7 @@ def main(options):
     if not os.path.isdir(EMOJI_CACHE_PATH):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
-    run(["python", "tools/setup/emoji_dump/build_emoji"])
+    run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])
@@ -221,7 +221,7 @@ def main(options):
             run(["tools/do-destroy-rebuild-test-database"])
         else:
             print("No need to regenerate the test DB.")
-        run(["python", "./manage.py", "compilemessages"])
+        run(["./manage.py", "compilemessages"])
 
     # Here we install nvm, node, and npm.
     run(["sudo", "tools/setup/install-node"])

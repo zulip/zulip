@@ -16,7 +16,7 @@ RUN echo 'export LC_ALL="en_US.UTF-8" LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8"'
 
 WORKDIR /srv/zulip
 
-CMD ["/usr/bin/python /srv/zulip/tools/provision.py","--docker"]
+CMD ["/srv/zulip/tools/provision.py", "--docker"]
 CMD ["source /srv/zulip-venv/bin/activate"]
 CMD ["./srv/zulip/tools/start-dockers"]
 

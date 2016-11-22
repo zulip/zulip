@@ -22,7 +22,7 @@ class Command(BaseCommand):
 This is run as part of the nagios health check for the deliver_email command.
 Please note that this is only relevant to the SMTP-based email delivery (no Mandrill).
 
-Usage: python manage.py print_email_delivery_backlog
+Usage: ./manage.py print_email_delivery_backlog
 """
 
     def handle(self, *args, **options):

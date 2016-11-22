@@ -23,7 +23,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, url=self.url)
 
-        print_help_mock.assert_any_call('python manage.py', self.COMMAND_NAME)
+        print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
     def test_check_if_command_exits_when_url_param_is_empty(self, print_help_mock):
@@ -31,7 +31,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path)
 
-        print_help_mock.assert_any_call('python manage.py', self.COMMAND_NAME)
+        print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
     def test_check_if_command_exits_when_fixture_path_does_not_exist(self, os_path_exists_mock):
