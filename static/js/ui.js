@@ -227,8 +227,19 @@ exports.update_starred = function (message_id, starred) {
     });
 };
 
-exports.update_reaction = function (message_id, starred) {
-  console.log("update reaction UI");
+exports.update_reaction = function (message_id, reaction_name) {
+  var message = exports.find_message(message_id);
+  update_message_in_all_views(message_id, function update_row(row) {
+    var reaction_item = row.find(".reaction_" + reaction_name);
+    if (reaction_item) {
+      console.log('Reaction item already exists');
+    } else {
+      var reaction_content = row.find('.reaction_content');
+      var html = "<span>Emoji</span>";
+      reaction_content.append(html);
+      console.log('New reaction');
+    }
+  });
 };
 
 var local_messages_to_show = [];

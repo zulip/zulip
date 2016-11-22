@@ -196,9 +196,14 @@ function dispatch_normal_event(event) {
             unread.mark_messages_as_read(msgs_to_update, {from: "server"});
             break;
         }
-    case 'emoji_reaction':
+    case 'reaction':
       /* All emoji notification
        */
+      switch (event.action){
+      case 'add':
+        ui.update_reaction();
+        break;
+      }
       break;
     }
 }

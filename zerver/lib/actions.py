@@ -918,6 +918,7 @@ def do_add_reaction(user_profile, message, emoji_name):
             'full_name': user_profile.full_name}
 
     event = {'type': 'reaction',
+             'action': 'add',
              'user': user,
              'message_id': message.id,
              'emoji_name': emoji_name} # type: Dict[str, Any]

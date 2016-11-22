@@ -239,10 +239,11 @@ $(function () {
     // Update the message object pointed to by the various message
     // lists.
     var message = ui.find_message(message_id);
+    var reaction_name = "simple_smile";
     console.log("Message", message);
     unread.mark_message_as_read(message);
-    ui.update_reaction(message.id, message.starred !== true);
-    reaction.send_reaction(message.id, "simple_smile");
+    ui.update_reaction(message.id, reaction_name);
+    reaction.send_reaction(message.id, reaction_name);
   }
 
   $("#main_div").on("click", ".reaction", function (e) {
