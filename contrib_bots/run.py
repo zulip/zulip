@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from __future__ import print_function
 
 import importlib
@@ -71,9 +72,9 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
 
 def run():
     usage = '''
-        python run.py <lib file>
+        ./run.py <lib file>
 
-        Example: python run.py lib/followup.py
+        Example: ./run.py lib/followup.py
 
         (This program loads bot-related code from the
         library code and then runs a message loop,

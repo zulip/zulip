@@ -417,7 +417,7 @@ is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environmnet.  To update your environment, you'll need to
 re-provision your vagrant machine using `vagrant provision`
-(or just `python tools/provision.py` from `/srv/zulip` inside the Vagrant
+(or just `tools/provision.py` from `/srv/zulip` inside the Vagrant
 guest); this should be pretty fast and we're working to make it faster.
 
 See also the documentation on the [testing

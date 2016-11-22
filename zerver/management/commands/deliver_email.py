@@ -70,7 +70,7 @@ class Command(BaseCommand):
 
 Run this command under supervisor. We use Mandrill for zulip.com; this is for SMTP email delivery.
 
-Usage: python manage.py deliver_email
+Usage: ./manage.py deliver_email
 """
 
     def handle(self, *args, **options):

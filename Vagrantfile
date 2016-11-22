@@ -81,7 +81,7 @@ set -x
 set -e
 set -o pipefail
 ln -nsf /srv/zulip ~/zulip
-/usr/bin/python /srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
+/srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
 SCRIPT
 
   config.vm.provision "shell",

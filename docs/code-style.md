@@ -320,10 +320,13 @@ styles (separate lines for each selector):
 
 -   Scripts should start with `#!/usr/bin/env python` and not
     `#/usr/bin/python` (the right Python may not be installed in
-    `/usr/bin`) or `#/usr/bin/env/python2.7` (bad for Python 3
+    `/usr/bin`) or `#/usr/bin/env python2.7` (bad for Python 3
     compatibility).  Don't put a shebang line on a Python file unless
     it's meaningful to run it as a script. (Some libraries can also be
     run as scripts, e.g. to run a test suite.)
+-   Scripts should be executed directly (`./script.py`), so that the
+    interpreter is implicitly found from the shebang line, rather than
+    explicitly overridden (`python script.py`).
 -   The first import in a file should be
     `from __future__ import absolute_import`, per [PEP
     328](http://docs.python.org/2/whatsnew/2.5.html#pep-328-absolute-and-relative-imports)
