@@ -1,12 +1,27 @@
 #!/usr/bin/env bash
-set -e
-set -x
+set -eux
+
+usage() {
+    echo "Usage: $0 [--py3] <ZULIP_VERSION>" >&2
+    exit 1
+}
+
+args="$(getopt -o '' -l 'py3' -n "$0" -- "$@")"
+eval "set -- $args"
+
+py3=
+while true; do
+    case "$1" in
+        --py3) py3=t; shift;;
+        --) shift; break;;
+        *) usage;;
+    esac
+done
 
 GITID=$(git rev-parse HEAD)
 
-if [ -z "$1" ]; then
-    echo "Usage: $0 <ZULIP_VERSION>"
-    exit 1
+if [ -z "${1:-}" ]; then
+    usage
 fi
 version="$1"
 prefix="zulip-server-$version"
@@ -38,6 +53,13 @@ if tar -tf "$TARBALL" | grep -q -e zilencer -e zproject/local_settings.py -e pup
 	exit 1;
 else
 	echo "Check for excluded files passed";
+fi
+
+if [ "$py3" ]; then
+    tools/replace-tarball-shebang \
+        '#!/usr/bin/env python' '#!/usr/bin/env python3' \
+        < "$TARBALL" > "$TARBALL.new"
+    mv "$TARBALL.new" "$TARBALL"
 fi
 
 # Check out a temporary full copy of the index to generate static files
