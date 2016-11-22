@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Fenced Code Extension for Python Markdown
 =========================================
