@@ -99,8 +99,17 @@ set -o pipefail
 if [ -d "/sys/fs/selinux" ]; then
   sudo mount -o remount,ro /sys/fs/selinux
 fi
+
+# Set default locale, this prevents errors if the user has another locale set.
+if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
+    echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
+fi
+
+# Provision the development environment
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
+
+# Run any custom provision hooks the user has configured
 if [ -f /srv/zulip/tools/custom_provision ]; then
   chmod +x /srv/zulip/tools/custom_provision
   /srv/zulip/tools/custom_provision
