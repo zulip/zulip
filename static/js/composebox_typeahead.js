@@ -433,12 +433,15 @@ exports.initialize = function () {
             return query_matches_person(current_recipient, item);
         },
         sorter: typeahead_helper.sort_recipientbox_typeahead,
-        updater: function (item) {
+        updater: function (item, event) {
             var previous_recipients = exports.get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
                 previous_recipients += ", ";
+            }
+            if (event && event.type === 'click') {
+                ui.focus_on('private_message_recipient');
             }
             return previous_recipients + item.email + ", ";
         },
