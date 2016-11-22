@@ -163,6 +163,16 @@ $(function () {
         meta.focusing = true;
     });
 
+    // MUTING
+
+    $('body').on('click', '.on_hover_topic_mute', function (e) {
+        e.stopPropagation();
+        var stream_id = $(e.currentTarget).attr('data-stream-id');
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        var stream = stream_data.get_sub_by_id(stream_id);
+        popovers.topic_ops.mute(stream.name, topic);
+    });
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {

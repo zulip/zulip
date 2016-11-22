@@ -997,6 +997,15 @@ a.message_label_clickable:hover {
     opacity: 1.0;
 }
 
+.on_hover_topic_mute {
+    opacity: .1;
+}
+
+.on_hover_topic_mute:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
 .edit_content {
     display: inline-block;
     position: relative;
