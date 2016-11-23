@@ -26,7 +26,7 @@ subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_resta
 logging.info("Filling memcached caches")
 subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
-# Restart the FastCGI and related processes via supervisorctl.
+# Restart the uWSGI and related processes via supervisorctl.
 logging.info("Stopping workers")
 subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
 logging.info("Stopping server core")
