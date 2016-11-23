@@ -150,10 +150,13 @@ exports.short_huddle_name = function (huddle) {
     var user_ids = huddle.split(',');
 
     var num_to_show = 3;
-    var names = _.map(user_ids.slice(0, num_to_show), function (user_id) {
+    var names = _.map(user_ids, function (user_id) {
         var person = people.get_person_from_user_id(user_id);
         return person.full_name;
     });
+
+    names = _.sortBy(names, function (name) { return name.toLowerCase(); });
+    names = names.slice(0, num_to_show);
     var others = user_ids.length - num_to_show;
 
     if (others === 1) {
