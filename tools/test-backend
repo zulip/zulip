@@ -128,6 +128,7 @@ if __name__ == "__main__":
 
     if len(args) == 0:
         suites = ["zerver.tests",
+                  "zerver.webhooks",
                   "analytics.tests"]
     else:
         suites = args

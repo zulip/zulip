@@ -11,7 +11,7 @@ from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_
 import base64
 from functools import wraps
 
-from .github import build_message_from_gitlog
+from zerver.webhooks.github.view import build_message_from_gitlog
 
 from typing import Any, Callable, Dict, TypeVar
 from zerver.lib.str_utils import force_str, force_bytes

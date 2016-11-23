@@ -3,7 +3,7 @@ from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 from django.test import TestCase
 
-from zerver.views.webhooks.appfollow import convert_markdown
+from zerver.webhooks.appfollow.view import convert_markdown
 
 class AppFollowHookTests(WebhookTestCase):
     STREAM_NAME = 'appfollow'

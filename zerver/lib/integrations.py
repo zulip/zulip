@@ -48,7 +48,7 @@ class EmailIntegration(Integration):
         return settings.EMAIL_GATEWAY_BOT != ""
 
 class WebhookIntegration(Integration):
-    DEFAULT_FUNCTION_PATH = 'zerver.views.webhooks.{name}.api_{name}_webhook'
+    DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'
     DEFAULT_URL = 'api/v1/external/{name}'
     DEFAULT_CLIENT_NAME = 'Zulip{name}Webhook'
 
@@ -114,7 +114,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('freshdesk'),
     GithubIntegration(
         'github',
-        function='zerver.views.webhooks.github.api_github_landing',
+        function='zerver.webhooks.github.view.api_github_landing',
         display_name='GitHub',
         secondary_line_text='(deprecated)'
     ),
@@ -123,14 +123,14 @@ WEBHOOK_INTEGRATIONS = [
         display_name='GitHub',
         logo='static/images/integrations/logos/github.png',
         secondary_line_text='(webhook)',
-        function='zerver.views.webhooks.github_webhook.api_github_webhook'
+        function='zerver.webhooks.github_webhook.view.api_github_webhook'
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('gosquared', display_name='GoSquared'),
     WebhookIntegration('hellosign', display_name='HelloSign'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('heroku', display_name='Heroku'),
-    WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
+    WebhookIntegration('ifttt', function='zerver.webhooks.ifttt.view.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato'),
     WebhookIntegration('mention', display_name='Mention'),
@@ -152,7 +152,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('updown'),
     WebhookIntegration(
         'yo',
-        function='zerver.views.webhooks.yo.api_yo_app_webhook',
+        function='zerver.webhooks.yo.view.api_yo_app_webhook',
         logo='static/images/integrations/logos/yo-app.png',
         display_name='Yo App'
     ),

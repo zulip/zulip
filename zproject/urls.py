@@ -9,7 +9,7 @@ from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 from zerver.views.integrations import IntegrationView, APIView, HelpView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.views.webhooks import github_dispatcher
+from zerver.webhooks import github_dispatcher
 
 
 from django.contrib.auth.views import (login, password_reset,
