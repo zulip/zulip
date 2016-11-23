@@ -107,6 +107,7 @@ class Realm(ModelReprMixin, models.Model):
     # domain is a domain in the Internet sense. It must be structured like a
     # valid email domain. We use is to restrict access, identify bots, etc.
     domain = models.CharField(max_length=40, db_index=True, unique=True) # type: text_type
+    default_domain = models.CharField(max_length=40, db_index=True, default='mit.edu', editable=False)
     # name is the user-visible identifier for the realm. It has no required
     # structure.
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
@@ -220,7 +221,7 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def is_zephyr_mirror_realm(self):
         # type: () -> bool
-        return self.domain == "mit.edu"
+        return self.domain == self.default_domain
 
     @property
     def webathena_enabled(self):
