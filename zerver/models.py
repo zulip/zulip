@@ -861,6 +861,31 @@ def bulk_get_recipients(type, type_ids):
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
 
+
+def sew_messages_and_reactions(messages, reactions):
+    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]
+    """Given a iterable of messages and reactions stitch reactions
+    into messages.
+    """
+    # Add all messages with empty reaction item
+    for message in messages:
+        message['reactions'] = []
+
+    # Convert list of messages into dictionary to make reaction stitching easy
+    converted_messages = {message['id']: message for message in messages}
+
+    for reaction in reactions:
+        converted_messages[reaction['message_id']]['reactions'].append(reaction)
+
+    values = converted_messages.values()
+
+    # Python 2 returns dict.values as list where as Python 3 returns
+    # as `dict_values`.
+    if isinstance(values, list):
+        return values
+    return list(values)
+
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
@@ -945,7 +970,14 @@ class Message(ModelReprMixin, models.Model):
             'sender__avatar_source',
             'sender__is_mirror_dummy',
         ]
-        return Message.objects.filter(id__in=needed_ids).values(*fields)
+        messages = Message.objects.filter(id__in=needed_ids).values(*fields)
+        """Adding one-many or Many-Many relationship in values results in N + X
+        results.
+
+        Link: https://docs.djangoproject.com/en/1.8/ref/models/querysets/#values
+        """
+        reactions = Reaction.get_raw_db_rows(needed_ids)
+        return sew_messages_and_reactions(messages, reactions)
 
     def sent_by_human(self):
         # type: () -> bool
@@ -1016,6 +1048,13 @@ class Reaction(ModelReprMixin, models.Model):
     message = models.ForeignKey(Message) # type: Message
     emoji_name = models.TextField() # type: text_type
 
+    @staticmethod
+    def get_raw_db_rows(needed_ids):
+        # type: (List[int]) -> List[Dict[str, Any]]
+        fields = ['message_id', 'emoji_name', 'user_profile__email',
+                  'user_profile__id', 'user_profile__full_name']
+        return Reaction.objects.filter(message_id__in=needed_ids).values(
+            *fields)
 # Whenever a message is sent, for each user current subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
 # table, which has has columns (id, user profile id, message id,
