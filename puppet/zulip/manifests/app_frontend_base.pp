@@ -67,6 +67,18 @@ class zulip::app_frontend_base {
     source => "puppet:///modules/zulip/supervisor/conf.d/zulip.conf",
     notify => Service["supervisor"],
   }
+
+  $uwsgi_processes = zulipconf("application_server", "uwsgi_processes", "5")
+  file { "/etc/zulip/uwsgi.ini":
+    require => Package[supervisor],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    content => template("zulip/uwsgi.ini.template.erb"),
+    notify => Service["supervisor"],
+  }
+
   file { "/home/zulip/tornado":
     ensure => directory,
     owner => "zulip",

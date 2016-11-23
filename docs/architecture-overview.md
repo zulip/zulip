@@ -139,9 +139,9 @@ from outside.
     nginx gets the hostname for the Tornado server via
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`.
 -   Requests to all other paths are sent to the Django app via the UNIX
-    socket `unix:/home/zulip/deployments/fastcgi-socket` (defined in
+    socket `unix:/home/zulip/deployments/uwsgi-socket` (defined in
     `puppet/zulip/files/nginx/zulip-include-frontend/upstreams`). We use
-    `zproject/wsgi.py` to implement FastCGI here (see
+    `zproject/wsgi.py` to implement uWSGI here (see
     `django.core.wsgi`).
 
 ### Supervisor
