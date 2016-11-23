@@ -27,6 +27,9 @@ ZULIP_PATH="$(realpath $(dirname $0)/../..)"
 apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y puppet git python python3 python-six python3-six crudini $ADDITIONAL_PACKAGES
 
+# Handle issues around upstart on Ubuntu Xenial
+"$ZULIP_PATH"/scripts/lib/check-upstart
+
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
