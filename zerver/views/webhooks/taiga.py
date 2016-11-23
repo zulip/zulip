@@ -19,7 +19,7 @@ subject of US/task should be in bold.
 """
 
 from __future__ import absolute_import
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional, Tuple, Text
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
@@ -31,14 +31,13 @@ from zerver.models import UserProfile, Client
 
 import ujson
 from six.moves import range
-import six
 
 
 @api_key_only_webhook_view('Taiga')
 @has_request_variables
 def api_taiga_webhook(request, user_profile, client, message=REQ(argument_type='body'),
                       stream=REQ(default='taiga'), topic=REQ(default='General')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], six.text_type, six.text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Text) -> HttpResponse
     parsed_events = parse_message(message)
 
     content_lines = []
