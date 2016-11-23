@@ -32,13 +32,13 @@ It is recommended to use the utility functions for other string conversions.
 
 import six
 from six import text_type, binary_type
-from typing import Any, Mapping, Union, TypeVar
+from typing import Any, Mapping, Union, TypeVar, Text
 
 NonBinaryStr = TypeVar('NonBinaryStr', str, text_type)
 # This is used to represent text or native strings
 
 def force_text(s, encoding='utf-8'):
-    # type: (Union[text_type, binary_type], str) -> text_type
+    # type: (Union[Text, binary_type], str) -> Text
     """converts a string to a text string"""
     if isinstance(s, text_type):
         return s
@@ -48,7 +48,7 @@ def force_text(s, encoding='utf-8'):
         raise TypeError("force_text expects a string type")
 
 def force_bytes(s, encoding='utf-8'):
-    # type: (Union[text_type, binary_type], str) -> binary_type
+    # type: (Union[Text, binary_type], str) -> binary_type
     """converts a string to binary string"""
     if isinstance(s, binary_type):
         return s
@@ -58,7 +58,7 @@ def force_bytes(s, encoding='utf-8'):
         raise TypeError("force_bytes expects a string type")
 
 def force_str(s, encoding='utf-8'):
-    # type: (Union[text_type, binary_type], str) -> str
+    # type: (Union[Text, binary_type], str) -> str
     """converts a string to a native string"""
     if isinstance(s, str):
         return s
@@ -82,7 +82,7 @@ class ModelReprMixin(object):
     This mixin will automatically define __str__ and __repr__.
     """
     def __unicode__(self):
-        # type: () -> text_type
+        # type: () -> Text
         # Originally raised an exception, but Django (e.g. the ./manage.py shell)
         # was catching the exception and not displaying any sort of error
         return u"Implement __unicode__ in your subclass of ModelReprMixin!"

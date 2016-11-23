@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Text
 
 #!/usr/bin/env python
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
@@ -91,7 +91,7 @@ def der_encode_uint32(val):
     return der_encode_integer(val)
 
 def der_encode_string(val):
-    # type: (six.text_type) -> str
+    # type: (Text) -> str
     if not isinstance(val, six.text_type):
         raise TypeError("unicode")
     return der_encode_tlv(0x1b, val.encode("utf-8"))
