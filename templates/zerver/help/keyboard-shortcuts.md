@@ -80,7 +80,9 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Open message actions menu**: `i` - This shortcut shows the
   available message actions of the selected message (outlined in
   blue).
-* **Edit a message you sent**: `i` then `Enter` (`Return` on Mac) -
+* **Edit last message you sent**: `⇽` - This starts editing the
+  last editable message that you sent in the current view (if any).
+* **Edit selected message**: `i` then `Enter` (`Return` on Mac) -
   This shortcut allows the user to edit the selected message (outlined
   in blue) if the user authored the selected message. If the selected
   message was written by another user, this shortcut will enable the
