@@ -9,7 +9,7 @@ import os
 import ujson
 
 from zerver.lib import bugdown
-from zerver.lib.integrations import INTEGRATIONS
+from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.utils import get_subdomain
 from zproject.jinja2 import render_to_response
 
@@ -85,7 +85,9 @@ class IntegrationView(ApiURLView):
         # type: (Optional[Dict[str, Any]]) -> Dict[str, Any]
         context = super(IntegrationView, self).get_context_data(**kwargs)  # type: Dict[str, Any]
         alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
+        alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
         context['integrations_dict'] = alphabetical_sorted_integration
+        context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
 
         if context["html_settings_links"]:
             settings_html = '<a href="../#settings">Zulip settings page</a>'

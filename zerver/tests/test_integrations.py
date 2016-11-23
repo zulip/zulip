@@ -8,7 +8,7 @@ from django.test import TestCase, override_settings
 from typing import Any
 
 from zproject.settings import DEPLOY_ROOT
-from zerver.lib.integrations import INTEGRATIONS
+from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.views.integrations import add_api_uri_context
 
@@ -16,6 +16,11 @@ class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
         # type: () -> None
         for integration in INTEGRATIONS.values():
+            self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
+
+    def test_check_if_every_hubot_lozenges_has_logo_that_exists(self):
+        # type: () -> None
+        for integration in HUBOT_LOZENGES.values():
             self.assertTrue(os.path.isfile(os.path.join(DEPLOY_ROOT, integration.logo)))
 
     @override_settings(REALMS_HAVE_SUBDOMAINS=False)
