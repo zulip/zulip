@@ -417,6 +417,9 @@ def build_custom_checkers(by_lang):
 def run():
     # type: () -> None
     parser = optparse.OptionParser()
+    parser.add_option('--force', default=False,
+        action="store_true",
+        help='Run tests despite possible problems.')
     parser.add_option('--full',
         action='store_true',
         help='Check some things we typically ignore')
@@ -431,7 +434,22 @@ def run():
         help='Print verbose timing output')
     (options, args) = parser.parse_args()
 
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    tools_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(tools_dir)
+    sys.path.insert(0, root_dir)
+
+    from tools.lib.test_script import (
+        get_provisioning_status,
+    )
+
+    os.chdir(root_dir)
+
+    if not options.force:
+        ok, msg = get_provisioning_status()
+        if not ok:
+            print(msg)
+            print('If you really know what you are doing, use --force to run anyway.')
+            sys.exit(1)
 
 
     by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
