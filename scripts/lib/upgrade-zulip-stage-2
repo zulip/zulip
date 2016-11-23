@@ -63,6 +63,8 @@ if not (args.skip_puppet and args.skip_migrations):
     subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*", "zulip-django",
                            "zulip-tornado", "zulip-senders:*"], preexec_fn=su_to_zulip)
 
+subprocess.check_call(["./scripts/lib/check-upstart"])
+
 if not args.skip_puppet:
     logging.info("Applying puppet changes...")
     subprocess.check_call(["./scripts/zulip-puppet-apply", "--force"])
