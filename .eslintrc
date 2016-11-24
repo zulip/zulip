@@ -133,7 +133,7 @@
         "no-self-compare": 2,
         "no-sync": 2,
         "no-underscore-dangle": 1,
-        "no-loop-func": 1,
+        "no-loop-func": 2,
         "no-labels": 2,
         "no-unused-vars": 1,
         "no-script-url": 2,
