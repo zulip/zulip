@@ -12,7 +12,7 @@ import traceback
 
 try:
     import lister
-    from typing import cast, Any, Callable, Dict, List, Optional, Generator, Tuple
+    from typing import cast, Any, Callable, Dict, Iterator, List, Optional, Tuple
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip linters inside a Zulip dev environment.")
@@ -38,7 +38,7 @@ zproject/test_settings.py
 
 @contextmanager
 def bright_red_output():
-    # type: () -> Generator[None, None, None]
+    # type: () -> Iterator[None]
     # Make the lint output bright red
     sys.stdout.write('\x1B[1;31m')
     sys.stdout.flush()

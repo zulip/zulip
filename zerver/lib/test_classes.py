@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
-from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
+from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
     Sized, Tuple, Union)
 
 from django.core.urlresolvers import resolve
@@ -406,7 +406,7 @@ class ZulipTestCase(TestCase):
 
     @contextmanager
     def simulated_markdown_failure(self):
-        # type: () -> Generator[None, None, None]
+        # type: () -> Iterator[None]
         '''
         This raises a failure inside of the try/except block of
         bugdown.__init__.do_convert.
