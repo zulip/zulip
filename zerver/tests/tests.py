@@ -2067,6 +2067,13 @@ class HomeTest(ZulipTestCase):
         path = urllib.parse.urlparse(result['Location']).path
         self.assertEquals(path, "/")
 
+    def test_generate_204(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self.client_get("/api/v1/generate_204")
+        self.assertEquals(result.status_code, 204)
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
