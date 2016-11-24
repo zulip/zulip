@@ -13,7 +13,8 @@ from zerver.views import do_change_password, create_homepage_form
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
-    PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
+    PreregistrationUser, Realm, RealmAlias, Recipient,
+    Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription,
 )
 
@@ -538,6 +539,24 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.subscribe_to_stream("hamlet@zulip.com", stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
+
+    def test_refer_friend(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted=1
+        user.invites_used=0
+        user.save()
+
+        invitee = "alice-test@zulip.com"
+        result = self.client_post('/json/refer_friend', dict(email=invitee))
+        self.assert_json_success(result)
+
+        # verify this works
+        Referral.objects.get(user_profile=user, email=invitee)
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 1)
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
