@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
-from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
-    Sized, Tuple, Union)
+from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
+    Optional, Sized, Tuple, Union)
 
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
@@ -62,7 +62,7 @@ import six
 
 @contextmanager
 def simulated_queue_client(client):
-    # type: (type) -> Generator[None, None, None]
+    # type: (type) -> Iterator[None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
@@ -70,7 +70,7 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
-    # type: (List[Mapping[str, Any]]) -> Generator[None, None, None]
+    # type: (List[Mapping[str, Any]]) -> Iterator[None]
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lst.append
     yield
