@@ -66,10 +66,6 @@ import six
 
 API_KEYS = {} # type: Dict[text_type, text_type]
 
-skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
-
-
-
 class ZulipTestCase(TestCase):
     '''
     WRAPPER_COMMENT:

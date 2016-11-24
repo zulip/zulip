@@ -58,11 +58,6 @@ from zerver.lib.str_utils import NonBinaryStr
 from contextlib import contextmanager
 import six
 
-API_KEYS = {} # type: Dict[text_type, text_type]
-
-skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
-
-
 @contextmanager
 def simulated_queue_client(client):
     # type: (type) -> Generator[None, None, None]
