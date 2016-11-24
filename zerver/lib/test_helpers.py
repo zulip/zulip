@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
     Sized, Tuple, Union)
 
+from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
@@ -43,6 +44,7 @@ from zerver.models import (
 
 from zerver.lib.request import JsonableError
 
+import collections
 import base64
 import mock
 import os
@@ -249,6 +251,73 @@ def write_instrumentation_reports(full_suite):
     # type: (bool) -> None
     if INSTRUMENTING:
         calls = INSTRUMENTED_CALLS
+
+        from zproject.urls import urlpatterns, v1_api_and_json_patterns
+
+        # Find our untested urls.
+        pattern_cnt = collections.defaultdict(int) # type: Dict[str, int]
+
+        def re_strip(r):
+            # type: (Any) -> str
+            return str(r).lstrip('^').rstrip('$')
+
+        def find_patterns(patterns, prefixes):
+            # type: (List[Any], List[str]) -> None
+            for pattern in patterns:
+                find_pattern(pattern, prefixes)
+
+        def cleanup_url(url):
+            # type: (str) -> str
+            if url.startswith('/'):
+                url = url[1:]
+            if url.startswith('http://testserver/'):
+                url = url[len('http://testserver/'):]
+            if url.startswith('http://zulip.testserver/'):
+                url = url[len('http://zulip.testserver/'):]
+            if url.startswith('http://testserver:9080/'):
+                url = url[len('http://testserver:9080/'):]
+            return url
+
+        def find_pattern(pattern, prefixes):
+            # type: (Any, List[str]) -> None
+
+            if isinstance(pattern, type(LocaleRegexURLResolver)):
+                return
+
+            if hasattr(pattern, 'url_patterns'):
+                return
+
+            canon_pattern = prefixes[0] + re_strip(pattern.regex.pattern)
+            cnt = 0
+            for call in calls:
+                if 'pattern' in call:
+                    continue
+
+                url = cleanup_url(call['url'])
+
+                for prefix in prefixes:
+                    if url.startswith(prefix):
+                        match_url = url[len(prefix):]
+                        if pattern.regex.match(match_url):
+                            if call['status_code'] in [200, 204, 301, 302]:
+                                cnt += 1
+                            call['pattern'] = canon_pattern
+            pattern_cnt[canon_pattern] += cnt
+
+        find_patterns(urlpatterns, ['', 'en/', 'de/'])
+        find_patterns(v1_api_and_json_patterns, ['api/v1/', 'json/'])
+
+        assert len(pattern_cnt) > 100
+        untested_patterns = set([p for p in pattern_cnt if pattern_cnt[p] == 0])
+
+        # We exempt some patterns that are called via Tornado.
+        exempt_patterns = set([
+            'api/v1/events',
+            'api/v1/register',
+        ])
+
+        untested_patterns -= exempt_patterns
+
         var_dir = 'var' # TODO make sure path is robust here
         fn = os.path.join(var_dir, 'url_coverage.txt')
         with open(fn, 'w') as f:
@@ -269,20 +338,6 @@ def write_instrumentation_reports(full_suite):
         if full_suite:
             print('URL coverage report is in %s' % (fn,))
             print('Try running: ./tools/analyze-url-coverage')
-
-        # Find our untested urls.
-        from zproject.urls import urlpatterns
-        untested_patterns = []
-        for pattern in urlpatterns:
-            for call in calls:
-                url = call['url']
-                if url.startswith('/'):
-                    url = url[1:]
-                if pattern.regex.match(url):
-                    break
-            else:
-                untested_patterns.append(pattern.regex.pattern)
-
 
         if full_suite and len(untested_patterns):
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
