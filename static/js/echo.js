@@ -95,13 +95,16 @@ function add_subject_links(message) {
         var url = realm_filter[1];
         var match;
         while ((match = pattern.exec(subject)) !== null) {
-            var current_group = 1;
             var link_url = url;
-            _.each(match.slice(1), function (matched_group) {
+            var matched_groups = match.slice(1);
+            var i = 0;
+            while (i < matched_groups.length) {
+                var matched_group = matched_groups[i];
+                var current_group = i + 1;
                 var back_ref = "\\" + current_group;
                 link_url = link_url.replace(back_ref, matched_group);
-                current_group++;
-            });
+                i++;
+            }
             links.push(link_url);
         }
     });
