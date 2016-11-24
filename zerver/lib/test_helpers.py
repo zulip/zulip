@@ -337,7 +337,7 @@ def write_instrumentation_reports(full_suite):
 
         if full_suite:
             print('URL coverage report is in %s' % (fn,))
-            print('Try running: ./tools/analyze-url-coverage')
+            print('Try running: ./tools/create-test-api-docs')
 
         if full_suite and len(untested_patterns):
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
