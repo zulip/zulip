@@ -506,7 +506,7 @@ def run():
         @lint
         def jslint():
             # type: () -> int
-            result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
+            result = subprocess.call(['node', 'tools/jslint/check-all.js']
                                      + by_lang['js'])
             return result
 
@@ -515,7 +515,7 @@ def run():
             # type: () -> int
             if len(by_lang['js']) == 0:
                 return 0
-            result = subprocess.call(['tools/node', 'node_modules/.bin/eslint', '--quiet']
+            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet']
                                      + by_lang['js'])
             return result
 
