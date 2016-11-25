@@ -279,6 +279,7 @@ TEMPLATES = [
         'BACKEND': 'zproject.jinja2.backends.Jinja2',
         'DIRS': [
             os.path.join(DEPLOY_ROOT, 'templates'),
+            os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {

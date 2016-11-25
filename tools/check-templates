@@ -134,6 +134,11 @@ def check_html_templates(templates, modified_only, all_dups):
             'templates/zerver/register.html',
             'templates/zerver/right-sidebar.html',
             'templates/zerver/search_operators.html',
+
+            'zerver/webhooks/deskdotcom/doc.html',
+            'zerver/webhooks/freshdesk/doc.html',
+            'zerver/webhooks/taiga/doc.html',
+            'zerver/webhooks/zendesk/doc.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
