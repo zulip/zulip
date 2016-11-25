@@ -1,0 +1,68 @@
+<p>
+    You can choose to be notified whenever certain events are triggered on Stripe
+    by adding a webhook to your Stripe account. First, create a stream where the events
+    are to be sent.
+</p>
+
+<p>Next, on your {{ settings_html|safe }}, create a Stripe bot.</p>
+
+<p>
+    Add a webhook to your Stripe account by going to "Your account"->"Account
+    settings"->"Webhooks"->"Add Endpoint" and adding the following URL,
+    replacing the bot email address (with the <code>@</code>sign escaped to <code>%40</code>),
+    bot API key, Zulip stream, and Zulip topic with the appropriate values:
+</p>
+
+<p>e.g.</p>
+
+<ul>
+    <li>sales-bot%40example.com instead of stripe-bot%40example.com</li>
+    <li>abcdef0123 instead of api_key</li>
+    <li>finance instead of sales</li>
+    <li>transactions instead of Stripe</li>
+</ul>
+<code>{{ external_uri_scheme }}stripe-bot%40example.com:api_key@{{ external_api_path_subdomain }}/v1/external/stripe?stream=sales%26topic=Stripe</code>
+
+<p>
+    {% if 'http:' in external_uri_scheme %}
+        <b><font color="#FF0000">Note that Stripe will only accept https webhooks!</font></b>
+    {% endif %}
+</p>
+
+<img class="screenshot" src="/static/images/integrations/stripe/001.png"/>
+
+<p>
+    To set up different topics for different events, create separate webhooks
+    for those events, customizing the URL stream and topic for each.
+</p>
+
+<img class="screenshot" src="/static/images/integrations/stripe/003.png"/>
+
+<p>
+    <b>Congratulations!</b>
+</p>
+
+<p>
+    You will now receive notifications for the events you have chosen.
+    Zulip currently supports the following events:
+</p>
+
+<ul>
+    <li>Charge Dispute Closed</li>
+    <li>Charge Dispute Created</li>
+    <li>Charge Failed</li>
+    <li>Charge Succeeded</li>
+    <li>Customer Created</li>
+    <li>Customer Deleted</li>
+    <li>Customer Subscription Created</li>
+    <li>Customer Subsciption Deleted</li>
+    <li>Customer Subscription Trial Will End</li>
+    <li>Invoice Payment Failed</li>
+    <li>Order Payment Failed</li>
+    <li>Order Payment Succeeded</li>
+    <li>Order Updated</li>
+    <li>Transfer Failed</li>
+    <li>Transfer Paid</li>
+</ul>
+
+<img class="screenshot" src="/static/images/integrations/stripe/002.png"/>

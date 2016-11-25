@@ -395,10 +395,11 @@ def get_all_templates():
 
     def is_valid_template(p, n):
         # type: (Text, Text) -> bool
-        return (not n.startswith('.') and
-                not n.startswith('__init__') and
-                not n.endswith(".md") and
-                isfile(p))
+        return 'webhooks' not in p \
+               and not n.startswith('.') \
+               and not n.startswith('__init__') \
+               and not n.endswith('.md') \
+               and isfile(p)
 
     def process(template_dir, dirname, fnames):
         # type: (str, str, Iterable[str]) -> None
