@@ -380,6 +380,7 @@ input[type=checkbox].inline-block {
     display: none;
     width: 90%;
     margin: 0 auto;
+    margin-bottom: 15px;
     padding: 10px;
 }
 
