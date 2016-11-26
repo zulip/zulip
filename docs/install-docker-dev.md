@@ -26,11 +26,8 @@ go to the directory with the Zulip source code:
 docker build -t user/zulipdev .
 ```
 
-Now you're going to install Zulip dependencies in the image:
-
+Commit and tag the provisioned images. The below will install Zulip's dependencies: 
 ```
-docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/tools/provision.py --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 ```
@@ -44,6 +41,18 @@ docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev:v2 \
 
 If you want to connect to the Docker instance to build a release
 tarball you can use:
+
+
+To View container logs to get important debugging information sent by Zulip:
+```
+docker logs --follow <container id>
+```
+
+To restart the server use:
+```
+docker ps
+docker restart <container id>
+```
 
 ```
 docker ps
