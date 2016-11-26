@@ -84,11 +84,11 @@ If you're in a hurry, you can copy and paste the following into your terminal
 after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
 ```
-sudo apt-get purge vagrant
-wget https://releases.hashicorp.com/vagrant/1.8.4/vagrant_1.8.4_x86_64.deb
-sudo dpkg -i vagrant*.deb
-sudo apt-get install build-essential git ruby lxc lxc-templates cgroup-lite redir
-vagrant plugin install vagrant-lxc
+sudo apt-get -y purge vagrant && \
+wget https://releases.hashicorp.com/vagrant/1.8.4/vagrant_1.8.4_x86_64.deb && \
+sudo dpkg -i vagrant*.deb && \
+sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
+vagrant plugin install vagrant-lxc && \
 vagrant lxc sudoers
 ```
 
@@ -197,8 +197,8 @@ If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
 instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
-1. In your browser, visit https://github.com/zulip/zulip and click the
-   `fork` button. You will need to be logged in to GitHub to do this.
+1. In your browser, visit [https://github.com/zulip/zulip](https://github.com/zulip/zulip)
+   and click the `fork` button. You will need to be logged in to GitHub to do this.
 2. Open Terminal (OS X/Ubuntu) or Cygwin (Windows; must run as an Administrator)
 3. In Terminal/Cygwin, clone your fork:
 ```
@@ -306,15 +306,11 @@ You can confirm this by looking at the command prompt, which starts with
 Next, start the Zulip server:
 
 ```
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~ $
-/srv/zulip/tools/run-dev.py
-```
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
+$ cd /srv/zulip
 
-As you can see above the application's root directory, where you can
-execute Django's command line utilities is:
-
-```
-/srv/zulip/
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
+$ tools/run-dev.py
 ```
 
 You will see several lines of output starting with something like:
@@ -350,8 +346,7 @@ Now the Zulip server should be running and accessible. Verify this by
 navigating to [http://localhost:9991/](http://localhost:9991/) in your browser
 on your main machine.
 
-You should see something like [(this screenshot of the Zulip dev
-environment)](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png).
+You should see something like this:
 
 ![Image of Zulip dev environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
 
