@@ -5,7 +5,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 from zerver.lib.actions import set_default_streams
 
 from optparse import make_option
@@ -21,17 +21,17 @@ streams.
 
 For example:
 
-python manage.py set_default_streams --domain=foo.com --streams=foo,bar,baz
-python manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz with space"
-python manage.py set_default_streams --domain=foo.com --streams=
+python manage.py set_default_streams --realm=foo --streams=foo,bar,baz
+python manage.py set_default_streams --realm=foo --streams="foo,bar,baz with space"
+python manage.py set_default_streams --realm=foo --streams=
 """
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('-d', '--domain',
-                            dest='domain',
+        parser.add_argument('-r', '--realm',
+                            dest='string_id',
                             type=str,
-                            help='The name of the existing realm to which to '
+                            help='The subdomain or string_id of the existing realm to which to '
                                  'attach default streams.')
 
         parser.add_argument('-s', '--streams',
@@ -41,11 +41,11 @@ python manage.py set_default_streams --domain=foo.com --streams=
 
     def handle(self, **options):
         # type: (*Any, **str) -> None
-        if options["domain"] is None or options["streams"] is None:
-            print("Please provide both a domain name and a default \
+        if options["string_id"] is None or options["streams"] is None:
+            print("Please provide both a subdomain name or string_id and a default \
 set of streams (which can be empty, with `--streams=`).", file=sys.stderr)
             exit(1)
 
         stream_names = [stream.strip() for stream in options["streams"].split(",")]
-        realm = get_realm(options["domain"])
+        realm = get_realm_by_string_id(options["string_id"])
         set_default_streams(realm, stream_names)

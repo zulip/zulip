@@ -8,15 +8,15 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import do_change_enable_digest_emails
-from zerver.models import Realm, UserProfile, get_realm, get_user_profile_by_email
+from zerver.models import Realm, UserProfile, get_realm_by_string_id, get_user_profile_by_email
 
 class Command(BaseCommand):
-    help = """Turn off digests for a domain or specified set of email addresses."""
+    help = """Turn off digests for a subdomain/string_id or specified set of email addresses."""
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('-d', '--domain',
-                            dest='domain',
+        parser.add_argument('-r', '--realm',
+                            dest='string_id',
                             type=str,
                             help='Turn off digests for all users in this domain.')
 
@@ -28,12 +28,12 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         # type: (**str) -> None
-        if options["domain"] is None and options["users"] is None:
+        if options["string_id"] is None and options["users"] is None:
             self.print_help("python manage.py", "turn_off_digests")
             exit(1)
 
-        if options["domain"]:
-            realm = get_realm(options["domain"])
+        if options["string_id"]:
+            realm = get_realm_by_string_id(options["string_id"])
             user_profiles = UserProfile.objects.filter(realm=realm)
         else:
             emails = set([email.strip() for email in options["users"].split(",")])

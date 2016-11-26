@@ -7,15 +7,15 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
 from zerver.models import UserProfile, PreregistrationUser, \
-    get_user_profile_by_email, get_realm, email_allowed_for_realm
+    get_user_profile_by_email, get_realm_by_string_id, email_allowed_for_realm
 
 class Command(BaseCommand):
     help = "Generate activation links for users and print them to stdout."
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('--domain',
-                            dest='domain',
+        parser.add_argument('--realm',
+                            dest='string_id',
                             type=str,
                             help='The realm in which to generate the invites (use for open realms).')
         parser.add_argument('--force',
@@ -42,11 +42,11 @@ class Command(BaseCommand):
             return
 
         realm = None
-        domain = options["domain"]
-        if domain:
-            realm = get_realm(domain)
+        string_id = options["string_id"]
+        if string_id:
+            realm = get_realm_by_string_id(string_id)
         if not realm:
-            print("The realm %s doesn't exist yet, please create it first." % (domain,))
+            print("The realm %s doesn't exist yet, please create it first." % (string_id,))
             print("Don't forget default streams!")
             exit(1)
 
@@ -54,7 +54,7 @@ class Command(BaseCommand):
             if realm:
                 if not email_allowed_for_realm(email, realm) and not options["force"]:
                     print("You've asked to add an external user (%s) to a closed realm (%s)." % (
-                        email, domain))
+                        email, string_id))
                     print("Are you sure? To do this, pass --force.")
                     exit(1)
                 else:
