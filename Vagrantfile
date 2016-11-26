@@ -80,6 +80,13 @@ $provision_script = <<SCRIPT
 set -x
 set -e
 set -o pipefail
+# If the host is running SELinux remount the /sys/fs/selinux directory as read only,
+# needed for apt-get to work.
+if [ -d "/sys/fs/selinux" ]; then
+  sudo mount -o remount,ro /sys/fs/selinux
+fi
+# Set default locale, this prevents errors on vagrant ssh
+echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
 ln -nsf /srv/zulip ~/zulip
 /usr/bin/python /srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
 SCRIPT
