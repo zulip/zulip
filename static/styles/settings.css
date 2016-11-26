@@ -421,3 +421,13 @@ input[type=checkbox].inline-block {
 #show_api_key_box {
     padding-bottom: 20px;
 }
+
+#muted_topics_table {
+    margin-bottom: 0px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+#muted_topics_table tbody {
+    border-bottom: none;
+}
