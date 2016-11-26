@@ -27,7 +27,7 @@ class Command(BaseCommand):
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files.
 
-Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
+Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None

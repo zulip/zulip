@@ -12,7 +12,7 @@ class Command(BaseCommand):
     settings.OPEN_REALM_CREATION is enabled. The link would expire automatically after
     settings.REALM_CREATION_LINK_VALIDITY_DAYS.
 
-    Usage: python manage.py generate_realm_creation_link """
+    Usage: ./manage.py generate_realm_creation_link """
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

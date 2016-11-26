@@ -29,7 +29,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         # type: (**str) -> None
         if options["domain"] is None and options["users"] is None:
-            self.print_help("python manage.py", "turn_off_digests")
+            self.print_help("./manage.py", "turn_off_digests")
             exit(1)
 
         if options["domain"]:

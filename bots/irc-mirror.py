@@ -104,11 +104,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 return
             self.dcc_connect(address, port)
 
-usage = """python irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> [optional args]
+usage = """./irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> [optional args]
 
 Example:
 
-python irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
+./irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
   --site=https://zulip.example.com --user=irc-bot@example.com
   --api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 

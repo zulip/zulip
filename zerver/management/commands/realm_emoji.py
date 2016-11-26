@@ -14,10 +14,10 @@ import six
 class Command(BaseCommand):
     help = """Manage emoji for the specified realm
 
-Example: python manage.py realm_emoji --realm=zulip.com --op=add robotheart \\
+Example: ./manage.py realm_emoji --realm=zulip.com --op=add robotheart \\
     https://humbug-user-avatars.s3.amazonaws.com/95ffa70fe0e7aea3c052ba91b38a28d8779f5705
-Example: python manage.py realm_emoji --realm=zulip.com --op=remove robotheart
-Example: python manage.py realm_emoji --realm=zulip.com --op=show
+Example: ./manage.py realm_emoji --realm=zulip.com --op=remove robotheart
+Example: ./manage.py realm_emoji --realm=zulip.com --op=show
 """
 
     # Fix support for multi-line usage
@@ -54,13 +54,13 @@ Example: python manage.py realm_emoji --realm=zulip.com --op=show
 
         name = options['name']
         if name is None:
-            self.print_help("python manage.py", "realm_emoji")
+            self.print_help("./manage.py", "realm_emoji")
             sys.exit(1)
 
         if options["op"] == "add":
             img_url = options['img_url']
             if img_url is None:
-                self.print_help("python manage.py", "realm_emoji")
+                self.print_help("./manage.py", "realm_emoji")
                 sys.exit(1)
             check_add_realm_emoji(realm, name, img_url)
             sys.exit(0)
@@ -68,5 +68,5 @@ Example: python manage.py realm_emoji --realm=zulip.com --op=show
             do_remove_realm_emoji(realm, name)
             sys.exit(0)
         else:
-            self.print_help("python manage.py", "realm_emoji")
+            self.print_help("./manage.py", "realm_emoji")
             sys.exit(1)

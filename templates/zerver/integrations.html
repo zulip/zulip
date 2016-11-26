@@ -190,7 +190,7 @@
       </li>
       <li>
         <p>Test your configuration by running the mirror with
-          <code>python asana/zulip_asana_mirror</code>. It will print
+          <code>asana/zulip_asana_mirror</code>. It will print
         some informational messages and process any recently created
         or completed tasks.</p>
       </li>
@@ -1528,7 +1528,7 @@ key = NAGIOS_BOT_API_KEY
         with <code>p4 triggers</code> and add an entry something like the
         following:
 
-        <pre>notify_zulip change-commit //depot/... "python /usr/local/share/zulip/integrations/perforce/zulip_change-commit.py %change% %changeroot%"</pre>
+        <pre>notify_zulip change-commit //depot/... "/usr/local/share/zulip/integrations/perforce/zulip_change-commit.py %change% %changeroot%"</pre>
         </li>
 
         <li>By default, this hook will send to streams of the form

@@ -18,7 +18,7 @@ import sys
 class Command(BaseCommand):
     help = """Create a realm.
 
-Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
+Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
@@ -84,7 +84,7 @@ Usage: python manage.py create_realm --string_id=acme --name='Acme'"""
 
         if not name or not string_id:
             print("\033[1;31mPlease provide a name and string_id.\033[0m\n", file=sys.stderr)
-            self.print_help("python manage.py", "create_realm")
+            self.print_help("./manage.py", "create_realm")
             exit(1)
 
         if options["deployment_id"] is not None and not settings.ZILENCER_ENABLED:

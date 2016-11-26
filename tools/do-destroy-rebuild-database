@@ -11,11 +11,11 @@ EOF
 
 sh "$(dirname "$0")/../scripts/setup/flush-memcached"
 
-python manage.py migrate --noinput
-python manage.py createcachetable third_party_api_results
-python manage.py populate_db -n100 --threads=1
+./manage.py migrate --noinput
+./manage.py createcachetable third_party_api_results
+./manage.py populate_db -n100 --threads=1
 # Ensure that the local user's API key is synced from ~/.zuliprc
 
 if [ -e ~/.zuliprc ]; then
-    python manage.py sync_api_key
+    ./manage.py sync_api_key
 fi

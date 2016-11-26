@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import time
 
 # Avoid requiring the typing module to be installed
