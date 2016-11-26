@@ -43,6 +43,7 @@ function render(template_name, args) {
         'bot-settings',
         'alert-word-settings',
         'attachments-settings',
+        'muted-topics-settings',
         'ui-settings',
     ]);
 }());
@@ -964,6 +965,22 @@ function render(template_name, args) {
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
+}());
+
+(function muted_topic_ui_row() {
+    var args = {
+        stream: 'Verona',
+        topic: 'Verona2',
+    };
+
+    var html = '<table id="muted-topics-table">';
+    html += '<tbody>';
+    html += render('muted_topic_ui_row', args);
+    html += '</tbody>';
+    html += '</table>';
+
+    assert.equal($(html).find("tr").data("stream"), "Verona");
+    assert.equal($(html).find("tr").data("topic"), "Verona2");
 }());
 
 // By the end of this test, we should have compiled all our templates.  Ideally,

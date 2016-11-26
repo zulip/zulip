@@ -129,6 +129,15 @@ exports.update_muted_topics = function (muted_topics) {
     unread_ui.update_unread_counts();
 };
 
+exports.set_up_muted_topics_ui = function (muted_topics) {
+    var muted_topics_table = $("#muted_topics_table tbody");
+    muted_topics_table.empty();
+    _.each(muted_topics, function (list) {
+        var row = templates.render('muted_topic_ui_row', {stream: list[0], topic: list[1]});
+        muted_topics_table.append(row);
+    });
+};
+
 $(function () {
     exports.update_muted_topics(page_params.muted_topics);
 });
