@@ -1,6 +1,6 @@
 # Development environment installation
 
-Zulip support a wide range of ways to install the Zulip development
+Zulip supports a wide range of ways to install the Zulip development
 environment.  We recommend using the Vagrant development environment,
 since it is easiest to setup and uninstall.
 
@@ -10,7 +10,7 @@ either [install directly](install-ubuntu-without-vagrant-dev.html) or
 use [the manual install process](install-generic-unix-dev.html)
 instead.  Note that those options only support Linux.
 
-An alternative option with poor network connectivity is to rent a cloud server
+An alternative option if you have poor network connectivity is to rent a cloud server
 (with at least 2GB of RAM), install
 the [remote development environment](dev-remote.html), and connect to the
 development environment over mosh or SSH.
