@@ -27,6 +27,7 @@ We are building a collection of translation style guides for Zulip,
 giving guidance on how Zulip should be translated into specific
 languages (e.g. what word to translate words like "home" to):
 
+* [Polish](polish.html)
 * [Spanish](spanish.html)
 
 ## Setting Default Language in Zulip
