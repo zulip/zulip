@@ -25,7 +25,7 @@ casper.waitForSelector('.sub_unsub_button.checked', function () {
 });
 casper.waitForSelector('#create_stream_button', function () {
      casper.test.assertTextExists('Create stream', 'Modal for specifying new stream users');
-     casper.fill('form#stream_creation_form', {stream_name: 'Waseemio'});
+     casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
      casper.click('form#stream_creation_form button.btn.btn-primary');
 });
 casper.then(function () {
@@ -68,6 +68,7 @@ casper.waitFor(function () {
 casper.then(function () {
     casper.test.info("User should be subscribed to stream Waseemio");
     casper.test.assertSelectorHasText('.stream-name', 'Waseemio');
+    casper.test.assertSelectorHasText('.description', 'Oimeesaw');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
     casper.click('form#add_new_subscription input.btn');
 });
