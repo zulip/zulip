@@ -1,23 +1,35 @@
+# Spanish Translation Style Guide
+
+Use formal Spanish for translation:
+
+* Formal "you" (*usted*) instead of informal form *tu*. Software translated to Spanish using the informal "you" form comes off as unprofessional and childish.
+
+* imperative, active, and continuous verbs, e.g. *manage streams* - *manejar canales*, not *manejo de canales*
+
+* not using reflexive *se* e.g. *log out* should be *salir*, not *salirse*.
+
+* warm and friendly phrasing whenever appropriate
+
+* no slang or regional phrases that could be unclear or too informal
+
+* balance common verbs and nouns with specific IT-related translation of English terms - this can be tricky, try to check how other resources were translated (e.g. GMail, Microsoft websites, Facebook) to decide what wouldn't sound awkward / rude in Spanish
+
+
+Some terms are very tricky to translate, so be sure to communicate with other Spanish speakers in the community. It's all about making Zulip friendly and usable.
+
 ## Términos Especiales Usados en Zulip
 
 
- * **@mención**: ver **mención**.
- * **/me**: ver **me**.
- * **personalización**: cambiar los ajustes de Zulip para que se comporte de la manera que usted prefiera.
- * **emoji**: imagen pequeña usada en mensajes de chat, para expresión tersa, no-verbal, o tierna; del japonés 絵文字.
- * **vista**: una de las opciones para ver diferentes tipos de mensajes, listados en la esquina superior izquierda de la ventana: Inicio, Mensajes Privados, Favoritos, Menciones.
- * **MP grupal**: Un mensaje privado enviado directamente a dos o más usuarios sin hacer uso de un canal.
- * **Inicio**: Una "vista" en la que todos los temas en todos los canales suscritos son visibles, ordenados por fecha y hora de publicación.
- * **me**: una referencia a su propio nombre, formateado `/me`.
- * **mención**: el acto de notificar a otro usuario de un mensaje, poniendo su nombre en el cuerpo del mensaje después de una `@` arroba.
- * **tabla de mensajes**: es el canal de mensajes en el panel de en medio de una ventana del navegador completamente abierta.
- * **silenciar un canal**: El acto de ocultar un canal manteniendo la suscripción del usuario.
- * **filtrar**: alterar una vista para que solo un canal, tema, o mensaje privado esté visible.
- * **fijar**: un canal: el mover un canal en particular al principio de la lista de canales.
- * **MP / PM**: mensaje privado — un mensaje enviado directamente a uno o más usuarios sin hacer uso de un canal.
- * **canal privado**: un canal que solo puede ser visualizado con una invitación previa.
- * **instancia**: una cuenta de Zulip, asociada a una organización en particular.
- * **canal**: un flujo de temas relacionados a un cierto grado del contenido.
- * **suscribirse a un canal**: registrarse para recibir todos los mensajes en un canal en particular.
- * **tema**: un tópico de conversacion dentro de un canal.
- * **cancelar la suscripción a un canal**: el excluirse de recibir cualquier mensaje en un canal en particular.
+ * mention - **@mención**
+ * customization - **personalización**
+ * view / filter - **vista**
+ * PM / Private Message - **MP grupal**
+ * Home - **Inicio**: We never use the term "Hogar" (literally home) in Spanish.
+ * message table - **tabla de mensajes**
+ * muting a stream - **silenciar un canal**
+ * narrow - **filtrar**: there's no other word that's common enough in Spanish for "to narrow" except for "filtrar". This is why we'll use "filtrar" for "to narrow" and not for the english Zulip meaning "filter", fo which we'll use "view" instead
+ * pinning - **fijar** (lit. to fixate)
+ * stream - **canal** The use of the literal Spanish word for stream "Flujo" is very confusing and not the correct metaphor for Spanish speaking people. The correct term would be "canal" (channel).
+ * realm - **instancia**: The literal Spanish of realm is "reino", which is not a term that's charged with computer terminology. Instancia es much clearer.
+
+ * **thread** - tema: We use "tema" instead of the Spanish translation for thread "hilo" because, again, "hilo" is not a commonly technical term and would only serve to confuse users.
