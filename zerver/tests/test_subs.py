@@ -53,33 +53,48 @@ import random
 import ujson
 import six
 from six import text_type
-from six.moves import range, urllib
+from six.moves import range, urllib, zip
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self):
         # type: () -> None
         stream_names = [u'new1', u'new2', u'new3']
+        stream_descriptions = [u'des1', u'des2', u'des3']
         realm = get_realm_by_string_id('zulip')
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
-            [{"name": stream_name, "invite_only": True} for stream_name in stream_names])
+            [{"name": stream_name,
+              "description": stream_description,
+              "invite_only": True}
+             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
 
         self.assertEqual(len(new_streams), 3)
         self.assertEqual(len(existing_streams), 0)
 
         actual_stream_names = {stream.name for stream in new_streams}
         self.assertEqual(actual_stream_names, set(stream_names))
+        actual_stream_descriptions = {stream.description for stream in new_streams}
+        self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
+        for stream in new_streams:
+            self.assertTrue(stream.invite_only)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
-            [{"name": stream_name, "invite_only": True} for stream_name in stream_names])
+            [{"name": stream_name,
+              "description": stream_description,
+              "invite_only": True}
+             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
 
         self.assertEqual(len(new_streams), 0)
         self.assertEqual(len(existing_streams), 3)
 
         actual_stream_names = {stream.name for stream in existing_streams}
         self.assertEqual(actual_stream_names, set(stream_names))
+        actual_stream_descriptions = {stream.description for stream in existing_streams}
+        self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
+        for stream in existing_streams:
+            self.assertTrue(stream.invite_only)
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self):
