@@ -169,7 +169,7 @@
         "strict": 1,
         "unnecessary-strict": 0,
         "use-isnan": 2,
-        "valid-typeof": ['error', { requireStringLiterals: true }],
+        "valid-typeof": ["error", { "requireStringLiterals": true }],
         "wrap-iife": 2,
         "wrap-regex": 0,
         "yoda": 1
