@@ -13,7 +13,7 @@ from zerver.decorator import asynchronous, \
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool, check_list, check_string
-from zerver.lib.event_queue import get_client_descriptor, \
+from zerver.tornado.event_queue import get_client_descriptor, \
     process_notification, fetch_events
 from django.core.handlers.base import BaseHandler
 

@@ -17,7 +17,6 @@ from django.http import HttpRequest, HttpResponse
 from tornado.gen import Return
 from tornado.httpclient import HTTPRequest
 
-from zerver.lib.event_queue import fetch_events
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.lib.test_classes import ZulipTestCase
 
@@ -29,6 +28,7 @@ from tornado.web import Application
 from tornado.websocket import websocket_connect
 
 from zerver.tornado.application import create_tornado_application
+from zerver.tornado.event_queue import fetch_events
 from zerver.tornado.views import get_events_backend
 
 from six.moves.http_cookies import SimpleCookie

@@ -69,7 +69,6 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many
 from zerver.decorator import statsd_increment
-from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
@@ -83,6 +82,7 @@ from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
+from zerver.tornado.event_queue import request_event_queue, get_user_events, send_event
 
 import DNS
 import ujson

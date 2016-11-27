@@ -197,13 +197,13 @@ thread. It's also used for communication between the application server
 and the Tornado push system.
 
 Two simple wrappers around `pika` (the Python RabbitMQ client) are in
-`zulip/server/lib/queue.py`. There's an asynchronous client for use in
+`zulip/zerver/lib/queue.py`. There's an asynchronous client for use in
 Tornado and a more general client for use elsewhere.
 
-`zerver/lib/event_queue.py` has helper functions for putting events into
-one queue or another. Most of the processes started by Supervisor are
-queue processors that continually pull things out of a RabbitMQ queue
-and handle them.
+`zerver/tornado/event_queue.py` has helper functions for putting
+events into one queue or another. Most of the processes started by
+Supervisor are queue processors that continually pull things out of a
+RabbitMQ queue and handle them.
 
 Also see [the queuing guide](queuing.html).
 

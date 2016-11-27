@@ -11,7 +11,7 @@ var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
 /* Mark users as offline after 140 seconds since their last checkin,
- * Keep in sync with zerver/lib/event_queue.py:receiver_is_idle
+ * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
  */
 var OFFLINE_THRESHOLD_SECS = 140;
 
