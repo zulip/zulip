@@ -11,6 +11,7 @@ from django.core import validators
 from django.contrib.sessions.models import Session
 from zerver.lib.bugdown import (
     BugdownRenderingException,
+    emoji_list,
     version as bugdown_version
 )
 from zerver.lib.cache import (
@@ -35,7 +36,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications
+    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications, \
+    Reaction
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
@@ -905,6 +907,50 @@ def do_send_messages(messages):
     # mirror single zephyr messages at a time and don't otherwise
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
+
+def do_add_reaction(user_profile, message, emoji_name):
+    # type: (UserProfile, Message, text_type) -> None
+    reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
+    reaction.save()
+
+    user = {'user_id': user_profile.id,
+            'email': user_profile.email,
+            'full_name': user_profile.full_name}
+
+    event = {'type': 'reaction',
+             'user': user,
+             'message_id': message.id,
+             'op': 'add',
+             'emoji_name': emoji_name} # type: Dict[str, Any]
+
+    ums = UserMessage.objects.filter(message=message.id)
+    send_event(event, [um.user_profile.id for um in ums])
+
+# check_add_reaction:
+# Checks the reaction and adds it
+def check_add_reaction(user_profile, emoji_name, message_id):
+    # type: (UserProfile, text_type, int) -> None
+    try:
+        messages = access_message(user_profile, message_id)
+        if len(messages) == 0:
+            raise JsonableError(_("Cannot access message"))
+        else:
+            message = messages[0]
+    except Message.DoesNotExist:
+        raise JsonableError(_("Unknown message id"))
+    if emoji_name is None:
+        raise JsonableError(_("Missing emoji"))
+    if emoji_name == "":
+        raise JsonableError(_("Emoji name can't be empty"))
+
+    existing_emojis = set(message.sender.realm.get_emoji().keys()) or set(emoji_list)
+    if emoji_name not in existing_emojis:
+        raise JsonableError(_("Emoji does not exist"))
+
+    if Reaction.objects.filter(user_profile=user_profile, message=message, emoji_name=emoji_name).exists():
+       raise JsonableError(_("Reaction exists"))
+    else:
+        do_add_reaction(user_profile, message, emoji_name)
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
