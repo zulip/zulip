@@ -37,9 +37,9 @@ def is_active_subscriber(user_profile, recipient):
                                        recipient=recipient,
                                        active=True).exists()
 
-def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
-    """Converts plaintext stream names to a list of Streams, validating input in the process
+def list_to_streams(streams_raw, user_profile, autocreate=False):
+    # type: (Iterable[Mapping[str, Any]], UserProfile, Optional[bool]) -> Tuple[List[Stream], List[Stream]]
+    """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
     requirements for a proper stream name: that is, that it is shorter
@@ -49,13 +49,13 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
 
-    @param streams_raw The list of stream names to process
+    @param streams_raw The list of stream dictionaries to process
     @param user_profile The user for whom we are retreiving the streams
     @param autocreate Whether we should create streams if they don't already exist
-    @param invite_only Whether newly created streams should have the invite_only bit set
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.
-    stream_set = set(stream_name.strip() for stream_name in streams_raw)
+
+    stream_set = set(stream_dict["name"].strip() for stream_dict in streams_raw)
 
     for stream_name in stream_set:
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
@@ -65,12 +65,15 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
 
     existing_streams = [] # type: List[Stream]
     missing_stream_names = [] # type: List[text_type]
+    missing_stream_dicts = [] # type: List[Mapping[str, Any]]
 
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
-    for stream_name in stream_set:
+    for stream_dict in streams_raw:
+        stream_name = stream_dict["name"].strip()
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
+            missing_stream_dicts.append(stream_dict)
             missing_stream_names.append(stream_name)
         else:
             existing_streams.append(stream)
@@ -92,8 +95,8 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         # paranoid approach, since often on Zulip two people will discuss
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(realm=user_profile.realm,
-                                                                stream_names=missing_stream_names,
-                                                                invite_only=invite_only)
+                                                                stream_dicts=missing_stream_dicts)
+
         existing_streams += dup_streams
 
     return existing_streams, created_streams
@@ -241,7 +244,11 @@ def remove_subscriptions_backend(request, user_profile,
         # admin.
         return json_error(_("This action requires administrative rights"))
 
-    streams, __ = list_to_streams(streams_raw, user_profile)
+    streams_as_dict = []
+    for stream_name in streams_raw:
+        streams_as_dict.append({"name": stream_name})
+
+    streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     for stream in streams:
         if removing_someone_else and stream.invite_only and \
@@ -311,18 +318,18 @@ def add_subscriptions_backend(request, user_profile,
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
     # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, bool, Optional[List[text_type]], bool) -> HttpResponse
-    stream_names = []
-    for stream_dict in streams_raw:
-        stream_name = stream_dict["name"].strip()
-        if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            return json_error(_("Stream name (%s) too long.") % (stream_name,))
-        if not valid_stream_name(stream_name):
-            return json_error(_("Invalid stream name (%s).") % (stream_name,))
-        stream_names.append(stream_name)
 
-    # Enforcement of can_create_streams policy is inside list_to_streams.
+    # Enforcement of can_create_streams policy and valid_stream_name policy is inside list_to_streams.
+    stream_dicts = []
+    for streams_dict in streams_raw:
+        streams_dict_copy = {} # type: Dict[str, Any]
+        for field in streams_dict:
+            streams_dict_copy[field] = streams_dict[field]
+        streams_dict_copy["invite_only"] = invite_only
+        stream_dicts.append(streams_dict_copy)
+
     existing_streams, created_streams = \
-        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+        list_to_streams(stream_dicts, user_profile, autocreate=True)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:

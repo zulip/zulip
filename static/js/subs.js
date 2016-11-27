@@ -637,17 +637,18 @@ function hide_new_stream_modal() {
     $('#stream-creation').modal("hide");
 }
 
-function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
+function ajaxSubscribeForCreation(stream, description, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream}]),
+        data: {"subscriptions": JSON.stringify([{"name": stream, "description": description}]),
                "principals": JSON.stringify(principals),
                "invite_only": JSON.stringify(invite_only),
                "announce": JSON.stringify(announce)
         },
         success: function (data) {
             $("#create_stream_name").val("");
+            $("#create_stream_description").val("");
             $("#subscriptions-status").hide();
             hide_new_stream_modal();
             // The rest of the work is done via the subscribe event we will get
@@ -813,6 +814,7 @@ $(function () {
     $("#stream_creation_form").on("submit", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
+        var description = $.trim($("#create_stream_description").val());
         if (!$("#stream_name_error").is(":visible")) {
             var principals = _.map(
                 $("#stream_creation_form input:checkbox[name=user]:checked"),
@@ -823,6 +825,7 @@ $(function () {
             // You are always subscribed to streams you create.
             principals.push(page_params.email);
             ajaxSubscribeForCreation(stream,
+                description,
                 principals,
                 $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
                 $('#announce-new-stream input').prop('checked')
