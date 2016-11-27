@@ -19,10 +19,9 @@ from typing import Callable
 from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.event_queue import process_notification, missedmessage_hook
 from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook
-from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.queue import setup_tornado_rabbitmq
-from zerver.lib.socket import get_sockjs_router, respond_send_message
-from zerver.tornado.handlers import AsyncDjangoHandler
+from zerver.lib.socket import respond_send_message
+from zerver.tornado.application import create_tornado_application
 
 import logging
 import sys
@@ -58,7 +57,7 @@ class Command(BaseCommand):
         interactive_debug_listen()
 
         import django
-        from tornado import httpserver, web
+        from tornado import httpserver
 
         try:
             addr, port = addrport.split(':')
@@ -98,17 +97,8 @@ class Command(BaseCommand):
                 queue_client.register_json_consumer('tornado_return', respond_send_message)
 
             try:
-                urls = (r"/notify_tornado",
-                        r"/json/events",
-                        r"/api/v1/events",
-                        )
-
                 # Application is an instance of Django's standard wsgi handler.
-                application = web.Application([(url, AsyncDjangoHandler) for url in urls]
-                                              + get_sockjs_router().urls,
-                                                debug=django.conf.settings.DEBUG,
-                                              # Disable Tornado's own request logging, since we have our own
-                                              log_function=lambda x: None)
+                application = create_tornado_application()
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application,
