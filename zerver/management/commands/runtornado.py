@@ -5,12 +5,12 @@ from typing import Any, Callable
 
 from django.conf import settings
 settings.RUNNING_INSIDE_TORNADO = True
-# We must call zerver.lib.tornado_ioloop_logging.instrument_tornado_ioloop
+# We must call zerver.tornado.ioloop_logging.instrument_tornado_ioloop
 # before we import anything else from our project in order for our
 # Tornado load logging to work; otherwise we might accidentally import
 # zerver.lib.queue (which will instantiate the Tornado ioloop) before
 # this.
-from zerver.lib.tornado_ioloop_logging import instrument_tornado_ioloop
+from zerver.tornado.ioloop_logging import instrument_tornado_ioloop
 instrument_tornado_ioloop()
 
 from django.core.management.base import BaseCommand, CommandError, CommandParser
