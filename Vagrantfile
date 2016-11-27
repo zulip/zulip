@@ -7,6 +7,18 @@ def command?(name)
   $?.success?
 end
 
+if Vagrant::VERSION == "1.8.7" then
+    path = `which curl`
+    if path.include?('/opt/vagrant/embedded/bin/curl') then
+        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 1.8.6 "\
+             "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the "\
+             "issue before provisioning. See "\
+             "https://github.com/mitchellh/vagrant/issues/7997 "\
+             "for reference."
+        exit
+    end
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # For LXC. VirtualBox hosts use a different box, described below.
