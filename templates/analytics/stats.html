@@ -1,0 +1,13 @@
+<html lang="en">
+<head>
+    {{ minified_js('stats')|safe }}
+</head>
+<body>
+<select name="" id="interval">
+    <option value="daily">Daily</option>
+    <option value="weekly">Weekly</option>
+    <option value="monthly">Monthly</option>
+</select>
+<div id="plotDiv" style="width: 1200px; height: 600px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+</body>
+</html>

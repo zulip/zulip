@@ -8,6 +8,7 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     do_fill_count_stat_at_hour, ZerverCountQuery
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, get_fill_state, installation_epoch
+from zerver.lib.test_helpers import ZulipTestCase
 
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
     get_user_profile_by_email, get_client
@@ -17,7 +18,7 @@ from datetime import datetime, timedelta
 from typing import Any, Type, Optional
 from six import text_type
 
-class AnalyticsTestCase(TestCase):
+class AnalyticsTestCase(ZulipTestCase):
     MINUTE = timedelta(seconds = 60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
@@ -260,3 +261,35 @@ class TestCountStats(AnalyticsTestCase):
 
         self.assertCountEquals(RealmCount, 'test_active_humans', 1)
         self.assertCountEquals(RealmCount, 'test_active_bots', 2)
+
+class TestAnalyticsViews(AnalyticsTestCase):
+    def test_sent_messages_with_subgroup(self):
+        # type: () -> None
+        bot1 = self.create_user('email1-bot', is_bot=True)
+        bot2 = self.create_user('email2-bot', is_bot=True)
+        human1 = self.create_user('email3-human', is_bot=False)
+        human2 = self.create_user('email4-human', is_bot=False)
+
+        stat = COUNT_STATS['messages_sent:is_bot']
+        human_recipient = Recipient.objects.create(type_id=human2.id, type=Recipient.STREAM)
+        bot_recipient = Recipient.objects.create(type_id=bot2.id, type=Recipient.STREAM)
+
+        self.create_message(bot1, human_recipient)
+        self.create_message(human1, bot_recipient)
+        self.create_message(human1, human_recipient)
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        messages_from_humans = RealmCount.objects.filter(
+            realm=self.default_realm, property='messages_sent:is_bot', subgroup='false').values_list(
+            'value', flat=True)[0]
+        messages_from_bots = RealmCount.objects.filter(
+            realm=self.default_realm, property='messages_sent:is_bot', subgroup='true').values_list(
+            'value', flat=True)[0]
+
+        assert (messages_from_humans == 2)
+        assert (messages_from_bots == 1)
+
+        # Fetch data from endpoint
+        self.login("iago@zulip.com")
+        result = self.client.get("/json/get-messages-chart-data")
+        self.assert_json_success(result)

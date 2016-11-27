@@ -128,6 +128,9 @@ i18n_urls = [
                                          name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+
+    # Stats page
+    url(r'^stats$', 'analytics.views.get_stats'),
 ]
 
 # If a Terms of Service is supplied, add that route
@@ -277,6 +280,9 @@ v1_api_and_json_patterns = [
     url(r'^events$', rest_dispatch,
         {'GET': 'zerver.tornadoviews.get_events_backend',
          'DELETE': 'zerver.tornadoviews.cleanup_event_queue'}),
+    # get data for graphs
+    url(r'^get-messages-chart-data$', 'zerver.lib.rest.rest_dispatch',
+        {'GET': 'analytics.views.get_messages_chart_data'}),
 ]
 
 # Include the dual-use patterns twice
