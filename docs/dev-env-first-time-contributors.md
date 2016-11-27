@@ -191,6 +191,39 @@ winsymlinks:native
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
+##### Configure Git
+
+**Important:** You must configure Git to preserve Linux-style line endings otherwise you will not be able to setup the Zulip developer environment on Windows.
+
+In Cywin, run the following command to set `core.autocrlf` to `input`:
+
+```
+christie@win10 ~
+$ git config --global core.autocrlf input
+```
+
+You can check that the new setting has been applied with:
+
+```
+christie@win10 ~
+$ git config core.autocrlf
+input
+```
+
+This will tell Git to keep Linux-style line endings (LF) upon checkout and to
+convert and Windows-style line-endings (CRLF) upon commit. This setting is
+global. If you are working on other projects with Git, it will affect those
+projects too.
+
+If setting `core.autocrlf` to `input` will interfere with your work on other
+projects, you can specify that the setting only apply to Zulip by adding `-c
+core.autocrlf=input` to your `git clone` command:
+
+```
+christie@win10 ~
+$ git clone git@github.com:YOURUSERNAME/zulip.git -c core.autocrlf=input
+```
+
 ### Step 2: Get Zulip Code
 
 If you haven't already created an ssh key and added it to your GitHub account,
@@ -206,6 +239,10 @@ git clone git@github.com:YOURUSERNAME/zulip.git
 ```
 
 This will create a 'zulip' directory and download the Zulip code into it.
+
+**Note for contributors using Windows**: Make sure you've set `core.autocrlf`
+to `input` or else add `-c core.autocrlf=input` to your clone command above.
+See [Configure Git][self-configure-git] for details.
 
 Don't forget to replace YOURUSERNAME with your git username. You will see
 something like:
@@ -786,3 +823,41 @@ patching file bundler.rb
 #### Permissions errors when running the test suite in LXC
 
 See ["Possible testing issues"](testing.html#possible-testing-issues).
+
+#### Unable to execute ./scripts/lib/setup-apt-repo during provision
+
+If you see the following error while provisioning on Windows:
+
+```
+==> default: sudo: unable to execute ./scripts/lib/setup-apt-repo: No such file or directory
+==> default: + sudo ./scripts/lib/setup-apt-repo
+==> default: Traceback (most recent call last):
+==> default:   File "/srv/zulip/tools/provision.py", line 212, in <module>
+==> default:
+==> default: sys.exit(main())
+==> default:   File "/srv/zulip/tools/provision.py", line 127, in main
+==> default:
+==> default: run(["sudo", "./scripts/lib/setup-apt-repo"])
+==> default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 98, in run
+==> default:
+==> default: raise subprocess.CalledProcessError(rc, args) # type: ignore # https://github.com/python/typeshed/pull/329
+==> default: subprocess
+==> default: .
+==> default: CalledProcessError
+==> default: :
+==> default: Command '['sudo', './scripts/lib/setup-apt-repo']' returned non-zero exit status 1
+The SSH command responded with a non-zero exit status. Vagrant
+assumes that this means the command failed. The output for this command
+should be in the log above. Please read the output to determine what
+went wrong.
+```
+
+The most likely reason is that Windows line endings (CRLF) have been added to
+Zulip's files.
+
+If you haven't made any changes you need to keep, the easiest solution is to
+change `core.autocrlf` to `input`, delete the Zulip directory and re-clone.
+Make sure you halt your Vagrant machine with `vagrant halt` before deleting
+your Zulip directory. See [Configure Git][self-configure-git] for details.
+
+[self-configure-git]: dev-env-first-time-contributors.html#configure-git
