@@ -411,13 +411,16 @@ probably not because Zulip's master branch is broken.  Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environmnet.  To update your environment, you'll need to
-re-provision your vagrant machine using `vagrant provision`
-(or just `tools/provision.py` from `/srv/zulip` inside the Vagrant
-guest); this should be pretty fast and we're working to make it faster.
+re-provision your vagrant machine using `vagrant provision` (this just
+runs `tools/provision.py` from your Zulip checkout inside the Vagrant
+guest); this should complete in about a minute.
 
-See also the documentation on the [testing
-page](testing.html#manual-testing-local-app-web-browser) for how to destroy and
-rebuild your database if you want to clear out test data.
+After provisioning, you'll want to
+[(re)start the Zulip development server](#step-3-start-the-dev-environment).
+
+If you run into any trouble, the
+[provision stream on chat.zulip.org](https://chat.zulip.org/#narrow/stream/provision)
+is a great place to ask for help.
 
 #### Rebuilding the dev environment
 
