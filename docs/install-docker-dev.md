@@ -26,8 +26,11 @@ go to the directory with the Zulip source code:
 docker build -t user/zulipdev .
 ```
 
+
 Commit and tag the provisioned images. The below will install Zulip's dependencies:
 ```
+docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
+$ /usr/bin/python /srv/zulip/tools/provision.py --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 ```
@@ -45,6 +48,7 @@ to understand how to use the Zulip development.  Note that
 `start-dockers` automatically runs `tools/run-dev.py` inside the
 container; you can then visit http://localhost:9991 to connect to your
 new Zulip Docker container.
+
 
 To view the container's `run-dev.py` console logs to get important
 debugging information (and e.g. outgoing emails) printed by the Zulip
