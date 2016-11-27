@@ -13,10 +13,13 @@ instance).
 
 #### Hardware Specifications
 
-* CPU and Memory: For installations with 100+ users you'll need a minimum of
-  **2 CPUs** and **4GB RAM**. For installations with fewer users, 1 CPU and 2GB
-  RAM might be sufficient. We strong recommend against installing with less
-  than 2GB of RAM, as you will likely experience out of memory issues.
+* CPU and Memory: For installations with 100+ users you'll need a
+  minimum of **2 CPUs** and **4GB RAM**. For installations with fewer
+  users, 1 CPU and 2GB RAM is sufficient. We strong recommend against
+  installing with less than 2GB of RAM, as you will likely experience
+  out of memory issues installing dependencies.  We recommend against
+  using highly CPU-limited servers like the AWS `t2` style instances
+  for organizations with a hundreds of users (active or no).
 
 * Disk space: You'll need at least 10GB of free disk space. If you intend to
   store uploaded files locally rather than on S3 you will likely need more.
