@@ -42,7 +42,8 @@ def write_config(config, since_id):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@zulip.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --search="@nprnews,quantum physics"
+%prog --user foo@zulip.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+    --search="@nprnews,quantum physics"
 
 Send Twitter search results to a Zulip stream.
 
@@ -55,12 +56,13 @@ To use this script:
 2. Subscribe to the stream that will receive Twitter updates (default stream: twitter)
 3. Test the script by running it manually, like this:
 
-/usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics" --site=https://zulip.example.com
+/usr/local/share/zulip/integrations/twitter/twitter-search-bot \
+    --search="@nprnews,quantum physics" --site=https://zulip.example.com
 
 4. Configure a crontab entry for this script. A sample crontab entry
 that will process tweets every 5 minutes is:
 
-*/5 * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot --search="@nprnews,quantum physics" --site=https://zulip.example.com
+*/5 * * * * /usr/local/share/zulip/integrations/twitter/twitter-search-bot [options]
 
 == Setting up Twitter authentications ==
 
