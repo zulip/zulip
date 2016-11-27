@@ -38,6 +38,13 @@
               <span class="message_star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty empty-star{{/if}}"
                     title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}"></span>
             </div>
+            <div class="reaction">
+                 <span class="message-reaction">
+                 <p>
+                        <img alt=":simple_smile:" class="emoji" src="/static/third/gemoji/images/emoji/simple_smile.png" title=":simple_smile:">
+                 </p>
+                 </span>
+            </div>
             <span class="edit_content"></span>
             <div class="info actions_hover">
               <i class="icon-vector-chevron-down"></i>
@@ -49,7 +56,11 @@
             </div>
           </div>
         </div>
-        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}
+          <div class="reaction_content">
+            <span class="reaction_simple_smile"><img src="/static/third/gemoji/images/emoji/simple_smile.png"></span>
+          </div>
+        </div>
         {{#if last_edit_timestr}}
           {{#unless include_sender}}
             <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>

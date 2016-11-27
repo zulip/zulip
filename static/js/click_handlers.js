@@ -237,6 +237,23 @@ $(function () {
         e.preventDefault();
     });
 
+  // Reaction
+  function update_reaction(message_id) {
+    // Update the message object pointed to by the various message
+    // lists.
+    var message = ui.find_message(message_id);
+    var reaction_name = "simple_smile";
+    console.log("Message", message);
+    unread.mark_message_as_read(message);
+    ui.update_reaction(message.id, reaction_name);
+    reaction.send_reaction(message.id, reaction_name);
+  }
+
+  $("#main_div").on("click", ".reaction", function (e) {
+    e.stopPropagation();
+    popovers.hide_all();
+    update_reaction(rows.id($(this).closest(".message_row")));
+  });
     // MISC
 
     $('#streams_inline_cog').click(function (e) {
