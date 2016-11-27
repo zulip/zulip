@@ -64,7 +64,7 @@ from zerver.lib.validator import (
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
-from zerver.tornadoviews import get_events_backend
+from zerver.tornado.views import get_events_backend
 
 from collections import OrderedDict
 import mock

@@ -13,6 +13,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from django.contrib.auth.views import (login, password_reset,
     password_reset_done, password_reset_confirm, password_reset_complete)
 
+import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
 import zerver.views.zephyr
@@ -22,7 +23,6 @@ import zerver.views.integrations
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
-from zerver import tornadoviews
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -273,10 +273,10 @@ v1_api_and_json_patterns = [
     url(r'^register$', rest_dispatch,
         {'POST': 'zerver.views.events_register.api_events_register'}),
 
-    # events -> zerver.tornadoviews
+    # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,
-        {'GET': 'zerver.tornadoviews.get_events_backend',
-         'DELETE': 'zerver.tornadoviews.cleanup_event_queue'}),
+        {'GET': 'zerver.tornado.views.get_events_backend',
+         'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
 ]
 
 # Include the dual-use patterns twice
@@ -334,7 +334,7 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 # Tornado views
 urls += [
     # Used internally for communication between Django and Tornado processes
-    url(r'^notify_tornado$', tornadoviews.notify, name='zerver.tornadoviews.notify'),
+    url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
 ]
 
 # Python Social Auth

@@ -290,7 +290,7 @@ def build_custom_checkers(by_lang):
              # are already captured
              ('zerver/middleware.py',
               'return json_error(exception.to_json_error_msg(), status=status_code)'),
-             ('zerver/tornadoviews.py', 'return json_error(result["message"])'),
+             ('zerver/tornado/views.py', 'return json_error(result["message"])'),
              ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),

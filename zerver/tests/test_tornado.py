@@ -29,7 +29,7 @@ from tornado.web import Application
 from tornado.websocket import websocket_connect
 
 from zerver.tornado.application import create_tornado_application
-from zerver.tornadoviews import get_events_backend
+from zerver.tornado.views import get_events_backend
 
 from six.moves.http_cookies import SimpleCookie
 
