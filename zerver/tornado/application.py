@@ -3,8 +3,8 @@ from __future__ import print_function
 
 from django.conf import settings
 
-from zerver.lib.socket import get_sockjs_router
 from zerver.tornado.handlers import AsyncDjangoHandler
+from zerver.tornado.socket import get_sockjs_router
 
 import tornado.web
 

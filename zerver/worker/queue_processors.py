@@ -18,7 +18,7 @@ from zerver.lib.actions import do_send_confirmation_email, \
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
-from zerver.lib.socket import req_redis_key
+from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
 from django.core.mail import EmailMessage

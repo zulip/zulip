@@ -20,8 +20,8 @@ from zerver.lib.debug import interactive_debug_listen
 from zerver.lib.event_queue import process_notification, missedmessage_hook
 from zerver.lib.event_queue import setup_event_queue, add_client_gc_hook
 from zerver.lib.queue import setup_tornado_rabbitmq
-from zerver.lib.socket import respond_send_message
 from zerver.tornado.application import create_tornado_application
+from zerver.tornado.socket import respond_send_message
 
 import logging
 import sys
