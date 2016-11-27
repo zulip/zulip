@@ -18,9 +18,9 @@ from six.moves import urllib
 
 from zerver.decorator import RespondAsynchronously
 from zerver.lib.response import json_response
-from zerver.lib.event_queue import get_descriptor_by_handler_id, clear_handler_by_id
-from zerver.lib.handlers import allocate_handler_id
+from zerver.lib.handlers import allocate_handler_id, clear_handler_by_id
 from zerver.middleware import async_request_stop
+from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
 from typing import Any, Callable
 

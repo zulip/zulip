@@ -31,6 +31,7 @@ from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 import copy
 import six
 from six import text_type
@@ -217,20 +218,6 @@ class ClientDescriptor(object):
         self.finish_current_handler()
         do_gc_event_queues({self.event_queue.id}, {self.user_profile_id},
                            {self.realm_id})
-
-descriptors_by_handler_id = {} # type: Dict[int, ClientDescriptor]
-
-def get_descriptor_by_handler_id(handler_id):
-    # type: (int) -> ClientDescriptor
-    return descriptors_by_handler_id.get(handler_id)
-
-def set_descriptor_by_handler_id(handler_id, client_descriptor):
-    # type: (int, ClientDescriptor) -> None
-    descriptors_by_handler_id[handler_id] = client_descriptor
-
-def clear_descriptor_by_handler_id(handler_id, client_descriptor):
-    # type: (int, Optional[ClientDescriptor]) -> None
-    del descriptors_by_handler_id[handler_id]
 
 def compute_full_event_type(event):
     # type: (Mapping[str, Any]) -> str
