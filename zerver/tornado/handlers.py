@@ -37,7 +37,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Set up middleware if needed. We couldn't do this earlier, because
         # settings weren't available.
-        self._request_middleware = None # type: ignore # Should be List[Callable[[WSGIRequest], Any]] https://github.com/JukkaL/mypy/issues/1174
+        self._request_middleware = None  # type: ignore # Should be List[Callable[[WSGIRequest], Any]] https://github.com/JukkaL/mypy/issues/1174
         self.initLock.acquire()
         # Check that middleware is still uninitialised.
         if self._request_middleware is None:
@@ -50,14 +50,15 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     def __repr__(self):
         # type: () -> str
-        return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, get_descriptor_by_handler_id(self.handler_id))
+        descriptor = get_descriptor_by_handler_id(self.handler_id)
+        return "AsyncDjangoHandler<%s, %s>" % (self.handler_id, descriptor)
 
     def get(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        environ  = WSGIContainer.environ(self.request)
+        environ = WSGIContainer.environ(self.request)
         environ['PATH_INFO'] = urllib.parse.unquote(environ['PATH_INFO'])
-        request  = WSGIRequest(environ)
-        request._tornado_handler     = self
+        request = WSGIRequest(environ)
+        request._tornado_handler = self
 
         set_script_prefix(get_script_name(environ))
         signals.request_started.send(sender=self.__class__)
@@ -74,12 +75,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             self.set_header(h[0], h[1])
 
         if not hasattr(self, "_new_cookies"):
-            self._new_cookies = [] # type: List[http.cookie.SimpleCookie]
+            self._new_cookies = []  # type: List[http.cookie.SimpleCookie]
         self._new_cookies.append(response.cookies)
 
         self.write(response.content)
         self.finish()
-
 
     def head(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
@@ -129,12 +129,13 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 ### END ADDED BY ZULIP
 
                 callback, callback_args, callback_kwargs = resolver.resolve(
-                        request.path_info)
+                    request.path_info)
 
                 # Apply view middleware
                 if response is None:
                     for middleware_method in self._view_middleware:
-                        response = middleware_method(request, callback, callback_args, callback_kwargs)
+                        response = middleware_method(request, callback, callback_args,
+                                                     callback_kwargs)
                         if response:
                             break
 
@@ -184,9 +185,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         response = callback(request, **param_dict)
                     except:
                         try:
-                            response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
+                            response = self.handle_uncaught_exception(request, resolver,
+                                                                      sys.exc_info())
                         finally:
-                            signals.got_request_exception.send(sender=self.__class__, request=request)
+                            signals.got_request_exception.send(sender=self.__class__,
+                                                               request=request)
             except exceptions.PermissionDenied:
                 logging.warning(
                     'Forbidden (Permission denied): %s', request.path,
@@ -200,7 +203,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 except:
                     try:
                         response = self.handle_uncaught_exception(request,
-                            resolver, sys.exc_info())
+                                                                  resolver, sys.exc_info())
                     finally:
                         signals.got_request_exception.send(
                             sender=self.__class__, request=request)
@@ -231,7 +234,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 response = middleware_method(request, response)
             if hasattr(self, 'apply_response_fixes'):
                 response = self.apply_response_fixes(request, response)
-        except: # Any exception should be gathered and handled
+        except:  # Any exception should be gathered and handled
             signals.got_request_exception.send(sender=self.__class__, request=request)
             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
 
