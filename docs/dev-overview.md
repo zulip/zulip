@@ -84,6 +84,6 @@ at our tips for [developing remotely][dev-remote].
 [install-vagrant]: dev-env-first-time-contributors.html
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
-[configure-proxy]: brief-install-vagrant-dev.html#specifying-a-proxy
+[configure-proxy]: dev-env-first-time-contributors.html#specifying-a-proxy
 [using-dev-env]: using-dev-environment.html
 [testing]: testing.html

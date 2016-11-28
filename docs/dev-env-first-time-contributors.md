@@ -16,6 +16,7 @@ Contents:
 * [Step 3: Start the dev environment](#step-3-start-the-dev-environment)
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
+* [Specifying a proxy](#specifying-a-proxy)
 
 **If you encounter errors installing the Zulip development environment,** check
 [Troubleshooting & Common Errors](#troubleshooting-common-errors). If that
@@ -37,10 +38,8 @@ When reporting your issue, please include the following information:
 
 Installing the Zulip dev environment requires downloading several
 hundred megabytes of dependencies. You will need an active internet
-connection throughout the entire installation processes. (See
-[Specifying a
-proxy](brief-install-vagrant-dev.html#specifying-a-proxy) if you need
-a proxy to access the internet.)
+connection throughout the entire installation processes. (See [Specifying a
+proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 
 - **All**: 2GB available RAM, Active broadband internet connection.
@@ -251,12 +250,11 @@ does the following:
   downloads all required dependencies, sets up the python environment for
   the Zulip dev environment, and initializes a default test database.
 
-You will need an active internet connection during the entire
-processes. (See [Specifying a
-proxy](brief-install-vagrant-dev.html#specifying-a-proxy) if you need
-a proxy to access the internet.) And if you're running into any
-problems, please come chat with us [in the `provision` stream of our
-developers' chat](https://chat.zulip.org/#narrow/stream/provision).
+You will need an active internet connection during the entire processes. (See
+[Specifying a proxy](#specifying-a-proxy) if you need a proxy to access the
+internet.) And if you're running into any problems, please come chat with us
+[in the `provision` stream of our developers'
+chat](https://chat.zulip.org/#narrow/stream/provision).
 
 Once `vagrant up` has completed, connect to the dev environment with `vagrant
 ssh`:
@@ -665,10 +663,10 @@ that failed.  Once you've resolved the problem, you can rerun
 `tools/provision.py` to proceed; the provisioning system is designed
 to recover well from failures.
 
-The zulip provisioning system is generally highly reliable; the most
-common cause of issues here is a poor network connection (or one where
-you need a proxy to access the Internet and haven't
-[configured the development environment to use it](brief-install-vagrant-dev.html#specifying-a-proxy).
+The zulip provisioning system is generally highly reliable; the most common
+cause of issues here is a poor network connection (or one where you need a
+proxy to access the Internet and haven't [configured the development
+environment to use it](#specifying-a-proxy).
 
 Once you've provisioned successfully, you'll get output like this:
 ```
@@ -786,3 +784,36 @@ patching file bundler.rb
 #### Permissions errors when running the test suite in LXC
 
 See ["Possible testing issues"](testing.html#possible-testing-issues).
+
+### Specifying a proxy
+
+If you need to use a proxy server to access the Internet, you will
+need to specify the proxy settings before running `Vagrant up`.
+First, install the Vagrant plugin `vagrant-proxyconf`:
+
+```
+vagrant plugin install vagrant-proxyconf.
+```
+
+Then create `~/.zulip-vagrant-config` and add the following lines to
+it (with the appropriate values in it for your proxy):
+
+```
+HTTP_PROXY http://proxy_host:port
+HTTPS_PROXY http://proxy_host:port
+NO_PROXY localhost,127.0.0.1,.example.com
+```
+
+Now run `vagrant up` in your terminal to install the development
+server. If you ran `vagrant up` before and failed, you'll need to run
+`vagrant destroy` first to clean up the failed installation.
+
+You can also change the port on the host machine that Vagrant uses by
+adding to your `~/.zulip-vagrant-config` file.  E.g. if you set:
+
+```
+HOST_PORT 9971
+```
+
+(and halt and restart the Vagrant guest), then you would visit
+http://localhost:9971/ to connect to your development server.
