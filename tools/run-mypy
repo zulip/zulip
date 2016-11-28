@@ -42,7 +42,6 @@ bots/githook-post-receive
 bots/jabber_mirror_backend.py
 bots/zephyr_mirror_backend.py
 puppet/zulip_ops
-tools/deprecated/generate-activity-metrics.py
 tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
 zproject/test_settings.py
