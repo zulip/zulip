@@ -267,12 +267,14 @@ virtualenvs - /srv/zulip-venv and /srv/zulip-py3-venv.
 If you want to do it manually, here are the steps:
 
 ```
-virtualenv /srv/zulip-venv -p python2 # Create a python2 virtualenv
+sudo virtualenv /srv/zulip-venv -p python2 # Create a python2 virtualenv
+sudo chown -R `whoami`:`whoami` /srv/zulip-venv
 source /srv/zulip-venv/bin/activate # Activate python2 virtualenv
 pip install --upgrade pip # upgrade pip itself because older versions have known issues
 pip install --no-deps -r requirements/py2_dev.txt # install python packages required for development
 
-virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
+sudo virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
+sudo chown -R `whoami`:`whoami` /srv/zulip-py3-venv
 source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
 pip install --upgrade pip # upgrade pip itself because older versions have known issues
 pip install --no-deps -r requirements/py3_dev.txt # install python packages required for development
