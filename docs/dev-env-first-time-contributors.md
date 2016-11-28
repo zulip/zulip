@@ -50,10 +50,8 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
   virtualization enabled (VT-X or AMD-V), administrator access,
   [Cygwin][cygwin-dl], [VirtualBox][vbox-dl], [Vagrant][vagrant-dl].
 
-Don't see your system listed above? Check out:
-* [Brief installation instructions for Vagrant development
-  environment](brief-install-vagrant-dev.html)
-* [Installing manually on UNIX-based platforms](install-generic-unix-dev.html)
+Don't see your system listed above? See [Advanced setup][install-advanced] for
+details about installing for other Linux and UNIX platforms.
 
 [cygwin-dl]: http://cygwin.com/
 
@@ -817,3 +815,5 @@ HOST_PORT 9971
 
 (and halt and restart the Vagrant guest), then you would visit
 http://localhost:9971/ to connect to your development server.
+
+[]
