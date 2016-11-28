@@ -82,10 +82,10 @@ def update_user_activity(request, user_profile):
     else:
         query = request.META['PATH_INFO']
 
-    event={'query': query,
-           'user_profile_id': user_profile.id,
-           'time': datetime_to_timestamp(now()),
-           'client': request.client.name}
+    event = {'query': query,
+             'user_profile_id': user_profile.id,
+             'time': datetime_to_timestamp(now()),
+             'client': request.client.name}
     queue_json_publish("user_activity", event, lambda event: None)
 
 # Based on django.views.decorators.http.require_http_methods

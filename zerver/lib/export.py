@@ -223,7 +223,7 @@ class Config(object):
         self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
-        self.source_filter= source_filter
+        self.source_filter = source_filter
         self.children = [] # type: List[Config]
 
         if normal_parent:
@@ -556,7 +556,7 @@ def fetch_user_profile(response, config, context):
     exportable_user_ids = context['exportable_user_ids']
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude=['password', 'api_key']
+    exclude = ['password', 'api_key']
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows = [] # type: List[Record]
@@ -1005,7 +1005,7 @@ def do_write_stats_file_for_realm_export(output_dir):
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
         for fn in fns:
-            f.write(os.path.basename(fn) +'\n')
+            f.write(os.path.basename(fn) + '\n')
             payload = open(fn).read()
             data = ujson.loads(payload)
             for k in sorted(data):

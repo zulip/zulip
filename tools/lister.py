@@ -109,7 +109,7 @@ def list_files(targets=[], ftypes=[], use_shebang=True, modified_only=False,
     else:
         return result_list
 
-if __name__=="__main__":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="List files tracked by git and optionally filter by type")
     parser.add_argument('targets', nargs='*', default=[],
                         help='''files and directories to include in the result.

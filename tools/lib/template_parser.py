@@ -238,7 +238,7 @@ def is_django_block_tag(tag):
 def get_handlebars_tag(text, i):
     # type: (str, int) -> str
     end = i + 2
-    while end < len(text) -1 and text[end] != '}':
+    while end < len(text) - 1 and text[end] != '}':
         end += 1
     if text[end] != '}' or text[end+1] != '}':
         raise TemplateParserException('Tag missing }}')
@@ -248,7 +248,7 @@ def get_handlebars_tag(text, i):
 def get_django_tag(text, i):
     # type: (str, int) -> str
     end = i + 2
-    while end < len(text) -1 and text[end] != '%':
+    while end < len(text) - 1 and text[end] != '%':
         end += 1
     if text[end] != '%' or text[end+1] != '}':
         raise TemplateParserException('Tag missing %}')

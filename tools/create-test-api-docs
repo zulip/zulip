@@ -140,7 +140,7 @@ def create_user_docs():
         groups['other'] = patterns
 
         for name in ['api', 'legacy', 'webhooks', 'other']:
-            f.write(name +' endpoints:\n\n')
+            f.write(name + ' endpoints:\n\n')
             f.write('<ul>\n')
             for pattern in sorted(groups[name]):
                 href = pattern.replace('/', '-') + '.html'

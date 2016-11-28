@@ -152,7 +152,7 @@ def html_tag_tree(text):
         # Add tokens to the Node tree first (conditionally).
         if token.kind in ('html_start', 'html_singleton'):
             parent = stack[-1]
-            node= Node(token=token, parent=parent)
+            node = Node(token=token, parent=parent)
             parent.children.append(node)
 
         # Then update the stack to have the next node that
