@@ -1,26 +1,31 @@
-# Development on a Remote Machine
+# Developing on a remote machine
 
-Zulip can be developed on a remote machine.
-We recommend doing this if you are running Windows or have other
-blockers stopping you from [developing locally](dev-overview.html).
+The Zulip developer environment works well on remote virtual machines. This can
+be a good alternative for those with poor network connectivity or who have
+limited storage/memory on their local machines.
 
-We recommend a remote Ubuntu machine for ease of development.
+We recommend giving Zulip dev its own virtual machine, running Ubuntu 14.04 or
+16.04, with at least 2GB of memory. If Zulip dev will be the only thing running
+on the remote virtual machine, we recommend installing
+[directly][install-direct]. Otherwise, we recommend the
+[Vagrant][install-vagrant] method so you can easily uninstall if you need to.
 
-## Connecting to the Remote Environment
+## Connecting to the remote environment
 
 Set up your remote server and connect to it using SSH or Mosh.
-We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow network connections.
+We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow
+network connections.
 
-## Setting Up the Development Environment
+## Setting up the development environment
 
-After you have connected to your remote server,
-you need to install the development environment.
-Follow the platform specific instructions for your specific remote instance:
+After you have connected to your remote server, you need to install the
+development environment.
 
-* [Ubuntu Installation][install-direct] - this installs the Zulip development environment directly on your remote server.
-* [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html) - this installs the development environment in a self-contained environment that is easy to remove later.
+If Zulip dev will be the only thing running on the remote virtual machine, we
+recommend installing [directly][install-direct]. Otherwise, we recommend the
+[Vagrant][install-vagrant] method so you can easily uninstall if you need to.
 
-## Running the Development Server
+## Running the development server
 
 Once you have set up the development environment, you can start up the development instance of zulip with the command
 
@@ -36,14 +41,14 @@ This will start up zulip on port 9991. You can then navigate to http://<REMOTE_I
 You can [port forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding)
 using ssh instead of running the dev env on an exposed interface.
 
-For more information, see [Using the Development Environment](using-dev-environment.html).
+For more information, see [Using the development environment](using-dev-environment.html).
 
-## Editing Code on the Remote Machine
+## Editing code on the remote machine
 
 You will need to either edit code locally on your computer and sync it to the remote
 development environment or just edit the zulip code base on the remote host.
 
-#### Editing Locally
+#### Editing locally
 
 If you want to edit code locally you can install your favorite text editor:
 * [atom](https://atom.io/)
@@ -60,7 +65,7 @@ Once you have your code locally you will need to sync your changes to your devel
 * [Unison](https://github.com/bcpierce00/unison) Recommended
 * [Rsync](https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-on-a-vps)
 
-#### Editing Remotely
+#### Editing remotely
 
 You will need to use a text editor on the remote machine:
 * [emacs](https://www.gnu.org/software/emacs/)
@@ -71,10 +76,12 @@ Once you install an editor
 [setup an ssh key](https://help.github.com/articles/generating-an-ssh-key/)
 on your host and [clone](git-guide.html) the zulip repository.
 
-#### Next Steps
+#### Next steps
 
 At this point you should
 [read about developing](dev-env-first-time-contributors.html#step-4-developing)
 and [read about using the development environment](using-dev-environment.html).
 
 [install-direct]: dev-setup-non-vagrant.html#installing-directly-on-ubuntu
+[install-generic]: dev-setup-non-vagrant.html#installing-manually-on-linux
+[install-vagrant]: dev-env-first-time-contributors.html
