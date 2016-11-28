@@ -1,5 +1,5 @@
-TIME_ZONE="America/New_York"
-ALLOWED_HOSTS=['graphite.humbughq.com', 'graphite.zulip.net', 'stats1.zulip.net']
+TIME_ZONE = "America/New_York"
+ALLOWED_HOSTS = ['graphite.humbughq.com', 'graphite.zulip.net', 'stats1.zulip.net']
 
 DATABASES = {
     'default': {

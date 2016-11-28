@@ -102,7 +102,7 @@ def act_on_message_ranges(db, orm, tasks, batch_size=5000, sleep=0.5):
 
     max_id = all_objects.all().order_by('-id')[0].id
     print("max_id = %d" % (max_id,))
-    overhead = int((max_id + 1 - min_id)/ batch_size * sleep / 60)
+    overhead = int((max_id + 1 - min_id) / batch_size * sleep / 60)
     print("Expect this to take at least %d minutes, just due to sleeps alone." % (overhead,))
 
     while min_id <= max_id:

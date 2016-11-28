@@ -84,7 +84,7 @@ def check_permissions():
 def build_message(event):
     if not ('bucket' in event and 'creator' in event and 'html_url' in event):
         logging.error("Perhaps the Basecamp API changed behavior? "
-                      "This event doesn't have the expected format:\n%s" %(event,))
+                      "This event doesn't have the expected format:\n%s" % (event,))
         return None
     # adjust the topic length to be bounded to 60 characters
     topic = event['bucket']['name']
