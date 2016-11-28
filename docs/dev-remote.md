@@ -17,9 +17,8 @@ After you have connected to your remote server,
 you need to install the development environment.
 Follow the platform specific instructions for your specific remote instance:
 
-* [Ubuntu Installation](install-ubuntu-without-vagrant-dev.html) - this installs the Zulip development environment directly on your remote server.
+* [Ubuntu Installation][install-direct] - this installs the Zulip development environment directly on your remote server.
 * [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html) - this installs the development environment in a self-contained environment that is easy to remove later.
-* [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html) - a shorter guide for the previous option.
 
 ## Running the Development Server
 
@@ -77,3 +76,5 @@ on your host and [clone](git-guide.html) the zulip repository.
 At this point you should
 [read about developing](dev-env-first-time-contributors.html#step-4-developing)
 and [read about using the development environment](using-dev-environment.html).
+
+[install-direct]: dev-setup-non-vagrant.html#installing-directly-on-ubuntu

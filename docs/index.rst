@@ -62,14 +62,11 @@ Contents:
    :maxdepth: 2
    :caption: Installation for developers
 
-   dev-overview
-   dev-env-first-time-contributors
-   brief-install-vagrant-dev
-   install-ubuntu-without-vagrant-dev
-   install-generic-unix-dev
-   install-docker-dev
-   dev-remote
-   using-dev-environment
+   Overview <dev-overview>
+   Recommended setup (Vagrant) <dev-env-first-time-contributors>
+   Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
+   Using the dev environment <using-dev-environment>
+   Developing remotely <dev-remote>
 
 .. _tutorial-docs:
 
