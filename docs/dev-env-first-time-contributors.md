@@ -158,13 +158,57 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
 If you do, make sure to **install default required packages** along with
-**git**, **curl**, **openssh**, and **rsync** binaries. You might also need to
-[enable native symlinks][self-win-symlinks].)
+**git**, **curl**, **openssh**, and **rsync** binaries.)
 
 After installing, you must run **Git BASH as an administrator**.
 
 Also, you must have hardware virtualization enabled (VT-X or AMD-V) in your
 computer's BIOS.
+
+##### Enable native symlinks
+
+The Zulip code includes symbolic links (symlinks). By default, native Windows
+symlinks are not enabled in either Git BASH or Cygwin, so you need to do a bit
+of configuration. **You must do this before you clone the Zulip code.**
+
+In **Git for BASH**:
+
+Open **Git BASH as an administrator** and run:
+
+```
+$ git config --global core.symlinks true
+```
+
+Now confirm the setting:
+
+```
+$ git config core.symlinks
+true
+```
+
+If you see `true`, you are ready for [Step 2: Get Zulip
+Code.](#step-2-get-zulip-code)
+
+Otherwise, if the above command prints `false` or nothing at all, then symlinks
+have not been enabled.
+
+In **Cygwin**:
+
+Open a Cygwin window **as an administrator** and do this:
+
+```
+christie@win10 ~
+$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
+```
+
+Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
+should see:
+
+```
+christie@win10 ~
+$ echo $CYGWIN
+winsymlinks:native
+```
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
@@ -553,30 +597,6 @@ $ cp /usr/bin/curl.exe /cygdrive/c/HashiCorp/Vagrant/embedded/bin/
 Now re-run `vagrant up` and vagrant should be able to fetch the required
 box file.
 
-#### Enable native symlinks on Windows/Cywin
-
-In order for symlinks to work within the Ubuntu virtual machine, you must tell
-Cygwin to create them as [native Windows
-symlinks](https://cygwin.com/cygwin-ug-net/using.html#pathnames-symlinks). The
-easiest way to do this is to add a line to `~/.bash_profile` setting the CYGWIN
-environment variable.
-
-Open a Cygwin window **as an administrator** and do this:
-
-```
-christie@win10 ~
-$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
-```
-
-Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
-should see:
-
-```
-christie@win10 ~
-$ echo $CYGWIN
-winsymlinks:native
-```
-
 #### os.symlink error
 
 If you receive the following error while running `vagrant up`:
@@ -860,4 +880,3 @@ http://localhost:9971/ to connect to your development server.
 [rtd-using-dev-env]: using-dev-environment.html
 [rtd-dev-remote]: dev-remote.html
 [git-bash]: https://git-for-windows.github.io/
-[self-win-symlinks]: #enable-native-symlinks-on-windows-cywin
