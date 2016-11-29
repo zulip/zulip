@@ -36,7 +36,6 @@ api/integrations/rss/rss-bot
 api/integrations/svn/post-commit
 api/integrations/twitter/twitter-bot
 api/integrations/twitter/twitter-search-bot
-api/zulip/__init__.py
 bots/gcal-bot
 bots/githook-post-receive
 bots/jabber_mirror_backend.py
