@@ -541,8 +541,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # type: () -> None
         self.login("hamlet@zulip.com")
         user = get_user_profile_by_email('hamlet@zulip.com')
-        user.invites_granted=1
-        user.invites_used=0
+        user.invites_granted = 1
+        user.invites_used = 0
         user.save()
 
         invitee = "alice-test@zulip.com"

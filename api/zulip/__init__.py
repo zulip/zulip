@@ -230,28 +230,28 @@ class Client(object):
         self.client_name = client
 
         if insecure:
-            self.tls_verification=False
+            self.tls_verification = False
         elif cert_bundle is not None:
             if not os.path.isfile(cert_bundle):
                 raise RuntimeError("tls bundle '%s' does not exist"
-                                   %(cert_bundle,))
-            self.tls_verification=cert_bundle
+                                   % (cert_bundle,))
+            self.tls_verification = cert_bundle
         else:
             # Default behavior: verify against system CA certificates
-            self.tls_verification=True
+            self.tls_verification = True
 
         if client_cert is None:
             if client_cert_key is not None:
                 raise RuntimeError("client cert key '%s' specified, but no client cert public part provided"
-                                   %(client_cert_key,))
+                                   % (client_cert_key,))
         else: # we have a client cert
             if not os.path.isfile(client_cert):
                 raise RuntimeError("client cert '%s' does not exist"
-                                   %(client_cert,))
+                                   % (client_cert,))
             if client_cert_key is not None:
                 if not os.path.isfile(client_cert_key):
                     raise RuntimeError("client cert key '%s' does not exist"
-                                       %(client_cert_key,))
+                                       % (client_cert_key,))
         self.client_cert = client_cert
         self.client_cert_key = client_cert_key
 
@@ -398,6 +398,7 @@ class Client(object):
                 if request is None:
                     request = {}
                 return request
+
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
             if computed_url is not None:
@@ -411,6 +412,7 @@ class Client(object):
     def call_on_each_event(self, callback, event_types=None, narrow=None):
         if narrow is None:
             narrow = []
+
         def do_register():
             while True:
                 if event_types is None:

@@ -264,6 +264,7 @@ class RateLimitTestCase(TestCase):
     def test_internal_local_clients_skip_rate_limiting(self):
         class Client(object):
             name = 'internal'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '127.0.0.1'}
@@ -285,6 +286,7 @@ class RateLimitTestCase(TestCase):
     def test_debug_clients_skip_rate_limiting(self):
         class Client(object):
             name = 'internal'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
@@ -307,6 +309,7 @@ class RateLimitTestCase(TestCase):
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self):
         class Client(object):
             name = 'external'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
@@ -329,6 +332,7 @@ class RateLimitTestCase(TestCase):
     def test_rate_limiting_happens_in_normal_case(self):
         class Client(object):
             name = 'external'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}

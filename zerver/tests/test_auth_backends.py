@@ -363,7 +363,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zerver.views.auth.login'):
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             result = self.backend.do_auth(response=response)
             self.assertNotIn('subdomain=1', result.url)
 
@@ -372,7 +372,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-                response=dict(email=self.email, name=self.name)
+                response = dict(email=self.email, name=self.name)
                 result = self.backend.do_auth(response=response)
                 self.assertIn('subdomain=1', result.url)
 
@@ -381,7 +381,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             self.backend.do_auth('fake-access-token', response=response)
 
             kwargs = {'realm_subdomain': 'acme',
@@ -394,7 +394,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
 
@@ -409,7 +409,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
                 self.backend.do_auth('fake-access-token', response=response)
                 kwargs = {'realm_subdomain': 'acme',
@@ -422,7 +422,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
 
@@ -437,7 +437,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
                 self.backend.do_auth('fake-access-token', response=response)
                 kwargs = {'realm_subdomain': 'acme',
@@ -449,7 +449,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         with mock.patch('zproject.backends.get_user_profile_by_email',
                         side_effect=UserProfile.DoesNotExist("Do not exist")):
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             return_data = dict() # type: Dict[str, Any]
             user = self.backend.authenticate(return_data=return_data, response=response)
             self.assertIs(user, None)
@@ -466,7 +466,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with mock.patch('zerver.views.auth.login_or_register_remote_user') as result, \
                 mock.patch('social.backends.github.GithubOAuth2.do_auth',
                            side_effect=do_auth_inactive):
-            response=dict(email=self.email, name=self.name)
+            response = dict(email=self.email, name=self.name)
             user = self.backend.do_auth(response=response)
             result.assert_not_called()
             self.assertIs(user, None)
@@ -487,7 +487,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=do_auth):
-            response=dict(email='nonexisting@phantom.com', name='Ghost')
+            response = dict(email='nonexisting@phantom.com', name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
             self.assert_in_response('Your email address does not correspond to any '
@@ -1089,6 +1089,7 @@ class TestJWTLogin(ZulipTestCase):
     """
     JWT uses ZulipDummyBackend.
     """
+
     def test_login_success(self):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}

@@ -181,6 +181,7 @@ class ClientDescriptor(object):
         self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
         self.last_connection_time = time.time()
+
         def timeout_callback():
             # type: () -> None
             self._timeout_handle = None

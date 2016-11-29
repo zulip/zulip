@@ -173,6 +173,7 @@ class GitlabHookTests(WebhookTestCase):
             expected_message,
             HTTP_X_GITLAB_EVENT="Merge Request Hook"
         )
+
     def test_merge_request_created_with_assignee_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / MR #3 New Merge Request"

@@ -544,7 +544,7 @@ def do_set_realm_default_language(realm, default_language):
         # NB: remove this once we upgrade to Django 1.9
         # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
         # Django 1.9
-        default_language= 'zh_HANS'
+        default_language = 'zh_HANS'
 
     realm.default_language = default_language
     realm.save(update_fields=['default_language'])
@@ -2441,18 +2441,18 @@ def do_update_user_presence(user_profile, client, log_time, status):
 
 def update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
-    event={'user_profile_id': user_profile.id,
-           'time': datetime_to_timestamp(log_time)}
+    event = {'user_profile_id': user_profile.id,
+             'time': datetime_to_timestamp(log_time)}
     queue_json_publish("user_activity_interval", event,
                        lambda e: do_update_user_activity_interval(user_profile, log_time))
 
 def update_user_presence(user_profile, client, log_time, status,
                          new_user_input):
     # type: (UserProfile, Client, datetime.datetime, int, bool) -> None
-    event={'user_profile_id': user_profile.id,
-           'status': status,
-           'time': datetime_to_timestamp(log_time),
-           'client': client.name}
+    event = {'user_profile_id': user_profile.id,
+             'status': status,
+             'time': datetime_to_timestamp(log_time),
+             'client': client.name}
 
     queue_json_publish("user_presence", event,
                        lambda e: do_update_user_presence(user_profile, client,
@@ -3302,7 +3302,7 @@ def handle_push_notification(user_profile_id, missed_message):
                 send_android_push_notification(user_profile, android_data)
 
     except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" %(missed_message['message_id'],))
+        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
 
 def is_inactive(email):
     # type: (text_type) -> None

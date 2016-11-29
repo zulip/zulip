@@ -259,7 +259,7 @@ def get_tweet_id(url):
     to_match = parsed_url.path
     # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
     if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
-        to_match= parsed_url.fragment
+        to_match = parsed_url.fragment
 
     tweet_id_match = re.match(r'^!?/.*?/status(es)?/(?P<tweetid>\d{10,18})(/photo/[0-9])?/?$', to_match)
     if not tweet_id_match:
@@ -659,6 +659,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
     """
     A pattern that allows including in-app modal links in messages.
     """
+
     def handleMatch(self, match):
         # type: (Match[text_type]) -> Element
         relative_url = match.group('relative_url')
@@ -824,6 +825,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
+
     def handleMatch(self, m):
         # type: (Match[text_type]) -> Optional[Element]
         href = m.group(9)
@@ -853,6 +855,7 @@ def prepare_realm_pattern(source):
 # using the provided format string to construct the URL.
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
+
     def __init__(self, source_pattern, format_string, markdown_instance=None):
         # type: (text_type, text_type, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)

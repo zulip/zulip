@@ -419,7 +419,7 @@ class BugdownTest(TestCase):
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
         converted = bugdown.convert(":test:", "zulip.com", msg)
-        self.assertEqual(converted, '<p>%s</p>' %(emoji_img(':test:', url)))
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', url)))
 
         do_remove_realm_emoji(zulip_realm, 'test')
         converted = bugdown.convert(":test:", "zulip.com", msg)

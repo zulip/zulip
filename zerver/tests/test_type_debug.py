@@ -24,6 +24,7 @@ class TypesPrintTest(TestCase):
     def _pre_setup(self):
         # type: () -> None
         pass
+
     def _post_teardown(self):
         # type: () -> None
         pass
@@ -91,6 +92,7 @@ class TypesPrintTest(TestCase):
     def test_class(self):
         # type: () -> None
         class A(object): pass
+
         class B(str): pass
         self.check_signature("<lambda>(A) -> str", 'A', (lambda x: x.__class__.__name__), A())
         self.check_signature("<lambda>(B) -> int", 5, (lambda x: len(x)), B("hello"))
@@ -98,6 +100,7 @@ class TypesPrintTest(TestCase):
     def test_sequence(self):
         # type: () -> None
         class A(list): pass
+
         class B(list): pass
         self.check_signature("add(A([]), B([str])) -> [str]",
                              ['two'], add, A([]), B(['two']))
@@ -109,6 +112,7 @@ class TypesPrintTest(TestCase):
     def test_mapping(self):
         # type: () -> None
         class A(dict): pass
+
         def to_A(l=[]):
             # type: (Iterable[Tuple[Any, Any]]) -> A
             return A(l)
