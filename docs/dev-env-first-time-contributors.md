@@ -1,9 +1,9 @@
 ## Vagrant environment setup tutorial
 
-This section guides first-time contributors through installing the Zulip dev
-environment on Windows, macOS, and Ubuntu.
+This section guides first-time contributors through installing the
+Zulip development environment on Windows, macOS, and Ubuntu.
 
-The recommended method for installing the Zulip dev environment is to use
+The recommended method for installing the Zulip development environment is to use
 Vagrant with VirtualBox on Windows and macOS, and Vagrant with LXC on
 Ubuntu. This method creates a virtual machine (for Windows and macOS)
 or a Linux container (for Ubuntu) inside which the Zulip server and
@@ -13,7 +13,7 @@ Contents:
 * [Requirements](#requirements)
 * [Step 1: Install Prerequisites](#step-1-install-prerequisites)
 * [Step 2: Get Zulip code](#step-2-get-zulip-code)
-* [Step 3: Start the dev environment](#step-3-start-the-dev-environment)
+* [Step 3: Start the development environment](#step-3-start-the-development-environment)
 * [Step 4: Developing](#step-4-developing)
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 * [Specifying a proxy](#specifying-a-proxy)
@@ -36,7 +36,7 @@ When reporting your issue, please include the following information:
 
 ### Requirements
 
-Installing the Zulip dev environment requires downloading several
+Installing the Zulip development environment requires downloading several
 hundred megabytes of dependencies. You will need an active internet
 connection throughout the entire installation processes. (See [Specifying a
 proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
@@ -244,13 +244,13 @@ Checking connectivity... done.
 Checking out files: 100% (1912/1912), done.`
 ```
 
-Now you are ready for [Step 3: Start the dev
-environment.](#step-3-start-the-dev-environment)
+Now you are ready for [Step 3: Start the development
+environment.](#step-3-start-the-development-environment)
 
-### Step 3: Start the dev environment
+### Step 3: Start the development environment
 
 Change into the zulip directory and tell vagrant to start the Zulip
-dev environment with `vagrant up`.
+development environment with `vagrant up`.
 
 ```
 christie@win10 ~
@@ -270,7 +270,7 @@ does the following:
   virtual machine/container at `~/zulip`
 - runs the `tools/provision.py` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
-  the Zulip dev environment, and initializes a default test database.
+  the Zulip development server, and initializes a default test database.
 
 You will need an active internet connection during the entire processes. (See
 [Specifying a proxy](#specifying-a-proxy) if you need a proxy to access the
@@ -281,8 +281,8 @@ chat](https://chat.zulip.org/#narrow/stream/provision).
 On Windows, you will see `The system cannot find the path specified.` message
 several times. This is expected behavior and is not an error.
 
-Once `vagrant up` has completed, connect to the dev environment with `vagrant
-ssh`:
+Once `vagrant up` has completed, connect to the development
+environment with `vagrant ssh`:
 
 ```
 christie@win10 ~/zulip
@@ -321,7 +321,7 @@ Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
  * Documentation:  https://help.ubuntu.com/
 ```
 
-Congrats, you're now inside the Zulip dev environment!
+Congrats, you're now inside the Zulip development environment!
 
 You can confirm this by looking at the command prompt, which starts with
 `(zulip-venv)`.
@@ -371,7 +371,7 @@ on your main machine.
 
 You should see something like this:
 
-![Image of Zulip dev environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
+![Image of Zulip development environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
 
 The Zulip server will continue to run and send output to the terminal window.
 When you navigate to Zulip in your browser, check your terminal and you
@@ -395,8 +395,8 @@ You'll work by editing files on your host machine, in the directory where you
 cloned Zulip. Use your favorite editor (Sublime, Atom, Vim, Emacs, Notepad++,
 etc.).
 
-When you save changes they will be synced automatically to the Zulip dev environment
-on the virtual machine/container.
+When you save changes they will be synced automatically to the Zulip
+development environment on the virtual machine/container.
 
 Each component of the Zulip development server will automatically
 restart itself or reload data appropriately when you make changes. So,
@@ -426,7 +426,7 @@ directory where you cloned Zulip on your main machine.
 If you're new to working with Git/GitHub, check out our [Git & GitHub
 Guide][rtd-git-guide].
 
-#### Maintaining the dev environment
+#### Maintaining the development environment
 
 If after rebasing onto a new version of the Zulip server, you receive
 new errors while starting the Zulip server or running tests, this is
@@ -439,13 +439,13 @@ runs `tools/provision.py` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
 
 After provisioning, you'll want to
-[(re)start the Zulip development server](#step-3-start-the-dev-environment).
+[(re)start the Zulip development server](#step-3-start-the-development-environment).
 
 If you run into any trouble, the
 [provision stream on chat.zulip.org](https://chat.zulip.org/#narrow/stream/provision)
 is a great place to ask for help.
 
-#### Rebuilding the dev environment
+#### Rebuilding the development environment
 
 If you ever want to recreate your development environment again from
 scratch (e.g. to test as change you've made to the provisioning
@@ -455,10 +455,10 @@ much faster than the original `vagrant up` since the base image is
 already cached on your machine (it takes about 5 minutes to run with a
 fast Internet connection).
 
-#### Shutting down the dev environment for use later
+#### Shutting down the development environment for use later
 
-To shut down but preserve the dev environment so you can use it again
-later use `vagrant halt` or `vagrant suspend`.
+To shut down but preserve the development environment so you can use
+it again later use `vagrant halt` or `vagrant suspend`.
 
 You can do this from the same Terminal/Git BASH window that is running
 run-dev.py by pressing ^C to halt the server and then typing `exit`. Or you
@@ -475,7 +475,7 @@ logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
 ```
-Now you can suspend the dev environment:
+Now you can suspend the development environment:
 
 ```
 christie@win10 ~/zulip
@@ -495,7 +495,7 @@ Check out the Vagrant documentation to learn more about
 [suspend](https://www.vagrantup.com/docs/cli/suspend.html) and
 [halt](https://www.vagrantup.com/docs/cli/halt.html).
 
-#### Resuming the dev environment
+#### Resuming the development environment
 
 When you're ready to work on Zulip again, run `vagrant up`. You will also need
 to connect to the virtual machine with `vagrant ssh` and re-start the Zulip
@@ -753,8 +753,9 @@ should be in the log above. Please read the output to determine what
 went wrong.
 ```
 
-Usually this error is not fatal. Try connecting to the dev environment and
-re-trying the command from withing the virtual machine:
+Usually this error is not fatal. Try connecting to the development
+environment and re-trying the command from withing the virtual
+machine:
 
 ```
 christie@win10 ~/zulip

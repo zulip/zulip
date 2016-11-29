@@ -2,10 +2,11 @@
 
 ## Requirements
 
-The Zulip dev environment can be installed on **macOS, Windows, and Linux**
-(Ubuntu recommended). You'll need at least **2GB of available RAM**.
+The Zulip development environment can be installed on **macOS,
+Windows, and Linux** (Ubuntu recommended). You'll need at least **2GB
+of available RAM**.
 
-Installing the Zulip dev environment requires downloading several hundred
+Installing the Zulip development environment requires downloading several hundred
 megabytes of dependencies, so you will need an **active, reasonably fast,
 internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
@@ -17,7 +18,7 @@ the [Vagrant development environment][install-vagrant]**.
 
 This method creates a virtual machine (for Windows and macOS) or a Linux
 container (for Ubuntu) inside which the Zulip server and all related services
-will run. Vagrant adds a bit of overhead to using the Zulip dev server, but
+will run. Vagrant adds a bit of overhead to using the Zulip development server, but
 provides an isolated environment that is easy to install, update, and
 uninstall. It has been well-tested and performs well.
 
@@ -47,21 +48,24 @@ or 14.04 Trust, or use [the manual install process][install-generic] instead.
 These options only support Linux.
 
 An alternative option if you have poor network connectivity is to rent a cloud
-server and install the Zulip dev environment for remote use. See [next
+server and install the Zulip development environment for remote use. See [next
 section][self-install-remote] for details.
 
 ## Installing remotely
 
-The Zulip dev environment works well on remote virtual machines. This can be a
-good alternative for those with poor network connectivity or who have
-limited storage/memory on their local machines.
+The Zulip development environment works well on remote virtual
+machines. This can be a good alternative for those with poor network
+connectivity or who have limited storage/memory on their local
+machines.
 
-We recommend giving the Zulip dev environment its **own virtual machine**, running
+We recommend giving the Zulip development environment its **own virtual machine**, running
 **Ubuntu 14.04 or 16.04**, with at least **2GB of memory**.
 
-If Zulip dev will be the only thing running on the remote virtual machine, we
-recommend installing [directly][install-direct]. Otherwise, we recommend the
-[Vagrant][install-vagrant] method so you can easily uninstall if you need to.
+If the Zulip development environment will be the only thing running on
+the remote virtual machine, we recommend installing
+[directly][install-direct]. Otherwise, we recommend the
+[Vagrant][install-vagrant] method so you can easily uninstall if you
+need to.
 
 If you wan to run a non-Ubuntu distribution, follow the [generic Linux
 directions][install-generic].
@@ -74,8 +78,9 @@ to read these documents to learn how to use it:
 * [Using the Development Environment][using-dev-env]
 * [Testing][testing]
 
-And if you've setup the Zulip dev environment on a remote machine, take a look
-at our tips for [developing remotely][dev-remote].
+And if you've setup the Zulip development environment on a remote
+machine, take a look at our tips for
+[developing remotely][dev-remote].
 
 [dev-remote]: dev-remote.html
 [install-direct]: dev-setup-non-vagrant.html#installing-directly-on-ubuntu

@@ -77,7 +77,7 @@ products, ordered here by which types we prefer to write:
 
 * A helpful tool for testing your integration is
   [UltraHook](http://www.ultrahook.com/), which allows you to receive webhook
-  calls via your local Zulip dev environment. This enables you to do end-to-end
+  calls via your local Zulip development environment. This enables you to do end-to-end
   testing with live data from the service you're integrating and can help you
   spot why something isn't working or if the service is using custom HTTP
   headers.
@@ -356,9 +356,10 @@ object), `user_profile` (Zulip's user object), and `client` (Zulip's analogue
 of UserAgent). You may also want to define additional parameters using the
 `REQ` object.
 
-In the example above, we have defined `payload` which is populated from the
-body of the http request, `stream` with a default of `test` (available by
-default in Zulip dev environment), and `topic` with a default of `Hello World`.
+In the example above, we have defined `payload` which is populated
+from the body of the http request, `stream` with a default of `test`
+(available by default in the Zulip development environment), and
+`topic` with a default of `Hello World`.
 
 The line that begins `# type` is a mypy type annotation. See [this
 page](mypy.html) for details about how to properly annotate your webhook
@@ -412,7 +413,7 @@ your real key. This is how Zulip knows the request is from an authorized user.
 
 Now you can test using Zulip itself, or curl on the command line.
 
-Using `manage.py` from within Zulip Dev environment:
+Using `manage.py` from within the Zulip development environment:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
@@ -506,7 +507,7 @@ As well as a new fixture `helloworld_goodbye.json` in
 ```
 
 Once you have written some tests, you can run just these new tests from within
-the Zulip dev environment with this command:
+the Zulip development environment with this command:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
@@ -549,7 +550,7 @@ The second part is a `div` with the webhook's usage instructions:
     <p>Learn how Zulip integrations work with this simple Hello World example!</p>
 
     <p>The Hello World webhook will use the <code>test<code> stream, which is
-    created by default in the Zulip dev environment. If you are running
+    created by default in the Zulip development environment. If you are running
     Zulip in production, you should make sure this stream exists.</p>
 
     <p>Next, on your <a href="/#settings" target="_blank">Zulip

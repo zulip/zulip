@@ -65,7 +65,7 @@ Contents:
    Overview <dev-overview>
    Recommended setup (Vagrant) <dev-env-first-time-contributors>
    Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
-   Using the dev environment <using-dev-environment>
+   Using the development environment <using-dev-environment>
    Developing remotely <dev-remote>
 
 .. _tutorial-docs:

@@ -1,4 +1,4 @@
-# Zulip dev environment setup without Vagrant
+# Zulip development environment setup without Vagrant
 
 Contents:
 
