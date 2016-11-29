@@ -4,11 +4,14 @@ The Zulip developer environment works well on remote virtual machines. This can
 be a good alternative for those with poor network connectivity or who have
 limited storage/memory on their local machines.
 
-We recommend giving Zulip dev its own virtual machine, running Ubuntu 14.04 or
-16.04, with at least 2GB of memory. If Zulip dev will be the only thing running
-on the remote virtual machine, we recommend installing
+We recommend giving the Zulip development environment its own virtual
+machine, running Ubuntu 14.04 or
+16.04, with at least 2GB of memory. If the Zulip development
+environment will be the only thing running on the remote virtual
+machine, we recommend installing
 [directly][install-direct]. Otherwise, we recommend the
-[Vagrant][install-vagrant] method so you can easily uninstall if you need to.
+[Vagrant][install-vagrant] method so you can easily uninstall if you
+need to.
 
 ## Connecting to the remote environment
 
@@ -32,44 +35,46 @@ networks.
 After you have connected to your remote server, you need to install the
 development environment.
 
-If Zulip dev will be the only thing running on the remote virtual machine, we
-recommend installing [directly][install-direct]. Otherwise, we recommend the
-[Vagrant][install-vagrant] method so you can easily uninstall if you need to.
+If the Zulip development environment will be the only thing running on
+the remote virtual machine, we recommend installing
+[directly][install-direct]. Otherwise, we recommend the
+[Vagrant][install-vagrant] method so you can easily uninstall if you
+need to.
 
 ## Running the development server
 
 Once you have set up the development environment, you can start up the
-development instance of zulip with the following command in the directory where
-you cloned zulip:
+development instance of Zulip with the following command in the directory where
+you cloned Zulip:
 
 ```
 ./tools/run-dev.py --interface=''
 ```
 
-This will start up zulip on port 9991. You can then navigate to
+This will start up the Zulip server on port 9991. You can then navigate to
 http://<REMOTE_IP>:9991 and you should see something like [(this screenshot of
-the Zulip dev
+the Zulip development
 environment)](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png).
 
-![Image of Zulip dev
+![Image of Zulip development
 environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
 
 You can [port
 forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding) using
-ssh instead of running the dev env on an exposed interface.
+ssh instead of running the development environment on an exposed interface.
 
 For more information, see [Using the development
 environment][rtd-using-dev-env].
 
-## Making changes to code on your remote dev server
+## Making changes to code on your remote development server
 
-To see changes on your remote dev server, you need to do one of the following:
+To see changes on your remote development server, you need to do one of the following:
 
 * [Edit locally](#editing-locally): Clone Zulip code to your computer and
   then use your favorite editor to make changes. When you want to see changes
-  on your remote dev instance, sync with Git.
+  on your remote Zulip development instance, sync with Git.
 * [Edit remotely](#editing-remotely): Edit code directly on your remote
-  Zulip dev instance using a [Web-based IDE](#web-based-ide) (recommended for
+  Zulip development instance using a [Web-based IDE](#web-based-ide) (recommended for
   beginners) or a [command line editor](#command-line-editors).
 
 #### Editing locally
@@ -90,8 +95,9 @@ Once you have cloned your code locally, you can get to work.
 
 ##### Syncing changes
 
-The easiest way to see your changes on your remote dev server is to **push them
-to GitHub** and them **fetch and merge** them from the remote server.
+The easiest way to see your changes on your remote development server
+is to **push them to GitHub** and them **fetch and merge** them from
+the remote server.
 
 For more detailed instructions about how to do this, see our [Git & GitHub
 Guide][rtd-git-guide]. In brief, the steps are as follows.
@@ -107,10 +113,10 @@ On your **local computer**:
 Be sure to replace `branchname` with the name of your actual feature branch.
 
 Once `git push` has completed successfully, you are ready to fetch the commits
-from your remote dev instance:
+from your remote development instance:
 
-1. In *Terminal* or *Git BASH*, connect to your remote dev instance with `ssh
-   user@host`.
+1. In *Terminal* or *Git BASH*, connect to your remote development
+   instance with `ssh user@host`.
 2. Change to the zulip directory (e.g., `cd zulip`).
 3. Fetch new commits from GitHub with `git fetch origin`.
 4. Change to the branch you want to work on with `git checkout branchname`.
@@ -130,8 +136,8 @@ To setup Codeanywhere for Zulip:
 2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
 3. Click **GET YOUR PUBLIC KEY** to get the new new public key that
    Codeanywhere generates when you create a new project. Add this public key to
-   `~/.ssh/authorized_keys` on your remove dev instance.
-4. Once you've added the new public key to your remote dev instance, click
+   `~/.ssh/authorized_keys` on your remote development instance.
+4. Once you've added the new public key to your remote development instance, click
    *CONNECT*.
 
 Now your workspace should look similar this:
@@ -139,8 +145,8 @@ Now your workspace should look similar this:
 
 ##### Command line editors
 
-Another way to edit directly on the remote dev server is with a command
-line text editor on the remote machine.
+Another way to edit directly on the remote development server is with
+a command line text editor on the remote machine.
 
 Two editors often available by default on Linux systems are:
 
