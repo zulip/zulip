@@ -98,6 +98,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/zulipchat_migration_tos.html',
             'zilencer/enterprise_tos_accept_body.txt',
             'zerver/help/index.md',
+            'zerver/help/mention-a-team-member.md',
             'zerver/help/missing.md',
             'zerver/closed_realm.html',
             'zerver/topic_is_muted.html',
