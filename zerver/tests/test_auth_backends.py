@@ -1089,6 +1089,7 @@ class TestJWTLogin(ZulipTestCase):
     """
     JWT uses ZulipDummyBackend.
     """
+
     def test_login_success(self):
         # type: () -> None
         payload = {'user': 'hamlet', 'realm': 'zulip.com'}

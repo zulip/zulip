@@ -14,6 +14,7 @@ Apdex score fell below critical level of 0.90\n\
 [View alert](https://rpm.newrelc.com/accounts/[account_id]/applications/[application_id]/incidents/[incident_id])'
         self.send_and_test_stream_message('alert', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
+
     def test_deployment(self):
         # type: () -> None
         expected_subject = 'Test App deploy'

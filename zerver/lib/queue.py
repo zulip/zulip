@@ -146,6 +146,7 @@ class SimpleQueueClient(object):
         # type: (str, bool) -> List[Dict[str, Any]]
         "Returns all messages in the desired queue"
         messages = []
+
         def opened():
             # type: () -> None
             while True:
@@ -233,6 +234,7 @@ class TornadoQueueClient(SimpleQueueClient):
 
         # Try to reconnect in two seconds
         retry_seconds = 2
+
         def on_timeout():
             # type: () -> None
             try:

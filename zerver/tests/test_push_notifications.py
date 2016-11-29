@@ -187,6 +187,7 @@ class SendNotificationTest(PushNotificationTest):
     def test_do_push_to_apns_service(self, mock_push):
         # type: (mock.MagicMock) -> None
         msg = apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+
         def test_push(message):
             # type: (Message) -> None
             self.assertIs(message, msg.get_frame())

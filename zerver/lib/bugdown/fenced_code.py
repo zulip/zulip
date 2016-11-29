@@ -128,6 +128,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             def handle_line(self, line):
                 # type: (text_type) -> None
                 raise NotImplementedError()
+
             def done(self):
                 # type: () -> None
                 raise NotImplementedError()

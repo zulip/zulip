@@ -13,6 +13,7 @@ from six.moves import range
 
 class TimeoutExpired(Exception):
     '''Exception raised when a function times out.'''
+
     def __str__(self):
         # type: () -> str
         return 'Function call timed out.'

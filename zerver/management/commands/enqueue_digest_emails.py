@@ -88,6 +88,7 @@ class Command(BaseCommand):
     help = """Enqueue digest emails for users that haven't checked the app
 in a while.
 """
+
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         # To be really conservative while we don't have user timezones or

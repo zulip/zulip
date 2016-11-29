@@ -299,6 +299,7 @@ class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
         # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
         self.process_request(request)
+
     def process_request(self, request):
         # type: (HttpRequest) -> None
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
