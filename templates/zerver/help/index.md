@@ -26,6 +26,7 @@ as a “**realm**”.
 
 **[The Zulip browser window](#the-zulip-browser-window)** |
 **[Posting and replying](#posting-and-replying)** |
+**[Mention a Team Member](/help/mention-a-team-member)** |
 **[Other common questions](#other-common-questions)** |
 **[Terminology](#special-terms-used-with-zulip)**
 
@@ -98,13 +99,6 @@ individual users. ![New message](/static/images/help/new_message.png)
    their email addresses with a comma. Each recipient will see all the
    other recipients. For several days, the list of recipients will
    appear under “GROUP PMs” at the lower right corner of your screen.
-
- * You can ping ("**@mention**") other users with a particular
-   stream-message from within the body of the message itself. Type `@`
-   and the beginning of their email address or one of their names, and
-   the system will offer you tab-completions. The completed @mention
-   will look something like this: `@**name@email.address**`, and it
-   will appear as **@name** in your posted message.
 
  * If you’re bashful about using the pronoun “I”, you can get your own
    registered name to appear boldfaced in a message by entering
