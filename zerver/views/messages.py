@@ -955,6 +955,9 @@ def render_message_backend(request, user_profile, content=REQ()):
     message.sending_client = request.client
 
     rendered_content = render_markdown(message, content, domain=user_profile.realm.domain)
+    if content.startswith('/me'):
+        me_html = '<span class="sender_name">{0}</span>'.format(user_profile.full_name)
+        rendered_content = rendered_content.replace('/me', me_html, 1)
     return json_success({"rendered": rendered_content})
 
 @authenticated_json_post_view
