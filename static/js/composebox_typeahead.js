@@ -248,8 +248,18 @@ exports.compose_content_begins_typeahead = function (query) {
             email: "everyone",
             full_name: "everyone"
         };
+        var here_item = {
+            special_item_text: "here (Notify online folks)",
+            email: "here",
+            full_name: "here"
+        };
+        var online_item = {
+            special_item_text: "online (Notify online folks)",
+            email: "online",
+            full_name: "online"
+        };
         var persons = people.get_realm_persons();
-        return [].concat(persons, [all_item, everyone_item]);
+        return [].concat(persons, [all_item, everyone_item, here_item, online_item]);
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {

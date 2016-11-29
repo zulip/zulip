@@ -323,7 +323,7 @@ function handleUserMentions(username) {
     if (person !== undefined) {
         return '<span class="user-mention" data-user-email="' + person.email + '">' +
                 '@' + person.full_name + '</span>';
-    } else if (username === 'all' || username === 'everyone') {
+    } else if (['all', 'everyone', 'here', 'online'].indexOf(username) > -1) {
         return '<span class="user-mention" data-user-email="*">' + '@' + username + '</span>';
     }
     return undefined;
