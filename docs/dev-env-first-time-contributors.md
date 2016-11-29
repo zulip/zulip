@@ -48,7 +48,8 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 - **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-X or AMD-V), administrator access,
-  [Cygwin][cygwin-dl], [VirtualBox][vbox-dl], [Vagrant][vagrant-dl-win].
+  [Git for Windows][git-bash] (which installs Git BASH), [VirtualBox][vbox-dl],
+  [Vagrant][vagrant-dl-win].
 
 Don't see your system listed above? See [Advanced setup][install-advanced] for
 details about installing for other Linux and UNIX platforms.
@@ -151,40 +152,19 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Windows 10
 
-1. Install [Cygwin][cygwin-dl]. Make sure to **install default required
-   packages** along with **git**, **curl**, **openssh**, and **rsync**
-   binaries.
+1. Install [Git for Windows][git-bash], which installs *Git BASH*.
 2. Install [VirtualBox][vbox-dl] (version >= 5.1.6).
 3. Install [Vagrant][vagrant-dl-win] (version 1.8.4-1.8.6, do not use 1.8.7).
 
-After installing, you must run **Cygwin as an administrator**.
+(Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
+If you do, make sure to **install default required packages** along with
+**git**, **curl**, **openssh**, and **rsync** binaries. You might also need to
+[enable native symlinks][self-win-symlinks].)
+
+After installing, you must run **Git BASH as an administrator**.
 
 Also, you must have hardware virtualization enabled (VT-X or AMD-V) in your
 computer's BIOS.
-
-##### Configure Cygwin
-
-In order for symlinks to work within the Ubuntu virtual machine, you must tell
-Cygwin to create them as [native Windows
-symlinks](https://cygwin.com/cygwin-ug-net/using.html#pathnames-symlinks). The
-easiest way to do this is to add a line to `~/.bash_profile` setting the CYGWIN
-environment variable.
-
-Open a Cygwin window **as an administrator** and do this:
-
-```
-christie@win10 ~
-$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
-```
-
-Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
-should see:
-
-```
-christie@win10 ~
-$ echo $CYGWIN
-winsymlinks:native
-```
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
@@ -196,8 +176,8 @@ instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 1. In your browser, visit [https://github.com/zulip/zulip](https://github.com/zulip/zulip)
    and click the `fork` button. You will need to be logged in to GitHub to do this.
-2. Open Terminal (macOS/Ubuntu) or Cygwin (Windows; must **run as an Administrator**)
-3. In Terminal/Cygwin, clone your fork:
+2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must **run as an Administrator**)
+3. In Terminal/Git BASH, clone your fork:
 ```
 git clone git@github.com:YOURUSERNAME/zulip.git
 ```
@@ -396,11 +376,11 @@ output.
 #### Committing and pushing changes with git
 
 When you're ready to commit or push changes via git, you will do this by
-running git commands in Terminal (macOS/Ubuntu) or Cygwin (Windows) in the directory
-where you cloned Zulip on your main machine.
+running git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
+directory where you cloned Zulip on your main machine.
 
-If you're new to working with Git/GitHub, check out [this
-guide](https://help.github.com/articles/create-a-repo/#commit-your-first-change).
+If you're new to working with Git/GitHub, check out our [Git & GitHub
+Guide][rtd-git-guide].
 
 #### Maintaining the dev environment
 
@@ -436,9 +416,9 @@ fast Internet connection).
 To shut down but preserve the dev environment so you can use it again
 later use `vagrant halt` or `vagrant suspend`.
 
-You can do this from the same Terminal/Cygwin window that is running
+You can do this from the same Terminal/Git BASH window that is running
 run-dev.py by pressing ^C to halt the server and then typing `exit`. Or you
-can halt vagrant from another Terminal/Cygwin window.
+can halt vagrant from another Terminal/Git BASH window.
 
 From the window where run-dev.py is running:
 
@@ -573,6 +553,30 @@ $ cp /usr/bin/curl.exe /cygdrive/c/HashiCorp/Vagrant/embedded/bin/
 Now re-run `vagrant up` and vagrant should be able to fetch the required
 box file.
 
+#### Enable native symlinks on Windows/Cywin
+
+In order for symlinks to work within the Ubuntu virtual machine, you must tell
+Cygwin to create them as [native Windows
+symlinks](https://cygwin.com/cygwin-ug-net/using.html#pathnames-symlinks). The
+easiest way to do this is to add a line to `~/.bash_profile` setting the CYGWIN
+environment variable.
+
+Open a Cygwin window **as an administrator** and do this:
+
+```
+christie@win10 ~
+$ echo 'export "CYGWIN=$CYGWIN winsymlinks:native"' >> ~/.bash_profile
+```
+
+Next, close that Cygwin window and open another. If you `echo` $CYGWIN you
+should see:
+
+```
+christie@win10 ~
+$ echo $CYGWIN
+winsymlinks:native
+```
+
 #### os.symlink error
 
 If you receive the following error while running `vagrant up`:
@@ -589,9 +593,9 @@ If you receive the following error while running `vagrant up`:
 
 Then Vagrant was not able to create a symbolic link.
 
-First, if you are using Windows, **make sure you have run Cygwin as an
-administrator**. By default, only administrators can create symbolic links on
-Windows.
+First, if you are using Windows, **make sure you have run Git BASH (or Cygwin)
+as an administrator**. By default, only administrators can create symbolic
+links on Windows.
 
 Second, VirtualBox does not enable symbolic links by default. Vagrant
 starting with version 1.6.0 enables symbolic links for VirtualBox shared
@@ -621,7 +625,7 @@ add the VirtualBox directory to your path. On Windows this is mostly likely
 
 If `vboxmanage enumerate` prints nothing, or shows a value of 0 for
 VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip, then enable
-symbolic links by running this command in Terminal/Cygwin:
+symbolic links by running this command in Terminal/Git BASH/Cygwin:
 
 ```
 vboxmanage setextradata YOURVMNAME VBoxInternal2/SharedFoldersEnableSymlinksCreate/srv_zulip 1
@@ -855,3 +859,5 @@ http://localhost:9971/ to connect to your development server.
 [rtd-testing]: testing.html
 [rtd-using-dev-env]: using-dev-environment.html
 [rtd-dev-remote]: dev-remote.html
+[git-bash]: https://git-for-windows.github.io/
+[self-win-symlinks]: #enable-native-symlinks-on-windows-cywin
