@@ -144,6 +144,9 @@ $ vagrant lxc sudoers
 [sudo] password for christie:
 ```
 
+If you encounter an error running `vagrant lxc sudoers`, [see
+this](#permissions-errors).
+
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
 #### Windows 10
@@ -240,7 +243,7 @@ does the following:
   or container (for Ubuntu)
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
-  virtual machine/container at `/srv/zulip`
+  virtual machine/container at `~/zulip`
 - runs the `tools/provision.py` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
   the Zulip dev environment, and initializes a default test database.
@@ -303,10 +306,10 @@ Next, start the Zulip server:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd /srv/zulip
+$ cd zulip
 
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
-$ tools/run-dev.py
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+$ ./tools/run-dev.py
 ```
 
 You will see several lines of output starting with something like:
@@ -443,7 +446,7 @@ From the window where run-dev.py is running:
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth via ?)
 ^C
 KeyboardInterrupt
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$ exit
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip$ exit
 logout
 Connection to 127.0.0.1 closed.
 christie@win10 ~/zulip
@@ -478,7 +481,12 @@ server:
 christie@win10 ~/zulip
 $ vagrant up
 $ vagrant ssh
-/srv/zulip/tools/run-dev.py
+
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
+$ cd zulip
+
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
+$ ./tools/run-dev.py
 ```
 
 #### Next Steps
@@ -655,7 +663,7 @@ The `vagrant up` command basically does the following:
 
 To debug such errors, you can log in to the Vagrant guest machine by
 running `vagrant ssh`, which should present you with a standard shell
-prompt.  You can debug interactively by using e.g. `cd /srv/zulip &&
+prompt.  You can debug interactively by using e.g. `cd zulip &&
 ./tools/provision.py`, and then running the individual subcommands
 that failed.  Once you've resolved the problem, you can rerun
 `tools/provision.py` to proceed; the provisioning system is designed
@@ -669,7 +677,7 @@ environment to use it](#specifying-a-proxy).
 Once you've provisioned successfully, you'll get output like this:
 ```
 Zulip development environment setup succeeded!
-(zulip-venv) vagrant@vagrant-base-trusty-amd64:/srv/zulip$
+(zulip-venv) vagrant@vagrant-base-trusty-amd64:~/zulip$
 ```
 
 If the `(zulip-venv)` part is missing, this is because your
@@ -727,8 +735,8 @@ re-trying the command from withing the virtual machine:
 christie@win10 ~/zulip
 $ vagrant ssh
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~
-$ cd /srv/zulip
-(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip
+$ cd zulip
+(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:~/zulip
 $ npm install
 npm WARN optional Skipping failed optional dependency /chokidar/fsevents:
 npm WARN notsup Not compatible with your operating system or architecture: fsevents@1.0.12
