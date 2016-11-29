@@ -717,7 +717,8 @@ def process_message_event(event_template, users):
         # If the recipient was offline and the message was a single or group PM to him
         # or she was @-notified potentially notify more immediately
         received_pm = message_type == "private" and user_profile_id != sender_id
-        mentioned = 'mentioned' in flags
+        all_mentioned = 'wildcard_mentioned' in flags and 'online_mentioned' not in flags
+        mentioned = 'mentioned' in flags or all_mentioned
         idle = receiver_is_idle(user_profile_id, realm_presences)
         always_push_notify = user_data.get('always_push_notify', False)
         if (received_pm or mentioned) and (idle or always_push_notify):

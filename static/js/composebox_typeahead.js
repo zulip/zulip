@@ -275,8 +275,19 @@ exports.compose_content_begins_typeahead = function (query) {
             pm_recipient_count: Infinity,
             full_name: "everyone",
         };
+        var here_item = {
+            special_item_text: "here (Notify online folks)",
+            email: "here",
+            full_name: "here",
+        };
+        var online_item = {
+            special_item_text: "online (Notify online folks)",
+            email: "online",
+            full_name: "online",
+        };
         var persons = people.get_realm_persons();
-        return [].concat(persons, [all_item, everyone_item]);
+        var mentions = [all_item, everyone_item, here_item, online_item];
+        return [].concat(persons, mentions);
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {

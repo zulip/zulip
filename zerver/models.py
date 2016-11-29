@@ -1161,7 +1161,7 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
     # on later
     ALL_FLAGS = [u'read', u'starred', u'collapsed', u'mentioned', u'wildcard_mentioned',
                  u'summarize_in_home', u'summarize_in_stream', u'force_expand', u'force_collapse',
-                 u'has_alert_word', u"historical", u'is_me_message']
+                 u'has_alert_word', u"historical", u'is_me_message', u'online_mentioned']
     flags = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
 
     class Meta(object):

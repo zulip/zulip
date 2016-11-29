@@ -52,7 +52,8 @@ exports.apply_markdown = function apply_markdown(message) {
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
                        '@' + person.full_name +
                        '</span>';
-            } else if (name === 'all' || name === 'everyone') {
+            } else if (name === 'all' || name === 'everyone' ||
+                       name === 'here' || name === 'online') {
                 push_uniquely(message.flags, 'mentioned');
                 return '<span class="user-mention" data-user-id="*">' +
                        '@' + name +

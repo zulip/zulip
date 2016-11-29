@@ -771,6 +771,7 @@ def do_send_messages(messages_maybe_none):
             # These properties on the Message are set via
             # render_markdown by code in the bugdown inline patterns
             wildcard = message['message'].mentions_wildcard
+            online_mentioned = message['message'].mentions_online
             mentioned_ids = message['message'].mentions_user_ids
             ids_with_alert_words = message['message'].user_ids_with_alert_words
             is_me_message = message['message'].is_me_message
@@ -781,6 +782,8 @@ def do_send_messages(messages_maybe_none):
                     um.flags |= UserMessage.flags.read
                 if wildcard:
                     um.flags |= UserMessage.flags.wildcard_mentioned
+                if online_mentioned:
+                    um.flags |= UserMessage.flags.online_mentioned
                 if um.user_profile_id in mentioned_ids:
                     um.flags |= UserMessage.flags.mentioned
                 if um.user_profile_id in ids_with_alert_words:
@@ -2538,6 +2541,7 @@ def truncate_topic(topic):
 def update_user_message_flags(message, ums):
     # type: (Message, Iterable[UserMessage]) -> None
     wildcard = message.mentions_wildcard
+    online_mentioned = message.mentions_online
     mentioned_ids = message.mentions_user_ids
     ids_with_alert_words = message.user_ids_with_alert_words
     changed_ums = set() # type: Set[UserMessage]
@@ -2561,6 +2565,8 @@ def update_user_message_flags(message, ums):
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
         update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
+
+        update_flag(um, online_mentioned, UserMessage.flags.online_mentioned)
 
         is_me_message = getattr(message, 'is_me_message', False)
         update_flag(um, is_me_message, UserMessage.flags.is_me_message)

@@ -654,6 +654,16 @@ class BugdownTest(TestCase):
                          '<p><span class="user-mention" data-user-email="*" data-user-id="*">@everyone</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
+    def test_mention_online(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        content = "@online test"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" data-user-email="*" data-user-id="*">@online</span> test</p>')
+        self.assertTrue(msg.mentions_online)
+
     def test_mention_single(self):
         # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")

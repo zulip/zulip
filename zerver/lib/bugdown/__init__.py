@@ -1022,6 +1022,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             if wildcard:
                 current_message.mentions_wildcard = True
+                current_message.mentions_online = mention.user_mention_matches_online(name)
                 email = '*'
                 user_id = "*"
             elif user:

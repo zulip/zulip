@@ -307,6 +307,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
 
     if message is not None:
         message.mentions_wildcard = False
+        message.mentions_online = False
         message.is_me_message = False
         message.mentions_user_ids = set()
         message.alert_words = set()

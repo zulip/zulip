@@ -73,6 +73,16 @@ global.people.add({
             pm_recipient_count: Infinity,
             full_name: 'everyone',
         },
+        {
+            special_item_text: 'here (Notify online folks)',
+            email: 'here',
+            full_name: 'here',
+        },
+        {
+            special_item_text: 'online (Notify online folks)',
+            email: 'online',
+            full_name: 'online',
+        },
     ];
 
     var people_with_all = global.people.get_realm_persons().concat(all_items);
