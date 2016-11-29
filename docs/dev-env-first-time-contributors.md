@@ -489,12 +489,13 @@ $ cd zulip
 $ ./tools/run-dev.py
 ```
 
-#### Next Steps
+### Next Steps
 
-At this point you should [read about using the development
-environment][using-dev].
+Next, read the following to learn more about developing for Zulip:
 
-[using-dev]: using-dev-environment.html
+* [Git & GitHub Guide][rtd-git-guide]
+* [Using the Development Environment][rtd-using-dev-env]
+* [Testing][rtd-testing]
 
 ### Troubleshooting & Common Errors
 
@@ -850,3 +851,7 @@ http://localhost:9971/ to connect to your development server.
 [avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
 [install-advanced]: dev-setup-non-vagrant.html
 [lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
+[rtd-git-guide]: git-guide.html
+[rtd-testing]: testing.html
+[rtd-using-dev-env]: using-dev-environment.html
+[rtd-dev-remote]: dev-remote.html
