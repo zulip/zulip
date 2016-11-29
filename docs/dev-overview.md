@@ -10,7 +10,7 @@ megabytes of dependencies, so you will need an **active, reasonably fast,
 internet connection throughout the entire installation processes.** You can
 [configure a proxy][configure-proxy] if you need one.
 
-## Recommended method
+## Recommended setup (Vagrant)
 
 **For first-time contributors on macOS, Windows, and Ubuntu, we recommend using
 the [Vagrant development environment][install-vagrant]**.
@@ -21,7 +21,7 @@ will run. Vagrant adds a bit of overhead to using the Zulip dev server, but
 provides an isolated environment that is easy to install, update, and
 uninstall. It has been well-tested and performs well.
 
-## Advanced methods
+## Advanced setup (non-Vagrant)
 
 For more experienced contributors, or for first-time contributors who don't
 want to or can't use Vagrant, Zulip supports a wide range of ways to install
@@ -78,9 +78,9 @@ And if you've setup the Zulip dev environment on a remote machine, take a look
 at our tips for [developing remotely][dev-remote].
 
 [dev-remote]: dev-remote.html
-[install-direct]: install-ubuntu-without-vagrant-dev.html
-[install-docker]: install-docker-dev.html
-[install-generic]: install-generic-unix-dev.html
+[install-direct]: dev-setup-non-vagrant.html#installing-directly-on-ubuntu
+[install-docker]: dev-setup-non-vagrant.html#using-docker-experimental
+[install-generic]: dev-setup-non-vagrant.html#installing-manually-on-linux
 [install-vagrant]: dev-env-first-time-contributors.html
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
