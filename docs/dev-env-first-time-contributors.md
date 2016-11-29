@@ -60,7 +60,7 @@ Jump to:
 
 * [macOS](#macos)
 * [Ubuntu](#ubuntu)
-* [Windows](#windows)
+* [Windows](#windows-10)
 
 #### macOS
 
