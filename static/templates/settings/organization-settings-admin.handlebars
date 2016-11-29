@@ -9,6 +9,7 @@
     <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
     <div class="alert" id="admin-realm-message-editing-status"></div>
     <div class="alert" id="admin-realm-default-language-status"></div>
+    <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
 
     <div class="input-group admin-realm">
       <label for="realm_name">{{t "Your organization's name" }}</label>
@@ -82,6 +83,13 @@
         <option value='{{this.code}}'>{{this.name}}</option>
         {{/each}}
       </select>
+    </div>
+    <div class="input-group">
+        <label for="realm_waiting_period_threshold">{{t "Waiting period threshold (in days)" }}</label>
+        <input type="text" id="id_realm_waiting_period_threshold"
+             name="realm_waiting_period_threshold"
+             class="admin-realm-message-content-edit-limit-minutes"
+             value="{{ realm_waiting_period_threshold }}"/>
     </div>
     <div class="input-group organization-submission">
       <input type="submit" class="button" value="{{t 'Save changes' }}" />

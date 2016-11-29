@@ -70,6 +70,8 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'update' && event.property === 'default_language') {
             page_params.realm_default_language = event.value;
             admin.reset_realm_default_language();
+        } else if (event.op === 'update' && event.property === 'waiting_period_threshold') {
+            page_params.realm_waiting_period_threshold = event.value;
         }
         break;
 

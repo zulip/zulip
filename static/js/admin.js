@@ -280,7 +280,8 @@ function _setup_page() {
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         language_list: page_params.language_list,
-        realm_default_language: page_params.realm_default_language
+        realm_default_language: page_params.realm_default_language,
+        realm_waiting_period_threshold: page_params.realm_waiting_period_threshold
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -293,6 +294,7 @@ function _setup_page() {
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
+    $('#admin-realm-waiting_period_threshold_status').expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $('#admin-filter-status').expectOne().hide();
     $('#admin-filter-pattern-status').expectOne().hide();
@@ -506,6 +508,7 @@ function _setup_page() {
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
+        var waiting_period_threshold_status = $("#admin-realm-waiting_period_threshold_status").expectOne();
         var auth_methods_table = $('.admin_auth_methods_table');
         name_status.hide();
         restricted_to_domain_status.hide();
@@ -527,6 +530,7 @@ function _setup_page() {
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_default_language = $("#id_realm_default_language").val();
+        var new_waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
         var new_auth_methods = {};
         _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
             new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
@@ -553,7 +557,8 @@ function _setup_page() {
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
-            default_language: JSON.stringify(new_default_language)
+            default_language: JSON.stringify(new_default_language),
+            waiting_period_threshold: JSON.stringify(parseInt(new_waiting_period_threshold, 10))
         };
 
         channel.patch({
@@ -618,6 +623,11 @@ function _setup_page() {
                 if (response_data.default_language !== undefined) {
                     if (response_data.default_language) {
                         ui.report_success(i18n.t("Default language changed!"), default_language_status);
+                    }
+                }
+                if (response_data.waiting_period_threshold !== undefined) {
+                    if (response_data.waiting_period_threshold > 0) {
+                        ui.report_success(i18n.t("waiting period threshold changed!"), waiting_period_threshold_status);
                     }
                 }
             },

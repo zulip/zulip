@@ -1857,6 +1857,7 @@ class HomeTest(ZulipTestCase):
             "realm_name",
             "realm_restricted_to_domain",
             "realm_uri",
+            "realm_waiting_period_threshold",
             "referrals",
             "save_stacktraces",
             "server_generation",

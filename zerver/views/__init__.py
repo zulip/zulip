@@ -589,6 +589,7 @@ def home_real(request):
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         realm_default_language = register_ret['realm_default_language'],
+        realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
