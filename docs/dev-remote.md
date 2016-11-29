@@ -65,9 +65,12 @@ environment][rtd-using-dev-env].
 
 To see changes on your remote dev server, you need to do one of the following:
 
-* edit code locally on your computer and then sync it to the remote development
-  environment, or
-* edit the zulip code directly on the remote server.
+* [Edit locally](#editing-locally): Clone Zulip code to your computer and
+  then use your favorite editor to make changes. When you want to see changes
+  on your remote dev instance, sync with Git.
+* [Edit remotely](#editing-remotely): Edit code directly on your remote
+  Zulip dev instance using a [Web-based IDE](#web-based-ide) (recommended for
+  beginners) or a [command line editor](#command-line-editors).
 
 #### Editing locally
 
@@ -84,6 +87,8 @@ Next, follow our [Git and GitHub Guide](git-guide.html) to clone and configure
 your fork of zulip on your local computer.
 
 Once you have cloned your code locally, you can get to work.
+
+##### Syncing changes
 
 The easiest way to see your changes on your remote dev server is to **push them
 to GitHub** and them **fetch and merge** them from the remote server.
@@ -113,17 +118,46 @@ from your remote dev instance:
 
 #### Editing remotely
 
-To edit directly on the remote dev server, you will need to use a text editor
-on the remote machine. *Nano* and *[Vim](http://www.vim.org/)* are often
-installed by default. If not, or if you want to try something else, we
-recommend:
+##### Web-based IDE
+
+If you are relatively new to working on the command line, or just want to get
+started working quickly, we recommend web-based IDE
+[Codeanywhere][codeanywhere].
+
+To setup Codeanywhere for Zulip:
+
+1. Create a [Codeanywhere][codeanywhere] account and log in.
+2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
+3. Click **GET YOUR PUBLIC KEY** to get the new new public key that
+   Codeanywhere generates when you create a new project. Add this public key to
+   `~/.ssh/authorized_keys` on your remove dev instance.
+4. Once you've added the new public key to your remote dev instance, click
+   *CONNECT*.
+
+Now your workspace should look similar this:
+![Codeanywhere workspace][img-ca-workspace]
+
+##### Command line editors
+
+Another way to edit directly on the remote dev server is with a command
+line text editor on the remote machine.
+
+Two editors often available by default on Linux systems are:
+
+* **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
+  features useful for programming, such as syntax highlighting, so we only
+  recommended it for quick edits to things like configuration files. Launch by
+  running command `nano <filename>`. Exit by pressing *control-X*.
+
+* **[Vim](http://www.vim.org/)**: A very powerful editor that can take a while
+  to learn. Launch by running `vim <filename>`. Quit Vim by pressing *escape*,
+  typing `:q`, and then pressing *return*. Vim comes with a program to learn it
+  called `vimtutor` (just run that command to start it).
+
+Other options include:
 
 * [emacs](https://www.gnu.org/software/emacs/)
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
-
-Once you have installed an editor you like, you can get to work. Be sure to
-take a look through our [Git & GitHub Guide][rtd-git-guide] for tips on using
-Git with Zulip.
 
 #### Next steps
 
@@ -140,3 +174,6 @@ Next, read the following to learn more about developing for Zulip:
 [rtd-using-dev-env]: using-dev-environment.html
 [rtd-testing]: testing.html
 [git-bash]: https://git-for-windows.github.io/
+[codeanywhere]: https://codeanywhere.com/
+[img-ca-settings]: images/codeanywhere-settings.png
+[img-ca-workspace]: images/codeanywhere-workspace.png
