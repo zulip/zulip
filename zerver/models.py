@@ -136,6 +136,7 @@ class Realm(ModelReprMixin, models.Model):
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: Text
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1) # type: BitHandler
+    waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
@@ -604,10 +605,14 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     def can_create_streams(self):
         # type: () -> bool
-        if self.is_realm_admin or not self.realm.create_stream_by_admins_only:
+        diff = (timezone.now() - self.date_joined).days
+        if self.is_realm_admin:
             return True
-        else:
+        elif self.realm.create_stream_by_admins_only:
             return False
+        if diff >= self.realm.waiting_period_threshold:
+            return True
+        return False
 
     def major_tos_version(self):
         # type: () -> int

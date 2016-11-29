@@ -35,7 +35,7 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    do_add_default_stream, do_change_is_admin,
+    do_add_default_stream, do_change_is_admin, do_set_realm_waiting_period_threshold,
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm_by_string_id, get_stream,
@@ -557,15 +557,15 @@ class StreamAdminTest(ZulipTestCase):
     def test_create_stream_by_admins_only_setting(self):
         # type: () -> None
         """
-        When realm.create_stream_by_admins_only setting is active,
-        non admin users shouldn't be able to create new streams.
+        When realm.create_stream_by_admins_only setting is active and
+        the number of days since the user had joined is less than waiting period
+        threshold, non admin users shouldn't be able to create new streams.
         """
         email = 'hamlet@zulip.com'
-        self.login(email)
         user_profile = get_user_profile_by_email(email)
-        do_change_is_admin(user_profile, False)
-
+        self.login(email)
         do_set_realm_create_stream_by_admins_only(user_profile.realm, True)
+
         stream_name = ['adminsonlysetting']
         result = self.common_subscribe_to_streams(
             email,
@@ -573,8 +573,33 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, 'User cannot create streams.')
 
-        # Change setting back to default
-        do_set_realm_create_stream_by_admins_only(user_profile.realm, False)
+    def test_create_stream_by_waiting_period_threshold(self):
+        # type: () -> None
+        """
+        Non admin users with account age greater or equal to waiting period
+        threshold should be able to create new streams.
+        """
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        self.login(email)
+        do_change_is_admin(user_profile, False)
+
+        do_set_realm_waiting_period_threshold(user_profile.realm, 10)
+
+        stream_name = ['waitingperiodtest']
+        result = self.common_subscribe_to_streams(
+            email,
+            stream_name
+        )
+        self.assert_json_error(result, 'User cannot create streams.')
+
+        do_set_realm_waiting_period_threshold(user_profile.realm, 0)
+
+        result = self.common_subscribe_to_streams(
+            email,
+            stream_name
+        )
+        self.assert_json_success(result)
 
     def test_remove_already_not_subbed(self):
         # type: () -> None
