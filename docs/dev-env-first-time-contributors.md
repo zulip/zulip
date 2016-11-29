@@ -1,11 +1,11 @@
 ## Vagrant environment setup tutorial
 
 This section guides first-time contributors through installing the Zulip dev
-environment on Windows 10, OS X El Capitan, Ubuntu 14.04, and Ubuntu 16.04.
+environment on Windows, macOS, and Ubuntu.
 
 The recommended method for installing the Zulip dev environment is to use
-Vagrant with VirtualBox on Windows and OS X, and Vagrant with LXC on
-Ubuntu. This method creates a virtual machine (for Windows and OS X)
+Vagrant with VirtualBox on Windows and macOS, and Vagrant with LXC on
+Ubuntu. This method creates a virtual machine (for Windows and macOS)
 or a Linux container (for Ubuntu) inside which the Zulip server and
 all related services will run.
 
@@ -43,33 +43,32 @@ proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
 
 
 - **All**: 2GB available RAM, Active broadband internet connection.
-- **OS X**: OS X (El Capitan recommended, untested on previous versions), Git,
-  [VirtualBox][vbox-dl], [Vagrant][vagrant-dl].
-- **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl], lxc.
-- **Windows**: Windows 64-bit (Win 10 recommended; Win 7 untested), hardware
+- **macOS**: macOS (10.11 El Capitan or 10.12 Sierra recommended), Git,
+  [VirtualBox][vbox-dl], [Vagrant][vagrant-dl-macos].
+- **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
+- **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-X or AMD-V), administrator access,
-  [Cygwin][cygwin-dl], [VirtualBox][vbox-dl], [Vagrant][vagrant-dl].
+  [Cygwin][cygwin-dl], [VirtualBox][vbox-dl], [Vagrant][vagrant-dl-win].
 
 Don't see your system listed above? See [Advanced setup][install-advanced] for
 details about installing for other Linux and UNIX platforms.
-
-[cygwin-dl]: http://cygwin.com/
 
 ### Step 1: Install Prerequisites
 
 Jump to:
 
-* [OS X](#os-x)
+* [macOS](#macos)
 * [Ubuntu](#ubuntu)
-* [Windows](#windows-10)
+* [Windows](#windows)
 
-#### OS X
+#### macOS
 
-1. Install [Vagrant][vagrant-dl]
+1. Install [Vagrant][vagrant-dl-macos] (1.8.4-1.8.6, do not use 1.8.7).
+2. Install [VirtualBox][vbox-dl] (>= 5.1.8)
 
-2. Install [VirtualBox][vbox-dl] or (for better performance;
-Virtualbox is quite slow) [VMWare Fusion][vmware-fusion-dl] with the
-[VMWare Fusion Vagrant plugin][vagrant-vmware-fusion-dl].
+(For a non-free option, but better performance, you can also use [VMWare
+Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
+plugin][vagrant-vmware-fusion-dl].)
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
@@ -82,7 +81,7 @@ after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
 ```
 sudo apt-get -y purge vagrant && \
-wget https://releases.hashicorp.com/vagrant/1.8.4/vagrant_1.8.4_x86_64.deb && \
+wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb && \
 sudo dpkg -i vagrant*.deb && \
 sudo apt-get -y install build-essential git ruby lxc lxc-templates cgroup-lite redir && \
 vagrant plugin install vagrant-lxc && \
@@ -104,11 +103,11 @@ christie@ubuntu-desktop:~
 $ sudo apt-get purge vagrant
 ```
 
-Now download and install the most recent .deb package from [Vagrant][vagrant-dl]:
+Now download and install the .deb package for [Vagrant 1.8.6][vagrant-dl-deb]:
 
 ```
 christie@ubuntu-desktop:~
-$ wget https://releases.hashicorp.com/vagrant/1.8.4/vagrant_1.8.4_x86_64.deb
+$ wget https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb
 
 christie@ubuntu-desktop:~
 $ sudo dpkg -i vagrant*.deb
@@ -133,7 +132,7 @@ Installed the plugin 'vagrant-lxc (1.2.1)'!
 ```
 
 If you encounter an error when trying to install the vagrant-lxc plugin, [see
-this](#nomethoderror-when-installing-vagrant-lxc-plugin-ubuntu-16-04).
+this](#nomethoderror).
 
 ##### 4. Configure sudo to be passwordless
 
@@ -147,20 +146,18 @@ $ vagrant lxc sudoers
 
 Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 
-[vagrant-dl]: https://www.vagrantup.com/downloads.html
-[vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
-[vbox-dl]: https://www.virtualbox.org/wiki/Downloads
-[vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
-[vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
-[avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
-
 #### Windows 10
 
-1. Install [Cygwin][cygwin-dl]. Make sure to install default required
-   packages along with **git**, **curl**, **openssh**, and **rsync**
+1. Install [Cygwin][cygwin-dl]. Make sure to **install default required
+   packages** along with **git**, **curl**, **openssh**, and **rsync**
    binaries.
-2. Install [VirtualBox][vbox-dl]
-3. Install [Vagrant][vagrant-dl]
+2. Install [VirtualBox][vbox-dl] (version >= 5.1.6).
+3. Install [Vagrant][vagrant-dl-win] (version 1.8.4-1.8.6, do not use 1.8.7).
+
+After installing, you must run **Cygwin as an administrator**.
+
+Also, you must have hardware virtualization enabled (VT-X or AMD-V) in your
+computer's BIOS.
 
 ##### Configure Cygwin
 
@@ -170,7 +167,7 @@ symlinks](https://cygwin.com/cygwin-ug-net/using.html#pathnames-symlinks). The
 easiest way to do this is to add a line to `~/.bash_profile` setting the CYGWIN
 environment variable.
 
-Open a Cygwin window and do this:
+Open a Cygwin window **as an administrator** and do this:
 
 ```
 christie@win10 ~
@@ -196,7 +193,7 @@ instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
 1. In your browser, visit [https://github.com/zulip/zulip](https://github.com/zulip/zulip)
    and click the `fork` button. You will need to be logged in to GitHub to do this.
-2. Open Terminal (OS X/Ubuntu) or Cygwin (Windows; must run as an Administrator)
+2. Open Terminal (macOS/Ubuntu) or Cygwin (Windows; must **run as an Administrator**)
 3. In Terminal/Cygwin, clone your fork:
 ```
 git clone git@github.com:YOURUSERNAME/zulip.git
@@ -239,7 +236,7 @@ $ vagrant up
 The first time you run this command it will take some time because vagrant
 does the following:
 
-- downloads the base Ubuntu 14.04 virtual machine image (for OS X and Windows)
+- downloads the base Ubuntu 14.04 virtual machine image (for macOS and Windows)
   or container (for Ubuntu)
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
@@ -254,6 +251,9 @@ internet.) And if you're running into any problems, please come chat with us
 [in the `provision` stream of our developers'
 chat](https://chat.zulip.org/#narrow/stream/provision).
 
+On Windows, you will see `The system cannot find the path specified.` message
+several times. This is expected behavior and is not an error.
+
 Once `vagrant up` has completed, connect to the dev environment with `vagrant
 ssh`:
 
@@ -262,7 +262,7 @@ christie@win10 ~/zulip
 $ vagrant ssh
 ```
 
-You should see something like this on Windows and OS X:
+You should see something like this on Windows and macOS:
 
 ```
 Welcome to Ubuntu 14.04.4 LTS (GNU/Linux 3.13.0-85-generic x86_64)
@@ -393,7 +393,7 @@ output.
 #### Committing and pushing changes with git
 
 When you're ready to commit or push changes via git, you will do this by
-running git commands in Terminal (OS X/Ubuntu) or Cygwin (Windows) in the directory
+running git commands in Terminal (macOS/Ubuntu) or Cygwin (Windows) in the directory
 where you cloned Zulip on your main machine.
 
 If you're new to working with Git/GitHub, check out [this
@@ -406,7 +406,7 @@ new errors while starting the Zulip server or running tests, this is
 probably not because Zulip's master branch is broken.  Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
-development environmnet.  To update your environment, you'll need to
+development environment.  To update your environment, you'll need to
 re-provision your vagrant machine using `vagrant provision` (this just
 runs `tools/provision.py` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
@@ -736,7 +736,21 @@ npm WARN notsup Not compatible with your operating system or architecture: fseve
 
 These are just warnings so it is okay to proceed and start the Zulip server.
 
-#### NoMethodError when installing vagrant-lxc plugin (Ubuntu 16.04)
+#### vagrant-lxc errors
+
+##### Permissions errors
+
+When building the development environment using Vagrant and the LXC provider,
+if you encounter permissions errors, you may need to `chown -R 1000:$(whoami)
+/path/to/zulip` on the host before running `vagrant up` in order to ensure that
+the synced directory has the correct owner during provision. This issue will
+arise if you run `id username` on the host where `username` is the user running
+Vagrant and the output is anything but 1000.  This seems to be caused by
+Vagrant behavior; for more information, see [the vagrant-lxc FAQ entry about
+shared folder permissions][lxc-sf].
+
+
+##### NoMethodError
 
 If you see the following error when you try to install the vagrant-lxc plugin:
 
@@ -816,4 +830,15 @@ HOST_PORT 9971
 (and halt and restart the Vagrant guest), then you would visit
 http://localhost:9971/ to connect to your development server.
 
-[]
+[cygwin-dl]: http://cygwin.com/
+[vagrant-dl]: https://www.vagrantup.com/downloads.html
+[vagrant-dl-win]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6.msi
+[vagrant-dl-macos]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6.dmg
+[vagrant-dl-deb]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6_x86_64.deb
+[vagrant-lxc]: https://github.com/fgrehm/vagrant-lxc
+[vbox-dl]: https://www.virtualbox.org/wiki/Downloads
+[vmware-fusion-dl]: http://www.vmware.com/products/fusion.html
+[vagrant-vmware-fusion-dl]: https://www.vagrantup.com/vmware/
+[avoiding-sudo]: https://github.com/fgrehm/vagrant-lxc#avoiding-sudo-passwords
+[install-advanced]: dev-setup-non-vagrant.html
+[lxc-sf]: https://github.com/fgrehm/vagrant-lxc/wiki/FAQ#help-my-shared-folders-have-the-wrong-owner
