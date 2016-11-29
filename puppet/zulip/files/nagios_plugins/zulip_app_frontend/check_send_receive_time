@@ -120,8 +120,8 @@ def get_zulips():
         last_event_id = max(last_event_id, int(event['id']))
     return [event['message'] for event in res['events']]
 
-if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
-    settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
+if ("staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
+        settings.NAGIOS_STAGING_RECEIVE_BOT is not None):
     sender = get_user_profile_by_email(settings.NAGIOS_STAGING_SEND_BOT)
     recipient = get_user_profile_by_email(settings.NAGIOS_STAGING_RECEIVE_BOT)
 else:

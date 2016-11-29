@@ -1117,6 +1117,8 @@ def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
+    if message_content == "Nanananana":
+        message_content += " Batman!"
     # type: (UserProfile, Client, text_type, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[text_type], Optional[text_type]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
@@ -2254,7 +2256,7 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
     user_profile.save(update_fields=["left_side_userlist"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name':'left_side_userlist',
+             'setting_name': 'left_side_userlist',
              'setting': setting_value}
     if log:
         log_event(event)
@@ -2273,7 +2275,7 @@ def do_change_default_language(user_profile, setting_value, log=True):
     user_profile.save(update_fields=["default_language"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name':'default_language',
+             'setting_name': 'default_language',
              'setting': setting_value}
     if log:
         log_event(event)

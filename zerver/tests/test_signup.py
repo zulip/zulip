@@ -78,7 +78,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent",],
+                    404: ["/help/nonexistent", ],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],

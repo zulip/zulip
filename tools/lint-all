@@ -82,11 +82,10 @@ def check_pep8(files):
     # type: (List[str]) -> bool
     failed = False
     ignored_rules = [
-        'E402', 'E501', 'W503', 'E711', 'E201', 'E203', 'E202', 'E128', 'E226', 'E124', 'E125',
-        'E126', 'E127', 'E121', 'E122', 'E123', 'E266', 'E265', 'E261', 'E301', 'E221', 'E303',
-        'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E111', 'E222', 'E731', 'E302', 'E129',
-        'E741', 'E714', 'W391', 'E211', 'E713', 'E502', 'E131', 'E305', 'E251', 'E306', 'E231',
-        'E701',
+        'E402', 'E501', 'W503', 'E711', 'E201', 'E203', 'E202', 'E128', 'E226', 'E124', 'E126',
+        'E127', 'E121', 'E122', 'E123', 'E266', 'E265', 'E261', 'E301', 'E221', 'E303', 'E241',
+        'E712', 'E702', 'E401', 'E115', 'E114', 'E111', 'E222', 'E731', 'E302', 'E129', 'E741',
+        'E714', 'W391', 'E211', 'E713', 'E502', 'E131', 'E305', 'E251', 'E306', 'E701',
     ]
     pep8 = subprocess.Popen(
         ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
@@ -340,7 +339,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
          'exclude': set(['static/styles/thirdparty-fonts.css']),
-         'strip': '\n',},
+         'strip': '\n', },
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
         ]) + whitespace_rules # type: RuleList

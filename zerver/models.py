@@ -96,7 +96,7 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name,
              'id': user_profile.id,
-             'is_mirror_dummy': user_profile.is_mirror_dummy,} for user_profile in user_profile_list]
+             'is_mirror_dummy': user_profile.is_mirror_dummy, } for user_profile in user_profile_list]
 
 def get_realm_emoji_cache_key(realm):
     # type: (Realm) -> Text

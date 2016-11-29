@@ -484,7 +484,7 @@ class StreamMessagesTest(ZulipTestCase):
                                                        "client": "test suite",
                                                        "subject": "announcement",
                                                        "content": "Everyone knows Iago rules",
-                                                       "forged": "true",},
+                                                       "forged": "true", },
                                   **self.api_auth(email))
         self.assert_json_error(result, "User not authorized for this query")
 
@@ -1576,3 +1576,20 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
         self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)
+
+class BatmanTest(ZulipTestCase):
+    def test_add_batman_to_nanana_message(self):
+        # type: () -> None
+        sender = get_user_profile_by_email('othello@zulip.com')
+        client = make_client(name="test suite")
+        message_id = check_send_message(sender, client, "stream", ["Verona"], "Batman test", "Nanananana")
+        self.assertEqual(Message.objects.values_list("content", flat=True).get(id=message_id),
+                         "Nanananana Batman!")
+
+    def test_do_not_add_batman_to_normal_message(self):
+        # type: () -> None
+        sender = get_user_profile_by_email('othello@zulip.com')
+        client = make_client(name="test suite")
+        message_id = check_send_message(sender, client, "stream", ["Verona"], "Batman test", "Hi there")
+        self.assertEqual(Message.objects.values_list("content", flat=True).get(id=message_id),
+                         "Hi there")
