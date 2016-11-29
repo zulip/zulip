@@ -206,7 +206,7 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
         message_list.narrowed.view.rerender_messages([message]);
     }
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 };
 
 exports.reify_message_id = function reify_message_id(local_id, server_id) {
