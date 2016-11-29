@@ -38,7 +38,9 @@ recommend installing [directly][install-direct]. Otherwise, we recommend the
 
 ## Running the development server
 
-Once you have set up the development environment, you can start up the development instance of zulip with the following command in the directory where you cloned zulip:
+Once you have set up the development environment, you can start up the
+development instance of zulip with the following command in the directory where
+you cloned zulip:
 
 ```
 ./tools/run-dev.py --interface=''
@@ -83,11 +85,31 @@ your fork of zulip on your local computer.
 
 Once you have cloned your code locally, you can get to work.
 
-When you are ready to sync your changes to your development server, use one of
-these programs:
+The easiest way to see your changes on your remote dev server is to **push them
+to GitHub** and them **fetch and merge** them from the remote server.
 
-* [Unison](https://github.com/bcpierce00/unison) Recommended
-* [Rsync](https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-on-a-vps)
+For more detailed instructions about how to do this, see our [Git & GitHub
+Guide][rtd-git-guide]. In brief, the steps are as follows.
+
+On your **local computer**:
+
+1. Open *Terminal* (macOS/Linux) or *Git for BASH*.
+2. Change directory to where you cloned Zulip (e.g. `cd zulip`).
+3. Use `git add` and `git commit` to stage and commit your changes (if you
+   haven't already).
+4. Push your commits to GitHub with `git push origin branchname`.
+
+Be sure to replace `branchname` with the name of your actual feature branch.
+
+Once `git push` has completed successfully, you are ready to fetch the commits
+from your remote dev instance:
+
+1. In *Terminal* or *Git BASH*, connect to your remote dev instance with `ssh
+   user@host`.
+2. Change to the zulip directory (e.g., `cd zulip`).
+3. Fetch new commits from GitHub with `git fetch origin`.
+4. Change to the branch you want to work on with `git checkout branchname`.
+5. Merge the new commits into your branch with `git merge origin/branchname`.
 
 #### Editing remotely
 
