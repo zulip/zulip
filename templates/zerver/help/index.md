@@ -24,10 +24,11 @@ as a “**realm**”.
 
 # Table of contents:
 
-**[The Zulip browser window](#the-zulip-browser-window)** |
-**[Posting and replying](#posting-and-replying)** |
-**[Other common questions](#other-common-questions)** |
-**[Terminology](#special-terms-used-with-zulip)**
+- **[The Zulip browser window](#the-zulip-browser-window)**
+- **[Posting and replying](#posting-and-replying)**
+- **[Other common questions](#other-common-questions)**
+- **[Terminology](#special-terms-used-with-zulip)**
+- **[Upload and Share Files](upload_share_files)**
 
 ---
 
