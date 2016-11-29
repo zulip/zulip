@@ -377,6 +377,7 @@ class GetOldMessagesTest(ZulipTestCase):
         conversations with that user.
         """
         me = 'hamlet@zulip.com'
+
         def dr_emails(dr):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 

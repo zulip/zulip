@@ -35,6 +35,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         # type: (ServerConnection, Event) -> None
         c.join(self.channel)
+
         def forward_to_irc(msg):
             # type: (Dict[str, Any]) -> None
             if msg["type"] == "stream":

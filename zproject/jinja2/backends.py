@@ -22,6 +22,7 @@ class Jinja2(django_jinja2.Jinja2):
     and add the functionality to pass the context processors to
     the `Template` object.
     """
+
     def __init__(self, params, *args, **kwargs):
         # type: (Dict[str, Any], *Any, **Any) -> None
         # We need to remove `context_processors` from `OPTIONS` because
@@ -51,6 +52,7 @@ class Template(django_jinja2.Template):
         processors to the context before passing it to the `render`
         function.
         """
+
         def __init__(self, template, context_processors, debug, *args, **kwargs):
             # type: (str, List[str], bool, *Any, **Any) -> None
             self.context_processors = context_processors

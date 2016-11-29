@@ -199,6 +199,7 @@ class Config(object):
     append itself to the parent's list of children.
 
     '''
+
     def __init__(self, table=None, model=None,
                 normal_parent=None, virtual_parent=None,
                 filter_args=None, custom_fetch=None, custom_tables=None,
@@ -1101,6 +1102,7 @@ def create_soft_link(source, in_progress=True):
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+
     def run_job(shard):
         # type: (str) -> int
         subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',

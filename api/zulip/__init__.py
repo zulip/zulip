@@ -398,6 +398,7 @@ class Client(object):
                 if request is None:
                     request = {}
                 return request
+
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
             if computed_url is not None:
@@ -411,6 +412,7 @@ class Client(object):
     def call_on_each_event(self, callback, event_types=None, narrow=None):
         if narrow is None:
             narrow = []
+
         def do_register():
             while True:
                 if event_types is None:
