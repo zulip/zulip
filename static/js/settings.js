@@ -747,6 +747,20 @@ function _setup_page() {
             }
         });
     });
+
+    $(function () {
+        $('body').on('click', '.settings-unmute-topic', function (e) {
+            var $row = $(this).closest("tr");
+            var stream = $row.data("stream");
+            var topic = $row.data("topic");
+
+            popovers.topic_ops.unmute(stream, topic);
+            $row.remove();
+            e.stopImmediatePropagation();
+        });
+
+        muting_ui.set_up_muted_topics_ui(muting.get_muted_topics());
+    });
 }
 
 exports.setup_page = function () {
