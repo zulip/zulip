@@ -147,6 +147,19 @@
              value="{{ realm_message_content_edit_limit_minutes }}"
         {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
     </div>
+    {{#if false}}
+    <div class="input-group">
+      <label for="realm_message_retention_days"
+        id="id_realm_message_retention_days_label"
+        title="{{t 'If empty, messages are not moved to archive.' }}">
+        {{t 'Retention period for messages in days (empty for disable)' }}
+      </label>
+      <input type="text" id="id_realm_message_retention_days"
+        name="realm_message_retention_days"
+        class="admin-realm-message-retention-days"
+        value="{{ realm_message_retention_days }}"/>
+    </div>
+    {{/if}}
     <div class="input-group">
       <label for="realm_default_language">{{t "Default language" }}:</label>
       <select name="realm_default_language" id="id_realm_default_language">

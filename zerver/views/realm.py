@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import require_realm_admin, to_non_negative_int
+from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_set_realm_authentication_methods,
@@ -34,8 +34,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  message_content_edit_limit_seconds=REQ(converter=to_non_negative_int, default=None),
                  default_language=REQ(validator=check_string, default=None),
                  waiting_period_threshold=REQ(converter=to_non_negative_int, default=None),
-                 authentication_methods=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
+                 authentication_methods=REQ(validator=check_dict([]), default=None),
+                 message_retention_days=REQ(converter=to_not_negative_int_or_none, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict], Optional[int]) -> HttpResponse
     # Validation for default_language
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
@@ -99,4 +100,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if waiting_period_threshold is not None and realm.waiting_period_threshold != waiting_period_threshold:
         do_set_realm_property(realm, 'waiting_period_threshold', waiting_period_threshold)
         data['waiting_period_threshold'] = waiting_period_threshold
+    if realm.message_retention_days != message_retention_days:
+        do_set_realm_property(realm, 'message_retention_days', message_retention_days)
+        data['message_retention_days'] = message_retention_days
     return json_success(data)

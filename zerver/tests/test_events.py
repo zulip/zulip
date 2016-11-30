@@ -72,7 +72,8 @@ from zerver.lib.actions import (
     do_add_realm_alias,
     do_change_realm_alias,
     do_remove_realm_alias,
-    do_change_icon_source)
+    do_change_icon_source,
+)
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
@@ -758,6 +759,19 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         events = self.do_test(
             lambda: do_set_realm_property(self.user_profile.realm, 'waiting_period_threshold', 17))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_message_retention_days(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('message_retention_days')),
+            ('value', check_int),
+        ])
+        events = self.do_test(
+            lambda: do_set_realm_property(self.user_profile.realm, "message_retention_days", 30))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

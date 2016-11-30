@@ -536,6 +536,14 @@ def to_non_negative_int(s):
         raise ValueError("argument is negative")
     return x
 
+
+def to_not_negative_int_or_none(s):
+    # type: (Text) -> Optional[int]
+    if s:
+        return to_non_negative_int(s)
+    return None
+
+
 def flexible_boolean(boolean):
     # type: (Text) -> bool
     """Returns True for any of "1", "true", or "True".  Returns False otherwise."""

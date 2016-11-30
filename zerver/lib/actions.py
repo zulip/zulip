@@ -474,7 +474,6 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
     )
     send_event(event, active_user_ids(realm))
 
-
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """

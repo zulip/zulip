@@ -374,6 +374,10 @@ exports.populate_auth_methods = function (auth_methods) {
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
+exports.update_message_retention_days = function () {
+    $("#id_realm_message_retention_days").val(page_params.message_retention_days);
+};
+
 function _setup_page() {
     var options = {
         realm_name: page_params.realm_name,
@@ -393,6 +397,7 @@ function _setup_page() {
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
+        realm_message_retention_days: page_params.realm_message_retention_days,
         language_list: page_params.language_list,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
@@ -669,6 +674,7 @@ function _setup_page() {
         var new_add_emoji_by_admins_only = $("#id_realm_add_emoji_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+        var new_message_retention_days = $("#id_realm_message_retention_days").val();
         var new_default_language = $("#id_realm_default_language").val();
         var new_waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
         var new_auth_methods = {};
@@ -686,6 +692,10 @@ function _setup_page() {
             // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
             new_message_content_edit_limit_minutes = 10;
             }
+        }
+        if (parseInt(new_message_retention_days, 10).toString() !==
+            new_message_retention_days && new_message_retention_days !== "") {
+                new_message_retention_days = "";
         }
 
         var url = "/json/realm";
@@ -705,6 +715,7 @@ function _setup_page() {
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
+            message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
             default_language: JSON.stringify(new_default_language),
             waiting_period_threshold: JSON.stringify(parseInt(new_waiting_period_threshold, 10)),
         };

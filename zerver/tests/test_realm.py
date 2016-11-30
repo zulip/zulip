@@ -212,6 +212,13 @@ class RealmTest(ZulipTestCase):
         realm = update_with_api(waiting_period_threshold=10)
         self.assertEqual(realm.waiting_period_threshold, 10)
 
+        # retention_period
+        set_up_db('message_retention_days', 10)
+        realm = update_with_api(message_retention_days=20)
+        self.assertEqual(realm.message_retention_days, 20)
+        realm = update_with_api(message_retention_days=10)
+        self.assertEqual(realm.message_retention_days, 10)
+
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'

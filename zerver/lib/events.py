@@ -104,6 +104,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_add_emoji_by_admins_only'] = user_profile.realm.add_emoji_by_admins_only
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
+        state['realm_message_retention_days'] = user_profile.realm.message_retention_days
         state['realm_default_language'] = user_profile.realm.default_language
         state['realm_waiting_period_threshold'] = user_profile.realm.waiting_period_threshold
         state['realm_icon_url'] = realm_icon_url(user_profile.realm)

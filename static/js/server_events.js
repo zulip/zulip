@@ -81,6 +81,9 @@ function dispatch_normal_event(event) {
             page_params.add_emoji_by_admins_only = event.value;
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
             page_params.realm_restricted_to_domain = event.value;
+        } else if (event.op === 'update' && event.property === 'message_retention_days') {
+            page_params.message_retention_days = event.value;
+            admin.update_message_retention_days();
         } else if (event.op === 'update_dict' && event.property === 'default') {
             $.each(event.data, function (key, value) {
                 page_params['realm_' + key] = value;
