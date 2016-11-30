@@ -99,10 +99,6 @@ var Templater = function (script) {
         };
       }
 
-      parent.value = function (name, type) {
-        return parent._[name]._data.val[type];
-      };
-
       parent.values = function (IS_INPUT) {
         var obj = {};
 
