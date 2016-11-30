@@ -142,7 +142,7 @@ def api_jira_webhook(request, user_profile, client,
         else:
             assignee_blurb = ''
         content = "%s **updated** %s%s:\n\n" % (author, issue, assignee_blurb)
-        changelog = get_in(payload, ['changelog',])
+        changelog = get_in(payload, ['changelog'])
         comment = get_in(payload, ['comment', 'body'])
 
         if changelog != '':

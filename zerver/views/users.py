@@ -228,8 +228,10 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
     default_sending_stream = None
     if default_sending_stream_name is not None:
         default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
-    if default_sending_stream and not default_sending_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_sending_stream):
+    if (default_sending_stream and not
+        default_sending_stream.is_public() and not \
+        subscribed_to_stream(user_profile, default_sending_stream)):
+
         return json_error(_('Insufficient permission'))
 
     default_events_register_stream = None
@@ -237,7 +239,7 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
         default_events_register_stream = stream_or_none(default_events_register_stream_name,
                                                         user_profile.realm)
     if default_events_register_stream and not default_events_register_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_events_register_stream):
+            subscribed_to_stream(user_profile, default_events_register_stream):
         return json_error(_('Insufficient permission'))
 
 
@@ -298,7 +300,7 @@ def get_members_backend(request, user_profile):
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
                   "email": profile.email,
-                  "avatar_url": avatar_url,}
+                  "avatar_url": avatar_url, }
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)
