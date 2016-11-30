@@ -1377,7 +1377,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     self.test_email,
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
-            )
+                    )
         self.assert_max_length(queries, 43)
 
         self.assert_length(events, 8)

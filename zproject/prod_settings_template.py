@@ -20,11 +20,11 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
 AUTHENTICATION_BACKENDS = (
-#    'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
-#    'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
-#    'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
-#    'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
-#    'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
+    #    'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
+    #    'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
+    #    'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
+    #    'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
+    #    'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
     )
 
 # To enable Google authentication, you need to do the following:
@@ -332,7 +332,7 @@ LDAP_APPEND_DOMAIN = None # type: str
 
 # This map defines how to populate attributes of a Zulip user from LDAP.
 AUTH_LDAP_USER_ATTR_MAP = {
-# Populate the Django user's name from the LDAP directory.
+    # Populate the Django user's name from the LDAP directory.
     "full_name": "cn",
 }
 

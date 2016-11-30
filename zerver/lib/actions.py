@@ -335,7 +335,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                     'OPTIN_TIME': datetime.datetime.isoformat(now().replace(microsecond=0)),
                 },
             },
-        lambda event: None)
+            lambda event: None)
 
 def notify_created_user(user_profile):
     # type: (UserProfile) -> None
