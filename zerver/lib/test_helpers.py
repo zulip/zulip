@@ -357,7 +357,10 @@ def get_all_templates():
 
     def is_valid_template(p, n):
         # type: (text_type, text_type) -> bool
-        return not n.startswith('.') and not n.startswith('__init__') and isfile(p)
+        return (not n.startswith('.') and
+                not n.startswith('__init__') and
+                not n.endswith(".md") and
+                isfile(p))
 
     def process(template_dir, dirname, fnames):
         # type: (str, str, Iterable[str]) -> None
