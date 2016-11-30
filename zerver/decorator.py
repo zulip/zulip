@@ -596,7 +596,7 @@ def rate_limit(domain='all'):
 
             if not user:
                 logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
-                                 func.__name__)
+                              func.__name__)
                 return func(request, *args, **kwargs)
 
             # Rate-limiting data is stored in redis

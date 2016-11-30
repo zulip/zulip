@@ -59,8 +59,8 @@ parser.add_option('--no-clear-memcached',
                   default=True, help='Do not clear memcached')
 
 parser.add_option('--force', dest='force',
-                      action="store_true",
-                      default=False, help='Run tests despite possible problems.')
+                  action="store_true",
+                  default=False, help='Run tests despite possible problems.')
 
 (options, arguments) = parser.parse_args()
 

@@ -64,7 +64,7 @@ class Command(BaseCommand):
         else:
             filt = models.Q(message__id__in=[mid.strip() for mid in sys.stdin.read().split(',')])
         mids = [m.id for m in
-                    UserMessage.objects.filter(filt, user_profile=user_profile).order_by('-id')]
+                UserMessage.objects.filter(filt, user_profile=user_profile).order_by('-id')]
 
         if options["for_real"]:
             sys.stdin.close()

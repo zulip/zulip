@@ -106,8 +106,8 @@ class FencedCodeExtension(markdown.Extension):
             else '_begin')
 
         md.preprocessors.add('fenced_code_block',
-                                 FencedBlockPreprocessor(md),
-                                 position)
+                             FencedBlockPreprocessor(md),
+                             position)
 
 
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):

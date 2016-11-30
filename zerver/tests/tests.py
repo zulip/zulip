@@ -270,8 +270,8 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
         self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
-        with self.settings(REALMS_HAVE_SUBDOMAINS = True), \
-             self.assertRaises(GetRealmByDomainException):
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
+             self.assertRaises(GetRealmByDomainException)):
             get_realm_by_email_domain('user@zulip.com')
 
 
@@ -845,7 +845,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
             bot_info = dict(
                 full_name='whatever',
                 short_name='whatever',
@@ -1182,7 +1182,7 @@ class BotTest(ZulipTestCase):
 
         # Try error case first (too many files):
         with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
             result = self.client_patch_multipart(
                 '/json/bots/hambot-bot@zulip.com',
                 dict(file1=fp1, file2=fp2))

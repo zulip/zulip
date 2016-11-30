@@ -952,8 +952,8 @@ class Message(ModelReprMixin, models.Model):
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
-                                   'website', 'ios', 'android')) or \
-                                   ('desktop app' in sending_client)
+                                   'website', 'ios', 'android')) or (
+                                   'desktop app' in sending_client)
 
     @staticmethod
     def content_has_attachment(content):

@@ -28,4 +28,4 @@ Usage: ./manage.py print_email_delivery_backlog
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         print(len(ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                  scheduled_timestamp__lte=datetime.utcnow()-timedelta(minutes=1))))
+                                              scheduled_timestamp__lte=datetime.utcnow()-timedelta(minutes=1))))

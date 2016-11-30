@@ -75,7 +75,7 @@ def list_of_tlds():
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [force_text(tld).lower().strip() for tld in open(tlds_file, 'r')
-                if tld not in blacklist and not tld[0].startswith('#')]
+            if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
 
@@ -959,9 +959,9 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             for word in realm_words:
                 escaped = re.escape(word.lower())
                 match_re = re.compile(u'(?:%s)%s(?:%s)' %
-                                        (allowed_before_punctuation,
-                                         escaped,
-                                         allowed_after_punctuation))
+                                      (allowed_before_punctuation,
+                                       escaped,
+                                       allowed_after_punctuation))
                 if re.search(match_re, content):
                     current_message.alert_words.add(word)
 
@@ -1113,8 +1113,8 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
-                                 BugdownUListPreprocessor(md),
-                                 "_begin")
+                             BugdownUListPreprocessor(md),
+                             "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
 
