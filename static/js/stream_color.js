@@ -48,10 +48,11 @@ function update_table_stream_color(table, stream_name, color) {
         var $label = $(label);
 
         if ($.trim($label.text()) === stream_name) {
-            $label.closest(".message-header-contents").css("background", payload.light);
-            $label.closest(".message-header-contents")
-                .find(".display-recipient-icon")
-                .css("color", payload.medium);
+            $label.closest(".stream_label")
+                .css("background", payload.medium);
+
+            $label.closest(".message-header-contents").find(".stream_topic")
+                .css("border-color", payload.medium);
         }
     });
 }
@@ -232,7 +233,7 @@ exports.lighter_stream_colors = function (hex) {
     var hsl = exports.hex_to_hsl(hex);
 
     var light = hsl.slice(0, 2).concat("90%");
-    var medium = hsl.slice(0, 2).concat("50%");
+    var medium = hsl.slice(0, 2).concat("65%");
 
     return {
         light: "hsl(" + light.join(",") + ")",

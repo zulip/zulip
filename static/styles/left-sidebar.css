@@ -308,7 +308,7 @@ ul.topic-list:not(:empty) {
 
 ul.expanded_private_messages {
     list-style-type: none;
-    font-weight: 300;
+    font-weight: 400;
     font-size: 84%;
     margin-left: 0px;
     padding-bottom: 2px;
