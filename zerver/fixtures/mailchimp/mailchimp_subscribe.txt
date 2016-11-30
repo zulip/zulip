@@ -1,0 +1,11 @@
+"type":"subscribe",
+"fired_at":"2016-11-29 23:38:36",
+"data[id]":"7407653990",
+"data[list_id]":"84258f38bb",
+"data[email]":"noahcristino@yahoo.com",
+"data[email_type]":"html",
+"data[merges][EMAIL]":"noahcristino@yahoo.com",
+"data[merges][FNAME]":"Noah",
+"data[merges][LNAME]":"Cristino",
+"data[ip_opt]":"73.114.27.149",
+"data[ip_signup]":"73.114.27.149"
