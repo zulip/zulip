@@ -21,6 +21,14 @@ zulip-core@googlegroups.com when you request to join the project or
 add a language so that we can be sure to accept your request to
 contribute.
 
+## Translation style guides
+
+We are building a collection of translation style guides for Zulip,
+giving guidance on how Zulip should be translated into specific
+languages (e.g. what word to translate words like "home" to):
+
+* [Spanish](spanish.html)
+
 ## Setting Default Language in Zulip
 
 Zulip allows you to set the default language through the settings
