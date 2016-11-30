@@ -104,7 +104,7 @@ class HomepageForm(forms.Form):
     # This form is important because it determines whether users can
     # register for our product. Be careful when modifying the
     # validators.
-    email = forms.EmailField(validators=[is_inactive,])
+    email = forms.EmailField(validators=[is_inactive, ])
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
