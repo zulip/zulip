@@ -54,7 +54,7 @@ def get_changed_source_files(other_checkout):
         # If git returned an error, assume we can't reuse any files, and
         # regenerate everything.
         print("Warning: git returned an error when comparing to the previous")
-        print ("deploy in %s. Will re-minify JavaScript instead of reusing"
+        print("deploy in %s. Will re-minify JavaScript instead of reusing"
                % (other_checkout,))
         return None
 
