@@ -19,7 +19,8 @@ from tornado import web
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler, websocket_connect
 
-if False: from typing import Any, Callable, Generator, Optional
+if False:
+    from typing import Any, Callable, Generator, Optional
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")

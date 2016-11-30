@@ -91,17 +91,23 @@ class TypesPrintTest(TestCase):
 
     def test_class(self):
         # type: () -> None
-        class A(object): pass
+        class A(object):
+            pass
 
-        class B(str): pass
+        class B(str):
+            pass
+
         self.check_signature("<lambda>(A) -> str", 'A', (lambda x: x.__class__.__name__), A())
         self.check_signature("<lambda>(B) -> int", 5, (lambda x: len(x)), B("hello"))
 
     def test_sequence(self):
         # type: () -> None
-        class A(list): pass
+        class A(list):
+            pass
 
-        class B(list): pass
+        class B(list):
+            pass
+
         self.check_signature("add(A([]), B([str])) -> [str]",
                              ['two'], add, A([]), B(['two']))
         self.check_signature("add(A([int]), B([str])) -> [int, ...]",
@@ -111,11 +117,13 @@ class TypesPrintTest(TestCase):
 
     def test_mapping(self):
         # type: () -> None
-        class A(dict): pass
+        class A(dict):
+            pass
 
         def to_A(l=[]):
             # type: (Iterable[Tuple[Any, Any]]) -> A
             return A(l)
+
         self.check_signature("to_A() -> A([])", A(()), to_A)
         self.check_signature("to_A([(int, str)]) -> A([(int, str)])",
                              {2: 'two'}, to_A, [(2, 'two')])

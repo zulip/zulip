@@ -1076,7 +1076,7 @@ def already_sent_mirrored_message_id(message):
     else:
         time_window = datetime.timedelta(seconds=0)
 
-    messages =  Message.objects.filter(
+    messages = Message.objects.filter(
         sender=message.sender,
         recipient=message.recipient,
         content=message.content,

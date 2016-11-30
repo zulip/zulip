@@ -42,7 +42,7 @@ def encode_info(info):
             result = '(stringified)\n'
         except:
             pass
-        result +=  cgi.escape(pprint.pformat(info, indent=4))
+        result += cgi.escape(pprint.pformat(info, indent=4))
         return '<pre>' + result + '</pre>'
     except:
         pass
