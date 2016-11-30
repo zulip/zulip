@@ -24,20 +24,21 @@ exports.render_now = function (time) {
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
     if (days_old === 0) {
-        return [i18n.t("Today"), true];
+        return ["<span>" + i18n.t("Today") + "</span>", true];
     } else if (days_old === 1) {
-        return [i18n.t("Yesterday"), true];
+        return ["<span>" + i18n.t("Yesterday") + "</span>", true];
     } else if (days_old >= 365) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is over a year old.
-        return [time.toString("MMM\xa0dd,\xa0yyyy"), false];
+        return ["<span>" + time.toString("MMM\xa0dd,\xa0yyyy") + "</span>", false];
     }
+
     // For now, if we get a message from tomorrow, we don't bother
     // rewriting the timestamp when it gets to be tomorrow.
 
     // "\xa0" is U+00A0 NO-BREAK SPACE.
     // Can't use &nbsp; as that represents the literal string "&nbsp;".
-    return [time.toString("MMM\xa0dd"), false];
+    return ["<span>" + time.toString("MMM\xa0dd") + "</span>", false];
 };
 
 // List of the dates that need to be updated when the day changes.

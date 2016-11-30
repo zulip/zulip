@@ -2310,6 +2310,7 @@ button.topic_edit_cancel {
 .date_row .date-direction {
     display: inline-block;
     padding-right: 5px;
+    color: #aaa;
 }
 
 .date_row .date-line {
@@ -2321,19 +2322,18 @@ button.topic_edit_cancel {
     margin: 0px 5px 0px 5px;
 }
 
-.date_row span {
+.date_row > span {
     display: block;
     background: inherit;
     padding: 4px;
     overflow: hidden;
     text-transform: uppercase;
     font-size: 0.8em;
-    color: #bbb;
-    text-shadow: 1px 1px 0px #fff;
+    color: #fff;
 }
 
-.date_row span:before,
-.date_row span:after {
+.date_row > span:before,
+.date_row > span:after {
     display: inline-block;
     position: relative;
     content: " ";
@@ -2344,18 +2344,44 @@ button.topic_edit_cancel {
     border-bottom: 1px solid #fff;
 }
 
-.date_row span:before {
+.date_row > span:before {
     right: 0.5em;
     margin-left: -50%;
 }
 
-.date_row span:after {
+.date_row > span:after {
     left: 0.5em;
     margin-right: -50%;
 }
 
 .include-sender .message_edit {
     margin-top: -14px;
+}
+
+.date_row span span {
+    background-color: #aaa;
+    padding: 2px 5px 0px 5px;
+    border-radius: 8px;
+}
+
+#group-pm-list {
+    display: none;
+}
+
+#userlist-header,
+#group-pm-header {
+    border-top: 1px solid #e2e2e2;
+    margin-top: 5px;
+    margin-right: 10px;
+}
+
+.sidebar-items:first-of-type #userlist-header {
+    border-top: none;
+}
+
+#feedback_section {
+    text-align: left;
+    padding-bottom: 10px;
 }
 
 .message_edit {
