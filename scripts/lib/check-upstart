@@ -1,0 +1,7 @@
+#!/bin/bash
+release=$(lsb_release -sc)
+
+if [ "$release" = "xenial" ] && [ -x /sbin/start ] && [ -x /sbin/stop ] && [ -x /sbin/restart ] && [ -x /sbin/status ] && [ -x /sbin/initctl ]; then
+    echo "Please uninstall the \"upstart\" package \"apt-get remove upstart\" and rerun the install script."
+    exit 1
+fi
