@@ -15,7 +15,7 @@ def get_realm_expired_messages(realm):
                                                              pub_date__lt=expired_date)
     if not expired_messages.exists():
         return None
-    return {'realm_id': realm.id,'expired_messages': expired_messages}
+    return {'realm_id': realm.id, 'expired_messages': expired_messages}
 
 
 def get_expired_messages():
