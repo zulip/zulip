@@ -13,7 +13,8 @@ from irc.client import ip_numstr_to_quad, ip_quad_to_numstr, Event, ServerConnec
 import zulip
 import optparse
 
-if False: from typing import Any
+if False:
+    from typing import Any
 
 IRC_DOMAIN = "irc.example.com"
 
