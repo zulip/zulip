@@ -42,8 +42,8 @@ var zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
     mentioned_message_count: 0,
-    stream_count: new Dict(),
-    subject_count: new Dict(),
+    stream_count: new Dict({fold_case: true}),
+    subject_count: new Dict({fold_case: true}),
     pm_count: new Dict(),
     unread_in_current_view: 0,
 };
