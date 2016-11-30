@@ -1946,11 +1946,11 @@ msgstr "帐户已经停用"
 
 #: zerver/views/__init__.py:736
 msgid "New organization creation disabled."
-msgstr ""
+msgstr "不能开始新机构"
 
 #: zerver/views/__init__.py:739
 msgid "The organization creation link has been expired or is not valid."
-msgstr ""
+msgstr "开始机构链接太旧或者不行"
 
 #: zerver/views/__init__.py:1076
 msgid "Password auth is disabled in your team."
@@ -2013,7 +2013,7 @@ msgstr "IRC频道名称必须以#开头"
 
 #: zerver/views/messages.py:872
 msgid "Your organization has turned off message editing."
-msgstr ""
+msgstr "你的机构不让编辑消息"
 
 #: zerver/views/messages.py:877
 msgid "Unknown message id"
@@ -2033,7 +2033,7 @@ msgstr "无需修改（Nothing to change）"
 
 #: zerver/views/messages.py:912 zerver/views/webhooks/ifttt.py:23
 msgid "Content can't be empty"
-msgstr ""
+msgstr "东西不能是空的"
 
 #: zerver/views/messages.py:939
 msgid "No such message"
@@ -2063,7 +2063,7 @@ msgstr "Token不存在"
 #: zerver/views/realm.py:37 zerver/views/user_settings.py:124
 #, python-format
 msgid "Invalid language '%s'"
-msgstr ""
+msgstr "语言不行"
 
 #: zerver/views/streams.py:56 zerver/views/streams.py:312
 #, python-format
@@ -2224,7 +2224,7 @@ msgstr "错误的事件%s"
 
 #: zerver/views/webhooks/ifttt.py:21
 msgid "Subject can't be empty"
-msgstr ""
+msgstr "标题不能空的"
 
 #: zerver/views/webhooks/jira.py:180
 msgid "Unknown JIRA event type"
@@ -2274,7 +2274,7 @@ msgstr "没有找到 Kerberos凭证"
 
 #: zerver/views/zephyr.py:29
 msgid "Webathena login not enabled"
-msgstr ""
+msgstr  "Webathena 登录不允许"
 
 #: zerver/views/zephyr.py:41
 msgid "Invalid Kerberos cache"
