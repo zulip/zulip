@@ -38,7 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
-from typing import Any, Dict, Mapping, Tuple, Optional
+from typing import Any, Dict, Mapping, Optional
 
 __version__ = "0.2.5"
 
