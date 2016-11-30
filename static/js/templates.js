@@ -54,7 +54,7 @@ Handlebars.registerHelper('if_and', function () {
     //     {{/if_and}}
     var options = arguments[arguments.length - 1];
     var i;
-    for (i = 0; i < arguments.length - 1; i+=1) {
+    for (i = 0; i < arguments.length - 1;i+=1) {
         if (!arguments[i]) {
             return options.inverse(this);
         }
@@ -70,7 +70,7 @@ Handlebars.registerHelper('if_or', function () {
     //     {{/if_or}}
     var options = arguments[arguments.length - 1];
     var i;
-    for (i = 0; i < arguments.length - 1; i+=1) {
+    for (i = 0; i < arguments.length - ;i+=1) {
         if (arguments[i]) {
             return options.fn(this);
 

@@ -131,9 +131,9 @@ exports.actions_menu_handle_keyboard = function (key) {
     if (index === -1) {
         index = 0;
     } else if ((key === 'down_arrow' || key === 'vim_down') && index < items.length - 1) {
-        index+=1;
+        index += 1;
     } else if ((key === 'up_arrow' || key === 'vim_up') && index > 0) {
-        index-=1;
+        index -= 1;
     }
     items.eq(index).focus();
 };

@@ -26,12 +26,12 @@ exports.update_state = function (granted, used) {
         $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());
         $("#invite-hearts").empty();
         var i;
-        for (i = 0; i < used; i+=1) {
+        for (i = 0; i < used;i+=1) {
             $("#invite-hearts").append($('<i class="icon-vector-heart"> </i>'));
         }
 
         var invites_left = Math.max(0, granted - used);
-        for (i = 0; i < invites_left; i+=1) {
+        for (i = 0; i < invites_left;i+=1) {
             $("#invite-hearts").append($('<i class="icon-vector-heart-empty"> </i>'));
         }
 

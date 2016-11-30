@@ -13,7 +13,7 @@ function phrase_match(phrase, q) {
     }
 
     var parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i+=1) {
+    for (i = 0; i < parts.length;i+=1) {
         if (parts[i].indexOf(q) === 0) {
             return true;
         }
@@ -304,7 +304,7 @@ function get_operator_subset_suggestions(query, operators) {
     var i;
     var suggestions = [];
 
-    for (i = operators.length - 1; i >= 1; i-=1) {
+    for (i = operators.length - 1; i >= 1;i-=1) {
         var subset = operators.slice(0, i);
         var search_string = Filter.unparse(subset);
         var description = Filter.describe(subset);

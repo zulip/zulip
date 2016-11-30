@@ -176,7 +176,7 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
         if (presence_info[user_id]) {
             var status = presence_info[user_id].status;
             if (status && (status !== 'offline')) {
-                num_present+=1;
+                num_present += 1;
             }
         }
     });

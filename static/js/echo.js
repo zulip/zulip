@@ -103,7 +103,7 @@ function add_subject_links(message) {
                 var current_group = i + 1;
                 var back_ref = "\\" + current_group;
                 link_url = link_url.replace(back_ref, matched_group);
-                i+=1;
+                i += 1;
             }
             links.push(link_url);
         }
@@ -352,7 +352,7 @@ function handleRealmFilter(pattern, matches) {
     _.each(matches, function (match) {
         var back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
-        current_group+=1;
+        current_group += 1;
     });
 
     return url;
@@ -373,7 +373,7 @@ function python_to_js_filter(pattern, url) {
 
         match = named_group_re.exec(pattern);
 
-        current_group+=1;
+        current_group += 1;
     }
     // Convert any python in-regex flags to RegExp flags
     var js_flags = 'g';

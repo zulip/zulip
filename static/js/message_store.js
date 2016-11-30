@@ -29,7 +29,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     if (recipient === undefined && fallback_attr !== undefined) {
         recipient = other_recipients[0][fallback_attr];
     }
-    for (i = 1; i < other_recipients.length; i+=1) {
+    for (i = 1; i < other_recipients.length;i+=1) {
         var attr_value = other_recipients[i][attr];
         if (attr_value === undefined && fallback_attr !== undefined) {
             attr_value = other_recipients[i][fallback_attr];
@@ -384,7 +384,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
 
         // Iterate backwards to find the last message sent_by_me, stopping at
         // the pointer position.
-        for (i = messages.length-1; i>=0; i-=1) {
+        for (i = messages.length-1; i>=0;i-=1) {
             var id = messages[i].id;
             if (id <= selected_id) {
                 break;
