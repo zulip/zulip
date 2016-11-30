@@ -931,6 +931,31 @@ def do_add_reaction(user_profile, message, emoji_name):
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile.id for um in ums])
 
+def do_remove_reaction(user_profile, message, emoji_name):
+    # type: (UserProfile, Message, text_type) -> None
+    Reaction.objects.filter(user_profile=user_profile,
+                            message=message,
+                            emoji_name=emoji_name).delete()
+
+    user_dict = {'user_id': user_profile.id,
+                 'email': user_profile.email,
+                 'full_name': user_profile.full_name} # type: Dict[str, Any]
+
+    event = {'type': 'reaction',
+             'op': 'remove',
+             'user': user_dict,
+             'message_id': message.id,
+             'emoji_name': emoji_name} # type: Dict[str, Any]
+
+    # Recipients for message update events, including reactions, are
+    # everyone who got the original message.  This means reactions
+    # won't live-update in preview narrows, but it's the right
+    # performance tradeoff, since otherwise we'd need to send all
+    # reactions to public stream messages to every browser for every
+    # client in the organization, which doesn't scale.
+    ums = UserMessage.objects.filter(message=message.id)
+    send_event(event, [um.user_profile.id for um in ums])
+
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],

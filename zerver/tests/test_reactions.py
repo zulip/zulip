@@ -116,7 +116,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid message(s)")
 
 class ReactionTest(ZulipTestCase):
-    def test_existing_reaction(self):
+    def test_add_existing_reaction(self):
         # type: () -> None
         """
         Creating the same reaction twice fails
@@ -141,8 +141,40 @@ class ReactionTest(ZulipTestCase):
                                   **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction already exists")
 
+    def test_remove_nonexisting_reaction(self):
+        # type: () -> None
+        """
+        Removing a reaction twice fails
+        """
+        pm_sender = 'hamlet@zulip.com'
+        pm_recipient = 'othello@zulip.com'
+        reaction_sender = pm_recipient
+
+        pm = self.client_post("/api/v1/messages", {"type": "private",
+                                                   "content": "Test message",
+                                                   "to": pm_recipient},
+                              **self.api_auth(pm_sender))
+        self.assert_json_success(pm)
+        content = ujson.loads(pm.content)
+        pm_id = content['id']
+        add = self.client_post('/api/v1/reactions', {'message_id': pm_id,
+                                                     'emoji': 'smile'},
+                               **self.api_auth(reaction_sender))
+        self.assert_json_success(add)
+
+        first = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
+                                                         'emoji': 'smile'},
+                                   **self.api_auth(reaction_sender))
+        self.assert_json_success(first)
+
+        second = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
+                                                         'emoji': 'smile'},
+                                    **self.api_auth(reaction_sender))
+        self.assert_json_error(second, "Reaction does not exist")
+
+
 class ReactionEventTest(ZulipTestCase):
-    def test_event(self):
+    def test_add_event(self):
         # type: () -> None
         """
         Recipients of the message receive the reaction event
@@ -178,5 +210,49 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event['user']['email'], reaction_sender)
         self.assertEqual(event['type'], 'reaction')
         self.assertEqual(event['op'], 'add')
+        self.assertEqual(event['emoji_name'], 'smile')
+        self.assertEqual(event['message_id'], pm_id)
+
+    def test_remove_event(self):
+        # type: () -> None
+        """
+        Recipients of the message receive the reaction event
+        and event contains relevant data
+        """
+        pm_sender = 'hamlet@zulip.com'
+        pm_recipient = 'othello@zulip.com'
+        reaction_sender = pm_recipient
+
+        result = self.client_post("/api/v1/messages", {"type": "private",
+                                                       "content": "Test message",
+                                                       "to": pm_recipient},
+                                  **self.api_auth(pm_sender))
+        self.assert_json_success(result)
+        content = ujson.loads(result.content)
+        pm_id = content['id']
+
+        expected_recipient_emails = set([pm_sender, pm_recipient])
+        expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
+
+        add = self.client_post('/api/v1/reactions', {'message_id': pm_id,
+                                                     'emoji': 'smile'},
+                               **self.api_auth(reaction_sender))
+        self.assert_json_success(add)
+
+        events = [] # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
+                                                              'emoji': 'smile'},
+                                        **self.api_auth(reaction_sender))
+        self.assert_json_success(result)
+        self.assertEqual(len(events), 1)
+
+        event = events[0]['event']
+        event_user_ids = set(events[0]['users'])
+
+        self.assertEqual(expected_recipient_ids, event_user_ids)
+        self.assertEqual(event['user']['email'], reaction_sender)
+        self.assertEqual(event['type'], 'reaction')
+        self.assertEqual(event['op'], 'remove')
         self.assertEqual(event['emoji_name'], 'smile')
         self.assertEqual(event['message_id'], pm_id)

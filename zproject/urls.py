@@ -200,8 +200,10 @@ v1_api_and_json_patterns = [
 
     # reactions -> zerver.view.reactions
     # POST adds a reaction to a message
+    # DELETE removes a reaction from a message
     url(r'^reactions$', rest_dispatch,
-        {'POST': 'zerver.views.reactions.add_reaction_backend'}),
+        {'POST': 'zerver.views.reactions.add_reaction_backend',
+         'DELETE': 'zerver.views.reactions.remove_reaction_backend'}),
 
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
