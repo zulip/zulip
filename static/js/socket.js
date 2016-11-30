@@ -89,7 +89,11 @@ Socket.prototype = {
 
     _get_next_req_id: function Socket__get_next_req_id() {
         var req_id = page_params.event_queue_id + ':' + this._next_req_id_counter;
+<<<<<<< HEAD
         this._next_req_id_counter += 1;
+=======
+        this._next_req_id_counter+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         return req_id;
     },
 
@@ -239,7 +243,11 @@ Socket.prototype = {
                 };
                 request.error = function (type, resp) {
                   blueslip.info("Could not authenticate with server: " + resp.msg);
+<<<<<<< HEAD
                   that._connection_failures += 1;
+=======
+                  that._connection_failures+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
                   that._try_to_reconnect({reason: 'auth_fail',
                                           wait_time: that._reconnect_wait_time()});
                 };
@@ -277,7 +285,11 @@ Socket.prototype = {
 
             blueslip.info("SockJS connection lost.  Attempting to reconnect soon."
                           + " (" + event.code.toString() + ", " + event.reason + ")");
+<<<<<<< HEAD
             that._connection_failures += 1;
+=======
+            that._connection_failures+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             that._is_reconnecting = false;
             // We don't need to specify a reason because the Socket is already closed
             that._try_to_reconnect({wait_time: that._reconnect_wait_time()});

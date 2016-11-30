@@ -260,7 +260,11 @@ exports.MessageList.prototype = {
             // for lower_bound purposes, find the real leftmost index (first non-local id)
             do {
                 potential_closest_matches.push(closest);
+<<<<<<< HEAD
                 closest -= 1;
+=======
+                closest-=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             } while(closest > 0 && this._is_localonly_id(items[closest - 1].id));
         }
         potential_closest_matches.push(closest);
@@ -308,7 +312,11 @@ exports.MessageList.prototype = {
                 break;
             }
             next_msg_id = msg_id;
+<<<<<<< HEAD
             idx += 1;
+=======
+            idx+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         }
 
         if (next_msg_id > 0) {

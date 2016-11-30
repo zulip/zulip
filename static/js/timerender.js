@@ -89,7 +89,11 @@ function render_date_span(elem, time_str, time_above_str) {
 // okay since to update the time later we look up the node by its id.)
 exports.render_date = function (time, time_above) {
     var id = "timerender" + next_timerender_id;
+<<<<<<< HEAD
     next_timerender_id += 1;
+=======
+    next_timerender_id+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
     var rendered_time = exports.render_now(time);
     var node = $("<span />").attr('id', id);
     if (time_above !== undefined) {

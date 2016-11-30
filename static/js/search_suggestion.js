@@ -13,7 +13,11 @@ function phrase_match(phrase, q) {
     }
 
     var parts = phrase.split(' ');
+<<<<<<< HEAD
     for (i = 0; i < parts.length;i+=1) {
+=======
+    for (i = 0; i < parts.length; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         if (parts[i].indexOf(q) === 0) {
             return true;
         }
@@ -304,7 +308,11 @@ function get_operator_subset_suggestions(query, operators) {
     var i;
     var suggestions = [];
 
+<<<<<<< HEAD
     for (i = operators.length - 1; i >= 1;i-=1) {
+=======
+    for (i = operators.length - 1; i >= 1; i-=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         var subset = operators.slice(0, i);
         var search_string = Filter.unparse(subset);
         var description = Filter.describe(subset);

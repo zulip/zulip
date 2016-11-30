@@ -103,7 +103,11 @@ function add_subject_links(message) {
                 var current_group = i + 1;
                 var back_ref = "\\" + current_group;
                 link_url = link_url.replace(back_ref, matched_group);
+<<<<<<< HEAD
                 i += 1;
+=======
+                i+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             }
             links.push(link_url);
         }
@@ -352,7 +356,11 @@ function handleRealmFilter(pattern, matches) {
     _.each(matches, function (match) {
         var back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
+<<<<<<< HEAD
         current_group += 1;
+=======
+        current_group+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
     });
 
     return url;
@@ -373,7 +381,11 @@ function python_to_js_filter(pattern, url) {
 
         match = named_group_re.exec(pattern);
 
+<<<<<<< HEAD
         current_group += 1;
+=======
+        current_group+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
     }
     // Convert any python in-regex flags to RegExp flags
     var js_flags = 'g';

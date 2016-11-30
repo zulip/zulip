@@ -176,7 +176,11 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
         if (presence_info[user_id]) {
             var status = presence_info[user_id].status;
             if (status && (status !== 'offline')) {
+<<<<<<< HEAD
                 num_present += 1;
+=======
+                num_present+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             }
         }
     });

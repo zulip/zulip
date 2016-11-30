@@ -19,7 +19,11 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
+<<<<<<< HEAD
     for (j = 0; (!tr.is('.message_row')) && j < 10;j+=1) {
+=======
+    for (j = 0; (!tr.is('.message_row')) && j < 10; j+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         tr = iterate_row(tr);
     }
     if (j === 10) {
@@ -41,7 +45,11 @@ function copy_handler(e) {
     var start_data, end_data;
     var skip_same_td_check = false;
     var div = $('<div>'), content;
+<<<<<<< HEAD
     for (i = 0; i < selection.rangeCount;i+=1) {
+=======
+    for (i = 0; i < selection.rangeCount; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         range = selection.getRangeAt(i);
         ranges.push(range);
 

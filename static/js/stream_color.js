@@ -172,7 +172,11 @@ exports.get_color_class = _.memoize(function (color) {
 
     // CSS colors are specified in the sRGB color space.
     // Convert to linear intensity values.
+<<<<<<< HEAD
     for (i=0; i<3;i+=1) {
+=======
+    for (i=0; i<3; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
     }
 

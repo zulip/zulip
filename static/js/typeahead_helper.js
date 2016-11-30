@@ -50,7 +50,11 @@ exports.highlight_query_in_phrase = function (query, phrase) {
 
     var result = "";
     var parts = phrase.split(' ');
+<<<<<<< HEAD
     for (i = 0; i < parts.length;i+=1) {
+=======
+    for (i = 0; i < parts.length; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         if (i > 0) {
             result += " ";
         }

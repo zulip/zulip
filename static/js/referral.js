@@ -26,12 +26,20 @@ exports.update_state = function (granted, used) {
         $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());
         $("#invite-hearts").empty();
         var i;
+<<<<<<< HEAD
         for (i = 0; i < used;i+=1) {
+=======
+        for (i = 0; i < used; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             $("#invite-hearts").append($('<i class="icon-vector-heart"> </i>'));
         }
 
         var invites_left = Math.max(0, granted - used);
+<<<<<<< HEAD
         for (i = 0; i < invites_left;i+=1) {
+=======
+        for (i = 0; i < invites_left; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             $("#invite-hearts").append($('<i class="icon-vector-heart-empty"> </i>'));
         }
 

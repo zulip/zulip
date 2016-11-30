@@ -56,7 +56,11 @@ exports.initialize_casper = function (viewport) {
     casper.test.on('fail', function failure() {
         if (casper_failure_count <= 10) {
             casper.capture("var/casper/casper-failure" + casper_failure_count + ".png");
+<<<<<<< HEAD
             casper_failure_count += 1;
+=======
+            casper_failure_count+=1;
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         }
     });
 

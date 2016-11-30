@@ -39,7 +39,11 @@
         }, function () {
             var i;
             initialized = true;
+<<<<<<< HEAD
             for (i=0; i<callbacks.length;i+=1) {
+=======
+            for (i=0; i<callbacks.length; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
                 callbacks[i]();
             }
         });

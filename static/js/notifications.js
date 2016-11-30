@@ -276,7 +276,11 @@ function process_notification(notification) {
 
     if (content.length > 150) {
         // Truncate content at a word boundary
+<<<<<<< HEAD
         for (i = 150; i > 0;i-=1) {
+=======
+        for (i = 150; i > 0; i-=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             if (content[i] === ' ') {
                 break;
             }

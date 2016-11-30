@@ -61,7 +61,11 @@ function _fade_messages() {
     normal_display = false;
 
     // Update the visible messages first, before the compose box opens
+<<<<<<< HEAD
     for (i = 0; i < visible_groups.length;i+=1) {
+=======
+    for (i = 0; i < visible_groups.length; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         first_row = rows.first_message_in_group(visible_groups[i]);
         first_message = current_msg_list.get(rows.id(first_row));
         should_fade_group = !fade_heuristic(focused_recipient, first_message);
@@ -83,7 +87,11 @@ function _fade_messages() {
 
         // Note: The below algorithm relies on the fact that all_elts is
         // sorted as it would be displayed in the message view
+<<<<<<< HEAD
         for (i = 0; i < all_groups.length;i+=1) {
+=======
+        for (i = 0; i < all_groups.length; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
             var group_elt = $(all_groups[i]);
             should_fade_group = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_group);

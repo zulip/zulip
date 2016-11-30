@@ -54,7 +54,11 @@ Handlebars.registerHelper('if_and', function () {
     //     {{/if_and}}
     var options = arguments[arguments.length - 1];
     var i;
+<<<<<<< HEAD
     for (i = 0; i < arguments.length - 1;i+=1) {
+=======
+    for (i = 0; i < arguments.length - 1; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         if (!arguments[i]) {
             return options.inverse(this);
         }
@@ -70,7 +74,11 @@ Handlebars.registerHelper('if_or', function () {
     //     {{/if_or}}
     var options = arguments[arguments.length - 1];
     var i;
+<<<<<<< HEAD
     for (i = 0; i < arguments.length - ;i+=1) {
+=======
+    for (i = 0; i < arguments.length - 1; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         if (arguments[i]) {
             return options.fn(this);
 
