@@ -197,7 +197,7 @@ individual users. ![New message](/static/images/help/new_message.png)
 **[Emoji](#emoji)** |
 **[Customization](#customization)**  |
 **[Muting vs. unsubscribing](#muting-a-stream-vs-unsubscribing-from-it)**
-
+**[Change your name](#Changing-your-user-name)**
 
 ### Keyboard shortcuts
 
@@ -472,6 +472,18 @@ unmuted streams, saving space.
 
 You can't do any of that with a unsubscribed stream.
 
+**[Go back to “Other common questions”](#other-common-questions)** |
+  **[Go back to “Table of contents”](#table-of-contents)**
+
+### Changing your user name
+
+How to change your name on a desktop client:
+
+ * **1.** Click on the gear wheel on the top-right of your screen. This will open the menu.
+ * **2.** Select the "Settings" option. This will open your settings.
+ * **3.** Type in the username you want to have in the "Full name" field. Your name cannot be empty. Your name must be less than 100 characters. Your name may not contain the characters ', ", `, @, > or *.
+ * **4.** Click on the "Save Changes" button. This will save your new username.
+ 
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#table-of-contents)**
 
