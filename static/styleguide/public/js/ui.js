@@ -72,7 +72,7 @@ var UIRender = function (templates) {
                             title: "Components"
                         });
                         group.component.get("list").appendChild(block);
-                    });    
+                    });
                 }
 
                 if (_meta.fonts) {
@@ -91,7 +91,7 @@ var UIRender = function (templates) {
                             title: "Fonts"
                         });
                         group.font.get("list").appendChild(block);
-                    });                    
+                    });
                 }
 
                 (function () {
@@ -110,16 +110,20 @@ var UIRender = function (templates) {
                 container.appendChild(group.font);
                 container.appendChild(group.color);
             },
-            class: function (class_name, component, container) {
+            class: function (payload, component, container) {
                 var t = meta.template,
                     class_button = t.ui.new("ind-class");
 
                 class_button.set("innerHTML", {
-                    name: class_name.class
+                    name: payload.class
                 });
 
                 class_button.set("data-name", {
-                    name: class_name.class
+                    name: payload.class
+                });
+
+                class_button.set("data-namespace", {
+                    name: payload.namespace
                 });
 
                 event.class_button(class_button, container, component);
@@ -129,7 +133,7 @@ var UIRender = function (templates) {
             create_table: function (block, component, props_list) {
                 props_list.push("id");
 
-                var head = ["Property", "Value"],
+                var head = ["Attribute", "Value"],
                     body = props_list.map(function (o) {
                         return [o, component.getAttribute(o) || component[o] || ""];
                     });
@@ -157,7 +161,7 @@ var UIRender = function (templates) {
                                         if (this.dataset.column === "1") {
                                             funcs.note.show("Type here to change node properties.", this, {
                                                 align: "left"
-                                            });  
+                                            });
                                         }
                                     },
                                     unhover: function () {
@@ -174,13 +178,23 @@ var UIRender = function (templates) {
             component_block: function (template, selector) {
                 var t = meta.template;
 
+                var default_namespace = (function () {
+                    var div = document.createElement("div");
+                    div.className = "new-style";
+                    return div;
+                })();
+
                 var component = t.components.new(selector),
                     block = t.ui.new("component-block"),
                     table = funcs.render.create_table(block, component, template.modifiers),
                     code = block.get("code");
 
+                // the default namespace should be appended in. Find a better
+                // solution for this.
+                default_namespace.appendChild(component);
+
                 block.set("innerHTML", {
-                    preview: component,
+                    preview: default_namespace,
                     description: template.description,
                     title: template.name,
                     "set-props": table
@@ -195,7 +209,7 @@ var UIRender = function (templates) {
                 // event.copy_button(block.get("copy-button"), block.get("code"));
 
                 hljs.highlightBlock(code);
-                console.log(template);
+
                 if (template.classes.length > 0) {
                     template.classes.forEach(function (c) {
                         block.get("class-list").appendChild(funcs.render.class(c, component, block));

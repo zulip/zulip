@@ -92,14 +92,16 @@ Config("config.json", function (json, resources, parser) {
     }
 
     T.Object.forEach(parsed.base, function (o, i) {
-        o.forEach(function (class_name) {
+        o.forEach(function (payload) {
             if (json.resources.components[i]) {
                 if (!json.resources.components[i]) {
                     json.resources.components[i] = [];
                 }
+
                 json.resources.components[i].classes.push({
-                    name: class_name.replace(/^\./, ""),
-                    class: class_name.replace(/^\./, "")
+                    name: payload.value.replace(/^\./, ""),
+                    class: payload.value.replace(/^\./, ""),
+                    namespace: payload.namespace
                 });
             }
         });

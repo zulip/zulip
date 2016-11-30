@@ -1,4 +1,4 @@
-var CSSParser = (function (stylesheet) {
+var CSSParser = function (stylesheet) {
     var base = {},
         generic = [],
         failures = [];
@@ -9,24 +9,24 @@ var CSSParser = (function (stylesheet) {
         add_selector_prefix: function (sel) {
             return sel.split(/\s*,\s*/).map(function (o) {
                 if (o.match("body")) {
-                    return o.replace("body", ".preview");
+                    return o.replace("body", ".styleguide-preview");
                 } else {
-                    return ".preview " + o;
+                    return ".styleguide-preview " + o;
                 }
             }).join(", ");
         },
-        add: function (base_sel, value) {
+        add: function (base_sel, value, namespace) {
             if (base_sel === false) {
                 if (generic.indexOf(value) === -1) {
                     generic.push(value);
                 }
             } else {
-                console.log(base_sel, value);
                 if (!base[base_sel]) {
-                    base[base_sel] = [value];
+                    base[base_sel] = [{ namespace: namespace, value: value }];
                 } else {
                     if (base[base_sel].indexOf(value) === -1) {
-                        base[base_sel].push(value);
+                        // add namespace to here...
+                        base[base_sel].push({ namespace: namespace, value: value });
                     }
                 }
             }
@@ -89,14 +89,20 @@ var CSSParser = (function (stylesheet) {
                 return;
             }
 
-            (sel.match(/([\w-_]*\.[\w-_]+)+/g) || []).forEach(function (sel) {
-                var classes = sel.split(/\./);
+            (sel.match(/([\w-_]*\.[\w-_]+)+/g) || []).forEach(function (m) {
+                var classes = m.split(/\./);
+
                 var obj = {
                     modifier: "." + classes.pop(),
-                    base: classes.join(".") || false
+                    base: classes.join(".") || false,
+                    namespace: null
                 };
 
-                funcs.add(obj.base, obj.modifier);
+                if (obj.base) {
+                    obj.namespace = sel.substr(0, sel.indexOf(obj.base + obj.modifier) - 1);
+                }
+
+                funcs.add(obj.base, obj.modifier, obj.namespace);
             });
 
             return this;
@@ -104,6 +110,8 @@ var CSSParser = (function (stylesheet) {
     };
 
     var iterate_rules = function (sheet, rules) {
+        var bases = Object.keys(base);
+
         T.Array.forEach(rules || [], function (o, i) {
             prototype.selector.parse(o.selectorText);
             if (o.selectorText) {
@@ -112,7 +120,9 @@ var CSSParser = (function (stylesheet) {
 
                 sheet.deleteRule(i);
                 if (o.cssText) {
-                    sheet.insertRule(text.replace(selector, funcs.add_selector_prefix(selector)), i);
+                    var sel = text.replace(selector, funcs.add_selector_prefix(selector));
+
+                    sheet.insertRule(sel, i);
                 }
             } else if (o.cssRules) {
                 iterate_rules(o, o.cssRules);
@@ -162,4 +172,4 @@ var CSSParser = (function (stylesheet) {
     });
 
     return prototype;
-});
+};
