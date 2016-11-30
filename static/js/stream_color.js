@@ -38,11 +38,8 @@ exports.pick_color = function (used_colors) {
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.
-    var style = (function () {
-        var hsl = stream_color.hex_to_hsl(color);
-        hsl[2] = "90%";
-        return hsl;
-    }());
+
+    var payload = exports.lighter_stream_colors(color);
 
     var stream_labels = $("#floating_recipient_bar")
         .add(table).find(".stream_label .display-recipient-block");
@@ -229,6 +226,18 @@ exports.hex_to_hsl = function (hex) {
     });
 
     return exports.rgb_to_hsl.apply(null, rgb);
+};
+
+exports.lighter_stream_colors = function (hex) {
+    var hsl = exports.hex_to_hsl(hex);
+
+    var light = hsl.slice(0, 2).concat("90%");
+    var medium = hsl.slice(0, 2).concat("50%");
+
+    return {
+        light: "hsl(" + light.join(",") + ")",
+        medium: "hsl(" + medium + ")",
+    };
 };
 
 return exports;
