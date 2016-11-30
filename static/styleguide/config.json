@@ -1,8 +1,6 @@
 {
     "css": [
-    "/static/styles/components.css",
-    "/static/styles/zulip.css",
-    "/static/styles/settings.css"
+        "/static/styles/components.css"
     ],
     "templates": [
     "public/templates/components.html"
