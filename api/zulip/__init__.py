@@ -38,8 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
-from typing import Any, Dict, Mapping, Tuple
-from zerver.lib.type_debug import print_types
+from typing import Any, Dict, Mapping, Tuple, Optional
 
 __version__ = "0.2.5"
 
@@ -105,7 +104,7 @@ def _default_client():
     return "ZulipPython/" + __version__
 
 def generate_option_group(parser, prefix=''):
-    # type: (str, str) -> Any
+    # type: (str, str) ->  optparse.OptionGroup
     group = optparse.OptionGroup(parser, 'Zulip API configuration')
     group.add_option('--%ssite' % (prefix,),
                      dest="zulip_site",
@@ -156,7 +155,8 @@ def generate_option_group(parser, prefix=''):
     return group
 
 def init_from_options(options, client=None):
-    # type: (Any, Any) -> Any 
+    # I tried changing Any with opt.OptionParser but got attribute errors OptionParser has not attribute "zulip_client"
+    # type: (Any, Optional[str]) -> Client
     if options.zulip_client is not None:
         client = options.zulip_client
     elif client is None:
@@ -183,7 +183,7 @@ class Client(object):
                  site=None, client=None,
                  cert_bundle=None, insecure=None,
                  client_cert=None, client_cert_key=None):
-        # type: (str, str, str, bool, bool, Any, str, Any, bool, Any, str ) -> None
+        # type: (str, str, str, bool, bool, str, str, Any, bool, Any, str ) -> None
         if client is None:
             client = _default_client()
 
@@ -267,7 +267,7 @@ class Client(object):
         self.client_cert_key = client_cert_key
 
     def get_user_agent(self):
-        # type: () -> Any
+        # type: () -> str
         vendor = ''
         vendor_version = ''
         try:
@@ -292,7 +292,7 @@ class Client(object):
                 )
 
     def do_api_query(self, orig_request, url, method="POST", longpolling = False):
-        # type: (Any, str, str, bool ) -> Any
+        # type: (Mapping[Any, Any], str, str, bool ) -> Dict[str, Any]
         request = {}
 
         for (key, val) in six.iteritems(orig_request):
@@ -325,7 +325,7 @@ class Client(object):
             return True
 
         def end_error_retry(succeeded):
-            # type: (Any) -> None
+            # type: (bool) -> None
             if query_state["had_error_retry"] and self.verbose:
                 if succeeded:
                     print("Success!")
@@ -404,14 +404,7 @@ class Client(object):
                     "status_code": res.status_code}
 
     @classmethod
-    def _register(cls, 
-                  name, 
-                  url=None,
-                  make_request=None,
-                  method="POST", 
-                  computed_url=None,
-                  **query_kwargs 
-		 ):
+    def _register(cls, name, url=None, make_request=None,method="POST", computed_url=None,**query_kwargs):
         # type: (Any, str, str, Any, str, Any, **Any) -> Any
         if url is None:
             url = name
@@ -422,7 +415,7 @@ class Client(object):
                     request = {}
                 return request
         def call(self, *args, **kwargs):
-            # type: (*Any, **Any) -> Any
+            # type: (*Any, **Any) -> str
             request = make_request(*args, **kwargs)
             if computed_url is not None:
                 req_url = computed_url(request)
@@ -438,7 +431,7 @@ class Client(object):
             narrow = []
         def do_register(): # type: ignore
             while True:
-                if event_types is None: 
+                if event_types is None:
                     res = self.register() # type: ignore
                 else:
                     res = self.register(event_types=event_types, narrow=narrow) # type: ignore
@@ -488,10 +481,9 @@ class Client(object):
     def call_on_each_message(self, callback):
         # type: (Any) -> Any
         def event_callback(event):
-	    # type: (Dict[str, str]) -> Any
+            # type: (Dict[str, str]) -> Any
             if event['type'] == 'message':
                 callback(event['message'])
-
         self.call_on_each_event(event_callback, ['message'])
 
 def _mk_subs(streams, **kwargs):
@@ -562,3 +554,4 @@ Client._register('get_subscribers', method='GET',
                  make_request=_kwargs_to_dict)
 Client._register('render_message', method='GET', url='messages/render')
 Client._register('create_user', method='POST', url='users')
+
