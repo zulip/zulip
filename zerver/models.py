@@ -489,7 +489,6 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
-    BANNED_CHARS = ['*', '`', '\'', '>', '\"', '@']
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH) # type: Text
