@@ -589,10 +589,10 @@ def fetch_user_profile_cross_realm(response, config, context):
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
-        get_user_profile_by_email(settings.NOTIFICATION_BOT),
-        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
-        get_user_profile_by_email(settings.WELCOME_BOT),
-    ]]
+            get_user_profile_by_email(settings.NOTIFICATION_BOT),
+            get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
+            get_user_profile_by_email(settings.WELCOME_BOT),
+            ]]
 
 def fetch_attachment_data(response, realm_id, message_ids):
     # type: (TableData, int, Set[int]) -> None
