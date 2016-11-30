@@ -64,7 +64,7 @@ as a “**realm**”.
 **[… To a stream](#posting-and-replying-to-a-stream)** |
 **[… To individual users](#posting-and-replying-to-individual-users)** |
 **[Some facts about messages](#some-facts-about-messages)** |
-**[Editing past messages](#editing-past-messages)**
+**[Editing past messages](editing-past-messages.md)**
 
 At the bottom of your screen, choose whether to post to a stream or to
 individual users. ![New message](/static/images/help/new_message.png)
@@ -145,31 +145,6 @@ individual users. ![New message](/static/images/help/new_message.png)
  * If you want greater separation of your paragraphs, enter a
    non-breaking space (option-space on Macintosh) on a line alone
    between other paragraphs.
-
-**[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-### Editing past messages
-
- * If you want to edit a past message of your own after it has been
-   posted, make sure the mouse is over that message. You should see a
-   little pencil ![pencil](/static/images/help/pencil.png) at the end
-   of the message and a “down-chevron”
-   ![down chevron](/static/images/help/down_chevron.png) near the
-   upper right corner of the message. Clicking either one of these
-   will give you editing options.
-
- * If you completely delete the text of a message, you won’t be able
-   to save it — so try putting a dash or “(deleted)” in as the message
-   text. The fact that there was once a message there will still be
-   evident, and the time stamp of the original posting date and time
-   will still be shown.
-
- * After you have edited a message, `(EDITED)` appears over the
-   message and to the right of your name. It is visible to everyone.
-
- * Editing topic titles is discussed in a separate answer,
-   **[below](#editing-a-topic-title)**.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
   **[Go back to “Table of contents”](#table-of-contents)**
