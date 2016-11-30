@@ -99,7 +99,7 @@ def is_template_database_current(
         migration_status='var/migration-status',
         settings='zproject.test_settings',
         check_files=None
-    ):
+        ):
     # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[List[str]]) -> bool
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:

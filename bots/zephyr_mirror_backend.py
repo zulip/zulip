@@ -103,9 +103,9 @@ def unwrap_lines(body):
             and re.match(r'^\W', previous_line, flags=re.UNICODE)):
             result += previous_line + "\n"
         elif (line == "" or
-            previous_line == "" or
-            re.match(r'^\W', line, flags=re.UNICODE) or
-            different_paragraph(previous_line, line)):
+                previous_line == "" or
+                re.match(r'^\W', line, flags=re.UNICODE) or
+                different_paragraph(previous_line, line)):
             # Use 2 newlines to separate sections so that we
             # trigger proper Markdown processing on things like
             # bulleted lists
@@ -622,7 +622,7 @@ Feedback button or at support@zulipchat.com."""
             # appropriate WHITESPACE instance for bidirectional mirroring
             instance = match_whitespace_instance.group(1)
         elif (instance == "instance %s" % (zephyr_class,) or
-            instance == "test instance %s" % (zephyr_class,)):
+                instance == "test instance %s" % (zephyr_class,)):
             # Forward messages to e.g. -c -i white-magic back from the
             # place we forward them to
             if instance.startswith("test"):
