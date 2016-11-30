@@ -964,7 +964,7 @@ class EventQueueTest(TestCase):
         queue.push({"type": "restart", "server_generation": "2"})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9, },
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,
@@ -978,7 +978,7 @@ class EventQueueTest(TestCase):
                         "timestamp": str(pointer_val)})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9, },
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,

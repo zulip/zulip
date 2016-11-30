@@ -484,7 +484,7 @@ class StreamMessagesTest(ZulipTestCase):
                                                        "client": "test suite",
                                                        "subject": "announcement",
                                                        "content": "Everyone knows Iago rules",
-                                                       "forged": "true", },
+                                                       "forged": "true"},
                                   **self.api_auth(email))
         self.assert_json_error(result, "User not authorized for this query")
 

@@ -105,8 +105,9 @@ def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator
 def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
     result = {}
-    if left_side_userlist is not None and \
-            user_profile.left_side_userlist != left_side_userlist:
+    if (left_side_userlist is not None and \
+        user_profile.left_side_userlist != left_side_userlist):
+
         do_change_left_side_userlist(user_profile, left_side_userlist)
 
     result['left_side_userlist'] = left_side_userlist

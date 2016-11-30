@@ -103,9 +103,9 @@ def unwrap_lines(body):
             and re.match(r'^\W', previous_line, flags=re.UNICODE)):
             result += previous_line + "\n"
         elif (line == "" or
-            previous_line == "" or
-            re.match(r'^\W', line, flags=re.UNICODE) or
-                different_paragraph(previous_line, line)):
+              previous_line == "" or
+              re.match(r'^\W', line, flags=re.UNICODE) or
+              different_paragraph(previous_line, line)):
             # Use 2 newlines to separate sections so that we
             # trigger proper Markdown processing on things like
             # bulleted lists
