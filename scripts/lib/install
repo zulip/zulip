@@ -15,6 +15,15 @@ DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::voyager}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
 
+# Check for at least ~1.9GB of RAM before starting installation;
+# otherwise users will find out about insufficient RAM via weird
+# errors like a segfault running `pip install`.
+mem_kb=$(cat /proc/meminfo | head -n1 | awk '{print $2}')
+if [ "$mem_kb" -lt 1900000 ]; then
+    echo "Insufficient RAM.  Zulip requires at least 2GB of RAM."
+    exit 1
+fi
+
 if ! [ -e /usr/bin/realpath ]; then
     # realpath is in coreutils on Xenial, but not in Trusty
     apt-get install -y realpath
