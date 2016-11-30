@@ -230,7 +230,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         internal_send_message(sender, "stream",
                               user_profile.realm.notifications_stream.name,
                               "New users", "%s just signed up for Zulip. Say hello!" % \
-                                (user_profile.full_name,),
+                              (user_profile.full_name,),
                               realm=user_profile.realm)
 
     internal_send_message(sender,
@@ -1831,7 +1831,7 @@ def do_regenerate_api_key(user_profile, log=True):
                                  user_id=user_profile.id,
                                  api_key=user_profile.api_key,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_avatar_source(user_profile, avatar_source, log=True):
     # type: (UserProfile, text_type, bool) -> None
@@ -1850,7 +1850,7 @@ def do_change_avatar_source(user_profile, avatar_source, log=True):
                                  user_id=user_profile.id,
                                  avatar_url=avatar_url(user_profile),
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
     else:
         payload = dict(
             email=user_profile.email,
@@ -1895,7 +1895,7 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_sending_stream=stream_name,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
     # type: (UserProfile, Stream, bool) -> None
@@ -1918,7 +1918,7 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_events_register_stream=stream_name,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_default_all_public_streams(user_profile, value, log=True):
     # type: (UserProfile, bool, bool) -> None
@@ -1935,7 +1935,7 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
                                  user_id=user_profile.id,
                                  default_all_public_streams=user_profile.default_all_public_streams,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_is_admin(user_profile, value, permission='administer'):
     # type: (UserProfile, bool, str) -> None
@@ -2096,8 +2096,8 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
 This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
 system-generated notifications.""" % (product_name, notifications_stream.name,)
         msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
-                                     notifications_stream.name, "welcome",
-                                     content, realm=realm)
+                                    notifications_stream.name, "welcome",
+                                    content, realm=realm)
         do_send_messages([msg])
 
         # Log the event
@@ -2668,8 +2668,8 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             if propagate_mode == 'change_all':
                 before_bound = now() - datetime.timedelta(days=2)
 
-                propagate_query = propagate_query & ~Q(id = message.id) & \
-                                                     Q(pub_date__range=(before_bound, now()))
+                propagate_query = (propagate_query & ~Q(id = message.id) &
+                                   Q(pub_date__range=(before_bound, now())))
             if propagate_mode == 'change_later':
                 propagate_query = propagate_query & Q(id__gt = message.id)
 
@@ -2803,7 +2803,7 @@ def gather_subscriptions_helper(user_profile):
 
     # Deactivated streams aren't in stream_hash.
     streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts \
-                   if sub["recipient__type_id"] in stream_hash]
+               if sub["recipient__type_id"] in stream_hash]
     streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
 
     # Add never subscribed streams to streams_subscribed_map

@@ -300,7 +300,7 @@ class ZulipTestCase(TestCase):
         # type: (Sized, int) -> None
         actual_count = len(queries)
         return self.assertTrue(actual_count == count,
-                                   "len(%s) == %s, != %s" % (queries, actual_count, count))
+                               "len(%s) == %s, != %s" % (queries, actual_count, count))
 
     def assert_max_length(self, queries, count):
         # type: (Sized, int) -> None

@@ -154,7 +154,7 @@ def p4_has_command(cmd):
        command does not exist in this version of p4."""
     real_cmd = p4_build_cmd(["help", cmd])
     p = subprocess.Popen(real_cmd, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE)
     p.communicate()
     return p.returncode == 0
 
@@ -534,7 +534,7 @@ def parseRevision(ref):
 
 def branchExists(ref):
     rev = read_pipe(["git", "rev-parse", "-q", "--verify", ref],
-                     ignore_error=True)
+                    ignore_error=True)
     return len(rev) > 0
 
 def extractLogMessageFromGitCommit(commit):
@@ -1714,7 +1714,7 @@ class P4Submit(Command, P4UserMap):
                         if self.conflict_behavior == "ask":
                             print("What do you want to do?")
                             response = input("[s]kip this commit but apply"
-                                                 " the rest, or [q]uit? ")
+                                             " the rest, or [q]uit? ")
                             if not response:
                                 continue
                         elif self.conflict_behavior == "skip":
@@ -2301,7 +2301,7 @@ class P4Sync(Command, P4UserMap):
                 print("Change %s is labelled %s" % (change, labelDetails))
 
             files = p4CmdList(["files"] + ["%s...@%s" % (p, change)
-                                                for p in self.branchPrefixes])
+                                           for p in self.branchPrefixes])
 
             if len(files) == len(labelRevisions):
 
@@ -2339,8 +2339,8 @@ class P4Sync(Command, P4UserMap):
             if self.verbose:
                 print("Querying files for label %s" % label)
             for file in p4CmdList(["files"] +
-                                      ["%s...@%s" % (p, label)
-                                          for p in self.depotPaths]):
+                                  ["%s...@%s" % (p, label)
+                                   for p in self.depotPaths]):
                 revisions[file["depotFile"]] = file["rev"]
                 change = int(file["change"])
                 if change > newestChange:

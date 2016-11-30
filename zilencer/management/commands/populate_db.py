@@ -355,7 +355,7 @@ def send_messages(data):
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                         type_id=personals_pair[0])
+                                                      type_id=personals_pair[0])
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data['personals_pair'] = personals_pair
         elif message_type == Recipient.STREAM:
