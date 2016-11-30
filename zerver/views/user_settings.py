@@ -82,7 +82,7 @@ def json_change_settings(request, user_profile,
             new_full_name = full_name.strip()
             if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
                 return json_error(_("Name too long!"))
-            elif list(set(new_full_name).intersection(UserProfile.BANNED_CHARS))
+            elif list(set(new_full_name).intersection(UserProfile.BANNED_CHARS)):
                 return json_error(_("Invalid characters in name!"))
             do_change_full_name(user_profile, new_full_name)
             result['full_name'] = new_full_name
