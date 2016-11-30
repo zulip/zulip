@@ -157,6 +157,7 @@ def validate(fn=None, text=None, check_indent=True):
         start_col = start_token.col
 
         old_matcher = state.matcher
+
         def f(end_token):
             # type: (Token) -> None
 

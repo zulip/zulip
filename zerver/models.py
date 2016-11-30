@@ -853,6 +853,7 @@ def bulk_get_recipients(type, type_ids):
     def cache_key_function(type_id):
         # type: (int) -> Text
         return get_recipient_cache_key(type, type_id)
+
     def query_function(type_ids):
         # type: (List[int]) -> Sequence[Recipient]
         # TODO: Change return type to QuerySet[Recipient]

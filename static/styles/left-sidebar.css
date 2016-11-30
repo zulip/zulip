@@ -41,6 +41,7 @@
 #stream-filters-container {
     overflow-y: hidden;
     position: relative;
+    z-index: 0;
 }
 
 #stream-filters-container .ps-scrollbar-y-rail {

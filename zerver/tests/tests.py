@@ -603,6 +603,7 @@ class WorkerTest(TestCase):
             def __init__(self):
                 # type: () -> None
                 super(TestWorker, self).__init__()
+
             def consume(self, data):
                 # type: (Mapping[str, Any]) -> None
                 pass

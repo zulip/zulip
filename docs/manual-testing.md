@@ -7,7 +7,7 @@ manual QA).  Manual testing not only catches bugs, but it also helps
 developers learn more about the system and think about the existing
 semantics of a feature they're working on.
 
-This doc assumes you know how to set up a local dev server
+This doc assumes you know how to set up a local development server
 and open the Zulip app in the browser.  It also assumes a basic
 knowledge of how to use Zulip.
 
@@ -463,13 +463,13 @@ Here are the tasks:
 - Invite ignore@zulip.com using the link beneath the buddy list but
   then don't take further action.
 - Fully invite foo@zulip.com using the gear menu.
-- Go to the dev console to get the login link for foo@zulip.com.
+- Go to the development console to get the login link for foo@zulip.com.
 - Go through the signup flow.
 - Follow the tutorial.
 - Use the gear menu to log out.
 - Log back in as Cordelia (admittedly, this step doesn't really QA
   much of our production code, since the login flow is customized for
-  the dev environment).
+  the development environment).
 
 ### To be continued... ###
 

@@ -113,7 +113,7 @@ it. On Ubuntu:
 
 ## Local browser testing (local app + web browser)
 
-This section is about troubleshooting your local dev environment.
+This section is about troubleshooting your local development environment.
 
 There is a [separate manual testing doc](manual-testing.html) that
 enumerates things you can test as part of manual QA.

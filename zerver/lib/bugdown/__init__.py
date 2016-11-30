@@ -659,6 +659,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
     """
     A pattern that allows including in-app modal links in messages.
     """
+
     def handleMatch(self, match):
         # type: (Match[text_type]) -> Element
         relative_url = match.group('relative_url')
@@ -824,6 +825,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
+
     def handleMatch(self, m):
         # type: (Match[text_type]) -> Optional[Element]
         href = m.group(9)
@@ -853,6 +855,7 @@ def prepare_realm_pattern(source):
 # using the provided format string to construct the URL.
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
+
     def __init__(self, source_pattern, format_string, markdown_instance=None):
         # type: (text_type, text_type, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)

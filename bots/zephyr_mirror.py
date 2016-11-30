@@ -62,6 +62,7 @@ if options.forward_class_messages and not options.noshard:
     from zerver.lib.parallel import run_parallel
     print("Starting parallel zephyr class mirroring bot")
     jobs = list("0123456789abcdef")
+
     def run_job(shard):
         # type: (str) -> int
         subprocess.call(args + ["--shard=%s" % (shard,)])

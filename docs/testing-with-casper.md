@@ -1,9 +1,9 @@
 # Web frontend black-box casperjs tests
 
 These live in `frontend_tests/casper_tests/`. This is a "black box"
-test; we load the frontend in a real (headless) browser, from a real dev
-server, and simulate UI interactions like sending messages, narrowing,
-etc.
+test; we load the frontend in a real (headless) browser, from a real
+(development) server, and simulate UI interactions like sending
+messages, narrowing, etc.
 
 Since this is interacting with a real dev server, it can catch backend
 bugs as well.

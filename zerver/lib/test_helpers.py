@@ -80,6 +80,7 @@ def tornado_redirected_to_list(lst):
 def simulated_empty_cache():
     # type: () -> Generator[List[Tuple[str, Union[text_type, List[text_type]], text_type]], None, None]
     cache_queries = [] # type: List[Tuple[str, Union[text_type, List[text_type]], text_type]]
+
     def my_cache_get(key, cache_name=None):
         # type: (text_type, Optional[str]) -> Any
         cache_queries.append(('get', key, cache_name))
@@ -206,6 +207,7 @@ class POSTRequestMock(object):
 class HostRequestMock(object):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
+
     def __init__(self, host=settings.EXTERNAL_HOST):
         # type: (text_type) -> None
         self.host = host
@@ -336,8 +338,8 @@ def write_instrumentation_reports(full_suite):
                     print(call)
 
         if full_suite:
-            print('URL coverage report is in %s' % (fn,))
-            print('Try running: ./tools/create-test-api-docs')
+            print('INFO: URL coverage report is in %s' % (fn,))
+            print('INFO: Try running: ./tools/create-test-api-docs')
 
         if full_suite and len(untested_patterns):
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
