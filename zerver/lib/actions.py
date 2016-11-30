@@ -2254,7 +2254,7 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
     user_profile.save(update_fields=["left_side_userlist"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name':'left_side_userlist',
+             'setting_name': 'left_side_userlist',
              'setting': setting_value}
     if log:
         log_event(event)
@@ -2273,7 +2273,7 @@ def do_change_default_language(user_profile, setting_value, log=True):
     user_profile.save(update_fields=["default_language"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name':'default_language',
+             'setting_name': 'default_language',
              'setting': setting_value}
     if log:
         log_event(event)
