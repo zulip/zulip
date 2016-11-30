@@ -39,7 +39,7 @@
         }, function () {
             var i;
             initialized = true;
-            for (i=0; i<callbacks.length; i++) {
+            for (i=0; i<callbacks.length; i+=1) {
                 callbacks[i]();
             }
         });

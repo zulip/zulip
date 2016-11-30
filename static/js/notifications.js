@@ -276,7 +276,7 @@ function process_notification(notification) {
 
     if (content.length > 150) {
         // Truncate content at a word boundary
-        for (i = 150; i > 0; i--) {
+        for (i = 150; i > 0; i-=1) {
             if (content[i] === ' ') {
                 break;
             }
