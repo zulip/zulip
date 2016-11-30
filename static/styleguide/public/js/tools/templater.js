@@ -27,7 +27,7 @@ var Templater = function (script) {
 
       ["data-"].forEach(function (o) {
         var regex = new RegExp(o);
-        if (regex.test(value)) 
+        if (regex.test(value))
           flag = true;
       });
 
@@ -39,7 +39,7 @@ var Templater = function (script) {
 
         parent.get = function (name) {
           if (name) {
-            return parent._[name];            
+            return parent._[name];
           } else {
             return parent._;
           }
@@ -110,7 +110,7 @@ var Templater = function (script) {
           var data = funcs.slashToObjFill(obj, key);
 
           if (IS_INPUT) {
-            node._data.val.value = node.value;            
+            node._data.val.value = node.value;
           }
 
           data.pointer[data.key] = node._data.val;

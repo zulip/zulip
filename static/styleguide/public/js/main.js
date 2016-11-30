@@ -22,7 +22,7 @@ var main = (function (meta, resources) {
         if (meta.fonts) {
             T.Array.forEach(meta.fonts, function (font, i) {
                 $main.appendChild(meta.ui.render.font(font));
-            });  
+            });
         }
 
         $main.appendChild(meta.ui.render.color(meta.colors));
@@ -30,7 +30,7 @@ var main = (function (meta, resources) {
 
     events(meta);
 
-    // the whole page runs in linear time w/ no callbacks except for one 
+    // the whole page runs in linear time w/ no callbacks except for one
     // recursive search that takes less than a few ms.
     console.log("The page took " + (new Date() - d) + "ms in total to render.");
 
