@@ -264,7 +264,7 @@ function _setup_page() {
     var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
     var atdomains = page_params.domains.slice();
     var i;
-    for (i = 0; i < atdomains.length; i++) {
+    for (i = 0; i < atdomains.length; i+=1) {
         atdomains[i] = '@' + atdomains[i];
     }
     var atdomains_string = stringify_list_with_conjunction(atdomains, "or");
