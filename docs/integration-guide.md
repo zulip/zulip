@@ -262,12 +262,12 @@ The first step in creating a webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
 You can use [requestb.in](http://requestb.in/) or a similar tool to capture
-webook payload(s) from the service you are integrating. Examining this
+webhook payload(s) from the service you are integrating. Examining this
 data allows you to do two things:
 
-1. Determine how you will need to structure your webook code, including what
+1. Determine how you will need to structure your webhook code, including what
    message types your integration should support and how; and,
-2. Create fixtures for your webook tests.
+2. Create fixtures for your webhook tests.
 
 A test fixture is a small file containing test data, one for each test.
 Fixtures enable the testing of webhook integration code without the need to
@@ -339,7 +339,7 @@ def api_helloworld_webhook(request, user_profile, client,
 ```
 
 The above code imports the required functions and defines the main webhook
-function `api_helloworld_webook`, decorating it with `api_key_only_webhook_view` and
+function `api_helloworld_webhook`, decorating it with `api_key_only_webhook_view` and
 `has_request_variables`.
 
 You must pass the name of your webhook to the `api_key_only_webhook_view`
@@ -477,12 +477,12 @@ In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `FIXTURE_DIR_NAME` refe
 to class attributes from the base class, `WebhookTestCase`. These are needed by
 `send_and_test_stream_message` to determine how to execute your test.
 
-When writing tests for your webook, you'll want to include one test function
+When writing tests for your webhook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
 integration supports.
 
 If, for example, we added support for sending a goodbye message to our `Hello
-World` webook, we would add another test function to `HelloWorldHookTests`
+World` webhook, we would add another test function to `HelloWorldHookTests`
 class called something like `test_goodbye_message`:
 
 ```
