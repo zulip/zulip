@@ -816,8 +816,10 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 
             # If we're not in a fenced block and we detect an upcoming list
             #  hanging off a paragraph, add a newline
-            if not fence and lines[i] and \
-                self.LI_RE.match(lines[i+1]) and not self.LI_RE.match(lines[i]):
+            if (not fence and lines[i] and
+                self.LI_RE.match(lines[i+1]) and
+                not self.LI_RE.match(lines[i])):
+
                 copy.insert(i+inserts+1, '')
                 inserts += 1
         return copy
