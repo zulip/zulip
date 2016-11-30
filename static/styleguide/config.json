@@ -59,6 +59,11 @@
                 "modifiers": ["innerHTML"],
                 "description": "The standard button format comes with a minimal outline and transparent background and has a hover property."
             },
+            ".tab-switcher": {
+                "name": "Tab Switcher",
+                "modifiers": [],
+                "description": "Test."
+            },
             "label": {
                 "name": "Label",
                 "modifiers": ["innerHTML", "for"],
