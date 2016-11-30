@@ -160,10 +160,6 @@ select.style-guide.dark {
     cursor: pointer;
 }
 
-.style-guide.button:focus {
-    box-shadow: 0px 0px 5px #27b2e0;
-}
-
 .style-guide.button.small {
     font-size: 0.9rem;
     padding: 0px 4px;

@@ -1,4 +1,4 @@
-* {  
+* {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -70,7 +70,7 @@ body {
     width: calc(260px);
     height: calc(100vh - 70px);
     padding: 0px 20px;
-    
+
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
 
@@ -126,7 +126,7 @@ body {
     color: #888;
 }
 
-.arrow {  
+.arrow {
     color: #fff;
     border-radius: 20px;
     padding: 0px 10px;
@@ -195,12 +195,12 @@ By changing the order, all is restored with the world.
 .title-block .arrow {
   color: transparent;
   white-space: nowrap;
-  
+
   border-radius: 20px;
   padding: 2px 12px;
   font-size: 1rem;
   max-width: 0px;
-  
+
   display: inline-block;
   transition: all 0.5s ease;
 }
@@ -245,7 +245,7 @@ By changing the order, all is restored with the world.
 }
 
 .component pre,
-.component .preview {
+.component .styleguide-preview {
     min-width: 0px;
     width: calc(100% - 20px) !important;
     height: auto !important;
@@ -264,13 +264,14 @@ By changing the order, all is restored with the world.
     border-radius: 4px;
 }
 
-.component .preview {
+.component .styleguide-preview {
     background-color: #fff !important;
     border-radius: 4px !important;
 }
 
 .component .class-list .ind-class {
     margin-right: 5px;
+    margin-bottom: 5px;
 }
 
 .component .description,
@@ -313,7 +314,7 @@ By changing the order, all is restored with the world.
 }
 
 .ind-color .name {
-    max-width: 250px;
+    max-width: 190px;
     font-weight: 300;
     font-size: 1.8rem;
 
@@ -345,7 +346,7 @@ thead {
     font-weight: 600;
 }
 
-tr {  
+tr {
     border-bottom: 1px solid #eee;
 }
 
