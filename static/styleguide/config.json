@@ -3,32 +3,29 @@
         "/static/styles/components.css"
     ],
     "templates": [
-    "public/templates/components.html"
+        "public/templates/components.html"
     ],
     "resources": {
         "colors": {
           "primary": [{
-              "name": "Sea Green",
+              "name": "Zulip Brand",
               "color": "#24cac2"
           }, {
-              "name": "Grey",
+              "name": "Dark Grey",
               "color": "#444"
+          }, {
+              "name": "Border Grey",
+              "color": "#eee"
           }],
           "secondary": [{
-              "name": "Gold",
-              "color": "#e6c377"
+              "name": "Danger Red",
+              "color": "#d9534f"
           }, {
-              "name": "Magenta",
-              "color": "#bd4a65"
+              "name": "Warning",
+              "color": "#f0ad4e"
           }, {
-              "name": "Forest Green",
-              "color": "#64b779"
-          }, {
-              "name": "Lime",
-              "color": "#b4d87e"
-          }, {
-              "name": "Silver",
-              "color": "#aabbbf"
+              "name": "Button Blue",
+              "color": "#478fca"
           }]
         },
         "fonts": [{
