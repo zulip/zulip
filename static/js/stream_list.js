@@ -266,7 +266,7 @@ function build_stream_sidebar_li(sub) {
                 color: stream_data.get_color(name),
                 pin_to_top: sub.pin_to_top,
                };
-    args.dark_background = stream_color.get_color_class(args.color);
+
     var list_item = $(templates.render('stream_sidebar_row', args));
     return list_item;
 }
@@ -317,12 +317,9 @@ exports.redraw_stream_privacy = function (stream_name) {
     var div = li.find('.stream-privacy');
     var swatch = li.find('.streamlist_swatch');
     var sub = stream_data.get_sub(stream_name);
-    var color = stream_data.get_color(stream_name);
-    var dark_background = stream_color.get_color_class(color);
 
     var args = {
         invite_only: sub.invite_only,
-        dark_background: dark_background,
     };
 
     if (sub.invite_only) {

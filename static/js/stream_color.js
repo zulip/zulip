@@ -35,24 +35,26 @@ exports.pick_color = function (used_colors) {
     return colors[0];
 };
 
-
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.
-    var style = color;
-    var color_class = exports.get_color_class(color);
+    var style = (function () {
+        var hsl = stream_color.hex_to_hsl(color);
+        hsl[2] = "90%";
+        return hsl;
+    }());
 
-    var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
+    var stream_labels = $("#floating_recipient_bar")
+        .add(table).find(".stream_label .display-recipient-block");
 
     _.each(stream_labels, function (label) {
         var $label = $(label);
+
         if ($.trim($label.text()) === stream_name) {
-            var messages = $label.closest(".recipient_row").children(".message_row");
-            messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
-            $label.css({background: style,
-                          "border-left-color": style});
-            $label.removeClass(exports.color_classes);
-            $label.addClass(color_class);
+            $label.closest(".message-header-contents").css("background", payload.light);
+            $label.closest(".message-header-contents")
+                .find(".display-recipient-icon")
+                .css("color", payload.medium);
         }
     });
 }
@@ -189,9 +191,50 @@ exports.get_color_class = _.memoize(function (color) {
     return (lightness < lightness_threshold) ? 'dark_background' : '';
 });
 
+exports.rgb_to_hsl = function (r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    var max = Math.max(r, g, b);
+    var min = Math.min(r, g, b);
+    var h;
+    var s;
+    var l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0;
+    } else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+
+        h /= 6;
+    }
+
+    return [(h*3.6*100+0.5) || 0, ((s*100+0.5) || 0) + '%', ((l*100+0.5) || 0) + '%'];
+};
+
+exports.hex_to_hsl = function (hex) {
+    if (/^#/.test(hex)) {
+        hex = hex.replace("#", "");
+    }
+
+    var rgb = hex.match(/.{2}/g).map(function (o) {
+        return parseInt(o, 16);
+    });
+
+    return exports.rgb_to_hsl.apply(null, rgb);
+};
+
 return exports;
 
 }());
+
 if (typeof module !== 'undefined') {
     module.exports = stream_color;
 }

@@ -443,8 +443,6 @@ function render(template_name, args) {
     assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
     assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
     assert(!row_1.find(".message_row").hasClass("private-message"));
-    assert.equal(row_1.find(".messagebox").css("box-shadow"),
-                 "inset 2px 0px 0px 0px #FF0000, -1px 0px 0px 0px #FF0000");
     assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
 
     var row_2 = $(html).find(".draft-row[data-draft-id='2']");

@@ -87,6 +87,12 @@ function populate_group_from_message_container(group, message_container) {
 
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
+        (function () {
+            var hsl = stream_color.hex_to_hsl(group.background_color);
+            hsl[2] = "90%";
+            group.background_color_light = "hsl(" + hsl.join(",") + ")";
+        }());
+
         group.color_class = stream_color.get_color_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
         group.subject = message_container.msg.subject;
