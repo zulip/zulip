@@ -57,7 +57,7 @@ class PublicURLTest(ZulipTestCase):
             response = getattr(self.client, method)(url) # e.g. self.client_post(url) if method is "post"
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
-                    expected_status, response.status_code, method, url))
+                                 expected_status, response.status_code, method, url))
 
     def test_public_urls(self):
         # type: () -> None
@@ -406,8 +406,8 @@ class InviteUserTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         # Intentionally use a weird string.
         self.assert_json_success(self.invite(
-"""bob-test@zulip.com,     carol-test@zulip.com,
-dave-test@zulip.com
+            """bob-test@zulip.com,     carol-test@zulip.com,
+            dave-test@zulip.com
 
 
 earl-test@zulip.com""", ["Denmark"]))
@@ -455,7 +455,7 @@ earl-test@zulip.com""", ["Denmark"]))
             "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
-                email="hamlet@zulip.com"))
+                            email="hamlet@zulip.com"))
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self):
@@ -479,7 +479,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for email in existing:
             self.assertRaises(PreregistrationUser.DoesNotExist,
                               lambda: PreregistrationUser.objects.get(
-                    email=email))
+                                email=email))
         for email in new:
             self.assertTrue(PreregistrationUser.objects.get(email=email))
 

@@ -424,9 +424,9 @@ def accounts_home(request):
 
 def approximate_unread_count(user_profile):
     # type: (UserProfile) -> int
-    not_in_home_view_recipients = [sub.recipient.id for sub in \
-                                       Subscription.objects.filter(
-            user_profile=user_profile, in_home_view=False)]
+    not_in_home_view_recipients = [sub.recipient.id for sub in
+                                   Subscription.objects.filter(
+                                        user_profile=user_profile, in_home_view=False)]
 
     # TODO: We may want to exclude muted messages from this count.
     #       It was attempted in the past, but the original attempt
