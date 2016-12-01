@@ -606,19 +606,19 @@ def home_real(request):
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled =
-            user_profile.enable_stream_desktop_notifications,
+        user_profile.enable_stream_desktop_notifications,
         stream_sounds_enabled = user_profile.enable_stream_sounds,
 
         # Private message and @-mention notification settings:
         desktop_notifications_enabled = desktop_notifications_enabled,
         sounds_enabled =
-            user_profile.enable_sounds,
+        user_profile.enable_sounds,
         enable_offline_email_notifications =
-            user_profile.enable_offline_email_notifications,
+        user_profile.enable_offline_email_notifications,
         enable_offline_push_notifications =
-            user_profile.enable_offline_push_notifications,
+        user_profile.enable_offline_push_notifications,
         enable_online_push_notifications =
-            user_profile.enable_online_push_notifications,
+        user_profile.enable_online_push_notifications,
         twenty_four_hour_time = register_ret['twenty_four_hour_time'],
 
         enable_digest_emails  = user_profile.enable_digest_emails,
