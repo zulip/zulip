@@ -152,8 +152,19 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         {% endif %}
 
         <div class="input-group margin">
-            {% if terms_of_service %}
             <div class="float-left">
+                {% if gci_mode_enabled %}
+                <input type="checkbox" name="gci"
+                       {% if form.gci.value() %}checked="checked"{% endif %} />
+                <label class="inline-block">
+                  {% trans %}I am a Google Code-in <span class="icon-vector-question-sign"
+                  data-toggle="tooltip" title="Google Code-in students should check this so that they get the best initial subscriptions for the GCI program. If you are not a Google Code-in student or don't know what it is, you shouldn't check this."></span> student
+                  {% endtrans %}
+                </label>
+                <br/>
+                {% endif %}
+
+                {% if terms_of_service %}
                 {#
                 This is somewhat subtle.
                 Checkboxes have a name and value, and when the checkbox is ticked, the form posts
@@ -172,8 +183,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         <div class="alert alert-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
+                {% endif %}
             </div>
-            {% endif %}
             <div class="submit-button-box float-right">
                 <input type="submit" class="button-new sea-green" value="Register" /><br />
                 <input type="hidden" name="next" value="{{ next }}" />

@@ -78,6 +78,10 @@ else:
 TEST_SUITE = False
 # The new user tutorial is enabled by default, but disabled for client tests.
 TUTORIAL_ENABLED = True
+# This mode will help to customize the initial stream subscriptions for students participating in Google Code-in 
+GCI_MODE_ENABLED = False
+# The students participating in Google Code-in would be subscribed only to these streams.
+GCI_STREAMS = ['Google Code-In']
 
 # Import variables like secrets from the prod_settings file
 # Import prod_settings after determining the deployment/machine type
