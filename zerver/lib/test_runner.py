@@ -163,7 +163,7 @@ class Runner(DiscoverRunner):
         if hasattr(sender, 'template'):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
-                if context.get('shallow_tested'):
+                if context.get('shallow_tested') and template_name not in self.templates_rendered:
                     self.shallow_tested_templates.add(template_name)
                 else:
                     self.templates_rendered.add(template_name)
