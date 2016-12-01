@@ -1032,7 +1032,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         user_profile.full_name = 'Hamlet'
         user_profile.save()
 
-        def method1 (req, user_profile):
+        def method1(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse
             user_profile.full_name = 'Should not be committed'
             user_profile.save()
