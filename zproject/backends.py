@@ -145,7 +145,9 @@ class SocialAuthMixin(ZulipAuthMixin):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
         # This function needs to be imported from here due to the cyclic
         # dependency.
-        from zerver.views.auth import login_or_register_remote_user
+        from zerver.views.auth import (login_or_register_remote_user,
+            redirect_to_subdomain_login_url)
+        from zerver.views import redirect_and_log_into_subdomain
 
         return_data = kwargs.get('return_data', {})
 
@@ -156,13 +158,23 @@ class SocialAuthMixin(ZulipAuthMixin):
         if inactive_user or inactive_realm:
             return None
 
-        request = self.strategy.request  # type: ignore # This comes from Python Social Auth.
+        strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
+        request = strategy.request
         email_address = self.get_email_address(*args, **kwargs)
         full_name = self.get_full_name(*args, **kwargs)
 
-        return login_or_register_remote_user(request, email_address,
-                                             user_profile, full_name,
-                                             bool(invalid_subdomain))
+        subdomain = strategy.session_get('subdomain')
+
+        if not subdomain:
+            return login_or_register_remote_user(request, email_address,
+                                                 user_profile, full_name,
+                                                 bool(invalid_subdomain))
+        try:
+            realm = Realm.objects.get(string_id=subdomain)
+        except Realm.DoesNotExist:
+            return redirect_to_subdomain_login_url()
+
+        return redirect_and_log_into_subdomain(realm, full_name, email_address)
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
