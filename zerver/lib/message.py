@@ -78,6 +78,7 @@ class MessageDict(object):
                 recipient_id = message.recipient.id,
                 recipient_type = message.recipient.type,
                 recipient_type_id = message.recipient.type_id,
+                reactions = message.reaction_set.all()
         )
 
     @staticmethod
@@ -137,7 +138,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int, List[Dict[str, Any]])) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
@@ -229,14 +230,12 @@ class ReactionDict(object):
     @staticmethod
     def build_dict_from_raw_db_row(row):
         # type: (Dict[str, Any]) -> Dict[str, Any]
-        fields = ['emoji_name', 'user_profile__email', 'user_profile__id',
-                      'user_profile__full_name']
         return {'emoji_name': row.get('emoji_name'),
                 'user': {'email': row.get('user_profile__email'),
                         'id': row.get('user_profile__id'),
                         'full_name': row.get('user_profile__full_name')}}
 
- 
+
 def re_render_content_for_management_command(message):
     # type: (Message) -> None
 

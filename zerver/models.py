@@ -863,8 +863,7 @@ def bulk_get_recipients(type, type_ids):
 
 
 def sew_messages_and_reactions(messages, reactions):
-    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) ->
-    # List[Dict[str, Any]]
+    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]
     """Given a iterable of messages and reactions stitch reactions
     into messages.
     """
@@ -879,13 +878,7 @@ def sew_messages_and_reactions(messages, reactions):
         converted_messages[reaction['message_id']]['reactions'].append(
             reaction)
 
-    values = converted_messages.values()
-
-    # Python 2 returns dict.values as list where as Python 3 returns
-    # as `dict_values`.
-    if isinstance(values, list):
-        return values
-    return list(values)
+    return list(converted_messages.values())
 
 
 class Message(ModelReprMixin, models.Model):
@@ -1052,6 +1045,14 @@ class Reaction(ModelReprMixin, models.Model):
 
     class Meta(object):
         unique_together = ("user_profile", "message", "emoji_name")
+
+    @staticmethod
+    def get_raw_db_rows(needed_ids):
+        # type: (List[int]) -> List[Dict[str, Any]]
+        fields = ['message_id', 'emoji_name', 'user_profile__email',
+                  'user_profile__id', 'user_profile__full_name']
+        return Reaction.objects.filter(message_id__in=needed_ids).values(
+            *fields)
 
 # Whenever a message is sent, for each user current subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
