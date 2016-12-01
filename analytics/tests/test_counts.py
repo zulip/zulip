@@ -77,7 +77,7 @@ class AnalyticsTestCase(TestCase):
         self.assertEqual(table.objects.filter(realm=realm,
                                               property=property,
                                               interval=interval,
-                                              end_time=end_time) \
+                                              end_time=end_time)
                          .filter(**kwargs).values_list('value', flat=True)[0],
                          value)
 

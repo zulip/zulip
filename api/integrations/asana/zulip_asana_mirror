@@ -208,9 +208,9 @@ def process_new_events():
     """
     # In task queries, Asana only exposes IDs for projects and users, so we need
     # to look up the mappings.
-    projects = dict((elt["id"], elt["name"]) for elt in \
+    projects = dict((elt["id"], elt["name"]) for elt in
                         fetch_from_asana("/projects")["data"])
-    users = dict((elt["id"], elt["name"]) for elt in \
+    users = dict((elt["id"], elt["name"]) for elt in
                      fetch_from_asana("/users")["data"])
 
     cutoff = since()

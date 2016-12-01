@@ -77,8 +77,9 @@ class CountingBackoff(object):
     def _check_success_timeout(self):
         if (self.timeout_success_equivalent is not None
             and self.last_attempt_time != 0
-            and time.time() - self.last_attempt_time > self.timeout_success_equivalent):
+                and time.time() - self.last_attempt_time > self.timeout_success_equivalent):
             self.number_of_retries = 0
+
 
 class RandomExponentialBackoff(CountingBackoff):
     def fail(self):
@@ -94,8 +95,10 @@ class RandomExponentialBackoff(CountingBackoff):
             print(message)
         time.sleep(delay)
 
+
 def _default_client():
     return "ZulipPython/" + __version__
+
 
 def generate_option_group(parser, prefix=''):
     group = optparse.OptionGroup(parser, 'Zulip API configuration')
@@ -147,6 +150,7 @@ def generate_option_group(parser, prefix=''):
                           file).''')
     return group
 
+
 def init_from_options(options, client=None):
     if options.zulip_client is not None:
         client = options.zulip_client
@@ -159,13 +163,15 @@ def init_from_options(options, client=None):
                   client_cert=options.client_cert,
                   client_cert_key=options.client_cert_key)
 
+
 def get_default_config_filename():
     config_file = os.path.join(os.environ["HOME"], ".zuliprc")
     if (not os.path.exists(config_file) and
-        os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
+            os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
         raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n"
                            "  mv ~/.humbugrc ~/.zuliprc\n")
     return config_file
+
 
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
@@ -221,7 +227,7 @@ class Client(object):
             site = site.rstrip("/")
             self.base_url = site
         else:
-           raise RuntimeError("Missing Zulip server URL; specify via --site or ~/.zuliprc.")
+            raise RuntimeError("Missing Zulip server URL; specify via --site or ~/.zuliprc.")
 
         if not self.base_url.endswith("/api"):
             self.base_url += "/api"
@@ -299,8 +305,8 @@ class Client(object):
                 return False
             if self.verbose:
                 if not query_state["had_error_retry"]:
-                    sys.stdout.write("zulip API(%s): connection error%s -- retrying." % \
-                            (url.split(API_VERSTRING, 2)[0], error_string,))
+                    sys.stdout.write("zulip API(%s): connection error%s -- retrying." %
+                                     (url.split(API_VERSTRING, 2)[0], error_string,))
                     query_state["had_error_retry"] = True
                 else:
                     sys.stdout.write(".")
@@ -352,7 +358,7 @@ class Client(object):
                 # want the later exception handlers to deal with any
                 # non-timeout other SSLErrors
                 if (isinstance(e, requests.exceptions.SSLError) and
-                    str(e) != "The read operation timed out"):
+                        str(e) != "The read operation timed out"):
                     raise
                 if longpolling:
                     # When longpolling, we expect the timeout to fire,
@@ -469,16 +475,20 @@ class Client(object):
 
         self.call_on_each_event(event_callback, ['message'])
 
+
 def _mk_subs(streams, **kwargs):
     result = kwargs
     result['subscriptions'] = streams
     return result
 
+
 def _mk_rm_subs(streams):
     return {'delete': streams}
 
+
 def _mk_deregister(queue_id):
     return {'queue_id': queue_id}
+
 
 def _mk_events(event_types=None, narrow=None):
     if event_types is None:
@@ -487,8 +497,10 @@ def _mk_events(event_types=None, narrow=None):
         narrow = []
     return dict(event_types=event_types, narrow=narrow)
 
+
 def _kwargs_to_dict(**kwargs):
     return kwargs
+
 
 class ZulipStream(object):
     """

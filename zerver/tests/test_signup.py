@@ -205,6 +205,7 @@ class PasswordResetTest(ZulipTestCase):
         result = self.client_get('/accounts/send_confirm/alice@example.com')
         self.assert_in_success_response(["Still no email?"], result)
 
+
 class LoginTest(ZulipTestCase):
     """
     Logging in, registration, and logging out.
@@ -310,8 +311,8 @@ class InviteUserTest(ZulipTestCase):
         """
 
         return self.client_post("/json/invite_users",
-                {"invitee_emails": users,
-                    "stream": streams})
+                                {"invitee_emails": users,
+                                    "stream": streams})
 
     def check_sent_emails(self, correct_recipients):
         # type: (List[str]) -> None
@@ -406,7 +407,7 @@ class InviteUserTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         # Intentionally use a weird string.
         self.assert_json_success(self.invite(
-"""bob-test@zulip.com,     carol-test@zulip.com,
+            """bob-test@zulip.com,     carol-test@zulip.com,
 dave-test@zulip.com
 
 
@@ -479,7 +480,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for email in existing:
             self.assertRaises(PreregistrationUser.DoesNotExist,
                               lambda: PreregistrationUser.objects.get(
-                    email=email))
+                                email=email))
         for email in new:
             self.assertTrue(PreregistrationUser.objects.get(email=email))
 
@@ -690,7 +691,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEquals(result.status_code, 200)
 
             result = self.submit_reg_form_for_user(username, password, domain=domain,
-                                                   realm_subdomain = string_id)
+                                                   realm_subdomain=string_id)
             self.assertEquals(result.status_code, 302)
 
             # Make sure the realm is created
@@ -733,7 +734,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEquals(result.status_code, 200)
 
             result = self.submit_reg_form_for_user(username, password, domain=domain,
-                                                   realm_subdomain = string_id,
+                                                   realm_subdomain=string_id,
                                                    realm_name=realm_name,
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=string_id + ".testserver")

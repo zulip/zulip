@@ -226,7 +226,7 @@ class AuthBackendTest(TestCase):
         backend = ZulipLDAPAuthBackend()
 
         # Test LDAP auth fails when LDAP server rejects password
-        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn', \
+        with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn',
                         side_effect=_LDAPUser.AuthenticationFailed("Failed")), \
              mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements'), \
              mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',

@@ -25,6 +25,7 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Realm, name_changes_disabled
 
+
 @authenticated_json_post_view
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
@@ -47,6 +48,8 @@ def json_change_ui_settings(request, user_profile,
         result['default_desktop_notifications'] = default_desktop_notifications
 
     return json_success(result)
+
+
 
 @authenticated_json_post_view
 @has_request_variables
@@ -87,6 +90,7 @@ def json_change_settings(request, user_profile,
 
     return json_success(result)
 
+
 @authenticated_json_post_view
 @has_request_variables
 def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool, default=None)):
@@ -100,12 +104,13 @@ def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator
 
     return json_success(result)
 
+
 @authenticated_json_post_view
 @has_request_variables
 def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
     result = {}
-    if (left_side_userlist is not None and \
+    if (left_side_userlist is not None and
         user_profile.left_side_userlist != left_side_userlist):
 
         do_change_left_side_userlist(user_profile, left_side_userlist)
@@ -113,6 +118,7 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
     result['left_side_userlist'] = left_side_userlist
 
     return json_success(result)
+
 
 @authenticated_json_post_view
 @has_request_variables
@@ -129,6 +135,7 @@ def json_language_setting(request, user_profile, default_language=REQ(validator=
     result['default_language'] = default_language
 
     return json_success(result)
+
 
 @authenticated_json_post_view
 @has_request_variables
@@ -199,6 +206,7 @@ def json_change_notify_settings(request, user_profile,
 
     return json_success(result)
 
+
 @authenticated_json_post_view
 def json_set_avatar(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -215,6 +223,7 @@ def json_set_avatar(request, user_profile):
     )
     return json_success(json_result)
 
+
 @has_request_variables
 def regenerate_api_key(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -223,6 +232,7 @@ def regenerate_api_key(request, user_profile):
         api_key = user_profile.api_key
     )
     return json_success(json_result)
+
 
 @has_request_variables
 def change_enter_sends(request, user_profile,

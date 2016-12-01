@@ -290,13 +290,15 @@ receive_zephyrs()
 logger.info("Finished receiving Zephyr messages!")
 
 all_keys = set(list(zhkeys.keys()) + list(hzkeys.keys()))
+
+
 def process_keys(content_list):
     # type: (List[str]) -> Tuple[Dict[str, int], Set[str], Set[str], bool, bool]
 
     # Start by filtering out any keys that might have come from
     # concurrent check-mirroring processes
     content_keys = [key for key in content_list if key in all_keys]
-    key_counts = {} # type: Dict[str, int]
+    key_counts = {}  # type: Dict[str, int]
     for key in all_keys:
         key_counts[key] = 0
     for key in content_keys:
@@ -328,12 +330,12 @@ for key in all_keys:
         continue
     if key in zhkeys:
         (stream, test) = zhkeys[key]
-        logger.warning("%10s: z got %s, h got %s.  Sent via Zephyr(%s): class %s" % \
-            (key, z_key_counts[key], h_key_counts[key], test, stream))
+        logger.warning("%10s: z got %s, h got %s.  Sent via Zephyr(%s): class %s" %
+                       (key, z_key_counts[key], h_key_counts[key], test, stream))
     if key in hzkeys:
         (stream, test) = hzkeys[key]
-        logger.warning("%10s: z got %s. h got %s.  Sent via Zulip(%s): class %s" % \
-            (key, z_key_counts[key], h_key_counts[key], test, stream))
+        logger.warning("%10s: z got %s. h got %s.  Sent via Zulip(%s): class %s" %
+                       (key, z_key_counts[key], h_key_counts[key], test, stream))
 logger.error("")
 logger.error("Summary of specific problems:")
 

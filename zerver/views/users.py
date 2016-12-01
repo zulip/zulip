@@ -23,6 +23,7 @@ from zerver.models import UserProfile, Stream, Realm, get_user_profile_by_email,
 from six import text_type
 from typing import Optional, Dict, Any
 
+
 def deactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:
@@ -33,6 +34,7 @@ def deactivate_user_backend(request, user_profile, email):
         return json_error(_('No such user'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
+
 def deactivate_user_own_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     admins = set(user_profile.realm.get_admin_users())
@@ -41,6 +43,7 @@ def deactivate_user_own_backend(request, user_profile):
         return json_error(_('Cannot deactivate the only admin'))
     do_deactivate_user(user_profile)
     return json_success()
+
 
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -60,6 +63,8 @@ def _deactivate_user_profile_backend(request, user_profile, target):
     do_deactivate_user(target)
     return json_success()
 
+
+
 def reactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
     try:
@@ -72,6 +77,7 @@ def reactivate_user_backend(request, user_profile, email):
 
     do_reactivate_user(target)
     return json_success()
+
 
 @has_request_variables
 def update_user_backend(request, user_profile, email,
@@ -100,6 +106,7 @@ def update_user_backend(request, user_profile, email,
 
     return json_success()
 
+
 def avatar(request, email):
     # type: (HttpRequest, str) -> HttpResponse
     try:
@@ -117,13 +124,15 @@ def avatar(request, email):
     url += '&' + request.META['QUERY_STRING']
     return redirect(url)
 
+
 def get_stream_name(stream):
     # type: (Stream) -> Optional[text_type]
     if stream:
         name = stream.name
-    else :
+    else:
         name = None
     return name
+
 
 def stream_or_none(stream_name, realm):
     # type: (text_type, Realm) -> Optional[Stream]
@@ -134,6 +143,7 @@ def stream_or_none(stream_name, realm):
         if not stream:
             raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
         return stream
+
 
 @has_request_variables
 def patch_bot_backend(request, user_profile, email,
@@ -180,6 +190,7 @@ def patch_bot_backend(request, user_profile, email,
     )
     return json_success(json_result)
 
+
 @has_request_variables
 def regenerate_bot_api_key(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -193,9 +204,10 @@ def regenerate_bot_api_key(request, user_profile, email):
 
     do_regenerate_api_key(bot)
     json_result = dict(
-        api_key = bot.api_key
+        api_key=bot.api_key
     )
     return json_success(json_result)
+
 
 @has_request_variables
 def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
@@ -229,8 +241,8 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
     if default_sending_stream_name is not None:
         default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
     if (default_sending_stream and not
-        default_sending_stream.is_public() and not \
-        subscribed_to_stream(user_profile, default_sending_stream)):
+        default_sending_stream.is_public() and not
+            subscribed_to_stream(user_profile, default_sending_stream)):
 
         return json_error(_('Insufficient permission'))
 
@@ -241,7 +253,6 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
     if default_events_register_stream and not default_events_register_stream.is_public() and not \
             subscribed_to_stream(user_profile, default_events_register_stream):
         return json_error(_('Insufficient permission'))
-
 
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
@@ -260,6 +271,7 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
             default_all_public_streams=bot_profile.default_all_public_streams,
     )
     return json_success(json_result)
+
 
 def get_bots_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -285,6 +297,7 @@ def get_bots_backend(request, user_profile):
 
     return json_success({'bots': list(map(bot_info, bot_profiles))})
 
+
 def get_members_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     realm = user_profile.realm
@@ -305,6 +318,7 @@ def get_members_backend(request, user_profile):
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)
     return json_success({'members': members})
+
 
 @require_realm_admin
 @has_request_variables
