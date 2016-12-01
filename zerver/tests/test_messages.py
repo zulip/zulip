@@ -405,7 +405,7 @@ class StreamMessagesTest(ZulipTestCase):
         # Did all of the subscribers get the message?
         new_subscriber_messages = []
         for subscriber in subscribers:
-           new_subscriber_messages.append(message_stream_count(subscriber))
+            new_subscriber_messages.append(message_stream_count(subscriber))
 
         # Did non-subscribers not get the message?
         new_non_subscriber_messages = []

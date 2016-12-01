@@ -138,7 +138,7 @@ def fetch_tweet_data(tweet_id):
             'access_token_secret': settings.TWITTER_ACCESS_TOKEN_SECRET,
         }
         if not all(creds.values()):
-           return None
+            return None
 
         try:
             api = twitter.Api(**creds)
