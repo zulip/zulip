@@ -64,12 +64,14 @@ def check_output(*popenargs, **kwargs):
     return output
 subprocess.check_output = check_output
 
+
 def git_repository_name():
     output = subprocess.check_output(["git", "rev-parse", "--is-bare-repository"])
     if output.strip() == "true":
         return os.path.basename(os.getcwd())[:-len(".git")]
     else:
         return os.path.basename(os.path.dirname(os.getcwd()))
+
 
 def git_commit_range(oldrev, newrev):
     log_cmd = ["git", "log", "--reverse",
@@ -83,9 +85,10 @@ def git_commit_range(oldrev, newrev):
             commits += '!avatar(%s) %s\n' % (author_email, subject)
     return commits
 
+
 def send_bot_message(oldrev, newrev, refname):
-    repo_name   = git_repository_name()
-    branch      = refname.replace('refs/heads/', '')
+    repo_name = git_repository_name()
+    branch = refname.replace('refs/heads/', '')
     destination = config.commit_notice_destination(repo_name, branch, newrev)
     if destination is None:
         # Don't forward the notice anywhere
@@ -95,12 +98,12 @@ def send_bot_message(oldrev, newrev, refname):
     old_head = oldrev[:12]
 
     if (oldrev == '0000000000000000000000000000000000000000' or
-        newrev == '0000000000000000000000000000000000000000'):
+            newrev == '0000000000000000000000000000000000000000'):
         # New branch pushed or old branch removed
         added = ''
         removed = ''
     else:
-        added   = git_commit_range(oldrev, newrev)
+        added = git_commit_range(oldrev, newrev)
         removed = git_commit_range(newrev, oldrev)
 
     if oldrev == '0000000000000000000000000000000000000000':
