@@ -1,3 +1,4 @@
+{
 "type": "subscribe",
 "fired_at": "2016-11-29 23:38:36",
 "data[id]": "7407653990",
@@ -10,3 +11,4 @@
 "data[merges][FNAME]": "Noah",
 "data[merges][LNAME]": "Cristino",
 "data[list_id]": "84258f38bb"
+}
