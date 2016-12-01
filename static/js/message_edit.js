@@ -239,7 +239,7 @@ function edit_message (row, raw_content) {
         // since otherwise there is a noticeable lag
         message_edit_countdown_timer.text(timer_text(seconds_left));
         var countdown_timer = setInterval(function () {
-            if (--seconds_left <= 0) {
+            if (seconds_left-1 <= 0) {
                 clearInterval(countdown_timer);
                 message_edit_content.prop("readonly", "readonly");
                 if (message.type === 'stream') {

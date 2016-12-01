@@ -188,19 +188,35 @@ var _ = global._;
       'some_email@**everyone**.com'
     ];
     var i;
-    for(i=0; i<messages_with_all_mentions.length; i++) {
+<<<<<<< HEAD
+    for(i=0; i<messages_with_all_mentions.length;i+=1) {
         assert(util.is_all_or_everyone_mentioned(messages_with_all_mentions[i]));
     }
 
-    for(i=0; i<messages_with_everyone_mentions.length; i++) {
+    for(i=0; i<messages_with_everyone_mentions.length;i+=1) {
         assert(util.is_all_or_everyone_mentioned(messages_with_everyone_mentions[i]));
     }
 
-    for(i=0; i<messages_without_all_mentions.length; i++) {
+    for(i=0; i<messages_without_all_mentions.length;i+=1) {
         assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
     }
 
-    for(i=0; i<messages_without_everyone_mentions.length; i++) {
+    for(i=0; i<messages_without_everyone_mentions.length;i+=1) {
+=======
+    for(i=0; i<messages_with_all_mentions.length; i+=1) {
+        assert(util.is_all_or_everyone_mentioned(messages_with_all_mentions[i]));
+    }
+
+    for(i=0; i<messages_with_everyone_mentions.length; i+=1) {
+        assert(util.is_all_or_everyone_mentioned(messages_with_everyone_mentions[i]));
+    }
+
+    for(i=0; i<messages_without_all_mentions.length; i+=1) {
+        assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+    }
+
+    for(i=0; i<messages_without_everyone_mentions.length; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
     }
 }());

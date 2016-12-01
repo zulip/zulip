@@ -191,7 +191,7 @@ var zero_counts = {
 
     var num_msgs = 10000;
     var i;
-    for (i = 0; i < num_msgs; ++i) {
+    for (i = 0; i < num_msgs;i+=1) {
         message.id = i+1;
         unread.process_loaded_messages([message]);
     }
@@ -199,7 +199,11 @@ var zero_counts = {
     count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, num_msgs);
 
-    for (i = 0; i < num_msgs; ++i) {
+<<<<<<< HEAD
+    for (i = 0; i < num_msgs;i+=1) {
+=======
+    for (i = 0; i < num_msgs; i+=1) {
+>>>>>>> 9b5d165cfef57c3d3d5d11471767444d0e5dda38
         message.id = i+1;
         unread.process_read_message(message);
     }
