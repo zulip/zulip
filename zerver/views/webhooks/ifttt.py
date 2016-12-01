@@ -8,7 +8,6 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import UserProfile, Client
 
 
-
 @api_key_only_webhook_view('IFTTT')
 @has_request_variables
 def api_iftt_app_webhook(request, user_profile, client,
@@ -23,3 +22,4 @@ def api_iftt_app_webhook(request, user_profile, client,
         return json_error(_("Content can't be empty"))
     check_send_message(user_profile, client, "stream", [stream], subject, content)
     return json_success()
+

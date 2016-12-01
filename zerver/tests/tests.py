@@ -432,7 +432,6 @@ class ZephyrTest(ZulipTestCase):
             'MTIzNA=='])
 
 
-
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self):
         # type: () -> None
@@ -528,7 +527,6 @@ class WorkerTest(TestCase):
             for queue_name, data in self.queue:
                 callback = self.consumers[queue_name]
                 callback(data)
-
 
     def test_UserActivityWorker(self):
         # type: () -> None
@@ -1570,7 +1568,6 @@ class ChangeSettingsTest(ZulipTestCase):
             dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
 
-
     # This is basically a don't-explode test.
     def test_notify_settings(self):
         # type: () -> None
@@ -1941,7 +1938,6 @@ class HomeTest(ZulipTestCase):
             html = result.content.decode('utf-8')
             self.assertIn('There is a new terms of service', html)
 
-
     def test_bad_narrow(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -2235,3 +2231,4 @@ class TestLoginPage(ZulipTestCase):
         # type: () -> None
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
+

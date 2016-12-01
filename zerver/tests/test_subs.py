@@ -743,7 +743,6 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_error(
             result, "Not subscribed to stream %s" % (unsubs_stream,))
 
-
     def test_json_subscription_property_invalid_verb(self):
         # type: () -> None
         """
@@ -1451,7 +1450,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
-
 
     def test_users_getting_add_peer_event(self):
         # type: () -> None

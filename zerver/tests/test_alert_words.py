@@ -45,7 +45,6 @@ class AlertWordTests(ZulipTestCase):
         words = user_alert_words(user)
         self.assertEqual(words, ['milk', 'cookies'])
 
-
     def test_default_no_words(self):
         # type: () -> None
         """
@@ -131,7 +130,6 @@ class AlertWordTests(ZulipTestCase):
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
-
 
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)

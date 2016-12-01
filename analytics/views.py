@@ -89,7 +89,6 @@ def get_realm_day_counts():
     for row in rows:
         counts[row['domain']][row['age']] = row['cnt']
 
-
     result = {}
     for domain in counts:
         raw_cnts = [counts[domain].get(age, 0) for age in range(8)]
@@ -259,7 +258,6 @@ def realm_summary_table(realm_minutes):
         total_user_profile_count += int(row['user_profile_count'])
         total_bot_count += int(row['bot_count'])
         total_at_risk_count += int(row['at_risk_count'])
-
 
     rows.append(dict(
         domain='Total',
@@ -695,8 +693,8 @@ def get_user_activity_summary(records):
             update('pointer', record)
         update(client, record)
 
-
     return summary
+
 
 def format_date_for_activity_reports(date):
     # type: (Optional[datetime]) -> str
@@ -705,6 +703,7 @@ def format_date_for_activity_reports(date):
     else:
         return ''
 
+
 def user_activity_link(email):
     # type: (str) -> mark_safe
     url_name = 'analytics.views.get_user_activity'
@@ -712,12 +711,14 @@ def user_activity_link(email):
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
+
 def realm_activity_link(realm):
     # type: (str) -> mark_safe
     url_name = 'analytics.views.get_realm_activity'
     url = urlresolvers.reverse(url_name, kwargs=dict(realm=realm))
     realm_link = '<a href="%s">%s</a>' % (url, realm)
     return mark_safe(realm_link)
+
 
 def realm_client_table(user_summaries):
     # type: (Dict[str, Dict[str, Dict[str, Any]]]) -> str
@@ -862,6 +863,7 @@ def realm_user_summary_table(all_records, admin_emails):
     content = make_table(title, cols, rows, has_row_class=True)
     return user_records, content
 
+
 @zulip_internal
 def get_realm_activity(request, realm):
     # type: (HttpRequest, str) -> HttpResponse
@@ -887,7 +889,6 @@ def get_realm_activity(request, realm):
     content = realm_client_table(all_user_records)
     data += [(page_title, content)]
 
-
     page_title = 'History'
     content = sent_messages_report(realm)
     data += [(page_title, content)]
@@ -903,6 +904,7 @@ def get_realm_activity(request, realm):
         dict(data=data, realm_link=realm_link, title=title),
         request=request
     )
+
 
 @zulip_internal
 def get_user_activity(request, email):

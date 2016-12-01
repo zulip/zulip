@@ -116,7 +116,6 @@ def handle_event(event):
         url = make_url("projects/%s" % (project_link,))
         scm = "of type %s" % (project_repo_type,) if project_repo_type else ""
 
-
         subject = "Repository %s Created" % (project_name,)
         content = "%s created a new repository %s [%s](%s)" % (actor_name, scm, project_name, url)
     elif event_type == 'push':
@@ -164,7 +163,6 @@ def handle_event(event):
         name = raw_props.get('subject')
         body = raw_props.get('content')
         changes = raw_props.get('changes')
-
 
         url = make_url("projects/%s/tickets/%s" % (project_link, num))
         subject = "#%s: %s" % (num, name)

@@ -222,7 +222,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         response = middleware_method(request, response)
                     response = response.render()
 
-
             except http.Http404 as e:
                 if settings.DEBUG:
                     from django.views import debug

@@ -57,7 +57,6 @@ Usage examples:
             print("%25s %15d" % (count[1], count[0]))
         print("Total:", total)
 
-
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         if options['arg'] is None:

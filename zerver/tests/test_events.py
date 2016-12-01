@@ -672,7 +672,6 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-
     def test_create_bot(self):
         # type: () -> None
         bot_created_checker = check_dict([

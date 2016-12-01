@@ -63,7 +63,6 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(get_client_name(req, is_json_view=True), 'website')
         self.assertEqual(get_client_name(req, is_json_view=False), 'Mozilla')
 
-
         req = Request(
             GET=dict(),
             POST=dict(),
@@ -81,7 +80,6 @@ class DecoratorTestCase(TestCase):
 
         self.assertEqual(get_client_name(req, is_json_view=True), 'fancy phone')
         self.assertEqual(get_client_name(req, is_json_view=False), 'fancy phone')
-
 
     def test_REQ_converter(self):
 

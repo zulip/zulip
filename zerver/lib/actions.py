@@ -1620,7 +1620,6 @@ def bulk_add_subscriptions(streams, users):
                              user_id=added_user.id)
                 send_event(event, peer_user_ids)
 
-
     return ([(user_profile, stream) for (user_profile, recipient_id, stream) in new_subs] +
             [(sub.user_profile, stream) for (sub, stream) in subs_to_activate],
             already_subscribed)
@@ -2659,7 +2658,6 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         event["subject"] = subject
         event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
         edit_history_event["prev_subject"] = orig_subject
-
 
         if propagate_mode in ["change_later", "change_all"]:
             propagate_query = Q(recipient = message.recipient, subject = orig_subject)
