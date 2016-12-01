@@ -136,9 +136,9 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # so calling process_stream_message directly
         try:
             process_stream_message(incoming_valid_message['To'],
-                incoming_valid_message['Subject'],
-                incoming_valid_message,
-                debug_info)
+                                   incoming_valid_message['Subject'],
+                                   incoming_valid_message,
+                                   debug_info)
         except ZulipEmailForwardError as e:
             # empty body throws exception
             exception_message = str(e)
@@ -285,7 +285,7 @@ class TestReplyExtraction(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
-        text =  """Reply
+        text = """Reply
 
         -----Original Message-----
 

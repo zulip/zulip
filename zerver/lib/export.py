@@ -199,12 +199,13 @@ class Config(object):
     append itself to the parent's list of children.
 
     '''
+
     def __init__(self, table=None, model=None,
-                normal_parent=None, virtual_parent=None,
-                filter_args=None, custom_fetch=None, custom_tables=None,
-                post_process_data=None,
-                concat_and_destroy=None, id_source=None, source_filter=None,
-                parent_key=None, use_all=False, is_seeded=False, exclude=None):
+                 normal_parent=None, virtual_parent=None,
+                 filter_args=None, custom_fetch=None, custom_tables=None,
+                 post_process_data=None,
+                 concat_and_destroy=None, id_source=None, source_filter=None,
+                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
         # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
 
@@ -223,7 +224,7 @@ class Config(object):
         self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
-        self.source_filter= source_filter
+        self.source_filter = source_filter
         self.children = [] # type: List[Config]
 
         if normal_parent:
@@ -556,7 +557,7 @@ def fetch_user_profile(response, config, context):
     exportable_user_ids = context['exportable_user_ids']
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude=['password', 'api_key']
+    exclude = ['password', 'api_key']
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows = [] # type: List[Record]
@@ -1005,7 +1006,7 @@ def do_write_stats_file_for_realm_export(output_dir):
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
         for fn in fns:
-            f.write(os.path.basename(fn) +'\n')
+            f.write(os.path.basename(fn) + '\n')
             payload = open(fn).read()
             data = ujson.loads(payload)
             for k in sorted(data):
@@ -1101,6 +1102,7 @@ def create_soft_link(source, in_progress=True):
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+
     def run_job(shard):
         # type: (str) -> int
         subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
@@ -1270,9 +1272,9 @@ def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
             new_id = lookup_table[old_id]
             if verbose:
                 logging.info('Remapping %s%s from %s to %s' % (table,
-                                                              field_name + '_id',
-                                                              old_id,
-                                                              new_id))
+                                                               field_name + '_id',
+                                                               old_id,
+                                                               new_id))
         else:
             new_id = old_id
         item[field_name + "_id"] = new_id
@@ -1589,8 +1591,8 @@ def import_attachments(data):
     with connection.cursor() as cursor:
         sql_template = '''
             insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
-                                                           parent_id,
-                                                           child_id)
+                                                            parent_id,
+                                                            child_id)
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
         cursor.executemany(sql_template, tups)
 

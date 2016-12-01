@@ -25,6 +25,7 @@ class Command(BaseCommand):
                             help="run all queues")
 
     help = "Runs a queue processing worker"
+
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         logging.basicConfig()

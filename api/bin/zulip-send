@@ -43,7 +43,7 @@ def do_send_message(client, message_data ):
 
     if message_data['type'] == 'stream':
         log.info('Sending message to stream "%s", subject "%s"... ' % \
-            (message_data['to'], message_data['subject']))
+                 (message_data['to'], message_data['subject']))
     else:
         log.info('Sending message to %s... ' % message_data['to'])
     response = client.send_message(message_data)
@@ -80,13 +80,13 @@ def main(argv=None):
 
     group = optparse.OptionGroup(parser, 'Stream parameters')
     group.add_option('-s', '--stream',
-                      dest='stream',
-                      action='store',
-                      help='Allows the user to specify a stream for the message.')
+                     dest='stream',
+                     action='store',
+                     help='Allows the user to specify a stream for the message.')
     group.add_option('-S', '--subject',
-                      dest='subject',
-                      action='store',
-                      help='Allows the user to specify a subject for the message.')
+                     dest='subject',
+                     action='store',
+                     help='Allows the user to specify a subject for the message.')
     parser.add_option_group(group)
 
 

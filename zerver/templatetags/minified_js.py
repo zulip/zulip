@@ -24,7 +24,7 @@ class MinifiedJSNode(Node):
             scripts = [settings.JS_SPECS[self.sourcefile]['output_filename']]
         script_urls = [staticfiles_storage.url(script) for script in scripts]
         script_tags = ['<script type="text/javascript" src="%s" charset="utf-8"></script>'
-                % url for url in script_urls]
+                        % url for url in script_urls]
         return '\n'.join(script_tags)
 
 
@@ -41,5 +41,5 @@ def minified_js(parser, token):
     sourcefile = sourcefile[1:-1]
     if sourcefile not in settings.JS_SPECS:
         raise TemplateSyntaxError("%s tag invalid argument: no JS file %s"
-                % (tag_name, sourcefile))
+                                  % (tag_name, sourcefile))
     return MinifiedJSNode(sourcefile)

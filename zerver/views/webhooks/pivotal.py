@@ -55,7 +55,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
         content = description + more_info
     elif event_type == 'note_create':
         subject = "Comment added"
-        content = description +  more_info
+        content = description + more_info
     elif event_type == 'story_create':
         issue_desc = get_text(['stories', 'story', 'description'])
         issue_type = get_text(['stories', 'story', 'story_type'])
@@ -64,12 +64,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
         if estimate != '':
             estimate = " worth %s story points" % (estimate,)
         subject = name
-        content = "%s (%s %s%s):\n\n~~~ quote\n%s\n~~~\n\n%s" % (description,
-                                                   issue_status,
-                                                   issue_type,
-                                                   estimate,
-                                                   issue_desc,
-                                                   more_info)
+        content = "%s (%s %s%s):\n\n~~~ quote\n%s\n~~~\n\n%s" % (description, issue_status, issue_type, estimate, issue_desc, more_info)
     return subject, content
 
 def api_pivotal_webhook_v5(request, user_profile, stream):

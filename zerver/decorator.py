@@ -82,10 +82,10 @@ def update_user_activity(request, user_profile):
     else:
         query = request.META['PATH_INFO']
 
-    event={'query': query,
-           'user_profile_id': user_profile.id,
-           'time': datetime_to_timestamp(now()),
-           'client': request.client.name}
+    event = {'query': query,
+             'user_profile_id': user_profile.id,
+             'time': datetime_to_timestamp(now()),
+             'client': request.client.name}
     queue_json_publish("user_activity", event, lambda event: None)
 
 # Based on django.views.decorators.http.require_http_methods
@@ -418,7 +418,7 @@ def process_as_post(view_func):
                 # FILES property, so we are essentially setting request.FILES here.  (In
                 # Django 1.5 FILES was still a read-only property.)
                 request.POST, request._files = MultiPartParser(request.META, BytesIO(request.body),
-                        request.upload_handlers, request.encoding).parse()
+                                                               request.upload_handlers, request.encoding).parse()
             else:
                 request.POST = QueryDict(request.body, encoding=request.encoding)
 
@@ -491,8 +491,8 @@ def client_is_exempt_from_rate_limiting(request):
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
     return ((request.client and request.client.name.lower() == 'internal')
-           and (is_local_addr(request.META['REMOTE_ADDR']) or
-                settings.DEBUG_RATE_LIMITING))
+            and (is_local_addr(request.META['REMOTE_ADDR']) or
+                 settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -596,7 +596,7 @@ def rate_limit(domain='all'):
 
             if not user:
                 logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
-                                 func.__name__)
+                              func.__name__)
                 return func(request, *args, **kwargs)
 
             # Rate-limiting data is stored in redis

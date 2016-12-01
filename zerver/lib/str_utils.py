@@ -81,6 +81,7 @@ class ModelReprMixin(object):
     Define __unicode__ on your model which returns a six.text_type object.
     This mixin will automatically define __str__ and __repr__.
     """
+
     def __unicode__(self):
         # type: () -> Text
         # Originally raised an exception, but Django (e.g. the ./manage.py shell)

@@ -38,6 +38,9 @@ args = parser.parse_args()
 deploy_path = args.deploy_path
 os.chdir(deploy_path)
 
+# Handle issues around upstart on Ubuntu Xenial
+subprocess.check_call(["./scripts/lib/check-upstart"])
+
 if not args.skip_puppet:
     logging.info("Upgrading system packages...")
     subprocess.check_call(["apt-get", "update"])

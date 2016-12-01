@@ -6,7 +6,7 @@ import sys
 import subprocess
 import logging
 
-TARBALL_ARCHIVE_PATH="/home/zulip/archives"
+TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))

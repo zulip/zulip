@@ -103,7 +103,7 @@ def parse_data(data, today):
 
                 if best is not None:
                     print("Last %s, %s %s ago:\t%.01f\t\t%s" \
-                        % (day.strftime("%A"), i, "days", best, percent))
+                          % (day.strftime("%A"), i, "days", best, percent))
                 best_last_time = best
 
     for metric in data:

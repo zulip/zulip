@@ -4,7 +4,8 @@
 # Leaving all the instructions out of this file to avoid having to
 # sync them as we update the comments.
 
-if False: from typing import Dict, Optional, Text
+if False:
+    from typing import Dict, Optional, Text
 
 ZULIP_USER = "commit-bot@zulip.com"
 ZULIP_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

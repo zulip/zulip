@@ -28,7 +28,7 @@ def message_fetch_objects():
     except IndexError:
         return []
     return Message.objects.select_related().filter(~Q(sender__email='tabbott/extra@mit.edu'),
-                                                    id__gt=max_id - MESSAGE_CACHE_SIZE)
+                                                   id__gt=max_id - MESSAGE_CACHE_SIZE)
 
 def message_cache_items(items_for_remote_cache, message):
     # type: (Dict[text_type, Tuple[binary_type]], Message) -> None
@@ -95,5 +95,5 @@ def fill_remote_cache(cache):
             items_for_remote_cache = {}
     cache_set_many(items_for_remote_cache, timeout=3600*24*7)
     logging.info("Succesfully populated %s cache!  Consumed %s remote cache queries (%s time)" % \
-                     (cache, get_remote_cache_requests() - remote_cache_requests_start,
-                      round(get_remote_cache_time() - remote_cache_time_start, 2)))
+                 (cache, get_remote_cache_requests() - remote_cache_requests_start,
+                  round(get_remote_cache_time() - remote_cache_time_start, 2)))

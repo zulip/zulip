@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         if settings.DEBUG:
             logging.basicConfig(level=logging.INFO,
-                format='%(asctime)s %(levelname)-8s %(message)s')
+                                format='%(asctime)s %(levelname)-8s %(message)s')
 
         def inner_run():
             # type: () -> None
@@ -114,7 +114,7 @@ class Command(BaseCommand):
 
                 if django.conf.settings.DEBUG:
                     instance.set_blocking_log_threshold(5)
-                    instance.handle_callback_exception=handle_callback_exception
+                    instance.handle_callback_exception = handle_callback_exception
                 instance.start()
             except KeyboardInterrupt:
                 sys.exit(0)

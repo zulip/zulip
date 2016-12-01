@@ -96,7 +96,7 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name,
              'id': user_profile.id,
-             'is_mirror_dummy': user_profile.is_mirror_dummy,} for user_profile in user_profile_list]
+             'is_mirror_dummy': user_profile.is_mirror_dummy} for user_profile in user_profile_list]
 
 def get_realm_emoji_cache_key(realm):
     # type: (Realm) -> Text
@@ -852,6 +852,7 @@ def bulk_get_recipients(type, type_ids):
     def cache_key_function(type_id):
         # type: (int) -> Text
         return get_recipient_cache_key(type, type_id)
+
     def query_function(type_ids):
         # type: (List[int]) -> Sequence[Recipient]
         # TODO: Change return type to QuerySet[Recipient]
@@ -951,8 +952,8 @@ class Message(ModelReprMixin, models.Model):
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
-                                   'website', 'ios', 'android')) or \
-                                   ('desktop app' in sending_client)
+                                   'website', 'ios', 'android')) or (
+                                   'desktop app' in sending_client)
 
     @staticmethod
     def content_has_attachment(content):
@@ -1143,7 +1144,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
         result = get_active_bot_dicts_in_realm(user_profile.realm)
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
-                                        bot_owner=user_profile).values(*active_bot_dict_fields)
+                                            bot_owner=user_profile).values(*active_bot_dict_fields)
     # TODO: Remove this import cycle
     from zerver.lib.avatar import get_avatar_url
 

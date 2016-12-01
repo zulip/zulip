@@ -631,6 +631,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.popover_mute_topic', function (e) {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
+        popovers.hide_actions_popover();
         exports.topic_ops.mute(stream, topic);
         e.stopPropagation();
         e.preventDefault();

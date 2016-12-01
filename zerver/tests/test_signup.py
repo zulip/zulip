@@ -78,7 +78,7 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent",],
+                    404: ["/help/nonexistent"],
                 }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
@@ -111,7 +111,7 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
-                msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
+                              msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
             )
             data = ujson.loads(resp.content)
             self.assertEqual('error', data['result'])
@@ -121,7 +121,7 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
-                msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
+                              msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
             )
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
@@ -310,8 +310,7 @@ class InviteUserTest(ZulipTestCase):
         """
 
         return self.client_post("/json/invite_users",
-                {"invitee_emails": users,
-                    "stream": streams})
+                                {"invitee_emails": users, "stream": streams})
 
     def check_sent_emails(self, correct_recipients):
         # type: (List[str]) -> None
@@ -439,7 +438,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
-                "Stream does not exist: NotARealStream. No invites were sent.")
+                                           "Stream does not exist: NotARealStream. No invites were sent.")
         self.check_sent_emails([])
 
     def test_invite_existing_user(self):
@@ -541,8 +540,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # type: () -> None
         self.login("hamlet@zulip.com")
         user = get_user_profile_by_email('hamlet@zulip.com')
-        user.invites_granted=1
-        user.invites_used=0
+        user.invites_granted = 1
+        user.invites_used = 0
         user.save()
 
         invitee = "alice-test@zulip.com"

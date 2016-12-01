@@ -25,8 +25,7 @@ function zephyr_topic_name_match(message, operand) {
     // instance "personal" to be the same.
     if (base_topic === ''
         || base_topic.toLowerCase() === 'personal'
-        || base_topic.toLowerCase() === '(instance "")')
-    {
+        || base_topic.toLowerCase() === '(instance "")') {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');

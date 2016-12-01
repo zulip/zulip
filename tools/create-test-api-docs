@@ -42,7 +42,7 @@ def encode_info(info):
             result = '(stringified)\n'
         except:
             pass
-        result +=  cgi.escape(pprint.pformat(info, indent=4))
+        result += cgi.escape(pprint.pformat(info, indent=4))
         return '<pre>' + result + '</pre>'
     except:
         pass
@@ -140,7 +140,7 @@ def create_user_docs():
         groups['other'] = patterns
 
         for name in ['api', 'legacy', 'webhooks', 'other']:
-            f.write(name +' endpoints:\n\n')
+            f.write(name + ' endpoints:\n\n')
             f.write('<ul>\n')
             for pattern in sorted(groups[name]):
                 href = pattern.replace('/', '-') + '.html'

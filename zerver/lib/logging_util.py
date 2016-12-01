@@ -19,7 +19,7 @@ class _RateLimitFilter(object):
         # Track duplicate errors
         duplicate = False
         rate = getattr(settings, '%s_LIMIT' %  self.__class__.__name__.upper(),
-               600)  # seconds
+                       600)  # seconds
         if rate > 0:
             # Test if the cache works
             try:

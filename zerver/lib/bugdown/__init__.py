@@ -75,7 +75,7 @@ def list_of_tlds():
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [force_text(tld).lower().strip() for tld in open(tlds_file, 'r')
-                if tld not in blacklist and not tld[0].startswith('#')]
+            if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
 
@@ -259,7 +259,7 @@ def get_tweet_id(url):
     to_match = parsed_url.path
     # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
     if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
-        to_match= parsed_url.fragment
+        to_match = parsed_url.fragment
 
     tweet_id_match = re.match(r'^!?/.*?/status(es)?/(?P<tweetid>\d{10,18})(/photo/[0-9])?/?$', to_match)
     if not tweet_id_match:
@@ -659,6 +659,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
     """
     A pattern that allows including in-app modal links in messages.
     """
+
     def handleMatch(self, match):
         # type: (Match[text_type]) -> Element
         relative_url = match.group('relative_url')
@@ -815,8 +816,10 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 
             # If we're not in a fenced block and we detect an upcoming list
             #  hanging off a paragraph, add a newline
-            if not fence and lines[i] and \
-                self.LI_RE.match(lines[i+1]) and not self.LI_RE.match(lines[i]):
+            if (not fence and lines[i] and
+                self.LI_RE.match(lines[i+1]) and
+                not self.LI_RE.match(lines[i])):
+
                 copy.insert(i+inserts+1, '')
                 inserts += 1
         return copy
@@ -824,6 +827,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
+
     def handleMatch(self, m):
         # type: (Match[text_type]) -> Optional[Element]
         href = m.group(9)
@@ -853,6 +857,7 @@ def prepare_realm_pattern(source):
 # using the provided format string to construct the URL.
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
+
     def __init__(self, source_pattern, format_string, markdown_instance=None):
         # type: (text_type, text_type, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)
@@ -954,9 +959,9 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             for word in realm_words:
                 escaped = re.escape(word.lower())
                 match_re = re.compile(u'(?:%s)%s(?:%s)' %
-                                        (allowed_before_punctuation,
-                                         escaped,
-                                         allowed_after_punctuation))
+                                      (allowed_before_punctuation,
+                                       escaped,
+                                       allowed_after_punctuation))
                 if re.search(match_re, content):
                     current_message.alert_words.add(word)
 
@@ -1006,13 +1011,13 @@ class Bugdown(markdown.Extension):
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
-            markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
-            '>not_strong')
+                              markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
+                              '>not_strong')
 
         # Custom strikethrough syntax: ~~foo~~
         md.inlinePatterns.add('del',
-            markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
-            '>strong')
+                              markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
+                              '>strong')
 
         # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
@@ -1031,7 +1036,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '>backtick')
 
         md.inlinePatterns.add('stream_subscribe_button',
-            StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
+                              StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
@@ -1108,8 +1113,8 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
-                                 BugdownUListPreprocessor(md),
-                                 "_begin")
+                             BugdownUListPreprocessor(md),
+                             "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
 
@@ -1182,7 +1187,7 @@ def make_realm_filters(domain, filters):
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
     make_md_engine(domain, {"realm_filters": [filters, "Realm-specific filters for %s" % (domain,)],
-                           "realm": [domain, "Realm name"]})
+                            "realm": [domain, "Realm name"]})
 
 def maybe_update_realm_filters(domain):
     # type: (Optional[text_type]) -> None
@@ -1279,11 +1284,11 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
 
         # Output error to log as well as sending a zulip and email
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
-            % (traceback.format_exc(), cleaned))
+                          % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
             internal_send_message(settings.ERROR_BOT, "stream",
-                    "errors", subject, "Markdown parser failed, email sent with details.")
+                                  "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)

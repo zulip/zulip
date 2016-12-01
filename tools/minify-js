@@ -15,7 +15,7 @@ from typing import Optional, Set
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
-                  help='a previous deploy from which to reuse files if possible')
+                    help='a previous deploy from which to reuse files if possible')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 
@@ -54,8 +54,8 @@ def get_changed_source_files(other_checkout):
         # If git returned an error, assume we can't reuse any files, and
         # regenerate everything.
         print("Warning: git returned an error when comparing to the previous")
-        print ("deploy in %s. Will re-minify JavaScript instead of reusing"
-               % (other_checkout,))
+        print("deploy in %s. Will re-minify JavaScript instead of reusing"
+              % (other_checkout,))
         return None
 
     changed = set() # type: Set[str]
@@ -106,7 +106,7 @@ for js_group, filespec in six.iteritems(JS_SPECS):
 
     out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
     map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])
-                                     + '.map')
+                            + '.map')
 
     if (not 'force_minify' in filespec) and (prev_deploy and len(set(in_files) & changed_files) == 0):
         # Try to reuse the output file from previous deploy

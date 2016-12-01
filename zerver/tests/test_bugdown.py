@@ -313,15 +313,15 @@ class BugdownTest(TestCase):
             # type: (text_type, text_type, text_type) -> text_type
             ## As of right now, all previews are mocked to be the exact same tweet
             return ('<div class="inline-preview-twitter">'
-                      '<div class="twitter-tweet">'
-                        '<a href="%s" target="_blank">'
-                          '<img class="twitter-avatar"'
-                          ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
-                        '</a>'
-                        '<p>%s</p>'
-                        '<span>- Eoin McMillan  (@imeoin)</span>'
-                        '%s'
-                      '</div>'
+                    '<div class="twitter-tweet">'
+                    '<a href="%s" target="_blank">'
+                    '<img class="twitter-avatar"'
+                    ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
+                    '</a>'
+                    '<p>%s</p>'
+                    '<span>- Eoin McMillan  (@imeoin)</span>'
+                    '%s'
+                    '</div>'
                     '</div>') % (url, tweet_html, image_html)
 
         msg = 'http://www.twitter.com'
@@ -396,9 +396,9 @@ class BugdownTest(TestCase):
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
                                         media_tweet_html,
                                         ('<div class="twitter-image">'
-                                           '<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
-                                             '<img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small">'
-                                           '</a>'
+                                         '<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
+                                         '<img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small">'
+                                         '</a>'
                                          '</div>'))))
 
     def test_fetch_tweet_data_settings_validation(self):
@@ -419,7 +419,7 @@ class BugdownTest(TestCase):
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
         converted = bugdown.convert(":test:", "zulip.com", msg)
-        self.assertEqual(converted, '<p>%s</p>' %(emoji_img(':test:', url)))
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', url)))
 
         do_remove_realm_emoji(zulip_realm, 'test')
         converted = bugdown.convert(":test:", "zulip.com", msg)
@@ -485,7 +485,7 @@ class BugdownTest(TestCase):
         zulip_filters = all_filters['zulip.com']
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
+                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
 
     def test_flush_realm_filter(self):
         # type: () -> None
@@ -850,7 +850,7 @@ class BugdownApiTests(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
-            u'<p>That is a <strong>bold</strong> statement</p>')
+                         u'<p>That is a <strong>bold</strong> statement</p>')
 
     def test_render_mention_stream_api(self):
         # type: () -> None
@@ -864,7 +864,7 @@ class BugdownApiTests(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
-            u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
+                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):

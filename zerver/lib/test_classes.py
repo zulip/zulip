@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
-    Sized, Tuple, Union)
+                    Sized, Tuple, Union)
 
 from django.core.urlresolvers import resolve
 from django.conf import settings
@@ -300,7 +300,7 @@ class ZulipTestCase(TestCase):
         # type: (Sized, int) -> None
         actual_count = len(queries)
         return self.assertTrue(actual_count == count,
-                                   "len(%s) == %s, != %s" % (queries, actual_count, count))
+                               "len(%s) == %s, != %s" % (queries, actual_count, count))
 
     def assert_max_length(self, queries, count):
         # type: (Sized, int) -> None

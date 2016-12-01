@@ -42,9 +42,9 @@ package_info = dict(
     url='https://www.zulip.com/dist/api/',
     packages=['zulip'],
     data_files=[('share/zulip/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
-                                           "examples/get-public-streams", "examples/unsubscribe",
-                                           "examples/list-members", "examples/list-subscriptions",
-                                           "examples/print-messages", "examples/recent-messages"])] + \
+                                          "examples/get-public-streams", "examples/unsubscribe",
+                                          "examples/list-members", "examples/list-subscriptions",
+                                          "examples/print-messages", "examples/recent-messages"])] + \
         list(recur_expand('share/zulip', 'integrations/')),
     scripts=["bin/zulip-send"],
 ) # type: Dict[str, Any]

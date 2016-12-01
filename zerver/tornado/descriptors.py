@@ -3,7 +3,8 @@ from __future__ import print_function
 
 from typing import Any, Optional
 
-if False: import zerver.tornado.event_queue
+if False:
+    import zerver.tornado.event_queue
 
 descriptors_by_handler_id = {} # type: Dict[int, zerver.tornado.event_queue.ClientDescriptor]
 

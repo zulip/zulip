@@ -140,9 +140,9 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         if 'remote_cache_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
             remote_cache_time_delta += (log_data['remote_cache_time_stopped'] -
-                                     log_data['remote_cache_time_restarted'])
+                                        log_data['remote_cache_time_restarted'])
             remote_cache_count_delta += (log_data['remote_cache_requests_stopped'] -
-                                      log_data['remote_cache_requests_restarted'])
+                                         log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
             remote_cache_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
@@ -194,13 +194,13 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     else:
         extra_request_data = ""
     logger_client = "(%s via %s)" % (email, client_name)
-    logger_timing = '%5s%s%s%s%s%s %s' % \
+    logger_timing = ('%5s%s%s%s%s%s %s' %
                      (format_timedelta(time_delta), optional_orig_delta,
                       remote_cache_output, bugdown_output,
-                      db_time_output, startup_output, path)
-    logger_line = '%-15s %-7s %3d %s%s %s' % \
-                    (remote_ip, method, status_code,
-                     logger_timing, extra_request_data, logger_client)
+                      db_time_output, startup_output, path))
+    logger_line = ('%-15s %-7s %3d %s%s %s' %
+                   (remote_ip, method, status_code,
+                    logger_timing, extra_request_data, logger_client))
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
         logger.debug(logger_line)
     else:
@@ -299,6 +299,7 @@ class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
         # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
         self.process_request(request)
+
     def process_request(self, request):
         # type: (HttpRequest) -> None
         if request.path.startswith("/api/") or request.path.startswith("/json/"):
@@ -394,9 +395,9 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     if settings.REALMS_HAVE_SUBDOMAINS:
                         session_cookie_domain = host
                     response.set_cookie(settings.SESSION_COOKIE_NAME,
-                            request.session.session_key, max_age=max_age,
-                            expires=expires, domain=session_cookie_domain,
-                            path=settings.SESSION_COOKIE_PATH,
-                            secure=settings.SESSION_COOKIE_SECURE or None,
-                            httponly=settings.SESSION_COOKIE_HTTPONLY or None)
+                                        request.session.session_key, max_age=max_age,
+                                        expires=expires, domain=session_cookie_domain,
+                                        path=settings.SESSION_COOKIE_PATH,
+                                        secure=settings.SESSION_COOKIE_SECURE or None,
+                                        httponly=settings.SESSION_COOKIE_HTTPONLY or None)
         return response

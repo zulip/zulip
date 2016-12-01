@@ -122,7 +122,7 @@ class SignupWorker(QueueProcessingWorker):
 
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        merge_vars=data['merge_vars']
+        merge_vars = data['merge_vars']
         # This should clear out any invitation reminder emails
         clear_followup_emails_queue(data["EMAIL"])
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:

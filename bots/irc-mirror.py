@@ -13,7 +13,8 @@ from irc.client import ip_numstr_to_quad, ip_quad_to_numstr, Event, ServerConnec
 import zulip
 import optparse
 
-if False: from typing import Any
+if False:
+    from typing import Any
 
 IRC_DOMAIN = "irc.example.com"
 
@@ -35,6 +36,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         # type: (ServerConnection, Event) -> None
         c.join(self.channel)
+
         def forward_to_irc(msg):
             # type: (Dict[str, Any]) -> None
             if msg["type"] == "stream":

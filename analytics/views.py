@@ -655,6 +655,7 @@ def get_user_activity_summary(records):
     # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
     #: but that would require this long `Union` to carry on throughout inner functions.
     summary = {} # type: Dict[str, Dict[str, Any]]
+
     def update(action, record):
         # type: (str, QuerySet) -> None
         if action not in summary:

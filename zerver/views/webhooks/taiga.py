@@ -252,7 +252,8 @@ def parse_message(message):
         if message["change"]["diff"]:
             for value in message["change"]["diff"]:
                 parsed_event = parse_change_event(value, message)
-                if parsed_event: events.append(parsed_event)
+                if parsed_event:
+                    events.append(parsed_event)
         if message["change"]["comment"]:
             events.append(parse_comment(message))
 

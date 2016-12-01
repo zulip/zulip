@@ -10,8 +10,7 @@ from zproject.legacy_urls import legacy_urls
 from zerver.views.integrations import IntegrationView, APIView, HelpView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
-from django.contrib.auth.views import (login, password_reset,
-    password_reset_done, password_reset_confirm, password_reset_complete)
+from django.contrib.auth.views import (login, password_reset, password_reset_done, password_reset_confirm, password_reset_complete)
 
 import zerver.tornado.views
 import zerver.views
@@ -125,7 +124,7 @@ i18n_urls = [
 
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'),
-                                         name='landing-page'),
+        name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 ]
@@ -215,7 +214,7 @@ v1_api_and_json_patterns = [
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_profile_backend',
-         'DELETE':'zerver.views.users.deactivate_user_own_backend'}),
+         'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
     url(r'^users/me/pointer$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_pointer_backend',
          'PUT': 'zerver.views.pointer.update_pointer_backend'}),

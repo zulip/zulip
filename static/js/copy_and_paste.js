@@ -87,8 +87,7 @@ function copy_handler(e) {
             // Construct a div for what we want to copy (div)
             for (row = current_msg_list.get_row(start_id);
                  rows.id(row) <= end_id;
-                 row = rows.next_visible(row))
-            {
+                 row = rows.next_visible(row)) {
                 if (row.prev().hasClass("message_header")) {
                     content = $('<div>').text(row.prev().text()
                                                 .replace(/\s+/g, " ")

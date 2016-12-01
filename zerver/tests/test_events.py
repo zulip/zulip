@@ -510,12 +510,12 @@ class EventsRegisterTest(ZulipTestCase):
         # Test transitions; any new backends should be tested with T/T/T/F/T
         for (auth_method_dict) in \
                 ({'Google': True, 'Email': True, 'GitHub': True, 'LDAP': False, 'Dev': False},
-                {'Google': True, 'Email': True, 'GitHub': False, 'LDAP': False, 'Dev': False},
-                {'Google': True, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': False},
-                {'Google': True, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': False },
-                {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
-                {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
-                {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
+                 {'Google': True, 'Email': True, 'GitHub': False, 'LDAP': False, 'Dev': False},
+                 {'Google': True, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': False},
+                 {'Google': True, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': False },
+                 {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
+                 {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
+                 {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
             events = self.do_test(lambda: do_set_realm_authentication_methods(self.user_profile.realm,
                                                                               auth_method_dict))
             error = schema_checker('events[0]', events[0])
@@ -558,7 +558,7 @@ class EventsRegisterTest(ZulipTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for create_stream_by_admins_only in (False, True, False):
             events = self.do_test(lambda: do_set_realm_create_stream_by_admins_only(self.user_profile.realm,
-                                                                                create_stream_by_admins_only))
+                                  create_stream_by_admins_only))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -593,7 +593,7 @@ class EventsRegisterTest(ZulipTestCase):
              (False, 0), (False, 1234), (False, 0), (True, 1234), (False, 0),
              (True, 1234), (True, 600), (False, 600), (False, 1234), (True, 600)):
             events = self.do_test(lambda: do_set_realm_message_editing(self.user_profile.realm,
-                                      allow_message_editing, message_content_edit_limit_seconds))
+                                  allow_message_editing, message_content_edit_limit_seconds))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -649,7 +649,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('realm_emoji', check_dict([])),
         ])
         events = self.do_test(lambda: check_add_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji",
-                                                         "https://realm.com/my_emoji"))
+                                                            "https://realm.com/my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -964,7 +964,7 @@ class EventQueueTest(TestCase):
         queue.push({"type": "restart", "server_generation": "2"})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9,},
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,
@@ -978,7 +978,7 @@ class EventQueueTest(TestCase):
                         "timestamp": str(pointer_val)})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9,},
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,

@@ -270,8 +270,8 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
         self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
-        with self.settings(REALMS_HAVE_SUBDOMAINS = True), \
-             self.assertRaises(GetRealmByDomainException):
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
+             self.assertRaises(GetRealmByDomainException)):
             get_realm_by_email_domain('user@zulip.com')
 
 
@@ -488,7 +488,7 @@ class AdminCreateUserTest(ZulipTestCase):
             )
         )
         self.assert_json_error(result,
-            "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
+                               "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
 
         RealmAlias.objects.create(realm=get_realm_by_string_id('zulip'), domain='zulip.net')
 
@@ -510,7 +510,7 @@ class AdminCreateUserTest(ZulipTestCase):
         # the same user twice.
         result = self.client_put("/json/users", valid_params)
         self.assert_json_error(result,
-            "Email 'romeo@zulip.net' already in use")
+                               "Email 'romeo@zulip.net' already in use")
 
 class WorkerTest(TestCase):
     class FakeClient(object):
@@ -603,6 +603,7 @@ class WorkerTest(TestCase):
             def __init__(self):
                 # type: () -> None
                 super(TestWorker, self).__init__()
+
             def consume(self, data):
                 # type: (Mapping[str, Any]) -> None
                 pass
@@ -793,14 +794,14 @@ class BotTest(ZulipTestCase):
                 type='realm_bot',
                 op='add',
                 bot=dict(email='hambot-bot@zulip.com',
-                     user_id=bot.id,
-                     full_name='The Bot of Hamlet',
-                     api_key=result['api_key'],
-                     avatar_url=result['avatar_url'],
-                     default_sending_stream=None,
-                     default_events_register_stream=None,
-                     default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
+                         user_id=bot.id,
+                         full_name='The Bot of Hamlet',
+                         api_key=result['api_key'],
+                         avatar_url=result['avatar_url'],
+                         default_sending_stream=None,
+                         default_events_register_stream=None,
+                         default_all_public_streams=False,
+                         owner='hamlet@zulip.com',
                 )
             ),
             event['event']
@@ -844,7 +845,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
             bot_info = dict(
                 full_name='whatever',
                 short_name='whatever',
@@ -947,14 +948,14 @@ class BotTest(ZulipTestCase):
                 type='realm_bot',
                 op='add',
                 bot=dict(email='hambot-bot@zulip.com',
-                     user_id=profile.id,
-                     full_name='The Bot of Hamlet',
-                     api_key=result['api_key'],
-                     avatar_url=result['avatar_url'],
-                     default_sending_stream='Denmark',
-                     default_events_register_stream=None,
-                     default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
+                         user_id=profile.id,
+                         full_name='The Bot of Hamlet',
+                         api_key=result['api_key'],
+                         avatar_url=result['avatar_url'],
+                         default_sending_stream='Denmark',
+                         default_events_register_stream=None,
+                         default_all_public_streams=False,
+                         owner='hamlet@zulip.com',
                 )
             ),
             event['event']
@@ -1010,15 +1011,15 @@ class BotTest(ZulipTestCase):
                 type='realm_bot',
                 op='add',
                 bot=dict(email='hambot-bot@zulip.com',
-                     full_name='The Bot of Hamlet',
-                     user_id=bot_profile.id,
-                     api_key=result['api_key'],
-                     avatar_url=result['avatar_url'],
-                     default_sending_stream=None,
-                     default_events_register_stream='Denmark',
-                     default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                )
+                         full_name='The Bot of Hamlet',
+                         user_id=bot_profile.id,
+                         api_key=result['api_key'],
+                         avatar_url=result['avatar_url'],
+                         default_sending_stream=None,
+                         default_events_register_stream='Denmark',
+                         default_all_public_streams=False,
+                         owner='hamlet@zulip.com',
+                        )
             ),
             event['event']
         )
@@ -1181,7 +1182,7 @@ class BotTest(ZulipTestCase):
 
         # Try error case first (too many files):
         with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
             result = self.client_patch_multipart(
                 '/json/bots/hambot-bot@zulip.com',
                 dict(file1=fp1, file2=fp2))
@@ -1531,18 +1532,18 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         json_result = self.client_post("/json/settings/change",
-            dict(
-                full_name='Foo Bar',
-                old_password=initial_password('hamlet@zulip.com'),
-                new_password='foobar1',
-                confirm_password='foobar1',
-            )
+                                       dict(
+                                                full_name='Foo Bar',
+                                                old_password=initial_password('hamlet@zulip.com'),
+                                                new_password='foobar1',
+                                                confirm_password='foobar1',
+                                           )
         )
         self.assert_json_success(json_result)
         result = ujson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
-                full_name, "Foo Bar")
+                         full_name, "Foo Bar")
         self.client_post('/accounts/logout/')
         self.login("hamlet@zulip.com", "foobar1")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
@@ -1557,7 +1558,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         with self.settings(NAME_CHANGES_DISABLED=True):
             json_result = self.client_post("/json/settings/change",
-                dict(full_name='Foo Bar'))
+                                            dict(full_name='Foo Bar'))
 
         # We actually fail silently here, since this only happens if
         # somebody is trying to game our API, and there's no reason to
@@ -1569,7 +1570,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         # Now try a too-long name
         json_result = self.client_post("/json/settings/change",
-            dict(full_name='x' * 1000))
+                                       dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
 
 
@@ -1609,13 +1610,13 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/settings/change",
-            dict(
-                new_password="mismatched_password",
-                confirm_password="not_the_same",
-            )
+                                  dict(
+                                           new_password="mismatched_password",
+                                           confirm_password="not_the_same",
+                                      )
         )
         self.assert_json_error(result,
-                "New password must match confirmation password!")
+                               "New password must match confirmation password!")
 
     def test_wrong_old_password(self):
         # type: () -> None
@@ -1624,11 +1625,11 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/settings/change",
-            dict(
-                old_password='bad_password',
-                new_password="ignored",
-                confirm_password="ignored",
-            )
+                                  dict(
+                                           old_password='bad_password',
+                                           new_password="ignored",
+                                           confirm_password="ignored",
+                                      )
         )
         self.assert_json_error(result, "Wrong password!")
 
@@ -1641,9 +1642,9 @@ class ChangeSettingsTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         result = self.client_post("/json/settings/change",
-            dict(
-                old_password='ignored',
-            )
+                                  dict(
+                                           old_password='ignored',
+                                      )
         )
         self.assert_json_error(result, "No new data supplied")
 

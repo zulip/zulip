@@ -80,8 +80,8 @@ def process_count_stat(stat, fill_to_time):
     while currently_filled <= fill_to_time:
         logger.info("START %s %s %s" % (stat.property, stat.interval, currently_filled))
         start = time.time()
-        FillState.objects.filter(property = stat.property) \
-                     .update(end_time = currently_filled, state = FillState.STARTED)
+        FillState.objects.filter(property = stat.property).update(end_time = currently_filled,
+                                                                  state = FillState.STARTED)
         do_fill_count_stat_at_hour(stat, currently_filled)
         FillState.objects.filter(property = stat.property).update(state = FillState.DONE)
         end = time.time()
@@ -319,16 +319,16 @@ zerver_count_message_type_by_user = ZerverCountQuery(Message, UserCount, count_m
 
 COUNT_STATS = {
     'active_users:is_bot': CountStat('active_users:is_bot', zerver_count_user_by_realm,
-                                        {'is_active': True}, (UserProfile, 'is_bot'), CountStat.DAY, True),
+                                     {'is_active': True}, (UserProfile, 'is_bot'), CountStat.DAY, True),
     'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, None,
                                CountStat.HOUR, False),
     'messages_sent:is_bot': CountStat('messages_sent:is_bot', zerver_count_message_by_user, {},
-                                         (UserProfile, 'is_bot'), CountStat.DAY, False),
+                                      (UserProfile, 'is_bot'), CountStat.DAY, False),
     'messages_sent:message_type': CountStat('messages_sent:message_type',
-                                              zerver_count_message_type_by_user, {},
-                                              None, CountStat.DAY, False),
+                                            zerver_count_message_type_by_user, {},
+                                            None, CountStat.DAY, False),
     'messages_sent:client': CountStat('messages_sent:client', zerver_count_message_by_user, {},
-                                         (Message, 'sending_client_id'), CountStat.HOUR, False),
+                                      (Message, 'sending_client_id'), CountStat.HOUR, False),
     'messages_sent_to_stream:is_bot': CountStat('messages_sent_to_stream:is_bot', zerver_count_message_by_stream,
-                                              {}, (UserProfile, 'is_bot'), CountStat.HOUR, False)
-    }
+                                                {}, (UserProfile, 'is_bot'), CountStat.HOUR, False)
+}

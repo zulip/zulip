@@ -16,9 +16,9 @@ i18n_urlpatterns = [
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
     url('^deployment/feedback$', rest_dispatch,
-          {'POST': 'zilencer.views.submit_feedback'}),
+        {'POST': 'zilencer.views.submit_feedback'}),
     url('^deployment/report_error$', rest_dispatch,
-          {'POST': 'zilencer.views.report_error'}),
+        {'POST': 'zilencer.views.report_error'}),
     url('^deployment/endpoints$', zilencer.views.lookup_endpoints_for_user,
         name='zilencer.views.lookup_endpoints_for_user'),
 ]

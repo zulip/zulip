@@ -326,7 +326,7 @@ class StreamAdminTest(ZulipTestCase):
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/streams/stream_name1',
-                                      {'description': ujson.dumps('Test description')})
+                                       {'description': ujson.dumps('Test description')})
         self.assert_json_success(result)
 
         event = events[0]['event']
@@ -361,7 +361,7 @@ class StreamAdminTest(ZulipTestCase):
         do_change_is_admin(user_profile, False)
 
         result = self.client_patch('/json/streams/stream_name1',
-                                  {'description': ujson.dumps('Test description')})
+                                   {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def set_up_stream_for_deletion(self, stream_name, invite_only=False,
@@ -1032,7 +1032,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         user_profile.full_name = 'Hamlet'
         user_profile.save()
 
-        def method1 (req, user_profile):
+        def method1(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse
             user_profile.full_name = 'Should not be committed'
             user_profile.save()
@@ -1142,7 +1142,7 @@ class SubscriptionAPITest(ZulipTestCase):
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
-                add_streams, self.streams, self.test_email, self.streams + add_streams)
+                                                        add_streams, self.streams, self.test_email, self.streams + add_streams)
         self.assert_length(events, 6)
 
     def test_successful_subscriptions_add_with_announce(self):
@@ -1170,7 +1170,7 @@ class SubscriptionAPITest(ZulipTestCase):
         cache.cache_delete(cache.user_profile_by_email_cache_key(self.test_email))
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, other_params,
-                add_streams, self.streams, self.test_email, self.streams + add_streams)
+                                                        add_streams, self.streams, self.test_email, self.streams + add_streams)
         self.assertEqual(len(events), 7)
 
     def test_successful_subscriptions_notifies_pm(self):
@@ -1280,8 +1280,7 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
         """
-        self.helper_check_subs_before_and_after_add(self.streams + [u"hümbüǵ"], {},
-            [u"hümbüǵ"], self.streams, self.test_email, self.streams + [u"hümbüǵ"])
+        self.helper_check_subs_before_and_after_add(self.streams + [u"hümbüǵ"], {}, [u"hümbüǵ"], self.streams, self.test_email, self.streams + [u"hümbüǵ"])
 
     def test_subscriptions_add_too_long(self):
         # type: () -> None
@@ -1338,14 +1337,12 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotEqual(len(streams), 0)  # necessary for full test coverage
         streams_to_sub = streams[:1]  # just add one, to make the message easier to check
         streams_to_sub.extend(current_streams)
-        self.helper_check_subs_before_and_after_add(streams_to_sub,
-            {"principals": ujson.dumps([invitee])}, streams[:1], current_streams,
-            invitee, streams_to_sub, invite_only=invite_only)
+        self.helper_check_subs_before_and_after_add(streams_to_sub, {"principals": ujson.dumps([invitee])}, streams[:1], current_streams, invitee, streams_to_sub, invite_only=invite_only)
         # verify that the user was sent a message informing them about the subscription
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
-                get_user_profile_by_email("notification-bot@zulip.com").id)
+                         get_user_profile_by_email("notification-bot@zulip.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
                         "subscribed you to the %sstream [%s](#narrow/stream/%s)."
                         % (self.user_profile.full_name,
@@ -1525,8 +1522,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 streams=[stream1, stream2, private]
             )
 
-        peer_events = [e for e in events
-            if e['event'].get('op') == 'peer_remove']
+        peer_events = [e for e in events if e['event'].get('op') == 'peer_remove']
 
         notifications = set()
         for event in peer_events:
@@ -1704,9 +1700,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotEqual(len(not_subbed), 0)  # necessary for full test coverage
         try_to_remove = not_subbed[:3]  # attempt to remove up to 3 streams not already subbed to
         streams_to_remove.extend(try_to_remove)
-        self.helper_check_subs_before_and_after_remove(streams_to_remove,
-            {"removed": self.streams[1:], "not_subscribed": try_to_remove},
-            self.test_email, [self.streams[0]])
+        self.helper_check_subs_before_and_after_remove(streams_to_remove, {"removed": self.streams[1:], "not_subscribed": try_to_remove}, self.test_email, [self.streams[0]])
 
     def test_subscriptions_remove_fake_stream(self):
         # type: () -> None
@@ -1826,8 +1820,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
             self.assertEqual(str(subscription),
-                u'<Subscription: '
-                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
+                             u'<Subscription: '
+                             '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
             )
 
         self.assertTrue(subscription.desktop_notifications)

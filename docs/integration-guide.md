@@ -77,7 +77,7 @@ products, ordered here by which types we prefer to write:
 
 * A helpful tool for testing your integration is
   [UltraHook](http://www.ultrahook.com/), which allows you to receive webhook
-  calls via your local Zulip dev environment. This enables you to do end-to-end
+  calls via your local Zulip development environment. This enables you to do end-to-end
   testing with live data from the service you're integrating and can help you
   spot why something isn't working or if the service is using custom HTTP
   headers.
@@ -262,12 +262,12 @@ The first step in creating a webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
 You can use [requestb.in](http://requestb.in/) or a similar tool to capture
-webook payload(s) from the service you are integrating. Examining this
+webhook payload(s) from the service you are integrating. Examining this
 data allows you to do two things:
 
-1. Determine how you will need to structure your webook code, including what
+1. Determine how you will need to structure your webhook code, including what
    message types your integration should support and how; and,
-2. Create fixtures for your webook tests.
+2. Create fixtures for your webhook tests.
 
 A test fixture is a small file containing test data, one for each test.
 Fixtures enable the testing of webhook integration code without the need to
@@ -339,7 +339,7 @@ def api_helloworld_webhook(request, user_profile, client,
 ```
 
 The above code imports the required functions and defines the main webhook
-function `api_helloworld_webook`, decorating it with `api_key_only_webhook_view` and
+function `api_helloworld_webhook`, decorating it with `api_key_only_webhook_view` and
 `has_request_variables`.
 
 You must pass the name of your webhook to the `api_key_only_webhook_view`
@@ -356,9 +356,10 @@ object), `user_profile` (Zulip's user object), and `client` (Zulip's analogue
 of UserAgent). You may also want to define additional parameters using the
 `REQ` object.
 
-In the example above, we have defined `payload` which is populated from the
-body of the http request, `stream` with a default of `test` (available by
-default in Zulip dev environment), and `topic` with a default of `Hello World`.
+In the example above, we have defined `payload` which is populated
+from the body of the http request, `stream` with a default of `test`
+(available by default in the Zulip development environment), and
+`topic` with a default of `Hello World`.
 
 The line that begins `# type` is a mypy type annotation. See [this
 page](mypy.html) for details about how to properly annotate your webhook
@@ -412,7 +413,7 @@ your real key. This is how Zulip knows the request is from an authorized user.
 
 Now you can test using Zulip itself, or curl on the command line.
 
-Using `manage.py` from within Zulip Dev environment:
+Using `manage.py` from within the Zulip development environment:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
@@ -476,12 +477,12 @@ In the above example, `STREAM_NAME`, `URL_TEMPLATE`, and `FIXTURE_DIR_NAME` refe
 to class attributes from the base class, `WebhookTestCase`. These are needed by
 `send_and_test_stream_message` to determine how to execute your test.
 
-When writing tests for your webook, you'll want to include one test function
+When writing tests for your webhook, you'll want to include one test function
 (and corresponding fixture) per each distinct message condition that your
 integration supports.
 
 If, for example, we added support for sending a goodbye message to our `Hello
-World` webook, we would add another test function to `HelloWorldHookTests`
+World` webhook, we would add another test function to `HelloWorldHookTests`
 class called something like `test_goodbye_message`:
 
 ```
@@ -506,7 +507,7 @@ As well as a new fixture `helloworld_goodbye.json` in
 ```
 
 Once you have written some tests, you can run just these new tests from within
-the Zulip dev environment with this command:
+the Zulip development environment with this command:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
@@ -549,7 +550,7 @@ The second part is a `div` with the webhook's usage instructions:
     <p>Learn how Zulip integrations work with this simple Hello World example!</p>
 
     <p>The Hello World webhook will use the <code>test<code> stream, which is
-    created by default in the Zulip dev environment. If you are running
+    created by default in the Zulip development environment. If you are running
     Zulip in production, you should make sure this stream exists.</p>
 
     <p>Next, on your <a href="/#settings" target="_blank">Zulip

@@ -31,7 +31,7 @@ class ActivityTest(ZulipTestCase):
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
         last_visit = timezone.now()
-        count=150
+        count = 150
         for user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(
                 user_profile=user_profile,

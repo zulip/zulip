@@ -78,7 +78,7 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        string_id=options["string_id"]
+        string_id = options["string_id"]
         name = options["name"]
         domain = options["domain"]
 

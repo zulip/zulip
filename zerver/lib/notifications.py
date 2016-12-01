@@ -71,7 +71,7 @@ def topic_narrow_url(realm, stream, topic):
     # type: (Realm, text_type, text_type) -> text_type
     base_url = u"%s/#narrow/stream/" % (realm.uri,)
     return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
-                              hashchange_encode(topic))
+                               hashchange_encode(topic))
 
 def build_message_list(user_profile, messages):
     # type: (UserProfile, List[Message]) -> List[Dict[str, Any]]
@@ -154,10 +154,10 @@ def build_message_list(user_profile, messages):
         elif message.recipient.type == Recipient.HUDDLE:
             assert not isinstance(disp_recipient, text_type)
             other_recipients = [r['full_name'] for r in disp_recipient
-                                    if r['email'] != user_profile.email]
+                                if r['email'] != user_profile.email]
             header = u"You and %s" % (", ".join(other_recipients),)
             html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
-                                       if r["email"] != user_profile.email])
+                                      if r["email"] != user_profile.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
             assert isinstance(disp_recipient, text_type)

@@ -11,6 +11,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
 import zulip
+from typing import List, Set, Tuple, Iterable, Optional
 
 parser = optparse.OptionParser(r"""
 
@@ -33,17 +34,17 @@ parser = optparse.OptionParser(r"""
 """)
 
 parser.add_option('--calendar',
-    dest='calendar',
-    action='store',
-    help='Google Calendar XML "Private Address"',
-    metavar='URL')
+                  dest='calendar',
+                  action='store',
+                  help='Google Calendar XML "Private Address"',
+                  metavar='URL')
 parser.add_option('--interval',
-    dest='interval',
-    default=10,
-    type=int,
-    action='store',
-    help='Minutes before event for reminder [default: 10]',
-    metavar='MINUTES')
+                  dest='interval',
+                  default=10,
+                  type=int,
+                  action='store',
+                  help='Minutes before event for reminder [default: 10]',
+                  metavar='MINUTES')
 parser.add_option_group(zulip.generate_option_group(parser))
 
 (options, args) = parser.parse_args()
@@ -57,6 +58,7 @@ except ImportError:
     parser.error('Install python-gdata')
 
 def get_calendar_url():
+    # type: () -> str
     parts = urllib.parse.urlparse(options.calendar)
     pat = os.path.split(parts.path)
     if pat[1] != 'basic':
@@ -70,6 +72,7 @@ calendar_url = get_calendar_url()
 client = zulip.init_from_options(options)
 
 def get_events():
+    # type: () -> Iterable[Tuple[int, datetime.datetime, str]]
     feed = CalendarClient().GetCalendarEventFeed(uri=calendar_url)
 
     for event in feed.entry:
@@ -80,12 +83,13 @@ def get_events():
         yield (event.uid.value, start, event.title.text)
 
 # Our cached view of the calendar, updated periodically.
-events = []
+events = [] # type: List[Tuple[int, datetime.datetime, str]]
 
 # Unique keys for events we've already sent, so we don't remind twice.
-sent = set()
+sent = set() # type: Set[Tuple[int, datetime.datetime]]
 
 def send_reminders():
+    # type: () -> Optional[None]
     global sent
 
     messages = []

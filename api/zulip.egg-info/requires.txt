@@ -1,0 +1,4 @@
+requests>=0.12.1
+simplejson
+six
+typing

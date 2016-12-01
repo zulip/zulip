@@ -10,13 +10,24 @@ from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
     authenticated_json_view, \
     get_user_profile_by_email, require_realm_admin, to_non_negative_int
-from zerver.lib.actions import bulk_remove_subscriptions, \
-    do_change_subscription_property, internal_prep_message, \
-    create_streams_if_needed, gather_subscriptions, subscribed_to_stream, \
-    bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
-    do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
-    do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream, get_topic_history_for_stream
+from zerver.lib.actions import bulk_remove_subscriptions,\
+                               do_change_subscription_property,\
+                               internal_prep_message,\
+                               create_streams_if_needed,\
+                               gather_subscriptions,\
+                               subscribed_to_stream,\
+                               bulk_add_subscriptions,\
+                               do_send_messages,\
+                               get_subscriber_emails,\
+                               do_rename_stream,\
+                               do_deactivate_stream,\
+                               do_make_stream_public,\
+                               do_add_default_stream,\
+                               do_change_stream_description,\
+                               do_get_streams,\
+                               do_make_stream_private,\
+                               do_remove_default_stream,\
+                               get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -295,8 +306,7 @@ def filter_stream_authorization(user_profile, streams):
         if stream.invite_only:
             unauthorized_streams.append(stream)
 
-    authorized_streams = [stream for stream in streams if
-               stream.id not in set(stream.id for stream in unauthorized_streams)]
+    authorized_streams = [stream for stream in streams if stream.id not in set(stream.id for stream in unauthorized_streams)]
     return authorized_streams, unauthorized_streams
 
 def stream_link(stream_name):
@@ -311,9 +321,10 @@ def stream_button(stream_name):
     return '!_stream_subscribe_button(%s)' % (stream_name,)
 
 @has_request_variables
-def add_subscriptions_backend(request, user_profile,
+def add_subscriptions_backend(request,
+                              user_profile,
                               streams_raw = REQ("subscriptions",
-                              validator=check_list(check_dict([('name', check_string)]))),
+                                                validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
@@ -405,14 +416,16 @@ def add_subscriptions_backend(request, user_profile,
 
             stream_buttons = ' '.join(stream_button(s.name) for s in created_streams)
             msg = ("%s just created %s. %s" % (user_profile.full_name,
-                                                stream_msg, stream_buttons))
+                                               stream_msg, stream_buttons))
             notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                   "stream",
-                                   notifications_stream.name, "Streams", msg,
-                                   realm=notifications_stream.realm))
+                                                       "stream",
+                                                       notifications_stream.name,
+                                                       "Streams",
+                                                       msg,
+                                                       realm=notifications_stream.realm))
         else:
             msg = ("Hi there!  %s just created a new stream '%s'. %s"
-                       % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
+                   % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
             for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).

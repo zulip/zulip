@@ -30,9 +30,9 @@ class DeskDotComHookTests(WebhookTestCase):
     def test_case_updated_message(self):
         # type: () -> None
         expected_subject = u"case updated notification"
-        expected_message = (u"Case 2 updated. "
-           u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
-           u"I have a question</a>\n")
+        expected_message = (u"Case 2 updated. "\
+                            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"\
+                            u"I have a question</a>\n")
 
         self.send_and_test_stream_message('case_updated', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
@@ -42,9 +42,9 @@ class DeskDotComHookTests(WebhookTestCase):
         # type: () -> None
 
         expected_subject = u"case updated notification"
-        expected_message = (u"Case 2 updated. "
-            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
-            u"Il mio hovercraft è pieno di anguille.</a>\n")
+        expected_message = (u"Case 2 updated. "\
+                            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"\
+                            u"Il mio hovercraft è pieno di anguille.</a>\n")
 
         self.send_and_test_stream_message('unicode_text_italian', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
@@ -54,9 +54,9 @@ class DeskDotComHookTests(WebhookTestCase):
         # type: () -> None
 
         expected_subject = u"case updated notification"
-        expected_message = (u"Case 2 updated. "
-            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"
-            u"私のホバークラフトは鰻でいっぱいです</a>\n")
+        expected_message = (u"Case 2 updated. "\
+                            u"Link: <a href='https://deskdotcomtest.desk.com/web/agent/case/2'>"\
+                            u"私のホバークラフトは鰻でいっぱいです</a>\n")
 
         self.send_and_test_stream_message('unicode_text_japanese', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",

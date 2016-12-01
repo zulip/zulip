@@ -11,6 +11,7 @@ from django.conf import settings
 try:
     # Tornado 2.4
     orig_poll_impl = ioloop._poll # type: ignore # cross-version type variation is hard for mypy
+
     def instrument_tornado_ioloop():
         # type: () -> None
         ioloop._poll = InstrumentedPoll # type: ignore # cross-version type variation is hard for mypy
@@ -21,6 +22,7 @@ except:
     # will be without actually constructing an IOLoop, so we just assume it will
     # be epoll.
     orig_poll_impl = select.epoll # type: ignore # There is no stub for select.epoll on python 3
+
     class InstrumentedPollIOLoop(PollIOLoop):
         def initialize(self, **kwargs): # type: ignore # TODO investigate likely buggy monkey patching here
             super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
@@ -78,8 +80,7 @@ class InstrumentedPoll(object):
             if total > 0:
                 percent_busy = 100 * (1 - in_poll / total)
                 if settings.PRODUCTION or percent_busy > 20:
-                    logging.info('Tornado %5.1f%% busy over the past %4.1f seconds'
-                        % (percent_busy, total))
+                    logging.info('Tornado %5.1f%% busy over the past %4.1f seconds' % (percent_busy, total))
                     self._last_print = t1
 
         return result
