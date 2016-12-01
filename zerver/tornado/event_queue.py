@@ -564,13 +564,13 @@ def request_event_queue(user_profile, user_client, apply_markdown,
                         narrow=[]):
     # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[text_type]]) -> Optional[str]
     if settings.TORNADO_SERVER:
-        req = {'dont_block'    : 'true',
+        req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
                'all_public_streams': ujson.dumps(all_public_streams),
-               'client'        : 'internal',
-               'user_client'   : user_client.name,
-               'narrow'        : ujson.dumps(narrow),
-               'lifespan_secs' : queue_lifespan_secs}
+               'client': 'internal',
+               'user_client': user_client.name,
+               'narrow': ujson.dumps(narrow),
+               'lifespan_secs': queue_lifespan_secs}
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
         resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
@@ -590,10 +590,10 @@ def get_user_events(user_profile, queue_id, last_event_id):
         resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
                                    auth=requests.auth.HTTPBasicAuth(
                                        user_profile.email, user_profile.api_key),
-                                   params={'queue_id'     : queue_id,
+                                   params={'queue_id': queue_id,
                                            'last_event_id': last_event_id,
-                                           'dont_block'   : 'true',
-                                           'client'       : 'internal'})
+                                           'dont_block': 'true',
+                                           'client': 'internal'})
 
         resp.raise_for_status()
 

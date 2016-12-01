@@ -121,7 +121,7 @@ def get_stream_name(stream):
     # type: (Stream) -> Optional[text_type]
     if stream:
         name = stream.name
-    else :
+    else:
         name = None
     return name
 

@@ -2896,21 +2896,21 @@ def get_status_dict(requesting_user_profile):
 
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, text_type]]
-    return [{'email'     : userdict['email'],
-             'user_id'   : userdict['id'],
-             'is_admin'  : userdict['is_realm_admin'],
-             'is_bot'    : userdict['is_bot'],
-             'full_name' : userdict['full_name']}
+    return [{'email': userdict['email'],
+             'user_id': userdict['id'],
+             'is_admin': userdict['is_realm_admin'],
+             'is_bot': userdict['is_bot'],
+             'full_name': userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 def get_cross_realm_dicts():
     # type: () -> List[Dict[str, Any]]
     users = [get_user_profile_by_email(email) for email in get_cross_realm_emails()]
-    return [{'email'     : user.email,
-             'user_id'   : user.id,
-             'is_admin'  : user.is_realm_admin,
-             'is_bot'    : user.is_bot,
-             'full_name' : user.full_name}
+    return [{'email': user.email,
+             'user_id': user.id,
+             'is_admin': user.is_realm_admin,
+             'is_bot': user.is_bot,
+             'full_name': user.full_name}
             for user in users]
 
 # Fetch initial data.  When event_types is not specified, clients want
@@ -3410,7 +3410,7 @@ def do_refer_friend(user_profile, email):
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
-    headers = {'Reply-To' : '"%s" <%s>' % (user_profile.full_name, user_profile.email,)}
+    headers = {'Reply-To': '"%s" <%s>' % (user_profile.full_name, user_profile.email,)}
     msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
     msg.send()
 

@@ -673,7 +673,7 @@ def home_real(request):
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
-                                   'page_params' : simplejson.encoder.JSONEncoderForHTML().encode(page_params),
+                                   'page_params': simplejson.encoder.JSONEncoderForHTML().encode(page_params),
                                    'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                    'avatar_url': avatar_url(user_profile),
                                    'show_debug':

@@ -1510,7 +1510,7 @@ class TestAdminSetBackends(ZulipTestCase):
         # Log in as admin
         self.login("iago@zulip.com")
         result = self.client_patch("/json/realm", {
-            'authentication_methods' : ujson.dumps({u'Email': False, u'Dev': False})})
+            'authentication_methods': ujson.dumps({u'Email': False, u'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
         realm = get_realm_by_string_id('zulip')
         self.assertTrue(password_auth_enabled(realm))
@@ -1522,7 +1522,7 @@ class TestAdminSetBackends(ZulipTestCase):
         self.login("iago@zulip.com")
         # Set some supported and unsupported backends
         result = self.client_patch("/json/realm", {
-            'authentication_methods' : ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
+            'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
         self.assert_json_success(result)
         realm = get_realm_by_string_id('zulip')
         # Check that unsupported backend is not enabled

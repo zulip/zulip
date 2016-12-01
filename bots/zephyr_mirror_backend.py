@@ -386,10 +386,10 @@ def process_notice(notice, log):
     if options.forward_class_messages and notice.opcode.lower() == "crypt":
         body = decrypt_zephyr(zephyr_class, notice.instance.lower(), body)
 
-    zeph = { 'time'      : str(notice.time),
-             'sender'    : notice.sender,
-             'zsig'      : zsig,  # logged here but not used by app
-             'content'   : body }
+    zeph = { 'time': str(notice.time),
+             'sender': notice.sender,
+             'zsig': zsig,  # logged here but not used by app
+             'content': body }
     if is_huddle:
         zeph['type'] = 'private'
         zeph['recipient'] = huddle_recipients
