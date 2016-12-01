@@ -24,7 +24,7 @@ fi
 
 if ! ./tools/build-release-tarball "${build_options[@]}" travis; then
     echo "Attempting to output failure logging data"
-    cat /tmp/tmp.*/zulip-server-travis/update-prod-static.log || true
+    cat /tmp/tmp.*/update-prod-static.log || true
     exit 1
 fi
 mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
