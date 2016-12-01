@@ -51,7 +51,7 @@ class AdminZulipHandler(logging.Handler):
                 method = request.method,
                 path = request.path,
                 data = request.GET if request.method == 'GET'
-                                   else filter.get_post_parameters(request),
+                else filter.get_post_parameters(request),
                 remote_addr = request.META.get('REMOTE_ADDR', None),
                 query_string = request.META.get('QUERY_STRING', None),
                 server_name = request.META.get('SERVER_NAME', None),

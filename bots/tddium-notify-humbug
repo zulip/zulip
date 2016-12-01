@@ -62,7 +62,7 @@ result = client.send_message(dict(
     to      = os.environ['ZULIP_STREAM'],
     subject = 'build for ' + repo_name,
     content = '%s [%s](%s)' %
-        (repo_name, os.environ['TDDIUM_BUILD_STATUS'], report_url)))
+              (repo_name, os.environ['TDDIUM_BUILD_STATUS'], report_url)))
 
 if result['result'] != 'success':
     sys.stderr.write('Error sending to Zulip:\n%s\n' % (result['msg'],))
