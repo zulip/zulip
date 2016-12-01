@@ -40,6 +40,7 @@ Subsystems Documentation
    input-pills
    thumbnailing
    presence
+   retention
    unread_messages
    billing
    documentation
