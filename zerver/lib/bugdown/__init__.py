@@ -984,7 +984,7 @@ class Bugdown(markdown.Extension):
         # define default configs
         self.config = {
             "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
-             "realm": [kwargs['realm'], "Realm name"]
+            "realm": [kwargs['realm'], "Realm name"]
         }
 
         super(Bugdown, self).__init__(*args, **kwargs)
