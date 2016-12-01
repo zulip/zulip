@@ -73,7 +73,7 @@ i18n_urls = [
          'template_name': 'zerver/reset.html',
          'email_template_name': 'registration/password_reset_email.txt',
          'password_reset_form': zerver.forms.ZulipPasswordResetForm,
-        }, name='django.contrib.auth.views.password_reset'),
+         }, name='django.contrib.auth.views.password_reset'),
     url(r'^accounts/password/reset/done/$', password_reset_done,
         {'template_name': 'zerver/reset_emailed.html'}),
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',

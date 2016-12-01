@@ -147,7 +147,7 @@ def get_client_name(request, is_json_view):
         if is_json_view:
             return "website"
         else:
-             return "Unspecified"
+            return "Unspecified"
 
 def process_client(request, user_profile, is_json_view=False, client_name=None):
     # type: (HttpRequest, UserProfile, bool, Optional[text_type]) -> None

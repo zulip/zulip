@@ -1828,7 +1828,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertEqual(str(subscription),
                 u'<Subscription: '
                 '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
-            )
+                             )
 
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)

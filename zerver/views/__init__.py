@@ -273,7 +273,7 @@ def accounts_register(request):
              'creating_new_team': realm_creation,
              'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
              'password_auth_enabled': password_auth_enabled(realm),
-            },
+             },
         request=request)
 
 @zulip_login_required
@@ -381,7 +381,7 @@ def create_realm(request, creation_key=None):
             email = form.cleaned_data['email']
             confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
             if settings.DEVELOPMENT:
-                 request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
+                request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
             if (creation_key is not None and check_key_is_valid(creation_key)):
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))

@@ -369,7 +369,7 @@ def notify_created_bot(user_profile):
                           default_all_public_streams=user_profile.default_all_public_streams,
                           avatar_url=avatar_url(user_profile),
                           owner=user_profile.bot_owner.email,
-                         ))
+                          ))
     send_event(event, bot_owner_userids(user_profile))
 
 def do_create_user(email, password, realm, full_name, short_name,

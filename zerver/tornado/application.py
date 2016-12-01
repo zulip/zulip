@@ -13,7 +13,7 @@ def create_tornado_application():
     urls = (r"/notify_tornado",
             r"/json/events",
             r"/api/v1/events",
-    )
+            )
 
     # Application is an instance of Django's standard wsgi handler.
     return tornado.web.Application([(url, AsyncDjangoHandler) for url in urls]

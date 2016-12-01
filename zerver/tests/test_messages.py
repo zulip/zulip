@@ -294,7 +294,7 @@ class PersonalMessagesTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
                 u'<UserMessage: recip / test@zulip.com ([])>'
-            )
+                             )
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
@@ -405,7 +405,7 @@ class StreamMessagesTest(ZulipTestCase):
         # Did all of the subscribers get the message?
         new_subscriber_messages = []
         for subscriber in subscribers:
-           new_subscriber_messages.append(message_stream_count(subscriber))
+            new_subscriber_messages.append(message_stream_count(subscriber))
 
         # Did non-subscribers not get the message?
         new_non_subscriber_messages = []
