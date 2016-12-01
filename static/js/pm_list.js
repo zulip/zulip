@@ -112,8 +112,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 
 exports.rebuild_recent = function (active_conversation) {
     remove_expanded_private_messages();
-    if (private_messages_open)
-    {
+    if (private_messages_open) {
         var max_private_messages = 5;
         var private_li = get_filter_li();
         var private_messages_dom = exports._build_private_messages_list(active_conversation,
