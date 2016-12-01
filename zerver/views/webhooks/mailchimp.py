@@ -17,8 +17,10 @@ MAILCHIMP_MESSAGE_TEMPLATE = '{data[merges][FNAME]} {data[merges][LNAME]} ({data
 @has_request_variables
 def api_mailchimp_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                             stream=REQ(default='mailchimp')):
+  print("\n\n\nGOT TO HERE 1!!!!!\n\n\")
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
     try:
+        print("\n\n\nGOT TO HERE 2!!!!!\n\n\")
         event = payload['event']
         return json_success()
         issue_body = payload['payload']
