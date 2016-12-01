@@ -78,6 +78,7 @@ class MessageDict(object):
                 recipient_id = message.recipient.id,
                 recipient_type = message.recipient.type,
                 recipient_type_id = message.recipient.type_id,
+                reactions = message.reaction_set.all()
         )
 
     @staticmethod
