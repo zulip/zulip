@@ -173,6 +173,11 @@ def redirect_to_main_site(request, url):
     params = {'subdomain': get_subdomain(request)}
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
+def start_social_login(request, backend):
+    # type: (HttpRequest, Text) -> HttpResponse
+    backend_url = reverse('social:begin', args=[backend])
+    return redirect_to_main_site(request, backend_url)
+
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')

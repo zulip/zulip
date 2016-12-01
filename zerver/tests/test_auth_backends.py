@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Optional, Text
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
+from django.core.urlresolvers import reverse
 
 import jwt
 import mock
@@ -364,14 +365,25 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.backend.do_auth(response=response)
             self.assertNotIn('subdomain=1', result.url)
 
+    def test_github_backend_do_auth_with_non_existing_subdomain(self):
+        # type: () -> None
+        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                        side_effect=self.do_auth):
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                self.backend.strategy.session_set('subdomain', 'test')
+                response = dict(email=self.email, name=self.name)
+                result = self.backend.do_auth(response=response)
+                self.assertIn('subdomain=1', result.url)
+
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                self.backend.strategy.session_set('subdomain', 'zulip')
                 response = dict(email=self.email, name=self.name)
                 result = self.backend.do_auth(response=response)
-                self.assertIn('subdomain=1', result.url)
+                self.assertEqual('http://zulip.testserver/accounts/login/subdomain/', result.url)
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
@@ -489,6 +501,11 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('action="/register/"', result)
             self.assert_in_response('Your email address does not correspond to any '
                                     'existing organization.', result)
+
+    def test_login_url(self):
+        # type: () -> None
+        result = self.client_get('/accounts/login/social/github')
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
 
 class ResponseMock(object):
     def __init__(self, status_code, data):
