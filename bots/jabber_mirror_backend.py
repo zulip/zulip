@@ -307,7 +307,7 @@ as normal.'''.replace("\n", " ")
     parser.add_option('--mode',
                       default=None,
                       action='store',
-                      help= \
+                      help=
 '''Which mode to run in.  Valid options are "personal" and "public".  In
 "personal" mode, the mirror uses an individual users' credentials and mirrors
 all messages they send on Zulip to Jabber and all private Jabber messages to
@@ -317,7 +317,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
     parser.add_option('--zulip-email-suffix',
                       default=None,
                       action='store',
-                      help= \
+                      help=
 '''Add the specified suffix to the local part of email addresses constructed
 from JIDs and nicks before sending requests to the Zulip server, and remove the
 suffix before sending requests to the Jabber server.  For example, specifying

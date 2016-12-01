@@ -229,7 +229,7 @@ def send_signup_message(sender, signups_stream, user_profile,
     if user_profile.realm.notifications_stream is not None and user_count > 1:
         internal_send_message(sender, "stream",
                               user_profile.realm.notifications_stream.name,
-                              "New users", "%s just signed up for Zulip. Say hello!" % \
+                              "New users", "%s just signed up for Zulip. Say hello!" %
                                 (user_profile.full_name,),
                               realm=user_profile.realm)
 
@@ -2787,7 +2787,7 @@ def gather_subscriptions_helper(user_profile):
 
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
-        "realm").values("id", "name", "invite_only", "realm_id", \
+        "realm").values("id", "name", "invite_only", "realm_id",
         "realm__domain", "email_token", "description")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
@@ -2802,7 +2802,7 @@ def gather_subscriptions_helper(user_profile):
     never_subscribed = []
 
     # Deactivated streams aren't in stream_hash.
-    streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts \
+    streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts
                    if sub["recipient__type_id"] in stream_hash]
     streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
 
