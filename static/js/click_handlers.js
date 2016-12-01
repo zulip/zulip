@@ -30,7 +30,7 @@ $(function () {
     function is_clickable_message_element(target) {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content_button");
+            target.is("i.edit_content_button") || target.is("img.message_image");
     }
 
     $("#main_div").on("click", ".messagebox", function (e) {
@@ -385,7 +385,7 @@ $(function () {
     });
 
     (function () {
-        $("#main_div").on("click", ".message_inline_image a", function (e) {
+        $("#main_div").on("click", ".message_inline_image a, .message_image", function (e) {
             var img = e.target,
                 row = rows.id($(img).closest(".message_row")),
                 user = current_msg_list.get(row).sender_full_name,
