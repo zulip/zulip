@@ -182,7 +182,7 @@ function dispatch_normal_event(event) {
 
     case 'update_message_flags':
         var new_value = event.operation === "add";
-        switch(event.flag) {
+        switch (event.flag) {
         case 'starred':
             _.each(event.messages, function (message_id) {
                 ui.update_starred(message_id, new_value);
