@@ -79,7 +79,7 @@ class PublicURLTest(ZulipTestCase):
                           "/api/v1/streams",
                           ],
                     404: ["/help/nonexistent"],
-                }
+                    }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
@@ -96,9 +96,9 @@ class PublicURLTest(ZulipTestCase):
                      400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
-                }
+                     }
         put_urls = {401: ["/json/users/me/pointer"],
-                }
+                    }
         for status_code, url_set in six.iteritems(get_urls):
             self.fetch("get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
@@ -112,7 +112,7 @@ class PublicURLTest(ZulipTestCase):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
                 msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
-            )
+                              )
             data = ujson.loads(resp.content)
             self.assertEqual('error', data['result'])
 
@@ -122,7 +122,7 @@ class PublicURLTest(ZulipTestCase):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
                 msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
-            )
+                              )
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])

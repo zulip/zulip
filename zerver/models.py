@@ -1157,7 +1157,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
              'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
-            }
+             }
             for botdict in result]
 
 def get_prereg_user_by_email(email):

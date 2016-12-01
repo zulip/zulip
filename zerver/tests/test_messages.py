@@ -294,7 +294,7 @@ class PersonalMessagesTest(ZulipTestCase):
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
                 u'<UserMessage: recip / test@zulip.com ([])>'
-            )
+                             )
 
     @slow("checks several profiles")
     def test_personal_to_self(self):
