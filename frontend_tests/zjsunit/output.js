@@ -9,7 +9,7 @@ function mkdir_p(path) {
     // This works like mkdir -p in Unix.
     try {
         fs.mkdirSync(path);
-    } catch(e) {
+    } catch (e) {
         if ( e.code !== 'EEXIST' ) {
             throw e;
         }

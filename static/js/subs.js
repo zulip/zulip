@@ -558,7 +558,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
                                                             value: value});
         return;
     }
-    switch(property) {
+    switch (property) {
     case 'color':
         stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
         break;

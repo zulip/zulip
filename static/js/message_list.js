@@ -261,7 +261,7 @@ exports.MessageList.prototype = {
             do {
                 potential_closest_matches.push(closest);
                 closest--;
-            } while(closest > 0 && this._is_localonly_id(items[closest - 1].id));
+            } while (closest > 0 && this._is_localonly_id(items[closest - 1].id));
         }
         potential_closest_matches.push(closest);
 
@@ -550,7 +550,7 @@ exports.MessageList.prototype = {
         var cur_idx = start_index;
         do {
             cur_idx = op(cur_idx);
-        } while(item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
+        } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
         return item_list[cur_idx];
     },
 

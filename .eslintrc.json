@@ -164,7 +164,15 @@
         "quote-props": 0,
         "radix": 2,
         "semi": 2,
-        "keyword-spacing": 1,
+        "keyword-spacing": ["error", {
+            "before": true,
+            "after": true,
+            "overrides": {
+                "return": { "after": true },
+                "throw": { "after": true },
+                "case": { "after": true }
+            }
+        }],
         "space-before-blocks": 1,
         "strict": 1,
         "unnecessary-strict": 0,
