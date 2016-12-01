@@ -179,8 +179,8 @@ def handle_digest_email(user_profile_id, cutoff):
     # You can't have an unread message that you sent, but when testing
     # this causes confusion so filter your messages out.
     pms = all_messages.filter(
-        ~Q(message__recipient__type=Recipient.STREAM) & \
-             ~Q(message__sender=user_profile))
+        ~Q(message__recipient__type=Recipient.STREAM) &
+        ~Q(message__sender=user_profile))
 
     # Show up to 4 missed PMs.
     pms_limit = 4
