@@ -1827,8 +1827,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
             self.assertEqual(str(subscription),
                 u'<Subscription: '
-                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
-                             )
+                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>')
 
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)

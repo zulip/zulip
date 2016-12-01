@@ -801,8 +801,7 @@ class BotTest(ZulipTestCase):
                      default_sending_stream=None,
                      default_events_register_stream=None,
                      default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                         )
+                     owner='hamlet@zulip.com')
             ),
             event['event']
         )
@@ -955,8 +954,7 @@ class BotTest(ZulipTestCase):
                      default_sending_stream='Denmark',
                      default_events_register_stream=None,
                      default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                         )
+                     owner='hamlet@zulip.com')
             ),
             event['event']
         )
@@ -1018,8 +1016,7 @@ class BotTest(ZulipTestCase):
                      default_sending_stream=None,
                      default_events_register_stream='Denmark',
                      default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                         )
+                     owner='hamlet@zulip.com')
             ),
             event['event']
         )
