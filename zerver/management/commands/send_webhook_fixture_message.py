@@ -47,11 +47,13 @@ Example:
         if not self._does_fixture_path_exist(full_fixture_path):
             print('Fixture {} does not exist'.format(options['fixture']))
             exit(1)
-
         json = self._get_fixture_as_json(full_fixture_path)
+        json2 = open(full_fixture_path).read()
         client = Client()
-        client.post(options['url'], json, content_type="application/json")
-
+        if json2[0:5] != "type=":
+            client.post(options['url'], json, content_type="application/json")
+        else:
+            client.post(options['url'], json2, content_type="text/plain")
     def _does_fixture_path_exist(self, fixture_path):
         # type: (str) -> bool
         return os.path.exists(fixture_path)
