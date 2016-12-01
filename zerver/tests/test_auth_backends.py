@@ -1459,6 +1459,10 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
 
+        result = self.client_get(result.url)
+        self.assert_in_response('action="/accounts/register/"', result)
+        self.assert_in_response('value="{0}" name="key"'.format(confirmation_key), result)
+
     def test_sso_only_when_preregistration_user_exists(self):
         # type: () -> None
         rf = RequestFactory()

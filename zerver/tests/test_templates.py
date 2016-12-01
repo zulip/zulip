@@ -48,25 +48,19 @@ class TemplateTestCase(ZulipTestCase):
         # Just add the templates whose context has a conflict with other
         # templates' context in `defer`.
         defer = ['analytics/activity.html']
-        email = [
-            'zerver/emails/invitation/invitation_reminder_email.html',
-            'zerver/emails/invitation/invitation_reminder_email.subject',
-            'zerver/emails/invitation/invitation_reminder_email.text',
-        ]
-        logged_out = [
-            '404.html',
-            '500.html',
-            'confirmation/confirm.html',
-            'confirmation/confirm_mituser.html',
-            'zerver/reset_confirm.html',
-            'zerver/reset_done.html',
-            'zerver/reset_emailed.html',
-            'zerver/reset.html',
-            'zerver/unsubscribe_link_error.html',
+
+        # Django doesn't send template_rendered signal for parent template
+        # https://code.djangoproject.com/ticket/24622
+        covered = [
             'zerver/portico.html',
             'zerver/portico_signup.html',
-            'zerver/register.html',
         ]
+
+        logged_out = [
+            'confirmation/confirm.html',  # seems unused
+            'confirmation/confirm_mituser.html',  # seems unused
+        ]
+
         logged_in = [
             'zerver/home.html',
             'zerver/invite_user.html',
@@ -107,7 +101,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/base.html',
             'zerver/api_content.json',
         ]
-        skip = defer + email + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
+        skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
         templates = [t for t in get_all_templates() if t not in skip]
         self.render_templates(templates, self.get_context())
 
