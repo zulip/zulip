@@ -673,8 +673,7 @@ MessageListView.prototype = {
         if (! (((selected_idx - this._render_win_start < this._RENDER_THRESHOLD)
                 && (this._render_win_start !== 0)) ||
                ((this._render_win_end - selected_idx <= this._RENDER_THRESHOLD)
-                && (this._render_win_end !== this.list.num_items()))))
-        {
+                && (this._render_win_end !== this.list.num_items())))) {
             return false;
         }
 
