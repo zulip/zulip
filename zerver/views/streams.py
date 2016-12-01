@@ -378,7 +378,7 @@ def add_subscriptions_backend(request, user_profile,
                           " **invite-only**" if private_streams[subscriptions[0]] else "",
                           subscriptions[0],
                           stream_link(subscriptions[0]),
-                        ))
+                          ))
             else:
                 msg = ("Hi there!  We thought you'd like to know that %s just "
                        "subscribed you to the following streams: \n\n"
