@@ -177,6 +177,7 @@ if __name__ == "__main__":
         print("\nError: %s templates have no tests!" % (missed_count,))
         for template in templates_not_rendered:
             print('  {}'.format(template))
+        print("See zerver/tests/test_templates.py for the exclude list.")
         failures = True
 
     if options.coverage:
