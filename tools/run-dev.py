@@ -12,6 +12,8 @@ import traceback
 
 from six.moves.urllib.parse import urlunparse
 
+from django.conf import settings
+
 from tornado import httpclient
 from tornado import httputil
 from tornado import gen
@@ -38,6 +40,13 @@ Note that, while runserver and runtornado have the usual auto-restarting
 behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
 """)
+if __name__ == "__main__":
+    TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(os.path.dirname(TOOLS_DIR))
+    sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+    from tools.lib.test_script import(
+        get_provisioning_status,
+    )
 
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
