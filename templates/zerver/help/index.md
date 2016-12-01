@@ -24,11 +24,12 @@ as a “**realm**”.
 
 # Table of contents:
 
-**[The Zulip browser window](#the-zulip-browser-window)** |
-**[Posting and replying](#posting-and-replying)** |
-**[Mention a Team Member](/help/mention-a-team-member)** |
-**[Other common questions](#other-common-questions)** |
-**[Terminology](#special-terms-used-with-zulip)**
+- **[The Zulip browser window](#the-zulip-browser-window)**
+- **[Posting and replying](#posting-and-replying)**
+- **[Mention a Team Member](/help/mention-a-team-member)**
+- **[Uploading and Sharing Files](/help/uploading_sharing_files)**
+- **[Other common questions](#other-common-questions)**
+- **[Terminology](#special-terms-used-with-zulip)**
 
 ---
 
