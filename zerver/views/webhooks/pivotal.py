@@ -55,7 +55,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
         content = description + more_info
     elif event_type == 'note_create':
         subject = "Comment added"
-        content = description +  more_info
+        content = description + more_info
     elif event_type == 'story_create':
         issue_desc = get_text(['stories', 'story', 'description'])
         issue_type = get_text(['stories', 'story', 'story_type'])

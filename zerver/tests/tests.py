@@ -270,8 +270,8 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
         self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
-        with self.settings(REALMS_HAVE_SUBDOMAINS = True), \
-             self.assertRaises(GetRealmByDomainException):
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
+             self.assertRaises(GetRealmByDomainException)):
             get_realm_by_email_domain('user@zulip.com')
 
 
@@ -603,6 +603,7 @@ class WorkerTest(TestCase):
             def __init__(self):
                 # type: () -> None
                 super(TestWorker, self).__init__()
+
             def consume(self, data):
                 # type: (Mapping[str, Any]) -> None
                 pass
@@ -800,8 +801,7 @@ class BotTest(ZulipTestCase):
                      default_sending_stream=None,
                      default_events_register_stream=None,
                      default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                )
+                     owner='hamlet@zulip.com')
             ),
             event['event']
         )
@@ -844,7 +844,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
             bot_info = dict(
                 full_name='whatever',
                 short_name='whatever',
@@ -954,8 +954,7 @@ class BotTest(ZulipTestCase):
                      default_sending_stream='Denmark',
                      default_events_register_stream=None,
                      default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                )
+                     owner='hamlet@zulip.com')
             ),
             event['event']
         )
@@ -1017,8 +1016,7 @@ class BotTest(ZulipTestCase):
                      default_sending_stream=None,
                      default_events_register_stream='Denmark',
                      default_all_public_streams=False,
-                     owner='hamlet@zulip.com',
-                )
+                     owner='hamlet@zulip.com')
             ),
             event['event']
         )
@@ -1181,7 +1179,7 @@ class BotTest(ZulipTestCase):
 
         # Try error case first (too many files):
         with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-             open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
             result = self.client_patch_multipart(
                 '/json/bots/hambot-bot@zulip.com',
                 dict(file1=fp1, file2=fp2))
@@ -1764,8 +1762,7 @@ class HelpTest(ZulipTestCase):
     def test_browser_window_help(self):
         # type: () -> None
         result = self.client_get('/help/#the-browser-window')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("There are three panes", result.content.decode("utf-8"))
+        self.assert_in_success_response(["There are three panes"], result)
 
 class HomeTest(ZulipTestCase):
     @slow('big method')
@@ -2066,6 +2063,13 @@ class HomeTest(ZulipTestCase):
         self.assertEquals(result.status_code, 302)
         path = urllib.parse.urlparse(result['Location']).path
         self.assertEquals(path, "/")
+
+    def test_generate_204(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        result = self.client_get("/api/v1/generate_204")
+        self.assertEquals(result.status_code, 204)
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):

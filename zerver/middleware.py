@@ -194,13 +194,13 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     else:
         extra_request_data = ""
     logger_client = "(%s via %s)" % (email, client_name)
-    logger_timing = '%5s%s%s%s%s%s %s' % \
+    logger_timing = ('%5s%s%s%s%s%s %s' %
                      (format_timedelta(time_delta), optional_orig_delta,
                       remote_cache_output, bugdown_output,
-                      db_time_output, startup_output, path)
-    logger_line = '%-15s %-7s %3d %s%s %s' % \
-                    (remote_ip, method, status_code,
-                     logger_timing, extra_request_data, logger_client)
+                      db_time_output, startup_output, path))
+    logger_line = ('%-15s %-7s %3d %s%s %s' %
+                   (remote_ip, method, status_code,
+                    logger_timing, extra_request_data, logger_client))
     if (status_code in [200, 304] and method == "GET" and path.startswith("/static")):
         logger.debug(logger_line)
     else:
@@ -299,6 +299,7 @@ class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
         # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
         self.process_request(request)
+
     def process_request(self, request):
         # type: (HttpRequest) -> None
         if request.path.startswith("/api/") or request.path.startswith("/json/"):

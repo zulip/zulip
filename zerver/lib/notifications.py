@@ -154,7 +154,7 @@ def build_message_list(user_profile, messages):
         elif message.recipient.type == Recipient.HUDDLE:
             assert not isinstance(disp_recipient, text_type)
             other_recipients = [r['full_name'] for r in disp_recipient
-                                    if r['email'] != user_profile.email]
+                                if r['email'] != user_profile.email]
             header = u"You and %s" % (", ".join(other_recipients),)
             html_link = pm_narrow_url(user_profile.realm, [r["email"] for r in disp_recipient
                                        if r["email"] != user_profile.email])

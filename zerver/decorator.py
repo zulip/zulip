@@ -82,10 +82,10 @@ def update_user_activity(request, user_profile):
     else:
         query = request.META['PATH_INFO']
 
-    event={'query': query,
-           'user_profile_id': user_profile.id,
-           'time': datetime_to_timestamp(now()),
-           'client': request.client.name}
+    event = {'query': query,
+             'user_profile_id': user_profile.id,
+             'time': datetime_to_timestamp(now()),
+             'client': request.client.name}
     queue_json_publish("user_activity", event, lambda event: None)
 
 # Based on django.views.decorators.http.require_http_methods
@@ -147,7 +147,7 @@ def get_client_name(request, is_json_view):
         if is_json_view:
             return "website"
         else:
-             return "Unspecified"
+            return "Unspecified"
 
 def process_client(request, user_profile, is_json_view=False, client_name=None):
     # type: (HttpRequest, UserProfile, bool, Optional[text_type]) -> None
@@ -596,7 +596,7 @@ def rate_limit(domain='all'):
 
             if not user:
                 logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
-                                 func.__name__)
+                              func.__name__)
                 return func(request, *args, **kwargs)
 
             # Rate-limiting data is stored in redis

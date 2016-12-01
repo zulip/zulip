@@ -107,7 +107,7 @@ def run_test(test):
             print("Actual test to be run is %s, but import failed." % (actual_test_name,))
             print("Importing test module directly to generate clearer traceback:")
             try:
-                command = ["python", "-c", "import %s" % (actual_test_name,)]
+                command = [sys.executable, "-c", "import %s" % (actual_test_name,)]
                 print("Import test command: `%s`" % (' '.join(command),))
                 subprocess.check_call(command)
             except subprocess.CalledProcessError:
@@ -163,7 +163,7 @@ class Runner(DiscoverRunner):
         if hasattr(sender, 'template'):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
-                if context.get('shallow_tested'):
+                if context.get('shallow_tested') and template_name not in self.templates_rendered:
                     self.shallow_tested_templates.add(template_name)
                 else:
                     self.templates_rendered.add(template_name)

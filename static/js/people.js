@@ -48,6 +48,13 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
         blueslip.error('Unknown user ids: ' + user_ids_string);
         return;
     }
+
+    emails = _.map(emails, function (email) {
+        return email.toLowerCase();
+    });
+
+    emails.sort();
+
     return emails.join(',');
 };
 
@@ -64,6 +71,9 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
         blueslip.error('Unknown emails: ' + emails_string);
         return;
     }
+
+    user_ids.sort();
+
     return user_ids.join(',');
 };
 

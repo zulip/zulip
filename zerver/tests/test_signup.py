@@ -13,7 +13,8 @@ from zerver.views import do_change_password, create_homepage_form
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
-    PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
+    PreregistrationUser, Realm, RealmAlias, Recipient,
+    Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription,
 )
 
@@ -77,8 +78,8 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                    404: ["/help/nonexistent",],
-                }
+                    404: ["/help/nonexistent"],
+                    }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
@@ -95,9 +96,9 @@ class PublicURLTest(ZulipTestCase):
                      400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
-                }
+                     }
         put_urls = {401: ["/json/users/me/pointer"],
-                }
+                    }
         for status_code, url_set in six.iteritems(get_urls):
             self.fetch("get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
@@ -110,8 +111,8 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
-                msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
-            )
+                              msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % (
+                                  resp.status_code,))
             data = ujson.loads(resp.content)
             self.assertEqual('error', data['result'])
 
@@ -120,8 +121,8 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
-                msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
-            )
+                              msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % (
+                                  resp.status_code,))
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
@@ -196,16 +197,13 @@ class PasswordResetTest(ZulipTestCase):
         tests here.
         '''
         result = self.client_get('/accounts/password/reset/done/')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn('Check your email', result.content.decode("utf-8"))
+        self.assert_in_success_response(["Check your email"], result)
 
         result = self.client_get('/accounts/password/done/')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("We've reset your password!", result.content.decode("utf-8"))
+        self.assert_in_success_response(["We've reset your password!"], result)
 
         result = self.client_get('/accounts/send_confirm/alice@example.com')
-        self.assertEqual(result.status_code, 200)
-        self.assertIn("Still no email?", result.content.decode("utf-8"))
+        self.assert_in_success_response(["Still no email?"], result)
 
 class LoginTest(ZulipTestCase):
     """
@@ -539,6 +537,24 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
+    def test_refer_friend(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted = 1
+        user.invites_used = 0
+        user.save()
+
+        invitee = "alice-test@zulip.com"
+        result = self.client_post('/json/refer_friend', dict(email=invitee))
+        self.assert_json_success(result)
+
+        # verify this works
+        Referral.objects.get(user_profile=user, email=invitee)
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 1)
+
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
         # type: () -> None
@@ -854,8 +870,7 @@ class UserSignUpTest(ZulipTestCase):
                                                realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
-        self.assertEquals(result.status_code, 200)
-        self.assertIn("You're almost there.", result.content.decode('utf8'))
+        self.assert_in_success_response(["You're almost there."], result)
 
     def test_completely_open_domain_success(self):
         # type: () -> None
@@ -898,8 +913,7 @@ class UserSignUpTest(ZulipTestCase):
                                                realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
-        self.assertEquals(result.status_code, 200)
-        self.assertIn("You're almost there.", result.content.decode('utf8'))
+        self.assert_in_success_response(["You're almost there."], result)
 
     def test_failed_signup_due_to_restricted_domain(self):
         # type: () -> None
@@ -987,10 +1001,10 @@ class UserSignUpTest(ZulipTestCase):
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
 
-            self.assertEquals(result.status_code, 200)
-            self.assertIn("You're almost there.", result.content.decode('utf8'))
-            self.assertIn("New User Name", result.content.decode('utf8'))
-            self.assertIn("newuser@zulip.com", result.content.decode('utf8'))
+            self.assert_in_success_response(["You're almost there.",
+                                             "New User Name",
+                                             "newuser@zulip.com"],
+                                            result)
 
             # Test the TypeError exception handler
             mock_ldap.directory = {
@@ -1007,10 +1021,10 @@ class UserSignUpTest(ZulipTestCase):
                                                    from_confirmation='1',
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
+            self.assert_in_success_response(["You're almost there.",
+                                             "newuser@zulip.com"],
+                                            result)
 
-            self.assertEquals(result.status_code, 200)
-            self.assertIn("You're almost there.", result.content.decode('utf8'))
-            self.assertIn("newuser@zulip.com", result.content.decode('utf8'))
 
         mock_ldap.reset()
         mock_initialize.stop()

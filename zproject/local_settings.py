@@ -77,7 +77,7 @@ TERMS_OF_SERVICE = 'corporate/terms.md'
 
 # Buckets used for Amazon S3 integration for storing files and user avatars.
 S3_AUTH_UPLOADS_BUCKET = "zulip-user-uploads"
-S3_AVATAR_BUCKET="humbug-user-avatars"
+S3_AVATAR_BUCKET = "humbug-user-avatars"
 
 APNS_SANDBOX = False
 APNS_FEEDBACK = "feedback_production"

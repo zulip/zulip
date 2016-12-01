@@ -23,7 +23,7 @@ from zerver.models import UserProfile, Client
 from zerver.decorator import RespondAsynchronously
 from zerver.lib.cache import cache_get_many, \
     user_profile_by_id_cache_key, cache_save_user_profile, cache_with_key
-from zerver.lib.handlers import clear_handler_by_id, get_handler_by_id, \
+from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
 from zerver.middleware import async_request_restart
@@ -31,6 +31,7 @@ from zerver.lib.narrow import build_narrow_filter
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 import copy
 import six
 from six import text_type
@@ -180,6 +181,7 @@ class ClientDescriptor(object):
         self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
         self.last_connection_time = time.time()
+
         def timeout_callback():
             # type: () -> None
             self._timeout_handle = None
@@ -217,20 +219,6 @@ class ClientDescriptor(object):
         self.finish_current_handler()
         do_gc_event_queues({self.event_queue.id}, {self.user_profile_id},
                            {self.realm_id})
-
-descriptors_by_handler_id = {} # type: Dict[int, ClientDescriptor]
-
-def get_descriptor_by_handler_id(handler_id):
-    # type: (int) -> ClientDescriptor
-    return descriptors_by_handler_id.get(handler_id)
-
-def set_descriptor_by_handler_id(handler_id, client_descriptor):
-    # type: (int, ClientDescriptor) -> None
-    descriptors_by_handler_id[handler_id] = client_descriptor
-
-def clear_descriptor_by_handler_id(handler_id, client_descriptor):
-    # type: (int, Optional[ClientDescriptor]) -> None
-    del descriptors_by_handler_id[handler_id]
 
 def compute_full_event_type(event):
     # type: (Mapping[str, Any]) -> str

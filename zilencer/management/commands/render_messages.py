@@ -25,7 +25,7 @@ def queryset_iterator(queryset, chunksize=5000):
 class Command(BaseCommand):
     help = """
     Render messages to a file.
-    Usage: python manage.py render_messages <destination> [--amount=10000]
+    Usage: ./manage.py render_messages <destination> [--amount=10000]
     """
 
     def add_arguments(self, parser):

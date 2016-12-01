@@ -25,8 +25,7 @@ function zephyr_topic_name_match(message, operand) {
     // instance "personal" to be the same.
     if (base_topic === ''
         || base_topic.toLowerCase() === 'personal'
-        || base_topic.toLowerCase() === '(instance "")')
-    {
+        || base_topic.toLowerCase() === '(instance "")') {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
@@ -102,8 +101,10 @@ function message_matches_search_term(message, operator, operand) {
         return (message.sender_email.toLowerCase() === operand.toLowerCase());
 
     case 'pm-with':
+        // TODO: use user_ids, not emails here
         return (message.type === 'private') &&
-            (message.reply_to.toLowerCase() === operand.split(',').sort().join(',').toLowerCase());
+            (util.normalize_recipients(message.reply_to) ===
+            util.normalize_recipients(operand));
     }
 
     return true; // unknown operators return true (effectively ignored)

@@ -1095,6 +1095,8 @@ just a temporary hack.
     font-weight: bold;
     color: red;
     padding: 0px 1px 0px 1px;
+    position: relative;
+    left: 29px;
 }
 
 .message_failed i {

@@ -15,6 +15,7 @@ class Command(BaseCommand):
                             help="queue to purge")
 
     help = "Discards all messages from the given queue"
+
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         queue_name = options['queue_name']

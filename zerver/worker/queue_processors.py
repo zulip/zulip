@@ -18,7 +18,7 @@ from zerver.lib.actions import do_send_confirmation_email, \
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
-from zerver.lib.socket import req_redis_key
+from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
 from django.core.mail import EmailMessage
@@ -122,7 +122,7 @@ class SignupWorker(QueueProcessingWorker):
 
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        merge_vars=data['merge_vars']
+        merge_vars = data['merge_vars']
         # This should clear out any invitation reminder emails
         clear_followup_emails_queue(data["EMAIL"])
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:

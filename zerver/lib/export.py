@@ -199,6 +199,7 @@ class Config(object):
     append itself to the parent's list of children.
 
     '''
+
     def __init__(self, table=None, model=None,
                 normal_parent=None, virtual_parent=None,
                 filter_args=None, custom_fetch=None, custom_tables=None,
@@ -223,7 +224,7 @@ class Config(object):
         self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
-        self.source_filter= source_filter
+        self.source_filter = source_filter
         self.children = [] # type: List[Config]
 
         if normal_parent:
@@ -556,7 +557,7 @@ def fetch_user_profile(response, config, context):
     exportable_user_ids = context['exportable_user_ids']
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude=['password', 'api_key']
+    exclude = ['password', 'api_key']
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows = [] # type: List[Record]
@@ -1005,7 +1006,7 @@ def do_write_stats_file_for_realm_export(output_dir):
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
         for fn in fns:
-            f.write(os.path.basename(fn) +'\n')
+            f.write(os.path.basename(fn) + '\n')
             payload = open(fn).read()
             data = ujson.loads(payload)
             for k in sorted(data):
@@ -1101,6 +1102,7 @@ def create_soft_link(source, in_progress=True):
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+
     def run_job(shard):
         # type: (str) -> int
         subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',

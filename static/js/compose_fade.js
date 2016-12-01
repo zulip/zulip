@@ -61,7 +61,7 @@ function _fade_messages() {
     normal_display = false;
 
     // Update the visible messages first, before the compose box opens
-    for (i = 0; i < visible_groups.length; i++) {
+    for (i = 0; i < visible_groups.length; i += 1) {
         first_row = rows.first_message_in_group(visible_groups[i]);
         first_message = current_msg_list.get(rows.id(first_row));
         should_fade_group = !fade_heuristic(focused_recipient, first_message);
@@ -83,7 +83,7 @@ function _fade_messages() {
 
         // Note: The below algorithm relies on the fact that all_elts is
         // sorted as it would be displayed in the message view
-        for (i = 0; i < all_groups.length; i++) {
+        for (i = 0; i < all_groups.length; i += 1) {
             var group_elt = $(all_groups[i]);
             should_fade_group = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_group);
@@ -130,7 +130,9 @@ function _fade_users() {
     }
     _.forEach($('.user_sidebar_entry'), function (elt) {
         elt = $(elt);
-        var would_receive = exports.would_receive_message(elt.attr('data-email'));
+        var user_id = elt.attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+        var would_receive = exports.would_receive_message(email);
         if (would_receive === true) {
             elt.addClass('unfaded').removeClass('faded');
         } else if (would_receive === false) {

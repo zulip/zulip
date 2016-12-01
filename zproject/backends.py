@@ -169,6 +169,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
     """
     Used when we want to log you in but we don't know which backend to use.
     """
+
     def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
                      return_data=None):
         # type: (Optional[text_type], Optional[text_type], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
@@ -189,6 +190,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     Allows a user to sign in using an email/password pair rather than
     a username/password pair.
     """
+
     def authenticate(self, username=None, password=None, realm_subdomain=None, return_data=None):
         # type: (Optional[text_type], Optional[str], Optional[text_type], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         """ Authenticate a user based on email address as the user name. """
@@ -227,6 +229,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         https://developers.google.com/accounts/docs/CrossClientAuth#offlineAccess
 
     """
+
     def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data={}):
         # type: (Optional[str], Optional[text_type], Dict[str, Any]) -> Optional[UserProfile]
         try:
@@ -257,6 +260,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
+
     def authenticate(self, remote_user, realm_subdomain=None):
         # type: (str, Optional[text_type]) -> Optional[UserProfile]
         if not remote_user:
@@ -282,14 +286,17 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         # Using Any type is safe because we are not doing anything with
         # the arguments.
         return False
+
     def has_module_perms(self, user, app_label):
         # type: (UserProfile, str) -> bool
         return False
+
     def get_all_permissions(self, user, obj=None):
         # type: (UserProfile, Any) -> Set
         # Using Any type is safe because we are not doing anything with
         # the arguments.
         return set()
+
     def get_group_permissions(self, user, obj=None):
         # type: (UserProfile, Any) -> Set
         # Using Any type is safe because we are not doing anything with
@@ -303,6 +310,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
                 raise ZulipLDAPException("Username does not match LDAP domain.")
             return email_to_username(username)
         return username
+
     def ldap_to_django_username(self, username):
         # type: (str) -> str
         if settings.LDAP_APPEND_DOMAIN:

@@ -95,13 +95,16 @@ function add_subject_links(message) {
         var url = realm_filter[1];
         var match;
         while ((match = pattern.exec(subject)) !== null) {
-            var current_group = 1;
             var link_url = url;
-            _.each(match.slice(1), function (matched_group) {
+            var matched_groups = match.slice(1);
+            var i = 0;
+            while (i < matched_groups.length) {
+                var matched_group = matched_groups[i];
+                var current_group = i + 1;
                 var back_ref = "\\" + current_group;
                 link_url = link_url.replace(back_ref, matched_group);
-                current_group++;
-            });
+                i += 1;
+            }
             links.push(link_url);
         }
     });
@@ -203,7 +206,7 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
         message_list.narrowed.view.rerender_messages([message]);
     }
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 };
 
 exports.reify_message_id = function reify_message_id(local_id, server_id) {
@@ -349,7 +352,7 @@ function handleRealmFilter(pattern, matches) {
     _.each(matches, function (match) {
         var back_ref = "\\" + current_group;
         url = url.replace(back_ref, match);
-        current_group++;
+        current_group += 1;
     });
 
     return url;
@@ -370,7 +373,7 @@ function python_to_js_filter(pattern, url) {
 
         match = named_group_re.exec(pattern);
 
-        current_group++;
+        current_group += 1;
     }
     // Convert any python in-regex flags to RegExp flags
     var js_flags = 'g';

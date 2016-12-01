@@ -1,79 +1,185 @@
-# Development on a Remote Machine
+# Developing on a remote machine
 
-Zulip can be developed on a remote machine.
-We recommend doing this if you are running Windows or have other
-blockers stopping you from [developing locally](dev-overview.html).
+The Zulip developer environment works well on remote virtual machines. This can
+be a good alternative for those with poor network connectivity or who have
+limited storage/memory on their local machines.
 
-We recommend a remote Ubuntu machine for ease of development.
+We recommend giving the Zulip development environment its own virtual
+machine, running Ubuntu 14.04 or
+16.04, with at least 2GB of memory. If the Zulip development
+environment will be the only thing running on the remote virtual
+machine, we recommend installing
+[directly][install-direct]. Otherwise, we recommend the
+[Vagrant][install-vagrant] method so you can easily uninstall if you
+need to.
 
-## Connecting to the Remote Environment
+## Connecting to the remote environment
 
-Set up your remote server and connect to it using SSH or Mosh.
-We recommend using [Mosh](https://mosh.org/) as it is more reliable over slow network connections.
+The best way to connect to your server is with the command line tool `ssh`.
 
-## Setting Up the Development Environment
+* On macOS and Linux/UNIX, `ssh` is a part of Terminal.
+* On Windows, `ssh` comes with [Bash for Git][git-bash].
 
-After you have connected to your remote server,
-you need to install the development environment.
-Follow the platform specific instructions for your specific remote instance:
-
-* [Ubuntu Installation](install-ubuntu-without-vagrant-dev.html) - this installs the Zulip development environment directly on your remote server.
-* [Detailed tutorial for Vagrant development environment](dev-env-first-time-contributors.html) - this installs the development environment in a self-contained environment that is easy to remove later.
-* [Brief installation instructions for Vagrant development environment](brief-install-vagrant-dev.html) - a shorter guide for the previous option.
-
-## Running the Development Server
-
-Once you have set up the development environment, you can start up the development instance of zulip with the command
+Open *Terminal* or *Bash for Git*, and connect with the following:
 
 ```
-./tools/run-dev.py
+$ ssh username@host
 ```
 
-This will start up zulip on port 9991. You can then navigate to http://<REMOTE_IP>:9991 and you should see something like
-[(this screenshot of the Zulip dev environment)](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png).
+If you have poor internet connectivity, we recommend using
+[Mosh](https://mosh.org/) as it is more reliable over slow or unreliable
+networks.
 
-![Image of Zulip dev environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
+## Setting up the development environment
 
-You can [port forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding)
-using ssh instead of running the dev env on an exposed interface.
+After you have connected to your remote server, you need to install the
+development environment.
 
-For more information, see [Using the Development Environment](using-dev-environment.html).
+If the Zulip development environment will be the only thing running on
+the remote virtual machine, we recommend installing
+[directly][install-direct]. Otherwise, we recommend the
+[Vagrant][install-vagrant] method so you can easily uninstall if you
+need to.
 
-## Editing Code on the Remote Machine
+## Running the development server
 
-You will need to either edit code locally on your computer and sync it to the remote
-development environment or just edit the zulip code base on the remote host.
+Once you have set up the development environment, you can start up the
+development instance of Zulip with the following command in the directory where
+you cloned Zulip:
 
-#### Editing Locally
+```
+./tools/run-dev.py --interface=''
+```
 
-If you want to edit code locally you can install your favorite text editor:
+This will start up the Zulip server on port 9991. You can then navigate to
+http://<REMOTE_IP>:9991 and you should see something like [(this screenshot of
+the Zulip development
+environment)](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png).
+
+![Image of Zulip development
+environment](https://raw.githubusercontent.com/zulip/zulip/master/docs/images/zulip-dev.png)
+
+You can [port
+forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding) using
+ssh instead of running the development environment on an exposed interface.
+
+For more information, see [Using the development
+environment][rtd-using-dev-env].
+
+## Making changes to code on your remote development server
+
+To see changes on your remote development server, you need to do one of the following:
+
+* [Edit locally](#editing-locally): Clone Zulip code to your computer and
+  then use your favorite editor to make changes. When you want to see changes
+  on your remote Zulip development instance, sync with Git.
+* [Edit remotely](#editing-remotely): Edit code directly on your remote
+  Zulip development instance using a [Web-based IDE](#web-based-ide) (recommended for
+  beginners) or a [command line editor](#command-line-editors).
+
+#### Editing locally
+
+If you want to edit code locally install your favorite text editor. If you
+don't have a favorite, here are some suggestions:
+
 * [atom](https://atom.io/)
 * [emacs](https://www.gnu.org/software/emacs/)
 * [vim](http://www.vim.org/)
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
 * [sublime](https://www.sublimetext.com/)
-* etc
 
-Next, [set up git](git-guide.html) on your local machine and clone the zulip
-repository.
+Next, follow our [Git and GitHub Guide](git-guide.html) to clone and configure
+your fork of zulip on your local computer.
 
-Once you have your code locally you will need to sync your changes to your development server:
-* [Unison](https://github.com/bcpierce00/unison) Recommended
-* [Rsync](https://www.digitalocean.com/community/tutorials/how-to-use-rsync-to-sync-local-and-remote-directories-on-a-vps)
+Once you have cloned your code locally, you can get to work.
 
-#### Editing Remotely
+##### Syncing changes
 
-You will need to use a text editor on the remote machine:
+The easiest way to see your changes on your remote development server
+is to **push them to GitHub** and them **fetch and merge** them from
+the remote server.
+
+For more detailed instructions about how to do this, see our [Git & GitHub
+Guide][rtd-git-guide]. In brief, the steps are as follows.
+
+On your **local computer**:
+
+1. Open *Terminal* (macOS/Linux) or *Git for BASH*.
+2. Change directory to where you cloned Zulip (e.g. `cd zulip`).
+3. Use `git add` and `git commit` to stage and commit your changes (if you
+   haven't already).
+4. Push your commits to GitHub with `git push origin branchname`.
+
+Be sure to replace `branchname` with the name of your actual feature branch.
+
+Once `git push` has completed successfully, you are ready to fetch the commits
+from your remote development instance:
+
+1. In *Terminal* or *Git BASH*, connect to your remote development
+   instance with `ssh user@host`.
+2. Change to the zulip directory (e.g., `cd zulip`).
+3. Fetch new commits from GitHub with `git fetch origin`.
+4. Change to the branch you want to work on with `git checkout branchname`.
+5. Merge the new commits into your branch with `git merge origin/branchname`.
+
+#### Editing remotely
+
+##### Web-based IDE
+
+If you are relatively new to working on the command line, or just want to get
+started working quickly, we recommend web-based IDE
+[Codeanywhere][codeanywhere].
+
+To setup Codeanywhere for Zulip:
+
+1. Create a [Codeanywhere][codeanywhere] account and log in.
+2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
+3. Click **GET YOUR PUBLIC KEY** to get the new new public key that
+   Codeanywhere generates when you create a new project. Add this public key to
+   `~/.ssh/authorized_keys` on your remote development instance.
+4. Once you've added the new public key to your remote development instance, click
+   *CONNECT*.
+
+Now your workspace should look similar this:
+![Codeanywhere workspace][img-ca-workspace]
+
+##### Command line editors
+
+Another way to edit directly on the remote development server is with
+a command line text editor on the remote machine.
+
+Two editors often available by default on Linux systems are:
+
+* **Nano**: A very simple, beginner-friendly editor. However, it lacks a lot of
+  features useful for programming, such as syntax highlighting, so we only
+  recommended it for quick edits to things like configuration files. Launch by
+  running command `nano <filename>`. Exit by pressing *control-X*.
+
+* **[Vim](http://www.vim.org/)**: A very powerful editor that can take a while
+  to learn. Launch by running `vim <filename>`. Quit Vim by pressing *escape*,
+  typing `:q`, and then pressing *return*. Vim comes with a program to learn it
+  called `vimtutor` (just run that command to start it).
+
+Other options include:
+
 * [emacs](https://www.gnu.org/software/emacs/)
-* [vim](http://www.vim.org/)
 * [spacemacs](https://github.com/syl20bnr/spacemacs)
 
-Once you install an editor
-[setup an ssh key](https://help.github.com/articles/generating-an-ssh-key/)
-on your host and [clone](git-guide.html) the zulip repository.
+#### Next steps
 
-#### Next Steps
+Next, read the following to learn more about developing for Zulip:
 
-At this point you should
-[read about developing](dev-env-first-time-contributors.html#step-4-developing)
-and [read about using the development environment](using-dev-environment.html).
+* [Git & GitHub Guide][rtd-git-guide]
+* [Using the Development Environment][rtd-using-dev-env]
+* [Testing][rtd-testing]
+
+[install-direct]: dev-setup-non-vagrant.html#installing-directly-on-ubuntu
+[install-generic]: dev-setup-non-vagrant.html#installing-manually-on-linux
+[install-vagrant]: dev-env-first-time-contributors.html
+[rtd-git-guide]: git-guide.html
+[rtd-using-dev-env]: using-dev-environment.html
+[rtd-testing]: testing.html
+[git-bash]: https://git-for-windows.github.io/
+[codeanywhere]: https://codeanywhere.com/
+[img-ca-settings]: images/codeanywhere-settings.png
+[img-ca-workspace]: images/codeanywhere-workspace.png

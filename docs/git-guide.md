@@ -311,9 +311,9 @@ upstream https://github.com/zulip/zulip.git (fetch)
 upstream https://github.com/zulip/zulip.git (push)
 ```
 
-### Step 2: Set up the Zulip dev environment
+### Step 2: Set up the Zulip development environment
 
-If you haven't already, now is a good time to install the Zulip dev environment
+If you haven't already, now is a good time to install the Zulip development environment
 ([overview][zulip-rtd-dev-overview]). If you're new to working on Zulip or open
 source projects in general, we recommend following our [detailed guide for
 first-time contributors][zulip-rtd-dev-first-time].
@@ -636,8 +636,8 @@ Integrate Fail2Ban.
 Updates Zulip logging to put an unambiguous entry into the logs such
 that fail2ban can be configured to look for these entries.
 
-Tested on my local Ubuntu dev server, but would appreciate someone
-testing on a production install with more users.
+Tested on my local Ubuntu development server, but would appreciate
+someone testing on a production install with more users.
 
 Fixes #1755.
 ```

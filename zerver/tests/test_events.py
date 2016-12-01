@@ -51,7 +51,6 @@ from zerver.lib.actions import (
     get_subscription
 )
 
-from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.message import render_markdown
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.lib.test_classes import (
@@ -64,7 +63,8 @@ from zerver.lib.validator import (
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
-from zerver.tornadoviews import get_events_backend
+from zerver.tornado.event_queue import allocate_client_descriptor, EventQueue
+from zerver.tornado.views import get_events_backend
 
 from collections import OrderedDict
 import mock
@@ -923,7 +923,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, None, "")
         self.assertTrue(len(result['realm_bots']) > 5)
 
-from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
     def test_one_event(self):
         # type: () -> None
@@ -965,7 +964,7 @@ class EventQueueTest(TestCase):
         queue.push({"type": "restart", "server_generation": "2"})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9,},
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,
@@ -979,7 +978,7 @@ class EventQueueTest(TestCase):
                         "timestamp": str(pointer_val)})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9,},
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,

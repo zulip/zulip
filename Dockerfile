@@ -14,6 +14,6 @@ USER zulip
 
 RUN ln -nsf /srv/zulip ~/zulip
 
-RUN echo 'export LC_ALL="en_US.UTF-8"' >> ~zulip/.bashrc
+RUN echo 'export LC_ALL="en_US.UTF-8" LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8"' >> ~zulip/.bashrc
 
 WORKDIR /srv/zulip

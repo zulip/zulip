@@ -35,7 +35,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
     realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
     ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications
+    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications, \
+    Reaction
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import get_avatar_url, avatar_url
@@ -68,7 +69,6 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, cache_set_many, \
     cache_delete, cache_delete_many
 from zerver.decorator import statsd_increment
-from zerver.lib.event_queue import request_event_queue, get_user_events, send_event
 from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
@@ -82,6 +82,7 @@ from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
+from zerver.tornado.event_queue import request_event_queue, get_user_events, send_event
 
 import DNS
 import ujson
@@ -229,7 +230,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         internal_send_message(sender, "stream",
                               user_profile.realm.notifications_stream.name,
                               "New users", "%s just signed up for Zulip. Say hello!" % \
-                                (user_profile.full_name,),
+                              (user_profile.full_name,),
                               realm=user_profile.realm)
 
     internal_send_message(sender,
@@ -368,7 +369,7 @@ def notify_created_bot(user_profile):
                           default_all_public_streams=user_profile.default_all_public_streams,
                           avatar_url=avatar_url(user_profile),
                           owner=user_profile.bot_owner.email,
-                         ))
+                          ))
     send_event(event, bot_owner_userids(user_profile))
 
 def do_create_user(email, password, realm, full_name, short_name,
@@ -543,7 +544,7 @@ def do_set_realm_default_language(realm, default_language):
         # NB: remove this once we upgrade to Django 1.9
         # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
         # Django 1.9
-        default_language= 'zh_HANS'
+        default_language = 'zh_HANS'
 
     realm.default_language = default_language
     realm.save(update_fields=['default_language'])
@@ -690,7 +691,7 @@ def compute_mit_user_fullname(email):
     except DNS.Base.ServerError:
         pass
     except:
-        print ("Error getting fullname for %s:" % (email,))
+        print("Error getting fullname for %s:" % (email,))
         traceback.print_exc()
     return email.lower()
 
@@ -906,6 +907,30 @@ def do_send_messages(messages):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
+def do_add_reaction(user_profile, message, emoji_name):
+    # type: (UserProfile, Message, text_type) -> None
+    reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
+    reaction.save()
+
+    user_dict = {'user_id': user_profile.id,
+                 'email': user_profile.email,
+                 'full_name': user_profile.full_name}
+
+    event = {'type': 'reaction',
+             'op': 'add',
+             'user': user_dict,
+             'message_id': message.id,
+             'emoji_name': emoji_name} # type: Dict[str, Any]
+
+    # Recipients for message update events, including reactions, are
+    # everyone who got the original message.  This means reactions
+    # won't live-update in preview narrows, but it's the right
+    # performance tradeoff, since otherwise we'd need to send all
+    # reactions to public stream messages to every browser for every
+    # client in the organization, which doesn't scale.
+    ums = UserMessage.objects.filter(message=message.id)
+    send_event(event, [um.user_profile.id for um in ums])
+
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],
@@ -963,11 +988,13 @@ def do_create_stream(realm, stream_name):
     subscribers = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
     bulk_add_subscriptions([stream], subscribers)
 
-def create_stream_if_needed(realm, stream_name, invite_only=False):
-    # type: (Realm, text_type, bool) -> Tuple[Stream, bool]
+def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
+    # type: (Realm, text_type, bool, text_type) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
-        defaults={'name': stream_name, 'invite_only': invite_only})
+        defaults={'name': stream_name,
+                  'description': stream_description,
+                  'invite_only': invite_only})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if not invite_only:
@@ -976,14 +1003,18 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
             send_event(event, active_user_ids(realm))
     return stream, created
 
-def create_streams_if_needed(realm, stream_names, invite_only):
-    # type: (Realm, List[text_type], bool) -> Tuple[List[Stream], List[Stream]]
+def create_streams_if_needed(realm, stream_dicts):
+    # type: (Realm, List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]
+    """Note that stream_dict["name"] is assumed to already be stripped of
+    whitespace"""
     added_streams = [] # type: List[Stream]
     existing_streams = [] # type: List[Stream]
-    for stream_name in stream_names:
+    for stream_dict in stream_dicts:
         stream, created = create_stream_if_needed(realm,
-                                                  stream_name,
-                                                  invite_only=invite_only)
+                                                  stream_dict["name"],
+                                                  invite_only=stream_dict.get("invite_only", False),
+                                                  stream_description=stream_dict.get("description", ""))
+
         if created:
             added_streams.append(stream)
         else:
@@ -1045,7 +1076,7 @@ def already_sent_mirrored_message_id(message):
     else:
         time_window = datetime.timedelta(seconds=0)
 
-    messages =  Message.objects.filter(
+    messages = Message.objects.filter(
         sender=message.sender,
         recipient=message.recipient,
         content=message.content,
@@ -1800,7 +1831,7 @@ def do_regenerate_api_key(user_profile, log=True):
                                  user_id=user_profile.id,
                                  api_key=user_profile.api_key,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_avatar_source(user_profile, avatar_source, log=True):
     # type: (UserProfile, text_type, bool) -> None
@@ -1819,7 +1850,7 @@ def do_change_avatar_source(user_profile, avatar_source, log=True):
                                  user_id=user_profile.id,
                                  avatar_url=avatar_url(user_profile),
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
     else:
         payload = dict(
             email=user_profile.email,
@@ -1864,7 +1895,7 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_sending_stream=stream_name,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
     # type: (UserProfile, Stream, bool) -> None
@@ -1887,7 +1918,7 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
                                  user_id=user_profile.id,
                                  default_events_register_stream=stream_name,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_default_all_public_streams(user_profile, value, log=True):
     # type: (UserProfile, bool, bool) -> None
@@ -1904,7 +1935,7 @@ def do_change_default_all_public_streams(user_profile, value, log=True):
                                  user_id=user_profile.id,
                                  default_all_public_streams=user_profile.default_all_public_streams,
                                  )),
-                    bot_owner_userids(user_profile))
+                   bot_owner_userids(user_profile))
 
 def do_change_is_admin(user_profile, value, permission='administer'):
     # type: (UserProfile, bool, str) -> None
@@ -2065,8 +2096,8 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
 This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
 system-generated notifications.""" % (product_name, notifications_stream.name,)
         msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
-                                     notifications_stream.name, "welcome",
-                                     content, realm=realm)
+                                    notifications_stream.name, "welcome",
+                                    content, realm=realm)
         do_send_messages([msg])
 
         # Log the event
@@ -2223,7 +2254,7 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
     user_profile.save(update_fields=["left_side_userlist"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name':'left_side_userlist',
+             'setting_name': 'left_side_userlist',
              'setting': setting_value}
     if log:
         log_event(event)
@@ -2242,7 +2273,7 @@ def do_change_default_language(user_profile, setting_value, log=True):
     user_profile.save(update_fields=["default_language"])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name':'default_language',
+             'setting_name': 'default_language',
              'setting': setting_value}
     if log:
         log_event(event)
@@ -2410,18 +2441,18 @@ def do_update_user_presence(user_profile, client, log_time, status):
 
 def update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
-    event={'user_profile_id': user_profile.id,
-           'time': datetime_to_timestamp(log_time)}
+    event = {'user_profile_id': user_profile.id,
+             'time': datetime_to_timestamp(log_time)}
     queue_json_publish("user_activity_interval", event,
                        lambda e: do_update_user_activity_interval(user_profile, log_time))
 
 def update_user_presence(user_profile, client, log_time, status,
                          new_user_input):
     # type: (UserProfile, Client, datetime.datetime, int, bool) -> None
-    event={'user_profile_id': user_profile.id,
-           'status': status,
-           'time': datetime_to_timestamp(log_time),
-           'client': client.name}
+    event = {'user_profile_id': user_profile.id,
+             'status': status,
+             'time': datetime_to_timestamp(log_time),
+             'client': client.name}
 
     queue_json_publish("user_presence", event,
                        lambda e: do_update_user_presence(user_profile, client,
@@ -2637,8 +2668,8 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             if propagate_mode == 'change_all':
                 before_bound = now() - datetime.timedelta(days=2)
 
-                propagate_query = propagate_query & ~Q(id = message.id) & \
-                                                     Q(pub_date__range=(before_bound, now()))
+                propagate_query = (propagate_query & ~Q(id = message.id) &
+                                   Q(pub_date__range=(before_bound, now())))
             if propagate_mode == 'change_later':
                 propagate_query = propagate_query & Q(id__gt = message.id)
 
@@ -2772,7 +2803,7 @@ def gather_subscriptions_helper(user_profile):
 
     # Deactivated streams aren't in stream_hash.
     streams = [stream_hash[sub["recipient__type_id"]] for sub in sub_dicts \
-                   if sub["recipient__type_id"] in stream_hash]
+               if sub["recipient__type_id"] in stream_hash]
     streams_subscribed_map = dict((sub["recipient__type_id"], sub["active"]) for sub in sub_dicts)
 
     # Add never subscribed streams to streams_subscribed_map
@@ -3271,7 +3302,7 @@ def handle_push_notification(user_profile_id, missed_message):
                 send_android_push_notification(user_profile, android_data)
 
     except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" %(missed_message['message_id'],))
+        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
 
 def is_inactive(email):
     # type: (text_type) -> None

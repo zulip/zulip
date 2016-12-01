@@ -52,6 +52,8 @@ global.people.add(mark);
 global.people.add(norbert);
 
 
+var people = global.people;
+
 var activity = require('js/activity.js');
 
 activity.update_huddles = function () {};
@@ -75,10 +77,10 @@ activity.update_huddles = function () {};
 
 (function test_process_loaded_messages() {
 
-    var huddle1 = 'bar@zulip.com,foo@zulip.com';
+    var huddle1 = 'jill@zulip.com,norbert@zulip.com';
     var timestamp1 = 1382479029; // older
 
-    var huddle2 = 'alice@zulip.com,bob@zulip.com';
+    var huddle2 = 'alice@zulip.com,fred@zulip.com';
     var timestamp2 = 1382479033; // newer
 
     var old_timestamp = 1382479000;
@@ -110,44 +112,56 @@ activity.update_huddles = function () {};
 
     activity.process_loaded_messages(messages);
 
-    assert.deepEqual(activity.get_huddles(), [huddle2, huddle1]);
+    var user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
+    var user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
+    assert.deepEqual(activity.get_huddles(), [user_ids_string2, user_ids_string1]);
 }());
 
 (function test_full_huddle_name() {
+    function full_name(emails_string) {
+        var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+        return activity.full_huddle_name(user_ids_string);
+    }
+
     assert.equal(
-        activity.full_huddle_name('alice@zulip.com,jill@zulip.com'),
+        full_name('alice@zulip.com,jill@zulip.com'),
         'Alice Smith, Jill Hill'
     );
 
     assert.equal(
-        activity.full_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
+        full_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill'
     );
 }());
 
 (function test_short_huddle_name() {
+    function short_name(emails_string) {
+        var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+        return activity.short_huddle_name(user_ids_string);
+    }
+
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com'),
+        short_name('alice@zulip.com'),
         'Alice Smith'
     );
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,jill@zulip.com'),
+        short_name('alice@zulip.com,jill@zulip.com'),
         'Alice Smith, Jill Hill'
     );
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
+        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill'
     );
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
+        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill, + 1 other'
     );
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
+        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill, + 2 others'
     );
 
@@ -155,6 +169,7 @@ activity.update_huddles = function () {};
 
 (function test_huddle_fraction_present() {
     var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+    huddle = people.emails_strings_to_user_ids_string(huddle);
 
     var presence_list = {};
     presence_list[alice.user_id] = {status: 'active'};

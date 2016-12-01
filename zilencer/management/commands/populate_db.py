@@ -133,9 +133,15 @@ class Command(BaseCommand):
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
-            names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
-                     ("Prospero from The Tempest", "prospero@zulip.com"),
-                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
+            names = [
+                ("Zoe", "ZOE@zulip.com"),
+                ("Othello, the Moor of Venice", "othello@zulip.com"),
+                ("Iago", "iago@zulip.com"),
+                ("Prospero from The Tempest", "prospero@zulip.com"),
+                ("Cordelia Lear", "cordelia@zulip.com"),
+                ("King Hamlet", "hamlet@zulip.com"),
+                ("aaron", "AARON@zulip.com"),
+            ]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
@@ -349,7 +355,7 @@ def send_messages(data):
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                         type_id=personals_pair[0])
+                                                      type_id=personals_pair[0])
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data['personals_pair'] = personals_pair
         elif message_type == Recipient.STREAM:

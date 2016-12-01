@@ -185,7 +185,9 @@ $(function () {
     });
 
     $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        var email = $(e.target).parents('li').data('email');
+        var user_id = $(e.target).parents('li').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
@@ -203,7 +205,8 @@ $(function () {
     });
 
     $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        var emails = $(e.target).parents('li').data('emails');
+        var user_ids_string = $(e.target).parents('li').attr('data-user-ids');
+        var emails = people.user_ids_string_to_emails_string(user_ids_string);
         narrow.by('pm-with', emails, {select_first_unread: true, trigger: 'sidebar'});
         e.preventDefault();
         e.stopPropagation();

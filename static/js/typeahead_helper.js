@@ -50,7 +50,7 @@ exports.highlight_query_in_phrase = function (query, phrase) {
 
     var result = "";
     var parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i++) {
+    for (i = 0; i < parts.length; i += 1) {
         if (i > 0) {
             result += " ";
         }
@@ -159,7 +159,8 @@ exports.sort_recipientbox_typeahead = function (matches) {
     // input_text may be one or more pm recipients
     var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
     var query = cleaned[cleaned.length - 1];
-    return exports.sort_recipients(matches, query);};
+    return exports.sort_recipients(matches, query);
+};
 
 return exports;
 

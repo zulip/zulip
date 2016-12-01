@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
-from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
+from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
     Sized, Tuple, Union)
 
 from django.core.urlresolvers import resolve
@@ -17,10 +17,9 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
-from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.str_utils import force_text
 from zerver.lib import cache
-from zerver.lib import event_queue
+from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
@@ -66,10 +65,6 @@ import six
 
 API_KEYS = {} # type: Dict[text_type, text_type]
 
-skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
-
-
-
 class ZulipTestCase(TestCase):
     '''
     WRAPPER_COMMENT:
@@ -84,7 +79,7 @@ class ZulipTestCase(TestCase):
     django_client to fool the regext.
     '''
 
-    DEFAULT_REALM_NAME = 'zulip.com'
+    DEFAULT_REALM = Realm.objects.get(string_id='zulip')
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
@@ -305,7 +300,7 @@ class ZulipTestCase(TestCase):
         # type: (Sized, int) -> None
         actual_count = len(queries)
         return self.assertTrue(actual_count == count,
-                                   "len(%s) == %s, != %s" % (queries, actual_count, count))
+                               "len(%s) == %s, != %s" % (queries, actual_count, count))
 
     def assert_max_length(self, queries, count):
         # type: (Sized, int) -> None
@@ -325,6 +320,13 @@ class ZulipTestCase(TestCase):
         # type: (text_type, HttpResponse) -> None
         self.assertIn(substring, response.content.decode('utf-8'))
 
+    def assert_in_success_response(self, substrings, response):
+        # type: (Iterable[text_type], HttpResponse) -> None
+        self.assertEqual(response.status_code, 200)
+        decoded = response.content.decode('utf-8')
+        for substring in substrings:
+            self.assertIn(substring, decoded)
+
     def fixture_data(self, type, action, file_type='json'):
         # type: (text_type, text_type, text_type) -> text_type
         return force_text(open(os.path.join(os.path.dirname(__file__),
@@ -333,7 +335,7 @@ class ZulipTestCase(TestCase):
     def make_stream(self, stream_name, realm=None, invite_only=False):
         # type: (text_type, Optional[Realm], Optional[bool]) -> Stream
         if realm is None:
-            realm = get_realm(self.DEFAULT_REALM_NAME)
+            realm = self.DEFAULT_REALM
 
         try:
             stream = Stream.objects.create(
@@ -404,7 +406,7 @@ class ZulipTestCase(TestCase):
 
     @contextmanager
     def simulated_markdown_failure(self):
-        # type: () -> Generator[None, None, None]
+        # type: () -> Iterator[None]
         '''
         This raises a failure inside of the try/except block of
         bugdown.__init__.do_convert.

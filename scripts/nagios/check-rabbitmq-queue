@@ -50,7 +50,7 @@ for line in output.split("\n"):
         status = max(status, this_status)
         max_count = max(max_count, count)
 
-warn_about =  ", ".join(warn_queues)
+warn_about = ", ".join(warn_queues)
 now = int(time.time())
 now_struct = time.gmtime(now)
 

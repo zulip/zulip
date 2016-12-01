@@ -47,5 +47,5 @@ class Command(BaseCommand):
             RealmAlias.objects.get(realm=realm, domain=alias).delete()
             sys.exit(0)
         else:
-            self.print_help("python manage.py", "realm_alias")
+            self.print_help("./manage.py", "realm_alias")
             sys.exit(1)

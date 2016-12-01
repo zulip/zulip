@@ -26,11 +26,11 @@ from zerver.lib.queue import queue_json_publish
 from zerver.lib.actions import check_send_message, extract_recipients
 from zerver.decorator import JsonableError
 from zerver.lib.utils import statsd
-from zerver.lib.event_queue import get_client_descriptor
 from zerver.middleware import record_request_start_data, record_request_stop_data, \
     record_request_restart_data, write_log_line, format_timedelta
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.session_user import get_session_user
+from zerver.tornado.event_queue import get_client_descriptor
 
 logger = logging.getLogger('zulip.socket')
 

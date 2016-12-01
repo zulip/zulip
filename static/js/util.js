@@ -45,7 +45,7 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
         middle = first + step;
         if (less(array[middle], value, middle)) {
             first = middle;
-            first++;
+            first += 1;
             len = len - step - 1;
         } else {
             len = step;
@@ -124,7 +124,8 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = _.map(recipients.split(','), $.trim);
+    recipients = _.map(recipients.split(','), function (s) { return s.trim(); });
+    recipients = _.map(recipients, function (s) { return s.toLowerCase(); });
     recipients = _.filter(recipients, function (s) { return s.length > 0; });
     recipients.sort();
     return recipients.join(',');
@@ -143,7 +144,7 @@ exports.robust_uri_decode = function (str) {
             if (!(e instanceof URIError)) {
                 throw e;
             }
-            end--;
+            end -= 1;
         }
     }
     return '';
@@ -176,7 +177,7 @@ exports.array_compare = function util_array_compare(a, b) {
         return false;
     }
     var i;
-    for (i = 0; i < a.length; ++i) {
+    for (i = 0; i < a.length; i += 1) {
         if (a[i] !== b[i]) {
             return false;
         }

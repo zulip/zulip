@@ -10,8 +10,7 @@ from django.http import HttpRequest, HttpResponse
 
 import pprint
 import ujson
-import six
-from typing import Dict, Any, Iterable, Optional
+from typing import Dict, Any, Iterable, Optional, Text
 
 
 PAGER_DUTY_EVENT_NAMES = {
@@ -71,7 +70,7 @@ def build_pagerduty_formatdict(message):
 
 
 def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
-    # type: (UserProfile, Client, six.text_type, Dict[str, Any], six.text_type) -> None
+    # type: (UserProfile, Client, Text, Dict[str, Any], Text) -> None
     subject = topic or 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
@@ -83,7 +82,7 @@ def send_raw_pagerduty_json(user_profile, client, stream, message, topic):
 
 
 def send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic):
-    # type: (UserProfile, Client, six.text_type, six.text_type, Dict[str, Any], six.text_type) -> None
+    # type: (UserProfile, Client, Text, Text, Dict[str, Any], Text) -> None
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '
         u'[{incident_num}]({incident_url}) {action} by '
@@ -112,7 +111,7 @@ def send_formated_pagerduty(user_profile, client, stream, message_type, format_d
 @has_request_variables
 def api_pagerduty_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                           stream=REQ(default='pagerduty'), topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], six.text_type, Optional[six.text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
     for message in payload['messages']:
         message_type = message['type']
 

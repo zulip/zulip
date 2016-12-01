@@ -138,14 +138,14 @@ class UnreadCountTests(ZulipTestCase):
                                          Recipient.PERSONAL, "test2")]
 
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
-                                                                 "op": "add",
-                                                                 "flag": "read"})
+                                                           "op": "add",
+                                                           "flag": "read"})
         self.assert_json_success(result)
 
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                                 "op": "remove",
-                                                                 "flag": "read",
-                                                                 "all": ujson.dumps(True)})
+                                                           "op": "remove",
+                                                           "flag": "read",
+                                                           "all": ujson.dumps(True)})
         self.assert_json_success(result)
 
         for msg in self.get_old_messages():

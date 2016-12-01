@@ -324,6 +324,14 @@
         top: 40px;
     }
 
+    .message_failed {
+        left: 0px;
+    }
+
+    .message_content {
+        padding-right: 35px;
+    }
+
 }
 
 @media only screen and (min-device-width: 300px) and (max-device-width: 700px) {

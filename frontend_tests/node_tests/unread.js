@@ -191,7 +191,7 @@ var zero_counts = {
 
     var num_msgs = 10000;
     var i;
-    for (i = 0; i < num_msgs; ++i) {
+    for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
         unread.process_loaded_messages([message]);
     }
@@ -199,7 +199,7 @@ var zero_counts = {
     count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, num_msgs);
 
-    for (i = 0; i < num_msgs; ++i) {
+    for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
         unread.process_read_message(message);
     }
@@ -319,8 +319,8 @@ var zero_counts = {
     };
     people.add_in_realm(bob);
 
-    assert.equal(unread.num_unread_for_person('alice@example.com'), 0);
-    assert.equal(unread.num_unread_for_person('bob@example.com'), 0);
+    assert.equal(unread.num_unread_for_person(alice.user_id), 0);
+    assert.equal(unread.num_unread_for_person(bob.user_id), 0);
 
     var message = {
         id: 15,
@@ -332,7 +332,7 @@ var zero_counts = {
         flags: ['read']
     };
     unread.process_loaded_messages([message, read_message]);
-    assert.equal(unread.num_unread_for_person('alice@example.com'), 1);
+    assert.equal(unread.num_unread_for_person(alice.user_id), 1);
 }());
 
 

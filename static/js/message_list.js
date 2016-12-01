@@ -260,8 +260,8 @@ exports.MessageList.prototype = {
             // for lower_bound purposes, find the real leftmost index (first non-local id)
             do {
                 potential_closest_matches.push(closest);
-                closest--;
-            } while(closest > 0 && this._is_localonly_id(items[closest - 1].id));
+                closest -= 1;
+            } while (closest > 0 && this._is_localonly_id(items[closest - 1].id));
         }
         potential_closest_matches.push(closest);
 
@@ -308,7 +308,7 @@ exports.MessageList.prototype = {
                 break;
             }
             next_msg_id = msg_id;
-            ++idx;
+            idx += 1;
         }
 
         if (next_msg_id > 0) {
@@ -550,7 +550,7 @@ exports.MessageList.prototype = {
         var cur_idx = start_index;
         do {
             cur_idx = op(cur_idx);
-        } while(item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
+        } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
         return item_list[cur_idx];
     },
 

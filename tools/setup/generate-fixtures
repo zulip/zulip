@@ -25,13 +25,13 @@ CREATE DATABASE zulip_test TEMPLATE zulip_test_base;
 EOF
 sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
 
-python manage.py migrate --noinput --settings=zproject.test_settings
+./manage.py migrate --noinput --settings=zproject.test_settings
 migration_status "var/migration-status"
 
 # This next line can be simplified to "-n0" once we fix our app (and tests) with 0 messages.
-python manage.py populate_db --settings=zproject.test_settings --test-suite -n30 \
+./manage.py populate_db --settings=zproject.test_settings --test-suite -n30 \
     --threads=1 --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
-python manage.py dumpdata  --settings=zproject.test_settings \
+./manage.py dumpdata  --settings=zproject.test_settings \
     zerver.UserProfile zerver.Stream zerver.Recipient \
     zerver.Subscription zerver.Message zerver.Huddle zerver.Realm \
     zerver.UserMessage zerver.Client \

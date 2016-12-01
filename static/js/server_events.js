@@ -182,7 +182,7 @@ function dispatch_normal_event(event) {
 
     case 'update_message_flags':
         var new_value = event.operation === "add";
-        switch(event.flag) {
+        switch (event.flag) {
         case 'starred':
             _.each(event.messages, function (message_id) {
                 ui.update_starred(message_id, new_value);
@@ -288,8 +288,7 @@ function get_events_success(events) {
     }
 
     if (new_pointer !== undefined
-        && new_pointer > pointer.furthest_read)
-    {
+        && new_pointer > pointer.furthest_read) {
         pointer.furthest_read = new_pointer;
         pointer.server_furthest_read = new_pointer;
         home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});

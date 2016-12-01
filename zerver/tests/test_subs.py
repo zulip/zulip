@@ -53,33 +53,48 @@ import random
 import ujson
 import six
 from six import text_type
-from six.moves import range, urllib
+from six.moves import range, urllib, zip
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self):
         # type: () -> None
         stream_names = [u'new1', u'new2', u'new3']
+        stream_descriptions = [u'des1', u'des2', u'des3']
         realm = get_realm_by_string_id('zulip')
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
-            stream_names,
-            invite_only=True)
+            [{"name": stream_name,
+              "description": stream_description,
+              "invite_only": True}
+             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
+
         self.assertEqual(len(new_streams), 3)
         self.assertEqual(len(existing_streams), 0)
 
         actual_stream_names = {stream.name for stream in new_streams}
         self.assertEqual(actual_stream_names, set(stream_names))
+        actual_stream_descriptions = {stream.description for stream in new_streams}
+        self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
+        for stream in new_streams:
+            self.assertTrue(stream.invite_only)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
-            stream_names,
-            invite_only=True)
+            [{"name": stream_name,
+              "description": stream_description,
+              "invite_only": True}
+             for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
+
         self.assertEqual(len(new_streams), 0)
         self.assertEqual(len(existing_streams), 3)
 
         actual_stream_names = {stream.name for stream in existing_streams}
         self.assertEqual(actual_stream_names, set(stream_names))
+        actual_stream_descriptions = {stream.description for stream in existing_streams}
+        self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
+        for stream in existing_streams:
+            self.assertTrue(stream.invite_only)
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self):
@@ -1017,7 +1032,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         user_profile.full_name = 'Hamlet'
         user_profile.save()
 
-        def method1 (req, user_profile):
+        def method1(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse
             user_profile.full_name = 'Should not be committed'
             user_profile.save()
@@ -1403,7 +1418,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 set([email1, email2, self.test_email])
         )
 
-        self.assertEqual(len(add_peer_event['users']), 14)
+        self.assertEqual(len(add_peer_event['users']), 16)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
@@ -1432,7 +1447,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event['users'])
-        self.assertEqual(len(add_peer_event['users']), 14)
+        self.assertEqual(len(add_peer_event['users']), 16)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
@@ -1812,8 +1827,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
             self.assertEqual(str(subscription),
                 u'<Subscription: '
-                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>'
-            )
+                '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>')
 
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)

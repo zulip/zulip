@@ -13,6 +13,7 @@ from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 from django.contrib.auth.views import (login, password_reset,
     password_reset_done, password_reset_confirm, password_reset_complete)
 
+import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
 import zerver.views.zephyr
@@ -22,7 +23,6 @@ import zerver.views.integrations
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
-from zerver import tornadoviews
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -73,7 +73,7 @@ i18n_urls = [
          'template_name': 'zerver/reset.html',
          'email_template_name': 'registration/password_reset_email.txt',
          'password_reset_form': zerver.forms.ZulipPasswordResetForm,
-        }, name='django.contrib.auth.views.password_reset'),
+         }, name='django.contrib.auth.views.password_reset'),
     url(r'^accounts/password/reset/done/$', password_reset_done,
         {'template_name': 'zerver/reset_emailed.html'}),
     url(r'^accounts/password/reset/(?P<uidb64>[0-9A-Za-z]+)/(?P<token>.+)/$',
@@ -125,7 +125,7 @@ i18n_urls = [
 
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'),
-                                         name='landing-page'),
+        name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 ]
@@ -198,6 +198,11 @@ v1_api_and_json_patterns = [
     url(r'^messages/flags$', rest_dispatch,
         {'POST': 'zerver.views.messages.update_message_flags'}),
 
+    # reactions -> zerver.view.reactions
+    # POST adds a reaction to a message
+    url(r'^reactions$', rest_dispatch,
+        {'POST': 'zerver.views.reactions.add_reaction_backend'}),
+
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
     url(r'^typing$', rest_dispatch,
@@ -210,7 +215,7 @@ v1_api_and_json_patterns = [
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_profile_backend',
-         'DELETE':'zerver.views.users.deactivate_user_own_backend'}),
+         'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
     url(r'^users/me/pointer$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_pointer_backend',
          'PUT': 'zerver.views.pointer.update_pointer_backend'}),
@@ -268,10 +273,10 @@ v1_api_and_json_patterns = [
     url(r'^register$', rest_dispatch,
         {'POST': 'zerver.views.events_register.api_events_register'}),
 
-    # events -> zerver.tornadoviews
+    # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,
-        {'GET': 'zerver.tornadoviews.get_events_backend',
-         'DELETE': 'zerver.tornadoviews.cleanup_event_queue'}),
+        {'GET': 'zerver.tornado.views.get_events_backend',
+         'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
 ]
 
 # Include the dual-use patterns twice
@@ -329,7 +334,7 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 # Tornado views
 urls += [
     # Used internally for communication between Django and Tornado processes
-    url(r'^notify_tornado$', tornadoviews.notify, name='zerver.tornadoviews.notify'),
+    url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
 ]
 
 # Python Social Auth

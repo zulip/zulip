@@ -285,7 +285,7 @@ class TestReplyExtraction(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
-        text =  """Reply
+        text = """Reply
 
         -----Original Message-----
 

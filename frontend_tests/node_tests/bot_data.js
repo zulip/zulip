@@ -20,7 +20,7 @@ var page_params = {
 set_global('page_params', page_params);
 
 var patched_underscore = _.clone(_);
-patched_underscore.debounce = function (f) { return(f); };
+patched_underscore.debounce = function (f) { return f; };
 global.patch_builtin('_', patched_underscore);
 
 

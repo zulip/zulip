@@ -4,7 +4,8 @@
 from __future__ import print_function
 import sys, os, os.path
 from os.path import dirname, abspath
-if False: from typing import Dict, Optional
+if False:
+    from typing import Dict, Optional
 
 BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
 sys.path.append(BASE_DIR)

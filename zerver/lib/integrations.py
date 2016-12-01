@@ -76,6 +76,20 @@ class WebhookIntegration(Integration):
         # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
 
+class HubotLozenge(Integration):
+    GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
+
+    def __init__(self, name, display_name=None, logo=None, logo_alt=None, git_url=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+        if logo_alt is None:
+            logo_alt = "{} logo".format(name.title())
+        self.logo_alt = logo_alt
+
+        if git_url is None:
+            git_url = self.GIT_URL_TEMPLATE.format(name)
+        self.git_url = git_url
+        super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
+
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake'),
@@ -163,6 +177,18 @@ INTEGRATIONS = {
     'twitter': Integration('twitter', 'twitter'),
 
 }  # type: Dict[str, Integration]
+
+HUBOT_LOZENGES = {
+    'assembla': HubotLozenge('assembla'),
+    'bonusly': HubotLozenge('bonusly'),
+    'chartbeat': HubotLozenge('chartbeat'),
+    'darksky': HubotLozenge('darksky', display_name='Dark Sky', logo_alt='Dark Sky logo'),
+    'hangouts': HubotLozenge('google-hangouts', display_name="Hangouts"),
+    'instagram': HubotLozenge('instagram'),
+    'mailchump': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
+    'translate': HubotLozenge('google-translate', display_name="Translate", logo_alt='Google Translate logo'),
+    'youtube': HubotLozenge('youtube', display_name='YouTube', logo_alt='YouTube logo')
+}
 
 for integration in WEBHOOK_INTEGRATIONS:
     INTEGRATIONS[integration.name] = integration

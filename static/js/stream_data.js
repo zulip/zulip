@@ -81,8 +81,8 @@ exports.update_subscribers_count = function (sub) {
 
 exports.all_subscribed_streams_are_in_home_view = function () {
     return _.every(exports.subscribed_subs(), function (sub) {
-        return sub.in_home_view; }
-    );
+        return sub.in_home_view;
+    });
 };
 
 exports.home_view_stream_names = function () {

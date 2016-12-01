@@ -19,7 +19,7 @@ missed-message emails, desktop apps, and much more.
 Further information on the Zulip project and its features can be found
 at https://www.zulip.org.
 
-[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master)
+[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/pip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/)
 
 ## Community
 
@@ -45,6 +45,8 @@ track Zulip-related issues (and store our code, of course).
 Anybody with a GitHub account should be able to create Issues there
 pertaining to bugs or enhancement requests.  We also use Pull
 Requests as our primary mechanism to receive code contributions.
+
+The Zulip community has a [Code of Conduct][code-of-conduct].
 
 ## Installing the Zulip Development environment
 
@@ -108,6 +110,7 @@ and [Trello][]), plus [node.js API bindings][node], an [isomorphic
 contributing!
 
 [cla]: https://opensource.dropbox.com/cla/
+[code-of-conduct]: https://zulip.readthedocs.io/en/latest/code-of-conduct.html
 [dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
 [doc]: https://zulip.readthedocs.io/
 [doc-commit-style]: http://zulip.readthedocs.io/en/latest/version-control.html#commit-messages

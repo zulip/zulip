@@ -802,7 +802,7 @@ function validate_stream_message() {
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
-        switch(check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
+        switch (check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
         case "does-not-exist":
             response = "<p>The stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
@@ -1088,7 +1088,7 @@ $(function () {
         $("#send-status").addClass("alert-error")
                         .removeClass("alert-info");
         $("#compose-send-button").removeAttr("disabled");
-        switch(err) {
+        switch (err) {
             case 'BrowserNotSupported':
                 msg = "File upload is not yet available for your browser.";
                 break;

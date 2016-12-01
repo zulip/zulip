@@ -16,13 +16,13 @@ STATIC_PATH = 'static/'
 def run():
     # type: () -> None
     """Builds for production, writing the output to disk"""
-    subprocess.check_call(['tools/node', 'node_modules/.bin/webpack'] +
+    subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
         ['--config', 'tools/webpack.production.config.js'])
 
 def run_watch(port):
     # type: (str) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
-    subprocess.Popen(['tools/node', 'node_modules/.bin/webpack-dev-server'] +
+    subprocess.Popen(['node', 'node_modules/.bin/webpack-dev-server'] +
         ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
 
 parser = argparse.ArgumentParser()

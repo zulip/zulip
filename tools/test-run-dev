@@ -36,7 +36,7 @@ def test_nagios(nagios_logfile):
     ZULIP_DIR = os.path.join(TOOLS_DIR, '..')
     API_DIR = os.path.join(ZULIP_DIR, 'api')
     os.chdir(API_DIR)
-    subprocess.call(['python', 'setup.py', 'install'])
+    subprocess.call(['./setup.py', 'install'])
     PUPPET_DIR = os.path.join(ZULIP_DIR, 'puppet')
     os.chdir(ZULIP_DIR)
     my_env = os.environ.copy()

@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
-from typing import (cast, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional,
-    Sized, Tuple, Union)
+from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
+    Optional, Sized, Tuple, Union)
 
+from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
 from django.test import TestCase
 from django.test.client import (
@@ -16,10 +17,10 @@ from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
-from zerver.lib.handlers import allocate_handler_id
 from zerver.lib.str_utils import force_text
 from zerver.lib import cache
-from zerver.lib import event_queue
+from zerver.tornado import event_queue
+from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
@@ -43,6 +44,7 @@ from zerver.models import (
 
 from zerver.lib.request import JsonableError
 
+import collections
 import base64
 import mock
 import os
@@ -58,14 +60,9 @@ from zerver.lib.str_utils import NonBinaryStr
 from contextlib import contextmanager
 import six
 
-API_KEYS = {} # type: Dict[text_type, text_type]
-
-skip_py3 = unittest.skipIf(six.PY3, "Expected failure on Python 3")
-
-
 @contextmanager
 def simulated_queue_client(client):
-    # type: (type) -> Generator[None, None, None]
+    # type: (type) -> Iterator[None]
     real_SimpleQueueClient = queue_processors.SimpleQueueClient
     queue_processors.SimpleQueueClient = client # type: ignore # https://github.com/JukkaL/mypy/issues/1152
     yield
@@ -73,7 +70,7 @@ def simulated_queue_client(client):
 
 @contextmanager
 def tornado_redirected_to_list(lst):
-    # type: (List[Mapping[str, Any]]) -> Generator[None, None, None]
+    # type: (List[Mapping[str, Any]]) -> Iterator[None]
     real_event_queue_process_notification = event_queue.process_notification
     event_queue.process_notification = lst.append
     yield
@@ -83,6 +80,7 @@ def tornado_redirected_to_list(lst):
 def simulated_empty_cache():
     # type: () -> Generator[List[Tuple[str, Union[text_type, List[text_type]], text_type]], None, None]
     cache_queries = [] # type: List[Tuple[str, Union[text_type, List[text_type]], text_type]]
+
     def my_cache_get(key, cache_name=None):
         # type: (text_type, Optional[str]) -> Any
         cache_queries.append(('get', key, cache_name))
@@ -192,7 +190,7 @@ def get_user_messages(user_profile):
 class DummyHandler(object):
     def __init__(self):
         # type: (Callable) -> None
-        allocate_handler_id(self)
+        allocate_handler_id(self)  # type: ignore # this is a testing mock
 
 class POSTRequestMock(object):
     method = "POST"
@@ -209,6 +207,7 @@ class POSTRequestMock(object):
 class HostRequestMock(object):
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
+
     def __init__(self, host=settings.EXTERNAL_HOST):
         # type: (text_type) -> None
         self.host = host
@@ -254,6 +253,73 @@ def write_instrumentation_reports(full_suite):
     # type: (bool) -> None
     if INSTRUMENTING:
         calls = INSTRUMENTED_CALLS
+
+        from zproject.urls import urlpatterns, v1_api_and_json_patterns
+
+        # Find our untested urls.
+        pattern_cnt = collections.defaultdict(int) # type: Dict[str, int]
+
+        def re_strip(r):
+            # type: (Any) -> str
+            return str(r).lstrip('^').rstrip('$')
+
+        def find_patterns(patterns, prefixes):
+            # type: (List[Any], List[str]) -> None
+            for pattern in patterns:
+                find_pattern(pattern, prefixes)
+
+        def cleanup_url(url):
+            # type: (str) -> str
+            if url.startswith('/'):
+                url = url[1:]
+            if url.startswith('http://testserver/'):
+                url = url[len('http://testserver/'):]
+            if url.startswith('http://zulip.testserver/'):
+                url = url[len('http://zulip.testserver/'):]
+            if url.startswith('http://testserver:9080/'):
+                url = url[len('http://testserver:9080/'):]
+            return url
+
+        def find_pattern(pattern, prefixes):
+            # type: (Any, List[str]) -> None
+
+            if isinstance(pattern, type(LocaleRegexURLResolver)):
+                return
+
+            if hasattr(pattern, 'url_patterns'):
+                return
+
+            canon_pattern = prefixes[0] + re_strip(pattern.regex.pattern)
+            cnt = 0
+            for call in calls:
+                if 'pattern' in call:
+                    continue
+
+                url = cleanup_url(call['url'])
+
+                for prefix in prefixes:
+                    if url.startswith(prefix):
+                        match_url = url[len(prefix):]
+                        if pattern.regex.match(match_url):
+                            if call['status_code'] in [200, 204, 301, 302]:
+                                cnt += 1
+                            call['pattern'] = canon_pattern
+            pattern_cnt[canon_pattern] += cnt
+
+        find_patterns(urlpatterns, ['', 'en/', 'de/'])
+        find_patterns(v1_api_and_json_patterns, ['api/v1/', 'json/'])
+
+        assert len(pattern_cnt) > 100
+        untested_patterns = set([p for p in pattern_cnt if pattern_cnt[p] == 0])
+
+        # We exempt some patterns that are called via Tornado.
+        exempt_patterns = set([
+            'api/v1/events',
+            'api/v1/register',
+        ])
+
+        untested_patterns -= exempt_patterns
+
         var_dir = 'var' # TODO make sure path is robust here
         fn = os.path.join(var_dir, 'url_coverage.txt')
         with open(fn, 'w') as f:
@@ -272,22 +338,8 @@ def write_instrumentation_reports(full_suite):
                     print(call)
 
         if full_suite:
-            print('URL coverage report is in %s' % (fn,))
-            print('Try running: ./tools/analyze-url-coverage')
-
-        # Find our untested urls.
-        from zproject.urls import urlpatterns
-        untested_patterns = []
-        for pattern in urlpatterns:
-            for call in calls:
-                url = call['url']
-                if url.startswith('/'):
-                    url = url[1:]
-                if pattern.regex.match(url):
-                    break
-            else:
-                untested_patterns.append(pattern.regex.pattern)
-
+            print('INFO: URL coverage report is in %s' % (fn,))
+            print('INFO: Try running: ./tools/create-test-api-docs')
 
         if full_suite and len(untested_patterns):
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
@@ -305,7 +357,10 @@ def get_all_templates():
 
     def is_valid_template(p, n):
         # type: (text_type, text_type) -> bool
-        return not n.startswith('.') and not n.startswith('__init__') and isfile(p)
+        return (not n.startswith('.') and
+                not n.startswith('__init__') and
+                not n.endswith(".md") and
+                isfile(p))
 
     def process(template_dir, dirname, fnames):
         # type: (str, str, Iterable[str]) -> None

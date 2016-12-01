@@ -29,7 +29,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     if (recipient === undefined && fallback_attr !== undefined) {
         recipient = other_recipients[0][fallback_attr];
     }
-    for (i = 1; i < other_recipients.length; i++) {
+    for (i = 1; i < other_recipients.length; i += 1) {
         var attr_value = other_recipients[i][attr];
         if (attr_value === undefined && fallback_attr !== undefined) {
             attr_value = other_recipients[i][fallback_attr];
@@ -42,13 +42,20 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
 exports.process_message_for_recent_private_messages = function process_message_for_recent_private_messages(message, remove_message) {
     var current_timestamp = 0;
 
+    var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+
+    if (!user_ids_string) {
+        blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
+        return;
+    }
+
     // If this conversation is already tracked, we'll replace with new timestamp,
     // so remove it from the current list.
     exports.recent_private_messages = _.filter(exports.recent_private_messages, function (recent_pm) {
-        return recent_pm.reply_to !== message.reply_to;
+        return recent_pm.user_ids_string !== user_ids_string;
     });
 
-    var new_conversation = {reply_to: message.reply_to,
+    var new_conversation = {user_ids_string: user_ids_string,
                             display_reply_to: message.display_reply_to,
                             timestamp: Math.max(message.timestamp, current_timestamp)};
 
@@ -377,7 +384,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
 
         // Iterate backwards to find the last message sent_by_me, stopping at
         // the pointer position.
-        for (i = messages.length-1; i>=0; i--) {
+        for (i = messages.length-1; i>=0; i -= 1) {
             var id = messages[i].id;
             if (id <= selected_id) {
                 break;
@@ -633,6 +640,9 @@ util.execute_early(function () {
         });
     });
 });
+
+// This is for testing.
+exports._add_message_metadata = add_message_metadata;
 
 return exports;
 

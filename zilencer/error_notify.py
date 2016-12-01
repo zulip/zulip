@@ -44,7 +44,7 @@ def email_browser_error(report):
             "href: %(href)s\n"
             "Server path: %(server_path)s\n"
             "Deployed version: %(version)s\n"
-            %  report)
+            % (report))
 
     more_info = report['more_info']
     if more_info is not None:
@@ -62,7 +62,7 @@ def zulip_browser_error(report):
 
     user_info = user_info_str(report)
 
-    body =  "User: %s\n" % (user_info,)
+    body = "User: %s\n" % (user_info,)
     body += ("Message: %(message)s\n"
              % report )
 
@@ -78,7 +78,7 @@ def notify_server_error(report):
 
 def zulip_server_error(report):
     # type: (Dict[str, Any]) -> None
-    subject = '%(node)s: %(message)s' %  report
+    subject = '%(node)s: %(message)s' % (report)
     stack_trace = report['stack_trace'] or "No stack trace available"
 
     user_info = user_info_str(report)

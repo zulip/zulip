@@ -434,7 +434,7 @@ def api_get_auth_backends(request):
     return json_success({"password": password_auth_enabled(None),
                          "dev": dev_auth_enabled(),
                          "google": google_auth_enabled(),
-                        })
+                         })
 
 @authenticated_json_post_view
 @has_request_variables
