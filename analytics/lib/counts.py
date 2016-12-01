@@ -135,9 +135,9 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
                 %(analytics_table)s.interval = '%(interval)s'
             )
             GROUP BY zerver_realm.id, %(analytics_table)s.subgroup
-        """ % {'analytics_table' : analytics_table._meta.db_table,
-               'property' : stat.property,
-               'interval' : interval}
+        """ % {'analytics_table': analytics_table._meta.db_table,
+               'property': stat.property,
+               'interval': interval}
         start = time.time()
         cursor.execute(realmcount_query, {'end_time': end_time})
         end = time.time()
@@ -180,10 +180,10 @@ def do_pull_from_zerver(stat, start_time, end_time, interval):
     # We do string replacement here because passing join_args as a param
     # may result in problems when running cursor.execute; we do
     # the string formatting prior so that cursor.execute runs it as sql
-    query_ = stat.zerver_count_query.query % {'zerver_table' : zerver_table,
-                                              'property' : stat.property,
-                                              'interval' : interval,
-                                              'join_args' : join_args,
+    query_ = stat.zerver_count_query.query % {'zerver_table': zerver_table,
+                                              'property': stat.property,
+                                              'interval': interval,
+                                              'join_args': join_args,
                                               'subgroup': subgroup,
                                               'group_by_clause': group_by_clause}
     cursor = connection.cursor()
