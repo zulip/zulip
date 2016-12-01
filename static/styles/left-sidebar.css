@@ -58,7 +58,7 @@
 
 #global_filters li:hover,
 #stream_filters li:hover {
-    background-color: #e2e8dd;
+    background-color: #eee;
 }
 
 #stream_filters li.active-sub-filter:hover {
@@ -82,7 +82,6 @@ ul.filters hr {
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: #ddedf6;
     position: relative;
 }
 
@@ -219,6 +218,10 @@ li.topic-list-item .topic-sidebar-arrow:hover {
 ul.filters li.muted_topic,
 ul.filters li.out_of_home_view {
     opacity: 0.25;
+}
+
+ul.filters li.out_of_home_view:hover {
+    opacity: 0.6;
 }
 
 ul.filters li.out_of_home_view li.muted_topic {
