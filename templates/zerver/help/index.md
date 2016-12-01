@@ -28,6 +28,7 @@ as a “**realm**”.
 - **[Posting and replying](#posting-and-replying)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
+- **[Changing your name](/help/change-your-name)**
 - **[Other common questions](#other-common-questions)**
 - **[Terminology](#special-terms-used-with-zulip)**
 
