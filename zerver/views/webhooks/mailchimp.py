@@ -15,9 +15,14 @@ MAILCHIMP_MESSAGE_TEMPLATE = '{data[merges][FNAME]} {data[merges][LNAME]} ({data
 @api_key_only_webhook_view('MailChimp')
 @has_request_variables
 def api_mailchimp_webhook(request, user_profile, client, stream=REQ(default='mailchimp')):
-    payload = request.body
-    print(payload)
-    payload = ujson.loads("{\n"+payload+"\n}")
+    returned = request.body
+    print("got request: "+returned)
+    payload = {}
+    split1 = returned.split("&")
+    for spli in split1:
+	      para = spli.split("=")
+	      payload[para[0]] = para[1]
+    print payload['type']
     print("mark 1")
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
     try:
@@ -42,7 +47,7 @@ def api_mailchimp_webhook(request, user_profile, client, stream=REQ(default='mai
         print("mark 3")
         check_send_message(user_profile, client, 'stream', [stream], subject, body)
         return json_success()
-    except KeyError as e:
+    except:
         return json_success()
     print("!")
     print(json_success())
