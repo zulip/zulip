@@ -16,7 +16,7 @@ MAILCHIMP_MESSAGE_TEMPLATE = '{data[merges][FNAME]} {data[merges][LNAME]} ({data
 @api_key_only_webhook_view('MailChimp')
 @has_request_variables
 def api_mailchimp_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
-                            stream=REQ(default='mailchimp')):
+                            stream=REQ(default='test')):
     print("mark 1")
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
     try:
@@ -39,6 +39,7 @@ def api_mailchimp_webhook(request, user_profile, client, payload=REQ(argument_ty
         print(body)
         print("===")
         print("mark 3")
+        return json_success()
     except KeyError as e:
         return json_error(_("Missing key {} in JSON".format(str(e))))
     check_send_message(user_profile, client, 'stream', [stream],
