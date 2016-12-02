@@ -101,22 +101,7 @@ exports.toggle_actions_popover = function (element, id) {
     }
 };
 
-// Reaction Popover We want to Create our own submenu
-$("#main_div").on("click", ".reaction_hover", function (e) {
-    var row = $(this).closest(".message_row");
-    e.stopPropagation();
-    popovers.toggle_reactions_popover(this, rows.id(row));
-});
- 
-$("#reaction-box").on("click", ".emoji", function (e) {
-    var emoji_choice = $(e.target).attr("title");
-    console.log(emoji_choice);
-    // var textarea = $("#new_message_content");
-    // textarea.val(textarea.val() + " " + emoji_choice);
-    // textarea.focus();
-    // update_reaction(rows.id($(this).closest(".message_row")));
-    e.stopPropagation();
-});
+
 
 exports.toggle_reactions_popover = function (element, id) {
      console.log('in emoji toggle')
@@ -339,6 +324,29 @@ exports.register_click_handlers = function () {
         show_message_info_popover(this, rows.id(row));
     });
 
+    // Reaction Popover We want to Create our own submenu
+    $("#main_div").on("click", ".message-reaction", function (e) {
+        console.log('foo')
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        popovers.toggle_reactions_popover(this, rows.id(row));
+    });
+
+    $("#reaction-box").on("click", ".emoji", function (e) {
+        var emoji_choice = $(e.target).attr("title");
+        console.log(emoji_choice);
+        // var textarea = $("#new_message_content");
+        // textarea.val(textarea.val() + " " + emoji_choice);
+        // textarea.focus();
+        // update_reaction(rows.id($(this).closest(".message_row")));
+        e.stopPropagation();
+    });
+
+    $("#main_div").on("click", ".reaction", function (e) {
+        e.stopPropagation();
+        popovers.hide_all();
+        update_reaction(rows.id($(this).closest(".message_row")));
+    });
     (function () {
         // create locally scoped variables for drag tracking.
         var meta = {
