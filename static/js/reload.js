@@ -225,7 +225,8 @@ exports.initiate = function (options) {
     var unconditional_timeout = 1000*60*30 + util.random_int(0, 1000*60*5);
     var composing_timeout     = 1000*60*5  + util.random_int(0, 1000*60);
     var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
-    var compose_done_handler, compose_started_handler;
+    var compose_done_handler;
+    var compose_started_handler;
 
     function reload_from_idle () {
         do_reload_app(false,

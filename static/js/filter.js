@@ -217,7 +217,8 @@ Filter.parse = function (str) {
         return operators;
     }
     _.each(matches, function (token) {
-        var parts, operator;
+        var parts;
+        var operator;
         parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.

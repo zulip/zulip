@@ -14,7 +14,9 @@ function show_floating_recipient_bar() {
 
 var old_label;
 function replace_floating_recipient_bar(desired_label) {
-    var new_label, other_label, header;
+    var new_label;
+    var other_label;
+    var header;
     if (desired_label !== old_label) {
         if (desired_label.children(".message_header_stream").length !== 0) {
             new_label = $("#current_label_stream");

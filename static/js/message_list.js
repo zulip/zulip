@@ -363,7 +363,8 @@ exports.MessageList.prototype = {
         if (stream === undefined) {
             return;
         }
-        var trailing_bookend_content, subscribed = stream_data.is_subscribed(stream);
+        var trailing_bookend_content;
+        var subscribed = stream_data.is_subscribed(stream);
         if (subscribed) {
             trailing_bookend_content = this.subscribed_bookend_content(stream);
         } else {

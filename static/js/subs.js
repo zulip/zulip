@@ -19,7 +19,8 @@ function get_color() {
 }
 
 function selectText(element) {
-  var range, sel;
+  var range;
+  var sel;
     if (window.getSelection) {
         sel = window.getSelection();
         range = document.createRange();
@@ -97,7 +98,8 @@ function update_in_home_view(sub, value) {
     sub.in_home_view = value;
 
     setTimeout(function () {
-        var msg_offset, saved_ypos;
+        var msg_offset;
+        var saved_ypos;
         // Save our current scroll position
         if (ui.home_tab_obscured()) {
             saved_ypos = viewport.scrollTop();
@@ -622,7 +624,8 @@ function ajaxUnsubscribe(stream) {
         url: "/json/subscriptions/remove",
         data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            var name, res = JSON.parse(xhr.responseText);
+            var name;
+            var res = JSON.parse(xhr.responseText);
             $("#subscriptions-status").hide();
             // The rest of the work is done via the unsubscribe event we will get
         },

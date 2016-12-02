@@ -69,7 +69,8 @@ exports.page_down = function () {
 };
 
 exports.cycle_stream = function (direction) {
-    var currentStream, nextStream;
+    var currentStream;
+    var nextStream;
     if (narrow.stream() !== undefined) {
         currentStream = stream_list.get_stream_li(narrow.stream());
     }

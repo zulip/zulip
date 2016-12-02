@@ -155,7 +155,11 @@ $(function () {
 //
 // This gets called on every message, so cache the results.
 exports.get_color_class = _.memoize(function (color) {
-    var match, i, lightness, channel = [0, 0, 0], mult = 1;
+    var match;
+    var i;
+    var lightness;
+    var channel = [0, 0, 0];
+    var mult = 1;
 
     match = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/.exec(color);
     if (!match) {

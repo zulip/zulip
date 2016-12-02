@@ -295,8 +295,8 @@ exports.lightbox = function (data) {
 
 exports.lightbox_photo = function (image, user) {
     // image should be an Image Object in JavaScript.
-    var url = $(image).attr("src"),
-        title = $(image).parent().attr("title");
+    var url = $(image).attr("src");
+    var title = $(image).parent().attr("title");
 
     $("#overlay .player-container").hide();
     $("#overlay .image-actions, .image-description, .download").show();

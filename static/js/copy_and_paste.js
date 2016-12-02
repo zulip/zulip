@@ -3,7 +3,8 @@ var copy_and_paste = (function () {
 var exports = {}; // we don't actually export anything yet, but that's ok
 
 function find_boundary_tr(initial_tr, iterate_row) {
-    var j, skip_same_td_check = false;
+    var j;
+    var skip_same_td_check = false;
     var tr = initial_tr;
 
     // If the selection boundary is somewhere that does not have a
@@ -37,10 +38,21 @@ function find_boundary_tr(initial_tr, iterate_row) {
 
 function copy_handler(e) {
     var selection = window.getSelection();
-    var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
-    var start_data, end_data;
+    var i;
+    var range;
+    var ranges = [];
+    var startc;
+    var endc;
+    var initial_end_tr;
+    var start_id;
+    var end_id;
+    var row;
+    var message;
+    var start_data;
+    var end_data;
     var skip_same_td_check = false;
-    var div = $('<div>'), content;
+    var div = $('<div>');
+    var content;
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);

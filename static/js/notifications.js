@@ -240,7 +240,11 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
 };
 
 function process_notification(notification) {
-    var i, notification_object, key, content, other_recipients;
+    var i;
+    var notification_object;
+    var key;
+    var content;
+    var other_recipients;
     var message = notification.message;
     var title = message.sender_full_name;
     var msg_count = 1;
@@ -557,7 +561,8 @@ $(function () {
     }
 
     $(document).on('message_id_changed', function (event) {
-        var old_id = event.old_id, new_id = event.new_id;
+        var old_id = event.old_id;
+        var new_id = event.new_id;
 
         // If a message ID that we're currently storing (as a link) has changed,
         // update that link as well

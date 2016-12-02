@@ -121,7 +121,8 @@ exports.save = function (row, from_topic_edited_only) {
 };
 
 function handle_edit_keydown(from_topic_edited_only, e) {
-    var row, code = e.keyCode || e.which;
+    var row;
+    var code = e.keyCode || e.which;
 
     if (e.target.id === "message_edit_content" && code === 13 &&
         (e.metaKey || e.ctrlKey)) {

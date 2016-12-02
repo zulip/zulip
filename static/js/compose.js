@@ -610,7 +610,8 @@ function send_message(request) {
 }
 
 exports.respond_to_message = function (opts) {
-    var message, msg_type;
+    var message;
+    var msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
     compose.snapshot_message();
@@ -1117,9 +1118,9 @@ $(function () {
         if (response.uri === undefined) {
             return;
         }
-        var textbox = $("#new_message_content"),
-            split_uri = response.uri.split("/"),
-            filename = split_uri[split_uri.length - 1];
+        var textbox = $("#new_message_content");
+        var split_uri = response.uri.split("/");
+        var filename = split_uri[split_uri.length - 1];
         // Urgh, yet another hack to make sure we're "composing"
         // when text gets added into the composebox.
         if (!compose.composing()) {
