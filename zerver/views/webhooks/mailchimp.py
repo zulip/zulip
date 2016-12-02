@@ -8,16 +8,16 @@ from zerver.models import Client, UserProfile
 from django.http import HttpRequest, HttpResponse
 from six import text_type
 from typing import Any
-
+import ujson
 MAILCHIMP_SUBJECT_TEMPLATE = '[{fired_at}]{type}|{data[merges][EMAIL]}'
 MAILCHIMP_MESSAGE_TEMPLATE = '{data[merges][FNAME]} {data[merges][LNAME]} ({data[merges][EMAIL]}) subscribed at {fired_at}'
 
-
 @api_key_only_webhook_view('MailChimp')
 @has_request_variables
-def api_mailchimp_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
-                            stream=REQ(default='mailchimp')):
-    payload = "{\n"+payload+"\n{"
+def api_mailchimp_webhook(request, user_profile, client, stream=REQ(default='mailchimp')):
+    payload = request.body
+    print(payload)
+    payload = ujson.loads("{\n"+payload+"\n}")
     print("mark 1")
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
     try:
@@ -43,9 +43,7 @@ def api_mailchimp_webhook(request, user_profile, client, payload=REQ(argument_ty
         check_send_message(user_profile, client, 'stream', [stream], subject, body)
         return json_success()
     except KeyError as e:
-        return json_error(_("Missing key {} in JSON".format(str(e))))
-    check_send_message(user_profile, client, 'stream', [stream],
-                       subject, body)
+        return json_success()
     print("!")
     print(json_success())
     return json_success()
