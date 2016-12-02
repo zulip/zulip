@@ -3,10 +3,13 @@ var compose = (function () {
 var exports = {};
 var is_composing_message = false;
 
-// Track the state of the @all warning. The user must acknowledge that they are spamming the entire stream
-// before the warning will go away. If they try to send before explicitly dismissing the warning, they will
-// get an error message too.
-// undefined: no @all/@everyone in message; false: user typed @all/@everyone; true: user clicked YES
+/* Track the state of the @all warning. The user must acknowledge that they are spamming the entire
+   stream before the warning will go away. If they try to send before explicitly dismissing the
+   warning, they will get an error message too.
+
+   undefined: no @all/@everyone in message;
+   false: user typed @all/@everyone;
+   true: user clicked YES */
 var user_acknowledged_all_everyone;
 
 var message_snapshot;
@@ -826,7 +829,8 @@ function validate_stream_message() {
 
     return true;
 }
-// The function checks whether the recipients are users of the realm or cross realm users (bots for now)
+// The function checks whether the recipients are users of the realm or cross realm users (bots
+// for now)
 function validate_private_message() {
     if (exports.recipient() === "") {
         compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
@@ -930,8 +934,8 @@ $(function () {
             }
 
             if (compose_fade.would_receive_message(email) === false) {
-                var new_row = templates.render("compose-invite-users", {email: email,
-                                                                        name: data.mentioned.full_name});
+                var new_row = templates.render("compose-invite-users",
+                                               {email: email, name: data.mentioned.full_name});
                 var error_area = $("#compose_invite_users");
 
                 var existing_invites = _.map($(".compose_invite_user", error_area), function (user_row) {
@@ -1189,7 +1193,8 @@ $(function () {
         if (exports.send_times_data[event.old_id] !== undefined) {
             var value = exports.send_times_data[event.old_id];
             delete exports.send_times_data[event.old_id];
-            exports.send_times_data[event.new_id] = _.extend({}, exports.send_times_data[event.old_id], value);
+            exports.send_times_data[event.new_id] =
+                _.extend({}, exports.send_times_data[event.old_id], value);
         }
     });
 });

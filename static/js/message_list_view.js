@@ -104,21 +104,25 @@ MessageListView.prototype = {
         }
     },
 
-    add_subscription_marker: function MessageListView__add_subscription_marker(group, last_msg_container, first_msg_container) {
+    add_subscription_marker: function MessageListView__add_subscription_marker(
+                                group, last_msg_container, first_msg_container) {
         if (last_msg_container !== undefined &&
             first_msg_container.msg.historical !== last_msg_container.msg.historical) {
             group.bookend_top = true;
             if (first_msg_container.msg.historical) {
                 group.unsubscribed = first_msg_container.msg.stream;
-                group.bookend_content = this.list.unsubscribed_bookend_content(first_msg_container.msg.stream);
+                group.bookend_content =
+                    this.list.unsubscribed_bookend_content(first_msg_container.msg.stream);
             } else {
                 group.subscribed = first_msg_container.msg.stream;
-                group.bookend_content = this.list.subscribed_bookend_content(first_msg_container.msg.stream);
+                group.bookend_content =
+                    this.list.subscribed_bookend_content(first_msg_container.msg.stream);
             }
         }
     },
 
-    build_message_groups: function MessageListView__build_message_groups(message_containers, message_id_prefix) {
+    build_message_groups: function MessageListView__build_message_groups(message_containers,
+                                                                         message_id_prefix) {
         function start_group() {
             return {
                 message_containers: [],
@@ -140,8 +144,11 @@ MessageListView.prototype = {
 
         function finish_group() {
             if (current_group.message_containers.length > 0) {
-                populate_group_from_message_container(current_group, current_group.message_containers[0]);
-                current_group.message_containers[current_group.message_containers.length - 1].include_footer = true;
+                populate_group_from_message_container(current_group,
+                                                      current_group.message_containers[0]);
+                current_group
+                   .message_containers[current_group.message_containers.length - 1]
+                   .include_footer = true;
                 new_message_groups.push(current_group);
             }
         }
@@ -150,8 +157,10 @@ MessageListView.prototype = {
             message_container.include_recipient = false;
             message_container.include_footer    = false;
 
-            if (same_recipient(prev, message_container) && self.collapse_messages &&
-               prev.msg.historical === message_container.msg.historical && same_day(prev, message_container)) {
+            if (same_recipient(prev, message_container) &&
+                self.collapse_messages &&
+                prev.msg.historical === message_container.msg.historical &&
+                same_day(prev, message_container)) {
                 add_message_container_to_group(message_container);
             } else {
                 finish_group();
@@ -171,10 +180,14 @@ MessageListView.prototype = {
                 }
 
                 if (message_container.msg.stream) {
-                    message_container.stream_url = narrow.by_stream_uri(message_container.msg.stream);
-                    message_container.topic_url = narrow.by_stream_subject_uri(message_container.msg.stream, message_container.msg.subject);
+                    message_container.stream_url =
+                        narrow.by_stream_uri(message_container.msg.stream);
+                    message_container.topic_url =
+                        narrow.by_stream_subject_uri(message_container.msg.stream,
+                                                     message_container.msg.subject);
                 } else {
-                    message_container.pm_with_url = narrow.pm_with_uri(message_container.msg.reply_to);
+                    message_container.pm_with_url =
+                        narrow.pm_with_uri(message_container.msg.reply_to);
                 }
             }
 
@@ -191,10 +204,12 @@ MessageListView.prototype = {
 
             message_container.small_avatar_url = ui.small_avatar_url(message_container.msg);
             if (message_container.msg.stream !== undefined) {
-                message_container.background_color = stream_data.get_color(message_container.msg.stream);
+                message_container.background_color =
+                    stream_data.get_color(message_container.msg.stream);
             }
 
-            message_container.contains_mention = notifications.speaking_at_me(message_container.msg);
+            message_container.contains_mention =
+                notifications.speaking_at_me(message_container.msg);
             message_container.msg.unread = unread.message_unread(message_container.msg);
             self._maybe_format_me_message(message_container);
 
@@ -219,24 +234,30 @@ MessageListView.prototype = {
         var first_msg_container = _.first(second_group.message_containers);
 
         // Join two groups into one.
-        if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container) && same_day(last_msg_container, first_msg_container) && (last_msg_container.msg.historical === first_msg_container.msg.historical)) {
-            if (!last_msg_container.status_message && !first_msg_container.msg.is_me_message && same_sender(last_msg_container, first_msg_container)) {
+        if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container) &&
+            same_day(last_msg_container, first_msg_container) &&
+            last_msg_container.msg.historical === first_msg_container.msg.historical) {
+            if (!last_msg_container.status_message && !first_msg_container.msg.is_me_message
+                && same_sender(last_msg_container, first_msg_container)) {
                 first_msg_container.include_sender = false;
             }
             if (same_sender(last_msg_container, first_msg_container)) {
                 last_msg_container.next_is_same_sender = true;
             }
-            first_group.message_containers = first_group.message_containers.concat(second_group.message_containers);
+            first_group.message_containers =
+                first_group.message_containers.concat(second_group.message_containers);
             return true;
         // Add a subscription marker
-        } else if (this.list !== home_msg_list && last_msg_container.msg.historical !== first_msg_container.msg.historical) {
+        } else if (this.list !== home_msg_list &&
+                   last_msg_container.msg.historical !== first_msg_container.msg.historical) {
             first_group.bookend_bottom = true;
             this.add_subscription_marker(first_group, last_msg_container, first_msg_container);
         }
         return false;
     },
 
-    merge_message_groups: function MessageListView__merge_message_groups(new_message_groups, where) {
+    merge_message_groups: function MessageListView__merge_message_groups(new_message_groups,
+                                                                         where) {
         // merge_message_groups takes a list of new messages groups to add to
         // this._message_groups and a location where to merge them currently
         // top or bottom. It returns an object of changes which needed to be
@@ -274,14 +295,15 @@ MessageListView.prototype = {
                 this._message_groups.unshift(first_group);
 
                 new_message_groups = _.initial(new_message_groups);
-            } else if (!same_day(second_group.message_containers[0], first_group.message_containers[0])) {
+            } else if (!same_day(second_group.message_containers[0],
+                       first_group.message_containers[0])) {
                 // The groups did not merge, so we need up update the date row for the old group
                 add_display_time(
                     second_group,
                     _.first(second_group.message_containers),
                     _.last(first_group.message_containers)
                 );
-                // We could add an action to just update the date row, but for now rerender the group.
+                // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
             }
             message_actions.prepend_groups = new_message_groups;
@@ -292,7 +314,9 @@ MessageListView.prototype = {
             if (this.join_message_groups(first_group, second_group)) {
                 // rerender the last message
                 message_actions.rerender_messages.push(
-                    first_group.message_containers[first_group.message_containers.length - second_group.message_containers.length - 1]
+                    first_group.message_containers[
+                        first_group.message_containers.length
+                        - second_group.message_containers.length - 1]
                 );
                 message_actions.append_messages = _.first(new_message_groups).message_containers;
                 new_message_groups = _.rest(new_message_groups);
@@ -502,7 +526,8 @@ MessageListView.prototype = {
 
         var last_message_group = _.last(self._message_groups);
         if (last_message_group !== undefined) {
-            list.last_message_historical = _.last(last_message_group.message_containers).msg.historical;
+            list.last_message_historical =
+                _.last(last_message_group.message_containers).msg.historical;
         }
 
         var stream_name = narrow.stream();
@@ -536,7 +561,8 @@ MessageListView.prototype = {
     },
 
 
-    _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems, last_message_was_selected) {
+    _maybe_autoscroll: function MessageListView__maybe_autoscroll(rendered_elems,
+                                                                  last_message_was_selected) {
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message.
@@ -585,8 +611,11 @@ MessageListView.prototype = {
         var info = viewport.message_viewport_info();
         var available_space_for_scroll = selected_row_offset - info.visible_top;
 
+        var rows_offset = rows.last_visible().offset().top - this.list.selected_row().offset().top;
+
         // autoscroll_forever: if we've sent a message, move pointer at least that far.
-        if (page_params.autoscroll_forever && id_of_last_message_sent_by_us > -1 && (rows.last_visible().offset().top - this.list.selected_row().offset().top) < (viewport.height())) {
+        if (page_params.autoscroll_forever && id_of_last_message_sent_by_us > -1 &&
+            rows_offset < (viewport.height())) {
             this.list.select_id(id_of_last_message_sent_by_us, {from_rendering: true});
             navigate.scroll_to_selected();
             return;
@@ -641,7 +670,8 @@ MessageListView.prototype = {
         this._render_win_end = 0;
     },
 
-    update_render_window: function MessageListView__update_render_window(selected_idx, check_for_changed) {
+    update_render_window: function MessageListView__update_render_window(selected_idx,
+                                                                         check_for_changed) {
         var new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
         if (check_for_changed && new_start === this._render_win_start) {
             return false;
@@ -707,7 +737,8 @@ MessageListView.prototype = {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
             // Must get this.list.selected_row() again since it is now a new DOM element
-            viewport.scrollTop(viewport.scrollTop() + this.selected_row().offset().top - scrolltop_offset);
+            viewport.scrollTop(
+                    viewport.scrollTop() + this.selected_row().offset().top - scrolltop_offset);
         }
     },
 
@@ -776,7 +807,8 @@ MessageListView.prototype = {
         var message_groups = [];
         var current_group = [];
         _.each(message_containers, function (message_container) {
-            if (current_group.length === 0 || same_recipient(current_group[current_group.length - 1], message_container)) {
+            if (current_group.length === 0 ||
+                same_recipient(current_group[current_group.length - 1], message_container)) {
                 current_group.push(message_container);
             } else {
                 message_groups.push(current_group);
@@ -850,7 +882,8 @@ MessageListView.prototype = {
         trailing_bookend.remove();
     },
 
-    render_trailing_bookend: function MessageListView_render_trailing_bookend(trailing_bookend_content, subscribed) {
+    render_trailing_bookend: function MessageListView_render_trailing_bookend(
+                                trailing_bookend_content, subscribed) {
         var rendered_trailing_bookend = $(templates.render('bookend', {
             bookend_content: trailing_bookend_content,
             trailing: true,

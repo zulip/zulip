@@ -241,9 +241,10 @@ casper.then(function () {
     casper.click('a[href^="#subscriptions"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
-    // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona etc).
-    // I used 'O' to make sure that it works even if there are multiple suggestions.
-    // Capital 'O' is used instead of small 'o' to make sure that the suggestions are not case sensitive.
+    // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
+    // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
+    // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
+    // are case insensitive.
     get_suggestions("O");
     select_from_suggestions(stream_name);
     casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
@@ -382,7 +383,9 @@ casper.then(function () {
 
 // // make sure we get the right error message, and that the message hasn't actually changed
 // casper.waitForSelector("div.edit_error", function () {
-//     casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
+//     casper.test.assertSelectorHasText(
+//         'div.edit_error',
+//         'Error saving edit: Your organization has turned off message editing.');
 //     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 // });
 

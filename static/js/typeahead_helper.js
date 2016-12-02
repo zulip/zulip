@@ -139,7 +139,8 @@ function identity(item) {
 exports.sort_recipients = function (matches, query) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
-    var matches_sorted_by_pms = exports.sort_by_pms(name_results.matches.concat(email_results.matches));
+    var matches_sorted_by_pms =
+        exports.sort_by_pms(name_results.matches.concat(email_results.matches));
     var rest_sorted_by_pms = exports.sort_by_pms(email_results.rest);
     return matches_sorted_by_pms.concat(rest_sorted_by_pms);
 };

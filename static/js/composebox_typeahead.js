@@ -302,8 +302,8 @@ exports.content_typeahead_selected = function (item) {
         $(document).trigger('streamname_completed.zulip', {stream: item});
     }
 
-    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
-    // in the textbox.
+    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
+    // overwrite the text in the textbox.
     setTimeout(function () {
         $('#new_message_content').caret(beginning.length, beginning.length);
     }, 0);

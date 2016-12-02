@@ -85,7 +85,8 @@ function _fade_messages() {
         // sorted as it would be displayed in the message view
         for (i = 0; i < all_groups.length; i += 1) {
             var group_elt = $(all_groups[i]);
-            should_fade_group = !fade_heuristic(focused_recipient, rows.recipient_from_group(group_elt));
+            should_fade_group = !fade_heuristic(focused_recipient,
+                                                rows.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_group);
         }
 

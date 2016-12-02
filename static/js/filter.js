@@ -457,7 +457,8 @@ Filter.describe = function (operators) {
                 return verb + 'alerted messages';
             }
         } else {
-            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
+            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
+                                                                elem.negated);
             if (prefix_for_operator !== '') {
                 return prefix_for_operator + ' ' + operand;
             }

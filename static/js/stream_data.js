@@ -276,7 +276,8 @@ exports.add_admin_options = function (sub) {
     });
 };
 
-exports.process_message_for_recent_topics = function process_message_for_recent_topics(message, remove_message) {
+exports.process_message_for_recent_topics = function process_message_for_recent_topics(
+                                                message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
     var stream = message.stream;
