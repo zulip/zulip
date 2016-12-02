@@ -1006,7 +1006,7 @@ class EditMessageTest(ZulipTestCase):
             # type: (int, text_type, bool) -> None
             new_subject = 'subject' + unique_str
             new_content = 'content' + unique_str
-            params_dict = { 'message_id': id_, 'subject': new_subject}
+            params_dict = {'message_id': id_, 'subject': new_subject}
             if not topic_only:
                 params_dict['content'] = new_content
             result = self.client_post("/json/update_message", params_dict)
@@ -1023,7 +1023,7 @@ class EditMessageTest(ZulipTestCase):
             old_content = message.content
             new_subject = 'subject' + unique_str
             new_content = 'content' + unique_str
-            params_dict = { 'message_id': id_, 'subject': new_subject}
+            params_dict = {'message_id': id_, 'subject': new_subject}
             if not topic_only:
                 params_dict['content'] = new_content
             result = self.client_post("/json/update_message", params_dict)
