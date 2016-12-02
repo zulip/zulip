@@ -863,8 +863,7 @@ def bulk_get_recipients(type, type_ids):
 
 
 def sew_messages_and_reactions(messages, reactions):
-    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) ->
-    # List[Dict[str, Any]]
+    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]
     """Given a iterable of messages and reactions stitch reactions
     into messages.
     """

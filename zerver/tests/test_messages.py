@@ -593,6 +593,7 @@ class MessageDictTest(ZulipTestCase):
 
 
     def test_reaction(self):
+        # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
@@ -627,6 +628,7 @@ class MessageDictTest(ZulipTestCase):
 
 class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self):
+        # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
         receiver = get_user_profile_by_email('hamlet@zulip.com')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
