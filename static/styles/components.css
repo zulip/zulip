@@ -16,6 +16,14 @@
     font-weight: 300;
 }
 
+.display-none {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;

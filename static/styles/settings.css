@@ -7,14 +7,6 @@ label {
     margin: 0;
 }
 
-.display-none {
-    display: none;
-}
-
-.inline-block {
-    display: inline-block;
-}
-
 .center-block {
     margin: 0 auto;
 }
