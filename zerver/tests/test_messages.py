@@ -662,7 +662,8 @@ class SewMessageAndReactionTest(ZulipTestCase):
             self.assertEqual(len(data['reactions']), 1)
             self.assertEqual(data['reactions'][0]['emoji_name'],
                              'simple_smile')
-
+            self.assertTrue(data['id'])
+            self.assertTrue(data['content'])
 
 class MessagePOSTTest(ZulipTestCase):
 
