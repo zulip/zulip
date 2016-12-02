@@ -386,10 +386,10 @@ $(function () {
 
     (function () {
         $("#main_div").on("click", ".message_inline_image a", function (e) {
-            var img = e.target,
-                row = rows.id($(img).closest(".message_row")),
-                user = current_msg_list.get(row).sender_full_name,
-                $target = $(this);
+            var img = e.target;
+            var row = rows.id($(img).closest(".message_row"));
+            var user = current_msg_list.get(row).sender_full_name;
+            var $target = $(this);
 
             // prevent the link from opening in a new page.
             e.preventDefault();

@@ -19,7 +19,10 @@ exports.random_int = function random_int(min, max) {
 // Usage: lower_bound(array, value, [less])
 //        lower_bound(array, first, last, value, [less])
 exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
-    var first, last, value, less;
+    var first;
+    var last;
+    var value;
+    var less;
     if (arg3 === undefined) {
         first = 0;
         last = array.length;

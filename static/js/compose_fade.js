@@ -54,7 +54,9 @@ function change_fade_state(elt, should_fade_group) {
 }
 
 function _fade_messages() {
-    var i, first_message, first_row;
+    var i;
+    var first_message;
+    var first_row;
     var should_fade_group = false;
     var visible_groups = viewport.visible_groups(false);
 

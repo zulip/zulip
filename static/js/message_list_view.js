@@ -277,7 +277,8 @@ MessageListView.prototype = {
             append_messages: [],
             rerender_messages: []
         };
-        var first_group, second_group;
+        var first_group;
+        var second_group;
 
         if (where === 'top') {
             first_group = _.last(new_message_groups);
@@ -389,8 +390,11 @@ MessageListView.prototype = {
         var table = rows.get_table(table_name);
         // we we record if last_message_was_selected before updating the table
         var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
-        var orig_scrolltop_offset, last_message_id;
-        var message_containers, first_msg, last_msg;
+        var orig_scrolltop_offset;
+        var last_message_id;
+        var message_containers;
+        var first_msg;
+        var last_msg;
 
         var self = this;
 
@@ -423,7 +427,10 @@ MessageListView.prototype = {
         var new_message_groups = this.build_message_groups(message_containers, this.table_name);
         var message_actions = this.merge_message_groups(new_message_groups, where);
         var new_dom_elements = [];
-        var rendered_groups, dom_messages, last_message_row, last_group_row;
+        var rendered_groups;
+        var dom_messages;
+        var last_message_row;
+        var last_group_row;
 
         _.each(message_containers, function (message_container) {
             self.message_containers[message_container.msg.id] = message_container;

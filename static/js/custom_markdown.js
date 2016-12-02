@@ -81,7 +81,10 @@ var exports = {};
     });
 
     $(document).on('message_rendered.zulip', function (e) {
-        var $inline_subscribe, $button, stream_name, id;
+        var $inline_subscribe;
+        var $button;
+        var stream_name;
+        var id;
         $inline_subscribe = $(e.target).find('.inline-subscribe');
         if ($inline_subscribe.length === 0) {
             return;

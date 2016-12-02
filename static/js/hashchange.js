@@ -83,7 +83,8 @@ exports.save_narrow = function (operators) {
 };
 
 function parse_narrow(hash) {
-    var i, operators = [];
+    var i;
+    var operators = [];
     for (i=1; i<hash.length; i+=2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.

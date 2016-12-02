@@ -15,7 +15,8 @@ exports.get = function get(message_id) {
 };
 
 exports.get_private_message_recipient = function (message, attr, fallback_attr) {
-    var recipient, i;
+    var recipient;
+    var i;
     var other_recipients = _.filter(message.display_recipient,
                                   function (element) {
                                       return !util.is_current_user(element.email);
@@ -616,7 +617,8 @@ util.execute_early(function () {
     }
 
     $(document).on('message_id_changed', function (event) {
-        var old_id = event.old_id, new_id = event.new_id;
+        var old_id = event.old_id;
+        var new_id = event.new_id;
         if (pointer.furthest_read === old_id) {
             pointer.furthest_read = new_id;
         }
