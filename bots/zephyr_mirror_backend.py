@@ -389,7 +389,7 @@ def process_notice(notice, log):
     zeph = { 'time': str(notice.time),
              'sender': notice.sender,
              'zsig': zsig,  # logged here but not used by app
-             'content': body }
+             'content': body}
     if is_huddle:
         zeph['type'] = 'private'
         zeph['recipient'] = huddle_recipients

@@ -37,7 +37,7 @@ logging.basicConfig()
 
 log = logging.getLogger('zulip-send')
 
-def do_send_message(client, message_data ):
+def do_send_message(client, message_data):
     # type: (zulip.Client, Dict[str, Any]) -> bool
     '''Sends a message and optionally prints status about the same.'''
 
