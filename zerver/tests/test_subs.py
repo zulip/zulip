@@ -741,7 +741,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                 "stream": unsubs_stream,
                                                 "value": "#ffffff"}])})
         self.assert_json_error(
-            result, "Not subscribed to stream %s" % (unsubs_stream,) )
+            result, "Not subscribed to stream %s" % (unsubs_stream,))
 
 
     def test_json_subscription_property_invalid_verb(self):

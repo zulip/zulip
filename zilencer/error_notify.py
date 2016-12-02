@@ -64,7 +64,7 @@ def zulip_browser_error(report):
 
     body = "User: %s\n" % (user_info,)
     body += ("Message: %(message)s\n"
-             % report )
+             % (report))
 
     internal_send_message(settings.ERROR_BOT,
             "stream", "errors", format_subject(subject), body)

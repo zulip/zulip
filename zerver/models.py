@@ -751,7 +751,7 @@ class Recipient(ModelReprMixin, models.Model):
     _type_names = {
         PERSONAL: 'personal',
         STREAM:   'stream',
-        HUDDLE:   'huddle' }
+        HUDDLE:   'huddle'}
 
     def type_name(self):
         # type: () -> str
