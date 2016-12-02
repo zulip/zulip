@@ -78,6 +78,7 @@
         "activity": false,
         "invite": false,
         "colorspace": false,
+        "reactions": false,
         "tutorial": false,
         "templates": false,
         "alert_words": false,

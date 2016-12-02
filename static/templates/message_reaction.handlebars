@@ -1,0 +1,8 @@
+<div class="message_reaction" title="{{this.title}}" data-emoji-name="{{this.emoji_name}}">
+  {{#if this.is_realm_emoji}}
+    <img src="{{this.url}}" class="emoji" />
+  {{else}}
+    <div class="emoji emoji-{{this.emoji_name_css_class}}" />
+  {{/if}}
+  <div class="message_reaction_count">{{this.count}}</div>
+</div>

@@ -532,6 +532,21 @@ function render(template_name, args) {
     assert($(html).text().trim(), "Message to stream devel");
 }());
 
+(function message_reaction() {
+    var args = {
+        emoji_name: 'smile',
+        message_id: '1'
+    };
+
+    var html = '';
+    html += '<div>';
+    html += render('message_reaction', args);
+    html += '</div>';
+
+    global.write_handlebars_output("message_reaction", html);
+    assert($(html).find(".message_reaction").has(".emoji .emoji-smile"));
+}());
+
 (function new_stream_users() {
     var args = {
         users: [
@@ -574,6 +589,22 @@ function render(template_name, args) {
     var button_area = $(html).find(".propagate-notifications-controls");
     assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
+}());
+
+(function reaction_popover_content() {
+    var args = {
+        search: 'Search',
+        message_id: 1,
+        emojis: global.emoji.emojis_name_to_css_class,
+    };
+
+    var html = '<div style="height: 250px">';
+    html += render('reaction_popover_content', args);
+    html += "</div>";
+    // test to make sure the first emoji is present in the popover
+    var emoji_key = $(html).find(".emoji-100").attr('title');
+    assert.equal(emoji_key, ':100:');
+    global.write_handlebars_output("reaction_popover_content", html);
 }());
 
 (function settings_tab() {

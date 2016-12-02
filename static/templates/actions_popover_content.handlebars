@@ -38,6 +38,15 @@
   </li>
   {{/if}}
 
+  {{#if should_display_add_reaction_option}}
+  <li>
+    <a href="#" class="reaction_button" data-msgid="{{message.id}}">
+      <i class="icon-vector-smile"></i>
+      {{#tr message}}Add emoji reaction{{/tr}}
+    </a>
+  </li>
+  {{/if}}
+
   <li>
     <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
       <i class="icon-vector-link"></i> {{t "Link to this conversation" }}

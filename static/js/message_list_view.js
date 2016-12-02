@@ -162,6 +162,8 @@ MessageListView.prototype = {
         }
 
         _.each(message_containers, function (message_container) {
+            var message_reactions = reactions.get_message_reactions(message_container.msg);
+            message_container.msg.message_reactions = message_reactions;
             message_container.include_recipient = false;
             message_container.include_footer    = false;
 
@@ -490,7 +492,11 @@ MessageListView.prototype = {
         if (message_actions.rerender_messages.length > 0) {
             _.each(message_actions.rerender_messages, function (message_container) {
                 var old_row = self.get_row(message_container.msg.id);
-                var msg_to_render = _.extend(message_container, {table_name: this.table_name});
+                var msg_reactions = reactions.get_message_reactions(message_container.msg);
+                message_container.msg.message_reactions = msg_reactions;
+                var msg_to_render = _.extend(message_container, {
+                    table_name: this.table_name,
+                });
                 var row = $(templates.render('single_message', msg_to_render));
                 self._post_process_dom_messages(row.get());
                 old_row.replaceWith(row);
@@ -504,7 +510,11 @@ MessageListView.prototype = {
             last_message_row = table.find('.message_row:last').expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
             dom_messages = $(_.map(message_actions.append_messages, function (message_container) {
-                var msg_to_render = _.extend(message_container, {table_name: this.table_name});
+                var msg_reactions = reactions.get_message_reactions(message_container.msg);
+                message_container.msg.message_reactions = msg_reactions;
+                var msg_to_render = _.extend(message_container, {
+                    table_name: this.table_name,
+                });
                 return templates.render('single_message', msg_to_render);
             }).join('')).filter('.message_row');
 
@@ -783,7 +793,11 @@ MessageListView.prototype = {
         this._add_msg_timestring(message_container);
         this._maybe_format_me_message(message_container);
 
-        var msg_to_render = _.extend(message_container, {table_name: this.table_name});
+        var msg_reactions = reactions.get_message_reactions(message_container.msg);
+        message_container.msg.message_reactions = msg_reactions;
+        var msg_to_render = _.extend(message_container, {
+            table_name: this.table_name,
+        });
         var rendered_msg = $(templates.render('single_message', msg_to_render));
         this._post_process_dom_messages(rendered_msg.get());
         row.replaceWith(rendered_msg);
