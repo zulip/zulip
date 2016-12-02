@@ -521,7 +521,6 @@ exports.register_click_handlers = function () {
 
         var stream = $(elt).parents('li').attr('data-name');
 
-        var ypos = $(elt).offset().top - viewport.scrollTop();
         $(elt).popover({
             content:   templates.render('stream_sidebar_actions', {stream: stream_data.get_sub(stream)}),
             trigger:   "manual",
@@ -566,7 +565,7 @@ exports.register_click_handlers = function () {
                 $(e.target).hide();
             });
 
-            $('.streams_popover').on('click', 'a.sp-cancel', function (e) {
+            $('.streams_popover').on('click', 'a.sp-cancel', function () {
                 popovers.hide_stream_sidebar_popover();
             });
         });

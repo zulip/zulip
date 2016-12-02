@@ -123,12 +123,6 @@ var zero_counts = {
 
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
-    var unknown_message = {
-        id: 18,
-        type: 'stream',
-        stream: 'social',
-        subject: 'lunch',
-    };
     event = {
         subject: 'brunch',
     };

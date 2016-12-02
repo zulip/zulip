@@ -36,7 +36,7 @@ var exports = {};
                 subscriptions: JSON.stringify([stream_name])
             }
         }).then(
-            function (data) {
+            function () {
                 $status_message.hide();
             }, function (xhr) {
                 ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);

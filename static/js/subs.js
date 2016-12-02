@@ -232,7 +232,6 @@ function stream_audible_notifications_clicked(e) {
 function stream_pin_clicked(e) {
     var stream = get_stream_name(e.target);
 
-    var sub = stream_data.get_sub(stream);
     exports.toggle_pin_to_top_stream(stream);
 }
 
@@ -336,7 +335,7 @@ function show_subscription_settings(sub_row) {
                 list.append(elem);
             });
         },
-        error: function (xhr) {
+        error: function () {
             loading.destroy_indicator(indicator_elem);
             error_elem.removeClass("hide").text("Could not fetch subscriber list");
         }
@@ -365,19 +364,8 @@ function show_subscription_settings(sub_row) {
     });
 
     var colorpicker = sub_settings.find('.colorpicker');
-
     var color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
-
-    // To figure out the worst case for an expanded row's height, we do some math:
-    // .subscriber_list_container max-height,
-    // .subscriber_list_settings,
-    // .regular_subscription_settings
-    // .subscription_header line-height,
-    // .subscription_header padding
-    var expanded_row_size = 200 + 30 + 100 + 30 + 5;
-    var cover = sub_row.offset().top + expanded_row_size -
-        viewport.height() + viewport.scrollTop();
 }
 
 exports.show_settings_for = function (stream_name) {
@@ -692,7 +680,7 @@ function ajaxSubscribe(stream) {
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream}]) },
-        success: function (resp, statusText, xhr, form) {
+        success: function (resp, statusText, xhr) {
             $("#create_stream_name").val("");
 
             actually_filter_streams();
@@ -717,9 +705,7 @@ function ajaxUnsubscribe(stream) {
     return channel.post({
         url: "/json/subscriptions/remove",
         data: {subscriptions: JSON.stringify([stream]) },
-        success: function (resp, statusText, xhr, form) {
-            var name;
-            var res = JSON.parse(xhr.responseText);
+        success: function () {
             $("#subscriptions-status").hide();
             // The rest of the work is done via the unsubscribe event we will get
         },
@@ -739,7 +725,7 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
                invite_only: JSON.stringify(invite_only),
                announce: JSON.stringify(announce)
         },
-        success: function (data) {
+        success: function () {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             $("#subscriptions-status").hide();
@@ -808,7 +794,6 @@ exports.remove_user_from_stream = function (user_email, stream_name, success, fa
 };
 
 $(function () {
-    var i;
 
     stream_data.initialize_from_page_params();
     stream_list.create_initial_sidebar_rows();
@@ -963,11 +948,11 @@ $(function () {
         $(e.target).removeClass("btn-danger").text(i18n.t("Subscribed"));
     });
 
-    $(".subscriptions").on("click", "#close-subscriptions-status", function (e) {
+    $(".subscriptions").on("click", "#close-subscriptions-status", function () {
         $("#subscriptions-status").hide();
     });
 
-    $("#subscriptions_table").on("click", ".email-address", function (e) {
+    $("#subscriptions_table").on("click", ".email-address", function () {
         selectText(this);
     });
 
@@ -1077,7 +1062,7 @@ $(function () {
             }
         }
 
-        function invite_failure(xhr) {
+        function invite_failure() {
             warning_elem.addClass("hide");
             error_elem.removeClass("hide").text("Could not add user to this stream");
         }
@@ -1144,7 +1129,7 @@ $(function () {
             }
         }
 
-        function removal_failure(xhr) {
+        function removal_failure() {
             warning_elem.addClass("hide");
             error_elem.removeClass("hide").text("Could not remove user from this stream");
         }
@@ -1167,7 +1152,7 @@ $(function () {
             // Stream names might contain unsafe characters so we must encode it first.
             url: "/json/streams/" + encodeURIComponent(sub.name),
             data: {new_name: JSON.stringify(new_name)},
-            success: function (data) {
+            success: function () {
                 new_name_box.val('');
                 ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
                                   'subscriptions-status');
@@ -1181,8 +1166,6 @@ $(function () {
 
     $('#subscriptions_table').on('submit', '.change-stream-description form', function (e) {
         e.preventDefault();
-        var form = $(e.target);
-
         var sub_settings = $(e.target).closest('.subscription_settings');
         var stream_name = get_stream_name(sub_settings);
         var description = sub_settings.find('input[name="description"]').val();
@@ -1247,7 +1230,7 @@ $(function () {
         channel.post({
             url: url,
             data: data,
-            success: function (data) {
+            success: function () {
                 sub = stream_data.get_sub_by_id(stream_id);
                 var stream_settings = settings_for_sub(sub);
                 var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");

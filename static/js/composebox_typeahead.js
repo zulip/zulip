@@ -165,7 +165,7 @@ function select_on_focus(field_id) {
     // conditions in Chrome so we need to protect against infinite
     // recursion.
     var in_handler = false;
-    $("#" + field_id).focus(function (e) {
+    $("#" + field_id).focus(function () {
         if (in_handler) {
             return;
         }
@@ -378,7 +378,7 @@ exports.initialize = function () {
 
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
-        source: function (query, process) {
+        source: function () {
             return stream_data.subscribed_streams();
         },
         items: 3,
@@ -396,7 +396,7 @@ exports.initialize = function () {
     });
 
     $( "#subject" ).typeahead({
-        source: function (query, process) {
+        source: function () {
             var stream_name = $("#stream").val();
             return exports.topics_seen_for(stream_name);
         },
@@ -450,7 +450,7 @@ exports.initialize = function () {
 
     exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true});
 
-    $( "#private_message_recipient" ).blur(function (event) {
+    $( "#private_message_recipient" ).blur(function () {
         var val = $(this).val();
         var recipients = exports.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));

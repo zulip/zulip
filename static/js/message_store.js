@@ -41,7 +41,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
 };
 
 exports.process_message_for_recent_private_messages =
-    function process_message_for_recent_private_messages(message, remove_message) {
+    function process_message_for_recent_private_messages(message) {
     var current_timestamp = 0;
 
     var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
@@ -219,7 +219,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             notifications.possibly_notify_new_messages_outside_viewport(new_messages);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
-        error: function (xhr) {
+        error: function () {
             // We might want to be more clever here
             setTimeout(function () {
                 if (msg_list === current_msg_list) {
@@ -496,7 +496,7 @@ exports.load_old_messages = function load_old_messages(opts) {
         success: function (data) {
             get_old_messages_success(data, opts);
         },
-        error: function (xhr, error_type, exn) {
+        error: function (xhr) {
             if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
                 // We unnarrowed before getting an error so don't
                 // bother trying again or doing further processing.

@@ -403,8 +403,6 @@ function compose_error(error_text, bad_input) {
     }
 }
 
-var send_options;
-
 function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/messages',

@@ -53,7 +53,7 @@ exports.initialize = function () {
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
-        beforeSubmit: function (arr, $form, options) {
+        beforeSubmit: function () {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
             // the user if they don't match certain constraints (i.e. not real email addresses,
@@ -63,7 +63,7 @@ exports.initialize = function () {
             $('#submit-invitation').button('loading');
             return true;
         },
-        success: function (resp, statusText, xhr, form) {
+        success: function () {
             $('#submit-invitation').button('reset');
             invite_status.text(i18n.t('User invited successfully.', {count: (invitee_emails.val().match(/@/g) || [] ).length}))
                           .addClass('alert-success')
@@ -77,7 +77,7 @@ exports.initialize = function () {
             }
 
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             $('#submit-invitation').button('reset');
             var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {

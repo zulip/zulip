@@ -201,10 +201,6 @@ var _ = global._;
     var search_term = 'a';
     var users = people.get_rest_of_realm();
     var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
-    var expected = [
-        { email: 'athens@example.com', full_name: 'Maria Athens' },
-        { email: 'ashton@example.com', full_name: 'Ashton Smith' },
-    ];
     assert.equal(filtered_people["ashton@example.com"], true);
     assert.equal(filtered_people["athens@example.com"], true);
     assert.equal(_.keys(filtered_people).length, 2);

@@ -327,7 +327,7 @@ exports.mark_message_as_read = function mark_message_as_read(message, options) {
 
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
-exports.process_visible = function process_visible(update_cursor) {
+exports.process_visible = function process_visible() {
     if (! notifications.window_has_focus()) {
         return;
     }

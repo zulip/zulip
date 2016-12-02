@@ -29,7 +29,7 @@ exports.init_viewport = function () {
     casper.options.viewportSize = {width: 1280, height: 1024};
 };
 
-exports.initialize_casper = function (viewport) {
+exports.initialize_casper = function () {
     if (casper.zulip_initialized !== undefined) {
         return;
     }

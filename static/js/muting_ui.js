@@ -17,7 +17,6 @@ exports.rerender = function () {
 };
 
 exports.notify_with_undo_option = (function () {
-    var event_added = false;
     var meta = {
         stream: null,
         topic: null,
@@ -26,12 +25,12 @@ exports.notify_with_undo_option = (function () {
         $mute: null
     };
     var animate = {
-        fadeOut: function ($mute) {
+        fadeOut: function () {
             if (meta.$mute) {
                 meta.$mute.fadeOut(500).removeClass("show");
             }
         },
-        fadeIn: function ($mute) {
+        fadeIn: function () {
             if (meta.$mute) {
                 meta.$mute.fadeIn(500).addClass("show");
             }

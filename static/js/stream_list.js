@@ -370,9 +370,8 @@ exports.update_dom_with_unread_counts = function (counts) {
                                       counts.mentioned_message_count);
 };
 
-exports.rename_stream = function (sub, new_name) {
-    // TODO: we don't actually need new_name, since the sub
-    //       will have been updated
+exports.rename_stream = function (sub) {
+    // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
     exports.build_stream_list(); // big hammer
 };
