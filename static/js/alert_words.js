@@ -24,8 +24,6 @@ exports.process_message = function (message) {
         var after_punctuation = '\\s|$|<|[\\)\\"\\?!:.,\';\\]!]';
 
 
-        var word_in_href = new RegExp(find_href_backwards + word, 'i');
-
         var regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
                                '(' + after_punctuation + ')' , 'ig');

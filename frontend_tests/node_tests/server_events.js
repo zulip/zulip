@@ -1,5 +1,4 @@
 var assert = require('assert');
-var _ = global._;
 
 add_dependencies({
     util: 'js/util.js',
@@ -25,8 +24,6 @@ set_global('page_params', {test_suite: false});
 set_global('reload', {
     is_in_progress: function () {return false;},
 });
-
-var page_params = global.page_params;
 
 set_global('echo', {
     process_from_server: function (messages) {

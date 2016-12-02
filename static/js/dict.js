@@ -9,7 +9,6 @@
  *
  */
 function Dict(opts) {
-    var self = this;
     this._items = {};
     this._opts = _.extend({}, {fold_case: false}, opts);
 }
@@ -84,7 +83,6 @@ Dict.prototype = {
     // If `key` exists in the Dict, return its value.  Otherwise
     // insert `key` with a value of `value` and return `value`.
     setdefault: function Dict_setdefault(key, value) {
-        var ret;
         var mapping = this._items[this._munge(key)];
         if (mapping === undefined) {
             return this.set(key, value);

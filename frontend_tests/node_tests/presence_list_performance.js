@@ -35,7 +35,6 @@ $.fn.expectOne = function () {
 global.compile_template('user_presence_row');
 global.compile_template('user_presence_rows');
 
-var people = require("js/people.js");
 var activity = require('js/activity.js');
 
 // TODO: de-dup with activity.js

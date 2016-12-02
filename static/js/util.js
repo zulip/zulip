@@ -42,7 +42,6 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     var len = last - first;
     var middle;
     var step;
-    var lower = 0;
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;

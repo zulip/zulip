@@ -1,5 +1,4 @@
 var common = require('../casper_lib/common.js').common;
-var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
 var stream_name = "Scotland";
 
 common.start_and_log_in();

@@ -306,7 +306,7 @@ exports.update_users = function (user_list) {
     var user_info = _.map(users, info_for);
     if (user_list !== undefined) {
         // Render right panel partially
-        _.each(user_info, function (user, index) {
+        _.each(user_info, function (user) {
             var user_index = all_users.indexOf(user.user_id);
             $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
             $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));

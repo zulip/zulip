@@ -24,11 +24,8 @@ i18n.init({
 });
 
 var jsdom = require("jsdom");
-var fs = require("fs");
-var path = require("path");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
-var _ = global._;
 
 (function test_t_tag() {
     var args = {

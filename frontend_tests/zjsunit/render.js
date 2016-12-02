@@ -3,7 +3,6 @@ var render = (function () {
 var exports = {};
 
 var fs = require('fs');
-var path = require("path");
 var _ = require('third/underscore/underscore.js');
 var Handlebars = require('handlebars');
 
