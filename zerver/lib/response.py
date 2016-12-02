@@ -32,8 +32,8 @@ def json_method_not_allowed(methods):
     # type: (List[text_type]) -> text_type
     resp = HttpResponseNotAllowed(methods)
     resp.content = force_bytes(ujson.dumps({"result": "error",
-        "msg": "Method Not Allowed",
-        "allowed_methods": methods}))
+                                            "msg": "Method Not Allowed",
+                                            "allowed_methods": methods}))
     return resp
 
 def json_response(res_type="success", msg="", data=None, status=200):

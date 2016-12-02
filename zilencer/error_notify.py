@@ -67,7 +67,7 @@ def zulip_browser_error(report):
              % (report))
 
     internal_send_message(settings.ERROR_BOT,
-            "stream", "errors", format_subject(subject), body)
+                          "stream", "errors", format_subject(subject), body)
 
 def notify_server_error(report):
     # type: (Dict[str, Any]) -> None

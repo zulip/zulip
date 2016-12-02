@@ -20,14 +20,14 @@ STATIC_PATH = 'static/'
 def get_templates():
     # type: () -> List[str]
     return (glob.glob(os.path.join(STATIC_PATH, 'templates/*.handlebars')) +
-        glob.glob(os.path.join(STATIC_PATH, 'templates/settings/*.handlebars')))
+            glob.glob(os.path.join(STATIC_PATH, 'templates/settings/*.handlebars')))
 
 def run():
     # type: () -> None
     subprocess.check_call(['node', 'node_modules/.bin/handlebars']
-        + get_templates()
-        + ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
-           '--known', 'if,unless,each,with'])
+                          + get_templates()
+                          + ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
+                             '--known', 'if,unless,each,with'])
 
 def run_forever():
     # type: () -> None

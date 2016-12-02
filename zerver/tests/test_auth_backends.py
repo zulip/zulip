@@ -137,8 +137,8 @@ class AuthBackendTest(TestCase):
         # Subdomain is ignored when feature is not enabled
         self.verify_backend(EmailAuthBackend(),
                             good_kwargs=dict(password=password,
-                                            realm_subdomain='acme',
-                                            return_data=dict()))
+                                             realm_subdomain='acme',
+                                             return_data=dict()))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             # With subdomains, authenticating with the right subdomain

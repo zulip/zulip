@@ -47,63 +47,63 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
         parser.add_argument('-n', '--num-messages',
-                    dest='num_messages',
-                    type=int,
-                    default=600,
-                    help='The number of messages to create.')
+                            dest='num_messages',
+                            type=int,
+                            default=600,
+                            help='The number of messages to create.')
 
         parser.add_argument('--extra-users',
-                    dest='extra_users',
-                    type=int,
-                    default=0,
-                    help='The number of extra users to create')
+                            dest='extra_users',
+                            type=int,
+                            default=0,
+                            help='The number of extra users to create')
 
         parser.add_argument('--huddles',
-                    dest='num_huddles',
-                    type=int,
-                    default=3,
-                    help='The number of huddles to create.')
+                            dest='num_huddles',
+                            type=int,
+                            default=3,
+                            help='The number of huddles to create.')
 
         parser.add_argument('--personals',
-                    dest='num_personals',
-                    type=int,
-                    default=6,
-                    help='The number of personal pairs to create.')
+                            dest='num_personals',
+                            type=int,
+                            default=6,
+                            help='The number of personal pairs to create.')
 
         parser.add_argument('--threads',
-                    dest='threads',
-                    type=int,
-                    default=10,
-                    help='The number of threads to use.')
+                            dest='threads',
+                            type=int,
+                            default=10,
+                            help='The number of threads to use.')
 
         parser.add_argument('--percent-huddles',
-                    dest='percent_huddles',
-                    type=float,
-                    default=15,
-                    help='The percent of messages to be huddles.')
+                            dest='percent_huddles',
+                            type=float,
+                            default=15,
+                            help='The percent of messages to be huddles.')
 
         parser.add_argument('--percent-personals',
-                    dest='percent_personals',
-                    type=float,
-                    default=15,
-                    help='The percent of messages to be personals.')
+                            dest='percent_personals',
+                            type=float,
+                            default=15,
+                            help='The percent of messages to be personals.')
 
         parser.add_argument('--stickyness',
-                    dest='stickyness',
-                    type=float,
-                    default=20,
-                    help='The percent of messages to repeat recent folks.')
+                            dest='stickyness',
+                            type=float,
+                            default=20,
+                            help='The percent of messages to repeat recent folks.')
 
         parser.add_argument('--nodelete',
-                    action="store_false",
-                    default=True,
-                    dest='delete',
-                    help='Whether to delete all the existing messages.')
+                            action="store_false",
+                            default=True,
+                            dest='delete',
+                            help='Whether to delete all the existing messages.')
 
         parser.add_argument('--test-suite',
-                    default=False,
-                    action="store_true",
-                    help='Whether to delete all the existing messages.')
+                            default=False,
+                            action="store_true",
+                            help='Whether to delete all the existing messages.')
 
     def handle(self, **options):
         # type: (**Any) -> None

@@ -52,7 +52,7 @@ def get_apns_key(identifer):
 
 class APNsMessage(object):
     def __init__(self, user, tokens, alert=None, badge=None, sound=None,
-            category=None, **kwargs):
+                 category=None, **kwargs):
         # type: (UserProfile, List[text_type], text_type, int, text_type, text_type, **Any) -> None
         self.frame = Frame()
         self.tokens = tokens
@@ -201,7 +201,7 @@ def send_android_push_notification(user, data):
         return
 
     reg_ids = [device.token for device in
-        PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.GCM)]
+               PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.GCM)]
 
     msg = gcmclient.JSONMessage(reg_ids, data)
     res = gcm.send(msg)

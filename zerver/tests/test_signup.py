@@ -310,8 +310,8 @@ class InviteUserTest(ZulipTestCase):
         """
 
         return self.client_post("/json/invite_users",
-                {"invitee_emails": users,
-                    "stream": streams})
+                                {"invitee_emails": users,
+                                    "stream": streams})
 
     def check_sent_emails(self, correct_recipients):
         # type: (List[str]) -> None
@@ -439,7 +439,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
-                "Stream does not exist: NotARealStream. No invites were sent.")
+                               "Stream does not exist: NotARealStream. No invites were sent.")
         self.check_sent_emails([])
 
     def test_invite_existing_user(self):

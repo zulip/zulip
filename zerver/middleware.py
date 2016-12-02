@@ -140,9 +140,9 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         if 'remote_cache_requests_stopped' in log_data:
             # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
             remote_cache_time_delta += (log_data['remote_cache_time_stopped'] -
-                                     log_data['remote_cache_time_restarted'])
+                                        log_data['remote_cache_time_restarted'])
             remote_cache_count_delta += (log_data['remote_cache_requests_stopped'] -
-                                      log_data['remote_cache_requests_restarted'])
+                                         log_data['remote_cache_requests_restarted'])
 
         if (remote_cache_time_delta > 0.005):
             remote_cache_output = " (mem: %s/%s)" % (format_timedelta(remote_cache_time_delta),
@@ -395,9 +395,9 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                     if settings.REALMS_HAVE_SUBDOMAINS:
                         session_cookie_domain = host
                     response.set_cookie(settings.SESSION_COOKIE_NAME,
-                            request.session.session_key, max_age=max_age,
-                            expires=expires, domain=session_cookie_domain,
-                            path=settings.SESSION_COOKIE_PATH,
-                            secure=settings.SESSION_COOKIE_SECURE or None,
-                            httponly=settings.SESSION_COOKIE_HTTPONLY or None)
+                                        request.session.session_key, max_age=max_age,
+                                        expires=expires, domain=session_cookie_domain,
+                                        path=settings.SESSION_COOKIE_PATH,
+                                        secure=settings.SESSION_COOKIE_SECURE or None,
+                                        httponly=settings.SESSION_COOKIE_HTTPONLY or None)
         return response

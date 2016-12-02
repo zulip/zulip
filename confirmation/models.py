@@ -62,7 +62,7 @@ def generate_realm_creation_url():
     return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
                         settings.EXTERNAL_HOST,
                         reverse('zerver.views.create_realm',
-                        kwargs={'creation_key': key}))
+                                kwargs={'creation_key': key}))
 
 class ConfirmationManager(models.Manager):
 

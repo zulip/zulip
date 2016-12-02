@@ -234,7 +234,7 @@ class NarrowBuilder(object):
             try:
                 emails = [e.strip() for e in operand.split(',')]
                 recipient = recipient_for_emails(emails, False,
-                    self.user_profile, self.user_profile)
+                                                 self.user_profile, self.user_profile)
             except ValidationError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
             cond = column("recipient_id") == recipient.id

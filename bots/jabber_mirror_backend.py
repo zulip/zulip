@@ -298,32 +298,31 @@ def config_error(msg):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser(epilog=
-'''Most general and Jabber configuration options may also be specified in the
-zulip configuration file under the jabber_mirror section (exceptions are noted
-in their help sections).  Keys have the same name as options with hyphens
-replaced with underscores.  Zulip configuration options go in the api section,
-as normal.'''.replace("\n", " ")
-                                    )
+                                   '''Most general and Jabber configuration options may also be specified in the
+                                   zulip configuration file under the jabber_mirror section (exceptions are noted
+                                   in their help sections).  Keys have the same name as options with hyphens
+                                   replaced with underscores.  Zulip configuration options go in the api section,
+                                   as normal.'''.replace("\n", " "))
     parser.add_option('--mode',
                       default=None,
                       action='store',
                       help=
-'''Which mode to run in.  Valid options are "personal" and "public".  In
-"personal" mode, the mirror uses an individual users' credentials and mirrors
-all messages they send on Zulip to Jabber and all private Jabber messages to
-Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
-user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
-"personal"'''.replace("\n", " "))
+                      '''Which mode to run in.  Valid options are "personal" and "public".  In
+                      "personal" mode, the mirror uses an individual users' credentials and mirrors
+                      all messages they send on Zulip to Jabber and all private Jabber messages to
+                      Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
+                      user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
+                      "personal"'''.replace("\n", " "))
     parser.add_option('--zulip-email-suffix',
                       default=None,
                       action='store',
                       help= \
-'''Add the specified suffix to the local part of email addresses constructed
-from JIDs and nicks before sending requests to the Zulip server, and remove the
-suffix before sending requests to the Jabber server.  For example, specifying
-"+foo" will cause messages that are sent to the "bar" room by nickname "qux" to
-be mirrored to the "bar/xmpp" stream in Zulip by user "qux+foo@example.com". This
-option does not affect login credentials.'''.replace("\n", " "))
+                      '''Add the specified suffix to the local part of email addresses constructed
+                      from JIDs and nicks before sending requests to the Zulip server, and remove the
+                      suffix before sending requests to the Jabber server.  For example, specifying
+                      "+foo" will cause messages that are sent to the "bar" room by nickname "qux" to
+                      be mirrored to the "bar/xmpp" stream in Zulip by user "qux+foo@example.com". This
+                      option does not affect login credentials.'''.replace("\n", " "))
     parser.add_option('-d', '--debug',
                       help='set logging to DEBUG.  Can not be set via config file.',
                       action='store_const',
@@ -355,12 +354,12 @@ option does not affect login credentials.'''.replace("\n", " "))
     jabber_group.add_option('--jabber-server-address',
                             default=None,
                             action='store',
-               help="The hostname of your Jabber server. This is only needed if "
+                            help="The hostname of your Jabber server. This is only needed if "
                             "your server is missing SRV records")
     jabber_group.add_option('--jabber-server-port',
                             default='5222',
                             action='store',
-               help="The port of your Jabber server. This is only needed if "
+                            help="The port of your Jabber server. This is only needed if "
                             "your server is missing SRV records")
 
     parser.add_option_group(jabber_group)
