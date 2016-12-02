@@ -33,14 +33,13 @@ exports.render_now = function (time) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is over a year old.
         return [time.toString("MMM\xa0dd,\xa0yyyy"), false];
-    } else {
-        // For now, if we get a message from tomorrow, we don't bother
-        // rewriting the timestamp when it gets to be tomorrow.
-
-        // "\xa0" is U+00A0 NO-BREAK SPACE.
-        // Can't use &nbsp; as that represents the literal string "&nbsp;".
-        return [time.toString("MMM\xa0dd"), false];
     }
+    // For now, if we get a message from tomorrow, we don't bother
+    // rewriting the timestamp when it gets to be tomorrow.
+
+    // "\xa0" is U+00A0 NO-BREAK SPACE.
+    // Can't use &nbsp; as that represents the literal string "&nbsp;".
+    return [time.toString("MMM\xa0dd"), false];
 };
 
 // List of the dates that need to be updated when the day changes.
@@ -73,9 +72,8 @@ function render_date_span(elem, time_str, time_above_str) {
         return elem.append('<i class="date-direction icon-vector-caret-up"></i>' +
                            time_above_str).append($('<hr class="date-line">')).append('<i class="date-direction icon-vector-caret-down"></i>'
                            + time_str);
-    } else {
-        return elem.append(time_str);
     }
+    return elem.append(time_str);
 }
 
 // Given an XDate object 'time', return a DOM node that initially

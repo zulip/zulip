@@ -94,9 +94,8 @@ exports.id_for_recipient_row = function (recipient_row) {
         // If we're narrowing from the FRB, take the msg id
         // directly from it
         return exports.id(recipient_row);
-    } else {
-        return exports.id(msg_row);
     }
+    return exports.id(msg_row);
 };
 
 return exports;

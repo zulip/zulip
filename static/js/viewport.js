@@ -58,9 +58,8 @@ exports.bottom_message_visible = function () {
         var message_bottom = last_row[0].getBoundingClientRect().bottom;
         var bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
         return bottom_of_feed > message_bottom;
-    } else {
-        return false;
     }
+    return false;
 };
 
 exports.is_below_visible_bottom = function (offset) {
@@ -111,9 +110,8 @@ function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
                 ((rect.bottom < bottom_of_feed) || // message is fully in view or
                  ((rect.height > bottom_of_feed - top_of_feed) &&
                   (rect.top < bottom_of_feed)))); // message is tall.
-    } else {
-        return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
     }
+    return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
 }
 
 function add_to_visible(candidates, visible,
@@ -127,9 +125,8 @@ function add_to_visible(candidates, visible,
                                 require_fully_visible)) {
             visible.push(row_to_id(row));
             return true;
-        } else {
-            return false;
         }
+        return false;
     });
 }
 

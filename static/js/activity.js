@@ -76,9 +76,8 @@ function update_count_in_dom(count_span, value_span, count) {
 function get_filter_li(user_ids_string) {
     if (name.indexOf(",") < 0) {
         return $("li.user_sidebar_entry[data-user-id='" + user_ids_string + "']");
-    } else {
-        return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
     }
+    return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
 }
 
 function set_count(user_ids_string, count) {

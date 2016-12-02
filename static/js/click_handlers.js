@@ -137,9 +137,8 @@ $(function () {
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
-        } else {
-            return nearest.id;
         }
+        return nearest.id;
     }
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {

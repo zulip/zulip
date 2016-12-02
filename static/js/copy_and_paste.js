@@ -94,26 +94,23 @@ function copy_handler(e) {
         if (!skip_same_td_check &&
             startc.parents('.selectable_row>div')[0] === endc.parents('.selectable_row>div')[0]) {
             return;
-        } else {
+        }
 
             // Construct a div for what we want to copy (div)
-            for (row = current_msg_list.get_row(start_id);
-                 rows.id(row) <= end_id;
-                 row = rows.next_visible(row)) {
-                if (row.prev().hasClass("message_header")) {
-                    content = $('<div>').text(row.prev().text()
-                                                .replace(/\s+/g, " ")
-                                                .replace(/^\s/, "").replace(/\s$/, ""));
-                    div.append($('<p>').append($('<strong>').text(content.text())));
-                }
-
-                message = current_msg_list.get(rows.id(row));
-
-                var message_firstp = $(message.content).slice(0, 1);
-                message_firstp.prepend(message.sender_full_name + ": ");
-                div.append(message_firstp);
-                div.append($(message.content).slice(1));
+        for (row = current_msg_list.get_row(start_id);
+             rows.id(row) <= end_id;
+             row = rows.next_visible(row)) {
+             if (row.prev().hasClass("message_header")) {
+                content = $('<div>').text(row.prev().text()
+                                            .replace(/\s+/g, " ")
+                                            .replace(/^\s/, "").replace(/\s$/, ""));
+                div.append($('<p>').append($('<strong>').text(content.text())));
             }
+            message = current_msg_list.get(rows.id(row));
+            var message_firstp = $(message.content).slice(0, 1);
+            message_firstp.prepend(message.sender_full_name + ": ");
+            div.append(message_firstp);
+            div.append($(message.content).slice(1));
         }
     }
 

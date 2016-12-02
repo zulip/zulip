@@ -35,9 +35,8 @@ exports.process_message = function (message) {
             var pre_match = content.substring(0, offset);
             if (find_href_backwards.exec(pre_match) || find_title_backwards.exec(pre_match)) {
                 return before + word + after;
-            } else {
-                return before + "<span class='alert-word'>" + word + "</span>" + after;
             }
+            return before + "<span class='alert-word'>" + word + "</span>" + after;
         });
     });
 };
