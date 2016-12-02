@@ -17,8 +17,9 @@ from datetime import datetime, timedelta
 from typing import Any, Type, Optional
 from six import text_type
 
+
 class AnalyticsTestCase(TestCase):
-    MINUTE = timedelta(seconds = 60)
+    MINUTE = timedelta(seconds=60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
     TIME_ZERO = datetime(2042, 3, 14).replace(tzinfo=timezone.utc)
@@ -28,7 +29,7 @@ class AnalyticsTestCase(TestCase):
         # type: () -> None
         self.default_realm = Realm.objects.create(
             string_id='realmtest', name='Realm Test',
-            domain='analytics.test', date_created=self.TIME_ZERO - 2*self.DAY)
+            domain='analytics.test', date_created=self.TIME_ZERO - 2 * self.DAY)
 
     # Lightweight creation of users, streams, and messages
     def create_user(self, email, **kwargs):
@@ -69,20 +70,23 @@ class AnalyticsTestCase(TestCase):
 
     # Note that this doesn't work for InstallationCount, since InstallationCount has no realm_id
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(self, table, property, value, end_time = TIME_ZERO, interval = CountStat.HOUR,
-                          realm = None, **kwargs):
+    def assertCountEquals(self, table, property, value, end_time=TIME_ZERO, interval=CountStat.HOUR,
+                          realm=None, **kwargs):
         # type: (Type[BaseCount], text_type, int, datetime, str, Optional[Realm], **models.Model) -> None
         if realm is None:
             realm = self.default_realm
         self.assertEqual(table.objects.filter(realm=realm,
                                               property=property,
                                               interval=interval,
-                                              end_time=end_time) \
+                                              end_time=end_time)
                          .filter(**kwargs).values_list('value', flat=True)[0],
                          value)
 
 # Tests manangement commands, backfilling, adding new stats, etc
+
+
 class TestUpdateAnalyticsCounts(AnalyticsTestCase):
+
     def test_analytics_stat_write(self):
         # type: () -> None
         # might change if we refactor count_query
@@ -103,11 +107,18 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
 
     def test_update_analytics_tables(self):
         # type: () -> None
-        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, None, CountStat.HOUR, False)
+        stat = CountStat(
+            'test_messages_sent',
+            zerver_count_message_by_user,
+            {},
+            None,
+            CountStat.HOUR,
+            False)
 
         user1 = self.create_user('email1')
         user2 = self.create_user('email2')
-        recipient = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
+        recipient = Recipient.objects.create(
+            type_id=user2.id, type=Recipient.PERSONAL)
         self.create_message(user1, recipient)
 
         # run command
@@ -121,10 +132,14 @@ class TestUpdateAnalyticsCounts(AnalyticsTestCase):
         do_fill_count_stat_at_hour(stat, self.TIME_LAST_HOUR)
 
         # check no earlier rows created, old ones still there
-        self.assertFalse(UserCount.objects.filter(end_time__lt = self.TIME_LAST_HOUR).exists())
-        self.assertCountEquals(UserCount, 'test_messages_sent', 1, user = user1)
+        self.assertFalse(
+            UserCount.objects.filter(
+                end_time__lt=self.TIME_LAST_HOUR).exists())
+        self.assertCountEquals(UserCount, 'test_messages_sent', 1, user=user1)
+
 
 class TestProcessCountStat(AnalyticsTestCase):
+
     def make_dummy_count_stat(self, current_time):
         # type: (datetime) -> CountStat
         dummy_query = """INSERT INTO analytics_realmcount (realm_id, property, end_time, interval, value)
@@ -133,7 +148,8 @@ class TestProcessCountStat(AnalyticsTestCase):
                                {}, None, CountStat.HOUR, False)
         return count_stat
 
-    def assertFillStateEquals(self, end_time, state = FillState.DONE, property = None):
+    def assertFillStateEquals(
+            self, end_time, state=FillState.DONE, property=None):
         # type: (datetime, int, Optional[text_type]) -> None
         count_stat = self.make_dummy_count_stat(end_time)
         if property is None:
@@ -149,41 +165,49 @@ class TestProcessCountStat(AnalyticsTestCase):
         count_stat = self.make_dummy_count_stat(current_time)
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 1)
+        self.assertEqual(InstallationCount.objects.filter(property=count_stat.property,
+                                                          interval=CountStat.HOUR).count(), 1)
 
         # dirty stat
-        FillState.objects.filter(property=count_stat.property).update(state=FillState.STARTED)
+        FillState.objects.filter(
+            property=count_stat.property).update(
+            state=FillState.STARTED)
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 1)
+        self.assertEqual(InstallationCount.objects.filter(property=count_stat.property,
+                                                          interval=CountStat.HOUR).count(), 1)
 
         # clean stat, no update
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 1)
+        self.assertEqual(InstallationCount.objects.filter(property=count_stat.property,
+                                                          interval=CountStat.HOUR).count(), 1)
 
         # clean stat, with update
         current_time = current_time + self.HOUR
         count_stat = self.make_dummy_count_stat(current_time)
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 2)
+        self.assertEqual(InstallationCount.objects.filter(property=count_stat.property,
+                                                          interval=CountStat.HOUR).count(), 2)
 
     # test users added in last hour
     def test_add_new_users(self):
         # type: () -> None
-        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, None, CountStat.HOUR, False)
+        stat = CountStat(
+            'add_new_user_test',
+            zerver_count_user_by_realm,
+            {},
+            None,
+            CountStat.HOUR,
+            False)
 
         # add new users to realm in last hour
         self.create_user('email1')
         self.create_user('email2')
 
         # add a new user before an hour
-        self.create_user('email3', date_joined=self.TIME_ZERO - 2*self.HOUR)
+        self.create_user('email3', date_joined=self.TIME_ZERO - 2 * self.HOUR)
 
         # check if user added before the hour is not included
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
@@ -210,7 +234,9 @@ class TestProcessCountStat(AnalyticsTestCase):
         stat = CountStat('test_active_humans', zerver_count_user_by_realm,
                          {'is_bot': False, 'is_active': True}, None, CountStat.HOUR, False)
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        self.assertFalse(RealmCount.objects.filter(realm=self.default_realm).exists())
+        self.assertFalse(
+            RealmCount.objects.filter(
+                realm=self.default_realm).exists())
 
     def test_empty_message_aggregates(self):
         # type: () -> None
@@ -218,31 +244,45 @@ class TestProcessCountStat(AnalyticsTestCase):
         # have no messages and no users
         stat = COUNT_STATS['messages_sent']
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        self.assertFalse(RealmCount.objects.filter(realm=self.default_realm).exists())
+        self.assertFalse(
+            RealmCount.objects.filter(
+                realm=self.default_realm).exists())
+
 
 class TestAggregates(AnalyticsTestCase):
     pass
 
+
 class TestXByYQueries(AnalyticsTestCase):
+
     def test_message_to_stream_aggregation(self):
         # type: () -> None
-        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, None, CountStat.HOUR, False)
+        stat = CountStat(
+            'test_messages_to_stream',
+            zerver_count_message_by_stream,
+            {},
+            None,
+            CountStat.HOUR,
+            False)
 
         # write some messages
         user = self.create_user('email')
-        stream = self.create_stream(date_created=self.TIME_ZERO - 2*self.HOUR)
+        stream = self.create_stream(
+            date_created=self.TIME_ZERO - 2 * self.HOUR)
 
         recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
         recipient.save()
 
-        self.create_message(user, recipient = recipient)
+        self.create_message(user, recipient=recipient)
 
         # run command
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
         self.assertCountEquals(StreamCount, 'test_messages_to_stream', 1)
 
+
 class TestCountStats(AnalyticsTestCase):
+
     def test_human_and_bot_count_by_realm(self):
         # type: () -> None
         stats = [

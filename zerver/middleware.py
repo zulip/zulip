@@ -351,7 +351,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
         if settings.REALMS_HAVE_SUBDOMAINS:
             if (not request.path.startswith("/static/") and not request.path.startswith("/api/")
-                and not request.path.startswith("/json/")):
+                    and not request.path.startswith("/json/")):
                 subdomain = get_subdomain(request)
                 if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
                     return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
