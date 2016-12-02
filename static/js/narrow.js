@@ -238,7 +238,8 @@ exports.activate = function (raw_operators, opts) {
             blueslip.debug("narrow.activate missing selected row", {
                 selected_id: current_msg_list.selected_id(),
                 selected_idx: current_msg_list.selected_idx(),
-                selected_idx_exact: current_msg_list._items.indexOf(current_msg_list.get(current_msg_list.selected_id())),
+                selected_idx_exact: current_msg_list._items.indexOf(
+                                        current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
                 render_end: current_msg_list.view._render_win_end
             });
@@ -275,7 +276,8 @@ exports.activate = function (raw_operators, opts) {
         if (! message_list.narrowed.empty()) {
             if (opts.select_first_unread) {
                 then_select_id = message_list.narrowed.last().id;
-                var first_unread = _.find(message_list.narrowed.all_messages(), unread.message_unread);
+                var first_unread =
+                    _.find(message_list.narrowed.all_messages(), unread.message_unread);
                 if (first_unread) {
                     then_select_id = first_unread.id;
                 }
@@ -306,7 +308,8 @@ exports.activate = function (raw_operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_store.add_messages(message_list.all.all_messages(), message_list.narrowed, {delay_render: true});
+        message_store.add_messages(message_list.all.all_messages(), message_list.narrowed,
+                                   {delay_render: true});
     }
 
     var defer_selecting_closest = message_list.narrowed.empty();
@@ -654,7 +657,8 @@ exports.narrowed_to_search = function () {
 };
 
 exports.muting_enabled = function () {
-    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() && !exports.narrowed_to_pms());
+    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
+            !exports.narrowed_to_pms());
 };
 
 return exports;

@@ -145,7 +145,8 @@ var bottom_of_feed = new util.CachedValue({
     }
 });
 
-function _visible_divs(selected_row, row_min_height, row_to_output, div_class, require_fully_visible) {
+function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
+                       require_fully_visible) {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
     // getting offsets relative to the full scrollable window. You can't try to
@@ -158,12 +159,12 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class, r
     var visible = [];
     var above_pointer = selected_row.prevAll("div." + div_class + ":lt(" + num_neighbors + ")");
     var below_pointer = selected_row.nextAll("div." + div_class + ":lt(" + num_neighbors + ")");
-    add_to_visible(selected_row, visible,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
-    add_to_visible(above_pointer, visible,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
-    add_to_visible(below_pointer, visible,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
+    add_to_visible(selected_row, visible, top_of_feed.get(), bottom_of_feed.get(),
+            require_fully_visible, row_to_output);
+    add_to_visible(above_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
+            require_fully_visible, row_to_output);
+    add_to_visible(below_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
+            require_fully_visible, row_to_output);
 
     return visible;
 }

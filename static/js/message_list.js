@@ -220,7 +220,8 @@ exports.MessageList.prototype = {
         function less_func (msg, ref_id, a_idx) {
             if (self._is_localonly_id(msg.id)) {
                 // First non-local message before this one
-                var effective = self._next_nonlocal_message(self._items, a_idx, function (idx) { return idx - 1; });
+                var effective = self._next_nonlocal_message(self._items, a_idx,
+                                                            function (idx) { return idx - 1; });
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
                     var decimal = parseFloat((msg.id % 1).toFixed(0.02));
@@ -268,8 +269,8 @@ exports.MessageList.prototype = {
         if (closest === items.length) {
             closest = closest - 1;
         } else {
-            // Any of the ids that we skipped over (due to them being local-only) might be the closest ID to the desired one,
-            // in case there is no exact match.
+            // Any of the ids that we skipped over (due to them being local-only) might be the
+            // closest ID to the desired one, in case there is no exact match.
             potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
             var best_match = items[closest].id;
 
@@ -546,7 +547,8 @@ exports.MessageList.prototype = {
         return id % 1 !== 0;
     },
 
-    _next_nonlocal_message: function MessageList__next_nonlocal_message(item_list, start_index, op) {
+    _next_nonlocal_message: function MessageList__next_nonlocal_message(item_list,
+                                                                        start_index, op) {
         var cur_idx = start_index;
         do {
             cur_idx = op(cur_idx);
@@ -602,8 +604,10 @@ exports.MessageList.prototype = {
                 return;
             }
 
-            var next = self._next_nonlocal_message(self._items, index, function (idx) { return idx + 1; });
-            var prev = self._next_nonlocal_message(self._items, index, function (idx) { return idx - 1; });
+            var next = self._next_nonlocal_message(self._items, index,
+                                                   function (idx) { return idx + 1; });
+            var prev = self._next_nonlocal_message(self._items, index,
+                                                   function (idx) { return idx - 1; });
 
             if ((next !== undefined && current_message.id > next.id) ||
                 (prev !== undefined && current_message.id < prev.id)) {

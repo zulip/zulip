@@ -39,7 +39,8 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     return recipient;
 };
 
-exports.process_message_for_recent_private_messages = function process_message_for_recent_private_messages(message, remove_message) {
+exports.process_message_for_recent_private_messages =
+    function process_message_for_recent_private_messages(message, remove_message) {
     var current_timestamp = 0;
 
     var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
@@ -51,7 +52,8 @@ exports.process_message_for_recent_private_messages = function process_message_f
 
     // If this conversation is already tracked, we'll replace with new timestamp,
     // so remove it from the current list.
-    exports.recent_private_messages = _.filter(exports.recent_private_messages, function (recent_pm) {
+    exports.recent_private_messages = _.filter(exports.recent_private_messages,
+                                               function (recent_pm) {
         return recent_pm.user_ids_string !== user_ids_string;
     });
 

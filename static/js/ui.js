@@ -117,7 +117,8 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
-    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) && !message.status_message) {
+    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
+        !message.status_message) {
         message_row.find(".edit_content").html('<i class="icon-vector-pencil edit_content_button"></i>');
     } else {
         message_row.find(".edit_content").html('<i class="icon-vector-file-text-alt edit_content_button" data-msgid="' + id + '"></i>');

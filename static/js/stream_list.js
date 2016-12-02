@@ -122,8 +122,9 @@ exports.build_stream_list = function () {
 
     streams = pinned_streams.concat(unpinned_streams);
 
-    if (previous_sort_order !== undefined && util.array_compare(previous_sort_order, streams)
-                                          && util.array_compare(previous_unpinned_order, unpinned_streams)) {
+    if (previous_sort_order !== undefined &&
+        util.array_compare(previous_sort_order, streams) &&
+        util.array_compare(previous_unpinned_order, unpinned_streams)) {
         return;
     }
     previous_sort_order = streams;

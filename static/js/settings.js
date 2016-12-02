@@ -88,7 +88,8 @@ function add_bot_row(info) {
     $('#bots_list').show();
 }
 
-function add_bot_default_streams_to_form(formData, default_sending_stream, default_events_register_stream) {
+function add_bot_default_streams_to_form(formData, default_sending_stream,
+                                         default_events_register_stream) {
     if (!feature_flags.new_bot_ui) { return; }
 
     if (default_sending_stream !== '') {
@@ -261,7 +262,8 @@ function _setup_page() {
         // Stream notification settings.
 
         if (result.enable_stream_desktop_notifications !== undefined) {
-            page_params.stream_desktop_notifications_enabled = result.enable_stream_desktop_notifications;
+            page_params.stream_desktop_notifications_enabled =
+                result.enable_stream_desktop_notifications;
         }
         if (result.enable_stream_sounds !== undefined) {
             page_params.stream_sounds_enabled = result.enable_stream_sounds;
@@ -277,11 +279,13 @@ function _setup_page() {
         }
 
         if (result.enable_offline_email_notifications !== undefined) {
-            page_params.enable_offline_email_notifications = result.enable_offline_email_notifications;
+            page_params.enable_offline_email_notifications =
+                result.enable_offline_email_notifications;
         }
 
         if (result.enable_offline_push_notifications !== undefined) {
-            page_params.enable_offline_push_notifications = result.enable_offline_push_notifications;
+            page_params.enable_offline_push_notifications =
+                result.enable_offline_push_notifications;
         }
 
         if (result.enable_online_push_notifications !== undefined) {
@@ -560,7 +564,8 @@ function _setup_page() {
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
-            add_bot_default_streams_to_form(formData, default_sending_stream, default_events_register_stream);
+            add_bot_default_streams_to_form(formData, default_sending_stream,
+                                            default_events_register_stream);
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
@@ -669,7 +674,8 @@ function _setup_page() {
 
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
-                add_bot_default_streams_to_form(formData, default_sending_stream, default_events_register_stream);
+                add_bot_default_streams_to_form(formData, default_sending_stream,
+                                                default_events_register_stream);
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });

@@ -249,8 +249,8 @@ exports.hide_user_sidebar_popover = function () {
         // this hide_* method looks different from all the others since
         // the presence list may be redrawn. Due to funkiness with jquery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
-        // to a certain element. We thus save off the .data("popover") in the show_user_sidebar_popover
-        // and inject it here before calling destroy.
+        // to a certain element. We thus save off the .data("popover") in the
+        // show_user_sidebar_popover and inject it here before calling destroy.
         $('#user_presences').data("popover", current_user_sidebar_popover);
         $('#user_presences').popover("destroy");
         current_user_sidebar_user_id = undefined;
@@ -702,7 +702,8 @@ exports.register_click_handlers = function () {
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
-    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() || topic_sidebar_popped() || message_info_popped() || emoji_map_is_open;
+    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() ||
+           topic_sidebar_popped() || message_info_popped() || emoji_map_is_open;
 };
 
 exports.hide_all = function () {

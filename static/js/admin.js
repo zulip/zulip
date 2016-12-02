@@ -278,7 +278,8 @@ function _setup_page() {
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
-        realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
+        realm_message_content_edit_limit_minutes:
+            Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         language_list: page_params.language_list,
         realm_default_language: page_params.realm_default_language
     };
@@ -539,7 +540,8 @@ function _setup_page() {
             if ((parseInt(new_message_content_edit_limit_minutes, 10).toString() !==
                  new_message_content_edit_limit_minutes) ||
                 new_message_content_edit_limit_minutes < 0) {
-            new_message_content_edit_limit_minutes = 10; // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
+            // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
+            new_message_content_edit_limit_minutes = 10;
             }
         }
 
@@ -552,7 +554,8 @@ function _setup_page() {
             authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
-            message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
+            message_content_edit_limit_seconds:
+                JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
             default_language: JSON.stringify(new_default_language)
         };
 
@@ -599,7 +602,8 @@ function _setup_page() {
                 if (response_data.allow_message_editing !== undefined) {
                     // We expect message_content_edit_limit_seconds was sent in the
                     // response as well
-                    var data_message_content_edit_limit_minutes = Math.ceil(response_data.message_content_edit_limit_seconds / 60);
+                    var data_message_content_edit_limit_minutes =
+                        Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
                             ui.report_success(i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
