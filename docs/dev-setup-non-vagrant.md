@@ -81,6 +81,7 @@ sudo apt-get install postgresql-9.5-pgroonga
 # If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
 cd zulip
 sudo apt-add-repository -ys ppa:tabbott/zulip
+sudo apt-get update
 # On 14.04
 sudo apt-get install postgresql-9.3-tsearch-extras
 # On 16.04
