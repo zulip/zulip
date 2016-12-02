@@ -448,8 +448,6 @@ function render(template_name, args) {
     var row_2 = $(html).find(".draft-row[data-draft-id='2']");
     assert.equal(row_2.find(".stream_label").text().trim(), "You and Jordan, Michael");
     assert(row_2.find(".message_row").hasClass("private-message"));
-    assert.equal(row_2.find(".messagebox").css("box-shadow"),
-                 "inset 2px 0px 0px 0px #444444, -1px 0px 0px 0px #444444");
     assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
 }());
 
@@ -834,10 +832,16 @@ function render(template_name, args) {
     html += render('stream_sidebar_row', args);
     html += '</ul>';
 
+    // because it won't mark the template as read otherwise.
+    render('stream_privacy');
+
     global.write_handlebars_output("stream_sidebar_row", html);
 
-    var swatch = $(html).find(".streamlist_swatch");
-    assert.equal(swatch.attr('id'), 'stream_sidebar_swatch_999');
+    var swatch = $(html).find(".stream-privacy");
+    assert.equal(swatch.attr('id'), 'stream_sidebar_privacy_swatch_999');
+
+    // test to ensure that the hashtag element from stream_privacy exists.
+    assert.equal($(html).find(".stream-privacy").children("*").attr("class"), "hashtag");
 }());
 
 

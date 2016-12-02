@@ -13,7 +13,7 @@ html {
 body {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    font-size: 0.93rem;
+    font-size: 0.88rem;
 }
 
 /* Common background color */
@@ -649,7 +649,7 @@ td.pointer {
 
 .stream_label {
     display: inline-block;
-    padding: 4px 4px 1px 4px;
+    padding: 3px 4px 2px 4px;
     font-weight: 600;
     height: 17px;
     line-height: 17px;
@@ -682,7 +682,7 @@ td.pointer {
 .stream_topic {
     display: inline-block;
     vertical-align: top;
-    padding: 3px 6px 0px 2px;
+    padding: 2px 6px 1px 2px;
     margin-left: -5px;
     height: 17px;
 
@@ -879,6 +879,7 @@ td.pointer {
     height: 17px;
     line-height: 17px;
     border-radius: 4px;
+    box-shadow: 8px 0px 0px #fff;
 }
 
 /* Base color backgrounds for messageboxes,
