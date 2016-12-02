@@ -32,6 +32,7 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
     get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    Reaction
 )
 
 from zerver.lib.actions import (
@@ -541,6 +542,8 @@ class MessageDictTest(ZulipTestCase):
                     edit_history='[]'
                 )
                 message.save()
+                reaction = Reaction(user_profile=sender, message=message,
+                                    emoji_name='simple_smile')
 
         ids = [row['id'] for row in Message.objects.all().values('id')]
         num_ids = len(ids)
@@ -586,6 +589,39 @@ class MessageDictTest(ZulipTestCase):
         message = Message.objects.get(id=message.id)
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, bugdown.version)
+
+
+    def test_reaction(self):
+        sender = get_user_profile_by_email('othello@zulip.com')
+        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        sending_client = make_client(name="test suite")
+        message = Message(
+            sender=sender,
+            recipient=recipient,
+            subject='whatever',
+            content='hello **world**',
+            pub_date=timezone.now(),
+            sending_client=sending_client,
+            last_edit_time=timezone.now(),
+            edit_history='[]'
+        )
+        message.save()
+
+        reaction = Reaction.objects.create(
+            message=message, user_profile=sender,
+            emoji_name='simple_smile')
+        row = Message.get_raw_db_rows([message.id])[0]
+        msg_dict = MessageDict.build_dict_from_raw_db_row(row,
+               apply_markdown=True)
+        self.assertEqual(msg_dict['reactions'][0]['emoji_name'],
+                         reaction.emoji_name)
+        self.assertEqual(msg_dict['reactions'][0]['user']['id'],
+                         sender.id)
+        self.assertEqual(msg_dict['reactions'][0]['user']['email'],
+                         sender.email)
+        self.assertEqual(msg_dict['reactions'][0]['user']['full_name'],
+                         sender.full_name)
 
 class MessagePOSTTest(ZulipTestCase):
 
