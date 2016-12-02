@@ -26,9 +26,8 @@ if (window.webkitNotifications) {
         checkPermission: function checkPermission() {
             if (window.Notification.permission === 'granted') {
                 return 0;
-            } else {
-                return 2;
             }
+            return 2;
         },
         requestPermission: window.Notification.requestPermission,
         createNotification: function createNotification(icon, title, content) {

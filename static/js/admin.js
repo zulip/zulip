@@ -167,9 +167,8 @@ function stringify_list_with_conjunction(lst, conjunction) {
         return lst.toString();
     } else if (lst.length === 2) {
         return lst.join(" " + conjunction + " ");
-    } else {
-        return lst.slice(0, lst.length-1).join(", ") + ", " + conjunction + " " + lst[lst.length-1].toString();
     }
+    return lst.slice(0, lst.length-1).join(", ") + ", " + conjunction + " " + lst[lst.length-1].toString();
 }
 
 exports.populate_emoji = function (emoji_data) {

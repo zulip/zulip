@@ -122,9 +122,8 @@ exports.compare_by_pms = function (user_a, user_b) {
         return -1;
     } else if (user_a === user_b) {
         return 0;
-    } else {
-        return 1;
     }
+    return 1;
 };
 
 exports.sort_by_pms = function (objs) {

@@ -35,9 +35,8 @@ function client() {
     if ((window.bridge !== undefined) &&
         (window.bridge.desktopAppVersion !== undefined)) {
         return "desktop app " + window.bridge.desktopAppVersion();
-    } else {
-        return "website";
     }
+    return "website";
 }
 
 // This function resets an input type="file".  Pass in the
@@ -839,36 +838,33 @@ function validate_private_message() {
     } else if (page_params.is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
-    } else {
-        var private_recipients = util.extract_pm_recipients(compose.recipient());
-        var invalid_recipients = [];
-        var context = {};
-        _.each(private_recipients, function (email) {
-            // This case occurs when exports.recipient() ends with ','
-            if (email === "") {
-                return;
-            }
-            if (people.realm_get(email) !== undefined) {
-                return;
-            }
-            if (people.is_cross_realm_email(email)) {
-                return;
-            }
-            invalid_recipients.push(email);
-        });
-
-        if (invalid_recipients.length === 1) {
-            context = {'recipient': invalid_recipients.join()};
-            compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
-            return false;
-        } else if (invalid_recipients.length > 1) {
-            context = {'recipients': invalid_recipients.join()};
-            compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
-            return false;
-        } else {
-            return true;
-        }
     }
+    var private_recipients = util.extract_pm_recipients(compose.recipient());
+    var invalid_recipients = [];
+    var context = {};
+    _.each(private_recipients, function (email) {
+        // This case occurs when exports.recipient() ends with ','
+        if (email === "") {
+            return;
+        }
+        if (people.realm_get(email) !== undefined) {
+            return;
+        }
+        if (people.is_cross_realm_email(email)) {
+            return;
+        }
+        invalid_recipients.push(email);
+    });
+    if (invalid_recipients.length === 1) {
+        context = {'recipient': invalid_recipients.join()};
+        compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
+        return false;
+    } else if (invalid_recipients.length > 1) {
+        context = {'recipients': invalid_recipients.join()};
+        compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
+        return false;
+    }
+    return true;
 }
 
 exports.validate = function () {
@@ -887,9 +883,8 @@ exports.validate = function () {
 
     if (exports.composing() === 'private') {
         return validate_private_message();
-    } else {
-        return validate_stream_message();
     }
+    return validate_stream_message();
 };
 
 $(function () {

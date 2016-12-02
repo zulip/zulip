@@ -170,11 +170,10 @@ exports.report_success = function (response, status_box, type) {
 function need_skinny_mode() {
     if (window.matchMedia !== undefined) {
         return window.matchMedia("(max-width: 767px)").matches;
-    } else {
-        // IE<10 doesn't support window.matchMedia, so do this
-        // as best we can without it.
-        return window.innerWidth <= 767;
     }
+    // IE<10 doesn't support window.matchMedia, so do this
+    // as best we can without it.
+    return window.innerWidth <= 767;
 }
 
 function update_message_in_all_views(message_id, callback) {
@@ -273,9 +272,8 @@ exports.small_avatar_url = function (message) {
             url += "&stamp=" + settings.avatar_stamp;
         }
         return url;
-    } else {
-        return "";
     }
+    return "";
 };
 
 exports.lightbox = function (data) {

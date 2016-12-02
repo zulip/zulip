@@ -81,9 +81,8 @@ function message_matches_search_term(message, operator, operand) {
         operand = operand.toLowerCase();
         if (page_params.is_zephyr_mirror_realm) {
             return zephyr_stream_name_match(message, operand);
-        } else {
-            return (message.stream.toLowerCase() === operand);
         }
+        return (message.stream.toLowerCase() === operand);
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -93,9 +92,9 @@ function message_matches_search_term(message, operator, operand) {
         operand = operand.toLowerCase();
         if (page_params.is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
-        } else {
-            return (message.subject.toLowerCase() === operand);
         }
+        return (message.subject.toLowerCase() === operand);
+
 
     case 'sender':
         return (message.sender_email.toLowerCase() === operand.toLowerCase());
@@ -125,9 +124,8 @@ Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
     if (canonical_operators.hasOwnProperty(operator)) {
         return canonical_operators[operator];
-    } else {
-        return operator;
     }
+    return operator;
 };
 
 Filter.canonicalize_term = function (opts) {
@@ -271,10 +269,9 @@ Filter.unparse = function (operators) {
             // All tokens that don't start with a known operator and
             // a colon are glued together to form a search term.
             return elem.operand;
-        } else {
-            var sign = elem.negated ? '-' : '';
-            return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
         }
+        var sign = elem.negated ? '-' : '';
+        return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
     });
     return parts.join(' ');
 };
