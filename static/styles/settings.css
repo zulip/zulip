@@ -7,12 +7,66 @@ label {
     margin: 0;
 }
 
-.center-block {
+.new-style .block {
+    display: block;
+}
+
+.new-style .center-block {
     margin: 0 auto;
 }
 
-.w-70 {
+.new-style .center {
+    text-align: center;
+}
+
+.new-style .w-70 {
     width: 70%;
+}
+
+.new-style .w-200 {
+    width: 200px;
+}
+
+.new-style .m-t-20 {
+    margin-top: 20px;
+}
+
+.new-style .grid label {
+    width: 200px;
+}
+
+.new-style .grid .warning {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 150px;
+    padding: 5px 10px;
+
+    text-align: left;
+}
+
+.new-style .warning #pw_strength {
+    width: 140px;
+    height: 8px;
+    margin: 6px 0px 0px 0px;
+}
+
+/* this is because the input[type=text] is also 200px wide but has
+   12px of padding and 2px worth of borders. These don't apply to
+   buttons however. */
+.new-style .input-size {
+    width: 214px;
+}
+
+.user-avatar-section {
+    float: right;
+    background-color: #fff;
+    margin: 20px 0px;
+    padding: 20px;
+}
+
+.user-avatar-section .inline-block {
+    display: block;
 }
 
 .padded-container {
@@ -422,6 +476,33 @@ input[type=checkbox].inline-block {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+#user-settings-avatar {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    width: 200px;
+    height: 200px;
+}
+
+@media (max-width: 1215px) {
+    .user-avatar-section {
+        float: none;
+        display: inline-block;
+    }
+
+    .user-avatar-section .inline-block {
+        display: inline-block;
+        vertical-align: top;
+        margin: 0px 10px;
+    }
+}
+
+@media (max-width: 856px) {
+    .user-avatar-section .inline-block {
+        display: block;
+        margin: 0;
+    }
 }
 
 #show_api_key_box {

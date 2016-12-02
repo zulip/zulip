@@ -96,6 +96,7 @@
 }
 
 .new-style .button.white {
+    padding: 7px 14px;
     background-color: #fff;
     color: inherit;
     border: 1px solid #CCC;
