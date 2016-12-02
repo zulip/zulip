@@ -3,6 +3,7 @@
 # This is tool for injecting messages during a usability study.  It's
 # likely useless for other applications.
 from __future__ import print_function
+from typing import Generator
 import sys
 import os
 import optparse
@@ -26,9 +27,10 @@ import zulip
 characters = {'othello': {'api-key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'intro': ''},
               'iago':    {'api-key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'intro': ''}}
 
-users = {}
+users = {} # type: Dict[str, Dict[str, str]]
 
 def gen_next_user():
+    # type: () -> Generator
     global users
     user_list = sorted(users.keys())
     while True:
@@ -37,6 +39,7 @@ def gen_next_user():
 next_user = gen_next_user()
 
 def connect_all(users):
+    # type: (Dict[str, Dict[str, str]]) -> None
     for user in users:
         users[user]['client'] = zulip.Client(
             client="ZulipMessageInjector/0.1",
@@ -49,6 +52,7 @@ connect_all(characters)
 connect_all(users)
 
 def truncate(string, length):
+    # type: (str, int) -> str
     if len(string) <= length:
         return string
     return string[:length - 3] + "..."
@@ -56,13 +60,14 @@ def truncate(string, length):
 last_character = None
 num_messages_sent = 0
 def send_message(character, text, subject):
+    # type: (str, str, str) -> None
     global characters
     global last_character
     global num_messages_sent
     message = text
     if character != last_character:
         message = characters[character]['intro'] + message
-    client = characters[character]["client"]
+    client = characters[character]["client"] # type: zulip.Client
     request = {'type': 'stream',
                'content': message,
                'to': ['othello'],
@@ -80,6 +85,7 @@ def send_message(character, text, subject):
         print("Sent %s messages" % (num_messages_sent,))
 
 def maybe_assign_character(character):
+    # type: (str) -> None
     global characters
     global users
     if not character in characters:
