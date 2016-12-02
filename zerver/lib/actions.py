@@ -556,6 +556,18 @@ def do_set_realm_default_language(realm, default_language):
             )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_waiting_period_threshold(realm, threshold):
+    # type: (Realm, int) -> None
+    realm.waiting_period_threshold = threshold
+    realm.save(update_fields=['waiting_period_threshold'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='waiting_period_threshold',
+        value=threshold,
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
     """
@@ -2958,6 +2970,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
         state['realm_default_language'] = user_profile.realm.default_language
+        state['realm_waiting_period_threshold'] = user_profile.realm.waiting_period_threshold
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain
