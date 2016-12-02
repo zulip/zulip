@@ -6,10 +6,11 @@
   <div class="alert" id="display-settings-status"></div>
   <form class="display-settings-form">
 
-    <div class="input-group">
-      <label for="default_language" class="inline-block"> {{t "Default Language" }}: <span id='default_language_name'>{{page_params.default_language_name}}</span></label>
+    <p for="default_language" class="inline-block title">
+      {{t "Default Language" }}: <span id='default_language_name'>{{page_params.default_language_name}}</span>
       <a id="default_language" href="#default_language" title='Change default language'>[Change]</a>
-    </div>
+    </p>
+
     <div id="default_language_modal" class="modal hide" tabindex="-1" role="dialog"
           aria-labelledby="default_language_modal_label" aria-hidden="true">
       <div class="modal-header">
@@ -59,19 +60,25 @@
       </div>
     </div>
 
-    <div class="input-group thinner">
-      <input type="checkbox" class="inline-block" name="left_side_userlist" id="left_side_userlist"
+    <div class="input-group">
+      <label class="checkbox">
+        <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
         {{#if page_params.left_side_userlist}}
           checked="checked"
         {{/if}} />
+        <span></span>
+      </label>
         <label for="left_side_userlist" class="inline-block">{{t "Display user list on left side in narrow windows." }}</label>
     </div>
 
-    <div class="input-group thinner">
-      <input type="checkbox" class="inline-block" name="twenty_four_hour_time" id="twenty_four_hour_time"
+    <div class="input-group">
+      <label class="checkbox">
+        <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
         {{#if page_params.twenty_four_hour_time}}
           checked="checked"
         {{/if}} />
+        <span></span>
+      </label>
       <label for="twenty_four_hour_time" class="inline-block">
         {{t "Display time in 24-hour format (17:00 instead of 5:00 PM)" }}
       </label>
