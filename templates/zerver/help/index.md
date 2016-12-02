@@ -24,6 +24,7 @@ as a “**realm**”.
 
 # Table of contents:
 
+- **[Change Your Password](/help/change-your-password)**
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Editing your profile](/help/edit-profile)**
 - **[Create a stream](/help/create-a-stream.md)**
