@@ -24,6 +24,7 @@ as a “**realm**”.
 
 # Table of contents:
 
+- **[Change Your Password](/help/manage-your-password)**
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
