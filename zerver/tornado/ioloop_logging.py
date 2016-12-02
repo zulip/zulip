@@ -81,7 +81,7 @@ class InstrumentedPoll(object):
                 percent_busy = 100 * (1 - in_poll / total)
                 if settings.PRODUCTION or percent_busy > 20:
                     logging.info('Tornado %5.1f%% busy over the past %4.1f seconds'
-                        % (percent_busy, total))
+                                 % (percent_busy, total))
                     self._last_print = t1
 
         return result

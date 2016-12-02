@@ -296,7 +296,7 @@ def filter_stream_authorization(user_profile, streams):
             unauthorized_streams.append(stream)
 
     authorized_streams = [stream for stream in streams if
-               stream.id not in set(stream.id for stream in unauthorized_streams)]
+                          stream.id not in set(stream.id for stream in unauthorized_streams)]
     return authorized_streams, unauthorized_streams
 
 def stream_link(stream_name):
@@ -313,7 +313,7 @@ def stream_button(stream_name):
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
-                              validator=check_list(check_dict([('name', check_string)]))),
+                                                validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
@@ -406,10 +406,11 @@ def add_subscriptions_backend(request, user_profile,
             stream_buttons = ' '.join(stream_button(s.name) for s in created_streams)
             msg = ("%s just created %s. %s" % (user_profile.full_name,
                                                stream_msg, stream_buttons))
-            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                   "stream",
-                                   notifications_stream.name, "Streams", msg,
-                                   realm=notifications_stream.realm))
+            notifications.append(
+                internal_prep_message(settings.NOTIFICATION_BOT,
+                                      "stream",
+                                      notifications_stream.name, "Streams", msg,
+                                      realm=notifications_stream.realm))
         else:
             msg = ("Hi there!  %s just created a new stream '%s'. %s"
                    % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))

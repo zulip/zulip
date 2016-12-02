@@ -1144,7 +1144,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
         result = get_active_bot_dicts_in_realm(user_profile.realm)
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
-                                        bot_owner=user_profile).values(*active_bot_dict_fields)
+                                            bot_owner=user_profile).values(*active_bot_dict_fields)
     # TODO: Remove this import cycle
     from zerver.lib.avatar import get_avatar_url
 

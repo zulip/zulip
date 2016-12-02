@@ -261,20 +261,19 @@ def accounts_register(request):
         login(request, auth_result)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
 
-    return render_to_response('zerver/register.html',
-            {'form': form,
-             'email': email,
-             'key': key,
-             'full_name': request.session.get('authenticated_full_name', None),
-             'lock_name': name_validated and name_changes_disabled(realm),
-             # password_auth_enabled is normally set via our context processor,
-             # but for the registration form, there is no logged in user yet, so
-             # we have to set it here.
-             'creating_new_team': realm_creation,
-             'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
-             'password_auth_enabled': password_auth_enabled(realm),
-             },
-        request=request)
+    return render_to_response(
+        'zerver/register.html',
+        {'form': form,
+         'email': email,
+         'key': key,
+         'full_name': request.session.get('authenticated_full_name', None),
+         'lock_name': name_validated and name_changes_disabled(realm),
+         # password_auth_enabled is normally set via our context processor,
+         # but for the registration form, there is no logged in user yet, so
+         # we have to set it here.
+         'creating_new_team': realm_creation,
+         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
+         'password_auth_enabled': password_auth_enabled(realm), }, request=request)
 
 @zulip_login_required
 def accounts_accept_terms(request):
@@ -291,8 +290,11 @@ def accounts_accept_terms(request):
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
         special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
-    return render_to_response('zerver/accounts_accept_terms.html',
-        {'form': form, 'email': email, 'special_message_template': special_message_template},
+    return render_to_response(
+        'zerver/accounts_accept_terms.html',
+        {'form': form,
+         'email': email,
+         'special_message_template': special_message_template},
         request=request)
 
 def create_homepage_form(request, user_info=None):
@@ -703,7 +705,7 @@ def is_buggy_ua(agent):
 @authenticated_json_post_view
 @has_request_variables
 def json_set_muted_topics(request, user_profile,
-                         muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
+                          muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
     # type: (HttpRequest, UserProfile, List[List[text_type]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()

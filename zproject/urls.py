@@ -11,7 +11,7 @@ from zerver.views.integrations import IntegrationView, APIView, HelpView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 from django.contrib.auth.views import (login, password_reset,
-    password_reset_done, password_reset_confirm, password_reset_complete)
+                                       password_reset_done, password_reset_confirm, password_reset_complete)
 
 import zerver.tornado.views
 import zerver.views

@@ -287,12 +287,12 @@ class PersonalMessagesTest(ZulipTestCase):
 
         with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
             self.assertEqual(str(message),
-                u'<Message: recip /  / '
-                '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
+                             u'<Message: recip /  / '
+                             '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
 
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
-                u'<UserMessage: recip / test@zulip.com ([])>'
+                             u'<UserMessage: recip / test@zulip.com ([])>'
                              )
 
     @slow("checks several profiles")
@@ -448,8 +448,8 @@ class StreamMessagesTest(ZulipTestCase):
                           content="whatever", subject="my topic")
         message = most_recent_message(user_profile)
         self.assertEqual(str(message),
-            u'<Message: Denmark / my topic / '
-            '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
+                         u'<Message: Denmark / my topic / '
+                         '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
 
     def test_message_mentions(self):
         # type: () -> None
@@ -890,7 +890,7 @@ class EditMessageTest(ZulipTestCase):
         the cache against the database"""
         self.login("hamlet@zulip.com")
         msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="editing", content="before edit")
+                                   subject="editing", content="before edit")
         result = self.client_post("/json/update_message", {
             'message_id': msg_id,
             'content': 'after edit'
@@ -1064,15 +1064,15 @@ class EditMessageTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id2 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic2")
+                                subject="topic2")
         id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
 
         result = self.client_post("/json/update_message", {
             'message_id': id1,
@@ -1091,17 +1091,17 @@ class EditMessageTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         id1 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id2 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id3 = self.send_message("iago@zulip.com", "Rome", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id4 = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic2")
+                                subject="topic2")
         id5 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic1")
+                                subject="topic1")
         id6 = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
-            subject="topic3")
+                                subject="topic3")
 
         result = self.client_post("/json/update_message", {
             'message_id': id2,
@@ -1484,9 +1484,9 @@ class LogDictTest(ZulipTestCase):
         content = 'find me some good coffee shops'
         # self.login("hamlet@zulip.com")
         message_id = self.send_message(email, stream_name,
-            message_type=Recipient.STREAM,
-            subject=topic_name,
-            content=content)
+                                       message_type=Recipient.STREAM,
+                                       subject=topic_name,
+                                       content=content)
         message = Message.objects.get(id=message_id)
         dct = message.to_log_dict()
 
@@ -1517,7 +1517,7 @@ class CheckMessageTest(ZulipTestCase):
         subject_name = 'issue'
         message_content = 'whatever'
         ret = check_message(sender, client, message_type_name, message_to,
-                      subject_name, message_content)
+                            subject_name, message_content)
         self.assertEqual(ret['message'].sender.email, 'othello@zulip.com')
 
     def test_bot_pm_feature(self):
