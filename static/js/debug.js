@@ -9,20 +9,6 @@
     The file may still be accessible under other circumstances, so do
     not put sensitive information here. */
 
-/*
-      print_elapsed_time("foo", foo)
-
-    evaluates to foo() and prints the elapsed time
-    to the console along with the name "foo". */
-
-function print_elapsed_time(name, fun) {
-    var t0 = new Date().getTime();
-    var out = fun();
-    var t1 = new Date().getTime();
-    console.log(name + ': ' + (t1 - t0) + ' ms');
-    return out;
-}
-
 
 /* An IterationProfiler is used for profiling parts of looping
  * constructs (like a for loop or _.each).  You mark sections of the

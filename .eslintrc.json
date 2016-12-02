@@ -136,7 +136,7 @@
         "no-underscore-dangle": 1,
         "no-loop-func": 2,
         "no-labels": 2,
-        "no-unused-vars": 1,
+        "no-unused-vars": ["error", { "vars": "local", "args": "after-used" }],
         "no-script-url": 2,
         "no-proto": 2,
         "no-iterator": 2,

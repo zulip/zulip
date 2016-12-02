@@ -350,7 +350,7 @@ function get_events(options) {
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
-        error: function (xhr, error_type, exn) {
+        error: function (xhr, error_type) {
             try {
                 get_events_xhr = undefined;
                 // If we are old enough to have messages outside of the
@@ -452,7 +452,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     });
 };
 
-window.addEventListener("beforeunload", function (event) {
+window.addEventListener("beforeunload", function () {
     exports.cleanup_event_queue();
 });
 

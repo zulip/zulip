@@ -2,7 +2,6 @@ var admin = (function () {
 
 var exports = {};
 var all_streams = [];
-var user_row_to_deactivate;
 
 exports.show_or_hide_menu_item = function () {
     var item = $('.admin-menu-item').expectOne();
@@ -41,20 +40,16 @@ exports.update_user_full_name = function (email, new_full_name) {
     user_row.show();
 };
 
-function failed_listing_users(xhr, error) {
+function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     ui.report_error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
 }
 
-function failed_listing_streams(xhr, error) {
+function failed_listing_streams(xhr) {
     ui.report_error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
 }
 
-function failed_listing_emoji(xhr, error) {
-    ui.report_error(i18n.t("Error listing emoji"), xhr, $("#administration-status"));
-}
-
-function failed_changing_name(xhr, error) {
+function failed_changing_name(xhr) {
     ui.report_error(i18n.t("Error changing name"), xhr, $("#administration-status"));
 }
 
@@ -144,12 +139,11 @@ function make_stream_default(stream_name) {
     var data = {
         stream_name: stream_name
     };
-    var default_streams_table = $("#admin_default_streams_table").expectOne();
 
     channel.put({
         url: '/json/default_streams',
         data: data,
-        error: function (xhr, error_type) {
+        error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
                 $(".active_stream_row button").closest("td").html(
                     $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
@@ -223,7 +217,7 @@ exports.populate_auth_methods = function (auth_methods) {
 };
 
 exports.set_up_deactivate_user_modal = function (row) {
-    $("#do_deactivate_user_button").expectOne().click(function (e) {
+    $("#do_deactivate_user_button").expectOne().click(function () {
         var email = row.find(".email").text();
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
@@ -234,7 +228,7 @@ exports.set_up_deactivate_user_modal = function (row) {
         row.find("button").prop("disabled", true).text("Working…");
         channel.del({
             url: '/json/users/' + email,
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -379,7 +373,7 @@ function _setup_page() {
 
         channel.del({
             url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_default_stream_row button").closest("td").html(
                     $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
@@ -404,7 +398,7 @@ function _setup_page() {
     $('.create_default_stream').typeahead({
         items: 5,
         fixed: true,
-        source: function (query) {
+        source: function () {
             return get_non_default_streams_names(all_streams);
         },
         highlight: true,
@@ -419,12 +413,11 @@ function _setup_page() {
 
         var row = $(e.target).closest(".user_row");
 
-        var user_name = row.find('.user_name').text();
         var email = get_email_for_user_row(row);
 
         channel.del({
             url: '/json/bots/' + email,
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -455,7 +448,7 @@ function _setup_page() {
 
         channel.post({
             url: '/json/users/' + email + "/reactivate",
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 var button = row.find("button");
                 if (xhr.status.toString().charAt(0) === "4") {
                     button.closest("td").html(
@@ -506,7 +499,6 @@ function _setup_page() {
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
-        var auth_methods_table = $('.admin_auth_methods_table');
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
@@ -626,7 +618,7 @@ function _setup_page() {
                     }
                 }
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var reason = $.parseJSON(xhr.responseText).reason;
                 if (reason === "no authentication") {
                     ui.report_error(i18n.t("Failed!"), xhr, authentication_methods_status);
@@ -661,7 +653,7 @@ function _setup_page() {
                 button.removeClass("make-admin");
                 button.text(i18n.t("Remove admin"));
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var status = row.find(".admin-user-status");
                 ui.report_error(i18n.t("Failed!"), xhr, status);
             }
@@ -692,7 +684,7 @@ function _setup_page() {
                 button.removeClass("remove-admin");
                 button.text(i18n.t("Make admin"));
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var status = row.find(".admin-user-status");
                 ui.report_error(i18n.t("Failed!"), xhr, status);
             }
@@ -713,7 +705,7 @@ function _setup_page() {
         user_row.hide();
         form_row.show();
 
-        reset_button.on("click", function (e) {
+        reset_button.on("click", function () {
             form_row.hide();
             user_row.show();
         });
@@ -738,7 +730,7 @@ function _setup_page() {
         });
     });
 
-    $("#do_deactivate_stream_button").click(function (e) {
+    $("#do_deactivate_stream_button").click(function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
             ui.report_message("Deactivation encountered an error. Please reload and try again.",
@@ -748,7 +740,7 @@ function _setup_page() {
         $(".active_stream_row button").prop("disabled", true).text("Working…");
         channel.del({
             url: '/json/streams/' + encodeURIComponent($(".active_stream_row").find('.stream_name').text()),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_stream_row button").closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -771,7 +763,7 @@ function _setup_page() {
 
         channel.del({
             url: '/json/realm/emoji/' + encodeURIComponent(btn.attr('data-emoji-name')),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -802,7 +794,7 @@ function _setup_page() {
                 ui.report_success(i18n.t("Custom emoji added!"), emoji_status);
                 $("form.admin-emoji-form input[type='text']").val("");
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 $('#admin-emoji-status').hide();
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
@@ -818,7 +810,7 @@ function _setup_page() {
 
         channel.del({
             url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
                         $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
@@ -853,7 +845,7 @@ function _setup_page() {
                 filter.id = data.id;
                 ui.report_success(i18n.t("Custom filter added!"), filter_status);
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var errors = $.parseJSON(xhr.responseText).errors;
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});

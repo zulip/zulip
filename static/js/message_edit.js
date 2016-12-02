@@ -105,12 +105,12 @@ exports.save = function (row, from_topic_edited_only) {
     channel.post({
         url: '/json/update_message',
         data: request,
-        success: function (data) {
+        success: function () {
             if (msg_list === current_msg_list) {
                 row.find(".edit_error").text("Message successfully edited!").removeClass("alert-error").addClass("alert-success").show();
             }
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             if (msg_list === current_msg_list) {
                 var message = channel.xhr_error_message("Error saving edit", xhr);
                 row.find(".edit_error").text(message).show();
@@ -355,7 +355,7 @@ exports.maybe_show_edit = function (row, id) {
     }
 };
 
-$(document).on('narrow_deactivated.zulip', function (event) {
+$(document).on('narrow_deactivated.zulip', function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = current_msg_list.get_row(idx);

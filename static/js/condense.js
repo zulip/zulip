@@ -140,7 +140,7 @@ exports.condense_and_collapse = function (elems) {
 };
 
 $(function () {
-    $("#home").on("click", ".message_expander", function (e) {
+    $("#home").on("click", ".message_expander", function () {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
         var row = $(this).closest(".message_row");
@@ -158,7 +158,7 @@ $(function () {
         }
     });
 
-    $("#home").on("click", ".message_condenser", function (e) {
+    $("#home").on("click", ".message_condenser", function () {
         var row = $(this).closest(".message_row");
         current_msg_list.get(rows.id(row)).condensed = true;
         condense_row(row);

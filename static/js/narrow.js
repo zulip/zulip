@@ -319,7 +319,7 @@ exports.activate = function (raw_operators, opts) {
         num_after: 50,
         msg_list: message_list.narrowed,
         use_first_unread_anchor: opts.first_unread_from_server,
-        cont: function (messages) {
+        cont: function () {
             ui.hide_loading_more_messages_indicator();
             if (defer_selecting_closest) {
                 maybe_select_closest();

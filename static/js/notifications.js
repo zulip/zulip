@@ -9,7 +9,6 @@ var notice_memory = {};
 var window_has_focus = document.hasFocus && document.hasFocus();
 
 var asked_permission_already = false;
-var names;
 var supports_sound;
 
 var unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
