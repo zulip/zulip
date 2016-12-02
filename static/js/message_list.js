@@ -120,9 +120,8 @@ exports.MessageList.prototype = {
         var i = this._items.length - n;
         if (i < 0) {
             return -1;
-        } else {
-            return this._items[i].id;
         }
+        return this._items[i].id;
     },
 
     clear: function  MessageList_clear(opts) {

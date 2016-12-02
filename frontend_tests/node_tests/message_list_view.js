@@ -20,9 +20,8 @@ set_global('timerender', {
     render_date: function (time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
-        } else {
-            return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
         }
+        return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
     }
 });
 

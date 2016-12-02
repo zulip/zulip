@@ -41,10 +41,9 @@ exports.set_count_toggle_button = function (elem, count) {
     } else if ((count > 0) && (count < 1000)) {
         elem.show(500);
         return elem.text(count);
-    } else {
-        elem.show(500);
-        return elem.text("1k+");
     }
+    elem.show(500);
+    return elem.text("1k+");
 };
 
 

@@ -563,15 +563,13 @@ function pick_empty_narrow_banner() {
         if (first_operand.indexOf(',') === -1) {
             // You have no private messages with this person
             return $("#empty_narrow_private_message");
-        } else {
-            return $("#empty_narrow_multi_private_message");
         }
+        return $("#empty_narrow_multi_private_message");
     } else if (first_operator === "sender") {
         if (people.get_by_email(first_operand)) {
             return $("#silent_user");
-        } else {
-            return $("#non_existing_user");
         }
+        return $("#non_existing_user");
     }
     return default_banner;
 }
@@ -615,10 +613,9 @@ exports.by_conversation_and_time_uri = function (message) {
         return "#narrow/stream/" + hashchange.encodeHashComponent(message.stream) +
             "/subject/" + hashchange.encodeHashComponent(message.subject) +
             "/near/" + hashchange.encodeHashComponent(message.id);
-    } else {
-        return "#narrow/pm-with/" + hashchange.encodeHashComponent(message.reply_to) +
-            "/near/" + hashchange.encodeHashComponent(message.id);
     }
+    return "#narrow/pm-with/" + hashchange.encodeHashComponent(message.reply_to) +
+        "/near/" + hashchange.encodeHashComponent(message.id);
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.

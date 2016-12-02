@@ -161,10 +161,9 @@ function insert_local_message(message_request, local_id) {
                 // For unknown users, we return a skeleton object.
                 return {email: email, full_name: email,
                         unknown_local_echo_user: true};
-            } else {
-                // NORMAL PATH
-                return person;
             }
+            // NORMAL PATH
+            return person;
         });
     }
 
@@ -298,9 +297,8 @@ function handleUnicodeEmoji(unicode_emoji) {
         return '<img alt="' + unicode_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + unicode_emoji + '">';
-    } else {
-        return unicode_emoji;
     }
+    return unicode_emoji;
 }
 
 function handleEmoji(emoji_name) {
@@ -310,9 +308,8 @@ function handleEmoji(emoji_name) {
         return '<img alt="' + input_emoji + '"' +
                ' class="emoji" src="' + emoji_url + '"' +
                ' title="' + input_emoji + '">';
-    } else {
-        return input_emoji;
     }
+    return input_emoji;
 }
 
 function handleAvatar(email) {
@@ -328,9 +325,8 @@ function handleUserMentions(username) {
                 '@' + person.full_name + '</span>';
     } else if (username === 'all' || username === 'everyone') {
         return '<span class="user-mention" data-user-email="*">' + '@' + username + '</span>';
-    } else {
-        return undefined;
     }
+    return undefined;
 }
 
 function handleStream(streamName) {

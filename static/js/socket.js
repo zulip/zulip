@@ -130,9 +130,8 @@ Socket.prototype = {
                 // call close() explicitly.
                 this._sockjs.close();
                 return;
-            } else {
-                throw e;
             }
+            throw e;
         }
     },
 
@@ -289,9 +288,8 @@ Socket.prototype = {
             // We specify a non-zero timeout here so that we don't try to
             // immediately reconnect when the page is refreshing
             return 30;
-        } else {
-            return Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
         }
+        return Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
     },
 
     _try_to_reconnect: function Socket__try_to_reconnect(opts) {
