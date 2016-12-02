@@ -30,9 +30,9 @@ from zerver.lib.test_classes import (
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
-    get_realm_by_string_id, get_stream, get_user_profile_by_email,
-    Reaction
+    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
+    RealmAlias, get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    Reaction, sew_messages_and_reactions
 )
 
 from zerver.lib.actions import (
@@ -544,6 +544,7 @@ class MessageDictTest(ZulipTestCase):
                 message.save()
                 reaction = Reaction(user_profile=sender, message=message,
                                     emoji_name='simple_smile')
+                reaction.save()
 
         ids = [row['id'] for row in Message.objects.all().values('id')]
         num_ids = len(ids)
@@ -622,6 +623,46 @@ class MessageDictTest(ZulipTestCase):
                          sender.email)
         self.assertEqual(msg_dict['reactions'][0]['user']['full_name'],
                          sender.full_name)
+
+
+class SewMessageAndReactionTest(ZulipTestCase):
+    def test_sew_messages_and_reaction(self):
+        sender = get_user_profile_by_email('othello@zulip.com')
+        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        stream_name = u'Çiğdem'
+        stream = self.make_stream(stream_name)
+        stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        sending_client = make_client(name="test suite")
+
+        needed_ids = []
+        for i in range(100):
+            for recipient in [pm_recipient, stream_recipient]:
+                message = Message(
+                    sender=sender,
+                    recipient=recipient,
+                    subject='whatever',
+                    content='whatever %d' % i,
+                    pub_date=timezone.now(),
+                    sending_client=sending_client,
+                    last_edit_time=timezone.now(),
+                    edit_history='[]'
+                )
+                message.save()
+                needed_ids.append(message.id)
+                reaction = Reaction(user_profile=sender, message=message,
+                                    emoji_name='simple_smile')
+                reaction.save()
+
+        messages = Message.objects.filter(id__in=needed_ids).values(
+            *['id', 'content'])
+        reactions = Reaction.get_raw_db_rows(needed_ids)
+        tied_data = sew_messages_and_reactions(messages, reactions)
+        for data in tied_data:
+            self.assertEqual(len(data['reactions']), 1)
+            self.assertEqual(data['reactions'][0]['emoji_name'],
+                             'simple_smile')
+
 
 class MessagePOSTTest(ZulipTestCase):
 
