@@ -196,7 +196,6 @@ def parse_change_event(change_type, message):
             event_type = "changed_" + change_type
             values.update({'old': old, 'new': new})
 
-
     elif change_type == "is_blocked":
         if message["change"]["diff"]["is_blocked"]["to"]:
             event_type = "blocked"
@@ -218,7 +217,6 @@ def parse_change_event(change_type, message):
         event_type = 'renamed'
         old, new = get_old_and_new_values(change_type, message)
         values.update({'old': old, 'new': new})
-
 
     elif change_type in ["estimated_finish", "estimated_start"]:
         old, new = get_old_and_new_values(change_type, message)

@@ -62,7 +62,6 @@ class DeskDotComHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-
     def get_body(self, fixture_name):
         # type: (text_type) -> text_type
         return self.fixture_data("deskdotcom", fixture_name, file_type="txt")

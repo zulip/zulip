@@ -91,7 +91,6 @@ def create_user_docs():
     # type: () -> None
     fn = 'var/url_coverage.txt' # TODO: make path more robust, maybe use json suffix
 
-
     out_dir = 'var/api_docs'
     try:
         os.mkdir(out_dir)

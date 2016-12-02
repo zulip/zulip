@@ -242,7 +242,6 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
             subscribed_to_stream(user_profile, default_events_register_stream):
         return json_error(_('Insufficient permission'))
 
-
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
                                  short_name=short_name, active=True,

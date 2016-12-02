@@ -181,7 +181,6 @@ class Command(makemessages.Command):
         # type: () -> str
         return self.frontend_source
 
-
     def get_namespace(self):
         # type: () -> str
         return self.frontend_namespace

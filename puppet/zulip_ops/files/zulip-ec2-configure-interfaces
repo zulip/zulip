@@ -114,7 +114,6 @@ for device in macs.values():
                 ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
                     address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
 
-
     to_configure.remove(address_of(device_number))
 
     for (count, ip) in enumerate(to_configure):

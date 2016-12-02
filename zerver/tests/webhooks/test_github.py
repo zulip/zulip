@@ -221,7 +221,6 @@ class GithubV2HookTests(WebhookTestCase):
         )
         self.basic_test('push_commits_more_than_limit', 'commits', 'zulip-test / master', expected_subject)
 
-
     def test_legacy_hook(self):
         # type: () -> None
         self.basic_test('push', 'commits', 'zulip-test / master', self.push_content)

@@ -201,7 +201,6 @@ class BugdownTest(TestCase):
                 href = 'http://' + url
             return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
 
-
         print("Running Bugdown Linkify tests")
         self.maxDiff = None # type: Optional[int]
         for inline_url, reference, url in linkify_tests:
@@ -447,7 +446,6 @@ class BugdownTest(TestCase):
             realm_filter.__unicode__(),
             '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
-
 
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")

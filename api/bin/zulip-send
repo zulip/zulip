@@ -89,7 +89,6 @@ def main(argv=None):
                      help='Allows the user to specify a subject for the message.')
     parser.add_option_group(group)
 
-
     (options, recipients) = parser.parse_args(argv[1:])
 
     if options.verbose:

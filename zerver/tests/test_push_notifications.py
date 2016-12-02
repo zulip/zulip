@@ -143,7 +143,6 @@ class TestPushApi(ZulipTestCase):
             result = self.client_delete(endpoint, {'token': 'non-existent token'})
             self.assert_json_error(result, 'Token does not exist')
 
-
         # Add tokens
         for endpoint, token in endpoints:
             # Test that we can push twice

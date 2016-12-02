@@ -156,7 +156,6 @@ class AuthBackendTest(TestCase):
                                 bad_kwargs=dict(password="wrong"),
                                 good_kwargs=dict(password=password))
 
-
     def test_email_auth_backend_disabled_password_auth(self):
         # type: () -> None
         email = u"hamlet@zulip.com"
@@ -286,7 +285,6 @@ class AuthBackendTest(TestCase):
             self.verify_backend(ZulipRemoteUserBackend(),
                                 email_to_username=email_to_username,
                                 good_kwargs=dict(realm_subdomain='acme'))
-
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             # With subdomains, authenticating with the right subdomain

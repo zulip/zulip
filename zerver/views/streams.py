@@ -457,7 +457,6 @@ def get_streams_backend(request, user_profile,
                         include_default=REQ(validator=check_bool, default=False)):
     # type: (HttpRequest, UserProfile, bool, bool, bool, bool) -> HttpResponse
 
-
     streams = do_get_streams(user_profile, include_public=include_public,
                              include_subscribed=include_subscribed,
                              include_all_active=include_all_active,

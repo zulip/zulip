@@ -480,7 +480,6 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-
     def test_get_old_messages_with_narrow_sender(self):
         """
         A request for old messages with a narrow by sender only returns
@@ -549,7 +548,6 @@ class GetOldMessagesTest(ZulipTestCase):
         message = messages[str(good_id)]
         self.assertEqual(message['match_content'],
             u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
-
 
     @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search(self):

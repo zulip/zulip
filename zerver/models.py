@@ -1280,7 +1280,6 @@ class UserPresence(models.Model):
                 user__is_bot=False,
         ).distinct("user").values("user")]
 
-
         for row in query:
             info = UserPresence.to_presence_dict(
                     client_name=row['client__name'],

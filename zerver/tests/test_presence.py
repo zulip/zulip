@@ -133,7 +133,6 @@ class UserPresenceTests(ZulipTestCase):
         json = post_presence()
         self.assertEqual(json['zephyr_mirror_active'], True)
 
-
     def _simulate_mirror_activity_for_user(self, user_profile):
         # type: (UserProfile) -> None
         last_visit = timezone.now()
@@ -146,7 +145,6 @@ class UserPresenceTests(ZulipTestCase):
             count=2,
             last_visit=last_visit
         )
-
 
     def test_same_realm(self):
         # type: () -> None

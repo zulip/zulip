@@ -186,7 +186,6 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
-
     def test_tokenize(self):
         # type: () -> None
         tag = '<meta whatever>bla'

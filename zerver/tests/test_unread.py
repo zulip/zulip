@@ -192,7 +192,6 @@ class UnreadCountTests(ZulipTestCase):
             if msg.user_profile.email == "hamlet@zulip.com":
                 self.assertFalse(msg.flags.read)
 
-
     def test_mark_all_in_invalid_stream_read(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
@@ -241,7 +240,6 @@ class UnreadCountTests(ZulipTestCase):
         for msg in unrelated_messages:
             if msg.user_profile.email == "hamlet@zulip.com":
                 self.assertFalse(msg.flags.read)
-
 
     def test_mark_all_in_invalid_topic_read(self):
         # type: () -> None

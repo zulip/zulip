@@ -63,7 +63,6 @@ class RateLimitTests(ZulipTestCase):
         settings.RATE_LIMITING = True
         add_ratelimit_rule(1, 5)
 
-
     def tearDown(self):
         # type: () -> None
         settings.RATE_LIMITING = False

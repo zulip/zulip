@@ -873,7 +873,6 @@ class P4UserMap(object):
             self.users[output["User"]] = output["FullName"] + " <" + output["Email"] + ">"
             self.emails[output["Email"]] = output["User"]
 
-
         s = ''
         for (key, val) in self.users.items():
             s += "%s\t%s\n" % (key.expandtabs(1), val.expandtabs(1))
@@ -958,7 +957,6 @@ class P4RollBack(Command):
                     system("git update-ref %s \"%s^\"" % (ref, ref))
                     log = extractLogMessageFromGitCommit(ref)
                     settings =  extractSettingsGitLog(log)
-
 
                     depotPaths = settings['depot-paths']
                     change = settings['change']
@@ -2480,7 +2478,6 @@ class P4Sync(Command, P4UserMap):
                 if source not in self.knownBranches:
                     lostAndFoundBranches.add(source)
 
-
         for branch in lostAndFoundBranches:
             self.knownBranches[branch] = branch
 
@@ -2698,7 +2695,6 @@ class P4Sync(Command, P4UserMap):
                 sys.stderr.write("p4 exitcode: %s\n" % info['p4ExitCode'])
                 sys.exit(1)
 
-
             change = int(info["change"])
             if change > newestRevision:
                 newestRevision = change
@@ -2726,7 +2722,6 @@ class P4Sync(Command, P4UserMap):
         except IOError:
             print("IO error with git fast-import. Is your git version recent enough?")
             print(self.gitError.read())
-
 
     def run(self, args):
         self.depotPaths = []

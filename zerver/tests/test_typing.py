@@ -207,7 +207,6 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
 
-
     def test_send_notification_to_another_user_event(self):
         # type: () -> None
         """

@@ -89,7 +89,6 @@ def get_realm_day_counts():
     for row in rows:
         counts[row['domain']][row['age']] = row['cnt']
 
-
     result = {}
     for domain in counts:
         raw_cnts = [counts[domain].get(age, 0) for age in range(8)]
@@ -259,7 +258,6 @@ def realm_summary_table(realm_minutes):
         total_user_profile_count += int(row['user_profile_count'])
         total_bot_count += int(row['bot_count'])
         total_at_risk_count += int(row['at_risk_count'])
-
 
     rows.append(dict(
         domain='Total',
@@ -695,7 +693,6 @@ def get_user_activity_summary(records):
             update('pointer', record)
         update(client, record)
 
-
     return summary
 
 def format_date_for_activity_reports(date):
@@ -886,7 +883,6 @@ def get_realm_activity(request, realm):
     page_title = 'Clients'
     content = realm_client_table(all_user_records)
     data += [(page_title, content)]
-
 
     page_title = 'History'
     content = sent_messages_report(realm)
