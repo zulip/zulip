@@ -179,7 +179,7 @@
                 "case": { "after": true }
             }
         }],
-        "space-before-blocks": 1,
+        "space-before-blocks": 2,
         "strict": 1,
         "unnecessary-strict": 0,
         "use-isnan": 2,
