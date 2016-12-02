@@ -24,6 +24,14 @@
     display: inline-block;
 }
 
+.box-shadow {
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.bg-white {
+    background-color: #FFF;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
