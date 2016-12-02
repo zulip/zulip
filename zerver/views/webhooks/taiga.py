@@ -156,7 +156,7 @@ def parse_comment(message):
         'values': {
             'user': message["change"]["user"]["name"],
             'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
-            message["data"]["name"]
+                 (message["data"]["name"])
         }
     }
 
@@ -170,7 +170,7 @@ def parse_create_or_delete(message):
             {
                 'user': message["data"]["owner"]["name"],
                 'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
-                message["data"]["name"]
+                (message["data"]["name"])
             }
     }
 
