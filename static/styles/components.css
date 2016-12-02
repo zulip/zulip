@@ -12,6 +12,10 @@
     display: none;
 }
 
+.light {
+    font-weight: 300;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
