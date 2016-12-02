@@ -24,7 +24,6 @@ class Command(BaseCommand):
                             default=False,
                             help="Only logout all users who are deactivated")
 
-
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         if options["realm"]:

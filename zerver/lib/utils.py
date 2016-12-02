@@ -131,7 +131,6 @@ def mkdir_p(path):
 
 def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=None):
     # type: (List[Any], Set[int], int, int) -> Iterable[Any]
-
     '''
     This merges one or more Django ascending-id queries into
     a generator that returns chunks of chunk_size row objects

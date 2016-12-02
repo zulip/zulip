@@ -208,7 +208,6 @@ class Config(object):
                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
         # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
-
         assert table or custom_tables
         self.table = table
         self.model = model
@@ -272,7 +271,6 @@ def export_from_config(response, config, seed_object=None, context=None):
 
     if context is None:
         context = {}
-
 
     if table:
         exported_tables = [table]
@@ -492,7 +490,6 @@ def get_realm_config():
         exclude=['email_token'],
         post_process_data=sanity_check_stream_data
     )
-
 
     #
 

@@ -1025,7 +1025,6 @@ class UserSignUpTest(ZulipTestCase):
                                              "newuser@zulip.com"],
                                             result)
 
-
         mock_ldap.reset()
         mock_initialize.stop()
 

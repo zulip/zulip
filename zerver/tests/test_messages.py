@@ -161,7 +161,6 @@ class TestCrossRealmPMs(ZulipTestCase):
         dep.realms = [get_realm_by_string_id("zulip")]
         dep.save()
 
-
     def create_user(self, email):
         # type: (text_type) -> UserProfile
         username, domain = email.split('@')

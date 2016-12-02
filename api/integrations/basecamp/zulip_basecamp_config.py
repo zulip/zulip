@@ -21,7 +21,6 @@
 # THE SOFTWARE.
 
 
-
 # Change these values to configure authentication for basecamp account
 BASECAMP_ACCOUNT_ID = "12345678"
 BASECAMP_USERNAME = "foo@example.com"
