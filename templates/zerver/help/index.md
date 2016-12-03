@@ -26,6 +26,7 @@ as a “**realm**”.
 
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Posting and replying](#posting-and-replying)**
+- **[Searching](search-messages.md)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
@@ -154,10 +155,8 @@ individual users. ![New message](/static/images/help/new_message.png)
 ## Other common questions
 
 **[Keyboard shortcuts](#keyboard-shortcuts)** |
-**[Searching](#searching)** |
-**[Search for past messages](#searching-for-past-messages)** |
-**[Find starred messages](#find-starred-messages)** |
-**[Show only particular messages](#show-only-particular-messages)** |
+**[Searching](search-messages.md)** |
+**[Filtering](search-messages.md#filtering-messages)** |
 **[Date of a message](#date-of-a-message)** |
 **[Change topic title or stream name](#changing-the-title-of-a-topic-or-stream)** |
 **[Edit topic titles](#editing-a-topic-title)** |
@@ -174,44 +173,6 @@ individual users. ![New message](/static/images/help/new_message.png)
 Go to the cog (![cog](/static/images/help/cog.png)) in the upper right
 corner of the right sidebar and choose “Keyboard shortcuts” from the
 drop-down menu.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-### Searching
-
-Zulip searches incrementally (and case-independent) as you type, but
-will only match your typing at the beginning of a stream name. So
-typing _el_ won’t bring up “Help”, but _he_ will.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-### Searching for past messages
-
-It is possible to do limited searches on past messages. Some special
-features and limitations:
-
- * If there are many hits, only the most recent ones are returned.
-
- * Searching by date isn’t currently possible.
-
- * Search hits include morphological variants by default (if you
-   search for _walking_ you’ll also get _walk_, _walks_, _walked_, and
-   so on). Sometimes putting a search term in quotes seems to
-   eliminate the variants, but that behavior isn’t consistent right
-   now.
-
- * It’s possible to combine search terms within parentheses using
-   logical operators — searching for `(“arrays” and “queues”)` will
-   return only those messages containing both _arrays_ and _queues_.
-
- * Many common words are “stop words” — the search tool will ignore
-   them, because they appear in too many messages to be useful.
-
- * To see a list of search operators, go to the cog
-   (![cog](/static/images/help/cog.png)) in the upper right corner of
-   the right sidebar and choose “Search help” from the drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#table-of-contents)**
