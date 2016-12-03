@@ -31,3 +31,9 @@ For bold text, surround your text with `** two asterisks **`.
 For strikethrough text, surround your text with `~~ two tildes ~~`.
 
 ![Strikethrough text](/static/images/help/strikethrough-screenshot.png)
+
+### Extra emphasis
+
+To add more variety, flavor, and emphasis to your messages, you can combine different styles of formatting.
+
+![Extra emphasized text](/static/images/help/extra-emphasis-screenshot.png)
