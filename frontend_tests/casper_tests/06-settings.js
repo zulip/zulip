@@ -22,9 +22,9 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible("#settings-change-box", function () {
+    casper.waitUntilVisible("#settings_content .account-settings-form", function () {
         casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, 'URL suggests we are on settings page');
-        casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
+        casper.test.assertVisible('.account-settings-form', 'Settings page is active');
 
         casper.test.assertNotVisible("#pw_change_controls");
 
@@ -56,6 +56,7 @@ casper.then(function () {
     casper.waitUntilVisible('#settings-status', function () {
         casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
 
+        casper.click('[data-section="your-bots"]');
         casper.click('#api_key_button');
     });
 });
@@ -196,6 +197,7 @@ casper.waitForSelector('#create_alert_word_form', function () {
 
 casper.then(function change_default_language() {
     casper.test.info('Changing the default language');
+    casper.click('[data-section="display-settings"]');
     casper.waitForSelector('#default_language');
 });
 
@@ -236,6 +238,7 @@ casper.waitForSelector("#settings-change-box", function check_url_preference() {
         return document.documentElement.lang;
     }, 'de');
     casper.test.info("English is now the default language");
+    casper.click('[data-section="display-settings"]');
 });
 
 casper.thenClick('#default_language');

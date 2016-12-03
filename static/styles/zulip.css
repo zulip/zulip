@@ -1962,11 +1962,6 @@ div.floating_recipient {
     table-layout: fixed;
 }
 
-.administration {
-    margin-top: 55px;
-    padding-left: 15px;
-}
-
 .conversation-partners {
     display: block;
     line-height: 1.2em;

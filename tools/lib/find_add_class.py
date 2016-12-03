@@ -18,6 +18,7 @@ GENERIC_KEYWORDS = [
     'show',
     'notdisplayed',
     'popover',
+    'no-border',
     'success',
     'text-error',
     'warning',
@@ -25,6 +26,7 @@ GENERIC_KEYWORDS = [
     'zoom-out',
     'first',
     'second',
+    'selected',
 ]
 
 def raise_error(fn, i, line):

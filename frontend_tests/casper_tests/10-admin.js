@@ -14,7 +14,7 @@ casper.then(function () {
     casper.click('a[href^="#administration"]');
 });
 
-casper.waitForSelector('#administration.tab-pane.active', function () {
+casper.waitForSelector('#settings_overlay_container.show', function () {
     casper.test.info('Administration page is active');
     casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#administration/, 'URL suggests we are on administration page');
 });
@@ -23,7 +23,6 @@ casper.waitForSelector('#administration.tab-pane.active', function () {
 casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
     casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
     casper.click('form.admin-realm-form input.button');
-
 });
 
 casper.then(function () {
@@ -64,14 +63,15 @@ casper.then(function () {
     });
 });
 
+
 casper.then(function () {
     // Test custom realm emoji
+    casper.click("li[data-section='emoji-settings']");
     casper.waitForSelector('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
             name: 'MouseFace',
             url: 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png',
-        });
-        casper.click('form.admin-emoji-form input.button');
+        }, true);
     });
 });
 
@@ -97,6 +97,7 @@ casper.then(function () {
 
 // Test custom realm filters
 casper.then(function () {
+    casper.click("li[data-section='filter-settings']");
     casper.waitForSelector('.admin-filter-form', function () {
         casper.fill('form.admin-filter-form', {
             pattern: '#(?P<id>[0-9]+)',
@@ -168,10 +169,7 @@ function select_from_suggestions(item) {
 
 // Test default stream creation and addition
 casper.then(function () {
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#subscriptions"]');
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#administration"]');
+    casper.click("li[data-section='default-streams-list']");
     casper.waitUntilVisible(".create_default_stream", function () {
         // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
         // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
@@ -201,9 +199,11 @@ casper.then(function () {
     });
 });
 
+
 // TODO: Test stream deletion
 
 casper.then(function () {
+    casper.click("li[data-section='organization-settings']");
     casper.waitUntilVisible('#id_realm_default_language', function () {
         casper.test.info("Changing realm default language");
         casper.evaluate(function () {
@@ -222,6 +222,7 @@ casper.then(function () {
 
 // Test authentication methods setting
 casper.then(function () {
+    casper.click("li[data-section='auth-methods']");
     casper.waitForSelector(".method_row[data-method='Email'] input[type='checkbox']", function () {
         casper.click(".method_row[data-method='Email'] input[type='checkbox']");
         casper.click('form.admin-realm-form input.button');

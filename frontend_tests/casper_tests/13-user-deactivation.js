@@ -10,6 +10,12 @@ casper.then(function () {
     });
 });
 
+casper.then(function () {
+    casper.waitForSelector('#settings_overlay_container.show', function () {
+        casper.click("li[data-section='user-list-admin']");
+    });
+});
+
 // Test user deactivation and reactivation
 casper.then(function () {
     casper.waitForSelector('.user_row[id="user_cordelia@zulip.com"]', function () {
@@ -52,8 +58,8 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 
-    casper.test.assertSelectorHasText("#administration a[aria-controls='deactivated-users']", "Deactivated users");
-    casper.click("#administration a[aria-controls='deactivated-users']");
+    casper.test.assertSelectorHasText("li[data-section='deactivated-users-admin']", "Deactivated users");
+    casper.click("li[data-section='deactivated-users-admin']");
 
 
     casper.waitForSelector('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] .reactivate', function () {
@@ -66,13 +72,15 @@ casper.then(function () {
     casper.waitForSelector('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] button:not(.reactivate)', function () {
         casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
     });
+});
 
-    casper.test.assertSelectorHasText("#administration a[aria-controls='organization']", "Organization");
-    casper.click("#administration a[aria-controls='organization']");
+// Test bot deactivation and reactivation
+casper.then(function () {
+    casper.test.assertSelectorHasText("li[data-section='organization-settings']", "Organization settings");
+    casper.click("li[data-section='bot-list-admin']");
 });
 
 casper.then(function () {
-    // Test bot deactivation and reactivation
     casper.waitForSelector('.user_row[id="user_new-user-bot@zulip.com"]', function () {
         casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
         casper.click('.user_row[id="user_new-user-bot@zulip.com"] .deactivate');

@@ -96,7 +96,7 @@ casper.then(function () {
 
 // go back to home page
 casper.then(function () {
-    casper.click('.global-filter[data-name="home"]');
+    casper.click('.settings-header .exit');
 });
 
 // Commented out due to Issue #1243
@@ -156,7 +156,7 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editin
 // Commented out due to Issue #1243
 // go back home
 // casper.then(function () {
-//     casper.click('.global-filter[data-name="home"]');
+//     casper.click('.settings-header .exit');
 // });
 
 // // save our edit
@@ -192,8 +192,8 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editin
 casper.then(function () {
     casper.test.info('Administration page');
     casper.click('a[href^="#administration"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#administration/, 'URL suggests we are on administration page');
-    casper.test.assertExists('#administration.tab-pane.active', 'Administration page is active');
+    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#administration/, 'URL suggests we are on administration page');
+    casper.test.assertExists('#settings_overlay_container.show', 'Administration page is active');
 });
 
 casper.waitForSelector('form.admin-realm-form input.button');

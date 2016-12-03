@@ -111,12 +111,27 @@ td .button {
 }
 
 .settings-section {
+    display: none;
     background-color: #fafafa;
     border-radius: 2px;
     margin: 20px;
     overflow: hidden;
     border: 1px solid #dfdfdf;
     border-top: 5px solid #dfdfdf;
+}
+
+#administration .settings-section {
+    display: block;
+}
+
+.settings-wrapper {
+    display: none;
+}
+
+.settings-section.show,
+.settings-wrapper.show,
+.settings-wrapper.show .settings-section {
+    display: block;
 }
 
 .settings-section .settings-section-title {
@@ -485,6 +500,247 @@ input[type=checkbox].inline-block {
     height: 200px;
 }
 
+/* -- new settings overlay -- */
+#settings_overlay_container {
+    pointer-events: none;
+    opacity: 0;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+
+    background-color: rgba(32,32,32,0.8);
+    z-index: 105;
+
+    transition: all 0.3s ease;
+}
+
+#settings_overlay_container.show {
+    pointer-events: all;
+    opacity: 1;
+}
+
+#settings_overlay_container.show #settings_page {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+#settings_page {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+
+    background-color: rgba(0,0,0,0.8);
+    z-index: 102;
+    min-height: 550px;
+}
+
+#settings_page {
+    height: 95vh;
+    width: 97vw;
+    margin: 2.5vh 1.5vw;
+    background-color: #fff;
+    overflow: hidden;
+    border-radius: 4px;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    transition: transform 0.2s ease;
+}
+
+#settings_page .sidebar {
+    float: left;
+    position: relative;
+    width: 250px;
+    height: 100%;
+    min-height: 550px;
+    overflow-y: auto;
+    border-top-left-radius: 4px;
+    border-right: 1px solid #eee;
+}
+
+#settings_page .sidebar .tab-container {
+    background-color: #fff;
+    padding: 6px;
+    border-bottom: 1px solid #ddd;
+}
+
+#settings_page .sidebar .settings-list {
+    position: relative;
+    z-index: 3;
+}
+
+#settings_page .content-wrapper {
+    position: relative;
+    float: left;
+    width: calc(100% - 250px - 1px);
+    height: 100%;
+}
+
+#settings_page .content-wrapper .settings-header {
+    width: 100%;
+    height: 43px;
+    border-bottom: 1px solid #ddd;
+}
+
+#settings_page .content-wrapper #settings_content {
+    width: 100%;
+    height: calc(100% - 60px);
+
+    float: left;
+    overflow-y: auto;
+}
+
+#settings_page .sidebar .header {
+    height: auto;
+    position: relative;
+    width: calc(100% - 20px);
+    padding: 10px;
+    text-align: center;
+    text-transform: uppercase;
+
+    background-color: #edefef;
+    border-bottom: 1px solid #DDD;
+}
+
+#settings_page .settings-header {
+    padding-top: 1px;
+}
+
+#settings_page .settings-header h1 {
+    text-align: center;
+    font-size: 1.1em;
+    line-height: 1;
+    margin: 15px;
+    text-transform: uppercase;
+}
+
+#settings_page .settings-header .exit {
+    font-weight: 400;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #AAA;
+    cursor: pointer;
+}
+
+#settings_page .settings-header .exit-sign {
+    float: right;
+    position: relative;
+    top: 3px;
+    margin-left: 3px;
+    font-size: 1.7em;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+
+#deactivation_user_modal.fade.in {
+    top: calc(50% - 120px);
+}
+
+#deactivate_self_modal {
+    box-shadow: 0px 0px 75px rgba(0,0,0,0.5);
+    outline: 10000px solid rgba(0,0,0,0.3);
+    border: none;
+    border-radius: 0px;
+}
+
+input[type=text]#settings_search {
+    width: calc(100% - 10px - 2px);
+    margin: 0px;
+
+    color: #555;
+    font-size: 0.9rem;
+    padding: 3px 5px;
+    outline: none;
+    border: 1px solid #DDD;
+    border-radius: 4px;
+}
+
+input[type=text]:focus#settings_search {
+    box-shadow: none;
+    border: 1px solid #BBB;
+
+    border-bottom: 1px solid #DDD;
+}
+
+input[type=text]#settings_search {
+    width: calc(100% - 10px - 2px);
+    margin: 0px;
+}
+
+#settings_page .sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#settings_page .sidebar li {
+    padding: 5px 0px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #eee;
+}
+
+#settings_page .sidebar li.no-border {
+    border-color: transparent;
+}
+
+#settings_page .sidebar li.active {
+    background-color: #eee;
+}
+
+#settings_page .sidebar li.active {
+    border-bottom: 1px solid transparent;
+}
+
+#settings_page .sidebar li .text,
+#settings_page .sidebar li .icon {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#settings_page .sidebar li .text {
+    width: calc(100% - 55px);
+    padding: 10px 12px 10px 0px;
+}
+
+#settings_page .sidebar li .icon {
+    width: 18px;
+    height: 18px;
+    margin: 10px 10px;
+
+    font-size: 1.4em;
+    color: #888;
+
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+#settings_page .sidebar li.admin {
+    display: none;
+}
+
+#settings_page .sidebar li.admin .icon {
+    text-align: center;
+}
+
+#settings_page .sidebar li:last-of-type .text {
+    border-bottom: none;
+}
+
+#settings_page .sidebar .sidebar-bottom-anchor {
+    width: 100%;
+    position: absolute;
+    bottom: 0px;
+}
+/* -- end new settings overlay -- */
+
 @media (max-width: 1215px) {
     .user-avatar-section {
         float: none;
@@ -502,6 +758,12 @@ input[type=checkbox].inline-block {
     .user-avatar-section .inline-block {
         display: block;
         margin: 0;
+    }
+}
+
+@media (max-width: 953px) {
+    #settings_content .warning {
+        display: none;
     }
 }
 
