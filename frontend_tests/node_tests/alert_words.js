@@ -1,14 +1,14 @@
 add_dependencies({
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 set_global('page_params', {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+'],
-    email: 'tester@zulip.com'
+    email: 'tester@zulip.com',
 });
 
 set_global('feature_flags', {
-    alert_words: true
+    alert_words: true,
 });
 
 var alert_words = require('js/alert_words.js');

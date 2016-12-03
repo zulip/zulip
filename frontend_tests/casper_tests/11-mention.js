@@ -11,7 +11,7 @@ casper.waitForSelector('#new_message_content', function () {
 casper.then(function () {
     casper.fill('form[action^="/json/messages"]', {
         stream:  'Verona',
-        subject: 'Test mention all'
+        subject: 'Test mention all',
     });
 });
 common.select_item_via_typeahead('#new_message_content', '@all', 'all');
@@ -50,8 +50,7 @@ casper.then( function () {
 
 casper.then( function () {
     common.expected_messages('zhome', ['Verona > Test mention all'],
-     ["<p><span class=\"user-mention user-mention-me\" data-user-email=\"*\">@all</span> </p>"]
-    );
+     ["<p><span class=\"user-mention user-mention-me\" data-user-email=\"*\">@all</span> </p>"]);
 });
 
 

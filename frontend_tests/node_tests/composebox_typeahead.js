@@ -11,24 +11,24 @@ set_global('stream_data', {subscribed_streams: function () {
 
 global.stub_out_jquery();
 add_dependencies({
-    people: 'js/people.js'
+    people: 'js/people.js',
 });
 
 global.people.add_in_realm({
     email: 'othello@zulip.com',
     user_id: 101,
-    full_name: "Othello, Moor of Venice"
+    full_name: "Othello, Moor of Venice",
 });
 global.people.add_in_realm({
     email: 'cordelia@zulip.com',
     user_id: 102,
-    full_name: "Cordelia Lear"
+    full_name: "Cordelia Lear",
 });
 
 global.people.add({
     email: 'other@zulip.com',
     user_id: 103,
-    full_name: "Deactivated User"
+    full_name: "Deactivated User",
 });
 
 (function test_add_topic () {

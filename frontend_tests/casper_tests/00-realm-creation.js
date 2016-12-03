@@ -21,7 +21,7 @@ casper.then(function () {
     // Submit the email for realm creation
     this.waitForSelector('form[action^="/create_realm/"]', function () {
         this.fill('form[action^="/create_realm/"]', {
-            email: email
+            email: email,
         }, true);
     });
     // Make sure confirmation email is send
@@ -65,7 +65,7 @@ casper.then(function () {
             realm_name: organization_name,
             realm_subdomain: subdomain,
             password: 'password',
-            terms: true
+            terms: true,
         }, true);
     });
 

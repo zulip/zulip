@@ -7,11 +7,11 @@ var noop = function () {};
 // dispatcher from server_events.
 (function work_around_server_events_loading_issues() {
     add_dependencies({
-        util: 'js/util.js'
+        util: 'js/util.js',
     });
     set_global('document', {});
     set_global('window', {
-        addEventListener: noop
+        addEventListener: noop,
     });
     global.stub_out_jquery();
 }());
@@ -21,17 +21,17 @@ var noop = function () {};
 set_global('tutorial', {
     is_running: function () {
         return false;
-    }
+    },
 });
 set_global('home_msg_list', {
     select_id: noop,
-    selected_id: function () {return 1;}
+    selected_id: function () {return 1;},
 });
 set_global('echo', {
     process_from_server: function (messages) {
         return messages;
     },
-    set_realm_filters: noop
+    set_realm_filters: noop,
 });
 
 // page_params is highly coupled to dispatching now
@@ -79,7 +79,7 @@ function dispatch(ev) {
 var event_fixtures = {
     alert_words: {
         type: 'alert_words',
-        alert_words: ['fire', 'lunch']
+        alert_words: ['fire', 'lunch'],
     },
 
     default_streams: {
@@ -89,33 +89,33 @@ var event_fixtures = {
                 name: 'devel',
                 description: 'devel',
                 invite_only: false,
-                stream_id: 1
+                stream_id: 1,
             },
             {
                 name: 'test',
                 description: 'test',
                 invite_only: true,
-                stream_id: 1
-            }
-        ]
+                stream_id: 1,
+            },
+        ],
     },
 
     message: {
         type: 'message',
         message: {
-            content: 'hello'
+            content: 'hello',
         },
-        flags: []
+        flags: [],
     },
 
     muted_topics: {
         type: 'muted_topics',
-        muted_topics: [['devel', 'js'], ['lunch', 'burritos']]
+        muted_topics: [['devel', 'js'], ['lunch', 'burritos']],
     },
 
     pointer: {
         type: 'pointer',
-        pointer: 999
+        pointer: 999,
     },
 
     presence: {
@@ -123,10 +123,10 @@ var event_fixtures = {
         email: 'alice@example.com',
         presence: {
             client_name: 'electron',
-            is_mirror_dummy: false
+            is_mirror_dummy: false,
             // etc.
         },
-        server_timestamp: 999999
+        server_timestamp: 999999,
     },
 
     // Please keep this next section un-nested, as we want this to partly
@@ -135,35 +135,35 @@ var event_fixtures = {
         type: 'realm',
         op: 'update',
         property: 'create_stream_by_admins_only',
-        value: false
+        value: false,
     },
 
     realm__update__invite_by_admins_only: {
         type: 'realm',
         op: 'update',
         property: 'invite_by_admins_only',
-        value: false
+        value: false,
     },
 
     realm__update__invite_required: {
         type: 'realm',
         op: 'update',
         property: 'invite_required',
-        value: false
+        value: false,
     },
 
     realm__update__name: {
         type: 'realm',
         op: 'update',
         property: 'name',
-        value: 'new_realm_name'
+        value: 'new_realm_name',
     },
 
     realm__update__restricted_to_domain: {
         type: 'realm',
         op: 'update',
         property: 'restricted_to_domain',
-        value: false
+        value: false,
     },
 
     realm__update_dict__default: {
@@ -172,8 +172,8 @@ var event_fixtures = {
         property: 'default',
         data: {
             allow_message_editing: true,
-            message_content_edit_limit_seconds: 5
-        }
+            message_content_edit_limit_seconds: 5,
+        },
     },
 
     realm_bot__add: {
@@ -181,9 +181,9 @@ var event_fixtures = {
         op: 'add',
         bot: {
             email: 'the-bot@example.com',
-            full_name: 'The Bot'
+            full_name: 'The Bot',
             // etc.
-        }
+        },
     },
 
     realm_bot__remove: {
@@ -191,8 +191,8 @@ var event_fixtures = {
         op: 'remove',
         bot: {
             email: 'the-bot@example.com',
-            full_name: 'The Bot'
-        }
+            full_name: 'The Bot',
+        },
     },
 
     realm_bot__update: {
@@ -200,24 +200,24 @@ var event_fixtures = {
         op: 'update',
         bot: {
             email: 'the-bot@example.com',
-            full_name: 'The Bot Has A New Name'
-        }
+            full_name: 'The Bot Has A New Name',
+        },
     },
 
     realm_emoji: {
         type: 'realm_emoji',
         realm_emoji: {
             airplane: {
-                display_url: 'some_url'
-            }
-        }
+                display_url: 'some_url',
+            },
+        },
     },
 
     realm_filters: {
         type: 'realm_filters',
         realm_filters: [
-            ['#[123]', 'ticket %(id)s']
-        ]
+            ['#[123]', 'ticket %(id)s'],
+        ],
     },
 
     realm_user__add: {
@@ -225,9 +225,9 @@ var event_fixtures = {
         op: 'add',
         person: {
             email: 'alice@example.com',
-            full_name: 'Alice User'
+            full_name: 'Alice User',
             // etc.
-        }
+        },
     },
 
     realm_user__remove: {
@@ -235,9 +235,9 @@ var event_fixtures = {
         op: 'remove',
         person: {
             email: 'alice@example.com',
-            full_name: 'Alice User'
+            full_name: 'Alice User',
             // etc.
-        }
+        },
     },
 
     realm_user__update: {
@@ -245,22 +245,22 @@ var event_fixtures = {
         op: 'update',
         person: {
             email: 'alice@example.com',
-            full_name: 'Alice NewName'
+            full_name: 'Alice NewName',
             // etc.
-        }
+        },
     },
 
     referral: {
         type: 'referral',
         referrals: {
             granted: 10,
-            used: 5
-        }
+            used: 5,
+        },
     },
 
     restart: {
         type: 'restart',
-        immediate: true
+        immediate: true,
     },
 
     stream: {
@@ -268,7 +268,7 @@ var event_fixtures = {
         op: 'update',
         name: 'devel',
         property: 'color',
-        value: 'blue'
+        value: 'blue',
     },
 
     subscription__add: {
@@ -277,10 +277,10 @@ var event_fixtures = {
         subscriptions: [
             {
                 name: 'devel',
-                stream_id: 42
+                stream_id: 42,
                 // etc.
-            }
-        ]
+            },
+        ],
     },
 
     subscription__remove: {
@@ -288,9 +288,9 @@ var event_fixtures = {
         op: 'remove',
         subscriptions: [
             {
-                stream_id: 42
-            }
-        ]
+                stream_id: 42,
+            },
+        ],
     },
 
     subscription__peer_add: {
@@ -300,10 +300,10 @@ var event_fixtures = {
         subscriptions: [
             {
                 name: 'devel',
-                stream_id: 42
+                stream_id: 42,
                 // etc.
-            }
-        ]
+            },
+        ],
     },
 
     subscription__peer_remove: {
@@ -312,10 +312,10 @@ var event_fixtures = {
         user_id: 555,
         subscriptions: [
             {
-                stream_id: 42
+                stream_id: 42,
                 // etc.
-            }
-        ]
+            },
+        ],
     },
 
     subscription__update: {
@@ -323,46 +323,46 @@ var event_fixtures = {
         op: 'update',
         name: 'devel',
         property: 'color',
-        value: 'black'
+        value: 'black',
     },
 
     update_display_settings__default_language: {
         type: 'update_display_settings',
         setting_name: 'default_language',
-        default_language: 'fr'
+        default_language: 'fr',
     },
 
     update_display_settings__left_side_userlist: {
         type: 'update_display_settings',
         setting_name: 'left_side_userlist',
-        left_side_userlist: true
+        left_side_userlist: true,
     },
 
     update_display_settings__twenty_four_hour_time: {
         type: 'update_display_settings',
         setting_name: 'twenty_four_hour_time',
-        twenty_four_hour_time: true
+        twenty_four_hour_time: true,
     },
 
     update_global_notifications: {
         type: 'update_global_notifications',
         notification_name: 'enable_stream_sounds',
-        setting: true
+        setting: true,
     },
 
     update_message_flags__read: {
         type: 'update_message_flags',
         operation: 'add',
         flag: 'read',
-        messages: [5, 999]
+        messages: [5, 999],
     },
 
     update_message_flags__starred: {
         type: 'update_message_flags',
         operation: 'add',
         flag: 'starred',
-        messages: [7, 99]
-    }
+        messages: [7, 99],
+    },
 };
 
 function assert_same(actual, expected) {
@@ -623,8 +623,7 @@ run(function (override, capture, args) {
     override(
         'subs',
         'update_subscription_properties',
-        capture(['name', 'property', 'value'])
-    );
+        capture(['name', 'property', 'value']));
     override('admin', 'update_default_streams_table', noop);
     dispatch(event);
     assert_same(args.name, event.name);
@@ -677,8 +676,7 @@ run(function (override, capture, args) {
     override(
         'subs',
         'update_subscription_properties',
-        capture(['name', 'property', 'value'])
-    );
+        capture(['name', 'property', 'value']));
     dispatch(event);
     assert_same(args.name, event.name);
     assert_same(args.property, event.property);
@@ -711,8 +709,7 @@ run(function (override, capture, args) {
     override(
         'notifications',
         'handle_global_notification_updates',
-        capture(['name', 'setting'])
-    );
+        capture(['name', 'setting']));
     dispatch(event);
     assert_same(args.name, event.notification_name);
     assert_same(args.setting, event.setting);
