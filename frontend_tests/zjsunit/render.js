@@ -66,7 +66,7 @@ exports.walk = function (dir, filelist) {
         } else {
             filelist.push({
                 url: dir + "/" + file,
-                name: file
+                name: file,
             });
         }
     });
@@ -92,7 +92,7 @@ exports.template_finder = (function () {
             .map(function (file) {
                 return {
                     url: file.url,
-                    name: file.name.replace(/\.handlebars$/, "")
+                    name: file.name.replace(/\.handlebars$/, ""),
                 };
             });
 
