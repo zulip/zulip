@@ -428,10 +428,10 @@ function send_message_ajax(request, success, error) {
 }
 
 function report_send_time(send_time, receive_time, display_time, locally_echoed, rendered_changed) {
-    var data = {"time": send_time.toString(),
-                "received": receive_time.toString(),
-                "displayed": display_time.toString(),
-                "locally_echoed": locally_echoed};
+    var data = {time: send_time.toString(),
+                received: receive_time.toString(),
+                displayed: display_time.toString(),
+                locally_echoed: locally_echoed};
     if (locally_echoed) {
         data.rendered_content_disparity = rendered_changed;
     }
@@ -642,10 +642,10 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    compose.start(msg_type, {'stream': stream, 'subject': subject,
-                             'private_message_recipient': pm_recipient,
-                             'replying_to_message': message,
-                             'trigger': opts.trigger});
+    compose.start(msg_type, {stream: stream, subject: subject,
+                             private_message_recipient: pm_recipient,
+                             replying_to_message: message,
+                             trigger: opts.trigger});
 
 };
 
@@ -729,7 +729,7 @@ exports.has_message_content = function () {
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name, autosubscribe) {
     var result = "error";
-    var request = {'stream': stream_name};
+    var request = {stream: stream_name};
     if (autosubscribe) {
         request.autosubscribe = true;
     }
@@ -856,11 +856,11 @@ function validate_private_message() {
         invalid_recipients.push(email);
     });
     if (invalid_recipients.length === 1) {
-        context = {'recipient': invalid_recipients.join()};
+        context = {recipient: invalid_recipients.join()};
         compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
         return false;
     } else if (invalid_recipients.length > 1) {
-        context = {'recipients': invalid_recipients.join()};
+        context = {recipients: invalid_recipients.join()};
         compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
         return false;
     }

@@ -25,7 +25,7 @@ global.compile_template('topic_list_item');
     var topics = [
         {subject: "coding"}
     ];
-    global.stream_data.populate_stream_topics_for_tests({"devel": topics});
+    global.stream_data.populate_stream_topics_for_tests({devel: topics});
     global.unread.num_unread_for_subject = function () {
         return 1;
     };
@@ -42,4 +42,3 @@ global.compile_template('topic_list_item');
 
     global.write_test_output("test_topic_list_build_widget", parent_elem.html());
 }());
-

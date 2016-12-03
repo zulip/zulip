@@ -368,7 +368,7 @@ exports.initialize = function () {
         return channel.post({
             url: '/json/users/me/enter-sends',
             idempotent: true,
-            data: {'enter_sends': page_params.enter_sends}
+            data: {enter_sends: page_params.enter_sends}
         });
     });
     $("#enter_sends").prop('checked', page_params.enter_sends);
