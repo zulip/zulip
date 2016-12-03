@@ -55,9 +55,9 @@ def check_pyflakes(options, by_lang):
         return False
     failed = False
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE,
-        universal_newlines = True)
+                                stdout = subprocess.PIPE,
+                                stderr = subprocess.PIPE,
+                                universal_newlines = True)
 
     # pyflakes writes some output (like syntax errors) to stderr. :/
     for pipe in (pyflakes.stdout, pyflakes.stderr):
@@ -328,9 +328,9 @@ def build_custom_checkers(by_lang):
         {'pattern': 'self\.client\.(get|post|patch|put|delete)',
          'exclude': set(['zilencer/tests.py']),
          'description': \
-    '''Do not call self.client directly for put/patch/post/get.
-    See WRAPPER_COMMENT in test_helpers.py for details.
-    '''},
+         'Do not call self.client directly for put/patch/post/get.'
+         'See WRAPPER_COMMENT in test_helpers.py for details.'
+         },
 
         ]) + whitespace_rules
     bash_rules = [
@@ -424,20 +424,20 @@ def run():
     # type: () -> None
     parser = optparse.OptionParser()
     parser.add_option('--force', default=False,
-        action="store_true",
-        help='Run tests despite possible problems.')
+                      action="store_true",
+                      help='Run tests despite possible problems.')
     parser.add_option('--full',
-        action='store_true',
-        help='Check some things we typically ignore')
+                      action='store_true',
+                      help='Check some things we typically ignore')
     parser.add_option('--pep8',
-        action='store_true',
-        help='Run the pep8 checker')
+                      action='store_true',
+                      help='Run the pep8 checker')
     parser.add_option('--modified', '-m',
-        action='store_true',
-        help='Only check modified files')
+                      action='store_true',
+                      help='Only check modified files')
     parser.add_option('--verbose', '-v',
-        action='store_true',
-        help='Print verbose timing output')
+                      action='store_true',
+                      help='Print verbose timing output')
     (options, args) = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
@@ -458,8 +458,8 @@ def run():
             sys.exit(1)
 
     by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
-        ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
-        use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
+                   ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
+                   use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.

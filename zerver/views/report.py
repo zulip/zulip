@@ -64,8 +64,8 @@ def json_report_narrow_time(request, user_profile,
 @authenticated_json_post_view
 @has_request_variables
 def json_report_unnarrow_time(request, user_profile,
-                            initial_core=REQ(converter=to_non_negative_int),
-                            initial_free=REQ(converter=to_non_negative_int)):
+                              initial_core=REQ(converter=to_non_negative_int),
+                              initial_free=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int, int) -> HttpResponse
     request._log_data["extra"] = "[%sms/%sms]" % (initial_core, initial_free)
     base_key = statsd_key(user_profile.realm.domain, clean_periods=True)

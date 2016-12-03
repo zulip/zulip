@@ -324,7 +324,7 @@ AUTH_LDAP_BIND_DN = ""
 # Specify the search base and the property to filter on that corresponds to the
 # username.
 AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=example,dc=com",
-    ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+                                   ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
 # If the value of a user's "uid" (or similar) property is not their email
 # address, specify the domain to append here.

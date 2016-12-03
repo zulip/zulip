@@ -79,7 +79,7 @@ parameters, or specify no parameters for interactive user creation.""")
 
         try:
             notify_new_user(do_create_user(email, initial_password(email),
-                realm, full_name, email_to_username(email)),
-                internal=True)
+                                           realm, full_name, email_to_username(email)),
+                            internal=True)
         except IntegrityError:
             raise CommandError("User already exists.")

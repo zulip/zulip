@@ -82,8 +82,8 @@ def print_types_to(file_obj):
             kwarg_types = [key + "=" + get_type_str(value) for key, value in kwargs.items()]
             ret_val = func(*args, **kwargs)
             output = "%s(%s) -> %s" % (func.__name__,
-                                    ", ".join(arg_types + kwarg_types),
-                                    get_type_str(ret_val))
+                                       ", ".join(arg_types + kwarg_types),
+                                       get_type_str(ret_val))
             print(output, file=file_obj)
             return ret_val
         return wrapper # type: ignore # https://github.com/python/mypy/issues/1927

@@ -88,9 +88,9 @@ def gather_hot_conversations(user_profile, stream_messages):
 
         # We'll display up to 2 messages from the conversation.
         first_few_messages = [user_message.message for user_message in \
-                            stream_messages.filter(
-                                message__recipient__type_id=stream_id,
-                                message__subject=subject)[:2]]
+                              stream_messages.filter(
+                                  message__recipient__type_id=stream_id,
+                                  message__subject=subject)[:2]]
 
         teaser_data = {"participants": users,
                        "count": count - len(first_few_messages),

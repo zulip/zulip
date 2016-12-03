@@ -187,7 +187,7 @@ class Runner(DiscoverRunner):
         return failed
 
     def run_tests(self, test_labels, extra_tests=None,
-            full_suite=False, **kwargs):
+                  full_suite=False, **kwargs):
         # type: (List[str], Optional[List[TestCase]], bool, **Any) -> bool
         self.setup_test_environment()
         try:
