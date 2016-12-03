@@ -61,3 +61,17 @@ A dropdown will appear with suggested emojis as you enter the emoji phrase.
 ![Emojis](/static/images/help/emojis-screenshot.png)
 
 A complete list of emojis can be found [here](http://www.webpagefx.com/tools/emoji-cheat-sheet/).
+
+## Mentions
+
+To call the attention of another member, you can alert other users by typing `@**username**"`
+
+If you type `@` and then begin typing their email address or one of their names, and the system will offer you tab-completions. The completed `@mention` will look something like: `@**name**`, and it will appear as **@name** in your posted message.
+
+![A User Who is Not Subscribed](/static/images/help/mention-screenshot.png)
+
+If you attempt to `@mention` someone who is not subscribed to the current stream, Zulip will ask if you would like to subscribe them to the stream:
+
+![A User Who is Not Subscribed](/static/images/help/mention_user_not_subscribed.png)
+
+You can view any mentions calling your attention by clicking on the ""@-mentions" view in the left sidebar.
