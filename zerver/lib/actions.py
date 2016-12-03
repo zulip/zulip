@@ -894,7 +894,7 @@ def do_send_messages(messages):
         send_event(event, users)
         if (settings.ENABLE_FEEDBACK and
             message['message'].recipient.type == Recipient.PERSONAL and
-            settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
+                settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
             queue_json_publish(
                     'feedback_messages',
                     message_to_dict(message['message'], apply_markdown=False),
@@ -1080,7 +1080,7 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
     if (len(recipient_profile_ids) == 2
-        and sender.id in recipient_profile_ids):
+            and sender.id in recipient_profile_ids):
         recipient_profile_ids.remove(sender.id)
 
     if len(recipient_profile_ids) > 1:
@@ -2370,7 +2370,7 @@ def do_update_user_activity_interval(user_profile, log_time):
         # (2) The end of the new interval could be inside the old interval
         # In either case, we just extend the old interval to include the new interval.
         if ((log_time <= last.end and log_time >= last.start) or
-            (effective_end <= last.end and effective_end >= last.start)):
+                (effective_end <= last.end and effective_end >= last.start)):
             last.end = max(last.end, effective_end)
             last.start = min(last.start, log_time)
             last.save(update_fields=["start", "end"])
@@ -3059,7 +3059,7 @@ def apply_events(state, events, user_profile):
                         # solved by removing the all-realm-bots data
                         # given to admin users from this flow.
                         if ('is_admin' in person and 'realm_bots' in state and
-                            user_profile.email == person['email']):
+                                user_profile.email == person['email']):
                             if p['is_admin'] and not person['is_admin']:
                                 state['realm_bots'] = []
                             if not p['is_admin'] and person['is_admin']:
@@ -3170,17 +3170,17 @@ def apply_events(state, events, user_profile):
                 user_id = event['user_id']
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
-                        user_id not in sub['subscribers']):
+                            user_id not in sub['subscribers']):
                         sub['subscribers'].append(user_id)
                 for sub in state['never_subscribed']:
                     if (sub['name'] in event['subscriptions'] and
-                        user_id not in sub['subscribers']):
+                            user_id not in sub['subscribers']):
                         sub['subscribers'].append(user_id)
             elif event['op'] == 'peer_remove':
                 user_id = event['user_id']
                 for sub in state['subscriptions']:
                     if (sub['name'] in event['subscriptions'] and
-                        user_id in sub['subscribers']):
+                            user_id in sub['subscribers']):
                         sub['subscribers'].remove(user_id)
         elif event['type'] == "presence":
             state['presences'][event['email']] = event['presence']
