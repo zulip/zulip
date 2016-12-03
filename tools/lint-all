@@ -138,7 +138,7 @@ def build_custom_checkers(by_lang):
                 continue
             for rule in rules:
                 exclude_list = rule.get('exclude', set())
-                if fn in exclude_list:
+                if fn in exclude_list or os.path.dirname(fn) in exclude_list:
                     continue
                 exclude_list = rule.get('exclude_line', set())
                 if (fn, line_fully_stripped) in exclude_list:
@@ -208,6 +208,13 @@ def build_custom_checkers(by_lang):
          'description': 'Write JS else statements on same line as }'},
         {'pattern': '^else if',
          'description': 'Write JS else statements on same line as }'},
+        {'pattern': 'console[.][a-z]',
+         'exclude': set(['static/js/blueslip.js',
+                         'frontend_tests/zjsunit',
+                         'frontend_tests/casper_lib/common.js',
+                         'frontend_tests/node_tests',
+                         'static/js/debug.js']),
+         'description': 'console.log and similar should not be used in webapp'},
         {'pattern': 'button\.text\(["\']',
          'exclude': set(['tools/lint-all',
                          'frontend_tests/node_tests/templates.js']),
