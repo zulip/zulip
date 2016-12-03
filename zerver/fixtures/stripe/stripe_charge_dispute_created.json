@@ -15,7 +15,7 @@
             "balance_transactions": [],
             "charge": "ch_00000000000000",
             "created": 1480672043,
-            "currency": "aud",
+            "currency": "jpy",
             "evidence": {
                 "access_activity_log": null,
                 "billing_address": null,
