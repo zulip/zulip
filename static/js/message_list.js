@@ -1,4 +1,3 @@
-/*jslint nomen: true */
 var message_list = (function () {
 
 var exports = {};
@@ -642,7 +641,6 @@ $(document).on('message_selected.zulip zuliphashchange.zulip mousewheel', functi
 return exports;
 
 }());
-/*jslint nomen: false */
 if (typeof module !== 'undefined') {
     module.exports = message_list;
 }

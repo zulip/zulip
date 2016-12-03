@@ -23,12 +23,7 @@ The Vagrant setup process runs this for you.
 
 `lint-all` runs many lint checks in parallel, including
 
--   JavaScript ([JSLint](http://www.jslint.com/))
-
-    > `tools/jslint/check-all.js` contains a pretty fine-grained set of
-    > JSLint options, rule exceptions, and allowed global variables. If
-    > you add a new global, you'll need to add it to the list.
-
+-   JavaScript ([ESLint](http://eslint.org/))
 -   Python ([Pyflakes](http://pypi.python.org/pypi/pyflakes))
 -   templates
 -   Puppet configuration
