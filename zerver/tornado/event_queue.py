@@ -141,7 +141,7 @@ class ClientDescriptor(object):
         self.finish_current_handler()
 
     def finish_current_handler(self):
-        # type: (bool) -> bool
+        # type: () -> bool
         if self.current_handler_id is not None:
             err_msg = "Got error finishing handler for queue %s" % (self.event_queue.id,)
             try:
@@ -193,7 +193,7 @@ class ClientDescriptor(object):
             self._timeout_handle = ioloop.add_timeout(heartbeat_time, timeout_callback)
 
     def disconnect_handler(self, client_closed=False):
-        # type: (bool, bool) -> None
+        # type: (bool) -> None
         if self.current_handler_id:
             clear_descriptor_by_handler_id(self.current_handler_id, None)
             clear_handler_by_id(self.current_handler_id)

@@ -189,7 +189,7 @@ def get_user_messages(user_profile):
 
 class DummyHandler(object):
     def __init__(self):
-        # type: (Callable) -> None
+        # type: () -> None
         allocate_handler_id(self)  # type: ignore # this is a testing mock
 
 class POSTRequestMock(object):
