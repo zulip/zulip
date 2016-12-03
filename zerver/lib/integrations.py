@@ -127,6 +127,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('semaphore'),
     WebhookIntegration('sentry'),
     WebhookIntegration('stash'),
+    WebhookIntegration('stripe', display_name='Stripe'),
     WebhookIntegration('taiga'),
     WebhookIntegration('teamcity'),
     WebhookIntegration('transifex'),

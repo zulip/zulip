@@ -11,7 +11,7 @@
         "object": {
             "id": "dp_00000000000000",
             "object": "dispute",
-            "amount": 1000,
+            "amount": 1001,
             "balance_transactions": [],
             "charge": "ch_00000000000000",
             "created": 1480672052,
