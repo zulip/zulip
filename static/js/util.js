@@ -214,17 +214,6 @@ exports.CachedValue.prototype = {
     }
 };
 
-exports.enforce_arity = function util_enforce_arity(func) {
-    return function () {
-        if (func.length !== arguments.length) {
-            throw new Error("Function '" + func.name + "' called with "
-                            + arguments.length + " arguments, but expected "
-                            + func.length);
-        }
-        return func.apply(this, arguments);
-    };
-};
-
 exports.execute_early = function (func) {
     if (page_params.test_suite) {
         $(document).one('phantom_page_loaded', func);
