@@ -82,4 +82,4 @@ Surround a portion of code with ``
 `back-ticks`
 `` to display it as inline code.
 
-Alternatively, blocks of code are surrounded by lines with <code>```three backticks</code>. 
+Blocks of code are either fenced by lines with <code>`````` three back-ticks```<code>```</code>.
