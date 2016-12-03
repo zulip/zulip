@@ -150,8 +150,8 @@ casper.then(function () {
     // Test custom realm emoji
     casper.waitForSelector('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
-            'name': 'MouseFace',
-            'url': 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png'
+            name: 'MouseFace',
+            url: 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png'
         });
         casper.click('form.admin-emoji-form input.button');
     });
@@ -180,8 +180,8 @@ casper.then(function () {
 // Test custom realm filters
 casper.waitForSelector('.admin-filter-form', function () {
     casper.fill('form.admin-filter-form', {
-        'pattern': '#(?P<id>[0-9]+)',
-        'url_format_string': 'https://trac.example.com/ticket/%(id)s'
+        pattern: '#(?P<id>[0-9]+)',
+        url_format_string: 'https://trac.example.com/ticket/%(id)s'
     });
     casper.click('form.admin-filter-form input.btn');
 });
@@ -202,8 +202,8 @@ casper.waitWhileSelector('.filter_row', function () {
 
 casper.waitForSelector('.admin-filter-form', function () {
     casper.fill('form.admin-filter-form', {
-        'pattern': 'a$',
-        'url_format_string': 'https://trac.example.com/ticket/%(id)s'
+        pattern: 'a$',
+        url_format_string: 'https://trac.example.com/ticket/%(id)s'
     });
     casper.click('form.admin-filter-form input.btn');
 });

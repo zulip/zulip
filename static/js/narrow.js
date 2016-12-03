@@ -111,9 +111,9 @@ exports.topic = function () {
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
         url: '/json/report_narrow_time',
-        data: {"initial_core": initial_core_time.toString(),
-               "initial_free": initial_free_time.toString(),
-               "network": network_time.toString()}
+        data: {initial_core: initial_core_time.toString(),
+               initial_free: initial_free_time.toString(),
+               network: network_time.toString()}
     });
 }
 
@@ -141,8 +141,8 @@ function report_unnarrow_time() {
 
     channel.post({
         url: '/json/report_unnarrow_time',
-        data: {"initial_core": initial_core_time.toString(),
-               "initial_free": initial_free_time.toString()}
+        data: {initial_core: initial_core_time.toString(),
+               initial_free: initial_free_time.toString()}
     });
 
     unnarrow_times = {};

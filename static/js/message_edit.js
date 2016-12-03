@@ -143,11 +143,11 @@ function timer_text(seconds_left) {
     var minutes = Math.floor(seconds_left / 60);
     var seconds = seconds_left % 60;
     if (minutes >= 1) {
-        return i18n.t("__minutes__ min to edit", {'minutes': minutes.toString()});
+        return i18n.t("__minutes__ min to edit", {minutes: minutes.toString()});
     } else if (seconds_left >= 10) {
-        return i18n.t("__seconds__ sec to edit", {'seconds': (seconds - seconds % 5).toString()});
+        return i18n.t("__seconds__ sec to edit", {seconds: (seconds - seconds % 5).toString()});
     }
-    return i18n.t("__seconds__ sec to edit", {'seconds': seconds.toString()});
+    return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
 }
 
 function edit_message (row, raw_content) {

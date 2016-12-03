@@ -16,7 +16,7 @@ i18n.init({
     resources: {
         fr: {
             translation: {
-                'Reply': "French",
+                Reply: "French",
                 "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "Some French text with __page_params.product_name__"
             }
         }
@@ -32,16 +32,16 @@ var _ = global._;
 
 (function test_t_tag() {
     var args = {
-        "message": {
+        message: {
             is_stream: true,
             id: "99",
             stream: "devel",
             subject: "testing",
             sender_full_name: "King Lear"
         },
-        "can_edit_message": true,
-        "can_mute_topic": true,
-        "narrowed": true
+        can_edit_message: true,
+        can_mute_topic: true,
+        narrowed: true
     };
 
     var html = '<div style="height: 250px">';
@@ -54,24 +54,24 @@ var _ = global._;
 
 (function test_tr_tag() {
     var args = {
-        "page_params": {
-            "fullname": "John Doe",
-            "product_name": "Zulip",
-            "password_auth_enabled": false,
-            "avatar_url": "http://example.com",
-            "left_side_userlist": false,
-            "twenty_four_hour_time": false,
-            "stream_desktop_notifications_enabled": false,
-            "stream_sounds_enabled": false,
-            "desktop_notifications_enabled": false,
-            "sounds_enabled": false,
-            "enable_offline_email_notifications": false,
-            "enable_offline_push_notifications": false,
-            "enable_online_push_notifications": false,
-            "enable_digest_emails": false,
-            "domain": "zulip.com",
-            "autoscroll_forever": false,
-            "default_desktop_notifications": false
+        page_params: {
+            fullname: "John Doe",
+            product_name: "Zulip",
+            password_auth_enabled: false,
+            avatar_url: "http://example.com",
+            left_side_userlist: false,
+            twenty_four_hour_time: false,
+            stream_desktop_notifications_enabled: false,
+            stream_sounds_enabled: false,
+            desktop_notifications_enabled: false,
+            sounds_enabled: false,
+            enable_offline_email_notifications: false,
+            enable_offline_push_notifications: false,
+            enable_online_push_notifications: false,
+            enable_digest_emails: false,
+            domain: "zulip.com",
+            autoscroll_forever: false,
+            default_desktop_notifications: false
         }
     };
 

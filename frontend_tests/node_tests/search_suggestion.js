@@ -249,10 +249,10 @@ global.stream_data.populate_stream_topics_for_tests({});
     };
 
     global.stream_data.populate_stream_topics_for_tests({
-        'devel': [
+        devel: [
             {subject: 'REXX'}
         ],
-        'office': [
+        office: [
             {subject: 'team'},
             {subject: 'ignore'},
             {subject: 'test'}
