@@ -118,7 +118,7 @@ set_global('blueslip', {});
 
     caught = undefined;
     try {
-        Dict.from_array({'bogus': true});
+        Dict.from_array({bogus: true});
     } catch (e2) {
         caught = true;
         assert.equal(e2.toString(), 'TypeError: Argument is not an array');

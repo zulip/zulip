@@ -41,10 +41,10 @@ casper.then(function () {
             casper.test.assertEqual(casper.getFormValues(form_sel).full_name, "Iago");
 
             casper.fill(form_sel, {
-                "full_name": "IagoNew",
-                "old_password": test_credentials.default_user.password,
-                "new_password": "qwertyuiop",
-                "confirm_password": "qwertyuiop"
+                full_name: "IagoNew",
+                old_password: test_credentials.default_user.password,
+                new_password: "qwertyuiop",
+                confirm_password: "qwertyuiop"
             });
             casper.click('input[name="change_settings"]');
         });
@@ -61,7 +61,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_password', function () {
-        casper.fill('form[action^="/json/fetch_api_key"]', {'password':'qwertyuiop'});
+        casper.fill('form[action^="/json/fetch_api_key"]', {password:'qwertyuiop'});
         casper.click('input[name="view_api_key"]');
     });
 });
@@ -72,10 +72,10 @@ casper.then(function () {
 
         // Change it all back so the next test can still log in
         casper.fill(form_sel, {
-            "full_name": "Iago",
-            "old_password": "qwertyuiop",
-            "new_password": test_credentials.default_user.password,
-            "confirm_password": test_credentials.default_user.password
+            full_name: "Iago",
+            old_password: "qwertyuiop",
+            new_password: test_credentials.default_user.password,
+            confirm_password: test_credentials.default_user.password
         });
         casper.click('input[name="change_settings"]');
     });

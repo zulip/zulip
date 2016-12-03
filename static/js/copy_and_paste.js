@@ -123,7 +123,7 @@ function copy_handler(e) {
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
-    div.css({position: 'absolute', 'left': '-99999px'})
+    div.css({position: 'absolute', left: '-99999px'})
             .attr('id', 'copytempdiv');
     $('body').append(div);
     selection.selectAllChildren(div[0]);

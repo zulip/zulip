@@ -13,14 +13,14 @@ var exports = {};
         channel.post({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([{'name': stream_name}])
+                subscriptions: JSON.stringify([{name: stream_name}])
             }
         }).then(
             function (data) {
                 if (!$.isEmptyObject(data.already_subscribed)) {
                     // Display the canonical stream capitalization.
                     var true_stream_name = data.already_subscribed[page_params.email][0];
-                    ui.report_success(i18n.t("Already subscribed to __stream__", {'stream': true_stream_name}),
+                    ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                       $status_message);
                 }
             }, function (xhr) {
@@ -45,13 +45,13 @@ var exports = {};
     }
 
     function display_subscribe($button, stream_name) {
-        $button.text(i18n.t('Subscribe to __stream__', {'stream': stream_data.canonicalized_name(stream_name)}))
+        $button.text(i18n.t('Subscribe to __stream__', {stream: stream_data.canonicalized_name(stream_name)}))
             .removeClass('btn-success')
             .addClass('btn-default');
     }
 
     function display_unsubscribe($button, stream_name) {
-        $button.text(i18n.t('Unsubscribe from __stream__', {'stream': stream_data.canonicalized_name(stream_name)}))
+        $button.text(i18n.t('Unsubscribe from __stream__', {stream: stream_data.canonicalized_name(stream_name)}))
             .removeClass('btn-default')
             .addClass('btn-success');
     }

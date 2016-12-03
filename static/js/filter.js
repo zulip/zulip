@@ -118,7 +118,7 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {"from": "sender", "subject": "topic"};
+var canonical_operators = {from: "sender", subject: "topic"};
 
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();

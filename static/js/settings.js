@@ -17,7 +17,7 @@ function build_stream_list($select, extra_names) {
         };
 
         var public_names = _.chain(stream_items)
-            .where({'invite_only': false})
+            .where({invite_only: false})
             .pluck('name')
             .map(function (x) { return [x, x]; })
             .value();
@@ -30,7 +30,7 @@ function build_stream_list($select, extra_names) {
             .value();
 
         var private_options = _.chain(stream_items)
-            .where({'invite_only': true})
+            .where({invite_only: true})
             .pluck('name')
             .map(function (x) { return [x, x]; })
             .map(build_option)
