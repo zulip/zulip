@@ -595,7 +595,7 @@ def rate_limit(domain='all'):
                 user = None
 
             if not user:
-                logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
+                logging.error("Requested rate-limiting on %s but user is not authenticated!" %
                               func.__name__)
                 return func(request, *args, **kwargs)
 

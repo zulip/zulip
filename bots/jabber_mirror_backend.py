@@ -317,7 +317,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
     parser.add_option('--zulip-email-suffix',
                       default=None,
                       action='store',
-                      help= \
+                      help=
 '''Add the specified suffix to the local part of email addresses constructed
 from JIDs and nicks before sending requests to the Zulip server, and remove the
 suffix before sending requests to the Jabber server.  For example, specifying
