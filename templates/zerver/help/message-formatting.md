@@ -66,12 +66,12 @@ A complete list of emojis can be found [here](http://www.webpagefx.com/tools/emo
 
 To call the attention of another member, you can alert other users by typing `@**username**"`
 
-If you type `@` and then begin typing their email address or one of their names, and the system will offer you tab-completions. The completed `@mention` will look something like: `@**name**`, and it will appear as **@name** in your posted message.
+If you type `@` and then begin typing their email address or one of their names, and the system will offer you auto-completion suggestions.
 
-![A User Who is Not Subscribed](/static/images/help/mention-screenshot.png)
+![Mentions](/static/images/help/mention-screenshot.png)
 
-If you attempt to `@mention` someone who is not subscribed to the current stream, Zulip will ask if you would like to subscribe them to the stream:
+Typing `@**all**` will alert all users in the stream, and a confirmation message will appear.
 
-![A User Who is Not Subscribed](/static/images/help/mention_user_not_subscribed.png)
+![Mention All](/static/images/help/all-confirm.png)
 
-You can view any mentions calling your attention by clicking on the ""@-mentions" view in the left sidebar.
+For more information on mentions, visit [here](/help/mention-a-team-member.md) for more information.
