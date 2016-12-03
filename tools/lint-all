@@ -36,6 +36,7 @@ zproject/settings.py
 zproject/test_settings.py
 """.split()
 
+
 @contextmanager
 def bright_red_output():
     # type: () -> Iterator[None]
