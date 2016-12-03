@@ -328,11 +328,11 @@ for key in all_keys:
         continue
     if key in zhkeys:
         (stream, test) = zhkeys[key]
-        logger.warning("%10s: z got %s, h got %s.  Sent via Zephyr(%s): class %s" % \
+        logger.warning("%10s: z got %s, h got %s.  Sent via Zephyr(%s): class %s" %
                        (key, z_key_counts[key], h_key_counts[key], test, stream))
     if key in hzkeys:
         (stream, test) = hzkeys[key]
-        logger.warning("%10s: z got %s. h got %s.  Sent via Zulip(%s): class %s" % \
+        logger.warning("%10s: z got %s. h got %s.  Sent via Zulip(%s): class %s" %
                        (key, z_key_counts[key], h_key_counts[key], test, stream))
 logger.error("")
 logger.error("Summary of specific problems:")
