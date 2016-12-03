@@ -4,7 +4,7 @@ Zulip uses a variant of GitHub Flavored Markdown (GFM) to allow you to easily fo
 
 ## Summary
 
-For a summary of message formatting in Zulip, click the (![A](/static/images/help/formatting.png)) icon located at the bottom left of your messaging box or the cog (![cog](/static/images/help/cog.png)) in the upper right corner of the right sidebar and choose “Message formatting” from the drop-down menu.
+For a summary of message formatting in Zulip, click the ![A](/static/images/help/formatting.png) icon located at the bottom left of your messaging box or the cog (![cog](/static/images/help/cog.png)) in the upper right corner of the right sidebar and choose “Message formatting” from the drop-down menu.
 
 The following modal window will appear.
 
@@ -44,7 +44,7 @@ To include hyperlinks in your messages, you can either enter the link's url addr
 
 ![Link](/static/images/help/link-screenshot.png)
 
-Unfortunately, Zulip currently does not support image embedding through links.
+Zulip currently does not support image embedding through links.
 
 ## Lists
 
