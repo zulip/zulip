@@ -1,0 +1,72 @@
+
+/**For under the messagesw**/
+.reaction_content_group {
+    width: 150px;
+    display: flex;
+    flex-direction: row;
+    margin-left: -3px;
+}
+
+
+div.message_content .reaction_content_emoji_wrapper {
+    display: inline-block;
+    height: 20px;
+    border-radius: 5px;
+    border: 1px solid #dddddd;
+    margin: 5px 5px 5px 0;
+    padding-right: 5px;
+}
+
+div.message_content .reaction_content_emoji_wrapper:hover {
+    border: 1px solid #bbbbbb;
+}
+
+div.message_content .reaction_content_emoji_wrapper:hover .reaction-content-emoji-count {
+    opacity: 1;
+}
+
+div.message_content .reaction_content_emoji_wrapper:hover .reaction-content-emoji {
+    transform: scale3d(0.85, 0.85, 1);
+}
+
+.reaction-content-emoji-count {
+    font-size: 9px;
+    margin-left: -3px;
+    opacity: 0.6;
+    transition: all 200ms ease-in-out;
+    vertical-align: middle;
+}
+
+.reaction-content-emoji {
+    display: inline-block;
+    height: 25px;
+    width: 25px;
+    position: relative;
+    top: 3px;
+    transition: all 200ms ease-in-out;
+    transform: scale3d(0.7, 0.7, 1);
+    margin-top: -7px;
+    vertical-align: middle;
+}
+
+/** Covers the popover **/
+.reaction-popover {
+    display: flex;
+    flex-direction: row;
+}
+
+.reaction-popover {
+    padding: 5px;
+} 
+
+.reaction-emojis {
+    height: 25px;
+    width: 25px;
+    position: relative;
+    top: 3px;
+    margin-top: -7px;
+}
+
+.reaction-container {
+    
+}
