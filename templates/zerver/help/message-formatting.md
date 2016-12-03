@@ -16,19 +16,19 @@ You can surround your test with a combination of asterisks `*` and tildes `~` to
 
 ### Italics
 
-For italics, surround your text with `* asterisks *`.
+For italics, surround your text with `*asterisks*`.
 
 ![Italicized text](/static/images/help/italics-screenshot.png)
 
 ### Bold
 
-For bold text, surround your text with `** two asterisks **`.
+For bold text, surround your text with `**two asterisks**`.
 
 ![Bold text](/static/images/help/bold-screenshot.png)
 
 ### Strikethrough
 
-For strikethrough text, surround your text with `~~ two tildes ~~`.
+For strikethrough text, surround your text with `~~two tildes~~`.
 
 ![Strikethrough text](/static/images/help/strikethrough-screenshot.png)
 
@@ -37,3 +37,9 @@ For strikethrough text, surround your text with `~~ two tildes ~~`.
 To add more variety, flavor, and emphasis to your messages, you can combine different styles of formatting.
 
 ![Extra emphasized text](/static/images/help/extra-emphasis-screenshot.png)
+
+## Links
+
+To include a hyperlink in your message, surround the link text with`[brackets]` and the url address of the link in `(parentheses)` immediately after.
+
+![Link](/static/images/help/link-screenshot.png)
