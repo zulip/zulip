@@ -76,10 +76,16 @@ Typing `@**all**` will alert all users in the stream, and a confirmation message
 
 For more information on mentions, visit [here](/help/mention-a-team-member.md) for more information.
 
-## Code blocks
+## Code
 
-Surround a portion of code with ``
+You can surround a portion of code with ``
 `back-ticks`
 `` to display it as inline code.
 
-Blocks of code are either fenced by lines with <code>`````` three back-ticks```<code>```</code>.
+Multi-line blocks of code are either fenced by lines with <code>`````` three back-ticks```<code>```</code></code> or indented with four spaces. In addition, to highlight language syntax, add the file extension of the language (for example, Python would be **.py**) right after the first set of back-ticks.
+
+![Inline code](/static/images/help/inline-code-screenshot.png)
+
+![Code syntax highlighting](/static/images/help/code-syntax-screenshot.png)
+
+##
