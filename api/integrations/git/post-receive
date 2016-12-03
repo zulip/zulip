@@ -30,6 +30,7 @@
 #  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
 
 from __future__ import absolute_import
+from typing import Text
 import os
 import sys
 import subprocess
@@ -50,6 +51,7 @@ client = zulip.Client(
     client="ZulipGit/" + VERSION)
 
 def git_repository_name():
+    # type: () -> Text
     output = subprocess.check_output(["git", "rev-parse", "--is-bare-repository"])
     if output.strip() == "true":
         return os.path.basename(os.getcwd())[:-len(".git")]
@@ -57,6 +59,7 @@ def git_repository_name():
         return os.path.basename(os.path.dirname(os.getcwd()))
 
 def git_commit_range(oldrev, newrev):
+    # type: (str, str) -> str
     log_cmd = ["git", "log", "--reverse",
                "--pretty=%aE %H %s", "%s..%s" % (oldrev, newrev)]
     commits = ''
@@ -69,6 +72,7 @@ def git_commit_range(oldrev, newrev):
     return commits
 
 def send_bot_message(oldrev, newrev, refname):
+    # type: (str, str, str) -> None
     repo_name   = git_repository_name()
     branch      = refname.replace('refs/heads/', '')
     destination = config.commit_notice_destination(repo_name, branch, newrev)
