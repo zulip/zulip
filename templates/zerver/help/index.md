@@ -29,6 +29,7 @@ as a “**realm**”.
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
+- **[Signing out](#help/signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
 
 ---
