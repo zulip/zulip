@@ -51,3 +51,13 @@ Unfortunately, Zulip currently does not support image embedding through links.
 Begin each item in your list with `* an asterisk followed by a space` to include lists in your messages.
 
 ![Lists](/static/images/help/lists-screenshot.png)
+
+## Emojis
+
+Zulip features a variety of emojis provided by the [Noto Project](https://code.google.com/p/noto/). To include emojis in your messages, surround the emoji phrase with `:colons:`.
+
+A dropdown will appear with suggested emojis as you enter the emoji phrase.
+
+![Emojis](/static/images/help/emojis-screenshot.png)
+
+A complete list of emojis can be found [here](http://www.webpagefx.com/tools/emoji-cheat-sheet/).
