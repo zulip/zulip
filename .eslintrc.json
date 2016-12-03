@@ -89,6 +89,10 @@
         "unread_ui": false
     },
     "rules": {
+	"array-callback-return": 1,
+	"no-useless-escape": 1,
+	"space-before-function-paren": 1,
+	"no-param-reassign": 1,
         "no-alert": 2,
         "no-array-constructor": 2,
         "no-caller": 2,
