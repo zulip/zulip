@@ -22,6 +22,12 @@ For italics, surround your text with `* asterisks *`.
 
 ### Bold
 
-For italics, surround your text with `* asterisks *`.
+For bold text, surround your text with `** two asterisks **`.
 
-![Italicized text](/static/images/help/italics-screenshot.png)
+![Bold text](/static/images/help/bold-screenshot.png)
+
+### Strikethrough
+
+For strikethrough text, surround your text with `~~ two tildes ~~`.
+
+![Strikethrough text](/static/images/help/strikethrough-screenshot.png)
