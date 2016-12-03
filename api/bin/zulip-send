@@ -42,7 +42,7 @@ def do_send_message(client, message_data):
     '''Sends a message and optionally prints status about the same.'''
 
     if message_data['type'] == 'stream':
-        log.info('Sending message to stream "%s", subject "%s"... ' %
+        log.info('Sending message to stream "%s", subject "%s"... ' % \
             (message_data['to'], message_data['subject']))
     else:
         log.info('Sending message to %s... ' % message_data['to'])

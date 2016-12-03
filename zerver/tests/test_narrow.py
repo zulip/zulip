@@ -710,8 +710,8 @@ class GetOldMessagesTest(ZulipTestCase):
             for type in bad_types:
                 # Rotate through every bad type for every integer
                 # parameter, one at a time.
-                post_params = dict(other_params + [(param, type)] +
-                                   [(other_param, 0) for other_param in
+                post_params = dict(other_params + [(param, type)] + \
+                                   [(other_param, 0) for other_param in \
                                     int_params[:idx] + int_params[idx + 1:]]
                                    )
                 result = self.client_get("/json/messages", post_params)

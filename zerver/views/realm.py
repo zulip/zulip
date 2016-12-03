@@ -62,7 +62,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         data['create_stream_by_admins_only'] = create_stream_by_admins_only
     if (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or \
        (message_content_edit_limit_seconds is not None and
-            realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
+        realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:

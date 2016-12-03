@@ -818,7 +818,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
             #  hanging off a paragraph, add a newline
             if (not fence and lines[i] and
                 self.LI_RE.match(lines[i+1]) and
-                    not self.LI_RE.match(lines[i])):
+                not self.LI_RE.match(lines[i])):
 
                 copy.insert(i+inserts+1, '')
                 inserts += 1

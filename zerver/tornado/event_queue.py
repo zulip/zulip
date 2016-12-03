@@ -262,7 +262,7 @@ class EventQueue(object):
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
         if (full_event_type in ["pointer", "restart"] or
-                full_event_type.startswith("flags/")):
+            full_event_type.startswith("flags/")):
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
                 return
@@ -760,7 +760,7 @@ def process_message_event(event_template, users):
 
         # The below prevents (Zephyr) mirroring loops.
         if ('mirror' in sending_client and
-                sending_client.lower() == client.client_type_name.lower()):
+            sending_client.lower() == client.client_type_name.lower()):
             continue
         client.add_event(user_event)
 

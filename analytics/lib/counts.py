@@ -168,7 +168,7 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
 def do_pull_from_zerver(stat, start_time, end_time, interval):
     # type: (CountStat, datetime, datetime, str) -> None
     zerver_table = stat.zerver_count_query.zerver_table._meta.db_table # type: ignore
-    join_args = ' '.join('AND %s.%s = %s' % (zerver_table, key, value)
+    join_args = ' '.join('AND %s.%s = %s' % (zerver_table, key, value) \
                          for key, value in stat.filter_args.items())
     if stat.group_by is None:
         subgroup = 'NULL'

@@ -81,7 +81,7 @@ class CountingBackoff(object):
         # type: () -> None
         if (self.timeout_success_equivalent is not None
             and self.last_attempt_time != 0
-                and time.time() - self.last_attempt_time > self.timeout_success_equivalent):
+            and time.time() - self.last_attempt_time > self.timeout_success_equivalent):
             self.number_of_retries = 0
 
 class RandomExponentialBackoff(CountingBackoff):
@@ -171,7 +171,7 @@ def get_default_config_filename():
     # type: () -> str
     config_file = os.path.join(os.environ["HOME"], ".zuliprc")
     if (not os.path.exists(config_file) and
-            os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
+        os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
         raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n"
                            "  mv ~/.humbugrc ~/.zuliprc\n")
     return config_file
@@ -312,7 +312,7 @@ class Client(object):
                 return False
             if self.verbose:
                 if not query_state["had_error_retry"]:
-                    sys.stdout.write("zulip API(%s): connection error%s -- retrying." %
+                    sys.stdout.write("zulip API(%s): connection error%s -- retrying." % \
                             (url.split(API_VERSTRING, 2)[0], error_string,))
                     query_state["had_error_retry"] = True
                 else:
@@ -366,7 +366,7 @@ class Client(object):
                 # want the later exception handlers to deal with any
                 # non-timeout other SSLErrors
                 if (isinstance(e, requests.exceptions.SSLError) and
-                        str(e) != "The read operation timed out"):
+                    str(e) != "The read operation timed out"):
                     raise
                 if longpolling:
                     # When longpolling, we expect the timeout to fire,
