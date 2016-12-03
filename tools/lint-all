@@ -322,9 +322,9 @@ def build_custom_checkers(by_lang):
         {'pattern': 'self\.client\.(get|post|patch|put|delete)',
          'exclude': set(['zilencer/tests.py']),
          'description': \
-         '''Do not call self.client directly for put/patch/post/get.
-         See WRAPPER_COMMENT in test_helpers.py for details.
-         '''},
+         'Do not call self.client directly for put/patch/post/get.'
+         'See WRAPPER_COMMENT in test_helpers.py for details.'
+         },
 
         ]) + whitespace_rules
     bash_rules = [
