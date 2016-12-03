@@ -20,9 +20,10 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    }
+    } # type: Dict[str, int]
 
 def report(state, data, last_check):
+    # type: (str, str, float) -> None
     print("%s: Last test run completed at %s\n%s" % (
         state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)),
         data))

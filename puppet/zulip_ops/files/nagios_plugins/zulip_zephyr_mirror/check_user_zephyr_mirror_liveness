@@ -27,14 +27,17 @@ django.setup()
 
 from zerver.models import UserActivity
 
+from typing import Any
+
 states = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    }
+    } # type: Dict[str, int]
 
 def report(state, short_msg, too_old=None):
+    # type: (str, str, Set[Any]) -> None
     too_old_data = ""
     if too_old:
         too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
