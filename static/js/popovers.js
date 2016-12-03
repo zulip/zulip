@@ -371,7 +371,7 @@ exports.register_click_handlers = function () {
         var email = people.get_person_from_user_id(user_id).email;
         popovers.hide_user_sidebar_popover();
 
-        compose.start('private', {"private_message_recipient": email, trigger: 'sidebar user actions'});
+        compose.start('private', {private_message_recipient: email, trigger: 'sidebar user actions'});
         e.stopPropagation();
     });
 
@@ -447,10 +447,10 @@ exports.register_click_handlers = function () {
         var can_unmute_topic = is_muted;
 
         var content = templates.render('topic_sidebar_actions', {
-            'stream_name': stream_name,
-            'topic_name': topic_name,
-            'can_mute_topic': can_mute_topic,
-            'can_unmute_topic': can_unmute_topic
+            stream_name: stream_name,
+            topic_name: topic_name,
+            can_mute_topic: can_mute_topic,
+            can_unmute_topic: can_unmute_topic
         });
 
         $(elt).popover({
@@ -523,7 +523,7 @@ exports.register_click_handlers = function () {
 
         var ypos = $(elt).offset().top - viewport.scrollTop();
         $(elt).popover({
-            content:   templates.render('stream_sidebar_actions', {'stream': stream_data.get_sub(stream)}),
+            content:   templates.render('stream_sidebar_actions', {stream: stream_data.get_sub(stream)}),
             trigger:   "manual",
             fixed: true
         });
@@ -664,7 +664,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.compose_to_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        compose.start('stream', {"stream": stream, trigger: 'sidebar stream actions'});
+        compose.start('stream', {stream: stream, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
 

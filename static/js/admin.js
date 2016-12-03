@@ -378,7 +378,7 @@ function _setup_page() {
         var stream_name = row.find('.default_stream_name').text();
 
         channel.del({
-            url: '/json/default_streams'+ '?' + $.param({"stream_name": stream_name}),
+            url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_default_stream_row button").closest("td").html(
@@ -567,7 +567,7 @@ function _setup_page() {
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
-                        ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {'atdomains_string': atdomains_string}), restricted_to_domain_status);
+                        ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {atdomains_string: atdomains_string}), restricted_to_domain_status);
                     } else {
                         ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
                     }
@@ -605,8 +605,10 @@ function _setup_page() {
                         Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui.report_success(i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
-                                                     {'num_minutes' : data_message_content_edit_limit_minutes}),
+                            ui.report_success(i18n.t("Users can now edit topics for all their messages,"
+                                                      +" and the content of messages which are less than __num_minutes__ minutes old.",
+                                                     {num_minutes :
+                                                       data_message_content_edit_limit_minutes}),
                                               message_editing_status);
                         } else {
                             ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);

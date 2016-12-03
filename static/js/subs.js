@@ -43,7 +43,7 @@ function set_stream_property(stream_name, property, value) {
     var sub_data = {stream: stream_name, property: property, value: value};
     return channel.post({
         url:      '/json/subscriptions/property',
-        data: {"subscription_data": JSON.stringify([sub_data])},
+        data: {subscription_data: JSON.stringify([sub_data])},
         timeout:  10*1000
     });
 }
@@ -247,10 +247,10 @@ function add_email_hint(row, email_address_hint_content) {
     // Add a popover explaining stream e-mail addresses on hover.
     var hint_id = "#email-address-hint-" + row.stream_id;
     var email_address_hint = $(hint_id);
-    email_address_hint.popover({"placement": "bottom",
-                "title": "Email integration",
-                "content": email_address_hint_content,
-                "trigger": "manual"});
+    email_address_hint.popover({placement: "bottom",
+                title: "Email integration",
+                content: email_address_hint_content,
+                trigger: "manual"});
 
     $("body").on("mouseover", hint_id, function (e) {
         email_address_hint.popover('show');
@@ -598,7 +598,7 @@ function ajaxSubscribe(stream) {
 
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream}]) },
+        data: {subscriptions: JSON.stringify([{name: stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
             exports.filter_table({input: ""});
@@ -607,7 +607,7 @@ function ajaxSubscribe(stream) {
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[page_params.email][0];
-                ui.report_success(i18n.t("Already subscribed to __stream__", {'stream': true_stream_name}),
+                ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                   $("#subscriptions-status"), 'subscriptions-status');
             }
             // The rest of the work is done via the subscribe event we will get
@@ -622,7 +622,7 @@ function ajaxSubscribe(stream) {
 function ajaxUnsubscribe(stream) {
     return channel.post({
         url: "/json/subscriptions/remove",
-        data: {"subscriptions": JSON.stringify([stream]) },
+        data: {subscriptions: JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
             var name;
             var res = JSON.parse(xhr.responseText);
@@ -644,10 +644,10 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream, "description": description}]),
-               "principals": JSON.stringify(principals),
-               "invite_only": JSON.stringify(invite_only),
-               "announce": JSON.stringify(announce)
+        data: {subscriptions: JSON.stringify([{name: stream, description: description}]),
+               principals: JSON.stringify(principals),
+               invite_only: JSON.stringify(invite_only),
+               announce: JSON.stringify(announce)
         },
         success: function (data) {
             $("#create_stream_name").val("");
@@ -702,8 +702,8 @@ function show_new_stream_modal() {
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream_name}]),
-               "principals": JSON.stringify([user_email])},
+        data: {subscriptions: JSON.stringify([{name: stream_name}]),
+               principals: JSON.stringify([user_email])},
         success: success,
         error: failure
     });
@@ -712,8 +712,8 @@ exports.invite_user_to_stream = function (user_email, stream_name, success, fail
 exports.remove_user_from_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
         url: "/json/subscriptions/remove",
-        data: {"subscriptions": JSON.stringify([stream_name]),
-               "principals": JSON.stringify([user_email])},
+        data: {subscriptions: JSON.stringify([stream_name]),
+               principals: JSON.stringify([user_email])},
         success: success,
         error: failure
     });
@@ -779,7 +779,7 @@ $(function () {
         // Hide users which aren't in filtered users
         _.each(users, function (user) {
             var display_type = filtered_users.hasOwnProperty(user.email)? "block" : "none";
-            $("label[data-name='" + user.email + "']").css({"display":display_type});
+            $("label[data-name='" + user.email + "']").css({display:display_type});
         });
 
         update_announce_stream_state();
@@ -787,9 +787,9 @@ $(function () {
     });
 
     var announce_stream_docs = $("#announce-stream-docs");
-    announce_stream_docs.popover({"placement": "right",
-                                  "content": templates.render('announce_stream_docs'),
-                                  "trigger": "manual"});
+    announce_stream_docs.popover({placement: "right",
+                                  content: templates.render('announce_stream_docs'),
+                                  trigger: "manual"});
     $("body").on("mouseover", "#announce-stream-docs", function (e) {
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
@@ -1021,7 +1021,7 @@ $(function () {
         channel.patch({
             // Stream names might contain unsafe characters so we must encode it first.
             url: "/json/streams/" + encodeURIComponent(sub.name),
-            data: {"new_name": JSON.stringify(new_name)},
+            data: {new_name: JSON.stringify(new_name)},
             success: function (data) {
                 new_name_box.val('');
                 ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
@@ -1048,7 +1048,7 @@ $(function () {
             // Stream names might contain unsafe characters so we must encode it first.
             url: '/json/streams/' + encodeURIComponent(stream_name),
             data: {
-                'description': JSON.stringify(description)
+                description: JSON.stringify(description)
             },
             success: function () {
                 // The event from the server will update the rest of the UI
@@ -1093,7 +1093,7 @@ $(function () {
         var sub = stream_data.get_sub_by_id(stream_id);
 
         $("#subscriptions-status").hide();
-        var data = {"stream_name": sub.name};
+        var data = {stream_name: sub.name};
 
         channel.post({
             url: url,

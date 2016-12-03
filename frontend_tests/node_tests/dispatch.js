@@ -171,8 +171,8 @@ var event_fixtures = {
         op: 'update_dict',
         property: 'default',
         data: {
-            'allow_message_editing': true,
-            'message_content_edit_limit_seconds': 5
+            allow_message_editing: true,
+            message_content_edit_limit_seconds: 5
         }
     },
 
@@ -207,7 +207,7 @@ var event_fixtures = {
     realm_emoji: {
         type: 'realm_emoji',
         realm_emoji: {
-            'airplane': {
+            airplane: {
                 display_url: 'some_url'
             }
         }

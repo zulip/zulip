@@ -120,9 +120,9 @@ function add_message_metadata(message) {
 
         stream_data.process_message_for_recent_topics(message);
 
-        involved_people = [{'full_name': message.sender_full_name,
-                            'user_id': message.sender_id,
-                            'email': message.sender_email}];
+        involved_people = [{full_name: message.sender_full_name,
+                            user_id: message.sender_id,
+                            email: message.sender_email}];
         set_topic_edit_properties(message);
         break;
 
@@ -592,8 +592,8 @@ util.execute_early(function () {
 
         // backfill more messages after the user is idle
         var backfill_batch_size = 1000;
-        $(document).idle({'idle': 1000*10,
-                          'onIdle': function () {
+        $(document).idle({idle: 1000*10,
+                          onIdle: function () {
                               var first_id = message_list.all.first().id;
                               exports.load_old_messages({
                                   anchor: first_id,

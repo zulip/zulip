@@ -399,7 +399,7 @@ function status_from_timestamp(baseline_time, presence) {
                     }
                     break;
                 default:
-                    blueslip.error('Unexpected status', {'presence_object': device_presence, 'device': device}, undefined);
+                    blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
             }
         }
     });
@@ -531,7 +531,7 @@ function maybe_select_person (e) {
             // undefined if there are no results
             var email = people.get_person_from_user_id(topPerson).email;
             compose.start('private',
-                    {trigger: 'sidebar enter key', "private_message_recipient": email});
+                    {trigger: 'sidebar enter key', private_message_recipient: email});
         }
         // Clear the user filter
         exports.escape_search();

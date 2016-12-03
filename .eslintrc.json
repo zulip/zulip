@@ -167,7 +167,7 @@
         "new-parens": 2,
         "one-var": ["error", "never"],
         "quotes": [1, "single"],
-        "quote-props": 0,
+        "quote-props": ["error", "as-needed", { "keywords": false, "unnecessary": true, "numbers": false }],
         "radix": 2,
         "semi": 2,
         "keyword-spacing": ["error", {

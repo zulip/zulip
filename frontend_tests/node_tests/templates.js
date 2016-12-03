@@ -73,16 +73,16 @@ function render(template_name, args) {
 
 (function actions_popover_content() {
     var args = {
-        "message": {
+        message: {
             is_stream: true,
             id: "99",
             stream: "devel",
             subject: "testing",
             sender_full_name: "King Lear"
         },
-        "can_edit_message": true,
-        "can_mute_topic": true,
-        "narrowed": true
+        can_edit_message: true,
+        can_mute_topic: true,
+        narrowed: true
     };
 
     var html = '<div style="height: 250px">';
@@ -109,9 +109,9 @@ function render(template_name, args) {
 (function admin_emoji_list() {
     var args = {
         emoji: {
-            "name": "MouseFace",
-            "display_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
-            "source_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
+            name: "MouseFace",
+            display_url: "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
+            source_url: "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
         }
     };
 
@@ -132,8 +132,8 @@ function render(template_name, args) {
 (function admin_filter_list() {
     var args = {
         filter: {
-            "pattern": "#(?P<id>[0-9]+)",
-            "url_format_string": "https://trac.example.com/ticket/%(id)s"
+            pattern: "#(?P<id>[0-9]+)",
+            url_format_string: "https://trac.example.com/ticket/%(id)s"
         }
     };
 
@@ -183,11 +183,11 @@ function render(template_name, args) {
     var users = ['alice', 'bob', 'carl'];
     _.each(users, function (user) {
         var args = {
-            "user": {
-                "is_active": true,
-                "is_active_human": true,
-                "email": user + '@zulip.com',
-                "full_name": user
+            user: {
+                is_active: true,
+                is_active_human: true,
+                email: user + '@zulip.com',
+                full_name: user
             }
         };
         html += render('admin_user_list', args);
@@ -241,8 +241,8 @@ function render(template_name, args) {
 (function admin_auth_methods_list() {
     var args = {
         method: {
-            "method": "Email",
-            "enabled": false
+            method: "Email",
+            enabled: false
         }
     };
 
@@ -296,10 +296,10 @@ function render(template_name, args) {
     html += '<div class="bot-settings-form">';
     html += '<ol id="bots_list" style="display: block">';
     var args = {
-        "email": "hamlet@zulip.com",
-        "api_key": "123456ABCD",
-        "name": "Hamlet",
-        "avatar_url": "/hamlet/avatar/url"
+        email: "hamlet@zulip.com",
+        api_key: "123456ABCD",
+        name: "Hamlet",
+        avatar_url: "/hamlet/avatar/url"
     };
     html += render('bot_avatar_row', args);
     html += '</ol>';
@@ -338,10 +338,10 @@ function render(template_name, args) {
 
 (function compose_notification() {
     var args = {
-        "note": "You sent a message to a muted topic.",
-        "link_text": "Narrow to here",
-        "link_msg_id": "99",
-        "link_class": "compose_notification_narrow_by_subject"
+        note: "You sent a message to a muted topic.",
+        link_text: "Narrow to here",
+        link_msg_id: "99",
+        link_class: "compose_notification_narrow_by_subject"
     };
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
@@ -374,12 +374,12 @@ function render(template_name, args) {
 
 (function group_pms() {
     var args = {
-        "group_pms": [
+        group_pms: [
             {
-                "fraction_present": 0.1,
-                "emails": "alice@zulip.com,bob@zulip.com",
-                "short_name": "Alice and Bob",
-                "name": "Alice and Bob"
+                fraction_present: 0.1,
+                emails: "alice@zulip.com,bob@zulip.com",
+                short_name: "Alice and Bob",
+                name: "Alice and Bob"
             }
         ]
     };
@@ -437,9 +437,9 @@ function render(template_name, args) {
 
 (function message_edit_form() {
     var args = {
-        "topic": "lunch",
-        "content": "Let's go to lunch!",
-        "is_stream": true
+        topic: "lunch",
+        content: "Let's go to lunch!",
+        is_stream: true
     };
     var html = render('message_edit_form', args);
     global.write_handlebars_output("message_edit_form", html);
@@ -557,9 +557,9 @@ function render(template_name, args) {
 
 (function notification() {
     var args = {
-        "content": "Hello",
-        "gravatar_url": "/gravatar/url",
-        "title": "You have a notification"
+        content: "Hello",
+        gravatar_url: "/gravatar/url",
+        title: "You have a notification"
     };
 
     var html = render('notification', args);
@@ -837,19 +837,19 @@ function render(template_name, args) {
     var args = {
         users: [
             {
-                "my_fullname": true,
-                "type_desc": "Active",
-                "type": "active",
-                "num_unread": 0,
-                "email": "lear@zulip.com",
-                "name": "King Lear"
+                my_fullname: true,
+                type_desc: "Active",
+                type: "active",
+                num_unread: 0,
+                email: "lear@zulip.com",
+                name: "King Lear"
             },
             {
-                "type_desc": "Away",
-                "type": "away",
-                "num_unread": 5,
-                "email": "othello@zulip.com",
-                "name": "Othello"
+                type_desc: "Away",
+                type: "away",
+                num_unread: 5,
+                email: "othello@zulip.com",
+                name: "Othello"
             }
         ]
     };
