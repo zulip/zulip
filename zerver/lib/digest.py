@@ -87,7 +87,7 @@ def gather_hot_conversations(user_profile, stream_messages):
         count = conversation_length[h]
 
         # We'll display up to 2 messages from the conversation.
-        first_few_messages = [user_message.message for user_message in \
+        first_few_messages = [user_message.message for user_message in
                             stream_messages.filter(
                                 message__recipient__type_id=stream_id,
                                 message__subject=subject)[:2]]
@@ -189,7 +189,7 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, [pm.message for pm in pms[:pms_limit]])
     template_payload['remaining_unread_pms_count'] = min(0, len(pms) - pms_limit)
 
-    home_view_recipients = [sub.recipient for sub in \
+    home_view_recipients = [sub.recipient for sub in
                             Subscription.objects.filter(
                                 user_profile=user_profile,
                                 active=True,
