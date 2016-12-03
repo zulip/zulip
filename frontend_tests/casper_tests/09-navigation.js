@@ -17,7 +17,7 @@ function wait_for_tab(tab) {
 function then_navigate_to(click_target, tab) {
     casper.then(function () {
         casper.test.info('Visiting #' + click_target);
-        casper.click('a[href^="#' + click_target + '"]');
+        casper.click("a[href='#" + click_target + "']");
         wait_for_tab(tab);
     });
 }
@@ -28,9 +28,12 @@ function then_navigate_to_settings() {
         var menu_selector = '#settings-dropdown';
         casper.waitUntilVisible(menu_selector, function () {
             casper.click(menu_selector);
-            casper.waitUntilVisible('a[href^="#settings"]', function () {
-                casper.click('a[href^="#settings"]');
-                wait_for_tab('settings');
+            casper.waitUntilVisible('a[data-popup="settings"]', function () {
+                casper.click('a[data-popup="settings"]');
+                casper.waitForSelector('#settings_page', function () {
+                    casper.test.assertExists('#settings_page', "Settings page is active");
+                    casper.click("#settings_page .exit");
+                });
             });
         });
     });
@@ -53,7 +56,6 @@ function then_navigate_to_subscriptions() {
 
 // Take a navigation tour of the app.
 // Entries are (click target, tab that should be active after clicking).
-
 then_navigate_to_settings();
 then_navigate_to('narrow/stream/Verona', 'home');
 then_navigate_to('home', 'home');
