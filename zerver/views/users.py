@@ -230,7 +230,7 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
         default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
     if (default_sending_stream and not
         default_sending_stream.is_public() and not
-        subscribed_to_stream(user_profile, default_sending_stream)):
+            subscribed_to_stream(user_profile, default_sending_stream)):
 
         return json_error(_('Insufficient permission'))
 

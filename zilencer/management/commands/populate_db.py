@@ -328,7 +328,7 @@ def send_messages(data):
 
         randkey = random.randint(1, random_max)
         if (num_messages > 0 and
-            random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
+                random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
             # Use an old recipient
             message_type, recipient_id, saved_data = recipients[num_messages - 1]
             if message_type == Recipient.PERSONAL:

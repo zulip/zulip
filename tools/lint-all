@@ -84,7 +84,7 @@ def check_pep8(files):
     ignored_rules = [
         'E402', 'E501', 'W503', 'E711', 'E128', 'E226',
         'E126', 'E121', 'E123', 'E266', 'E265', 'E261', 'E221',
-        'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E731', 'E302', 'E129',
+        'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E731', 'E302',
         'E741', 'E714', 'W391', 'E713', 'E305', 'E251', 'E306',
     ]
     pep8 = subprocess.Popen(
@@ -159,7 +159,7 @@ def build_custom_checkers(by_lang):
                     traceback.print_exc()
             if (max_length is not None and len(line) > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
-                "#ignorelongline" not in line):
+                    "#ignorelongline" not in line):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             lastLine = line
         if lineFlag and '\n' not in lastLine:
