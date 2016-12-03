@@ -67,7 +67,7 @@ def zulip_to_jid(email, jabber_domain):
     jid = JID(email, domain=jabber_domain)
     if (options.zulip_email_suffix
         and options.zulip_email_suffix in jid.username
-        and not jid.username.endswith("-bot")):
+            and not jid.username.endswith("-bot")):
         jid.username = jid.username.rpartition(options.zulip_email_suffix)[0]
     return jid
 
@@ -317,7 +317,7 @@ user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
     parser.add_option('--zulip-email-suffix',
                       default=None,
                       action='store',
-                      help= \
+                      help=
 '''Add the specified suffix to the local part of email addresses constructed
 from JIDs and nicks before sending requests to the Zulip server, and remove the
 suffix before sending requests to the Jabber server.  For example, specifying
@@ -384,7 +384,7 @@ option does not affect login credentials.'''.replace("\n", " "))
     for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix",
                    "jabber_server_address", "jabber_server_port"):
         if (getattr(options, option) is None
-            and config.has_option("jabber_mirror", option)):
+                and config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
 
     for option in ("no_use_tls",):

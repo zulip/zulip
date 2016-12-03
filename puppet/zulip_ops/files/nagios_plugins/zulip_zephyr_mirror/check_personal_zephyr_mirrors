@@ -13,16 +13,17 @@ from __future__ import print_function
 import os
 import time
 
-RESULTS_DIR = "/home/zulip/mirror_status"
+RESULTS_DIR = "/home/zulip/mirror_status" # type: str
 
 states = {
     "OK": 0,
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    }
+    } # type: Dict[str, int]
 
 def report(state, output):
+    # type: (str, str) -> None
     print("%s\n%s" % (state, output))
     exit(states[state])
 
