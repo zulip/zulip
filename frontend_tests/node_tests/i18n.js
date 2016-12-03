@@ -1,7 +1,7 @@
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
-    i18n: 'i18next'
+    i18n: 'i18next',
 });
 
 var i18n = global.i18n;
@@ -10,17 +10,17 @@ i18n.init({
     keySeparator: false,
     interpolation: {
         prefix: "__",
-        suffix: "__"
+        suffix: "__",
     },
     lng: 'fr',
     resources: {
         fr: {
             translation: {
                 Reply: "French",
-                "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "Some French text with __page_params.product_name__"
-            }
-        }
-    }
+                "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "Some French text with __page_params.product_name__",
+            },
+        },
+    },
 });
 
 var jsdom = require("jsdom");
@@ -37,11 +37,11 @@ var _ = global._;
             id: "99",
             stream: "devel",
             subject: "testing",
-            sender_full_name: "King Lear"
+            sender_full_name: "King Lear",
         },
         can_edit_message: true,
         can_mute_topic: true,
-        narrowed: true
+        narrowed: true,
     };
 
     var html = '<div style="height: 250px">';
@@ -71,8 +71,8 @@ var _ = global._;
             enable_digest_emails: false,
             domain: "zulip.com",
             autoscroll_forever: false,
-            default_desktop_notifications: false
-        }
+            default_desktop_notifications: false,
+        },
     };
 
     var html = global.render_template('settings_tab', args);

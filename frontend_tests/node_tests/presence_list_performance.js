@@ -4,7 +4,7 @@ global.stub_out_jquery();
 set_global('document', {
     hasFocus: function () {
         return true;
-    }
+    },
 });
 set_global('feature_flags', {});
 set_global('page_params', {});
@@ -16,7 +16,7 @@ add_dependencies({
    compose_fade: 'js/compose_fade.js',
    people: 'js/people.js',
    unread: 'js/unread.js',
-   activity: 'js/activity.js'
+   activity: 'js/activity.js',
 });
 
 var compose_fade = require('js/compose_fade.js');
@@ -42,27 +42,27 @@ var activity = require('js/activity.js');
 var alice = {
     email: 'alice@zulip.com',
     user_id: 1,
-    full_name: 'Alice Smith'
+    full_name: 'Alice Smith',
 };
 var fred = {
     email: 'fred@zulip.com',
     user_id: 2,
-    full_name: "Fred Flintstone"
+    full_name: "Fred Flintstone",
 };
 var jill = {
     email: 'jill@zulip.com',
     user_id: 3,
-    full_name: 'Jill Hill'
+    full_name: 'Jill Hill',
 };
 var mark = {
     email: 'mark@zulip.com',
     user_id: 4,
-    full_name: 'Marky Mark'
+    full_name: 'Marky Mark',
 };
 var norbert = {
     email: 'norbert@zulip.com',
     user_id: 5,
-    full_name: 'Norbert Oswald'
+    full_name: 'Norbert Oswald',
 };
 
 global.people.add(alice);
@@ -112,7 +112,7 @@ activity.presence_info[norbert.user_id] = {status: activity.ACTIVE};
           num_unread: 0,
           type: 'idle',
           type_desc: 'is not active',
-          mobile: undefined }
+          mobile: undefined },
     ]);
 }());
 
@@ -130,7 +130,7 @@ activity.presence_info[norbert.user_id] = {status: activity.ACTIVE};
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined }
+          mobile: undefined },
     ]);
 
     // Test if user index in presence_info is the expected one
@@ -147,7 +147,7 @@ activity.presence_info[norbert.user_id] = {status: activity.ACTIVE};
           num_unread: 0,
           type: 'active',
           type_desc: 'is active',
-          mobile: undefined }
+          mobile: undefined },
     ]);
 
     all_users = activity._filter_and_sort(activity.presence_info);

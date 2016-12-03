@@ -2,42 +2,42 @@ global.stub_out_jquery();
 
 add_dependencies({
     people: 'js/people.js',
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 var noop = function () {};
 var people = global.people;
 
 set_global('page_params', {
-    email: 'me@example.com'
+    email: 'me@example.com',
 });
 
 set_global('alert_words', {
-    process_message: noop
+    process_message: noop,
 });
 
 var me = {
     email: 'me@example.com',
     user_id: 101,
-    full_name: 'Me Myself'
+    full_name: 'Me Myself',
 };
 
 var alice = {
     email: 'alice@example.com',
     user_id: 102,
-    full_name: 'Alice'
+    full_name: 'Alice',
 };
 
 var bob = {
     email: 'bob@example.com',
     user_id: 103,
-    full_name: 'Bob'
+    full_name: 'Bob',
 };
 
 var cindy = {
     email: 'cindy@example.com',
     user_id: 104,
-    full_name: 'Cindy'
+    full_name: 'Cindy',
 };
 
 people.add_in_realm(me);
@@ -54,7 +54,7 @@ var message_store = require('js/message_store.js');
         sender_email: 'me@example.com',
         type: 'private',
         display_recipient: [me, bob, cindy],
-        flags: ['has_alert_word']
+        flags: ['has_alert_word'],
     };
     message_store._add_message_metadata(message);
 

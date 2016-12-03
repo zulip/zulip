@@ -1,5 +1,5 @@
 add_dependencies({
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 global.stub_out_jquery();
@@ -8,13 +8,13 @@ var people = require("js/people.js");
 
 set_global('page_params', {
     people_list: [],
-    email: 'hamlet@example.com'
+    email: 'hamlet@example.com',
 });
 set_global('activity', {
-    set_user_statuses: function () {}
+    set_user_statuses: function () {},
 });
 set_global('admin', {
-    show_or_hide_menu_item: function () {}
+    show_or_hide_menu_item: function () {},
 });
 
 var _ = global._;
@@ -23,7 +23,7 @@ var _ = global._;
     var orig_person = {
         email: 'orig@example.com',
         user_id: 31,
-        full_name: 'Original'
+        full_name: 'Original',
     };
     people.add(orig_person);
 
@@ -40,7 +40,7 @@ var _ = global._;
     var isaac = {
         email: email,
         user_id: 32,
-        full_name: full_name
+        full_name: full_name,
     };
     people.add(isaac);
 
@@ -91,7 +91,7 @@ var _ = global._;
     var person = {
         email: 'mary@example.com',
         user_id: 42,
-        full_name: 'Mary'
+        full_name: 'Mary',
     };
     people.add(person);
     person = people.get_by_email('mary@example.com');
@@ -107,7 +107,7 @@ var _ = global._;
     person = {
         email: 'mary@example.com',
         user_id: 42,
-        full_name: 'Mary New'
+        full_name: 'Mary New',
     };
     people.update(person);
     person = people.get_person_from_user_id(42);
@@ -126,23 +126,23 @@ var _ = global._;
     var myself = {
         email: 'myself@example.com',
         user_id: 201,
-        full_name: 'Yours Truly'
+        full_name: 'Yours Truly',
     };
     global.page_params.email = myself.email;
     var alice1 = {
         email: 'alice1@example.com',
         user_id: 202,
-        full_name: 'Alice'
+        full_name: 'Alice',
     };
     var alice2 = {
         email: 'alice2@example.com',
         user_id: 203,
-        full_name: 'Alice'
+        full_name: 'Alice',
     };
     var bob = {
         email: 'bob@example.com',
         user_id: 204,
-        full_name: 'Bob van Roberts'
+        full_name: 'Bob van Roberts',
     };
     people.add_in_realm(myself);
     people.add_in_realm(alice1);
@@ -152,7 +152,7 @@ var _ = global._;
     var expected = [
         { email: 'alice1@example.com', full_name: 'Alice' },
         { email: 'alice2@example.com', full_name: 'Alice' },
-        { email: 'bob@example.com', full_name: 'Bob van Roberts' }
+        { email: 'bob@example.com', full_name: 'Bob van Roberts' },
     ];
     assert.deepEqual(others, expected);
 
@@ -175,22 +175,22 @@ var _ = global._;
      var charles = {
         email: 'charles@example.com',
         user_id: 301,
-        full_name: 'Charles Dickens'
+        full_name: 'Charles Dickens',
     };
     var maria = {
         email: 'athens@example.com',
         user_id: 302,
-        full_name: 'Maria Athens'
+        full_name: 'Maria Athens',
     };
     var ashton = {
         email: 'ashton@example.com',
         user_id: 303,
-        full_name: 'Ashton Smith'
+        full_name: 'Ashton Smith',
     };
     var linus = {
         email: 'ltorvalds@example.com',
         user_id: 304,
-        full_name: 'Linus Torvalds'
+        full_name: 'Linus Torvalds',
     };
 
     people.add_in_realm(charles);
@@ -203,7 +203,7 @@ var _ = global._;
     var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
     var expected = [
         { email: 'athens@example.com', full_name: 'Maria Athens' },
-        { email: 'ashton@example.com', full_name: 'Ashton Smith' }
+        { email: 'ashton@example.com', full_name: 'Ashton Smith' },
     ];
     assert.equal(filtered_people["ashton@example.com"], true);
     assert.equal(filtered_people["athens@example.com"], true);
@@ -232,12 +232,12 @@ var _ = global._;
      var emp401 = {
         email: 'emp401@example.com',
         user_id: 401,
-        full_name: 'whatever 401'
+        full_name: 'whatever 401',
     };
     var emp402 = {
         email: 'EMP402@example.com',
         user_id: 402,
-        full_name: 'whatever 402'
+        full_name: 'whatever 402',
     };
 
     people.add_in_realm(emp401);

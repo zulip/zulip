@@ -1,11 +1,11 @@
 add_dependencies({
     util: 'js/util.js',
-    stream_data: 'js/stream_data.js'
+    stream_data: 'js/stream_data.js',
 });
 
 set_global('page_params', {
     email: 'hamlet@zulip.com',
-    domain: 'zulip.com'
+    domain: 'zulip.com',
 });
 
 set_global('feature_flags', {});
@@ -24,7 +24,7 @@ function assert_same_operators(result, terms) {
         return {
             negated: negated,
             operator: term.operator,
-            operand: term.operand
+            operand: term.operand,
         };
     });
     assert.deepEqual(result, terms);
@@ -34,7 +34,7 @@ function assert_same_operators(result, terms) {
     var operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'stream', operand: 'exclude_stream', negated: true},
-        {operator: 'topic', operand: 'bar'}
+        {operator: 'topic', operand: 'bar'},
     ];
     var filter = new Filter(operators);
 
@@ -54,7 +54,7 @@ function assert_same_operators(result, terms) {
     operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'topic', operand: 'bar'},
-        {operator: 'search', operand: 'pizza'}
+        {operator: 'search', operand: 'pizza'},
     ];
     filter = new Filter(operators);
 
@@ -65,7 +65,7 @@ function assert_same_operators(result, terms) {
     // we don't consider ourselves to have a stream operator, because we don't
     // want to have the stream in the tab bar or unsubscribe messaging, etc.
     operators = [
-        {operator: 'stream', operand: 'exclude', negated: true}
+        {operator: 'stream', operand: 'exclude', negated: true},
     ];
     filter = new Filter(operators);
     assert(!filter.has_operator('stream'));
@@ -74,7 +74,7 @@ function assert_same_operators(result, terms) {
     // the search logic happens on the back end and we need to have can_apply_locally()
     // be false, and we want "Search results" in the tab bar.
     operators = [
-        {operator: 'search', operand: 'stop_word', negated: true}
+        {operator: 'search', operand: 'stop_word', negated: true},
     ];
     filter = new Filter(operators);
     assert(filter.has_operator('search'));
@@ -82,7 +82,7 @@ function assert_same_operators(result, terms) {
 
     // Similar logic applies to negated "has" searches.
     operators = [
-        {operator: 'has', operand: 'images', negated: true}
+        {operator: 'has', operand: 'images', negated: true},
     ];
     filter = new Filter(operators);
     assert(filter.has_operator('has'));
@@ -92,7 +92,7 @@ function assert_same_operators(result, terms) {
 (function test_topic_stuff() {
     var operators = [
         {operator: 'stream', operand: 'foo'},
-        {operator: 'topic', operand: 'old topic'}
+        {operator: 'topic', operand: 'old topic'},
     ];
     var filter = new Filter(operators);
 
@@ -109,7 +109,7 @@ function assert_same_operators(result, terms) {
 (function test_new_style_operators() {
     var term = {
         operator: 'stream',
-        operand: 'foo'
+        operand: 'foo',
     };
     var operators = [term];
     var filter = new Filter(operators);
@@ -121,7 +121,7 @@ function assert_same_operators(result, terms) {
     var operators = [
         {operator: 'stream', operand: 'foo'},
         {operator: 'in', operand: 'all'},
-        {operator: 'topic', operand: 'bar'}
+        {operator: 'topic', operand: 'bar'},
     ];
 
     var filter = new Filter(operators);
@@ -129,7 +129,7 @@ function assert_same_operators(result, terms) {
 
     global.page_params.narrow_stream = 'default';
     operators = [
-        {operator: 'stream', operand: 'default'}
+        {operator: 'stream', operand: 'default'},
     ];
     filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), []);
@@ -261,7 +261,7 @@ function get_predicate(operators) {
     var narrow;
 
     narrow = [
-        {operator: 'stream', operand: 'social', negated: true}
+        {operator: 'stream', operand: 'social', negated: true},
     ];
     predicate = new Filter(narrow).predicate();
     assert(predicate({type: 'stream', stream: 'devel'}));
@@ -285,7 +285,7 @@ function get_predicate(operators) {
     // Try to get the MIT regex to explode for an empty stream.
     var terms = [
         {operator: 'stream', operand: ''},
-        {operator: 'topic', operand: 'bar'}
+        {operator: 'topic', operand: 'bar'},
     ];
     predicate = new Filter(terms).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
@@ -293,7 +293,7 @@ function get_predicate(operators) {
     // Try to get the MIT regex to explode for an empty topic.
     terms = [
         {operator: 'stream', operand: 'foo'},
-        {operator: 'topic', operand: ''}
+        {operator: 'topic', operand: ''},
     ];
     predicate = new Filter(terms).predicate();
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
@@ -321,7 +321,7 @@ function get_predicate(operators) {
     // Exercise caching feature.
     var terms = [
         {operator: 'stream', operand: 'Foo'},
-        {operator: 'topic', operand: 'bar'}
+        {operator: 'topic', operand: 'bar'},
     ];
     var filter = new Filter(terms);
     predicate = filter.predicate();
@@ -343,38 +343,38 @@ function get_predicate(operators) {
     operators = [
         {operator: 'stream', operand: 'Foo'},
         {operator: 'topic', operand: 'Bar'},
-        {operator: 'search', operand: 'yo'}
+        {operator: 'search', operand: 'yo'},
     ];
     _test();
 
     string = 'pm-with:leo+test@zulip.com';
     operators = [
-        {operator: 'pm-with', operand: 'leo+test@zulip.com'}
+        {operator: 'pm-with', operand: 'leo+test@zulip.com'},
     ];
     _test();
 
     string = 'sender:leo+test@zulip.com';
     operators = [
-        {operator: 'sender', operand: 'leo+test@zulip.com'}
+        {operator: 'sender', operand: 'leo+test@zulip.com'},
     ];
     _test();
 
     string = 'stream:With+Space';
     operators = [
-        {operator: 'stream', operand: 'With Space'}
+        {operator: 'stream', operand: 'With Space'},
     ];
     _test();
 
     string = 'https://www.google.com';
     operators = [
-        {operator: 'search', operand: 'https://www.google.com'}
+        {operator: 'search', operand: 'https://www.google.com'},
     ];
     _test();
 
     string = 'stream:foo -stream:exclude';
     operators = [
         {operator: 'stream', operand: 'foo'},
-        {operator: 'stream', operand: 'exclude', negated: true}
+        {operator: 'stream', operand: 'exclude', negated: true},
     ];
     _test();
 }());
@@ -386,19 +386,19 @@ function get_predicate(operators) {
     operators = [
         {operator: 'stream', operand: 'Foo'},
         {operator: 'topic', operand: 'Bar', negated: true},
-        {operator: 'search', operand: 'yo'}
+        {operator: 'search', operand: 'yo'},
     ];
     string = 'stream:Foo -topic:Bar yo';
     assert.deepEqual(Filter.unparse(operators), string);
 
     operators = [
-        {operator: 'id', operand: 50}
+        {operator: 'id', operand: 50},
     ];
     string = 'id:50';
     assert.deepEqual(Filter.unparse(operators), string);
 
     operators = [
-        {operator: 'near', operand: 150}
+        {operator: 'near', operand: 150},
     ];
     string = 'near:150';
     assert.deepEqual(Filter.unparse(operators), string);
@@ -410,85 +410,85 @@ function get_predicate(operators) {
 
     narrow = [
         {operator: 'stream', operand: 'devel'},
-        {operator: 'is', operand: 'starred'}
+        {operator: 'is', operand: 'starred'},
     ];
     string = 'Narrow to stream devel, Narrow to starred messages';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'stream', operand: 'devel'},
-        {operator: 'topic', operand: 'JS'}
+        {operator: 'topic', operand: 'JS'},
     ];
     string = 'Narrow to devel > JS';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'is', operand: 'private'},
-        {operator: 'search', operand: 'lunch'}
+        {operator: 'search', operand: 'lunch'},
     ];
     string = 'Narrow to all private messages, Search for lunch';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'id', operand: 99}
+        {operator: 'id', operand: 99},
     ];
     string = 'Narrow to message ID 99';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'in', operand: 'home'}
+        {operator: 'in', operand: 'home'},
     ];
     string = 'Narrow to messages in home';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'is', operand: 'mentioned'}
+        {operator: 'is', operand: 'mentioned'},
     ];
     string = 'Narrow to mentioned messages';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'is', operand: 'alerted'}
+        {operator: 'is', operand: 'alerted'},
     ];
     string = 'Narrow to alerted messages';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'is', operand: 'something_we_do_not_support'}
+        {operator: 'is', operand: 'something_we_do_not_support'},
     ];
     string = 'Narrow to (unknown operator)';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'bogus', operand: 'foo'}
+        {operator: 'bogus', operand: 'foo'},
     ];
     string = 'Narrow to (unknown operator)';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'stream', operand: 'devel'},
-        {operator: 'topic', operand: 'JS', negated: true}
+        {operator: 'topic', operand: 'JS', negated: true},
     ];
     string = 'Narrow to stream devel, Exclude topic JS';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'is', operand: 'private'},
-        {operator: 'search', operand: 'lunch', negated: true}
+        {operator: 'search', operand: 'lunch', negated: true},
     ];
     string = 'Narrow to all private messages, Exclude lunch';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'stream', operand: 'devel'},
-        {operator: 'is', operand: 'starred', negated: true}
+        {operator: 'is', operand: 'starred', negated: true},
     ];
     string = 'Narrow to stream devel, Exclude starred messages';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: 'stream', operand: 'devel'},
-        {operator: 'has', operand: 'image', negated: true}
+        {operator: 'has', operand: 'image', negated: true},
     ];
     string = 'Narrow to stream devel, Exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
