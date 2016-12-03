@@ -54,7 +54,8 @@ import sys
 import boto.utils
 import netifaces
 from six.moves import range
-if False: from typing import Optional
+if False:
+    from typing import Optional
 
 def address_of(device_id):
     # type: (int) -> Optional[str]

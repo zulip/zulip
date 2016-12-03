@@ -27,7 +27,8 @@ django.setup()
 
 from zerver.models import UserActivity
 
-if False: from typing import Any
+if False:
+    from typing import Any
 
 states = {
     "OK": 0,
