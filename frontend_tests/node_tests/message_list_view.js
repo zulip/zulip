@@ -72,8 +72,7 @@ set_global('timerender', {
     function assert_message_list_equal(list1, list2) {
         assert.deepEqual(
             _.chain(list1).pluck('msg').pluck('id').value(),
-            _.chain(list2).pluck('msg').pluck('id').value(),
-        );
+            _.chain(list2).pluck('msg').pluck('id').value());
     }
 
     function assert_message_groups_list_equal(list1, list2) {
@@ -85,8 +84,7 @@ set_global('timerender', {
         }
         assert.deepEqual(
             _.map(list1, extract_message_ids),
-            _.map(list2, extract_message_ids),
-        );
+            _.map(list2, extract_message_ids));
     }
 
     (function test_empty_list_bottom() {
@@ -122,8 +120,7 @@ set_global('timerender', {
 
         assert_message_groups_list_equal(
             list._message_groups,
-            [build_message_group([message1, message2])],
-        );
+            [build_message_group([message1, message2])]);
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups, []);
@@ -149,8 +146,7 @@ set_global('timerender', {
         assert(!message_group2.show_date);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group1, message_group2],
-        );
+            [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups, []);
@@ -176,8 +172,7 @@ set_global('timerender', {
         assert(message_group2.show_date);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group1, message_group2],
-        );
+            [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups, []);
@@ -203,8 +198,7 @@ set_global('timerender', {
         assert(message_group1.bookend_bottom);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group1, message_group2],
-        );
+            [message_group1, message_group2]);
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups, []);
@@ -230,8 +224,7 @@ set_global('timerender', {
         assert(message2.include_sender);
         assert_message_groups_list_equal(
             list._message_groups,
-            [build_message_group([message1, message2])],
-        );
+            [build_message_group([message1, message2])]);
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups, []);
@@ -257,13 +250,11 @@ set_global('timerender', {
 
         assert_message_groups_list_equal(
             list._message_groups,
-            [build_message_group([message2, message1])],
-        );
+            [build_message_group([message2, message1])]);
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups,
-            [build_message_group([message2, message1])],
-        );
+            [build_message_group([message2, message1])]);
         assert_message_list_equal(result.append_messages, []);
         assert_message_list_equal(result.rerender_messages, []);
     }());
@@ -285,8 +276,7 @@ set_global('timerender', {
 
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1],
-        );
+            [message_group2, message_group1]);
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert_message_groups_list_equal(result.rerender_groups, []);
@@ -311,12 +301,10 @@ set_global('timerender', {
 
         assert.equal(
             message_group1.show_date,
-            '900000000 - 1000000',
-        );
+            '900000000 - 1000000');
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1],
-        );
+            [message_group2, message_group1]);
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert_message_groups_list_equal(result.rerender_groups, [message_group1]);
@@ -342,8 +330,7 @@ set_global('timerender', {
         assert(message_group2.bookend_bottom);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1],
-        );
+            [message_group2, message_group1]);
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
         assert_message_groups_list_equal(result.rerender_groups, []);

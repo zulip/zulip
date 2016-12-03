@@ -623,8 +623,7 @@ run(function (override, capture, args) {
     override(
         'subs',
         'update_subscription_properties',
-        capture(['name', 'property', 'value']),
-    );
+        capture(['name', 'property', 'value']));
     override('admin', 'update_default_streams_table', noop);
     dispatch(event);
     assert_same(args.name, event.name);
@@ -677,8 +676,7 @@ run(function (override, capture, args) {
     override(
         'subs',
         'update_subscription_properties',
-        capture(['name', 'property', 'value']),
-    );
+        capture(['name', 'property', 'value']));
     dispatch(event);
     assert_same(args.name, event.name);
     assert_same(args.property, event.property);
@@ -711,8 +709,7 @@ run(function (override, capture, args) {
     override(
         'notifications',
         'handle_global_notification_updates',
-        capture(['name', 'setting']),
-    );
+        capture(['name', 'setting']));
     dispatch(event);
     assert_same(args.name, event.notification_name);
     assert_same(args.setting, event.setting);

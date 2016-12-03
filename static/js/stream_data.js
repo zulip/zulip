@@ -88,8 +88,7 @@ exports.all_subscribed_streams_are_in_home_view = function () {
 exports.home_view_stream_names = function () {
     var home_view_subs = _.filter(exports.subscribed_subs(), function (sub) {
             return sub.in_home_view;
-        },
-    );
+        });
     return _.map(home_view_subs, function (sub) {
         return sub.name;
     });

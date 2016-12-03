@@ -197,9 +197,7 @@ exports.populate_filters = function (filters_data) {
                         url_format_string: filter[1],
                         id: filter[2],
                     },
-                },
-            ),
-        );
+                }));
     });
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
@@ -237,8 +235,7 @@ exports.set_up_deactivate_user_modal = function (row) {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
-                    );
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
                 } else {
                      row.find("button").text("Failed!");
                 }
@@ -427,8 +424,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
-                    );
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
                 } else {
                     row.find("button").text("Failed!");
                 }
@@ -459,8 +455,7 @@ function _setup_page() {
                 var button = row.find("button");
                 if (xhr.status.toString().charAt(0) === "4") {
                     button.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
-                    );
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
                 } else {
                      button.text(i18n.t("Failed!"));
                 }
@@ -751,8 +746,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_stream_row button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
-                    );
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
                 } else {
                      $(".active_stream_row button").text("Failed!");
                 }
@@ -774,8 +768,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
-                    );
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
                 } else {
                      btn.text("Failed!");
                 }
@@ -821,8 +814,7 @@ function _setup_page() {
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
-                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg),
-                    );
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg));
                 } else {
                      btn.text("Failed!");
                 }

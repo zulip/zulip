@@ -302,8 +302,7 @@ MessageListView.prototype = {
                 add_display_time(
                     second_group,
                     _.first(second_group.message_containers),
-                    _.last(first_group.message_containers),
-                );
+                    _.last(first_group.message_containers));
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
             }
@@ -317,8 +316,7 @@ MessageListView.prototype = {
                 message_actions.rerender_messages.push(
                     first_group.message_containers[
                         first_group.message_containers.length
-                        - second_group.message_containers.length - 1],
-                );
+                        - second_group.message_containers.length - 1]);
                 message_actions.append_messages = _.first(new_message_groups).message_containers;
                 new_message_groups = _.rest(new_message_groups);
             } else if (first_group !== undefined && second_group !== undefined) {

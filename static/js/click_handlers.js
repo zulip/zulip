@@ -268,8 +268,7 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
     $('#send-status .send-status-close').click(
-        function () { $('#send-status').stop(true).fadeOut(500); },
-    );
+        function () { $('#send-status').stop(true).fadeOut(500); });
 
 
     $('.compose_stream_button').click(function (e) {

@@ -125,13 +125,11 @@ activity.update_huddles = function () {};
 
     assert.equal(
         full_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill',
-    );
+        'Alice Smith, Jill Hill');
 
     assert.equal(
         full_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill',
-    );
+        'Alice Smith, Fred Flintstone, Jill Hill');
 }());
 
 (function test_short_huddle_name() {
@@ -142,28 +140,23 @@ activity.update_huddles = function () {};
 
     assert.equal(
         short_name('alice@zulip.com'),
-        'Alice Smith',
-    );
+        'Alice Smith');
 
     assert.equal(
         short_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill',
-    );
+        'Alice Smith, Jill Hill');
 
     assert.equal(
         short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill',
-    );
+        'Alice Smith, Fred Flintstone, Jill Hill');
 
     assert.equal(
         short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other',
-    );
+        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other');
 
     assert.equal(
         short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others',
-    );
+        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others');
 
 }());
 
@@ -179,8 +172,7 @@ activity.update_huddles = function () {};
 
     assert.equal(
         activity.huddle_fraction_present(huddle, presence_list),
-        '0.50',
-    );
+        '0.50');
 }());
 
 
@@ -193,8 +185,7 @@ activity.update_huddles = function () {};
         },
     };
     var status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
     assert.equal(status.mobile, false);
 
     presence.Android = {
@@ -203,20 +194,17 @@ activity.update_huddles = function () {};
         pushable: false,
     };
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "active");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "offline");
 
@@ -226,20 +214,17 @@ activity.update_huddles = function () {};
         pushable: true,
     };
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "idle");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence,
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 

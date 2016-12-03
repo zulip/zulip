@@ -823,16 +823,14 @@ $(function () {
                 $("#stream_creation_form input:checkbox[name=user]:checked"),
                 function (elem) {
                     return $(elem).val();
-                },
-            );
+                });
             // You are always subscribed to streams you create.
             principals.push(page_params.email);
             ajaxSubscribeForCreation(stream,
                 description,
                 principals,
                 $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
-                $('#announce-new-stream input').prop('checked'),
-            );
+                $('#announce-new-stream input').prop('checked'));
         }
     });
 
@@ -1121,8 +1119,7 @@ $(function () {
             "/json/make_stream_public",
             "The stream has been made public!",
             "Error making stream public",
-            false,
-        );
+            false);
     });
 
     $("#subscriptions_table").on("click", ".make-stream-private-button", function (e) {
@@ -1131,8 +1128,7 @@ $(function () {
             "/json/make_stream_private",
             "The stream has been made private!",
             "Error making stream private",
-            true,
-        );
+            true);
     });
 
     $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {

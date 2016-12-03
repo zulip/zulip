@@ -628,8 +628,7 @@ exports.MessageList.prototype = {
 
 exports.all = new exports.MessageList(
     undefined, undefined,
-    {muting_enabled: false},
-);
+    {muting_enabled: false});
 
 // We stop autoscrolling when the user is clearly in the middle of
 // doing something.  Be careful, though, if you try to capture

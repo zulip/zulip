@@ -126,8 +126,7 @@ exports.colorize_tab_bar = function () {
                  $(this).css('border-left-color',
                              color_for_stream).css('background-color',
                                                    color_for_stream);
-                },
-              );
+                });
             }
             stream_tab.removeClass(stream_color.color_classes);
             stream_tab.addClass(stream_dark);

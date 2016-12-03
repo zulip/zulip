@@ -127,8 +127,7 @@ casper.then(function () {
     //     );
         casper.test.assertEqual(
             common.get_form_field_value(form_sel + ' [name=bot_name]'),
-            'Bot 1',
-        );
+            'Bot 1');
     });
 });
 

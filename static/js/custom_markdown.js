@@ -25,8 +25,7 @@ var exports = {};
                 }
             }, function (xhr) {
                 ui.report_error(i18n.t("Error adding subscription"), xhr, $status_message);
-            },
-        );
+            });
     }
 
     function remove_sub(stream_name, $status_message) {
@@ -40,8 +39,7 @@ var exports = {};
                 $status_message.hide();
             }, function (xhr) {
                 ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);
-            },
-        );
+            });
     }
 
     function display_subscribe($button, stream_name) {

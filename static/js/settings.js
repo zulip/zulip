@@ -25,8 +25,7 @@ function build_stream_list($select, extra_names) {
             .map(build_option)
             .reduce(
                 function ($optgroup, option) { return $optgroup.append(option); },
-                $('<optgroup label="Public"/>'),
-            )
+                $('<optgroup label="Public"/>'))
             .value();
 
         var private_options = _.chain(stream_items)
@@ -36,8 +35,7 @@ function build_stream_list($select, extra_names) {
             .map(build_option)
             .reduce(
                 function ($optgroup, option) { return $optgroup.append(option); },
-                $('<optgroup label="Private"/>'),
-            )
+                $('<optgroup label="Private"/>'))
             .value();
 
         $select.empty();
@@ -63,12 +61,10 @@ function add_bot_row(info) {
     }
     build_stream_list(
         default_sending_stream_select,
-        to_extra_options,
-    );
+        to_extra_options);
     default_sending_stream_select.val(
         info.default_sending_stream,
-        to_extra_options,
-    );
+        to_extra_options);
 
     var events_extra_options = [['__all_public__', 'All public streams']];
     if (info.default_events_register_stream === null && !info.default_all_public_streams) {
@@ -76,8 +72,7 @@ function add_bot_row(info) {
     }
     build_stream_list(
         default_events_register_stream_select,
-        events_extra_options,
-    );
+        events_extra_options);
     if (info.default_all_public_streams) {
         default_events_register_stream_select.val('__all_public__');
     } else {
@@ -142,8 +137,7 @@ function _setup_page() {
                 build_stream_list($('#create_bot_default_sending_stream'));
                 build_stream_list(
                     $('#create_bot_default_events_register_stream'),
-                    [['__all_public__', 'All public streams']],
-                );
+                    [['__all_public__', 'All public streams']]);
             },
         });
     }

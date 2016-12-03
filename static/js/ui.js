@@ -508,8 +508,7 @@ $(function () {
                     selected_id_from_idx: event.msg_list._items[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         _.pluck(event.msg_list._items, 'id'),
-                        _.chain(current_msg_list._items).pluck('id').clone().value().sort(),
-                    ),
+                        _.chain(current_msg_list._items).pluck('id').clone().value().sort()),
                     found_in_dom: row_from_dom.length,
                 });
             }

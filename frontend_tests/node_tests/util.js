@@ -55,39 +55,32 @@ var _ = global._;
     _.each([util.same_recipient, util.same_major_recipient], function (same) {
         assert(same(
             {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'fOO', subject: 'bar'},
-        ));
+            {type: 'stream', stream: 'fOO', subject: 'bar'}));
 
         assert(!same(
             {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'yo', subject: 'whatever'},
-        ));
+            {type: 'stream', stream: 'yo', subject: 'whatever'}));
 
         assert(same(
             {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-        ));
+            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}));
 
         assert(same(
             {type: 'private', reply_to: 'fred@zulip.com'},
-            {type: 'private', reply_to: 'Fred@zulip.com'},
-        ));
+            {type: 'private', reply_to: 'Fred@zulip.com'}));
 
         assert(!same(
             {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'private', reply_to: 'Fred@zulip.com'},
-        ));
+            {type: 'private', reply_to: 'Fred@zulip.com'}));
     });
 
     assert(util.same_major_recipient(
         {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'},
-    ));
+        {type: 'stream', stream: 'fOO', subject: 'sub2'}));
 
     assert(!util.same_recipient(
         {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'},
-    ));
+        {type: 'stream', stream: 'fOO', subject: 'sub2'}));
 
 }());
 
@@ -108,8 +101,7 @@ var _ = global._;
 (function test_normalize_recipients() {
     assert.equal(
         util.normalize_recipients('ZOE@foo.com, bob@foo.com, alice@foo.com, AARON@foo.com '),
-        'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com',
-    );
+        'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com');
 }());
 
 (function test_random_int() {

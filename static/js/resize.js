@@ -100,8 +100,7 @@ function get_new_heights() {
         res,
         usable_height,
         user_presences,
-        group_pms,
-    );
+        group_pms);
 
     return res;
 }
