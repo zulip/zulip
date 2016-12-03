@@ -176,6 +176,7 @@ class TypingStartedNotificationTest(ZulipTestCase):
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'start')
 
+
 class StoppedTypingNotificationTest(ZulipTestCase):
     def test_send_notification_to_self_event(self):
         # type: () -> None
@@ -217,8 +218,7 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         recipient = 'othello@zulip.com'
         expected_recipient_emails = set([sender, recipient])
         expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
-
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post('/api/v1/typing', {'to': recipient,
                                                          'op': 'stop'},

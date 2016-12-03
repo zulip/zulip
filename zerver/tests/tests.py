@@ -2231,3 +2231,4 @@ class TestLoginPage(ZulipTestCase):
         # type: () -> None
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
+

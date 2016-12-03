@@ -695,12 +695,14 @@ def get_user_activity_summary(records):
 
     return summary
 
+
 def format_date_for_activity_reports(date):
     # type: (Optional[datetime]) -> str
     if date:
         return date.astimezone(eastern_tz).strftime('%Y-%m-%d %H:%M')
     else:
         return ''
+
 
 def user_activity_link(email):
     # type: (str) -> mark_safe
@@ -709,12 +711,14 @@ def user_activity_link(email):
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
+
 def realm_activity_link(realm):
     # type: (str) -> mark_safe
     url_name = 'analytics.views.get_realm_activity'
     url = urlresolvers.reverse(url_name, kwargs=dict(realm=realm))
     realm_link = '<a href="%s">%s</a>' % (url, realm)
     return mark_safe(realm_link)
+
 
 def realm_client_table(user_summaries):
     # type: (Dict[str, Dict[str, Dict[str, Any]]]) -> str
@@ -859,6 +863,7 @@ def realm_user_summary_table(all_records, admin_emails):
     content = make_table(title, cols, rows, has_row_class=True)
     return user_records, content
 
+
 @zulip_internal
 def get_realm_activity(request, realm):
     # type: (HttpRequest, str) -> HttpResponse
@@ -899,6 +904,7 @@ def get_realm_activity(request, realm):
         dict(data=data, realm_link=realm_link, title=title),
         request=request
     )
+
 
 @zulip_internal
 def get_user_activity(request, email):
