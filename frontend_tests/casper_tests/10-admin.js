@@ -43,7 +43,7 @@ casper.then(function () {
     casper.click('a[href^="#administration"]');
 });
 
-casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
+casper.waitUntilVisible('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
     // Test Setting was saved
     casper.test.assertEval(function () {
         return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
@@ -67,7 +67,7 @@ casper.then(function () {
 casper.then(function () {
     // Test custom realm emoji
     casper.click("li[data-section='emoji-settings']");
-    casper.waitForSelector('.admin-emoji-form', function () {
+    casper.waitUntilVisible('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
             name: 'MouseFace',
             url: 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png',
@@ -82,7 +82,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitForSelector('.emoji_row', function () {
+    casper.waitUntilVisible('.emoji_row', function () {
         casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
         casper.test.assertExists('.emoji_row img[src="http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png"]');
         casper.click('.emoji_row button.delete');
@@ -90,7 +90,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileSelector('.emoji_row', function () {
+    casper.waitWhileVisible('.emoji_row', function () {
         casper.test.assertDoesntExist('.emoji_row');
     });
 });
@@ -98,7 +98,7 @@ casper.then(function () {
 // Test custom realm filters
 casper.then(function () {
     casper.click("li[data-section='filter-settings']");
-    casper.waitForSelector('.admin-filter-form', function () {
+    casper.waitUntilVisible('.admin-filter-form', function () {
         casper.fill('form.admin-filter-form', {
             pattern: '#(?P<id>[0-9]+)',
             url_format_string: 'https://trac.example.com/ticket/%(id)s',
@@ -114,7 +114,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitForSelector('.filter_row', function () {
+    casper.waitUntilVisible('.filter_row', function () {
         casper.test.assertSelectorHasText('.filter_row span.filter_pattern', '#(?P<id>[0-9]+)');
         casper.test.assertSelectorHasText('.filter_row span.filter_url_format_string', 'https://trac.example.com/ticket/%(id)s');
         casper.click('.filter_row button');
@@ -122,13 +122,13 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileSelector('.filter_row', function () {
+    casper.waitWhileVisible('.filter_row', function () {
         casper.test.assertDoesntExist('.filter_row');
     });
 });
 
 casper.then(function () {
-    casper.waitForSelector('.admin-filter-form', function () {
+    casper.waitUntilVisible('.admin-filter-form', function () {
         casper.fill('form.admin-filter-form', {
             pattern: 'a$',
             url_format_string: 'https://trac.example.com/ticket/%(id)s',
@@ -181,20 +181,20 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
+    casper.waitUntilVisible('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
     });
 });
 
 casper.then(function () {
-    casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
+    casper.waitUntilVisible('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
         casper.click('.default_stream_row[id='+stream_name+'] button.remove-default-stream');
     });
 });
 
 casper.then(function () {
-    casper.waitWhileSelector('.default_stream_row[id='+stream_name+']', function () {
+    casper.waitWhileVisible('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertDoesntExist('.default_stream_row[id='+stream_name+']');
     });
 });
@@ -223,7 +223,7 @@ casper.then(function () {
 // Test authentication methods setting
 casper.then(function () {
     casper.click("li[data-section='auth-methods']");
-    casper.waitForSelector(".method_row[data-method='Email'] input[type='checkbox']", function () {
+    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox']", function () {
         casper.click(".method_row[data-method='Email'] input[type='checkbox']");
         casper.click('form.admin-realm-form input.button');
     });
@@ -249,7 +249,7 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 
-    casper.waitForSelector(".method_row[data-method='Email'] input[type='checkbox']", function () {
+    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox']", function () {
         // Test Setting was saved
         casper.test.assertEval(function () {
             return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
