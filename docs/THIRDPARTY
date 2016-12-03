@@ -218,10 +218,6 @@ Files: tools/inject-messages/othello
 Copyright: Shakespeare
 License: public-domain
 
-Files: tools/jslint/jslint.js
-Copyright: 2002 Douglas Crockford
-License: XXX-good-not-evil
-
 Files: tools/review
 Copyright: 2010 Ksplice, Inc.
 License: Apache-2.0

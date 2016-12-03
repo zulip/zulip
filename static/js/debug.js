@@ -9,9 +9,6 @@
     The file may still be accessible under other circumstances, so do
     not put sensitive information here. */
 
-// It's fine to use console.log etc. in this file.
-/*jslint devel: true */
-
 /*
       print_elapsed_time("foo", foo)
 
