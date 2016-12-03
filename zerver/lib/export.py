@@ -201,11 +201,11 @@ class Config(object):
     '''
 
     def __init__(self, table=None, model=None,
-                normal_parent=None, virtual_parent=None,
-                filter_args=None, custom_fetch=None, custom_tables=None,
-                post_process_data=None,
-                concat_and_destroy=None, id_source=None, source_filter=None,
-                parent_key=None, use_all=False, is_seeded=False, exclude=None):
+                 normal_parent=None, virtual_parent=None,
+                 filter_args=None, custom_fetch=None, custom_tables=None,
+                 post_process_data=None,
+                 concat_and_destroy=None, id_source=None, source_filter=None,
+                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
         # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
         assert table or custom_tables
@@ -1269,9 +1269,9 @@ def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
             new_id = lookup_table[old_id]
             if verbose:
                 logging.info('Remapping %s%s from %s to %s' % (table,
-                                                              field_name + '_id',
-                                                              old_id,
-                                                              new_id))
+                                                               field_name + '_id',
+                                                               old_id,
+                                                               new_id))
         else:
             new_id = old_id
         item[field_name + "_id"] = new_id
@@ -1588,8 +1588,8 @@ def import_attachments(data):
     with connection.cursor() as cursor:
         sql_template = '''
             insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
-                                                           parent_id,
-                                                           child_id)
+                                                            parent_id,
+                                                            child_id)
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
         cursor.executemany(sql_template, tups)
 

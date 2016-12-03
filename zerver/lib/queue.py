@@ -132,8 +132,8 @@ class SimpleQueueClient(object):
 
         self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(queue_name,
-            lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
-                consumer_tag=self._generate_ctag(queue_name)))
+                          lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
+                                                             consumer_tag=self._generate_ctag(queue_name)))
 
     def register_json_consumer(self, queue_name, callback):
         # type: (str, Callable[[Mapping[str, Any]], None]) -> None
@@ -276,8 +276,8 @@ class TornadoQueueClient(SimpleQueueClient):
 
         self.consumers[queue_name].add(wrapped_consumer)
         self.ensure_queue(queue_name,
-            lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
-                consumer_tag=self._generate_ctag(queue_name)))
+                          lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
+                                                             consumer_tag=self._generate_ctag(queue_name)))
 
 queue_client = None # type: Optional[SimpleQueueClient]
 def get_queue_client():

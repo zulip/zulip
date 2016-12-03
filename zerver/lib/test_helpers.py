@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Sized, Tuple, Union)
+                    Optional, Sized, Tuple, Union)
 
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
@@ -189,7 +189,7 @@ def get_user_messages(user_profile):
 
 class DummyHandler(object):
     def __init__(self):
-        # type: (Callable) -> None
+        # type: () -> None
         allocate_handler_id(self)  # type: ignore # this is a testing mock
 
 class POSTRequestMock(object):

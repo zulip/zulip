@@ -268,7 +268,7 @@ class FileUploadTest(ZulipTestCase):
 
         self.subscribe_to_stream("hamlet@zulip.com", "test")
         body = ("[f1.txt](http://localhost:9991/user_uploads/" + f1_path_id + ")"
-               "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
+                "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         msg_id = self.send_message("hamlet@zulip.com", "test", Recipient.STREAM, body, "test")
 
         result = self.client_post("/json/upload_file", {'file': f3})
@@ -277,7 +277,7 @@ class FileUploadTest(ZulipTestCase):
         f3_path_id = re.sub('/user_uploads/', '', uri)
 
         new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
-                   "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
+                    "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         result = self.client_post("/json/update_message", {
             'message_id': msg_id,
             'content': new_body

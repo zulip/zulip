@@ -147,9 +147,9 @@ def elide_subject(subject):
 
 def send_zulip(entry, feed_name):
     content = "**[%s](%s)**\n%s\n%s" % (entry.title,
-                                  entry.link,
-                                  strip_tags(entry.summary),
-                                  entry.link)
+                                        entry.link,
+                                        strip_tags(entry.summary),
+                                        entry.link)
     message = {"type": "stream",
                "sender": opts.zulip_email,
                "to": opts.stream,

@@ -75,3 +75,11 @@ Typing `@**all**` will alert all users in the stream, and a confirmation message
 ![Mention All](/static/images/help/all-confirm.png)
 
 For more information on mentions, visit [here](/help/mention-a-team-member.md) for more information.
+
+## Code blocks
+
+Surround a portion of code with ``
+`back-ticks`
+`` to display it as inline code.
+
+Alternatively, blocks of code are surrounded by lines with <code>```three backticks</code>. 

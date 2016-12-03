@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         if settings.DEBUG:
             logging.basicConfig(level=logging.INFO,
-                format='%(asctime)s %(levelname)-8s %(message)s')
+                                format='%(asctime)s %(levelname)-8s %(message)s')
 
         def inner_run():
             # type: () -> None

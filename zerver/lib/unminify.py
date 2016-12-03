@@ -43,7 +43,7 @@ class SourceMap(object):
                 try:
                     result = index.lookup(line=gen_line-1, column=gen_col-1)
                     out += ('       = %s line %d column %d\n' %
-                        (result.src, result.src_line+1, result.src_col+1))
+                            (result.src, result.src_line+1, result.src_col+1))
                 except IndexError:
                     out += '       [Unable to look up in source map]\n'
 

@@ -417,8 +417,12 @@ def process_as_post(view_func):
                 # Note that request._files is just the private attribute that backs the
                 # FILES property, so we are essentially setting request.FILES here.  (In
                 # Django 1.5 FILES was still a read-only property.)
-                request.POST, request._files = MultiPartParser(request.META, BytesIO(request.body),
-                        request.upload_handlers, request.encoding).parse()
+                request.POST, request._files = MultiPartParser(
+                    request.META,
+                    BytesIO(request.body),
+                    request.upload_handlers,
+                    request.encoding
+                ).parse()
             else:
                 request.POST = QueryDict(request.body, encoding=request.encoding)
 
@@ -491,8 +495,8 @@ def client_is_exempt_from_rate_limiting(request):
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
     return ((request.client and request.client.name.lower() == 'internal')
-           and (is_local_addr(request.META['REMOTE_ADDR']) or
-                settings.DEBUG_RATE_LIMITING))
+            and (is_local_addr(request.META['REMOTE_ADDR']) or
+            settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT

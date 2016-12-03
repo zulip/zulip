@@ -69,7 +69,7 @@ class RateLimitTests(ZulipTestCase):
         remove_ratelimit_rule(1, 5)
 
     def send_api_message(self, email, content):
-        # type: (text_type, text_type, text_type) -> HttpResponse
+        # type: (text_type, text_type) -> HttpResponse
         return self.client_post("/api/v1/messages", {"type": "stream",
                                                      "to": "Verona",
                                                      "client": "test suite",

@@ -88,7 +88,7 @@ Usage: ./manage.py deliver_email
                 # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(),
                 # and select with now()
                 email_jobs_to_deliver = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                                scheduled_timestamp__lte=datetime.utcnow())
+                                                                    scheduled_timestamp__lte=datetime.utcnow())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
                         if not send_email_job(job):

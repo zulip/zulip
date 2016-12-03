@@ -13,11 +13,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (argparse.ArgumentParser) -> None
         parser.add_argument('app_label', nargs='?',
-            help='App label of an application to synchronize the state.')
+                            help='App label of an application to synchronize the state.')
 
         parser.add_argument('--database', action='store', dest='database',
-            default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
-                'Defaults to the "default" database.')
+                            default=DEFAULT_DB_ALIAS, help='Nominates a database to synchronize. '
+                            'Defaults to the "default" database.')
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
