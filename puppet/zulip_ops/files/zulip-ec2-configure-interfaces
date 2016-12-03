@@ -54,11 +54,10 @@ import sys
 import boto.utils
 import netifaces
 from six.moves import range
-
-from typing import Union
+if False: from typing import Optional
 
 def address_of(device_id):
-    # type: (int) -> Union[str, None]
+    # type: (int) -> Optional[str]
     try:
         return netifaces.ifaddresses("ens%i" % device_id)[netifaces.AF_INET][0]['addr']
     except KeyError:
