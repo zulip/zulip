@@ -1,6 +1,6 @@
 # Message formatting
 
-Zulip uses a subset of GitHub Flavored Markdown (GFM) to allow you to easily format your messages.
+Zulip uses a variant of GitHub Flavored Markdown (GFM) to allow you to easily format your messages.
 
 ## Summary
 
@@ -8,4 +8,20 @@ For a summary of message formatting in Zulip, click the (![A](/static/images/hel
 
 The following modal window will appear.
 
-![](/static/images/help/message-formatting-summary.png)
+![Message formatting modal](/static/images/help/message-formatting-summary.png)
+
+## Emphasis
+
+You can surround your test with a combination of asterisks `*` and tildes `~` to emphasize words or phrases in your messages.
+
+### Italics
+
+For italics, surround your text with `* asterisks *`.
+
+![Italicized text](/static/images/help/italics-screenshot.png)
+
+### Bold
+
+For italics, surround your text with `* asterisks *`.
+
+![Italicized text](/static/images/help/italics-screenshot.png)
