@@ -36,7 +36,7 @@ if (!String.prototype.codePointAt) {
       Object.defineProperty(String.prototype, 'codePointAt', {
         'value': codePointAt,
         'configurable': true,
-        'writable': true
+        'writable': true,
       });
     } else {
       String.prototype.codePointAt = codePointAt;

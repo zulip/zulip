@@ -175,7 +175,7 @@ Filter.canonicalize_term = function (opts) {
     return {
         negated: negated,
         operator: operator,
-        operand: operand
+        operand: operand,
     };
 };
 
@@ -372,7 +372,7 @@ Filter.prototype = {
                 return ok;
             });
         };
-    }
+    },
 };
 
 Filter.operator_to_prefix = function (operator, negated) {

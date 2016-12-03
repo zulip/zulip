@@ -13,8 +13,8 @@ var exports = {};
         channel.post({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([{name: stream_name}])
-            }
+                subscriptions: JSON.stringify([{'name': stream_name}]),
+            },
         }).then(
             function (data) {
                 if (!$.isEmptyObject(data.already_subscribed)) {
@@ -25,7 +25,7 @@ var exports = {};
                 }
             }, function (xhr) {
                 ui.report_error(i18n.t("Error adding subscription"), xhr, $status_message);
-            }
+            },
         );
     }
 
@@ -33,14 +33,14 @@ var exports = {};
         channel.post({
             url: '/json/subscriptions/remove',
             data: {
-                subscriptions: JSON.stringify([stream_name])
-            }
+                subscriptions: JSON.stringify([stream_name]),
+            },
         }).then(
             function (data) {
                 $status_message.hide();
             }, function (xhr) {
                 ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);
-            }
+            },
         );
     }
 

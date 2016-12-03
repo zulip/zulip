@@ -49,7 +49,7 @@
  *  See README at project homepage
  *
  */
-;(function($) {
+(function($) {
 
   jQuery.event.props.push("dataTransfer");
 
@@ -85,7 +85,7 @@
       uploadFinished: empty,
       progressUpdated: empty,
       globalProgressUpdated: empty,
-      speedUpdated: empty
+      speedUpdated: empty,
       },
       errors = ["BrowserNotSupported", "TooManyFiles", "FileTooLarge", "FileTypeNotAllowed", "NotFound", "NotReadable", "AbortError", "ReadError"],
       doc_leave_timer, stop_loop = false,
@@ -94,7 +94,7 @@
 
   $.fn.filedrop = function(options) {
     var opts = $.extend({}, default_opts, options),
-        global_progress = []
+        global_progress = [];
         // Zulip modification: keep a pointer to the object that the function
         // was invoked on.
         caller = this;
@@ -135,7 +135,7 @@
         }
       }
 
-      if( opts.drop.call(this, e) === false ) return false;
+      if ( opts.drop.call(this, e) === false ) {return false;}
       files = e.dataTransfer.files;
       if (files === null || files === undefined || files.length === 0) {
         opts.error(errors[0]);
@@ -158,7 +158,7 @@
 
     function uploadRawImageData(event, image) {
       // Call the user callback to initialize the drop event
-      if( opts.drop.call(this, undefined) === false ) return false;
+      if ( opts.drop.call(this, undefined) === false ) {return false;}
       sendRawImageData(event, image);
     }
 
@@ -195,7 +195,7 @@
       }
 
       // Call the user callback to initialize the drop event
-      if( opts.drop.call(this, event) === false ) return false;
+      if ( opts.drop.call(this, event) === false ) {return false;}
 
       // Read the data of the drop in as binary data, and send it to the server
       var data = item.getAsFile();
@@ -282,7 +282,7 @@
 
       var total = 0, index;
       for (index in global_progress) {
-        if(global_progress.hasOwnProperty(index)) {
+        if (global_progress.hasOwnProperty(index)) {
           total = total + global_progress[index];
         }
       }
@@ -340,8 +340,7 @@
         if (xhr.responseText) {
           try {
             serverResponse = jQuery.parseJSON(xhr.responseText);
-          }
-          catch (e) {
+          }          catch (e) {
             serverResponse = xhr.responseText;
           }
         }
@@ -376,8 +375,8 @@
       }
 
       if (opts.allowedfiletypes.push && opts.allowedfiletypes.length) {
-        for(var fileIndex = files.length;fileIndex--;) {
-          if(!files[fileIndex].type || $.inArray(files[fileIndex].type, opts.allowedfiletypes) < 0) {
+        for (var fileIndex = files.length;fileIndex--;) {
+          if (!files[fileIndex].type || $.inArray(files[fileIndex].type, opts.allowedfiletypes) < 0) {
             opts.error(errors[3], files[fileIndex]);
             return false;
           }
@@ -452,7 +451,7 @@
             }
 
             reader.onerror = function(e) {
-                switch(e.target.error.code) {
+                switch (e.target.error.code) {
                     case e.target.error.NOT_FOUND_ERR:
                         opts.error(errors[4]);
                         return false;
@@ -465,7 +464,7 @@
                     default:
                         opts.error(errors[7]);
                         return false;
-                };
+                }
             };
 
             reader.onloadend = !opts.beforeSend ? send : function (e) {
@@ -617,7 +616,7 @@
         return function() {
           opts.docLeave.call(_this, e);
         };
-      })(this), 200);
+      }(this)), 200);
     }
 
     return this;
@@ -639,4 +638,4 @@
     };
   } catch (e) {}
 
-})(jQuery);
+}(jQuery));

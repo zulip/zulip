@@ -146,7 +146,7 @@ function do_hashchange(from_reload) {
         var narrow_opts = {
             select_first_unread: true,
             change_hash:    false,  // already set
-            trigger: 'hash change'
+            trigger: 'hash change',
         };
         if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
             narrow_opts.from_reload = true;
@@ -187,7 +187,7 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var ignore = {
     flag: false,
-    prev: null
+    prev: null,
 };
 
 function get_main_hash(hash) {

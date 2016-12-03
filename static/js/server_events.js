@@ -37,7 +37,7 @@ function dispatch_normal_event(event) {
         var reload_options = {save_pointer: true,
                               save_narrow: true,
                               save_compose: true,
-                              message: "The application has been updated; reloading!"
+                              message: "The application has been updated; reloading!",
                              };
         if (event.immediate) {
             reload_options.immediate = true;
@@ -390,7 +390,7 @@ function get_events(options) {
             }
             var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
             get_events_timeout = setTimeout(get_events, retry_sec*1000);
-        }
+        },
     });
 }
 
@@ -448,7 +448,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     page_params.event_queue_expired = true;
     channel.del({
         url:      '/json/events',
-        data:     {queue_id: page_params.event_queue_id}
+        data:     {queue_id: page_params.event_queue_id},
     });
 };
 

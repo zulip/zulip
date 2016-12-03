@@ -63,12 +63,12 @@ var methodSubjects = [
 	'Seconds',      // 5
 	'Milliseconds', // 6
 	'Day',          // 7
-	'Year'          // 8
+	'Year',          // 8
 ];
 var subjectPlurals = [
 	'Years',        // 0
 	'Months',       // 1
-	'Days'          // 2
+	'Days',          // 2
 ];
 var unitsWithin = [
 	12,   // months in year
@@ -77,12 +77,12 @@ var unitsWithin = [
 	60,   // minutes in hour
 	60,   // seconds in minute
 	1000, // milliseconds in second
-	1     //
+	1,     //
 ];
 var formatStringRE = new RegExp(
 	"(([a-zA-Z])\\2*)|" + // 1, 2
 	"(\\(" + "(('.*?'|\\(.*?\\)|.)*?)" + "\\))|" + // 3, 4, 5 (allows for 1 level of inner quotes or parens)
-	"('(.*?)')" // 6, 7
+	"('(.*?)')", // 6, 7
 );
 var UTC = Date.UTC;
 var toUTCString = Date.prototype.toUTCString;
@@ -112,7 +112,7 @@ proto.splice = Array.prototype.splice;
 function XDate() {
 	return init(
 		(this instanceof XDate) ? this : new XDate(),
-		arguments
+		arguments,
 	);
 }
 
@@ -126,21 +126,17 @@ function init(xdate, args) {
 	}
 	if (!len) {
 		xdate[0] = new Date();
-	}
-	else if (len == 1) {
+	}	else if (len == 1) {
 		var arg = args[0];
 		if (arg instanceof Date || isNumber(arg)) {
 			xdate[0] = new Date(+arg);
-		}
-		else if (arg instanceof XDate) {
+		}		else if (arg instanceof XDate) {
 			xdate[0] = _clone(arg);
-		}
-		else if (isString(arg)) {
+		}		else if (isString(arg)) {
 			xdate[0] = new Date(0);
 			xdate = parse(arg, utcMode || false, xdate);
 		}
-	}
-	else {
+	}	else {
 		xdate[0] = new Date(UTC.apply(Date, args));
 		if (!utcMode) {
 			xdate[0] = coerceToLocal(xdate[0]);
@@ -161,7 +157,7 @@ function init(xdate, args) {
 proto.getUTCMode = methodize(getUTCMode);
 function getUTCMode(xdate) {
 	return xdate[0].toString === toUTCString;
-};
+}
 
 
 proto.setUTCMode = methodize(setUTCMode);
@@ -173,11 +169,11 @@ function setUTCMode(xdate, utcMode, doCoercion) {
 			}
 			xdate[0].toString = toUTCString;
 		}
-	}else{
+	} else {
 		if (getUTCMode(xdate)) {
 			if (doCoercion) {
 				xdate[0] = coerceToLocal(xdate[0]);
-			}else{
+			} else {
 				xdate[0] = new Date(+xdate[0]);
 			}
 			// toString will have been cleared
@@ -190,7 +186,7 @@ function setUTCMode(xdate, utcMode, doCoercion) {
 proto.getTimezoneOffset = function() {
 	if (getUTCMode(this)) {
 		return 0;
-	}else{
+	} else {
 		return this[0].getTimezoneOffset();
 	}
 };
@@ -258,7 +254,7 @@ function _set(xdate, fieldIndex, value, args, useUTC) {
 	}
 	if (fieldIndex == MONTH) {
 		expectedMonth = (value % 12 + 12) % 12;
-	}else{
+	} else {
 		expectedMonth = getField(MONTH);
 	}
 	setField(fieldIndex, args);
@@ -274,7 +270,7 @@ function _add(xdate, fieldIndex, delta, preventOverflow) {
 	var intDelta = Math.floor(delta);
 	xdate['set' + methodSubjects[fieldIndex]](
 		xdate['get' + methodSubjects[fieldIndex]]() + intDelta,
-		preventOverflow || false
+		preventOverflow || false,
 	);
 	if (intDelta != delta && fieldIndex < MILLISECONDS) {
 		_add(xdate, fieldIndex+1, (delta-intDelta)*unitsWithin[fieldIndex], preventOverflow);
@@ -294,18 +290,16 @@ function _diff(xdate1, xdate2, fieldIndex) { // fieldIndex=FULLYEAR is for years
 		if (fieldIndex == MONTH) {
 			v += (xdate2.getFullYear() - xdate1.getFullYear()) * 12;
 		}
-	}
-	else if (fieldIndex == DATE) {
+	}	else if (fieldIndex == DATE) {
 		var clear1 = xdate1.toDate().setUTCHours(0, 0, 0, 0); // returns an ms value
 		var clear2 = xdate2.toDate().setUTCHours(0, 0, 0, 0); // returns an ms value
 		v = Math.round((clear2 - clear1) / DAY_MS) + ((xdate2 - clear2) - (xdate1 - clear1)) / DAY_MS;
-	}
-	else {
+	}	else {
 		v = (xdate2 - xdate1) / [
 			3600000, // milliseconds in hour
 			60000,   // milliseconds in minute
 			1000,    // milliseconds in second
-			1        //
+			1,        //
 			][fieldIndex - 3];
 	}
 	return v;
@@ -357,7 +351,7 @@ function _getWeek(getField) {
 function getWeek(year, month, date) {
 	var d = new Date(UTC(year, month, date));
 	var week1 = getWeek1(
-		getWeekYear(year, month, date)
+		getWeekYear(year, month, date),
 	);
 	return Math.floor(Math.round((d - week1) / DAY_MS) / 7) + 1;
 }
@@ -367,8 +361,7 @@ function getWeekYear(year, month, date) { // get the year that the date's week #
 	var d = new Date(UTC(year, month, date));
 	if (d < getWeek1(year)) {
 		return year - 1;
-	}
-	else if (d >= getWeek1(year + 1)) {
+	}	else if (d >= getWeek1(year + 1)) {
 		return year + 1;
 	}
 	return year;
@@ -390,7 +383,7 @@ function _setWeek(xdate, n, year, useUTC) {
 		year = getWeekYear(
 			getField(FULLYEAR),
 			getField(MONTH),
-			getField(DATE)
+			getField(DATE),
 		);
 	}
 
@@ -411,7 +404,7 @@ function _setWeek(xdate, n, year, useUTC) {
 
 
 XDate.parsers = [
-	parseISO
+	parseISO,
 ];
 
 
@@ -445,16 +438,16 @@ function parseISO(str, utcMode, xdate) {
 			m[7] || 0,
 			m[8] || 0,
 			m[10] || 0,
-			m[12] ? Number('0.' + m[12]) * 1000 : 0
+			m[12] ? Number('0.' + m[12]) * 1000 : 0,
 		));
 		if (m[13]) { // has gmt offset or Z
 			if (m[14]) { // has gmt offset
 				d.setUTCMinutes(
 					d.getUTCMinutes() +
-					(m[15] == '-' ? 1 : -1) * (Number(m[16]) * 60 + (m[18] ? Number(m[18]) : 0))
+					(m[15] == '-' ? 1 : -1) * (Number(m[16]) * 60 + (m[18] ? Number(m[18]) : 0)),
 				);
 			}
-		}else{ // no specified timezone
+		} else { // no specified timezone
 			if (!utcMode) {
 				d = coerceToLocal(d);
 			}
@@ -472,7 +465,7 @@ function parseISO(str, utcMode, xdate) {
 proto.toString = function(formatString, settings, uniqueness) {
 	if (formatString === undefined || !valid(this)) {
 		return this[0].toString(); // already accounts for utc-mode (might be toUTCString)
-	}else{
+	} else {
 		return format(this, formatString, settings, uniqueness, getUTCMode(this));
 	}
 };
@@ -481,7 +474,7 @@ proto.toString = function(formatString, settings, uniqueness) {
 proto.toUTCString = proto.toGMTString = function(formatString, settings, uniqueness) {
 	if (formatString === undefined || !valid(this)) {
 		return this[0].toUTCString();
-	}else{
+	} else {
 		return format(this, formatString, settings, uniqueness, true);
 	}
 };
@@ -500,12 +493,12 @@ XDate.locales = {
 		dayNames: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
 		dayNamesShort: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
 		amDesignator: 'AM',
-		pmDesignator: 'PM'
-	}
+		pmDesignator: 'PM',
+	},
 };
 XDate.formatters = {
 	i: ISO_FORMAT_STRING,
-	u: ISO_FORMAT_STRING_TZ
+	u: ISO_FORMAT_STRING_TZ,
 };
 
 
@@ -543,14 +536,12 @@ function _format(xdate, formatString, getField, getSetting, useUTC) {
 		out += formatString.substr(0, m.index);
 		if (m[1]) { // consecutive alphabetic characters
 			out += processTokenString(xdate, m[1], getField, getSetting, useUTC);
-		}
-		else if (m[3]) { // parenthesis
+		}		else if (m[3]) { // parenthesis
 			subout = _format(xdate, m[4], getField, getSetting, useUTC);
 			if (parseInt(subout.replace(/\D/g, ''), 10)) { // if any of the numbers are non-zero. or no numbers at all
 				out += subout;
 			}
-		}
-		else { // else if (m[6]) { // single quotes
+		}		else { // else if (m[6]) { // single quotes
 			out += m[7] || "'"; // if inner is blank, meaning 2 consecutive quotes = literal single quote
 		}
 		formatString = formatString.substr(m.index + m[0].length);
@@ -569,7 +560,7 @@ function processTokenString(xdate, tokenString, getField, getSetting, useUTC) {
 			out += replacement;
 			tokenString = tokenString.substr(end);
 			end = tokenString.length;
-		}else{
+		} else {
 			end--;
 		}
 	}
@@ -581,8 +572,7 @@ function getTokenReplacement(xdate, token, getField, getSetting, useUTC) {
 	var formatter = XDate.formatters[token];
 	if (isString(formatter)) {
 		return _format(xdate, formatter, getField, getSetting, useUTC);
-	}
-	else if (isFunction(formatter)) {
+	}	else if (isFunction(formatter)) {
 		return formatter(xdate, useUTC || false, getSetting);
 	}
 	switch (token) {
@@ -616,7 +606,7 @@ function getTokenReplacement(xdate, token, getField, getSetting, useUTC) {
 		case 'ww'   : return zeroPad(_getWeek(getField));
 		case 'S'    :
 			var d = getField(DATE);
-			if (d > 10 && d < 20) return 'th';
+			if (d > 10 && d < 20) {return 'th';}
 			return ['st', 'nd', 'rd'][d % 10 - 1] || 'th';
 	}
 }
@@ -630,8 +620,7 @@ function _getTZString(xdate, token) {
 	var out = hours;
 	if (token == 'zz') {
 		out = zeroPad(hours);
-	}
-	else if (token == 'zzz') {
+	}	else if (token == 'zzz') {
 		out = zeroPad(hours) + ':' + zeroPad(minutes);
 	}
 	return sign + out;
@@ -657,13 +646,13 @@ each(
 		'toLocaleString',
 		'toLocaleDateString',
 		'toLocaleTimeString',
-		'toJSON'
+		'toJSON',
 	],
 	function(methodName) {
 		proto[methodName] = function() {
 			return this[0][methodName]();
 		};
-	}
+	},
 );
 
 
@@ -752,7 +741,7 @@ function coerceToUTC(date) {
 		date.getHours(),
 		date.getMinutes(),
 		date.getSeconds(),
-		date.getMilliseconds()
+		date.getMilliseconds(),
 	));
 }
 
@@ -765,7 +754,7 @@ function coerceToLocal(date) {
 		date.getUTCHours(),
 		date.getUTCMinutes(),
 		date.getUTCSeconds(),
-		date.getUTCMilliseconds()
+		date.getUTCMilliseconds(),
 	);
 }
 
@@ -799,7 +788,7 @@ function slice(a, start, end) {
 	return Array.prototype.slice.call(
 		a,
 		start || 0, // start and end cannot be undefined for IE
-		end===undefined ? a.length : end
+		end===undefined ? a.length : end,
 	);
 }
 
@@ -807,27 +796,27 @@ function slice(a, start, end) {
 function each(a, f) {
 	for (var i=0; i<a.length; i++) {
 		f(a[i], i);
-	};
+	}
 }
 
 
 function isString(arg) {
-	return typeof arg == 'string';
+	return typeof arg === 'string';
 }
 
 
 function isNumber(arg) {
-	return typeof arg == 'number';
+	return typeof arg === 'number';
 }
 
 
 function isBoolean(arg) {
-	return typeof arg == 'boolean';
+	return typeof arg === 'boolean';
 }
 
 
 function isFunction(arg) {
-	return typeof arg == 'function';
+	return typeof arg === 'function';
 }
 
 
@@ -857,4 +846,4 @@ if (typeof define === 'function' && define.amd) {
 
 return XDate;
 
-})(Date, Math, Array);
+}(Date, Math, Array));

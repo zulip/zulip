@@ -7,7 +7,7 @@
 
     var _support = {
         setSelectionRange: ('setSelectionRange' in _input) || ('selectionStart' in _input),
-        createTextRange: ('createTextRange' in _input) || ('selection' in document)
+        createTextRange: ('createTextRange' in _input) || ('selection' in document),
     };
 
     var _rNewlineIE = /\r\n/g,
@@ -185,7 +185,7 @@
         var newLength = +(curPos + text.length + (oldValueNorm.length - curPos));
         var maxLength = +input.getAttribute('maxlength');
 
-        if(_hasAttr(input, 'maxlength') && newLength > maxLength) {
+        if (_hasAttr(input, 'maxlength') && newLength > maxLength) {
             var delta = text.length - (newLength - maxLength);
             text = text.substr(0, delta);
         }
@@ -336,7 +336,7 @@
         var newLength = +(selection.start + text.length + (oldValue.length - selection.end));
         var maxLength = +$input.attr('maxlength');
 
-        if($input.is('[maxlength]') && newLength > maxLength) {
+        if ($input.is('[maxlength]') && newLength > maxLength) {
             var delta = text.length - (newLength - maxLength);
             text = text.substr(0, delta);
         }
@@ -392,8 +392,7 @@
     var _deselectAll = function() {
         if (document.selection) {
             document.selection.empty();
-        }
-        else if (window.getSelection) {
+        }        else if (window.getSelection) {
             window.getSelection().removeAllRanges();
         }
     };
@@ -516,7 +515,7 @@
             return this.each(function(_i, elem) {
                 _selectAll(elem);
             });
-        }
+        },
 
     });
 
@@ -537,7 +536,7 @@
         deselectAll: function() {
             _deselectAll();
             return this;
-        }
+        },
     });
 
 }(window.jQuery || window.Zepto || window.$));

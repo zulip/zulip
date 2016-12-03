@@ -1,6 +1,6 @@
 add_dependencies({
     stream_data: 'js/stream_data.js',
-    Filter: 'js/filter.js'
+    Filter: 'js/filter.js',
 });
 
 var narrow = require('js/narrow.js');

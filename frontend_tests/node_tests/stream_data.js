@@ -2,13 +2,13 @@ global.stub_out_jquery();
 
 set_global('page_params', {
     is_admin: false,
-    people_list: []
+    people_list: [],
 });
 
 add_dependencies({
     people: 'js/people.js',
     stream_color: 'js/stream_color.js',
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 set_global('blueslip', {});
@@ -22,7 +22,7 @@ var people = global.people;
         color: 'blue',
         name: 'Denmark',
         stream_id: 1,
-        in_home_view: false
+        in_home_view: false,
     };
     var social = {
         subscribed: true,
@@ -30,7 +30,7 @@ var people = global.people;
         name: 'social',
         stream_id: 2,
         in_home_view: true,
-        invite_only: true
+        invite_only: true,
     };
     var test = {
         subscribed: true,
@@ -38,7 +38,7 @@ var people = global.people;
         name: 'test',
         stream_id: 3,
         in_home_view: false,
-        invite_only: false
+        invite_only: false,
     };
     stream_data.add_sub('Denmark', denmark);
     stream_data.add_sub('social', social);
@@ -77,7 +77,7 @@ var people = global.people;
         name: 'Denmark',
         subscribed: true,
         color: 'red',
-        stream_id: id
+        stream_id: id,
     };
     stream_data.add_sub('Denmark', sub);
     sub = stream_data.get_sub('Denmark');
@@ -98,7 +98,7 @@ var people = global.people;
     var me = {
         email: 'me@zulip.com',
         full_name: 'Current User',
-        user_id: 81
+        user_id: 81,
     };
 
     // set up user data
@@ -132,17 +132,17 @@ var people = global.people;
     var fred = {
         email: 'fred@zulip.com',
         full_name: 'Fred',
-        user_id: 101
+        user_id: 101,
     };
     var not_fred = {
         email: 'not_fred@zulip.com',
         full_name: 'Not Fred',
-        user_id: 102
+        user_id: 102,
     };
     var george = {
         email: 'george@zulip.com',
         full_name: 'George',
-        user_id: 103
+        user_id: 103,
     };
     people.add(fred);
     people.add(not_fred);
@@ -160,7 +160,7 @@ var people = global.people;
     var brutus = {
         email: email,
         full_name: 'Brutus',
-        user_id: 104
+        user_id: 104,
     };
     people.add(brutus);
     assert(!stream_data.user_is_subscribed('Rome', email));
@@ -218,7 +218,7 @@ var people = global.people;
     var message = {
         stream: 'Rome',
         timestamp: 101,
-        subject: 'toPic1'
+        subject: 'toPic1',
     };
     stream_data.process_message_for_recent_topics(message);
 
@@ -228,14 +228,14 @@ var people = global.people;
             subject: 'toPic1',
             canon_subject: 'topic1',
             count: 1,
-            timestamp: 101
-        }
+            timestamp: 101,
+        },
     ]);
 
     message = {
         stream: 'Rome',
         timestamp: 102,
-        subject: 'Topic1'
+        subject: 'Topic1',
     };
     stream_data.process_message_for_recent_topics(message);
     history = stream_data.get_recent_topics('Rome');
@@ -244,14 +244,14 @@ var people = global.people;
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 
     message = {
         stream: 'Rome',
         timestamp: 103,
-        subject: 'topic2'
+        subject: 'topic2',
     };
     stream_data.process_message_for_recent_topics(message);
     history = stream_data.get_recent_topics('Rome');
@@ -260,14 +260,14 @@ var people = global.people;
             subject: 'topic2',
             canon_subject: 'topic2',
             count: 1,
-            timestamp: 103
+            timestamp: 103,
         },
         {
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 
     stream_data.process_message_for_recent_topics(message, true);
@@ -277,8 +277,8 @@ var people = global.people;
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 }());
 
@@ -290,7 +290,7 @@ var people = global.people;
             name: 'stream_to_admin',
             stream_id: 1,
             in_home_view: false,
-            invite_only: false
+            invite_only: false,
         };
     }
 
@@ -339,21 +339,21 @@ var people = global.people;
         stream_id: 1,
         name: 'c',
         color: 'cinnamon',
-        subscribed: true
+        subscribed: true,
     };
 
     var blue = {
         stream_id: 2,
         name: 'b',
         color: 'blue',
-        subscribed: false
+        subscribed: false,
     };
 
     var amber = {
         stream_id: 3,
         name: 'a',
         color: 'amber',
-        subscribed: true
+        subscribed: true,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon.name, cinnamon);

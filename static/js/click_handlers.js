@@ -268,7 +268,7 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
     $('#send-status .send-status-close').click(
-        function () { $('#send-status').stop(true).fadeOut(500); }
+        function () { $('#send-status').stop(true).fadeOut(500); },
     );
 
 
@@ -340,8 +340,8 @@ $(function () {
             relay_url: "https://webathena.mit.edu/relay.html",
             params: {
                 realm: "ATHENA.MIT.EDU",
-                principal: principal
-            }
+                principal: principal,
+            },
         }, function (err, r) {
             if (err) {
                 blueslip.warn(err);
@@ -360,7 +360,7 @@ $(function () {
                 },
                 error: function (data, success) {
                     $("#zephyr-mirror-error").show();
-                }
+                },
             });
         });
         $('#settings-dropdown').dropdown("toggle");
@@ -398,13 +398,13 @@ $(function () {
             if ($target.parent().hasClass("youtube-video")) {
                 ui.lightbox({
                     type: "youtube",
-                    id: $target.data("id")
+                    id: $target.data("id"),
                 });
             } else {
                 ui.lightbox({
                     type: "photo",
                     image: img,
-                    user: user
+                    user: user,
                 });
             }
         });

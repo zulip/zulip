@@ -77,7 +77,7 @@ $(function () {
                     // We ignore errors from the server because
                     // they're unlikely and we'll get an email either
                     // way
-                }
+                },
             });
 
             show_and_fade_elem($("#tell-a-friend-success"));
@@ -90,7 +90,7 @@ $(function () {
         showErrors: function () {
             this.defaultShowErrors();
             resize.resize_page_components();
-        }
+        },
     });
 
     $("#referral-form input").on('blur', function (e) {

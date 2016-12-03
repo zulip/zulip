@@ -1,8 +1,8 @@
 set_global('page_params', {
-    domain: 'zulip.com'
+    domain: 'zulip.com',
 });
 add_dependencies({
-    unread: 'js/unread.js'
+    unread: 'js/unread.js',
 });
 
 var muting = require('js/muting.js');
@@ -42,16 +42,16 @@ var muting = require('js/muting.js');
     muting.mute_topic('devel', 'java');
     assert.deepEqual(muting.get_muted_topics().sort(), [
         ['devel', 'java'],
-        ['office', 'gossip']
+        ['office', 'gossip'],
     ]);
 
     muting.set_muted_topics([
         ['social', 'breakfast'],
-        ['design', 'typography']
+        ['design', 'typography'],
     ]);
     assert.deepEqual(muting.get_muted_topics().sort(), [
         ['design', 'typography'],
-        ['social', 'breakfast']
+        ['social', 'breakfast'],
     ]);
 }());
 
@@ -59,7 +59,7 @@ var muting = require('js/muting.js');
     muting.set_muted_topics([]);
     assert(!muting.is_topic_muted('SOCial', 'breakfast'));
     muting.set_muted_topics([
-        ['SOCial', 'breakfast']
+        ['SOCial', 'breakfast'],
     ]);
     assert(muting.is_topic_muted('SOCial', 'breakfast'));
     assert(muting.is_topic_muted('social', 'breakfast'));

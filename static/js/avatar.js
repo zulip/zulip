@@ -12,7 +12,7 @@ function is_image_format(file) {
         'image/jpeg',
         'image/png',
         'image/gif',
-        'image/tiff'
+        'image/tiff',
     ];
     return _.indexOf(supported_types, type) >= 0;
 }
@@ -36,7 +36,7 @@ exports.build_bot_create_widget = function () {
         file_name_field,
         input_error,
         clear_button,
-        upload_button
+        upload_button,
     );
 };
 
@@ -55,7 +55,7 @@ exports.build_bot_edit_widget = function (li) {
         file_name_field,
         input_error,
         clear_button,
-        upload_button
+        upload_button,
     );
 };
 
@@ -64,7 +64,7 @@ exports.build_widget = function (
         file_name_field, // jQuery object to show file name
         input_error, // jQuery object for error text
         clear_button, // jQuery button to clear last upload choice
-        upload_button // jQuery button to open file dialog
+        upload_button, // jQuery button to open file dialog
 ) {
 
     function accept(file) {
@@ -138,7 +138,7 @@ exports.build_widget = function (
         clear: clear,
         // Call back to close() when you are truly done with the widget,
         // so you can release handlers.
-        close: close
+        close: close,
     };
 };
 
@@ -151,7 +151,7 @@ exports.build_user_avatar_widget = function (upload_function) {
             get_file_input,
             $("#user_avatar_file_input_error").expectOne(),
             $("#user_avatar_upload_button").expectOne(),
-            upload_function
+            upload_function,
     );
 };
 
@@ -159,7 +159,7 @@ exports.build_direct_upload_widget = function (
         get_file_input, // function returns a jQuery file input object
         input_error, // jQuery object for error text
         upload_button, // jQuery button to open file dialog
-        upload_function
+        upload_function,
 ) {
 
     function accept(file) {

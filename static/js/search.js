@@ -66,7 +66,7 @@ exports.initialize = function () {
         updater: narrow_or_search_for_term,
         sorter: function (items) {
             return items;
-        }
+        },
     });
 
     $("#searchbox_form").keydown(function (e) {

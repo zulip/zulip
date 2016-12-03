@@ -23,7 +23,7 @@
 */
 
 // JSON2 by Douglas Crockford (minified).
-var JSON;JSON||(JSON={}),function(){function str(a,b){var c,d,e,f,g=gap,h,i=b[a];i&&typeof i=="object"&&typeof i.toJSON=="function"&&(i=i.toJSON(a)),typeof rep=="function"&&(i=rep.call(b,a,i));switch(typeof i){case"string":return quote(i);case"number":return isFinite(i)?String(i):"null";case"boolean":case"null":return String(i);case"object":if(!i)return"null";gap+=indent,h=[];if(Object.prototype.toString.apply(i)==="[object Array]"){f=i.length;for(c=0;c<f;c+=1)h[c]=str(c,i)||"null";e=h.length===0?"[]":gap?"[\n"+gap+h.join(",\n"+gap)+"\n"+g+"]":"["+h.join(",")+"]",gap=g;return e}if(rep&&typeof rep=="object"){f=rep.length;for(c=0;c<f;c+=1)typeof rep[c]=="string"&&(d=rep[c],e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e))}else for(d in i)Object.prototype.hasOwnProperty.call(i,d)&&(e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));e=h.length===0?"{}":gap?"{\n"+gap+h.join(",\n"+gap)+"\n"+g+"}":"{"+h.join(",")+"}",gap=g;return e}}function quote(a){escapable.lastIndex=0;return escapable.test(a)?'"'+a.replace(escapable,function(a){var b=meta[a];return typeof b=="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)})+'"':'"'+a+'"'}function f(a){return a<10?"0"+a:a}"use strict",typeof Date.prototype.toJSON!="function"&&(Date.prototype.toJSON=function(a){return isFinite(this.valueOf())?this.getUTCFullYear()+"-"+f(this.getUTCMonth()+1)+"-"+f(this.getUTCDate())+"T"+f(this.getUTCHours())+":"+f(this.getUTCMinutes())+":"+f(this.getUTCSeconds())+"Z":null},String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(a){return this.valueOf()});var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},rep;typeof JSON.stringify!="function"&&(JSON.stringify=function(a,b,c){var d;gap="",indent="";if(typeof c=="number")for(d=0;d<c;d+=1)indent+=" ";else typeof c=="string"&&(indent=c);rep=b;if(!b||typeof b=="function"||typeof b=="object"&&typeof b.length=="number")return str("",{"":a});throw new Error("JSON.stringify")}),typeof JSON.parse!="function"&&(JSON.parse=function(text,reviver){function walk(a,b){var c,d,e=a[b];if(e&&typeof e=="object")for(c in e)Object.prototype.hasOwnProperty.call(e,c)&&(d=walk(e,c),d!==undefined?e[c]=d:delete e[c]);return reviver.call(a,b,e)}var j;text=String(text),cx.lastIndex=0,cx.test(text)&&(text=text.replace(cx,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,""))){j=eval("("+text+")");return typeof reviver=="function"?walk({"":j},""):j}throw new SyntaxError("JSON.parse")})}()
+var JSON;JSON||(JSON={}),(function(){function str(a,b){var c,d,e,f,g=gap,h,i=b[a];i&&typeof i==="object"&&typeof i.toJSON==="function"&&(i=i.toJSON(a)),typeof rep==="function"&&(i=rep.call(b,a,i));switch (typeof i){case "string":return quote(i);case "number":return isFinite(i)?String(i):"null";case "boolean":case "null":return String(i);case "object":if (!i){return "null";}gap+=indent,h=[];if (Object.prototype.toString.apply(i)==="[object Array]"){f=i.length;for (c=0;c<f;c+=1){h[c]=str(c,i)||"null";}e=h.length===0?"[]":gap?"[\n"+gap+h.join(",\n"+gap)+"\n"+g+"]":"["+h.join(",")+"]",gap=g;return e;} if (rep&&typeof rep==="object"){f=rep.length;for (c=0;c<f;c+=1) {typeof rep[c]==="string"&&(d=rep[c],e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));}} else {for (d in i){Object.prototype.hasOwnProperty.call(i,d)&&(e=str(d,i),e&&h.push(quote(d)+(gap?": ":":")+e));}}e=h.length===0?"{}":gap?"{\n"+gap+h.join(",\n"+gap)+"\n"+g+"}":"{"+h.join(",")+"}",gap=g;return e;}} function quote(a){escapable.lastIndex=0;return escapable.test(a)?'"'+a.replace(escapable,function(a){var b=meta[a];return typeof b==="string"?b:"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4);})+'"':'"'+a+'"';} function f(a){return a<10?"0"+a:a;}"use strict",typeof Date.prototype.toJSON!=="function"&&(Date.prototype.toJSON=function(a){return isFinite(this.valueOf())?this.getUTCFullYear()+"-"+f(this.getUTCMonth()+1)+"-"+f(this.getUTCDate())+"T"+f(this.getUTCHours())+":"+f(this.getUTCMinutes())+":"+f(this.getUTCSeconds())+"Z":null;},String.prototype.toJSON=Number.prototype.toJSON=Boolean.prototype.toJSON=function(a){return this.valueOf();});var cx=/[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,escapable=/[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,gap,indent,meta={"\b":"\\b","\t":"\\t","\n":"\\n","\f":"\\f","\r":"\\r",'"':'\\"',"\\":"\\\\"},rep;typeof JSON.stringify!=="function"&&(JSON.stringify=function(a,b,c){var d;gap="",indent="";if (typeof c==="number") {for (d=0;d<c;d+=1){indent+=" ";}} else {typeof c==="string"&&(indent=c);}rep=b;if (!b||typeof b==="function"||typeof b==="object"&&typeof b.length==="number"){return str("",{"":a});} throw new Error("JSON.stringify");}),typeof JSON.parse!=="function"&&(JSON.parse=function(text,reviver){function walk(a,b){var c,d,e=a[b];if (e&&typeof e==="object") {for (c in e){Object.prototype.hasOwnProperty.call(e,c)&&(d=walk(e,c),d!==undefined?e[c]=d:delete e[c]);}} return reviver.call(a,b,e);} var j;text=String(text),cx.lastIndex=0,cx.test(text)&&(text=text.replace(cx,function(a){return "\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4);}));if (/^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,""))){j=eval("("+text+")");return typeof reviver==="function"?walk({"":j},""):j;} throw new SyntaxError("JSON.parse");});}());
 
 
 //     [*] Including lib/index.js
@@ -48,27 +48,27 @@ SockJS = (function(){
  */
 var REventTarget = function() {};
 REventTarget.prototype.addEventListener = function (eventType, listener) {
-    if(!this._listeners) {
+    if (!this._listeners) {
          this._listeners = {};
     }
-    if(!(eventType in this._listeners)) {
+    if (!(eventType in this._listeners)) {
         this._listeners[eventType] = [];
     }
     var arr = this._listeners[eventType];
-    if(utils.arrIndexOf(arr, listener) === -1) {
+    if (utils.arrIndexOf(arr, listener) === -1) {
         arr.push(listener);
     }
     return;
 };
 
 REventTarget.prototype.removeEventListener = function (eventType, listener) {
-    if(!(this._listeners && (eventType in this._listeners))) {
+    if (!(this._listeners && (eventType in this._listeners))) {
         return;
     }
     var arr = this._listeners[eventType];
     var idx = utils.arrIndexOf(arr, listener);
     if (idx !== -1) {
-        if(arr.length > 1) {
+        if (arr.length > 1) {
             this._listeners[eventType] = arr.slice(0, idx).concat( arr.slice(idx+1) );
         } else {
             delete this._listeners[eventType];
@@ -85,7 +85,7 @@ REventTarget.prototype.dispatchEvent = function (event) {
         this['on'+t].apply(this, args);
     }
     if (this._listeners && t in this._listeners) {
-        for(var i=0; i < this._listeners[t].length; i++) {
+        for (var i=0; i < this._listeners[t].length; i++) {
             this._listeners[t][i].apply(this, args);
         }
     }
@@ -105,8 +105,8 @@ REventTarget.prototype.dispatchEvent = function (event) {
 var SimpleEvent = function(type, obj) {
     this.type = type;
     if (typeof obj !== 'undefined') {
-        for(var k in obj) {
-            if (!obj.hasOwnProperty(k)) continue;
+        for (var k in obj) {
+            if (!obj.hasOwnProperty(k)) {continue;}
             this[k] = obj[k];
         }
     }
@@ -114,10 +114,10 @@ var SimpleEvent = function(type, obj) {
 
 SimpleEvent.prototype.toString = function() {
     var r = [];
-    for(var k in this) {
-        if (!this.hasOwnProperty(k)) continue;
+    for (var k in this) {
+        if (!this.hasOwnProperty(k)) {continue;}
         var v = this[k];
-        if (typeof v === 'function') v = '[function]';
+        if (typeof v === 'function') {v = '[function]';}
         r.push(k + '=' + v);
     }
     return 'SimpleEvent(' + r.join(', ') + ')';
@@ -142,14 +142,14 @@ var EventEmitter = function(events) {
 EventEmitter.prototype.emit = function(type) {
     var that = this;
     that._verifyType(type);
-    if (that._nuked) return;
+    if (that._nuked) {return;}
 
     var args = Array.prototype.slice.call(arguments, 1);
     if (that['on'+type]) {
         that['on'+type].apply(that, args);
     }
     if (type in that._listeners) {
-        for(var i = 0; i < that._listeners[type].length; i++) {
+        for (var i = 0; i < that._listeners[type].length; i++) {
             that._listeners[type][i].apply(that, args);
         }
     }
@@ -158,7 +158,7 @@ EventEmitter.prototype.emit = function(type) {
 EventEmitter.prototype.on = function(type, callback) {
     var that = this;
     that._verifyType(type);
-    if (that._nuked) return;
+    if (that._nuked) {return;}
 
     if (!(type in that._listeners)) {
         that._listeners[type] = [];
@@ -178,7 +178,7 @@ EventEmitter.prototype._verifyType = function(type) {
 EventEmitter.prototype.nuke = function() {
     var that = this;
     that._nuked = true;
-    for(var i=0; i<that._events.length; i++) {
+    for (var i=0; i<that._events.length; i++) {
         delete that[that._events[i]];
     }
     that._listeners = {};
@@ -199,7 +199,7 @@ var random_string_chars = 'abcdefghijklmnopqrstuvwxyz0123456789_';
 utils.random_string = function(length, max) {
     max = max || random_string_chars.length;
     var i, ret = [];
-    for(i=0; i < length; i++) {
+    for (i=0; i < length; i++) {
         ret.push( random_string_chars.substr(Math.floor(Math.random() * max),1) );
     }
     return ret.join('');
@@ -222,7 +222,7 @@ utils.getOrigin = function(url) {
 
 utils.isSameOriginUrl = function(url_a, url_b) {
     // location.origin would do, but it's not always available.
-    if (!url_b) url_b = _window.location.href;
+    if (!url_b) {url_b = _window.location.href;}
 
     return (url_a.split('/').slice(0,3).join('/')
                 ===
@@ -231,18 +231,18 @@ utils.isSameOriginUrl = function(url_a, url_b) {
 
 utils.getParentDomain = function(url) {
     // ipv4 ip address
-    if (/^[0-9.]*$/.test(url)) return url;
+    if (/^[0-9.]*$/.test(url)) {return url;}
     // ipv6 ip address
-    if (/^\[/.test(url)) return url;
+    if (/^\[/.test(url)) {return url;}
     // no dots
-    if (!(/[.]/.test(url))) return url;
+    if (!(/[.]/.test(url))) {return url;}
 
     var parts = url.split('.').slice(1);
     return parts.join('.');
 };
 
 utils.objectExtend = function(dst, src) {
-    for(var k in src) {
+    for (var k in src) {
         if (src.hasOwnProperty(k)) {
             dst[k] = src[k];
         }
@@ -276,7 +276,7 @@ utils.countRTO = function (rtt) {
         rto = rtt + 200; // 200msec < rto <= 300msec
     }
     return rto;
-}
+};
 
 utils.log = function() {
     if (_window.console && console.log && console.log.apply) {
@@ -322,8 +322,8 @@ utils.amendUrl = function(url) {
 
 // IE doesn't support [].indexOf.
 utils.arrIndexOf = function(arr, obj){
-    for(var i=0; i < arr.length; i++){
-        if(arr[i] === obj){
+    for (var i=0; i < arr.length; i++){
+        if (arr[i] === obj){
             return i;
         }
     }
@@ -342,11 +342,11 @@ utils.arrSkip = function(arr, obj) {
 
 // Via: https://gist.github.com/1133122/2121c601c5549155483f50be3da5305e83b8c5df
 utils.isArray = Array.isArray || function(value) {
-    return {}.toString.call(value).indexOf('Array') >= 0
+    return {}.toString.call(value).indexOf('Array') >= 0;
 };
 
 utils.delay = function(t, fun) {
-    if(typeof t === 'function') {
+    if (typeof t === 'function') {
         fun = t;
         t = 0;
     }
@@ -409,9 +409,9 @@ var JSONQuote = (JSON && JSON.stringify) || function(string) {
 // characters.
 var unroll_lookup = function(escapable) {
     var i;
-    var unrolled = {}
-    var c = []
-    for(i=0; i<65536; i++) {
+    var unrolled = {};
+    var c = [];
+    for (i=0; i<65536; i++) {
         c.push( String.fromCharCode(i) );
     }
     escapable.lastIndex = 0;
@@ -431,16 +431,16 @@ utils.quote = function(string) {
 
     // In most cases this should be very fast and good enough.
     extra_escapable.lastIndex = 0;
-    if(!extra_escapable.test(quoted)) {
+    if (!extra_escapable.test(quoted)) {
         return quoted;
     }
 
-    if(!extra_lookup) extra_lookup = unroll_lookup(extra_escapable);
+    if (!extra_lookup) {extra_lookup = unroll_lookup(extra_escapable);}
 
     return quoted.replace(extra_escapable, function(a) {
         return extra_lookup[a];
     });
-}
+};
 
 var _all_protocols = ['websocket',
                       'xdr-streaming',
@@ -454,7 +454,7 @@ var _all_protocols = ['websocket',
 
 utils.probeProtocols = function() {
     var probed = {};
-    for(var i=0; i<_all_protocols.length; i++) {
+    for (var i=0; i<_all_protocols.length; i++) {
         var protocol = _all_protocols[i];
         // User can have a typo in protocol name.
         probed[protocol] = SockJS[protocol] &&
@@ -466,8 +466,8 @@ utils.probeProtocols = function() {
 utils.detectProtocols = function(probed, protocols_whitelist, info) {
     var pe = {},
         protocols = [];
-    if (!protocols_whitelist) protocols_whitelist = _all_protocols;
-    for(var i=0; i<protocols_whitelist.length; i++) {
+    if (!protocols_whitelist) {protocols_whitelist = _all_protocols;}
+    for (var i=0; i<protocols_whitelist.length; i++) {
         var protocol = protocols_whitelist[i];
         pe[protocol] = probed[protocol];
     }
@@ -480,7 +480,7 @@ utils.detectProtocols = function(probed, protocols_whitelist, info) {
                 maybe_push(protos);
             }
         }
-    }
+    };
 
     // 1. Websocket
     if (info.websocket !== false) {
@@ -511,7 +511,7 @@ utils.detectProtocols = function(probed, protocols_whitelist, info) {
         }
     }
     return protocols;
-}
+};
 //         [*] End of lib/utils.js
 
 
@@ -534,11 +534,11 @@ utils.createHook = function() {
             if (!(window_id in map)) {
                 map[window_id] = {
                     id: window_id,
-                    del: function() {delete map[window_id];}
+                    del: function() {delete map[window_id];},
                 };
             }
             return map[window_id];
-        }
+        };
     }
     return _window[MPrefix](window_id);
 };
@@ -579,14 +579,14 @@ var on_unload = {};
 var after_unload = false;
 
 var trigger_unload_callbacks = function() {
-    for(var ref in on_unload) {
+    for (var ref in on_unload) {
         on_unload[ref]();
         delete on_unload[ref];
-    };
+    }
 };
 
 var unload_triggered = function() {
-    if(after_unload) return;
+    if (after_unload) {return;}
     after_unload = true;
     trigger_unload_callbacks();
 };
@@ -604,8 +604,9 @@ utils.unload_add = function(listener) {
     return ref;
 };
 utils.unload_del = function(ref) {
-    if (ref in on_unload)
-        delete on_unload[ref];
+    if (ref in on_unload)        {
+delete on_unload[ref];
+}
 };
 
 
@@ -625,7 +626,7 @@ utils.createIframe = function (iframe_url, error_callback) {
             // within iframe. Without the timeout it goes straight to
             // onunload.
             setTimeout(function() {
-                if(iframe) {
+                if (iframe) {
                     iframe.parentNode.removeChild(iframe);
                 }
                 iframe = null;
@@ -646,7 +647,7 @@ utils.createIframe = function (iframe_url, error_callback) {
             if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(msg, origin);
             }
-        } catch (x) {};
+        } catch (x) {}
     };
 
     iframe.src = iframe_url;
@@ -665,7 +666,7 @@ utils.createIframe = function (iframe_url, error_callback) {
     return {
         post: post,
         cleanup: cleanup,
-        loaded: unattach
+        loaded: unattach,
     };
 };
 
@@ -698,7 +699,7 @@ utils.createHtmlfile = function (iframe_url, error_callback) {
             if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(msg, origin);
             }
-        } catch (x) {};
+        } catch (x) {}
     };
 
     doc.open();
@@ -717,7 +718,7 @@ utils.createHtmlfile = function (iframe_url, error_callback) {
     return {
         post: post,
         cleanup: cleanup,
-        loaded: unattach
+        loaded: unattach,
     };
 };
 //         [*] End of lib/dom.js
@@ -740,16 +741,16 @@ AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
 
     try {
         that.xhr = new XMLHttpRequest();
-    } catch(x) {};
+    } catch (x) {}
 
     if (!that.xhr) {
         try {
             that.xhr = new _window.ActiveXObject('Microsoft.XMLHTTP');
-        } catch(x) {};
+        } catch (x) {}
     }
     if (_window.ActiveXObject || _window.XDomainRequest) {
         // IE8 caches even POSTs
-        url += ((url.indexOf('?') === -1) ? '?' : '&') + 't='+(+new Date);
+        url += ((url.indexOf('?') === -1) ? '?' : '&') + 't='+(+new Date());
     }
 
     // Explorer tends to keep connection open, even after the
@@ -757,12 +758,12 @@ AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
     that.unload_ref = utils.unload_add(function(){that._cleanup(true);});
     try {
         that.xhr.open(method, url, true);
-    } catch(e) {
+    } catch (e) {
         // IE raises an exception on wrong port.
         that.emit('finish', 0, '');
         that._cleanup();
         return;
-    };
+    }
 
     if (!opts || !opts.no_credentials) {
         // Mozilla docs says https://developer.mozilla.org/en/XMLHttpRequest :
@@ -770,7 +771,7 @@ AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
         that.xhr.withCredentials = 'true';
     }
     if (opts && opts.headers) {
-        for(var key in opts.headers) {
+        for (var key in opts.headers) {
             that.xhr.setRequestHeader(key, opts.headers[key]);
         }
     }
@@ -785,9 +786,9 @@ AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
                 try {
                     var status = x.status;
                     var text = x.responseText;
-                } catch (x) {};
+                } catch (x) {}
                 // IE returns 1223 for 204: http://bugs.jquery.com/ticket/1450
-                if (status === 1223) status = 204;
+                if (status === 1223) {status = 204;}
 
                 // IE does return readystate == 3 for 404 answers.
                 if (text && text.length > 0) {
@@ -797,7 +798,7 @@ AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
             case 4:
                 var status = x.status;
                 // IE returns 1223 for 204: http://bugs.jquery.com/ticket/1450
-                if (status === 1223) status = 204;
+                if (status === 1223) {status = 204;}
 
                 that.emit('finish', status, x.responseText);
                 that._cleanup(false);
@@ -810,7 +811,7 @@ AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
 
 AbstractXHRObject.prototype._cleanup = function(abort) {
     var that = this;
-    if (!that.xhr) return;
+    if (!that.xhr) {return;}
     utils.unload_del(that.unload_ref);
 
     // IE needs this field to be a function
@@ -819,7 +820,7 @@ AbstractXHRObject.prototype._cleanup = function(abort) {
     if (abort) {
         try {
             that.xhr.abort();
-        } catch(x) {};
+        } catch (x) {}
     }
     that.unload_ref = that.xhr = null;
 };
@@ -840,7 +841,7 @@ var XHRLocalObject = utils.XHRLocalObject = function(method, url, payload) {
     var that = this;
     utils.delay(function(){
         that._start(method, url, payload, {
-            no_credentials: true
+            no_credentials: true,
         });
     });
 };
@@ -860,7 +861,7 @@ XDRObject.prototype._start = function(method, url, payload) {
     var that = this;
     var xdr = new XDomainRequest();
     // IE caches even POSTs
-    url += ((url.indexOf('?') === -1) ? '?' : '&') + 't='+(+new Date);
+    url += ((url.indexOf('?') === -1) ? '?' : '&') + 't='+(+new Date());
 
     var onerror = xdr.ontimeout = xdr.onerror = function() {
         that.emit('finish', 0, '');
@@ -879,14 +880,14 @@ XDRObject.prototype._start = function(method, url, payload) {
         // Fails with AccessDenied if port number is bogus
         that.xdr.open(method, url);
         that.xdr.send(payload);
-    } catch(x) {
+    } catch (x) {
         onerror();
     }
 };
 
 XDRObject.prototype._cleanup = function(abort) {
     var that = this;
-    if (!that.xdr) return;
+    if (!that.xdr) {return;}
     utils.unload_del(that.unload_ref);
 
     that.xdr.ontimeout = that.xdr.onerror = that.xdr.onprogress =
@@ -894,7 +895,7 @@ XDRObject.prototype._cleanup = function(abort) {
     if (abort) {
         try {
             that.xdr.abort();
-        } catch(x) {};
+        } catch (x) {}
     }
     that.unload_ref = that.xdr = null;
 };
@@ -957,7 +958,7 @@ var SockJS = function(url, dep_protocols_whitelist, options) {
             dep_protocols_whitelist.length > 0) {
             protocols_whitelist = [dep_protocols_whitelist];
         } else if (utils.isArray(dep_protocols_whitelist)) {
-            protocols_whitelist = dep_protocols_whitelist
+            protocols_whitelist = dep_protocols_whitelist;
         } else {
             protocols_whitelist = null;
         }
@@ -999,8 +1000,9 @@ SockJS.CLOSING = 2;
 SockJS.CLOSED = 3;
 
 SockJS.prototype._debug = function() {
-    if (this._options.debug)
-        utils.log.apply(utils, arguments);
+    if (this._options.debug)        {
+utils.log.apply(utils, arguments);
+}
 };
 
 SockJS.prototype._dispatchOpen = function() {
@@ -1021,15 +1023,17 @@ SockJS.prototype._dispatchOpen = function() {
 
 SockJS.prototype._dispatchMessage = function(data) {
     var that = this;
-    if (that.readyState !== SockJS.OPEN)
-            return;
+    if (that.readyState !== SockJS.OPEN)            {
+return;
+}
     that.dispatchEvent(new SimpleEvent("message", {data: data}));
 };
 
 SockJS.prototype._dispatchHeartbeat = function(data) {
     var that = this;
-    if (that.readyState !== SockJS.OPEN)
-        return;
+    if (that.readyState !== SockJS.OPEN)        {
+return;
+}
     that.dispatchEvent(new SimpleEvent('heartbeat', {}));
 };
 
@@ -1037,8 +1041,9 @@ SockJS.prototype._didClose = function(code, reason, force) {
     var that = this;
     if (that.readyState !== SockJS.CONNECTING &&
         that.readyState !== SockJS.OPEN &&
-        that.readyState !== SockJS.CLOSING)
-            return;
+        that.readyState !== SockJS.CLOSING)            {
+return;
+}
     if (that._ir) {
         that._ir.nuke();
         that._ir = null;
@@ -1074,13 +1079,13 @@ SockJS.prototype._didClose = function(code, reason, force) {
 SockJS.prototype._didMessage = function(data) {
     var that = this;
     var type = data.slice(0, 1);
-    switch(type) {
+    switch (type) {
     case 'o':
         that._dispatchOpen();
         break;
     case 'a':
         var payload = JSON.parse(data.slice(1) || '[]');
-        for(var i=0; i < payload.length; i++){
+        for (var i=0; i < payload.length; i++){
             that._dispatchMessage(payload[i]);
         }
         break;
@@ -1109,7 +1114,7 @@ SockJS.prototype._try_next_protocol = function(close_event) {
         that._transport_tref = null;
     }
 
-    while(1) {
+    while (1) {
         var protocol = that.protocol = that._protocols.shift();
         if (!protocol) {
             return false;
@@ -1157,9 +1162,10 @@ SockJS.prototype._try_next_protocol = function(close_event) {
 
 SockJS.prototype.close = function(code, reason) {
     var that = this;
-    if (code && !utils.userSetCode(code))
-        throw new Error("INVALID_ACCESS_ERR");
-    if(that.readyState !== SockJS.CONNECTING &&
+    if (code && !utils.userSetCode(code))        {
+throw new Error("INVALID_ACCESS_ERR");
+}
+    if (that.readyState !== SockJS.CONNECTING &&
        that.readyState !== SockJS.OPEN) {
         return false;
     }
@@ -1170,8 +1176,9 @@ SockJS.prototype.close = function(code, reason) {
 
 SockJS.prototype.send = function(data) {
     var that = this;
-    if (that.readyState === SockJS.CONNECTING)
-        throw new Error('INVALID_STATE_ERR');
+    if (that.readyState === SockJS.CONNECTING)        {
+throw new Error('INVALID_STATE_ERR');
+}
     if (that.readyState === SockJS.OPEN) {
         that._transport.doSend(utils.quote('' + data));
     }
@@ -1225,7 +1232,7 @@ var WebSocketTransport = SockJS.websocket = function(ri, trans_url) {
     // let's not open the ws connection at all. See:
     // https://github.com/sockjs/sockjs-client/issues/28
     // https://bugzilla.mozilla.org/show_bug.cgi?id=696085
-    that.unload_ref = utils.unload_add(function(){that.ws.close()});
+    that.unload_ref = utils.unload_add(function(){that.ws.close();});
     that.ws.onclose = function() {
         that.ri._didMessage(utils.closeFrame(1006, "WebSocket connection broken"));
     };
@@ -1351,7 +1358,7 @@ var jsonPGenericSender = function(url, payload, callback) {
     try {
         // ie6 dynamic iframes with target="" support (thanks Chris Lambacher)
         iframe = _document.createElement('<iframe name="'+ id +'">');
-    } catch(x) {
+    } catch (x) {
         iframe = _document.createElement('iframe');
         iframe.name = id;
     }
@@ -1361,13 +1368,13 @@ var jsonPGenericSender = function(url, payload, callback) {
 
     try {
         area.value = payload;
-    } catch(e) {
+    } catch (e) {
         utils.log('Your browser is seriously broken. Go home! ' + e.message);
     }
     form.submit();
 
     var completed = function(e) {
-        if (!iframe.onerror) return;
+        if (!iframe.onerror) {return;}
         iframe.onreadystatechange = iframe.onerror = iframe.onload = null;
         // Opera mini doesn't like if we GC iframe
         // immediately, thus this timeout.
@@ -1382,7 +1389,7 @@ var jsonPGenericSender = function(url, payload, callback) {
     };
     iframe.onerror = iframe.onload = completed;
     iframe.onreadystatechange = function(e) {
-        if (iframe.readyState == 'complete') completed();
+        if (iframe.readyState == 'complete') {completed();}
     };
     return completed;
 };
@@ -1600,7 +1607,7 @@ var jsonPReceiverWrapper = function(url, constructReceiver, user_callback) {
 
     // Callback will be called exactly once.
     var callback = function(frame) {
-        switch(aborting) {
+        switch (aborting) {
         case 0:
             // Normal behaviour - delete hook _and_ emit message.
             delete _window[WPrefix][id];
@@ -1752,7 +1759,7 @@ IframeTransport.prototype.i_constructor = function(ri, trans_url, base_url) {
 
     var iframe_url = base_url + '/iframe.html';
     if (that.ri._options.devel) {
-        iframe_url += '?t=' + (+new Date);
+        iframe_url += '?t=' + (+new Date());
     }
     that.window_id = utils.random_string(8);
     iframe_url += '#' + that.window_id;
@@ -1784,14 +1791,14 @@ IframeTransport.prototype.doCleanup = function() {
 
 IframeTransport.prototype.onmessage = function(e) {
     var that = this;
-    if (e.origin !== that.origin) return;
+    if (e.origin !== that.origin) {return;}
     var window_id = e.data.slice(0, 8);
     var type = e.data.slice(8, 9);
     var data = e.data.slice(9);
 
-    if (window_id !== that.window_id) return;
+    if (window_id !== that.window_id) {return;}
 
-    switch(type) {
+    switch (type) {
     case 's':
         that.iframeObj.loaded();
         that.postMessage('s', JSON.stringify([SockJS.version, that.protocol, that.trans_url, that.base_url]));
@@ -1833,7 +1840,7 @@ IframeTransport.enabled = function() {
 var curr_window_id;
 
 var postMessage = function (type, data) {
-    if(parent !== _window) {
+    if (parent !== _window) {
         parent.postMessage(curr_window_id + type + (data || ''), '*');
     } else {
         utils.log("Can't postMessage, no parent window.", type, data);
@@ -1860,16 +1867,17 @@ SockJS.bootstrap_iframe = function() {
     var facade;
     curr_window_id = _document.location.hash.slice(1);
     var onMessage = function(e) {
-        if(e.source !== parent) return;
-        if(typeof utils.parent_origin === 'undefined')
-            utils.parent_origin = e.origin;
-        if (e.origin !== utils.parent_origin) return;
+        if (e.source !== parent) {return;}
+        if (typeof utils.parent_origin === 'undefined')            {
+utils.parent_origin = e.origin;
+}
+        if (e.origin !== utils.parent_origin) {return;}
 
         var window_id = e.data.slice(0, 8);
         var type = e.data.slice(8, 9);
         var data = e.data.slice(9);
-        if (window_id !== curr_window_id) return;
-        switch(type) {
+        if (window_id !== curr_window_id) {return;}
+        switch (type) {
         case 's':
             var p = JSON.parse(data);
             var version = p[0];
@@ -1900,8 +1908,9 @@ SockJS.bootstrap_iframe = function() {
             facade._doSend(data);
             break;
         case 'c':
-            if (facade)
-                facade._doCleanup();
+            if (facade)                {
+facade._doCleanup();
+}
             facade = null;
             break;
         }
@@ -1949,7 +1958,7 @@ InfoReceiver.prototype.doXhr = function(base_url, AjaxObject) {
         if (status === 200) {
             var rtt = (new Date()).getTime() - t0;
             var info = JSON.parse(text);
-            if (typeof info !== 'object') info = {};
+            if (typeof info !== 'object') {info = {};}
             that.emit('finish', info, rtt);
         } else {
             that.emit('finish');
@@ -1980,11 +1989,11 @@ var InfoReceiverIframe = function(base_url) {
         var mock_ri = {
             _options: {},
             _didClose: fun,
-            _didMessage: fun
+            _didMessage: fun,
         };
         ifr.i_constructor(mock_ri, base_url, base_url);
-    }
-    if(!_document.body) {
+    };
+    if (!_document.body) {
         utils.attachEvent('load', go);
     } else {
         go();
@@ -2022,7 +2031,7 @@ var createInfoReceiver = function(base_url) {
     default:
         // IE 7
         return new InfoReceiverFake();
-    };
+    }
 };
 
 
@@ -2031,7 +2040,7 @@ var WInfoReceiverIframe = FacadeJS['w-iframe-info-receiver'] = function(ri, _tra
     ir.onfinish = function(info, rtt) {
         ri._didMessage('m'+JSON.stringify([info, rtt]));
         ri._didClose();
-    }
+    };
 };
 WInfoReceiverIframe.prototype.doCleanup = function() {};
 //         [*] End of lib/info.js
@@ -2065,7 +2074,7 @@ EventSourceIframeTransport.roundTrips = 3; // html, javascript, eventsource
 // w-iframe-eventsource
 var EventSourceTransport = FacadeJS['w-iframe-eventsource'] = function(ri, trans_url) {
     this.run(ri, trans_url, '/eventsource', EventSourceReceiver, utils.XHRLocalObject);
-}
+};
 EventSourceTransport.prototype = new AjaxBasedTransport();
 //         [*] End of lib/trans-iframe-eventsource.js
 
@@ -2281,7 +2290,7 @@ var HtmlfileReceiver = function(url) {
         },
         stop: function () {
             that.iframe_close({}, 'network');
-        }
+        },
     };
     that.iframe_close = function(e, abort_reason) {
         iframeObj.cleanup();
@@ -2320,11 +2329,11 @@ var XhrReceiver = function(url, AjaxObject) {
 
     that.xo = new AjaxObject('POST', url, null);
     that.xo.onchunk = function(status, text) {
-        if (status !== 200) return;
+        if (status !== 200) {return;}
         while (1) {
             var buf = text.slice(buf_pos);
             var p = buf.indexOf('\n');
-            if (p === -1) break;
+            if (p === -1) {break;}
             buf_pos += p+1;
             var msg = buf.slice(0, p);
             that.dispatchEvent(new SimpleEvent('message', {data: msg}));
@@ -2335,7 +2344,7 @@ var XhrReceiver = function(url, AjaxObject) {
         that.xo = null;
         var reason = status === 200 ? 'network' : 'permanent';
         that.dispatchEvent(new SimpleEvent('close', {reason: reason}));
-    }
+    };
 };
 
 XhrReceiver.prototype = new REventTarget();
@@ -2371,8 +2380,8 @@ SockJS.getIframeTransport = function(){
 //         [*] End of lib/test-hooks.js
 
                   return SockJS;
-          })();
-if ('_sockjs_onload' in window) setTimeout(_sockjs_onload, 1);
+          }());
+if ('_sockjs_onload' in window) {setTimeout(_sockjs_onload, 1);}
 
 // AMD compliance
 if (typeof define === 'function' && define.amd) {

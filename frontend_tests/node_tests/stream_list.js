@@ -10,12 +10,12 @@ add_dependencies({
     stream_data: 'js/stream_data',
     subs: 'js/subs',
     util: 'js/util',
-    hashchange: 'js/hashchange'
+    hashchange: 'js/hashchange',
 });
 
 set_global('unread', {});
 set_global('message_store', {
-    recent_private_messages: new global.Array()
+    recent_private_messages: new global.Array(),
 });
 
 // TODO: move pm_list-related tests to their own module
@@ -37,12 +37,12 @@ global.compile_template('stream_privacy');
 var alice = {
     email: 'alice@zulip.com',
     user_id: 101,
-    full_name: 'Alice'
+    full_name: 'Alice',
 };
 var bob = {
     email: 'bob@zulip.com',
     user_id: 102,
-    full_name: 'Bob'
+    full_name: 'Bob',
 };
 global.people.add_in_realm(alice);
 global.people.add_in_realm(bob);
@@ -88,7 +88,7 @@ function clear_filters() {
         stream_id: 100,
         color: 'blue',
         subscribed: true,
-        id: 5
+        id: 5,
     };
     global.stream_data.add_sub('devel', devel);
 
@@ -97,7 +97,7 @@ function clear_filters() {
         stream_id: 200,
         color: 'green',
         subscribed: true,
-        id: 6
+        id: 6,
     };
     global.stream_data.add_sub('social', social);
 
@@ -135,7 +135,7 @@ function clear_filters() {
         color: 'blue',
         id: 5,
         pin_to_top: false,
-        subscribed: true
+        subscribed: true,
     };
     stream_list.create_sidebar_row(develSub);
     global.stream_data.add_sub('devel', develSub);
@@ -146,7 +146,7 @@ function clear_filters() {
         color: 'green',
         id: 6,
         pin_to_top: true,
-        subscribed: true
+        subscribed: true,
     };
     stream_list.create_sidebar_row(socialSub);
     global.stream_data.add_sub('social', socialSub);

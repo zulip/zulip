@@ -18,7 +18,7 @@ var bugdown_re = [
                     /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\s+/m,
                     /[^\s]*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)$/m,
                     // Twitter and youtube links are given previews
-                    /[^\s]*(?:twitter|youtube).com\/[^\s]*/
+                    /[^\s]*(?:twitter|youtube).com\/[^\s]*/,
                   ];
 
 exports.contains_bugdown = function contains_bugdown(content) {
@@ -417,7 +417,7 @@ $(function () {
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function (_) {
                 return false;
-            }
+            },
         };
     }
 
@@ -500,7 +500,7 @@ $(function () {
         streamHandler: handleStream,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
-        preprocessors: [preprocess_code_blocks]
+        preprocessors: [preprocess_code_blocks],
     });
 
     function on_failed_action(action, callback) {

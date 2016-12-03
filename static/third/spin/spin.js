@@ -31,20 +31,20 @@
 (function(root, factory) {
 
   /* CommonJS */
-  if (typeof exports == 'object')  module.exports = factory()
+  if (typeof exports === 'object')  module.exports = factory();
 
   /* AMD module */
-  else if (typeof define == 'function' && define.amd) define(factory)
+  else if (typeof define === 'function' && define.amd) define(factory);
 
   /* Browser global */
-  else root.Spinner = factory()
+  else root.Spinner = factory();
 }
 (this, function() {
   "use strict";
 
   var prefixes = ['webkit', 'Moz', 'ms', 'O'] /* Vendor prefixes */
     , animations = {} /* Animation rules keyed by their name */
-    , useCssAnimations /* Whether to use CSS animations or setTimeout */
+    , useCssAnimations; /* Whether to use CSS animations or setTimeout */
 
   /**
    * Utility function to create elements. If no tag name is given,
@@ -52,10 +52,10 @@
    */
   function createEl(tag, prop) {
     var el = document.createElement(tag || 'div')
-      , n
+      , n;
 
-    for(n in prop) el[n] = prop[n]
-    return el
+    for (n in prop) el[n] = prop[n];
+    return el;
   }
 
   /**
@@ -63,19 +63,19 @@
    */
   function ins(parent /* child1, child2, ...*/) {
     for (var i=1, n=arguments.length; i<n; i++)
-      parent.appendChild(arguments[i])
+      parent.appendChild(arguments[i]);
 
-    return parent
+    return parent;
   }
 
   /**
    * Insert a new stylesheet to hold the @keyframe or VML rules.
    */
   var sheet = (function() {
-    var el = createEl('style', {type : 'text/css'})
-    ins(document.getElementsByTagName('head')[0], el)
-    return el.sheet || el.styleSheet
-  }())
+    var el = createEl('style', {type : 'text/css'});
+    ins(document.getElementsByTagName('head')[0], el);
+    return el.sheet || el.styleSheet;
+  }());
 
   /**
    * Creates an opacity keyframe animation rule and returns its name.
@@ -87,7 +87,7 @@
       , start = 0.01 + i/lines * 100
       , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
       , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()
-      , pre = prefix && '-' + prefix + '-' || ''
+      , pre = prefix && '-' + prefix + '-' || '';
 
     if (!animations[name]) {
       sheet.insertRule(
@@ -97,12 +97,12 @@
         (start+0.01) + '%{opacity:1}' +
         (start+trail) % 100 + '%{opacity:' + alpha + '}' +
         '100%{opacity:' + z + '}' +
-        '}', sheet.cssRules.length)
+        '}', sheet.cssRules.length);
 
-      animations[name] = 1
+      animations[name] = 1;
     }
 
-    return name
+    return name;
   }
 
   /**
@@ -111,13 +111,13 @@
   function vendor(el, prop) {
     var s = el.style
       , pp
-      , i
+      , i;
 
-    if(s[prop] !== undefined) return prop
-    prop = prop.charAt(0).toUpperCase() + prop.slice(1)
-    for(i=0; i<prefixes.length; i++) {
-      pp = prefixes[i]+prop
-      if(s[pp] !== undefined) return pp
+    if (s[prop] !== undefined) return prop;
+    prop = prop.charAt(0).toUpperCase() + prop.slice(1);
+    for (i=0; i<prefixes.length; i++) {
+      pp = prefixes[i]+prop;
+      if (s[pp] !== undefined) return pp;
     }
   }
 
@@ -126,9 +126,9 @@
    */
   function css(el, prop) {
     for (var n in prop)
-      el.style[vendor(el, n)||n] = prop[n]
+      el.style[vendor(el, n)||n] = prop[n];
 
-    return el
+    return el;
   }
 
   /**
@@ -136,22 +136,22 @@
    */
   function merge(obj) {
     for (var i=1; i < arguments.length; i++) {
-      var def = arguments[i]
+      var def = arguments[i];
       for (var n in def)
-        if (obj[n] === undefined) obj[n] = def[n]
+        if (obj[n] === undefined) obj[n] = def[n];
     }
-    return obj
+    return obj;
   }
 
   /**
    * Returns the absolute page-offset of the given element.
    */
   function pos(el) {
-    var o = { x:el.offsetLeft, y:el.offsetTop }
-    while((el = el.offsetParent))
-      o.x+=el.offsetLeft, o.y+=el.offsetTop
+    var o = { x:el.offsetLeft, y:el.offsetTop };
+    while ((el = el.offsetParent))
+      o.x+=el.offsetLeft, o.y+=el.offsetTop;
 
-    return o
+    return o;
   }
 
   // Built-in defaults
@@ -173,17 +173,17 @@
     className: 'spinner', // CSS class to assign to the element
     top: 'auto',          // center vertically
     left: 'auto',         // center horizontally
-    position: 'relative'  // element position
-  }
+    position: 'relative',  // element position
+  };
 
   /** The constructor */
   function Spinner(o) {
-    if (typeof this == 'undefined') return new Spinner(o)
-    this.opts = merge(o || {}, Spinner.defaults, defaults)
+    if (typeof this === 'undefined') return new Spinner(o);
+    this.opts = merge(o || {}, Spinner.defaults, defaults);
   }
 
   // Global defaults that override the built-ins:
-  Spinner.defaults = {}
+  Spinner.defaults = {};
 
   merge(Spinner.prototype, {
 
@@ -193,27 +193,27 @@
      * stop() internally.
      */
     spin: function(target) {
-      this.stop()
+      this.stop();
 
       var self = this
         , o = self.opts
         , el = self.el = css(createEl(0, {className: o.className}), {position: o.position, width: 0, zIndex: o.zIndex})
         , mid = o.radius+o.length+o.width
         , ep // element position
-        , tp // target position
+        , tp; // target position
 
       if (target) {
-        target.insertBefore(el, target.firstChild||null)
-        tp = pos(target)
-        ep = pos(el)
+        target.insertBefore(el, target.firstChild||null);
+        tp = pos(target);
+        ep = pos(el);
         css(el, {
           left: (o.left == 'auto' ? tp.x-ep.x + (target.offsetWidth >> 1) : parseInt(o.left, 10) + mid) + 'px',
-          top: (o.top == 'auto' ? tp.y-ep.y + (target.offsetHeight >> 1) : parseInt(o.top, 10) + mid)  + 'px'
-        })
+          top: (o.top == 'auto' ? tp.y-ep.y + (target.offsetHeight >> 1) : parseInt(o.top, 10) + mid)  + 'px',
+        });
       }
 
-      el.setAttribute('role', 'progressbar')
-      self.lines(el, self.opts)
+      el.setAttribute('role', 'progressbar');
+      self.lines(el, self.opts);
 
       if (!useCssAnimations) {
         // No CSS animation support, use setTimeout() instead
@@ -228,27 +228,27 @@
         ;(function anim() {
           i++;
           for (var j = 0; j < o.lines; j++) {
-            alpha = Math.max(1 - (i + (o.lines - j) * astep) % f * ostep, o.opacity)
+            alpha = Math.max(1 - (i + (o.lines - j) * astep) % f * ostep, o.opacity);
 
-            self.opacity(el, j * o.direction + start, alpha, o)
+            self.opacity(el, j * o.direction + start, alpha, o);
           }
-          self.timeout = self.el && setTimeout(anim, ~~(1000/fps))
-        })()
+          self.timeout = self.el && setTimeout(anim, ~~(1000/fps));
+        })();
       }
-      return self
+      return self;
     },
 
     /**
      * Stops and removes the Spinner.
      */
     stop: function() {
-      var el = this.el
+      var el = this.el;
       if (el) {
-        clearTimeout(this.timeout)
-        if (el.parentNode) el.parentNode.removeChild(el)
-        this.el = undefined
+        clearTimeout(this.timeout);
+        if (el.parentNode) el.parentNode.removeChild(el);
+        this.el = undefined;
       }
-      return this
+      return this;
     },
 
     /**
@@ -258,7 +258,7 @@
     lines: function(el, o) {
       var i = 0
         , start = (o.lines - 1) * (1 - o.direction) / 2
-        , seg
+        , seg;
 
       function fill(color, shadow) {
         return css(createEl(), {
@@ -269,8 +269,8 @@
           boxShadow: shadow,
           transformOrigin: 'left',
           transform: 'rotate(' + ~~(360/o.lines*i+o.rotate) + 'deg) translate(' + o.radius+'px' +',0)',
-          borderRadius: (o.corners * o.width>>1) + 'px'
-        })
+          borderRadius: (o.corners * o.width>>1) + 'px',
+        });
       }
 
       for (; i < o.lines; i++) {
@@ -279,14 +279,14 @@
           top: 1+~(o.width/2) + 'px',
           transform: o.hwaccel ? 'translate3d(0,0,0)' : '',
           opacity: o.opacity,
-          animation: useCssAnimations && addAnimation(o.opacity, o.trail, start + i * o.direction, o.lines) + ' ' + 1/o.speed + 's linear infinite'
-        })
+          animation: useCssAnimations && addAnimation(o.opacity, o.trail, start + i * o.direction, o.lines) + ' ' + 1/o.speed + 's linear infinite',
+        });
 
-        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px ' + '#000'), {top: 2+'px'}))
+        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px ' + '#000'), {top: 2+'px'}));
 
-        ins(el, ins(seg, fill(o.color, '0 0 1px rgba(0,0,0,.1)')))
+        ins(el, ins(seg, fill(o.color, '0 0 1px rgba(0,0,0,.1)')));
       }
-      return el
+      return el;
     },
 
     /**
@@ -294,39 +294,39 @@
      * Will be overwritten in VML fallback mode below.
      */
     opacity: function(el, i, val) {
-      if (i < el.childNodes.length) el.childNodes[i].style.opacity = val
-    }
+      if (i < el.childNodes.length) el.childNodes[i].style.opacity = val;
+    },
 
-  })
+  });
 
 
   function initVML() {
 
     /* Utility function to create a VML tag */
     function vml(tag, attr) {
-      return createEl('<' + tag + ' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">', attr)
+      return createEl('<' + tag + ' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">', attr);
     }
 
     // No CSS transforms but VML support, add a CSS rule for VML elements:
-    sheet.addRule('.spin-vml', 'behavior:url(#default#VML)')
+    sheet.addRule('.spin-vml', 'behavior:url(#default#VML)');
 
     Spinner.prototype.lines = function(el, o) {
       var r = o.length+o.width
-        , s = 2*r
+        , s = 2*r;
 
       function grp() {
         return css(
           vml('group', {
             coordsize: s + ' ' + s,
-            coordorigin: -r + ' ' + -r
+            coordorigin: -r + ' ' + -r,
           }),
-          { width: s, height: s }
-        )
+          { width: s, height: s },
+        );
       }
 
       var margin = -(o.width+o.length)*2 + 'px'
         , g = css(grp(), {position: 'absolute', top: margin, left: margin})
-        , i
+        , i;
 
       function seg(i, dx, filter) {
         ins(g,
@@ -336,38 +336,38 @@
                 height: o.width,
                 left: o.radius,
                 top: -o.width>>1,
-                filter: filter
+                filter: filter,
               }),
               vml('fill', {color: o.color, opacity: o.opacity}),
-              vml('stroke', {opacity: 0}) // transparent stroke to fix color bleeding upon opacity change
-            )
-          )
-        )
+              vml('stroke', {opacity: 0}), // transparent stroke to fix color bleeding upon opacity change
+            ),
+          ),
+        );
       }
 
       if (o.shadow)
         for (i = 1; i <= o.lines; i++)
-          seg(i, -2, 'progid:DXImageTransform.Microsoft.Blur(pixelradius=2,makeshadow=1,shadowopacity=.3)')
+          seg(i, -2, 'progid:DXImageTransform.Microsoft.Blur(pixelradius=2,makeshadow=1,shadowopacity=.3)');
 
-      for (i = 1; i <= o.lines; i++) seg(i)
-      return ins(el, g)
-    }
+      for (i = 1; i <= o.lines; i++) seg(i);
+      return ins(el, g);
+    };
 
     Spinner.prototype.opacity = function(el, i, val, o) {
-      var c = el.firstChild
-      o = o.shadow && o.lines || 0
+      var c = el.firstChild;
+      o = o.shadow && o.lines || 0;
       if (c && i+o < c.childNodes.length) {
-        c = c.childNodes[i+o]; c = c && c.firstChild; c = c && c.firstChild
-        if (c) c.opacity = val
+        c = c.childNodes[i+o]; c = c && c.firstChild; c = c && c.firstChild;
+        if (c) c.opacity = val;
       }
-    }
+    };
   }
 
-  var probe = css(createEl('group'), {behavior: 'url(#default#VML)'})
+  var probe = css(createEl('group'), {behavior: 'url(#default#VML)'});
 
-  if (!vendor(probe, 'transform') && probe.adj) initVML()
-  else useCssAnimations = vendor(probe, 'animation')
+  if (!vendor(probe, 'transform') && probe.adj) initVML();
+  else useCssAnimations = vendor(probe, 'animation');
 
-  return Spinner
+  return Spinner;
 
 }));

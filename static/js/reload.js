@@ -196,7 +196,7 @@ exports.initiate = function (options) {
         save_pointer: true,
         save_narrow: true,
         save_compose: true,
-        send_after_reload: false
+        send_after_reload: false,
     });
 
     if (options.save_pointer === undefined ||

@@ -5,7 +5,7 @@
 add_dependencies({
     util: 'js/util.js',
     muting: 'js/muting.js',
-    MessageListView: 'js/message_list_view.js'
+    MessageListView: 'js/message_list_view.js',
 });
 
 
@@ -27,17 +27,17 @@ var MessageList = require('js/message_list').MessageList;
     var messages = [
         {
             id: 50,
-            content: 'fifty'
+            content: 'fifty',
         },
         {
-            id: 60
+            id: 60,
         },
         {
-            id: 70
+            id: 70,
         },
         {
-            id: 80
-        }
+            id: 80,
+        },
     ];
 
     assert.equal(list.empty(), true);
@@ -71,11 +71,11 @@ var MessageList = require('js/message_list').MessageList;
 
     var old_messages = [
         {
-            id: 30
+            id: 30,
         },
         {
-            id: 40
-        }
+            id: 40,
+        },
     ];
     list.prepend(old_messages, true);
     assert.equal(list.first().id, 30);
@@ -83,8 +83,8 @@ var MessageList = require('js/message_list').MessageList;
 
     var new_messages = [
         {
-            id: 90
-        }
+            id: 90,
+        },
     ];
     list.append(new_messages, true);
     assert.equal(list.last().id, 90);

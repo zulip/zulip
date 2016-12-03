@@ -51,7 +51,7 @@
       events: 'mousemove keydown DOMMouseScroll mousewheel mousedown touchstart touchmove', //events that will trigger the idle resetter
       onIdle: function(){}, //callback function to be executed after idle time
       onActive: function(){}, //callback function to be executed after back from idleness
-      keepTracking: false //if you want to keep tracking user even after the first time, set this to true
+      keepTracking: false, //if you want to keep tracking user even after the first time, set this to true
     };
 
     var idle = false;
@@ -70,7 +70,7 @@
         if (canceled) {
             return;
         }
-        if(idle){
+        if (idle){
             settings.onActive.call();
             idle = false;
         }
@@ -82,20 +82,20 @@
       elem.off(settings.events, handler);
       clearTimeout(timerId);
       canceled = true;
-    }
+    };
 
     var resetTimeout = function() {
       idle = false;
       clearTimeout(timerId);
       createTimeout();
-    }
+    };
 
     var createTimeout = function() {
       timerId = setTimeout(function(){
         idle = true;
         cancel();
         settings.onIdle.call();
-        if(settings.keepTracking) {
+        if (settings.keepTracking) {
             // We want the reset to occur after this event has been
             // completely handled
             setTimeout(function () {
@@ -106,7 +106,7 @@
         }
       }, settings.idle);
       control.timerId = timerId;
-    }
+    };
 
     var control = {
         'cancel': cancel,
@@ -118,4 +118,4 @@
 
     return control;
   }; 
-})( jQuery );
+}( jQuery ));

@@ -123,7 +123,7 @@ Dict.prototype = {
         return _.each(this._items, function (mapping) {
             f(mapping.v, mapping.k);
         });
-    }
+    },
 };
 
 }());

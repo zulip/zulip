@@ -66,7 +66,7 @@ function get_stream_suggestions(operators) {
         var description = prefix + ' ' + highlighted_stream;
         var term = {
             operator: 'stream',
-            operand: stream
+            operand: stream,
         };
         var search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
@@ -142,7 +142,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         var term = {
             operator: matching_operator,
             operand: person.email,
-            negated: negated
+            negated: negated,
         };
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
@@ -156,7 +156,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
 
     suggestions.push({
         search_string: 'is:private',
-        description: 'Private messages'
+        description: 'Private messages',
     });
 
     return suggestions;
@@ -324,32 +324,32 @@ function get_special_filter_suggestions(query, operators) {
     var suggestions = [
         {
             search_string: '',
-            description: 'Home'
+            description: 'Home',
         },
         {
             search_string: 'in:all',
-            description: 'All messages'
+            description: 'All messages',
         },
         {
             search_string: 'is:private',
-            description: 'Private messages'
+            description: 'Private messages',
         },
         {
             search_string: 'is:starred',
-            description: 'Starred messages'
+            description: 'Starred messages',
         },
         {
             search_string: 'is:mentioned',
-            description: '@-mentions'
+            description: '@-mentions',
         },
         {
             search_string: 'is:alerted',
-            description: 'Alerted messages'
+            description: 'Alerted messages',
         },
         {
             search_string: 'sender:' + page_params.email,
-            description: 'Sent by me'
-        }
+            description: 'Sent by me',
+        },
     ];
 
     query = query.toLowerCase();
@@ -421,7 +421,7 @@ exports.get_suggestions = function (query) {
     });
     return {
         strings: strings,
-        lookup_table: lookup_table
+        lookup_table: lookup_table,
     };
 };
 

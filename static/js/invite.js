@@ -101,7 +101,7 @@ exports.initialize = function () {
 
             }
 
-        }
+        },
     });
 
     $(document).on('click', '.invite_check_all_button', function (e) {

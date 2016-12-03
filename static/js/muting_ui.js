@@ -23,7 +23,7 @@ exports.notify_with_undo_option = (function () {
         topic: null,
         hide_me_time: null,
         alert_hover_state: false,
-        $mute: null
+        $mute: null,
     };
     var animate = {
         fadeOut: function ($mute) {
@@ -35,7 +35,7 @@ exports.notify_with_undo_option = (function () {
             if (meta.$mute) {
                 meta.$mute.fadeIn(500).addClass("show");
             }
-        }
+        },
     };
     var interval = setInterval(function () {
         if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
@@ -93,13 +93,13 @@ exports.persist_and_rerender = function () {
     // die down before the next reload anyway, making the muting moot.
     exports.rerender();
     var data = {
-        muted_topics: JSON.stringify(muting.get_muted_topics())
+        muted_topics: JSON.stringify(muting.get_muted_topics()),
     };
     last_topic_update = timestamp_ms();
     channel.post({
         url: '/json/set_muted_topics',
         idempotent: true,
-        data: data
+        data: data,
     });
 };
 

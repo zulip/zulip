@@ -4,7 +4,7 @@ add_dependencies({
     muting: 'js/muting',
     narrow: 'js/narrow',
     stream_data: 'js/stream_data',
-    templates: 'js/templates'
+    templates: 'js/templates',
 });
 
 set_global('unread', {});
@@ -23,7 +23,7 @@ global.compile_template('topic_list_item');
     var max_topics = 5;
 
     var topics = [
-        {subject: "coding"}
+        {subject: "coding"},
     ];
     global.stream_data.populate_stream_topics_for_tests({devel: topics});
     global.unread.num_unread_for_subject = function () {

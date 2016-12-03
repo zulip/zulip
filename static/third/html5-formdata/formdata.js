@@ -4,8 +4,9 @@
  * (c) 2010 François de Metz
  */
 (function(w) {
-    if (w.FormData)
-        return;
+    if (w.FormData)        {
+return;
+}
     function FormData() {
         this.fake = true;
         this.boundary = "--------FormData" + Math.random();
@@ -13,7 +14,7 @@
     }
     FormData.prototype.append = function(key, value) {
         this._fields.push([key, value]);
-    }
+    };
     FormData.prototype.toString = function() {
         var boundary = this.boundary;
         var body = "";
@@ -32,6 +33,6 @@
         });
         body += "--" + boundary +"--";
         return body;
-    }
+    };
     w.FormData = FormData;
-})(window);
+}(window));

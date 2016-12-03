@@ -18,7 +18,7 @@ function then_edit_last_message() {
 common.then_send_message('stream', {
     stream:  'Verona',
     subject: 'edits',
-    content: 'test editing'
+    content: 'test editing',
 });
 
 casper.waitForText("test editing");
@@ -42,7 +42,7 @@ casper.waitWhileVisible("textarea.message_edit_content", function () {
 common.then_send_message('stream', {
     stream:  'Verona',
     subject: 'edits',
-    content: '/me test editing one line with me'
+    content: '/me test editing one line with me',
 });
 
 casper.waitForText("test editing one line with me");
@@ -65,7 +65,7 @@ casper.waitWhileVisible("textarea.message_edit_content", function () {
 
 common.then_send_message('private', {
     recipient: "cordelia@zulip.com",
-    content: "test editing pm"
+    content: "test editing pm",
 });
 
 casper.waitForText("test editing pm");

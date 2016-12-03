@@ -4,11 +4,11 @@ var MessageListView = require('js/message_list_view.js');
 add_dependencies({
     $: 'jquery',
     XDate: 'third/xdate/xdate.dev.js',
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 set_global('page_params', {
-  twenty_four_hour_time: false
+  twenty_four_hour_time: false,
 });
 set_global('home_msg_list', null);
 set_global('feature_flags', {twenty_four_hour_time: false});
@@ -37,7 +37,7 @@ set_global('timerender', {
             message = {};
         }
         message_context = _.defaults(message_context, {
-            include_sender: true
+            include_sender: true,
         });
         message_context.msg = _.defaults(message, {
             id: _.uniqueId('test_message_'),
@@ -46,7 +46,7 @@ set_global('timerender', {
             stream: 'Test Stream 1',
             subject: 'Test Subject 1',
             sender_email: 'test@example.com',
-            timestamp: _.uniqueId()
+            timestamp: _.uniqueId(),
         });
         return message_context;
     }
@@ -55,7 +55,7 @@ set_global('timerender', {
         return {
             message_containers: messages,
             message_group_id: _.uniqueId('test_message_group_'),
-            show_date: true
+            show_date: true,
         };
     }
 
@@ -64,7 +64,7 @@ set_global('timerender', {
         list._message_groups = message_groups;
         list.list = {
             unsubscribed_bookend_content: function () {},
-            subscribed_bookend_content: function () {}
+            subscribed_bookend_content: function () {},
         };
         return list;
     }
@@ -72,7 +72,7 @@ set_global('timerender', {
     function assert_message_list_equal(list1, list2) {
         assert.deepEqual(
             _.chain(list1).pluck('msg').pluck('id').value(),
-            _.chain(list2).pluck('msg').pluck('id').value()
+            _.chain(list2).pluck('msg').pluck('id').value(),
         );
     }
 
@@ -85,14 +85,14 @@ set_global('timerender', {
         }
         assert.deepEqual(
             _.map(list1, extract_message_ids),
-            _.map(list2, extract_message_ids)
+            _.map(list2, extract_message_ids),
         );
     }
 
     (function test_empty_list_bottom() {
         var list = build_list([]);
         var message_group = build_message_group([
-            build_message_context()
+            build_message_context(),
         ]);
 
         var result = list.merge_message_groups([message_group], 'bottom');
@@ -109,12 +109,12 @@ set_global('timerender', {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context();
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -122,7 +122,7 @@ set_global('timerender', {
 
         assert_message_groups_list_equal(
             list._message_groups,
-            [build_message_group([message1, message2])]
+            [build_message_group([message1, message2])],
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
@@ -135,12 +135,12 @@ set_global('timerender', {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({subject: 'Test subject 2'});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -149,7 +149,7 @@ set_global('timerender', {
         assert(!message_group2.show_date);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group1, message_group2]
+            [message_group1, message_group2],
         );
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert_message_groups_list_equal(result.prepend_groups, []);
@@ -162,12 +162,12 @@ set_global('timerender', {
 
         var message1 = build_message_context({timestamp: 1000});
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({timestamp: 900000});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -176,7 +176,7 @@ set_global('timerender', {
         assert(message_group2.show_date);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group1, message_group2]
+            [message_group1, message_group2],
         );
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert_message_groups_list_equal(result.prepend_groups, []);
@@ -189,12 +189,12 @@ set_global('timerender', {
 
         var message1 = build_message_context({historical: false});
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({historical: true});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -203,7 +203,7 @@ set_global('timerender', {
         assert(message_group1.bookend_bottom);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group1, message_group2]
+            [message_group1, message_group2],
         );
         assert_message_groups_list_equal(result.append_groups, [message_group2]);
         assert_message_groups_list_equal(result.prepend_groups, []);
@@ -216,12 +216,12 @@ set_global('timerender', {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({is_me_message: true});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -230,7 +230,7 @@ set_global('timerender', {
         assert(message2.include_sender);
         assert_message_groups_list_equal(
             list._message_groups,
-            [build_message_group([message1, message2])]
+            [build_message_group([message1, message2])],
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
@@ -244,12 +244,12 @@ set_global('timerender', {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context();
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -257,12 +257,12 @@ set_global('timerender', {
 
         assert_message_groups_list_equal(
             list._message_groups,
-            [build_message_group([message2, message1])]
+            [build_message_group([message2, message1])],
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups,
-            [build_message_group([message2, message1])]
+            [build_message_group([message2, message1])],
         );
         assert_message_list_equal(result.append_messages, []);
         assert_message_list_equal(result.rerender_messages, []);
@@ -272,12 +272,12 @@ set_global('timerender', {
 
         var message1 = build_message_context();
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({subject: 'Test Subject 2'});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -285,7 +285,7 @@ set_global('timerender', {
 
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1]
+            [message_group2, message_group1],
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
@@ -298,12 +298,12 @@ set_global('timerender', {
 
         var message1 = build_message_context({timestamp: 900000});
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({timestamp: 1000});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -311,11 +311,11 @@ set_global('timerender', {
 
         assert.equal(
             message_group1.show_date,
-            '900000000 - 1000000'
+            '900000000 - 1000000',
         );
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1]
+            [message_group2, message_group1],
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
@@ -328,12 +328,12 @@ set_global('timerender', {
 
         var message1 = build_message_context({historical: false});
         var message_group1 = build_message_group([
-            message1
+            message1,
         ]);
 
         var message2 = build_message_context({historical: true});
         var message_group2 = build_message_group([
-            message2
+            message2,
         ]);
 
         var list = build_list([message_group1]);
@@ -342,7 +342,7 @@ set_global('timerender', {
         assert(message_group2.bookend_bottom);
         assert_message_groups_list_equal(
             list._message_groups,
-            [message_group2, message_group1]
+            [message_group2, message_group1],
         );
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, [message_group2]);
