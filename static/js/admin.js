@@ -10,6 +10,8 @@ exports.show_or_hide_menu_item = function () {
         item.show();
     } else {
         item.hide();
+        $(".ind-tab[data-name='admin']").addClass("disabled");
+        $(".settings-list li.admin").hide();
     }
 };
 
@@ -130,7 +132,8 @@ function get_non_default_streams_names(streams_data) {
 }
 
 exports.update_default_streams_table = function () {
-    if ($('#administration').hasClass('active')) {
+    if (/#*administration/.test(window.location.hash) ||
+        /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         populate_default_streams(page_params.realm_default_streams);
     }
@@ -241,8 +244,9 @@ function _setup_page() {
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold
     };
+
     var admin_tab = templates.render('admin_tab', options);
-    $("#administration").html(admin_tab);
+    $("#settings_content .administration-box").html(admin_tab);
     $("#administration-status").expectOne().hide();
     $("#admin-realm-name-status").expectOne().hide();
     $("#admin-realm-restricted-to-domain-status").expectOne().hide();
@@ -257,6 +261,20 @@ function _setup_page() {
     $('#admin-filter-status').expectOne().hide();
     $('#admin-filter-pattern-status').expectOne().hide();
     $('#admin-filter-format-status').expectOne().hide();
+
+    var tab = (function () {
+        var tab = false;
+        var hash_sequence = window.location.hash.split(/\//);
+        if (/#*(administration)/.test(hash_sequence[0])) {
+            tab = hash_sequence[1];
+            return tab || "organization-settings";
+        }
+        return tab;
+    }());
+
+    if (tab) {
+        exports.launch_page(tab);
+    }
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
@@ -876,6 +894,17 @@ function _setup_page() {
     });
 
 }
+
+exports.launch_page = function (tab) {
+    var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
+
+    if ($active_tab.hasClass("admin")) {
+        $(".sidebar .ind-tab[data-name='admin']").click();
+    }
+
+    $("#settings_overlay_container").addClass("show");
+    $active_tab.click();
+};
 
 exports.setup_page = function () {
     i18n.ensure_i18n(_setup_page);

@@ -48,12 +48,6 @@ exports.initialize = function () {
 
     // The admin and settings pages are generated client-side through
     // templates.
-
-    var admin_link = $('#gear-menu a[href="#administration"]');
-    admin_link.on('shown', admin.setup_page);
-
-    var settings_link = $('#gear-menu a[href="#settings"]');
-    settings_link.on('shown', settings.setup_page);
 };
 
 return exports;

@@ -1,0 +1,98 @@
+<div id="settings_page" class="new-style">
+  <div class="sidebar">
+    <div class="sidebar-list dark-grey small-text">
+      <div class="center tab-container">
+        <div class="tab-switcher">
+          <div class="ind-tab first selected" data-name="settings">{{ _('Settings') }}</div>
+          <div class="ind-tab second" data-name="admin">{{ _('Administration') }} </div>
+        </div>
+      </div>
+      <ul class="settings-list">
+        <li tabindex="1" class="active" data-section="your-account">
+          <div class="icon icon-vector-user"></div>
+          <div class="text">{{ _('Your Account') }}</div>
+        </li>
+        <li tabindex="1" data-section="display-settings">
+          <div class="icon icon-vector-time"></div>
+          <div class="text">{{ _('Display Settings') }}</div>
+        </li>
+        <li tabindex="1" data-section="notifications">
+          <div class="icon icon-vector-warning-sign"></div>
+          <div class="text">{{ _('Notifications') }}</div>
+        </li>
+        <li tabindex="1" data-section="your-bots">
+          <div class="icon icon-vector-github"></div>
+          <div class="text">{{ _('Your Bots') }}</div>
+        </li>
+        <li tabindex="1" data-section="custom-alert-words">
+          <div class="icon icon-vector-book"></div>
+          <div class="text">{{ _('Custom Alert Words') }}</div>
+        </li>
+        <li tabindex="1" data-section="zulip-labs">
+          <i class="icon icon-vector-beaker"></i>
+          <div class="text">{{ _('Zulip Labs') }}</div>
+        </li>
+
+        <li class="admin" tabindex="1" data-section="organization-settings">
+          <i class="icon icon-vector-beaker"></i>
+          <div class="text">{{ _('Organization Settings') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="emoji-settings">
+          <i class="icon icon-vector-smile"></i>
+          <div class="text">{{ _('Emoji Settings') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="auth-methods">
+          <i class="icon icon-vector-lock"></i>
+          <div class="text">{{ _('Authentication Methods') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="user-list-admin">
+          <i class="icon icon-vector-user"></i>
+          <div class="text">{{ _('Users') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="deactivated-users-admin">
+          <i class="icon icon-vector-trash"></i>
+          <div class="text">{{ _('Deactivated Users') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="bot-list-admin">
+          <i class="icon icon-vector-github"></i>
+          <div class="text">{{ _('Bots') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="streams-list-admin">
+          <i class="icon icon-vector-exchange"></i>
+          <div class="text">{{ _('Streams Deletion') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="default-streams-list">
+          <i class="icon icon-vector-exchange"></i>
+          <div class="text">{{ _('Default Streams') }}</div>
+        </li>
+        <li class="admin" tabindex="1" data-section="filter-settings">
+          <i class="icon icon-vector-font"></i>
+          <div class="text">{{ _('Filter Settings') }}</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-bottom-anchor dark-grey small-text">
+      <ul>
+        <li>
+          <div class="icon icon-vector-off"></div>
+          <a href="#logout" class="no-style logout_button"><div class="text">Log Out</div></a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="content-wrapper">
+    <div class="settings-header">
+      <h1><i class="icon-vector-wrench settings-icon"></i> {{ _('Settings') }}</h1>
+      <button class="button small sea-green exit">Close Settings</button>
+    </div>
+    <div id="settings_content">
+        <div class="administration-box administration">
+
+        </div>
+        <div class="settings-box">
+
+        </div>
+    </div>
+  </div>
+</div>
