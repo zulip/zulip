@@ -21,13 +21,13 @@ var stIsIE = /*@cc_on!@*/false;
 sorttable = {
   init: function() {
     // quit if this function has already been called
-    if (arguments.callee.done) return;
+    if (arguments.callee.done) {return;}
     // flag this function so we don't do the same thing twice
     arguments.callee.done = true;
     // kill the timer
-    if (_timer) clearInterval(_timer);
+    if (_timer) {clearInterval(_timer);}
 
-    if (!document.createElement || !document.getElementsByTagName) return;
+    if (!document.createElement || !document.getElementsByTagName) {return;}
 
     sorttable.DATE_RE = /^(\d\d?)[\/\.-](\d\d?)[\/\.-]((\d\d)?\d\d)$/;
 
@@ -48,9 +48,9 @@ sorttable = {
       table.insertBefore(the,table.firstChild);
     }
     // Safari doesn't support table.tHead, sigh
-    if (table.tHead == null) table.tHead = table.getElementsByTagName('thead')[0];
+    if (table.tHead == null) {table.tHead = table.getElementsByTagName('thead')[0];}
 
-    if (table.tHead.rows.length != 1) return; // can't cope with two header rows
+    if (table.tHead.rows.length != 1) {return;} // can't cope with two header rows
 
     // Sorttable v1 put rows with a class of "sortbottom" at the bottom (as
     // "total" rows, for example). This is B&R, since what you're supposed
@@ -81,7 +81,7 @@ sorttable = {
       if (!headrow[i].className.match(/\bsorttable_nosort\b/)) { // skip this col
         mtch = headrow[i].className.match(/\bsorttable_([a-z0-9]+)\b/);
         if (mtch) { override = mtch[1]; }
-	      if (mtch && typeof sorttable["sort_"+override] == 'function') {
+	      if (mtch && typeof sorttable["sort_"+override] === 'function') {
 	        headrow[i].sorttable_sortfunction = sorttable["sort_"+override];
 	      } else {
 	        headrow[i].sorttable_sortfunction = sorttable.guessType(table,i);
@@ -169,13 +169,13 @@ sorttable = {
     for (var i=0; i<table.tBodies[0].rows.length; i++) {
       text = sorttable.getInnerText(table.tBodies[0].rows[i].cells[column]);
       if (text != '') {
-        if (text.match(/^-?[£$¤]?[\d,.]+%?$/)) {
+        if (text.match(/^-?[ï¿½$ï¿½]?[\d,.]+%?$/)) {
           return sorttable.sort_numeric;
         }
         // check for a date: dd/mm/yyyy or dd/mm/yy
         // can have / or . or - as separator
         // can be mm/dd as well
-        possdate = text.match(sorttable.DATE_RE)
+        possdate = text.match(sorttable.DATE_RE);
         if (possdate) {
           // looks like a date
           first = parseInt(possdate[1]);
@@ -203,24 +203,20 @@ sorttable = {
     // for example, you can override the cell text with a customkey attribute.
     // it also gets .value for <input> fields.
 
-    if (!node) return "";
+    if (!node) {return "";}
 
-    hasInputs = (typeof node.getElementsByTagName == 'function') &&
+    hasInputs = (typeof node.getElementsByTagName === 'function') &&
                  node.getElementsByTagName('input').length;
 
     if (node.getAttribute("sorttable_customkey") != null) {
       return node.getAttribute("sorttable_customkey");
-    }
-    else if (typeof node.textContent != 'undefined' && !hasInputs) {
+    }    else if (typeof node.textContent !== 'undefined' && !hasInputs) {
       return node.textContent.replace(/^\s+|\s+$/g, '');
-    }
-    else if (typeof node.innerText != 'undefined' && !hasInputs) {
+    }    else if (typeof node.innerText !== 'undefined' && !hasInputs) {
       return node.innerText.replace(/^\s+|\s+$/g, '');
-    }
-    else if (typeof node.text != 'undefined' && !hasInputs) {
+    }    else if (typeof node.text !== 'undefined' && !hasInputs) {
       return node.text.replace(/^\s+|\s+$/g, '');
-    }
-    else {
+    }    else {
       switch (node.nodeType) {
         case 3:
           if (node.nodeName.toLowerCase() == 'input') {
@@ -260,44 +256,44 @@ sorttable = {
      you are comparing a[0] and b[0] */
   sort_numeric: function(a,b) {
     aa = parseFloat(a[0].replace(/[^0-9.-]/g,''));
-    if (isNaN(aa)) aa = 0;
+    if (isNaN(aa)) {aa = 0;}
     bb = parseFloat(b[0].replace(/[^0-9.-]/g,''));
-    if (isNaN(bb)) bb = 0;
+    if (isNaN(bb)) {bb = 0;}
     return aa-bb;
   },
   sort_alpha: function(a,b) {
-    if (a[0]==b[0]) return 0;
-    if (a[0]<b[0]) return -1;
+    if (a[0]==b[0]) {return 0;}
+    if (a[0]<b[0]) {return -1;}
     return 1;
   },
   sort_ddmm: function(a,b) {
     mtch = a[0].match(sorttable.DATE_RE);
     y = mtch[3]; m = mtch[2]; d = mtch[1];
-    if (m.length == 1) m = '0'+m;
-    if (d.length == 1) d = '0'+d;
+    if (m.length == 1) {m = '0'+m;}
+    if (d.length == 1) {d = '0'+d;}
     dt1 = y+m+d;
     mtch = b[0].match(sorttable.DATE_RE);
     y = mtch[3]; m = mtch[2]; d = mtch[1];
-    if (m.length == 1) m = '0'+m;
-    if (d.length == 1) d = '0'+d;
+    if (m.length == 1) {m = '0'+m;}
+    if (d.length == 1) {d = '0'+d;}
     dt2 = y+m+d;
-    if (dt1==dt2) return 0;
-    if (dt1<dt2) return -1;
+    if (dt1==dt2) {return 0;}
+    if (dt1<dt2) {return -1;}
     return 1;
   },
   sort_mmdd: function(a,b) {
     mtch = a[0].match(sorttable.DATE_RE);
     y = mtch[3]; d = mtch[2]; m = mtch[1];
-    if (m.length == 1) m = '0'+m;
-    if (d.length == 1) d = '0'+d;
+    if (m.length == 1) {m = '0'+m;}
+    if (d.length == 1) {d = '0'+d;}
     dt1 = y+m+d;
     mtch = b[0].match(sorttable.DATE_RE);
     y = mtch[3]; d = mtch[2]; m = mtch[1];
-    if (m.length == 1) m = '0'+m;
-    if (d.length == 1) d = '0'+d;
+    if (m.length == 1) {m = '0'+m;}
+    if (d.length == 1) {d = '0'+d;}
     dt2 = y+m+d;
-    if (dt1==dt2) return 0;
-    if (dt1<dt2) return -1;
+    if (dt1==dt2) {return 0;}
+    if (dt1<dt2) {return -1;}
     return 1;
   },
 
@@ -309,9 +305,9 @@ sorttable = {
     var t = list.length - 1;
     var swap = true;
 
-    while(swap) {
+    while (swap) {
         swap = false;
-        for(var i = b; i < t; ++i) {
+        for (var i = b; i < t; ++i) {
             if ( comp_func(list[i], list[i+1]) > 0 ) {
                 var q = list[i]; list[i] = list[i+1]; list[i+1] = q;
                 swap = true;
@@ -319,9 +315,9 @@ sorttable = {
         } // for
         t--;
 
-        if (!swap) break;
+        if (!swap) {break;}
 
-        for(var i = t; i > b; --i) {
+        for (var i = t; i > b; --i) {
             if ( comp_func(list[i], list[i-1]) < 0 ) {
                 var q = list[i]; list[i] = list[i-1]; list[i-1] = q;
                 swap = true;
@@ -330,8 +326,8 @@ sorttable = {
         b++;
 
     } // while(swap)
-  }
-}
+  },
+};
 
 /* ******************************************************************
    Supporting functions: bundled here to avoid depending on a library
@@ -378,9 +374,9 @@ function dean_addEvent(element, type, handler) {
 		element.addEventListener(type, handler, false);
 	} else {
 		// assign each event handler a unique ID
-		if (!handler.$$guid) handler.$$guid = dean_addEvent.guid++;
+		if (!handler.$$guid) {handler.$$guid = dean_addEvent.guid++;}
 		// create a hash table of event types for the element
-		if (!element.events) element.events = {};
+		if (!element.events) {element.events = {};}
 		// create a hash table of event handlers for each element/event pair
 		var handlers = element.events[type];
 		if (!handlers) {
@@ -395,7 +391,7 @@ function dean_addEvent(element, type, handler) {
 		// assign a global event handler to do all the work
 		element["on" + type] = handleEvent;
 	}
-};
+}
 // a counter used to create unique IDs
 dean_addEvent.guid = 1;
 
@@ -408,7 +404,7 @@ function removeEvent(element, type, handler) {
 			delete element.events[type][handler.$$guid];
 		}
 	}
-};
+}
 
 function handleEvent(event) {
 	var returnValue = true;
@@ -424,20 +420,20 @@ function handleEvent(event) {
 		}
 	}
 	return returnValue;
-};
+}
 
 function fixEvent(event) {
 	// add W3C standard event methods
 	event.preventDefault = fixEvent.preventDefault;
 	event.stopPropagation = fixEvent.stopPropagation;
 	return event;
-};
+}
 fixEvent.preventDefault = function() {
 	this.returnValue = false;
 };
 fixEvent.stopPropagation = function() {
   this.cancelBubble = true;
-}
+};
 
 // Dean's forEach: http://dean.edwards.name/base/forEach.js
 /*
@@ -458,7 +454,7 @@ if (!Array.forEach) { // mozilla already supports this
 // generic enumeration
 Function.prototype.forEach = function(object, block, context) {
 	for (var key in object) {
-		if (typeof this.prototype[key] == "undefined") {
+		if (typeof this.prototype[key] === "undefined") {
 			block.call(context, object[key], key, object);
 		}
 	}
@@ -482,10 +478,10 @@ var forEach = function(object, block, context) {
 			// the object implements a custom forEach method so use that
 			object.forEach(block, context);
 			return;
-		} else if (typeof object == "string") {
+		} else if (typeof object === "string") {
 			// the object is a string
 			resolve = String;
-		} else if (typeof object.length == "number") {
+		} else if (typeof object.length === "number") {
 			// the object is array-like
 			resolve = Array;
 		}

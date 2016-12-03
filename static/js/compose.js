@@ -188,7 +188,7 @@ function update_fade () {
 $(function () {
     $('#stream,#subject,#private_message_recipient').bind({
          keyup: update_fade,
-         change: update_fade
+         change: update_fade,
     });
 });
 
@@ -198,7 +198,7 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
         stream:           '',
         subject:          '',
         private_message_recipient: '',
-        trigger:          'unknown'
+        trigger:          'unknown',
     };
 
     // Set default parameters based on the current narrowed view.
@@ -423,7 +423,7 @@ function send_message_ajax(request, success, error) {
 
             var response = channel.xhr_error_message("Error sending message", xhr);
             error(response);
-        }
+        },
     });
 }
 
@@ -437,7 +437,7 @@ function report_send_time(send_time, receive_time, display_time, locally_echoed,
     }
     channel.post({
         url: '/json/report_send_time',
-        data: data
+        data: data,
     });
 }
 
@@ -750,7 +750,7 @@ exports.check_stream_existence = function (stream_name, autosubscribe) {
             } else {
                 result = "error";
             }
-        }
+        },
     });
     return result;
 };
@@ -1039,7 +1039,7 @@ $(function () {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
                     $("#preview_content").html(i18n.t("Failed to generate preview"));
-                }
+                },
             });
         }
     });
@@ -1062,7 +1062,7 @@ $(function () {
             // Optional. A value of false (default) limits selection to a single file, while
             // true enables multiple file selection.
             multiselect: true,
-            iframe: true
+            iframe: true,
         };
         Dropbox.choose(options);
     });
@@ -1160,7 +1160,7 @@ $(function () {
         maxfilesize: page_params.maxfilesize,
         data: {
             // the token isn't automatically included in filedrop's post
-            csrfmiddlewaretoken: csrf_token
+            csrfmiddlewaretoken: csrf_token,
         },
         raw_droppable: ['text/uri-list', 'text/plain'],
         drop: uploadStarted,
@@ -1174,7 +1174,7 @@ $(function () {
             }
             textbox.val(textbox.val() + contents);
             autosize_textarea();
-        }
+        },
     });
 
     if (page_params.narrow !== undefined) {

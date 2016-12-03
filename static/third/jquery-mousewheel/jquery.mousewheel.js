@@ -39,7 +39,7 @@ $.event.special.mousewheel = {
         } else {
             this.onmousewheel = null;
         }
-    }
+    },
 };
 
 $.fn.extend({
@@ -49,7 +49,7 @@ $.fn.extend({
     
     unmousewheel: function(fn) {
         return this.unbind("mousewheel", fn);
-    }
+    },
 });
 
 
@@ -81,4 +81,4 @@ function handler(event) {
     return ($.event.dispatch || $.event.handle).apply(this, args);
 }
 
-})(jQuery);
+}(jQuery));

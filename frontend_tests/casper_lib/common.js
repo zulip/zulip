@@ -20,7 +20,7 @@ function log_in(credentials) {
     casper.test.info('Logging in');
     casper.fill('form[action^="/accounts/login"]', {
         username: credentials.username,
-        password: credentials.password
+        password: credentials.password,
     }, true /* submit form */);
 }
 
@@ -143,7 +143,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
 
             var tah = $(field_selector).data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
+                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
             });
             tah.select();
         }, {field_selector:field_selector, str: str, item: item});
@@ -242,10 +242,10 @@ exports.get_rendered_messages = function (table) {
 
             bodies: $.map(tbl.find('.message_content'), function (elem) {
                 return elem.innerHTML;
-            })
+            }),
         };
     }, {
-        table: table
+        table: table,
     });
 };
 
@@ -262,7 +262,7 @@ exports.keypress = function (code) {
     casper.evaluate(function (code) {
         $('body').trigger($.Event('keydown', { which: code }));
     }, {
-        code: code
+        code: code,
     });
 };
 

@@ -259,7 +259,7 @@ exports.update = function update(person) {
         }
 
         $(".inline_profile_picture.u-" + person.id).css({
-          "background-image": "url(" + url + ")"
+          "background-image": "url(" + url + ")",
         });
     }
 

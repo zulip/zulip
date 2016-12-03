@@ -94,5 +94,5 @@ IterationProfiler.prototype = {
                 console.log(prop, this.sections[prop]);
             }
         }
-    }
+    },
 };

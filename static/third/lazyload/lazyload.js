@@ -129,7 +129,7 @@ LazyLoad = (function (doc) {
       // True if this browser supports disabling async mode on dynamically
       // created script nodes. See
       // http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order
-      async: doc.createElement('script').async === true
+      async: doc.createElement('script').async === true,
     };
 
     (env.webkit = /AppleWebKit\//.test(ua))
@@ -191,7 +191,7 @@ LazyLoad = (function (doc) {
           urls    : urls,
           callback: callback,
           obj     : obj,
-          context : context
+          context : context,
         });
       } else {
         // Load sequentially.
@@ -200,7 +200,7 @@ LazyLoad = (function (doc) {
             urls    : [urls[i]],
             callback: i === len - 1 ? callback : null, // callback is only added to the last URL
             obj     : obj,
-            context : context
+            context : context,
           });
         }
       }
@@ -221,7 +221,7 @@ LazyLoad = (function (doc) {
       if (isCSS) {
           node = env.gecko ? createNode('style') : createNode('link', {
             href: url,
-            rel : 'stylesheet'
+            rel : 'stylesheet',
           });
       } else {
         node = createNode('script', {src: url});
@@ -387,7 +387,7 @@ LazyLoad = (function (doc) {
     */
     js: function (urls, callback, obj, context) {
       load('js', urls, callback, obj, context);
-    }
+    },
 
   };
-})(this.document);
+}(this.document));

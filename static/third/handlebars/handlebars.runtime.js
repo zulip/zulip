@@ -65,7 +65,7 @@ var __module3__ = (function() {
 
   __exports__ = SafeString;
   return __exports__;
-})();
+}());
 
 // handlebars/utils.js
 var __module2__ = (function(__dependency1__) {
@@ -80,7 +80,7 @@ var __module2__ = (function(__dependency1__) {
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#x27;",
-    "`": "&#x60;"
+    "`": "&#x60;",
   };
 
   var badChars = /[&<>"'`]/g;
@@ -91,8 +91,8 @@ var __module2__ = (function(__dependency1__) {
   }
 
   function extend(obj, value) {
-    for(var key in value) {
-      if(Object.prototype.hasOwnProperty.call(value, key)) {
+    for (var key in value) {
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
         obj[key] = value[key];
       }
     }
@@ -131,7 +131,7 @@ var __module2__ = (function(__dependency1__) {
     // an object's to string has escaped characters in it.
     string = "" + string;
 
-    if(!possible.test(string)) { return string; }
+    if (!possible.test(string)) { return string; }
     return string.replace(badChars, escapeChar);
   }
 
@@ -147,7 +147,7 @@ var __module2__ = (function(__dependency1__) {
 
   __exports__.isEmpty = isEmpty;
   return __exports__;
-})(__module3__);
+}(__module3__));
 
 // handlebars/exception.js
 var __module4__ = (function() {
@@ -181,7 +181,7 @@ var __module4__ = (function() {
 
   __exports__ = Exception;
   return __exports__;
-})();
+}());
 
 // handlebars/base.js
 var __module1__ = (function(__dependency1__, __dependency2__) {
@@ -197,7 +197,7 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
     1: '<= 1.0.rc.2', // 1.0.rc.2 is actually rev2 but doesn't report it
     2: '== 1.0.0-rc.3',
     3: '== 1.0.0-rc.4',
-    4: '>= 1.0.0'
+    4: '>= 1.0.0',
   };
   __exports__.REVISION_CHANGES = REVISION_CHANGES;
   var isArray = Utils.isArray,
@@ -234,12 +234,12 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
       } else {
         this.partials[name] = str;
       }
-    }
+    },
   };
 
   function registerDefaultHelpers(instance) {
     instance.registerHelper('helperMissing', function(arg) {
-      if(arguments.length === 2) {
+      if (arguments.length === 2) {
         return undefined;
       } else {
         throw new Exception("Missing helper: '" + arg + "'");
@@ -251,12 +251,12 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
 
       if (isFunction(context)) { context = context.call(this); }
 
-      if(context === true) {
+      if (context === true) {
         return fn(this);
-      } else if(context === false || context == null) {
+      } else if (context === false || context == null) {
         return inverse(this);
       } else if (isArray(context)) {
-        if(context.length > 0) {
+        if (context.length > 0) {
           return instance.helpers.each(context, options);
         } else {
           return inverse(this);
@@ -276,9 +276,9 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
         data = createFrame(options.data);
       }
 
-      if(context && typeof context === 'object') {
+      if (context && typeof context === 'object') {
         if (isArray(context)) {
-          for(var j = context.length; i<j; i++) {
+          for (var j = context.length; i<j; i++) {
             if (data) {
               data.index = i;
               data.first = (i === 0);
@@ -287,9 +287,9 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
             ret = ret + fn(context[i], { data: data });
           }
         } else {
-          for(var key in context) {
-            if(context.hasOwnProperty(key)) {
-              if(data) {
+          for (var key in context) {
+            if (context.hasOwnProperty(key)) {
+              if (data) {
                 data.key = key;
                 data.index = i;
                 data.first = (i === 0);
@@ -301,7 +301,7 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
         }
       }
 
-      if(i === 0){
+      if (i === 0){
         ret = inverse(this);
       }
 
@@ -322,13 +322,13 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
     });
 
     instance.registerHelper('unless', function(conditional, options) {
-      return instance.helpers['if'].call(this, conditional, {fn: options.inverse, inverse: options.fn, hash: options.hash});
+      return instance.helpers.if.call(this, conditional, {fn: options.inverse, inverse: options.fn, hash: options.hash});
     });
 
     instance.registerHelper('with', function(context, options) {
       if (isFunction(context)) { context = context.call(this); }
 
-      if (!Utils.isEmpty(context)) return options.fn(context);
+      if (!Utils.isEmpty(context)) {return options.fn(context);}
     });
 
     instance.registerHelper('log', function(context, options) {
@@ -355,7 +355,7 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
           console[method].call(console, obj);
         }
       }
-    }
+    },
   };
   __exports__.logger = logger;
   function log(level, obj) { logger.log(level, obj); }
@@ -367,7 +367,7 @@ var __module1__ = (function(__dependency1__, __dependency2__) {
   };
   __exports__.createFrame = createFrame;
   return __exports__;
-})(__module2__, __module4__);
+}(__module2__, __module4__));
 
 // handlebars/runtime.js
 var __module5__ = (function(__dependency1__, __dependency2__, __dependency3__) {
@@ -425,7 +425,7 @@ var __module5__ = (function(__dependency1__, __dependency2__, __dependency3__) {
       programs: [],
       program: function(i, fn, data) {
         var programWrapper = this.programs[i];
-        if(data) {
+        if (data) {
           programWrapper = program(i, fn, data);
         } else if (!programWrapper) {
           programWrapper = this.programs[i] = program(i, fn);
@@ -444,7 +444,7 @@ var __module5__ = (function(__dependency1__, __dependency2__, __dependency3__) {
       },
       programWithDepth: env.VM.programWithDepth,
       noop: env.VM.noop,
-      compilerInfo: null
+      compilerInfo: null,
     };
 
     return function(context, options) {
@@ -499,9 +499,9 @@ var __module5__ = (function(__dependency1__, __dependency2__, __dependency3__) {
   __exports__.program = program;function invokePartial(partial, name, context, helpers, partials, data) {
     var options = { partial: true, helpers: helpers, partials: partials, data: data };
 
-    if(partial === undefined) {
+    if (partial === undefined) {
       throw new Exception("The partial " + name + " could not be found");
-    } else if(partial instanceof Function) {
+    } else if (partial instanceof Function) {
       return partial(context, options);
     }
   }
@@ -510,7 +510,7 @@ var __module5__ = (function(__dependency1__, __dependency2__, __dependency3__) {
 
   __exports__.noop = noop;
   return __exports__;
-})(__module2__, __module4__, __module1__);
+}(__module2__, __module4__, __module1__));
 
 // handlebars.runtime.js
 var __module0__ = (function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__) {
@@ -548,7 +548,7 @@ var __module0__ = (function(__dependency1__, __dependency2__, __dependency3__, _
 
   __exports__ = Handlebars;
   return __exports__;
-})(__module1__, __module3__, __module4__, __module2__, __module5__);
+}(__module1__, __module3__, __module4__, __module2__, __module5__));
 
   return __module0__;
-})();
+}());

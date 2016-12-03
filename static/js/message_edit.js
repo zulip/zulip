@@ -12,7 +12,7 @@ var editability_types = {
     // Similar story for messages whose topic you can change only because
     // you are an admin.
     TOPIC_ONLY: 3,
-    FULL: 4
+    FULL: 4,
 };
 exports.editability_types = editability_types;
 
@@ -115,7 +115,7 @@ exports.save = function (row, from_topic_edited_only) {
                 var message = channel.xhr_error_message("Error saving edit", xhr);
                 row.find(".edit_error").text(message).show();
             }
-        }
+        },
     });
     // The message will automatically get replaced via message_list.update_message.
 };
@@ -216,7 +216,7 @@ function edit_message (row, raw_content) {
             animation: false,
             placement: 'left',
             template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
-                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>'
+                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>',
         });
     }
 
@@ -310,7 +310,7 @@ exports.start = function (row) {
                 message.raw_content = data.raw_content;
                 start_edit_maintaining_scroll(row, data.raw_content);
             }
-        }
+        },
     });
 };
 

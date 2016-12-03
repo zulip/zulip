@@ -294,7 +294,7 @@ exports.mark_stream_as_read = function mark_stream_as_read(stream, cont) {
                    all:      false,
                    op:       'add',
                    flag:     'read',
-                   stream_name: stream
+                   stream_name: stream,
                   },
         success:  cont});
 };
@@ -308,7 +308,7 @@ exports.mark_topic_as_read = function mark_topic_as_read(stream, topic, cont) {
                op:       'add',
                flag:     'read',
                topic_name: topic,
-               stream_name: stream
+               stream_name: stream,
                },
     success:  cont});
 };

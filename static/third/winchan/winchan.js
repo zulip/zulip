@@ -1,17 +1,15 @@
-;WinChan = (function() {
+WinChan = (function() {
   var RELAY_FRAME_NAME = "__winchan_relay_frame";
   var CLOSE_CMD = "die";
 
   // a portable addListener implementation
   function addListener(w, event, cb) {
-    if(w.attachEvent) w.attachEvent('on' + event, cb);
-    else if (w.addEventListener) w.addEventListener(event, cb, false);
+    if (w.attachEvent) {w.attachEvent('on' + event, cb);}    else if (w.addEventListener) {w.addEventListener(event, cb, false);}
   }
 
   // a portable removeListener implementation
   function removeListener(w, event, cb) {
-    if(w.detachEvent) w.detachEvent('on' + event, cb);
-    else if (w.removeEventListener) w.removeEventListener(event, cb, false);
+    if (w.detachEvent) {w.detachEvent('on' + event, cb);}    else if (w.removeEventListener) {w.removeEventListener(event, cb, false);}
   }
 
   // checking for IE8 or above
@@ -20,8 +18,9 @@
     if (navigator.appName === 'Microsoft Internet Explorer') {
       var ua = navigator.userAgent;
       var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
-      if (re.exec(ua) != null)
-        rv = parseFloat(RegExp.$1);
+      if (re.exec(ua) != null)        {
+rv = parseFloat(RegExp.$1);
+}
     }
     return rv >= 8;
   }
@@ -34,7 +33,7 @@
       var userAgent = navigator.userAgent;
       return (userAgent.indexOf('Fennec/') != -1) ||  // XUL
              (userAgent.indexOf('Firefox/') != -1 && userAgent.indexOf('Android') != -1);   // Java
-    } catch(e) {};
+    } catch (e) {}
     return false;
   }
 
@@ -46,9 +45,9 @@
 
   // given a URL, extract the origin
   function extractOrigin(url) {
-    if (!/^https?:\/\//.test(url)) url = window.location.href;
+    if (!/^https?:\/\//.test(url)) {url = window.location.href;}
     var m = /^(https?:\/\/[\-_a-zA-Z\.0-9:]+)/.exec(url);
-    if (m) return m[1];
+    if (m) {return m[1];}
     return url;
   }
 
@@ -60,11 +59,10 @@
     for (var i = frames.length - 1; i >= 0; i--) {
       try {
         if (frames[i].location.href.indexOf(origin) === 0 &&
-            frames[i].name === RELAY_FRAME_NAME)
-        {
+            frames[i].name === RELAY_FRAME_NAME)        {
           return frames[i];
         }
-      } catch(e) { }
+      } catch (e) { }
     }
     return;
   }
@@ -86,17 +84,17 @@
      */
     return {
       open: function(opts, cb) {
-        if (!cb) throw "missing required callback argument";
+        if (!cb) {throw "missing required callback argument";}
 
         // test required options
         var err;
-        if (!opts.url) err = "missing required 'url' parameter";
-        if (!opts.relay_url) err = "missing required 'relay_url' parameter";
-        if (err) setTimeout(function() { cb(err); }, 0);
+        if (!opts.url) {err = "missing required 'url' parameter";}
+        if (!opts.relay_url) {err = "missing required 'relay_url' parameter";}
+        if (err) {setTimeout(function() { cb(err); }, 0);}
 
         // supply default options
-        if (!opts.window_name) opts.window_name = null;
-        if (!opts.window_features || isFennec()) opts.window_features = undefined;
+        if (!opts.window_name) {opts.window_name = null;}
+        if (!opts.window_features || isFennec()) {opts.window_features = undefined;}
 
         // opts.params may be undefined
 
@@ -127,13 +125,13 @@
 
         var w = window.open(opts.url, opts.window_name, opts.window_features);
 
-        if (!messageTarget) messageTarget = w;
+        if (!messageTarget) {messageTarget = w;}
 
         var req = JSON.stringify({a: 'request', d: opts.params});
 
         // cleanup on unload
         function cleanup() {
-          if (iframe) document.body.removeChild(iframe);
+          if (iframe) {document.body.removeChild(iframe);}
           iframe = undefined;
           if (w) {
             try {
@@ -152,8 +150,7 @@
         function onMessage(e) {
           try {
             var d = JSON.parse(e.data);
-            if (d.a === 'ready') messageTarget.postMessage(req, origin);
-            else if (d.a === 'error') {
+            if (d.a === 'ready') {messageTarget.postMessage(req, origin);}            else if (d.a === 'error') {
               if (cb) {
                 cb(d.d);
                 cb = null;
@@ -167,7 +164,7 @@
                 cb = null;
               }
             }
-          } catch(err) { }
+          } catch (err) { }
         }
 
         addListener(window, 'message', onMessage);
@@ -182,17 +179,16 @@
                 // IE7 blows up here, do nothing
               }
             }
-          }
+          },
         };
       },
       onOpen: function(cb) {
         var o = "*";
         var msgTarget = isIE ? findRelay() : window.opener;
-        if (!msgTarget) throw "can't find relay frame";
+        if (!msgTarget) {throw "can't find relay frame";}
         function doPost(msg) {
           msg = JSON.stringify(msg);
-          if (isIE) msgTarget.doPost(msg, o);
-          else msgTarget.postMessage(msg, o);
+          if (isIE) {msgTarget.doPost(msg, o);}          else {msgTarget.postMessage(msg, o);}
         }
 
         function onMessage(e) {
@@ -203,8 +199,8 @@
           var d;
           try {
             d = JSON.parse(e.data);
-          } catch(err) { }
-          if (!d || d.a !== 'request') return;
+          } catch (err) { }
+          if (!d || d.a !== 'request') {return;}
           removeListener(window, 'message', onMessage);
           o = e.origin;
           if (cb) {
@@ -232,7 +228,7 @@
         // is loaded. (IE specific possible failure)
         try {
           doPost({a: "ready"});
-        } catch(e) {
+        } catch (e) {
           // this code should never be exectued outside IE
           addListener(msgTarget, 'load', function(e) {
             doPost({a: "ready"});
@@ -245,7 +241,7 @@
             // IE8 doesn't like this...
             removeListener(isIE ? msgTarget : window, 'message', onDie);
           } catch (ohWell) { }
-          if (cb) doPost({ a: 'error', d: 'client closed window' });
+          if (cb) {doPost({ a: 'error', d: 'client closed window' });}
           cb = undefined;
           // explicitly close the window, in case the client is trying to reload or nav
           try { window.close(); } catch (e) { }
@@ -254,9 +250,9 @@
         return {
           detach: function() {
             removeListener(window, 'unload', onUnload);
-          }
+          },
         };
-      }
+      },
     };
   } else {
     return {
@@ -265,7 +261,7 @@
       },
       onOpen: function(cb) {
         setTimeout(function() { cb("unsupported browser"); }, 0);
-      }
+      },
     };
   }
-})();
+}());

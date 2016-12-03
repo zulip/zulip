@@ -226,7 +226,7 @@ function build_stream_sidebar_li(sub) {
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
                 color: stream_data.get_color(name),
-                pin_to_top: sub.pin_to_top
+                pin_to_top: sub.pin_to_top,
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -276,7 +276,7 @@ exports.redraw_stream_privacy = function (stream_name) {
 
     var args = {
         invite_only: sub.invite_only,
-        dark_background: dark_background
+        dark_background: dark_background,
     };
 
     if (sub.invite_only) {
@@ -390,7 +390,7 @@ $(function () {
     // each stream.
     topic_list.set_click_handlers({
         zoom_in: zoom_in,
-        zoom_out: zoom_out
+        zoom_out: zoom_out,
     });
 
     pm_list.set_click_handlers();

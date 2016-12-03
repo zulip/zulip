@@ -39,12 +39,10 @@ casper.then(function () {
 casper.then(function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="cordelia@zulip.com"]'),
                              true,
-                             "Cordelia is visible"
-    );
+                             "Cordelia is visible");
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="hamlet@zulip.com"]'),
                              false,
-                             "King Hamlet is not visible"
-    );
+                             "King Hamlet is not visible");
 });
 casper.then(function () {
     casper.test.info("Clearing user filter search box");
@@ -53,12 +51,10 @@ casper.then(function () {
 casper.then(function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="cordelia@zulip.com"]'),
                              true,
-                             "Cordelia is visible again"
-    );
+                             "Cordelia is visible again");
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="hamlet@zulip.com"]'),
                              true,
-                             "King Hamlet is visible again"
-    );
+                             "King Hamlet is visible again");
 });
 casper.waitFor(function () {
     return casper.evaluate(function () {

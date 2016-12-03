@@ -1,7 +1,7 @@
 global.stub_out_jquery();
 
 add_dependencies({
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 var util = global.util;
@@ -13,7 +13,7 @@ var _ = global._;
     var cv = new util.CachedValue({
         compute_value: function () {
             return x * 2;
-        }
+        },
     });
 
     assert.equal(cv.get(), 10);
@@ -55,39 +55,32 @@ var _ = global._;
     _.each([util.same_recipient, util.same_major_recipient], function (same) {
         assert(same(
             {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'fOO', subject: 'bar'}
-        ));
+            {type: 'stream', stream: 'fOO', subject: 'bar'}));
 
         assert(!same(
             {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'yo', subject: 'whatever'}
-        ));
+            {type: 'stream', stream: 'yo', subject: 'whatever'}));
 
         assert(same(
             {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}
-        ));
+            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}));
 
         assert(same(
             {type: 'private', reply_to: 'fred@zulip.com'},
-            {type: 'private', reply_to: 'Fred@zulip.com'}
-        ));
+            {type: 'private', reply_to: 'Fred@zulip.com'}));
 
         assert(!same(
             {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'private', reply_to: 'Fred@zulip.com'}
-        ));
+            {type: 'private', reply_to: 'Fred@zulip.com'}));
     });
 
     assert(util.same_major_recipient(
         {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'}
-    ));
+        {type: 'stream', stream: 'fOO', subject: 'sub2'}));
 
     assert(!util.same_recipient(
         {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'}
-    ));
+        {type: 'stream', stream: 'fOO', subject: 'sub2'}));
 
 }());
 
@@ -108,8 +101,7 @@ var _ = global._;
 (function test_normalize_recipients() {
     assert.equal(
         util.normalize_recipients('ZOE@foo.com, bob@foo.com, alice@foo.com, AARON@foo.com '),
-        'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com'
-    );
+        'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com');
 }());
 
 (function test_random_int() {
@@ -160,7 +152,7 @@ var _ = global._;
       '@**all**',
       'some text before @**all** some text after',
       '@**all** some text after only',
-      'some text before only @**all**'
+      'some text before only @**all**',
     ];
 
     var messages_with_everyone_mentions = [
@@ -171,21 +163,21 @@ var _ = global._;
       '@**everyone**',
       'some text before @**everyone** some text after',
       '@**everyone** some text after only',
-      'some text before only @**everyone**'
+      'some text before only @**everyone**',
     ];
 
     var messages_without_all_mentions = [
       '`@everyone`',
       'some_email@everyone.com',
       '`@**everyone**`',
-      'some_email@**everyone**.com'
+      'some_email@**everyone**.com',
     ];
 
     var messages_without_everyone_mentions = [
       '`@everyone`',
       'some_email@everyone.com',
       '`@**everyone**`',
-      'some_email@**everyone**.com'
+      'some_email@**everyone**.com',
     ];
     var i;
     for (i=0; i<messages_with_all_mentions.length; i += 1) {

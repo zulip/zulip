@@ -36,7 +36,7 @@
 		className: 'autosizejs',
 		append: '',
 		callback: false,
-		resizeDelay: 10
+		resizeDelay: 10,
 	},
 
 	// border:0 is unnecessary, but avoids a bug in FireFox on OSX
@@ -51,7 +51,7 @@
 		'letterSpacing',
 		'textTransform',
 		'wordSpacing',
-		'textIndent'
+		'textIndent',
 	],
 
 	// to keep track which textarea is being mirrored when adjust() is called.
@@ -87,7 +87,7 @@
 				overflow: ta.style.overflow,
 				overflowY: ta.style.overflowY,
 				wordWrap: ta.style.wordWrap,
-				resize: ta.style.resize
+				resize: ta.style.resize,
 			},
 			timeout,
 			width = $ta.width();
@@ -109,7 +109,7 @@
 				overflow: 'hidden',
 				overflowY: 'hidden',
 				wordWrap: 'break-word', // horizontal overflow is hidden, so break-word is necessary for handling words longer than the textarea width
-				resize: ($ta.css('resize') === 'none' || $ta.css('resize') === 'vertical') ? 'none' : 'horizontal'
+				resize: ($ta.css('resize') === 'none' || $ta.css('resize') === 'vertical') ? 'none' : 'horizontal',
 			});
 
 			// The mirror width must exactly match the textarea width, so using getBoundingClientRect because it doesn't round the sub-pixel value.
@@ -125,8 +125,7 @@
 					});
 
 					mirror.style.width = width + 'px';
-				}
-				else {
+				}				else {
 					// window.getComputedStyle, getBoundingClientRect returning a width are unsupported and unneeded in IE8 and lower.
 					mirror.style.width = Math.max($ta.width(), 0) + 'px';
 				}
@@ -226,7 +225,7 @@
 				} else {
 					// IE7 / IE8
 					$ta.on('propertychange.autosize', function(){
-						if(event.propertyName === 'value'){
+						if (event.propertyName === 'value'){
 							adjust();
 						}
 					});

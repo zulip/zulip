@@ -87,7 +87,27 @@ exports.process_fenced_code = function (content) {
                         output_lines.push(text);
                         output_lines.push('');
                         handler_stack.pop();
-                    }
+                    },
+                };
+            } else {
+                return {
+                    handle_line: function (line) {
+                        if (line === fence) {
+                            this.done();
+                        } else {
+                            lines.push(line);
+                        }
+                    },
+
+                    done: function () {
+                        var text = wrap_code(lines.join('\n'));
+                        // insert safe HTML that is passed through the parsing
+                        var placeholder = stash_func(text, true);
+                        output_lines.push('');
+                        output_lines.push(placeholder);
+                        output_lines.push('');
+                        handler_stack.pop();
+                    },
                 };
             }
             return {
@@ -119,7 +139,7 @@ exports.process_fenced_code = function (content) {
             },
             done: function () {
                 handler_stack.pop();
-            }
+            },
         };
     }
 

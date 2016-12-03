@@ -28,7 +28,7 @@ function show_message_info_popover(element, id) {
             message:  message,
             pm_with_uri: narrow.pm_with_uri(message.sender_email),
             sent_by_uri: narrow.by_sender_uri(message.sender_email),
-            narrowed: narrow.active()
+            narrowed: narrow.active(),
         };
 
         var ypos = elt.offset().top - viewport.scrollTop();
@@ -36,7 +36,7 @@ function show_message_info_popover(element, id) {
             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
             title:     templates.render('message_info_popover_title',   args),
             content:   templates.render('message_info_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         current_message_info_popover_elem = elt;
@@ -86,7 +86,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
-            narrowed: narrow.active()
+            narrowed: narrow.active(),
         };
 
         var ypos = elt.offset().top - viewport.scrollTop();
@@ -94,7 +94,7 @@ exports.toggle_actions_popover = function (element, id) {
             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         current_actions_popover_elem = elt;
@@ -163,7 +163,7 @@ exports.topic_ops = {
         popovers.hide_topic_sidebar_popover();
         muting.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
-    }
+    },
 };
 
 function message_info_popped() {
@@ -260,7 +260,7 @@ exports.hide_user_sidebar_popover = function () {
 
 function render_emoji_popover() {
     var content = templates.render('emoji_popover_content', {
-        emoji_list: emoji.emojis_name_to_css_class
+        emoji_list: emoji.emojis_name_to_css_class,
     });
 
     $('.emoji_popover').append(content);
@@ -291,11 +291,11 @@ exports.register_click_handlers = function () {
         var meta = {
           drag: false,
           c: {
-            y: null
+            y: null,
           },
           $popover: $(".emoji_popover"),
           MIN_HEIGHT: 25,
-          MAX_HEIGHT: 300
+          MAX_HEIGHT: 300,
         };
 
         // drag must start within the .drag zone.
@@ -417,7 +417,7 @@ exports.register_click_handlers = function () {
             content:   content,
             placement: userlist_placement === "left" ? "right" : "left",
             trigger:   "manual",
-            fixed: true
+            fixed: true,
         });
         target.popover("show");
         current_user_sidebar_user_id = user_id;
@@ -447,16 +447,16 @@ exports.register_click_handlers = function () {
         var can_unmute_topic = is_muted;
 
         var content = templates.render('topic_sidebar_actions', {
-            stream_name: stream_name,
-            topic_name: topic_name,
-            can_mute_topic: can_mute_topic,
-            can_unmute_topic: can_unmute_topic
+            'stream_name': stream_name,
+            'topic_name': topic_name,
+            'can_mute_topic': can_mute_topic,
+            'can_unmute_topic': can_unmute_topic,
         });
 
         $(elt).popover({
             content: content,
             trigger: "manual",
-            fixed: true
+            fixed: true,
         });
 
         $(elt).popover("show");
@@ -474,7 +474,7 @@ exports.register_click_handlers = function () {
 
         var operators = [
             {operator: 'stream', operand: stream_name},
-            {operator: 'topic', operand: topic_name}
+            {operator: 'topic', operand: topic_name},
         ];
         var opts = {select_first_unread: true, trigger: 'sidebar'};
         narrow.activate(operators, opts);
@@ -525,7 +525,7 @@ exports.register_click_handlers = function () {
         $(elt).popover({
             content:   templates.render('stream_sidebar_actions', {stream: stream_data.get_sub(stream)}),
             trigger:   "manual",
-            fixed: true
+            fixed: true,
         });
 
         // This little function is a workaround for the fact that

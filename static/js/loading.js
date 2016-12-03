@@ -51,7 +51,7 @@ exports.make_indicator = function (outer_container, opts) {
         radius: 9,
         speed: 1.25,
         shadow: false,
-        zIndex: 1000
+        zIndex: 1000,
     }).spin(spinner_elem[0]);
     outer_container.data("spinner_obj", spinner);
     outer_container.data("destroying", false);

@@ -7,7 +7,7 @@ exports.narrowed = undefined;
 exports.MessageList = function (table_name, filter, opts) {
     _.extend(this, {
         collapse_messages: true,
-        muting_enabled: true
+        muting_enabled: true,
     }, opts);
     this.view = new MessageListView(this, table_name, this.collapse_messages);
 
@@ -150,11 +150,11 @@ exports.MessageList.prototype = {
                 use_closest: false,
                 empty_ok: false,
                 mark_read: true,
-                force_rerender: false
+                force_rerender: false,
             }, opts, {
                 id: id,
                 msg_list: this,
-                previously_selected: this._selected_id
+                previously_selected: this._selected_id,
             });
 
         id = parseFloat(id);
@@ -179,7 +179,7 @@ exports.MessageList.prototype = {
             var error_data = {
                 table_name: this.table_name,
                 id: id,
-                items_length: this._items.length
+                items_length: this._items.length,
             };
             blueslip.fatal("Cannot select id -1", error_data);
         }
@@ -622,13 +622,12 @@ exports.MessageList.prototype = {
                 }
             }
         }, 0);
-    }
+    },
 };
 
 exports.all = new exports.MessageList(
     undefined, undefined,
-    {muting_enabled: false}
-);
+    {muting_enabled: false});
 
 // We stop autoscrolling when the user is clearly in the middle of
 // doing something.  Be careful, though, if you try to capture

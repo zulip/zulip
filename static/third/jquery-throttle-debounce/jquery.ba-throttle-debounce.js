@@ -147,13 +147,13 @@
       function exec() {
         last_exec = +new Date();
         callback.apply( that, args );
-      };
+      }
       
       // If `debounce_mode` is true (at_begin) this is used to clear the flag
       // to allow future `callback` executions.
       function clear() {
         timeout_id = undefined;
-      };
+      }
       
       if ( debounce_mode && !timeout_id ) {
         // Since `wrapper` is being called for the first time and
@@ -181,7 +181,7 @@
         // execute after `delay` ms.
         timeout_id = setTimeout( debounce_mode ? clear : exec, debounce_mode === undefined ? delay - elapsed : delay );
       }
-    };
+    }
     
     // Set the guid of `wrapper` function to the same of original callback, so
     // it can be removed in jQuery 1.4+ .unbind or .die by using the original
@@ -249,4 +249,4 @@
       : jq_throttle( delay, callback, at_begin !== false );
   };
   
-})(this);
+}(this));

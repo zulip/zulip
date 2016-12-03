@@ -22,7 +22,7 @@
     suppressScrollX: false,
     suppressScrollY: false,
     scrollXMarginOffset: 0,
-    scrollYMarginOffset: 0
+    scrollYMarginOffset: 0,
   };
 
   var getEventClassName = (function () {
@@ -56,8 +56,7 @@
           $this.data('perfect-scrollbar-update')();
         }
         return $this;
-      }
-      else if (option === 'destroy') {
+      }      else if (option === 'destroy') {
         if ($this.data('perfect-scrollbar-destroy')) {
           $this.data('perfect-scrollbar-destroy')();
         }
@@ -99,11 +98,9 @@
 
         if (newTop < 0) {
           scrollbarYTop = 0;
-        }
-        else if (newTop > maxTop) {
+        }        else if (newTop > maxTop) {
           scrollbarYTop = maxTop;
-        }
-        else {
+        }        else {
           scrollbarYTop = newTop;
         }
 
@@ -118,11 +115,9 @@
 
         if (newLeft < 0) {
           scrollbarXLeft = 0;
-        }
-        else if (newLeft > maxLeft) {
+        }        else if (newLeft > maxLeft) {
           scrollbarXLeft = maxLeft;
-        }
-        else {
+        }        else {
           scrollbarXLeft = newLeft;
         }
 
@@ -155,8 +150,7 @@
           scrollbarXActive = true;
           scrollbarXWidth = getSettingsAdjustedThumbSize(parseInt(containerWidth * containerWidth / contentWidth, 10));
           scrollbarXLeft = parseInt($this.scrollLeft() * (containerWidth - scrollbarXWidth) / (contentWidth - containerWidth), 10);
-        }
-        else {
+        }        else {
           scrollbarXActive = false;
           scrollbarXWidth = 0;
           scrollbarXLeft = 0;
@@ -167,8 +161,7 @@
           scrollbarYActive = true;
           scrollbarYHeight = getSettingsAdjustedThumbSize(parseInt(containerHeight * containerHeight / contentHeight, 10));
           scrollbarYTop = parseInt($this.scrollTop() * (containerHeight - scrollbarYHeight) / (contentHeight - containerHeight), 10);
-        }
-        else {
+        }        else {
           scrollbarYActive = false;
           scrollbarYHeight = 0;
           scrollbarYTop = 0;
