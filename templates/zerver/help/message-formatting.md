@@ -40,6 +40,14 @@ To add more variety, flavor, and emphasis to your messages, you can combine diff
 
 ## Links
 
-To include a hyperlink in your message, surround the link text with`[brackets]` and the url address of the link in `(parentheses)` immediately after.
+To include hyperlinks in your messages, you can either enter the link's url address directly or surround the link's display text with`[brackets]` and the url address of the link in `(parentheses)` immediately after.
 
 ![Link](/static/images/help/link-screenshot.png)
+
+Unfortunately, Zulip currently does not support image embedding through links.
+
+## Lists
+
+Begin each item in your list with `* an asterisk followed by a space` to include lists in your messages.
+
+![Lists](/static/images/help/lists-screenshot.png)
