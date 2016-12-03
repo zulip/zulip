@@ -88,4 +88,8 @@ Multi-line blocks of code are either fenced by lines with <code>`````` three bac
 
 ![Code syntax highlighting](/static/images/help/code-syntax-screenshot.png)
 
-##
+## Quotes
+
+To insert quotes, you can either add a greater-than symbol ```>``` and a space before your phrase or submit it as a quote block by following the code syntax highlighting format.
+
+![Quotes](/static/images/help/quotes-screenshot.png)
