@@ -121,3 +121,7 @@ $(function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = muting_ui;
+}

@@ -158,3 +158,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = timerender;
+}

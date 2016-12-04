@@ -108,3 +108,7 @@ exports.send_force_collapse = function send_force_collapse(messages, value) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = message_flags;
+}

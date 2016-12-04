@@ -402,3 +402,7 @@ $(document).keypress(function (e) {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = hotkeys;
+}
