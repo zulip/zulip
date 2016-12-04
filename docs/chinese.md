@@ -92,9 +92,9 @@ When applied to a user account, translated as "禁用/启用(Disable/Enable)", f
 
 * I want - **开启**
  
-Mainly used in the settings page, literally translated as "I want to ***", which is colloquial and inappropriate in Chinese expression. It is translated sense to sense as "开启(Turn on some options)".
+Mainly used in the settings page, literally translated as "I want to ...", which is colloquial and inappropriate in Chinese expression. It is translated sense to sense as "开启(Turn on some options)".
 
-主要出现在设置页面（Setting Page）中，直译为“我想***”、“我要***”。取直译过于口语化，并不合乎中文的使用习惯。因此这里取意译，翻译为“开启（某某功能选项）”。
+主要出现在设置页面（Setting Page）中，直译为“我想...”、“我要...”。取直译过于口语化，并不合乎中文的使用习惯。因此这里取意译，翻译为“开启（某某功能选项）”。
 
 * User/People/Person - **用户**
 
