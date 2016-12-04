@@ -37,4 +37,4 @@ Users who have not been added to the stream upon creation will receive the follo
 
 To automatically subscribe a user to your stream, scroll down to **People to add** and tick the checkboxes with the names of the users you want to add. To search for specific users, enter their usernames in the **Filter names** box.
 
-Once you are ready to create your stream, click the blue **Create** button located at the bottom right of the window. The stream will now appear in the left sidebar of users who've subscribed to it.
+Once you are ready to create your stream, click the blue **Create** button located at the bottom right of the window. The stream will now appear in the left sidebar for the users that you subscribed..
