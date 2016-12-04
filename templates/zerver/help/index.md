@@ -27,6 +27,7 @@ as a “**realm**”.
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
+- **[Change Your Name](/help/name-change)**
 - **[Message formatting](/help/message-formatting.md)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
