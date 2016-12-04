@@ -104,7 +104,8 @@ def unwrap_lines(body):
     previous_line = lines[0]
     for line in lines[1:]:
         line = line.rstrip()
-        if (re.match(r'^\W', line, flags=re.UNICODE) and re.match(r'^\W', previous_line, flags=re.UNICODE)):
+        if (re.match(r'^\W', line, flags=re.UNICODE)
+                and re.match(r'^\W', previous_line, flags=re.UNICODE)):
             result += previous_line + "\n"
         elif (line == "" or
               previous_line == "" or
@@ -212,7 +213,8 @@ def update_subscriptions():
     classes_to_subscribe = set()
     for stream in public_streams:
         zephyr_class = stream.encode("utf-8")
-        if (options.shard is not None and not hashlib.sha1(zephyr_class).hexdigest().startswith(options.shard)):
+        if (options.shard is not None and
+                not hashlib.sha1(zephyr_class).hexdigest().startswith(options.shard)):
             # This stream is being handled by a different zephyr_mirror job.
             continue
         if zephyr_class in current_zephyr_subs:
@@ -382,7 +384,8 @@ def process_notice(notice, log):
     if notice.format.startswith("Zephyr error: See") or notice.format.endswith("@(@color(blue))"):
         logger.debug("Skipping message we got from Zulip!")
         return
-    if (zephyr_class == "mail" and notice.instance.lower() == "inbox" and is_personal and not options.forward_mail_zephyrs):
+    if (zephyr_class == "mail" and notice.instance.lower() == "inbox" and is_personal and
+            not options.forward_mail_zephyrs):
         # Only forward mail zephyrs if forwarding them is enabled.
         return
 
