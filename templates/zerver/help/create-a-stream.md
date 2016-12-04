@@ -23,11 +23,11 @@ Enter the title of your stream in the **Stream name** input. If you designate yo
 
 You can optionally enter a brief description of your stream in **Stream description** to give other users a general idea of what's being discussed in your stream. The description can be seen under the stream name in the stream overview.
 
-The **Stream accessibility** option controls the privacy of your stream. The **Anybody can join** option makes your stream public and accessible to all users. On the other hand, only users you invite will be able to access your private stream with the **People must be invited** option enabled.
+The **Stream accessibility** option controls the privacy of your stream. There are two options:
+- **Anybody can join** - This option makes your stream **public** and accessible to all users.
+- **People must be invited** -- This options makes your stream **private**.  Only users you invite will be able to access this stream.
 
-If your stream is public, you can choose to alert users about the new stream by clicking the **Announce stream** checkbox.
-
-If this option is selected, users who have been added to the stream upon creation will receive the following message.
+If your stream is public, you can choose to alert users about the new stream by clicking the **Announce stream** checkbox. If this option is selected, users who have been added to the stream upon creation will receive the following message.
 
 ![Streams User Added](/static/images/help/stream-add-alert.png)
 
