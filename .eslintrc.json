@@ -52,6 +52,7 @@
         "muting_ui": false,
         "Socket": false,
         "channel": false,
+        "components": false,
         "viewport": false,
         "avatar": false,
         "feature_flags": false,
