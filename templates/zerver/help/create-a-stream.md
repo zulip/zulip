@@ -2,7 +2,7 @@
 On Zulip, streams are similar to conversation threads or subjects. Streams are located on the left sidebar.
 Streams can be either:
 * **Public streams** - Public streams are for open discussions. All users can subscribe to public streams and discuss there.
-* **Private streams** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to it.
+* **Private streams** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to them.
 
 ## Create a new stream
 To create a stream, locate the cog (![cog](/static/images/help/cog.png)) next to **Streams** in your left sidebar. A tooltip labeled **Subscribe, add, or configure streams** will appear.
@@ -25,15 +25,13 @@ You can optionally enter a brief description of your stream in **Stream descript
 
 The **Stream accessibility** option controls the privacy of your stream. There are two options:
 - **Anybody can join** - This option makes your stream **public** and accessible to all users.
-- **People must be invited** -- This options makes your stream **private**.  Only users you invite will be able to access this stream.
+- **People must be invited** -- This option makes your stream **private**.  Only users you invite will be able to access this stream.
 
-If your stream is public, you can choose to alert users about the new stream by clicking the **Announce stream** checkbox. If this option is selected, users who have been added to the stream upon creation will receive the following message.
+If your stream is public, you can choose to alert users about the new stream by clicking the **Announce stream** checkbox.
 
-![Streams User Added](/static/images/help/stream-add-alert.png)
+* If the **Announce stream** feature is **enabled**, users who have been added to the stream upon creation will be notified that they have been added, but users who have not been added to the stream upon creation will be notified about the stream's creation and can choose to subscribe to the stream.
 
-Users who have not been added to the stream upon creation will receive the following message and can choose to subscribe to the stream.
-
-![Streams User Subscribe](/static/images/help/stream-subscribe.png)
+* If the **Announce stream** feature is **disabled**, only users who have been added to the new stream will receive the notification.
 
 To automatically subscribe a user to your stream, scroll down to **People to add** and tick the checkboxes with the names of the users you want to add. To search for specific users, enter their usernames in the **Filter names** box.
 
