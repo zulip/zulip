@@ -50,9 +50,8 @@ import DNS
 import mock
 import time
 import ujson
-from six import text_type
 from six.moves import range
-from typing import Any, Optional
+from typing import Any, Optional, Text
 
 class TopicHistoryTest(ZulipTestCase):
     def test_topics_history(self):
@@ -145,7 +144,7 @@ class TopicHistoryTest(ZulipTestCase):
 
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain):
-        # type: (text_type) -> Realm
+        # type: (Text) -> Realm
         realm = Realm.objects.create(string_id=domain, domain=domain, invite_required=False)
         RealmAlias.objects.create(realm=realm, domain=domain)
         return realm
@@ -162,7 +161,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         dep.save()
 
     def create_user(self, email):
-        # type: (text_type) -> UserProfile
+        # type: (Text) -> UserProfile
         username, domain = email.split('@')
         self.register(username, 'test', domain=domain)
         return get_user_profile_by_email(email)
@@ -321,7 +320,7 @@ class PersonalMessagesTest(ZulipTestCase):
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
     def assert_personal(self, sender_email, receiver_email, content="test content"):
-        # type: (text_type, text_type, text_type) -> None
+        # type: (Text, Text, Text) -> None
         """
         Send a private message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
@@ -379,7 +378,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def assert_stream_message(self, stream_name, subject="test subject",
                               content="test content"):
-        # type: (text_type, text_type, text_type) -> None
+        # type: (Text, Text, Text) -> None
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
@@ -873,7 +872,7 @@ class MessagePOSTTest(ZulipTestCase):
 
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
-        # type: (int, Optional[text_type], Optional[text_type]) -> Message
+        # type: (int, Optional[Text], Optional[Text]) -> Message
         msg = Message.objects.get(id=msg_id)
         cached = message_to_dict(msg, False)
         uncached = MessageDict.to_dict_uncached_helper(msg, False)
@@ -1002,7 +1001,7 @@ class EditMessageTest(ZulipTestCase):
             self.assert_json_success(result)
 
         def do_edit_message_assert_success(id_, unique_str, topic_only = False):
-            # type: (int, text_type, bool) -> None
+            # type: (int, Text, bool) -> None
             new_subject = 'subject' + unique_str
             new_content = 'content' + unique_str
             params_dict = {'message_id': id_, 'subject': new_subject}
@@ -1016,7 +1015,7 @@ class EditMessageTest(ZulipTestCase):
                 self.check_message(id_, subject=new_subject, content=new_content)
 
         def do_edit_message_assert_error(id_, unique_str, error, topic_only = False):
-            # type: (int, text_type, text_type, bool) -> None
+            # type: (int, Text, Text, bool) -> None
             message = Message.objects.get(id=id_)
             old_subject = message.topic_name()
             old_content = message.content
@@ -1124,7 +1123,7 @@ class MirroredMessageUsersTest(TestCase):
     def test_invalid_sender(self):
         # type: () -> None
         user = get_user_profile_by_email('hamlet@zulip.com')
-        recipients = [] # type: List[text_type]
+        recipients = [] # type: List[Text]
         request = self.Request()
         request.POST = dict() # no sender
 
@@ -1141,7 +1140,7 @@ class MirroredMessageUsersTest(TestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         sender = user
 
-        recipients = [] # type: List[text_type]
+        recipients = [] # type: List[Text]
         request = self.Request()
         request.POST = dict(
             sender=sender.email,

@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar, Text
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
@@ -41,7 +41,6 @@ from zerver.worker import queue_processors
 
 from django.conf import settings
 from django.core import mail
-from six import text_type
 from six.moves import range, urllib
 import os
 import re
@@ -105,7 +104,7 @@ class ModelTest(TestCase):
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, email, new_realm_name):
-        # type: (text_type, text_type) -> None
+        # type: (Text, Text) -> None
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
@@ -1665,13 +1664,13 @@ class ChangeSettingsTest(ZulipTestCase):
 class GetProfileTest(ZulipTestCase):
 
     def common_update_pointer(self, email, pointer):
-        # type: (text_type, int) -> None
+        # type: (Text, int) -> None
         self.login(email)
         result = self.client_put("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
-        # type: (str) -> Dict[text_type, Any]
+        # type: (str) -> Dict[Text, Any]
         user_profile = get_user_profile_by_email(email)
         self.send_message(email, "Verona", Recipient.STREAM, "hello")
 
@@ -2113,7 +2112,7 @@ class ExtractedRecipientsTest(TestCase):
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         s = s.strip()
         return re.sub(r'\s+', ' ', s)
 

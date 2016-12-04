@@ -33,7 +33,7 @@ from zerver.views.messages import (
     NarrowBuilder, BadNarrowOperator
 )
 
-from six import text_type
+from typing import Text
 from six.moves import range
 import os
 import re
@@ -519,7 +519,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(email)
 
         def send(content):
-            # type: (text_type) -> None
+            # type: (Text) -> None
             msg_id = self.send_message(
                 sender_name=email,
                 raw_recipients="Verona",

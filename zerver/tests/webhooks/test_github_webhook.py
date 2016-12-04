@@ -1,6 +1,5 @@
 import ujson
-from six import text_type
-from typing import Dict, Optional
+from typing import Dict, Optional, Text
 
 from zerver.models import Message
 from zerver.lib.webhooks.git import COMMITS_LIMIT

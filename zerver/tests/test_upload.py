@@ -17,7 +17,6 @@ from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
 from six.moves import urllib
-from six import text_type
 from PIL import Image
 
 from boto.s3.connection import S3Connection
@@ -38,7 +37,7 @@ from moto import mock_s3
 
 TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, Text
 
 def destroy_uploads():
     # type: () -> None

@@ -42,10 +42,9 @@ import os
 import ujson
 import six
 
-from six import text_type
 from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
-from typing import Any, AnyStr, Dict, List, Optional, Tuple
+from typing import Any, AnyStr, Dict, List, Optional, Tuple, Text
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
@@ -159,17 +158,17 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
 def bugdown_convert(text):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return bugdown.convert(text, "zulip.com")
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
-        # type: (text_type, text_type) -> None
+        # type: (Text, Text) -> None
         converted = bugdown_convert(text)
         self.assertEqual(converted, expected)
 
     def load_bugdown_tests(self):
-        # type: () -> Tuple[Dict[text_type, Any], List[List[text_type]]]
+        # type: () -> Tuple[Dict[Text, Any], List[List[Text]]]
         test_fixtures = {}
         data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/bugdown-data.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
@@ -190,7 +189,7 @@ class BugdownTest(TestCase):
             self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload, url, phrase=''):
-            # type: (text_type, text_type, text_type) -> text_type
+            # type: (Text, Text, Text) -> Text
             target = " target=\"_blank\""
             if url[:4] == 'http':
                 href = url
@@ -290,7 +289,7 @@ class BugdownTest(TestCase):
     def test_inline_interesting_links(self):
         # type: () -> None
         def make_link(url):
-            # type: (text_type) -> text_type
+            # type: (Text) -> Text
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
         normal_tweet_html = ('<a href="https://twitter.com/twitter" target="_blank"'
@@ -309,7 +308,7 @@ class BugdownTest(TestCase):
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
-            # type: (text_type, text_type, text_type) -> text_type
+            # type: (Text, Text, Text) -> Text
             ## As of right now, all previews are mocked to be the exact same tweet
             return ('<div class="inline-preview-twitter">'
                     '<div class="twitter-tweet">'
@@ -408,7 +407,7 @@ class BugdownTest(TestCase):
     def test_realm_emoji(self):
         # type: () -> None
         def emoji_img(name, url):
-            # type: (text_type, text_type) -> text_type
+            # type: (Text, Text) -> Text
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
         zulip_realm = get_realm_by_string_id('zulip')
@@ -564,7 +563,7 @@ class BugdownTest(TestCase):
         realm_alert_words = alert_words_in_realm(user_profile.realm)
 
         def render(msg, content):
-            # type: (Message, text_type) -> text_type
+            # type: (Message, Text) -> Text
             return render_markdown(msg,
                                    content,
                                    realm_alert_words=realm_alert_words,

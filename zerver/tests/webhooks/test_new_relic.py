@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
+from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class NewRelicHookTests(WebhookTestCase):
@@ -24,5 +24,5 @@ Description sent via curl\n\nChangelog string'
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data("newrelic", fixture_name, file_type="txt")
