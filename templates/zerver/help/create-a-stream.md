@@ -5,8 +5,6 @@ Streams can be either:
 * **Private streams** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to it.
 
 ## Create a new stream
-In order create a stream on Zulip, organization administrators must have disabled the **Only admins may create streams** option in their **Organization settings**.
-
 To create a stream, locate the cog (![cog](/static/images/help/cog.png)) next to **Streams** in your left sidebar. A tooltip labeled **Subscribe, add, or configure streams** will appear.
 
 ![Streams Cog](/static/images/help/streams-1.png)
@@ -14,6 +12,8 @@ To create a stream, locate the cog (![cog](/static/images/help/cog.png)) next to
 When you click the cog (![cog](/static/images/help/cog.png)), you'll see an overview of all the streams you've subscribed to. Click the button labeled **Create new stream** to create a stream.
 
 ![Streams Overview](/static/images/help/streams-overview.png)
+
+If you are not presented with the option of creating a stream on Zulip, it is probably because your organization's administrators have disabled stream creation for ordinary users. If that's the case, then you need to ask them to make creating streams available to other users, or you will have to ask an administrator for help creating each particular stream.
 
 A modal window will appear to let you begin creating your stream.
 
@@ -23,7 +23,7 @@ Enter the title of your stream in the **Stream name** input. If you designate yo
 
 You can optionally enter a brief description of your stream in **Stream description** to give other users a general idea of what's being discussed in your stream. The description can be seen under the stream name in the stream overview.
 
-The **Stream accessibility** option controls the privacy of your stream. The **Public** option makes your stream public and accessible to all users. On the other hand, only users you invite will be able to access stream with the **Private** option enabled.
+The **Stream accessibility** option controls the privacy of your stream. The **Anybody can join** option makes your stream public and accessible to all users. On the other hand, only users you invite will be able to access your private stream with the **People must be invited** option enabled.
 
 If your stream is public, you can choose to alert users about the new stream by clicking the **Announce stream** checkbox.
 
