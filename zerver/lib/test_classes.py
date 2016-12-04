@@ -258,9 +258,8 @@ class ZulipTestCase(TestCase):
         data = ujson.loads(result.content)
         return data['messages']
 
-    def users_subscribed_to_stream(self, stream_name, realm_domain):
-        # type: (text_type, text_type) -> List[UserProfile]
-        realm = get_realm(realm_domain)
+    def users_subscribed_to_stream(self, stream_name, realm):
+        # type: (text_type, Realm) -> List[UserProfile]
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)

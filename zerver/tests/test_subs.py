@@ -40,7 +40,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm_by_string_id, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
-    create_streams_if_needed, active_user_ids
+    create_streams_if_needed, active_user_ids, get_realm
 )
 
 from zerver.views.streams import (
@@ -388,6 +388,7 @@ class StreamAdminTest(ZulipTestCase):
         Delete the stream and assess the result.
         """
         active_name = stream.name
+        realm = stream.realm
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -417,7 +418,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(deactivated_stream.invite_only)
         self.assertEqual(deactivated_stream.name, deactivated_stream_name)
         subscribers = self.users_subscribed_to_stream(
-                deactivated_stream_name, "zulip.com")
+                deactivated_stream_name, realm)
         self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
@@ -499,7 +500,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
         if result.status_code not in [400]:
-            subbed_users = self.users_subscribed_to_stream(stream_name, other_user_profile.realm.domain)
+            subbed_users = self.users_subscribed_to_stream(stream_name, other_user_profile.realm)
             self.assertNotIn(other_user_profile, subbed_users)
 
         return result
@@ -1992,7 +1993,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
 
-    def check_well_formed_result(self, result, stream_name, domain):
+    def check_well_formed_result(self, result, stream_name, realm_domain):
         # type: (Dict[str, Any], Text, Text) -> None
         """
         A successful call to get_subscribers returns the list of subscribers in
@@ -2002,10 +2003,11 @@ class GetSubscribersTest(ZulipTestCase):
          "result": "success",
          "subscribers": ["hamlet@zulip.com", "prospero@zulip.com"]}
         """
+        realm = get_realm(realm_domain)
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
         true_subscribers = [user_profile.email for user_profile in self.users_subscribed_to_stream(
-                stream_name, domain)]
+                stream_name, realm)]
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(self, stream_name, email=None):
