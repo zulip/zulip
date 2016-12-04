@@ -163,3 +163,7 @@ $(function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = tab_bar;
+}

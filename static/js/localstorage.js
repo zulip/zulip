@@ -19,3 +19,7 @@ exports.supported = function supports_localstorage() {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = localstorage;
+}

@@ -45,3 +45,9 @@ function password_quality(password, bar) {
 
     return acceptable;
 }
+
+if (typeof module !== 'undefined') {
+    module.exports.status_classes = status_classes;
+    module.exports.autofocus = autofocus;
+    module.exports.password_quality = password_quality;
+}

@@ -884,3 +884,7 @@ exports.setup_page = function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = admin;
+}

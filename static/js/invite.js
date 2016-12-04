@@ -118,3 +118,7 @@ exports.initialize = function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = invite;
+}

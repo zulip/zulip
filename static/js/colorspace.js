@@ -55,3 +55,7 @@ exports.getHexColor = function (rgb) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = colorspace;
+}
