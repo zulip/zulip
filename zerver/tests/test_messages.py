@@ -383,7 +383,7 @@ class StreamMessagesTest(ZulipTestCase):
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
-        subscribers = self.users_subscribed_to_stream(stream_name, "zulip.com")
+        subscribers = self.users_subscribed_to_stream(stream_name, Realm.domain)
         old_subscriber_messages = []
         for subscriber in subscribers:
             old_subscriber_messages.append(message_stream_count(subscriber))
