@@ -90,6 +90,28 @@
         "unread_ui": false
     },
     "rules": {
+        "prefer-const": ["error", {
+	    "destructuring": "any",
+            "ignoreReadBeforeAssign": true
+        }],
+	"no-const-assign": "error",
+	"no-new-object": 2,
+	"quote-props": ["error", "as-needed", {
+	    "keywords": false,
+	    "unnecessary": true,
+	    "numbers": false
+	}],
+	"no-array-constructor": "error",
+	"array-callback-return": 1,
+	"template-curly-spacing": "error",
+	"no-useless-escape": 1,
+	"func-style": ["off", "expression"],
+	"wrap-iife": ["error", "outside", { "functionPrototypeMethods": false }],
+	"no-new-func": "error",
+	"space-before-function-paren": 1,
+	"no-param-reassign": 1,
+	"prefer-spread": "error",
+	"arrow-spacing": ["error", { "before": true, "after": true }],
         "no-alert": 2,
         "no-array-constructor": 2,
         "no-caller": 2,
