@@ -199,10 +199,11 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.messages.update_message_flags'}),
 
     # reactions -> zerver.view.reactions
-    # POST adds a reaction to a message
+    # PUT adds a reaction to a message
     # DELETE removes a reaction from a message
-    url(r'^reactions$', rest_dispatch,
-        {'POST': 'zerver.views.reactions.add_reaction_backend',
+    url(r'^messages/(?P<message_id>[0-9]+)/emoji_reactions/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$',
+        rest_dispatch,
+        {'PUT': 'zerver.views.reactions.add_reaction_backend',
          'DELETE': 'zerver.views.reactions.remove_reaction_backend'}),
 
     # typing -> zerver.views.typing
