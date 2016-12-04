@@ -30,6 +30,7 @@ as a “**realm**”.
 - **[Create a stream](/help/create-a-stream.md)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
+- **[Change Your Name](/help/name-change)**
 - **[Message formatting](/help/message-formatting.md)**
 - **[Streams and private messages](/help/streams-and-private-messages.md)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
