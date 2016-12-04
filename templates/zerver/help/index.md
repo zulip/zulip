@@ -25,6 +25,7 @@ as a “**realm**”.
 # Table of contents:
 
 - **[The Zulip browser window](#the-zulip-browser-window)**
+- **[Create a stream](/help/create-a-stream.md)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Message formatting](/help/message-formatting.md)**
