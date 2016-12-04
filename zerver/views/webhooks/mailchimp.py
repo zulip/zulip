@@ -1,4 +1,5 @@
-# Webhooks for external integrations.
+
+#hooks for external integrations.
 from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
@@ -9,6 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from six import text_type
 from typing import Any
 import ujson
+import urlparse
 MAILCHIMP_SUBJECT_TEMPLATE = '[{fired_at}]{type}|{data[merges][EMAIL]}'
 MAILCHIMP_MESSAGE_TEMPLATE = '{data[merges][FNAME]} {data[merges][LNAME]} ({data[merges][EMAIL]}) subscribed at {fired_at}'
 
@@ -18,14 +20,18 @@ def api_mailchimp_webhook(request, user_profile, client, stream=REQ(default='mai
     try:
 	returned = request.body
         print("got request: "+returned)
-	    payload = {}
-	    split1 = returned.split("&")
-	        for spli in split1:
-	            para = spli.split("=")
-	            payload[para[0]] = para[1]
-        print payload['type']
-	    print("mark 1")
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
+	print("parsing")
+	returned = urlparse.unquote(returned)
+	print("decoded: "+returned)
+	payload = {}
+	#print("payload: "+payload)
+	split1 = returned.split("&")
+	for spli in split1:
+            para = spli.split("=")
+            payload[para[0]] = para[1]
+        print(payload['type'])
+	print("mark 1")
+        # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
         print("mark 2")
         #print("load: "+payload['event'])
         #event = payload['event']
