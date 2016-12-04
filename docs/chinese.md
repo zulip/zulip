@@ -58,14 +58,14 @@ Zulip的文风比较口语化，考虑到大多数中国用户的习惯，翻译
 
   "Narrow to" is translated as "筛选(Filter by)" for now, based on two considerations:
 
-    * In Chinese, the word "筛选(Filter)" means a way to select according to the specific conditions. "Narrow to ..." means "to narrow the scope of ...". The two words share the common meanings.
+    1. In Chinese, the word "筛选(Filter)" means a way to select according to the specific conditions. "Narrow to ..." means "to narrow the scope of ...". The two words share the common meanings.
 
-    * "筛选" is of a common computer vocabulary and has been well accepted by public, e.g. the "Filter(筛选)" feature in Microsoft Excel.
+    2. "筛选" is of a common computer vocabulary and has been well accepted by public, e.g. the "Filter(筛选)" feature in Microsoft Excel.
 
   In addition, in the searching context "Narrow to ..." is not translated as "筛选(Filter)" but as "搜索(Search)" because of readability considerations.
 
-  这里暂且翻译为“筛选”。主要有两点考虑：1) 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ***”的含义为“使***缩小范围”，两者有一定共通性。2) “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如Microsoft Excel中的“筛选”功能。
-  另外，在搜索功能的语境中，“Narrow to ***”没有翻译为“筛选”，而翻译为“搜索”，这是出于可读性的考虑。
+  这里暂且翻译为“筛选”。主要有两点考虑：1) 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ***”的含义为“使...缩小范围”，两者有一定共通性。2) “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如Microsoft Excel中的“筛选”功能。
+  另外，在搜索功能的语境中，“Narrow to ...”没有翻译为“筛选”，而翻译为“搜索”，这是出于可读性的考虑。
   
   * Mute/Unmute - **开启/关闭免打扰**
 
