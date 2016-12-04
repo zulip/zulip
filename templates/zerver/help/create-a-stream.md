@@ -27,7 +27,7 @@ The **Stream accessibility** option controls the privacy of your stream. There a
 - **Anybody can join** - This option makes your stream **public** and accessible to all users.
 - **People must be invited** -- This option makes your stream **private**.  Only users you invite will be able to access this stream.
 
-If your stream is public, you can choose to alert users about the new stream by clicking the Announce stream checkbox. Users who have been added to the new stream will always be notified, but if the Announce stream feature is enabled, all users will be notified of the stream's creation.
+If your stream is public, you can choose to alert users about the new stream by clicking the **Announce stream** checkbox. Users who have been added to the new stream will always be notified, but if the **Announce stream** feature is **enabled**, all users will be notified of the stream's creation.
 
 To automatically subscribe a user to your stream, scroll down to **People to add** and tick the checkboxes with the names of the users you want to add. To search for specific users, enter their usernames in the **Filter names** box.
 
