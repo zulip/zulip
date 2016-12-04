@@ -6,7 +6,7 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
 
-from six import text_type
+from typing import Text
 
 # Desk.com's integrations all make the user supply a template, where it fills
 # in stuff like {{customer.name}} and posts the result as a "data" parameter.
@@ -18,7 +18,7 @@ from six import text_type
 def api_deskdotcom_webhook(request, user_profile, data=REQ(),
                            topic=REQ(default="Desk.com notification"),
                            stream=REQ(default="desk.com")):
-    # type: (HttpRequest, UserProfile, text_type, text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, Text) -> HttpResponse
     check_send_message(user_profile, get_client("ZulipDeskWebhook"), "stream",
                        [stream], topic, data)
     return json_success()
