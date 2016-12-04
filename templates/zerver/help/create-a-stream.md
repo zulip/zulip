@@ -19,7 +19,7 @@ A modal window will appear to let you begin creating your stream.
 
 ![Streams Modal](/static/images/help/stream-modal.png)
 
-Enter the title of your stream in the **Stream name** input. If you designate your stream as public, the **Stream name** will be displayed under the Streams on the left sidebar. **Stream name** must be unique to all other streams and have a 60-character limit.
+Enter the title of your stream in the **Stream name** input. If you designate your stream as public, the **Stream name** will be displayed under the Streams on the left sidebar. **Stream name** must be unique to all other streams and can be no longer than 60 characters.
 
 You can optionally enter a brief description of your stream in **Stream description** to give other users a general idea of what's being discussed in your stream. The description can be seen under the stream name in the stream overview.
 
