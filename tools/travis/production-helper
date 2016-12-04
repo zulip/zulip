@@ -60,6 +60,8 @@ if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
     echo "Displaying the contents of the main server log:"
     echo
     cat /var/log/zulip/server.log
+    cat /var/log/nginx/error.log
+    cat /var/log/zulip/django.log
     exit 1
 fi
 
