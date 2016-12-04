@@ -21,6 +21,7 @@ Zulip的文风比较口语化，考虑到大多数中国用户的习惯，翻译
   Realm直译为“领域”、“王国”，取直译显然不合适。Zulip中关于“Realm”的解释为“组织”或者“机构”（Organization）；另外，“Realm”还与“域”（domain）有所联系；例如，“设置页”中可以对“Realm”设置限制，仅允许有相同邮件域名的用户登录。因此这里选择译为“社区”，可能更接近本义。可选的翻译还有“社群”（Google+的习惯）。最近发现，“Realm”译为“团队”似乎更合适。尝试在Transifex中将“社区”替换为“团队”后，发现不少地方比以前通顺了许多。
 
   * Stream - **频道**
+
   There were several other optional translations, e.g. "群组(Group)", "主题(Subject)", and "栏目(Column)". The "频道(Channel)" is in use now, which is inspired by the chat "Channel" in the game Ingress. Since "Stream" can be "Created/Deleted" or "Subscribed/Unsubscribed", "Stream" can also initiate a "Topic" discussion, the meanings of "频道(Channel) are closer to "Stream" than others. Another translation is "讨论组", which is a term of QQ, in which it is a temporary chat group. However, "讨论组" has one more Chinese character than "频道(Channel)".
 
   曾经使用的翻译有“群组”、“主题”、“版块”，还有“栏目”。现在选择的“频道”灵感来源于Ingress游戏中的聊天“Channel”。因为“Stream”可以“新建/删除（Create/Delete）”、也可以“订阅/退订（Subscribe/Unsubscribe）”，“Stream”内部还可以发起“话题（Topic）讨论。“Stream”还有一个备选方案，就是“讨论组”，字多一个，稍微有点啰嗦。主要参考自以前QQ的“讨论组”，在QQ中是一种临时的群组。
@@ -57,10 +58,11 @@ Zulip的文风比较口语化，考虑到大多数中国用户的习惯，翻译
 
   "Narrow to" is translated as "筛选(Filter by)" for now, based on two considerations:
 
-     * In Chinese, the word "筛选(Filter)" means a way to select according to the specific conditions. "Narrow to ..." means "to narrow the scope of ...". The two words share the common meanings.
-     * "筛选" is of a common computer vocabulary and has been well accepted by public, e.g. the "Filter(筛选)" feature in Microsoft Excel.
+    * In Chinese, the word "筛选(Filter)" means a way to select according to the specific conditions. "Narrow to ..." means "to narrow the scope of ...". The two words share the common meanings.
 
-   In addition, in the searching context "Narrow to ..." is not translated as "筛选(Filter)" but as "搜索(Search)" because of readability considerations.
+    * "筛选" is of a common computer vocabulary and has been well accepted by public, e.g. the "Filter(筛选)" feature in Microsoft Excel.
+
+  In addition, in the searching context "Narrow to ..." is not translated as "筛选(Filter)" but as "搜索(Search)" because of readability considerations.
 
   这里暂且翻译为“筛选”。主要有两点考虑：1) 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ***”的含义为“使***缩小范围”，两者有一定共通性。2) “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如Microsoft Excel中的“筛选”功能。
   另外，在搜索功能的语境中，“Narrow to ***”没有翻译为“筛选”，而翻译为“搜索”，这是出于可读性的考虑。
@@ -96,7 +98,9 @@ Zulip的文风比较口语化，考虑到大多数中国用户的习惯，翻译
 ## Others(其它)
  
   * You/Your - **您/您的**
+
   It is translated as 您/您的(You/Your) rather than "你/你的(You/Your)", so as to express respect to user.
+
   出于尊重用户的目的，翻译为敬语“您/您的”，而不翻译为“你/你的”。
 
   * We - **我们（或不翻）**
