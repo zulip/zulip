@@ -368,7 +368,7 @@ exports.get_recent_topics = function (stream_name) {
 
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
-    recent_topics = new Dict.from(stream_map, {fold_case: true});
+    recent_topics = Dict.from(stream_map, {fold_case: true});
 };
 
 return exports;
