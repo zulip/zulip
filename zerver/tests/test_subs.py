@@ -1993,7 +1993,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
 
-    def check_well_formed_result(self, result, stream_name, domain):
+    def check_well_formed_result(self, result, stream_name, Realm):
         # type: (Dict[str, Any], text_type, text_type) -> None
         """
         A successful call to get_subscribers returns the list of subscribers in
@@ -2006,7 +2006,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
         true_subscribers = [user_profile.email for user_profile in self.users_subscribed_to_stream(
-                stream_name, domain)]
+                stream_name, Realm)]
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(self, stream_name, email=None):
