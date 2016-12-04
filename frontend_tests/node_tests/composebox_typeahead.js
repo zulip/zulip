@@ -31,6 +31,12 @@ global.people.add({
     full_name: "Deactivated User",
 });
 
+global.people.add({
+    email: 'other@zulip.com',
+    user_id: 103,
+    full_name: "Deactivated User"
+});
+
 (function test_add_topic () {
     ct.add_topic('Denmark', 'civil fears');
     ct.add_topic('devel', 'fading');
