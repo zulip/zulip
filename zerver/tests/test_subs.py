@@ -500,7 +500,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # If the removal succeeded, then assert that Cordelia is no longer subscribed.
         if result.status_code not in [400]:
-            subbed_users = self.users_subscribed_to_stream(stream_name, other_user_profile.realm)
+            subbed_users = self.users_subscribed_to_stream(stream_name, other_user_profile.realm.domain)
             self.assertNotIn(other_user_profile, subbed_users)
 
         return result
