@@ -47,7 +47,7 @@ su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 # TODO: Ideally this would test actually logging in, but this is a start.
 echo; echo "Now testing that the newly installed server's homepage loads"; echo
 
-wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output
+wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output || true # || true so we see errors.log if this 500s
 grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
 if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
     set +x
@@ -56,6 +56,10 @@ if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
     echo "Displaying the contents of the server's error log:"
     echo
     cat /var/log/zulip/errors.log
+    echo
+    echo "Displaying the contents of the main server log:"
+    echo
+    cat /var/log/zulip/server.log
     exit 1
 fi
 
