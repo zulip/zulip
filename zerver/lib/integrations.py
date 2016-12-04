@@ -140,7 +140,7 @@ WEBHOOK_INTEGRATIONS = [
         logo='static/images/integrations/logos/yo-app.png',
         display_name='Yo App'
     ),
-    WebhookIntegration('zendesk')
+    WebhookIntegration('zendesk'),
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {
