@@ -2,8 +2,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
-from typing import Any
+from typing import Any, Text
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
@@ -22,7 +21,7 @@ FAILED_STATUS = 'failed'
 @has_request_variables
 def api_circleci_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                          stream=REQ(default='circleci')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     payload = payload['payload']
     subject = get_subject(payload)
     body = get_body(payload)
@@ -31,11 +30,11 @@ def api_circleci_webhook(request, user_profile, client, payload=REQ(argument_typ
     return json_success()
 
 def get_subject(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return CIRCLECI_SUBJECT_TEMPLATE.format(repository_name=payload['reponame'])
 
 def get_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     data = {
         'build_url': payload['build_url'],
         'username': payload['username'],
@@ -45,7 +44,7 @@ def get_body(payload):
     return CIRCLECI_MESSAGE_TEMPLATE.format(**data)
 
 def get_status(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     status = payload['status']
     if payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
         return u'is still failing'

@@ -2,9 +2,8 @@
 from __future__ import absolute_import
 import re
 from functools import partial
-from six import text_type
 from six.moves import zip
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Text
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
@@ -63,7 +62,7 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
     return json_success()
 
 def get_subject_for_branch_specified_events(payload, branch_name=None):
-    # type: (Dict[str, Any], Optional[text_type]) -> text_type
+    # type: (Dict[str, Any], Optional[Text]) -> Text
     return SUBJECT_WITH_BRANCH_TEMPLATE.format(
         repo=get_repository_name(payload['repository']),
         branch=get_branch_name_for_push_event(payload) if branch_name is None else branch_name
@@ -89,7 +88,7 @@ def get_subject(payload):
     return BITBUCKET_SUBJECT_TEMPLATE.format(repository_name=get_repository_name(payload['repository']))
 
 def get_subject_based_on_type(payload, type):
-    # type: (Dict[str, Any], str) -> text_type
+    # type: (Dict[str, Any], str) -> Text
     if type.startswith('pull_request'):
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload.get('repository')),
@@ -137,7 +136,7 @@ def get_body_based_on_type(type):
     return GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)
 
 def get_push_bodies(payload):
-    # type: (Dict[str, Any]) -> List[text_type]
+    # type: (Dict[str, Any]) -> List[Text]
     messages_list = []
     for change in payload['push']['changes']:
         potential_tag = (change['new'] or change['old'] or {}).get('type')
@@ -152,14 +151,14 @@ def get_push_bodies(payload):
     return messages_list
 
 def get_remove_branch_push_body(payload, change):
-    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any], Dict[str, Any]) -> Text
     return get_remove_branch_event_message(
         get_user_username(payload),
         change['old']['name'],
     )
 
 def get_force_push_body(payload, change):
-    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any], Dict[str, Any]) -> Text
     return get_force_push_commits_event_message(
         get_user_username(payload),
         change['links']['html']['href'],
@@ -168,7 +167,7 @@ def get_force_push_body(payload, change):
     )
 
 def get_normal_push_body(payload, change):
-    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any], Dict[str, Any]) -> Text
     commits_data = [{
         'sha': commit.get('hash'),
         'url': commit.get('links').get('html').get('href'),
@@ -193,7 +192,7 @@ def get_fork_body(payload):
     )
 
 def get_commit_comment_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     comment = payload.get('comment')
     action = u'[commented]({})'.format(comment['links']['html']['href'])
     return get_commits_comment_action_message(
@@ -220,12 +219,12 @@ def get_commit_status_changed_body(payload):
     )
 
 def get_issue_commented_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     action = '[commented]({}) on'.format(payload['comment']['links']['html']['href'])
     return get_issue_action_body(payload, action)
 
 def get_issue_action_body(payload, action):
-    # type: (Dict[str, Any], str) -> text_type
+    # type: (Dict[str, Any], str) -> Text
     issue = payload['issue']
     assignee = None
     message = None
@@ -244,7 +243,7 @@ def get_issue_action_body(payload, action):
     )
 
 def get_pull_request_action_body(payload, action):
-    # type: (Dict[str, Any], str) -> text_type
+    # type: (Dict[str, Any], str) -> Text
     pull_request = payload['pullrequest']
     return get_pull_request_event_message(
         get_user_username(payload),
@@ -254,7 +253,7 @@ def get_pull_request_action_body(payload, action):
     )
 
 def get_pull_request_created_or_updated_body(payload, action):
-    # type: (Dict[str, Any], str) -> text_type
+    # type: (Dict[str, Any], str) -> Text
     pull_request = payload['pullrequest']
     assignee = None
     if pull_request.get('reviewers'):
@@ -272,17 +271,17 @@ def get_pull_request_created_or_updated_body(payload, action):
     )
 
 def get_pull_request_comment_created_action_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     action = '[commented]({})'.format(payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action)
 
 def get_pull_request_deleted_or_updated_comment_action_body(payload, action):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     action = "{} a [comment]({})".format(action, payload['comment']['links']['html']['href'])
     return get_pull_request_comment_action_body(payload, action)
 
 def get_pull_request_comment_action_body(payload, action):
-    # type: (Dict[str, Any], str) -> text_type
+    # type: (Dict[str, Any], str) -> Text
     action += ' on'
     return get_pull_request_event_message(
         get_user_username(payload),
@@ -293,7 +292,7 @@ def get_pull_request_comment_action_body(payload, action):
     )
 
 def get_push_tag_body(payload, change):
-    # type: (Dict[str, Any], Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any], Dict[str, Any]) -> Text
     if change.get('created'):
         tag = change.get('new')
         action = 'pushed'

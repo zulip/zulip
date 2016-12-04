@@ -14,8 +14,7 @@ import logging
 import re
 import ujson
 
-from six import text_type
-from typing import Any, Mapping, Optional, Sequence, Tuple
+from typing import Any, Mapping, Optional, Sequence, Tuple, Text
 from zerver.lib.str_utils import force_str
 from django.http import HttpRequest, HttpResponse
 
@@ -23,14 +22,14 @@ ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
 def is_test_repository(repository):
-    # type: (Mapping[text_type, Any]) -> bool
+    # type: (Mapping[Text, Any]) -> bool
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
 
 class UnknownEventType(Exception):
     pass
 
 def github_pull_request_content(payload):
-    # type: (Mapping[text_type, Any]) -> text_type
+    # type: (Mapping[Text, Any]) -> Text
     pull_request = payload['pull_request']
     action = get_pull_request_or_issue_action(payload)
 
@@ -53,7 +52,7 @@ def github_pull_request_content(payload):
         )
 
 def github_issues_content(payload):
-    # type: (Mapping[text_type, Any]) -> text_type
+    # type: (Mapping[Text, Any]) -> Text
     issue = payload['issue']
     action = get_pull_request_or_issue_action(payload)
 
@@ -74,7 +73,7 @@ def github_issues_content(payload):
         )
 
 def github_object_commented_content(payload, type):
-    # type: (Mapping[text_type, Any], text_type) -> text_type
+    # type: (Mapping[Text, Any], Text) -> Text
     comment = payload['comment']
     issue = payload['issue']
     action = u'[commented]({}) on'.format(comment['html_url'])
@@ -89,17 +88,17 @@ def github_object_commented_content(payload, type):
     )
 
 def get_pull_request_or_issue_action(payload):
-    # type: (Mapping[text_type, Any]) -> text_type
+    # type: (Mapping[Text, Any]) -> Text
     return 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
 def get_pull_request_or_issue_assignee(object_payload):
-    # type: (Mapping[text_type, Any]) -> text_type
+    # type: (Mapping[Text, Any]) -> Text
     assignee_dict = object_payload.get('assignee')
     if assignee_dict:
         return assignee_dict.get('login')
 
 def get_pull_request_or_issue_subject(repository, payload_object, type):
-    # type: (Mapping[text_type, Any], Mapping[text_type, Any], text_type) -> text_type
+    # type: (Mapping[Text, Any], Mapping[Text, Any], Text) -> Text
     return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repository['name'],
             type=type,
@@ -108,12 +107,12 @@ def get_pull_request_or_issue_subject(repository, payload_object, type):
         )
 
 def github_generic_subject(noun, topic_focus, blob):
-    # type: (text_type, text_type, Mapping[text_type, Any]) -> text_type
+    # type: (Text, Text, Mapping[Text, Any]) -> Text
     # issue and pull_request objects have the same fields we're interested in
     return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
 def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
-    # type: (UserProfile, text_type, Mapping[text_type, Any], text_type, text_type, **Any) -> Tuple[text_type, text_type, text_type]
+    # type: (UserProfile, Text, Mapping[Text, Any], Text, Text, **Any) -> Tuple[Text, Text, Text]
     """
     processes github payload with version 1 field specification
     `payload` comes in unmodified from github
@@ -126,7 +125,7 @@ def api_github_v1(user_profile, event, payload, branches, stream, **kwargs):
 
 def api_github_v2(user_profile, event, payload, branches, default_stream,
                   commit_stream, issue_stream, topic_focus = None):
-    # type: (UserProfile, text_type, Mapping[text_type, Any], text_type, text_type, text_type, text_type, Optional[text_type]) -> Tuple[text_type, text_type, text_type]
+    # type: (UserProfile, Text, Mapping[Text, Any], Text, Text, Text, Text, Optional[Text]) -> Tuple[Text, Text, Text]
     """
     processes github payload with version 2 field specification
     `payload` comes in unmodified from github
@@ -205,7 +204,7 @@ def api_github_landing(request, user_profile, event=REQ(),
                        exclude_commits=REQ(converter=flexible_boolean, default=False),
                        emphasize_branch_in_topic=REQ(converter=flexible_boolean, default=False),
                        ):
-    # type: (HttpRequest, UserProfile, text_type, Mapping[text_type, Any], text_type, text_type, int, text_type, text_type, bool, bool, bool, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Mapping[Text, Any], Text, Text, int, Text, Text, bool, bool, bool, bool) -> HttpResponse
 
     repository = payload['repository']
 
@@ -280,7 +279,7 @@ def api_github_landing(request, user_profile, event=REQ(),
                                 message_content=content)
 
 def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher, forced=None, created=None):
-    # type: (UserProfile, text_type, text_type, List[Dict[str, str]], text_type, text_type, text_type, text_type, Optional[text_type], Optional[text_type]) -> Tuple[text_type, text_type]
+    # type: (UserProfile, Text, Text, List[Dict[str, str]], Text, Text, Text, Text, Optional[Text], Optional[Text]) -> Tuple[Text, Text]
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 

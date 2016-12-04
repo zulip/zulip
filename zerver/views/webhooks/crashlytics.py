@@ -6,8 +6,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
 from django.http import HttpRequest, HttpResponse
-from six import text_type
-from typing import Any
+from typing import Any, Text
 
 CRASHLYTICS_SUBJECT_TEMPLATE = '{display_id}: {title}'
 CRASHLYTICS_MESSAGE_TEMPLATE = '[Issue]({url}) impacts at least {impacted_devices_count} device(s).'
@@ -19,7 +18,7 @@ VERIFICATION_EVENT = 'verification'
 @has_request_variables
 def api_crashlytics_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                             stream=REQ(default='crashlytics')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     try:
         event = payload['event']
         if event == VERIFICATION_EVENT:
