@@ -66,7 +66,7 @@ In addition, in the searching context "Narrow to ..." is not translated as "筛�
 
 这里暂且翻译为“筛选”。主要有两点考虑：
 
-1. 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ***”的含义为“使...缩小范围”，两者有一定共通性。
+1. 在汉语中，“筛选”表示按照指定条件进行挑选的方式。“Narrow to ...”的含义为“使...缩小范围”，两者有一定共通性。
 
 2. “筛选”也是比较大众化的计算机用语，易于为大家所接受。例如Microsoft Excel中的“筛选”功能。
 
