@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Text
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -52,7 +52,6 @@ import mock
 import random
 import ujson
 import six
-from six import text_type
 from six.moves import range, urllib, zip
 
 class TestCreateStreams(ZulipTestCase):
@@ -612,7 +611,7 @@ class StreamAdminTest(ZulipTestCase):
 
 class DefaultStreamTest(ZulipTestCase):
     def get_default_stream_names(self, realm):
-        # type: (Realm) -> Set[text_type]
+        # type: (Realm) -> Set[Text]
         streams = get_default_streams_for_realm(realm)
         stream_names = [s.name for s in streams]
         return set(stream_names)
@@ -1062,7 +1061,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.streams = self.get_streams(self.test_email)
 
     def make_random_stream_names(self, existing_stream_names):
-        # type: (List[text_type]) -> List[text_type]
+        # type: (List[Text]) -> List[Text]
         """
         Helper function to make up random stream names. It takes
         existing_stream_names and randomly appends a digit to the end of each,
@@ -1102,7 +1101,7 @@ class SubscriptionAPITest(ZulipTestCase):
     def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
                                                subscribed, already_subscribed,
                                                email, new_subs, invite_only=False):
-        # type: (List[text_type], Dict[str, Any], List[text_type], List[text_type], text_type, List[text_type], bool) -> None
+        # type: (List[Text], Dict[str, Any], List[Text], List[Text], Text, List[Text], bool) -> None
         """
         Check result of adding subscriptions.
 
@@ -1323,7 +1322,7 @@ class SubscriptionAPITest(ZulipTestCase):
                                "Invalid stream name (%s)." % (invalid_stream_name,))
 
     def assert_adding_subscriptions_for_principal(self, invitee, streams, invite_only=False):
-        # type: (text_type, List[text_type], bool) -> None
+        # type: (Text, List[Text], bool) -> None
         """
         Calling POST /json/users/me/subscriptions on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add
@@ -1663,7 +1662,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def helper_check_subs_before_and_after_remove(self, subscriptions, json_dict,
                                                   email, new_subs):
-        # type: (List[text_type], Dict[str, Any], text_type, List[text_type]) -> None
+        # type: (List[Text], Dict[str, Any], Text, List[Text]) -> None
         """
         Check result of removing subscriptions.
 
@@ -1720,7 +1719,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
     def helper_subscriptions_exists(self, stream, exists, subscribed):
-        # type: (text_type, bool, bool) -> None
+        # type: (Text, bool, bool) -> None
         """
         A helper function that calls /json/subscriptions/exists on a stream and
         verifies that the returned JSON dictionary has the exists and
@@ -1797,7 +1796,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertTrue(json["exists"])
 
     def get_subscription(self, user_profile, stream_name):
-        # type: (UserProfile, text_type) -> Subscription
+        # type: (UserProfile, Text) -> Subscription
         stream = Stream.objects.get(realm=self.realm, name=stream_name)
         return Subscription.objects.get(
             user_profile=user_profile,
@@ -1994,7 +1993,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.login(self.email)
 
     def check_well_formed_result(self, result, stream_name, domain):
-        # type: (Dict[str, Any], text_type, text_type) -> None
+        # type: (Dict[str, Any], Text, Text) -> None
         """
         A successful call to get_subscribers returns the list of subscribers in
         the form:
@@ -2010,14 +2009,14 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(self, stream_name, email=None):
-        # type: (text_type, Optional[str]) -> HttpResponse
+        # type: (Text, Optional[str]) -> HttpResponse
         if email is None:
             email = self.email
         return self.client_get("/api/v1/streams/%s/members" % (stream_name,),
                                **self.api_auth(email))
 
     def make_successful_subscriber_request(self, stream_name):
-        # type: (text_type) -> None
+        # type: (Text) -> None
         result = self.make_subscriber_request(stream_name)
         self.assert_json_success(result)
         self.check_well_formed_result(ujson.loads(result.content),
@@ -2174,7 +2173,7 @@ class GetSubscribersTest(ZulipTestCase):
         result_dict = ujson.loads(result.content)
         self.assertIn('subscribers', result_dict)
         self.assertIsInstance(result_dict['subscribers'], list)
-        subscribers = [] # type: List[text_type]
+        subscribers = [] # type: List[Text]
         for subscriber in result_dict['subscribers']:
             self.assertIsInstance(subscriber, six.string_types)
             subscribers.append(subscriber)

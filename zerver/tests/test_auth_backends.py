@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Text
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
@@ -40,7 +40,6 @@ from social.storage.django_orm import BaseDjangoStorage
 from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
 
-from six import text_type
 from six.moves import urllib
 from six.moves.http_cookies import SimpleCookie
 import ujson
@@ -50,7 +49,7 @@ class AuthBackendTest(TestCase):
     def verify_backend(self, backend, good_args=None,
                        good_kwargs=None, bad_kwargs=None,
                        email_to_username=None):
-        # type: (Any, List[Any], Dict[str, Any], Dict[str, Any], Callable[[text_type], text_type]) -> None
+        # type: (Any, List[Any], Dict[str, Any], Dict[str, Any], Callable[[Text], Text]) -> None
         if good_args is None:
             good_args = []
         if good_kwargs is None:

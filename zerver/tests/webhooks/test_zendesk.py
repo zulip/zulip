@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from typing import Any, Optional
+from typing import Any, Optional, Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -18,7 +17,7 @@ class ZenDeskHookTests(WebhookTestCase):
     MESSAGE = DEFAULT_MESSAGE
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> Dict[str, Any]
+        # type: (Text) -> Dict[str, Any]
         return {
             'ticket_title': self.TICKET_TITLE,
             'ticket_id': self.TICKET_ID,
@@ -27,7 +26,7 @@ class ZenDeskHookTests(WebhookTestCase):
         }
 
     def do_test(self, expected_subject=None, expected_message=None):
-        # type: (Optional[text_type], Optional[text_type]) -> None
+        # type: (Optional[Text], Optional[Text]) -> None
         self.send_and_test_stream_message(None, expected_subject, expected_message,
                                           content_type=None, **self.api_auth(self.TEST_USER_EMAIL))
         self.TICKET_TITLE = self.DEFAULT_TICKET_TITLE

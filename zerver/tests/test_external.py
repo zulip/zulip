@@ -27,7 +27,7 @@ import ujson
 
 from six.moves import urllib
 from six.moves import range
-from six import text_type
+from typing import Text
 
 class MITNameTest(TestCase):
     def test_valid_hesiod(self):
@@ -69,7 +69,7 @@ class RateLimitTests(ZulipTestCase):
         remove_ratelimit_rule(1, 5)
 
     def send_api_message(self, email, content):
-        # type: (text_type, text_type) -> HttpResponse
+        # type: (Text, Text) -> HttpResponse
         return self.client_post("/api/v1/messages", {"type": "stream",
                                                      "to": "Verona",
                                                      "client": "test suite",

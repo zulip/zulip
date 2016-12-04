@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
+from typing import Text
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -61,5 +61,5 @@ class BeanstalkHookTests(WebhookTestCase):
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> Dict[str, text_type]
+        # type: (Text) -> Dict[str, Text]
         return {'payload': self.fixture_data('beanstalk', fixture_name)}

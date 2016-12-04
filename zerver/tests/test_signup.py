@@ -42,8 +42,7 @@ import ujson
 from six.moves import urllib
 from six.moves import range
 import six
-from six import text_type
-from typing import Any
+from typing import Any, Text
 
 class PublicURLTest(ZulipTestCase):
     """
@@ -299,7 +298,7 @@ class LoginTest(ZulipTestCase):
 class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams):
-        # type: (str, List[text_type]) -> HttpResponse
+        # type: (str, List[Text]) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 

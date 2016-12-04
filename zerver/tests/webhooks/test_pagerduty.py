@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
+from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class PagerDutyHookTests(WebhookTestCase):

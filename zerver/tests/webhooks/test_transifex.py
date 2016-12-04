@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from typing import Any, Dict
+from typing import Any, Dict, Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class TransifexHookTests(WebhookTestCase):
@@ -34,7 +33,7 @@ class TransifexHookTests(WebhookTestCase):
         self.REVIEWED = True
 
     def build_webhook_url(self):
-        # type: () -> text_type
+        # type: () -> Text
         url_data = self.URL_DATA_TEMPLATE.format(
             project=self.PROJECT,
             language=self.LANGUAGE,
@@ -45,5 +44,5 @@ class TransifexHookTests(WebhookTestCase):
         return self.URL_TEMPLATE.format(api_key=api_key, stream=self.STREAM_NAME, data_template=url_data)
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> Dict[str, Any]
+        # type: (Text) -> Dict[str, Any]
         return {}
