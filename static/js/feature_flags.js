@@ -5,7 +5,6 @@ var exports = {};
 // Manually-flipped debugging flags
 exports.log_send_times = false;
 exports.collect_send_times = false;
-exports.use_socket = true;
 exports.local_echo = true;
 
 // Experimental modification to support much wider message views.

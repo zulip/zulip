@@ -442,7 +442,7 @@ function report_send_time(send_time, receive_time, display_time, locally_echoed,
 }
 
 var socket;
-if (feature_flags.use_socket) {
+if (page_params.use_socket) {
     socket = new Socket("/sockjs");
 }
 // For debugging.  The socket will eventually move out of this file anyway.
@@ -555,7 +555,7 @@ exports.send_message_success = function (local_id, message_id, start_time, local
 
 exports.transmit_message = function (request, success, error) {
     delete exports.send_times_data[request.id];
-    if (feature_flags.use_socket) {
+    if (page_params.use_socket) {
         send_message_socket(request, success, error);
     } else {
         send_message_ajax(request, success, error);
