@@ -194,7 +194,7 @@ function get_main_hash(hash) {
     return hash.replace(/^#/, "").split(/\//)[0];
 }
 
-function should_ignore (hash) {
+function should_ignore(hash) {
     // an array of hashes to ignore (eg. ["subscriptions", "settings", "administration"]).
     var ignore_list = [];
     var main_hash = get_main_hash(hash);

@@ -3,7 +3,7 @@ var channel = (function () {
 var exports = {};
 var pending_requests = [];
 
-function add_pending_request (jqXHR) {
+function add_pending_request(jqXHR) {
     if (!feature_flags.cleanup_before_reload) { return; }
 
     pending_requests.push(jqXHR);
@@ -13,7 +13,7 @@ function add_pending_request (jqXHR) {
     }
 }
 
-function remove_pending_request (jqXHR) {
+function remove_pending_request(jqXHR) {
     if (!feature_flags.cleanup_before_reload) { return; }
 
     var pending_request_index = _.indexOf(pending_requests, jqXHR);

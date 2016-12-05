@@ -108,7 +108,7 @@
 	"func-style": ["off", "expression"],
 	"wrap-iife": ["error", "outside", { "functionPrototypeMethods": false }],
 	"no-new-func": "error",
-	"space-before-function-paren": 1,
+	"space-before-function-paren": ["error", { "anonymous": "always", "named": "never", "asyncArrow": "always" }],
 	"no-param-reassign": 1,
 	"prefer-spread": "error",
 	"arrow-spacing": ["error", { "before": true, "after": true }],

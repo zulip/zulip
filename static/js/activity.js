@@ -329,11 +329,11 @@ function actually_update_users_for_search() {
 
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
-function show_huddles () {
+function show_huddles() {
     $('#group-pm-list').expectOne().show();
 }
 
-function hide_huddles () {
+function hide_huddles() {
     $('#group-pm-list').expectOne().hide();
 }
 
@@ -519,7 +519,7 @@ exports.blur_search = function () {
     $('.user-list-filter').blur();
 };
 
-function maybe_select_person (e) {
+function maybe_select_person(e) {
     if (e.keyCode === 13) {
         // Enter key was pressed
 
@@ -538,7 +538,7 @@ function maybe_select_person (e) {
     }
 }
 
-function focus_user_filter (e) {
+function focus_user_filter(e) {
     e.stopPropagation();
 }
 

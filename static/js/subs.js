@@ -67,7 +67,7 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
 
 // Finds the stream name of a jquery object that's inside a
 // .stream-row or .subscription_settings element.
-function get_stream_name (target) {
+function get_stream_name(target) {
     if (target.constructor !== jQuery) {
         target = $(target);
     }
@@ -850,7 +850,7 @@ $(function () {
         selectText(this);
     });
 
-    function sub_or_unsub (stream_name) {
+    function sub_or_unsub(stream_name) {
         var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {

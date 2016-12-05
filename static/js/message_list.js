@@ -215,7 +215,7 @@ exports.MessageList.prototype = {
     // nature of local message IDs in the message list
     _lower_bound: function MessageList__lower_bound(id) {
         var self = this;
-        function less_func (msg, ref_id, a_idx) {
+        function less_func(msg, ref_id, a_idx) {
             if (self._is_localonly_id(msg.id)) {
                 // First non-local message before this one
                 var effective = self._next_nonlocal_message(self._items, a_idx,

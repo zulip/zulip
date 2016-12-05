@@ -45,7 +45,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     });
 };
 
-exports.initialize = function initialize () {
+exports.initialize = function initialize() {
     // Load the sprite image in the background so that the browser
     // can cache it for later use.
     var sprite = new Image();
