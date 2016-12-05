@@ -28,7 +28,7 @@ class ReactionEmojiTest(ZulipTestCase):
         sender = 'hamlet@zulip.com'
         result = self.client_post('/api/v1/reactions', {'message_id': 1, 'emoji': ''},
                                   **self.api_auth(sender))
-        self.assert_json_error(result, "Emoji '' does not exist")
+        self.assert_json_error(result, "Emoji name can't be empty")
 
     def test_invalid_emoji(self):
         # type: () -> None
@@ -115,6 +115,7 @@ class ReactionMessageIDTest(ZulipTestCase):
                                   **self.api_auth(reaction_sender))
         self.assert_json_error(result, "Invalid message(s)")
 
+
 class ReactionTest(ZulipTestCase):
     def test_existing_reaction(self):
         # type: () -> None
@@ -140,6 +141,7 @@ class ReactionTest(ZulipTestCase):
                                                         'emoji': 'smile'},
                                   **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction already exists")
+
 
 class ReactionEventTest(ZulipTestCase):
     def test_event(self):
@@ -178,5 +180,3 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event['user']['email'], reaction_sender)
         self.assertEqual(event['type'], 'reaction')
         self.assertEqual(event['op'], 'add')
-        self.assertEqual(event['emoji_name'], 'smile')
-        self.assertEqual(event['message_id'], pm_id)
