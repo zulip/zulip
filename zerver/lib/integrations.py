@@ -123,6 +123,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('mention', display_name='Mention'),
     WebhookIntegration('newrelic', display_name='New Relic'),
     WebhookIntegration('pagerduty'),
+    WebhookIntegration('papertrail'),
     WebhookIntegration('pingdom'),
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
