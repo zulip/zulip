@@ -209,6 +209,6 @@
         "valid-typeof": ["error", { "requireStringLiterals": true }],
         "wrap-iife": 2,
         "wrap-regex": 0,
-        "yoda": 1
+        "yoda": 2
     }
 }
