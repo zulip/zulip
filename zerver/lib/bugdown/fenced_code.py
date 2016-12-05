@@ -101,8 +101,8 @@ class FencedCodeExtension(markdown.Extension):
         # Newer versions of Python-Markdown (starting at 2.3?) have
         # a normalize_whitespace preprocessor that needs to go first.
         position = ('>normalize_whitespace'
-            if 'normalize_whitespace' in md.preprocessors
-            else '_begin')
+                    if 'normalize_whitespace' in md.preprocessors
+                    else '_begin')
 
         md.preprocessors.add('fenced_code_block',
                              FencedBlockPreprocessor(md),
@@ -260,13 +260,13 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         # is enabled, so we call it to highlite the code
         if self.codehilite_conf:
             highliter = CodeHilite(text,
-                       linenums=self.codehilite_conf['linenums'][0],
-                       guess_lang=self.codehilite_conf['guess_lang'][0],
-                       css_class=self.codehilite_conf['css_class'][0],
-                       style=self.codehilite_conf['pygments_style'][0],
-                       use_pygments=self.codehilite_conf['use_pygments'][0],
-                       lang=(lang or None),
-                       noclasses=self.codehilite_conf['noclasses'][0])
+                                   linenums=self.codehilite_conf['linenums'][0],
+                                   guess_lang=self.codehilite_conf['guess_lang'][0],
+                                   css_class=self.codehilite_conf['css_class'][0],
+                                   style=self.codehilite_conf['pygments_style'][0],
+                                   use_pygments=self.codehilite_conf['use_pygments'][0],
+                                   lang=(lang or None),
+                                   noclasses=self.codehilite_conf['noclasses'][0])
 
             code = highliter.hilite()
         else:

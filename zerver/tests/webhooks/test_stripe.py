@@ -23,7 +23,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_charge_dispute_created
         self.send_and_test_stream_message('charge_dispute_created', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_charge_failed(self):
         # type: () -> None
@@ -32,7 +32,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_charge_failed
         self.send_and_test_stream_message('charge_failed', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_charge_succeeded(self):
         # type: () -> None
@@ -41,7 +41,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_charge_succeeded
         self.send_and_test_stream_message('charge_succeeded', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_created_email(self):
         # type: () -> None
@@ -50,7 +50,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_customer_created_email
         self.send_and_test_stream_message('customer_created_email', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_created(self):
         # type: () -> None
@@ -59,7 +59,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_customer_created
         self.send_and_test_stream_message('customer_created', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_deleted(self):
         # type: () -> None
@@ -68,7 +68,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_customer_deleted
         self.send_and_test_stream_message('customer_deleted', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_subscription_created(self):
         # type: () -> None
@@ -77,7 +77,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_customer_subscription_created
         self.send_and_test_stream_message('customer_subscription_created', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_subscription_deleted(self):
         # type: () -> None
@@ -86,7 +86,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_customer_subscription_deleted
         self.send_and_test_stream_message('customer_subscription_deleted', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_customer_subscription_trial_will_end(self):
         # type: () -> None
@@ -95,7 +95,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_customer_subscription_trial_will_end
         self.send_and_test_stream_message('customer_subscription_trial_will_end', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_invoice_payment_failed(self):
         # type: () -> None
@@ -104,7 +104,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_invoice_payment_failed
         self.send_and_test_stream_message('invoice_payment_failed', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_order_payment_failed(self):
         # type: () -> None
@@ -113,7 +113,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_order_payment_failed
         self.send_and_test_stream_message('order_payment_failed', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_order_payment_succeeded(self):
         # type: () -> None
@@ -122,7 +122,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_order_payment_succeeded
         self.send_and_test_stream_message('order_payment_succeeded', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_order_updated(self):
         # type: () -> None
@@ -131,7 +131,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_order_updated
         self.send_and_test_stream_message('order_updated', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_transfer_failed(self):
         # type: () -> None
@@ -140,7 +140,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_transfer_failed
         self.send_and_test_stream_message('transfer_failed', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def test_transfer_paid(self):
         # type: () -> None
@@ -149,7 +149,7 @@ class StripeHookTests(WebhookTestCase):
 
         # use fixture named stripe_transfer_paid
         self.send_and_test_stream_message('transfer_paid', expected_subject, expected_message,
-                                      content_type="application/x-www-form-urlencoded")
+                                          content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
         # type: (Text) -> Text

@@ -219,7 +219,7 @@ def validate(fn=None, text=None, check_indent=True):
 def is_special_html_tag(s, tag):
     # type: (str, str) -> bool
     return (s.startswith('<!--') or
-           tag in ['link', 'meta', '!DOCTYPE'])
+            tag in ['link', 'meta', '!DOCTYPE'])
 
 def is_django_block_tag(tag):
     # type: (str) -> bool

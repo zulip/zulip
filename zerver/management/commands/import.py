@@ -48,7 +48,7 @@ Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] 
         count = model.objects.count()
         if count:
             print("Zulip instance is not empty, found %d rows in %s table. "
-                % (count, model._meta.db_table))
+                  % (count, model._meta.db_table))
             print("You may use --destroy-rebuild-database to destroy and rebuild the database prior to import.")
             exit(1)
 
@@ -60,8 +60,8 @@ Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
-            Client, Message, UserMessage, Huddle, DefaultStream, RealmAlias,
-            RealmFilter]
+                            Client, Message, UserMessage, Huddle, DefaultStream, RealmAlias,
+                            RealmFilter]
 
         if len(args) == 0:
             print("Please provide at least one realm dump to import.")
