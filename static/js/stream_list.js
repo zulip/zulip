@@ -526,7 +526,7 @@ function toggle_filter_displayed(e) {
     if (e.target.id === 'streams_inline_cog') {
         return;
     }
-    if (0 === $('.stream-list-filter.notdisplayed').length) {
+    if ($('.stream-list-filter.notdisplayed').length === 0) {
         exports.clear_and_hide_search();
     } else {
         exports.initiate_search();
