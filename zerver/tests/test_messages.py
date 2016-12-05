@@ -591,7 +591,6 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, bugdown.version)
 
-
     def test_reaction(self):
         # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
