@@ -31,6 +31,7 @@ as a “**realm**”.
 - **[Message formatting](/help/message-formatting.md)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
+- **[Signing out](#help/signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
 
 ---
