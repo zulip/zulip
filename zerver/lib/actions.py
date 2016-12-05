@@ -954,7 +954,7 @@ def check_add_reaction(user_profile, emoji_name, message_id):
         raise JsonableError(_("Emoji does not exist"))
     do_add_reaction(user_profile, message, emoji_name)
 
->>>>>>> fork/master
+
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
     recipient_user_profiles = get_recipient_user_profiles(notification['recipient'],

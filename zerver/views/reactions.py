@@ -9,6 +9,7 @@ from zerver.lib.bugdown import emoji_list
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
+from zerver.models import Reaction, UserProfile
 
 
 @has_request_variables

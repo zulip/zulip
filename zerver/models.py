@@ -1140,7 +1140,7 @@ class Subscription(ModelReprMixin, models.Model):
     desktop_notifications = models.BooleanField(default=True) # type: bool
     audible_notifications = models.BooleanField(default=True) # type: bool
 
-    # Combination desktop audible notifications superseded by the
+    # Combination desktop + audible notifications superseded by the
     # above.
     notifications = models.BooleanField(default=False) # type: bool
 
