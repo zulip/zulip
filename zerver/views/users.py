@@ -31,16 +31,22 @@ def deactivate_user_backend(request, user_profile, email):
         return json_error(_('No such user'))
     if target.is_bot:
         return json_error(_('No such user'))
+    if check_last_admin(target):
+        return json_error(_('Cannot deactivate the only organization administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    admins = set(user_profile.realm.get_admin_users())
 
-    if user_profile.is_realm_admin and len(admins) == 1:
-        return json_error(_('Cannot deactivate the only admin'))
+    if user_profile.is_realm_admin and check_last_admin(user_profile):
+        return json_error(_('Cannot deactivate the only organization administrator'))
     do_deactivate_user(user_profile)
     return json_success()
+
+def check_last_admin(user_profile):
+    # type: (UserProfile) -> bool
+    admins = set(user_profile.realm.get_admin_users())
+    return user_profile.is_realm_admin and len(admins) == 1
 
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -87,6 +93,8 @@ def update_user_backend(request, user_profile, email,
         return json_error(_('Insufficient permission'))
 
     if is_admin is not None:
+        if not is_admin and check_last_admin(user_profile):
+            return json_error(_('Cannot remove the only organization administrator'))
         do_change_is_admin(target, is_admin)
 
     if (full_name is not None and target.full_name != full_name and
