@@ -878,13 +878,7 @@ def sew_messages_and_reactions(messages, reactions):
         converted_messages[reaction['message_id']]['reactions'].append(
             reaction)
 
-    values = converted_messages.values()
-
-    # Python 2 returns dict.values as list where as Python 3 returns
-    # as `dict_values`.
-    if isinstance(values, list):
-        return values
-    return list(values)
+    return list(converted_messages.values())
 
 
 class Message(ModelReprMixin, models.Model):
