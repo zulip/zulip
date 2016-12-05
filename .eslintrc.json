@@ -120,7 +120,7 @@
             "numbers": false
         }],
         "no-array-constructor": "error",
-        "array-callback-return": 1,
+        "array-callback-return": "error",
         "template-curly-spacing": "error",
         "no-useless-escape": 1,
         "func-style": ["off", "expression"],
