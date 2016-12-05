@@ -166,6 +166,9 @@ be non-standard.
 
 * Disable link-by-reference syntax, `[foo][bar]` ... `[bar]: http://google.com`
 
+* Enable linking to other streams using `#**streamName**`
+
+
 ### Code
 
 * Enable fenced code block extension, with syntax highlighting
