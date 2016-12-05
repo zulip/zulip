@@ -161,6 +161,7 @@ exports.strcmp = (function () {
         var collator = new Intl.Collator();
         return collator.compare;
     } catch (e) {
+        // continue regardless of error
     }
 
     return function util_strcmp (a, b) {

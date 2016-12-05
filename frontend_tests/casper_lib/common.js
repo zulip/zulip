@@ -337,4 +337,5 @@ return exports;
 try {
     exports.common = common;
 } catch (e) {
+    // continue regardless of error
 }
