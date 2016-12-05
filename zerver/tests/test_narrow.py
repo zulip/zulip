@@ -358,7 +358,6 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def add_reaction_to_message(self, message_id, email):
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         payload = self.client_post('/json/reactions',
                                    {'emoji': 'simple_smile',
                                     'message_id': message_id})
@@ -386,12 +385,12 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         Test old `/json/messages` returns reactions.
 
-        - Login as a `User A`, subscribe to stream `S1`. 
+        - Login as a `User A`, subscribe to stream `S1`.
         - Login as a `User B` and subscribe to the stream `S1`.
         - Login as a `User A` and send a message `m1` to the stream `S1`.
         - Login as a `User B` and react to the message `m1`.
-        - Login as a `User A` and fetch the messages. 
-        - Assert on reaction for the message `m1`
+        - Login as a `User A` and fetch the messages.
+        - Assert on reaction for the message `m1`.
         """
         stream = "metamorphosis"
         hamlet_email = "hamlet@zulip.com"
