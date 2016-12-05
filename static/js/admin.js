@@ -58,7 +58,7 @@ function failed_changing_name(xhr, error) {
     ui.report_error(i18n.t("Error changing name"), xhr, $("#administration-status"));
 }
 
-function populate_users (realm_people_data) {
+function populate_users(realm_people_data) {
     var users_table = $("#admin_users_table");
     var deactivated_users_table = $("#admin_deactivated_users_table");
     var bots_table = $("#admin_bots_table");

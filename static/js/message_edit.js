@@ -16,7 +16,7 @@ var editability_types = {
 };
 exports.editability_types = editability_types;
 
-function get_editability (message, edit_limit_seconds_buffer) {
+function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
     if (!(message && message.sent_by_me)) {
         return editability_types.NO;
@@ -150,7 +150,7 @@ function timer_text(seconds_left) {
     return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
 }
 
-function edit_message (row, raw_content) {
+function edit_message(row, raw_content) {
     var content_top = row.find('.message_content')[0]
         .getBoundingClientRect().top;
 

@@ -164,7 +164,7 @@ exports.strcmp = (function () {
         // continue regardless of error
     }
 
-    return function util_strcmp (a, b) {
+    return function util_strcmp(a, b) {
         return (a < b ? -1 : (a > b ? 1 : 0));
     };
 }());

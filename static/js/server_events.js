@@ -204,7 +204,7 @@ function get_events_success(events) {
     var messages_to_update = [];
     var new_pointer;
 
-    var clean_event = function clean_event (event) {
+    var clean_event = function clean_event(event) {
         // Only log a whitelist of the event to remove private data
         return _.pick(event, 'id', 'type', 'op');
     };

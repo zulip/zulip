@@ -500,11 +500,11 @@ exports.clear_and_hide_search = function () {
     filter.addClass('notdisplayed');
 };
 
-function focus_stream_filter (e) {
+function focus_stream_filter(e) {
     e.stopPropagation();
 }
 
-function maybe_select_stream (e) {
+function maybe_select_stream(e) {
     if (e.keyCode === 13) {
         // Enter key was pressed
 

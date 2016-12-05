@@ -40,7 +40,7 @@ if (window.webkitNotifications) {
 }
 
 
-function browser_desktop_notifications_on () {
+function browser_desktop_notifications_on() {
     return (notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             /webkit/i.test(navigator.userAgent) &&
@@ -50,7 +50,7 @@ function browser_desktop_notifications_on () {
         (window.bridge !== undefined);
 }
 
-function cancel_notification_object (notification_object) {
+function cancel_notification_object(notification_object) {
         // We must remove the .onclose so that it does not trigger on .cancel
         notification_object.onclose = function () {};
         notification_object.onclick = function () {};

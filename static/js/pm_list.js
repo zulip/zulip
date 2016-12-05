@@ -43,7 +43,7 @@ exports.get_li_for_user_ids_string = function (user_ids_string) {
     return convo_li;
 };
 
-function set_pm_conversation_count (conversation, count) {
+function set_pm_conversation_count(conversation, count) {
     var pm_li = pm_list.get_conversation_li(conversation);
     var count_span = pm_li.find('.private_message_count');
     var value_span = count_span.find('.value');

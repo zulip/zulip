@@ -130,7 +130,7 @@ function clear_box() {
     $("#send-status").hide(0);
 }
 
-function clear_preview_area () {
+function clear_preview_area() {
     $("#new_message_content").show();
     $("#undo_markdown_preview").hide();
     $("#preview_message_area").hide();
@@ -174,7 +174,7 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(stream_color.get_color_class(color));
 };
 
-function update_fade () {
+function update_fade() {
     if (!is_composing_message) {
         return;
     }
@@ -281,7 +281,7 @@ exports.start = function (msg_type, opts) {
     resize.resize_bottom_whitespace();
 };
 
-function abort_xhr () {
+function abort_xhr() {
     $("#compose-send-button").removeAttr("disabled");
     var xhr = $("#compose").data("filedrop_xhr");
     if (xhr !== undefined) {
@@ -655,7 +655,7 @@ exports.respond_to_message = function (opts) {
 exports.test_send_many_messages = function (stream, subject, count) {
     var num_sent = 0;
 
-    function do_send_one () {
+    function do_send_one() {
         var message = {};
         num_sent += 1;
 

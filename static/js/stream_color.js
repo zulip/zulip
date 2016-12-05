@@ -105,7 +105,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     tab_bar.colorize_tab_bar();
 };
 
-function picker_do_change_color (color) {
+function picker_do_change_color(color) {
     var stream_id = $(this).attr('stream_id');
     var hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);

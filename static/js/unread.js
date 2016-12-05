@@ -227,7 +227,7 @@ exports.mark_all_as_read = function mark_all_as_read(cont) {
 };
 
 // Takes a list of messages and marks them as read
-exports.mark_messages_as_read = function mark_messages_as_read (messages, options) {
+exports.mark_messages_as_read = function mark_messages_as_read(messages, options) {
     options = options || {};
     var processed = false;
 
