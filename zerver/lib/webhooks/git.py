@@ -1,5 +1,4 @@
-from six import text_type
-from typing import Optional, Any
+from typing import Optional, Any, Text
 
 SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
 SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
@@ -33,7 +32,7 @@ TAG_WITH_URL_TEMPLATE = u"[{tag_name}]({tag_url})"
 TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False):
-    # type: (text_type, Optional[text_type], text_type, List[Dict[str, Any]], Optional[bool]) -> text_type
+    # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool]) -> Text
     if compare_url:
         pushed_text_message = PUSH_PUSHED_TEXT_WITH_URL.format(compare_url=compare_url)
     else:
@@ -47,7 +46,7 @@ def get_push_commits_event_message(user_name, compare_url, branch_name, commits_
     ).rstrip()
 
 def get_force_push_commits_event_message(user_name, url, branch_name, head):
-    # type: (text_type, text_type, text_type, text_type) -> text_type
+    # type: (Text, Text, Text, Text) -> Text
     return FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         url=url,
@@ -56,7 +55,7 @@ def get_force_push_commits_event_message(user_name, url, branch_name, head):
     )
 
 def get_remove_branch_event_message(user_name, branch_name):
-    # type: (text_type, text_type) -> text_type
+    # type: (Text, Text) -> Text
     return REMOVE_BRANCH_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         branch_name=branch_name,
@@ -67,7 +66,7 @@ def get_pull_request_event_message(
         target_branch=None, base_branch=None,
         message=None, assignee=None, type='PR'
 ):
-    # type: (text_type, text_type, text_type, Optional[int], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type], Optional[text_type]) -> text_type
+    # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[Text]) -> Text
     main_message = PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
@@ -88,7 +87,7 @@ def get_pull_request_event_message(
     return main_message.rstrip()
 
 def get_issue_event_message(user_name, action, url, number=None, message=None, assignee=None):
-    # type: (text_type, text_type, text_type, Optional[int], Optional[text_type], Optional[text_type]) -> text_type
+    # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text]) -> Text
     return get_pull_request_event_message(
         user_name,
         action,
@@ -100,7 +99,7 @@ def get_issue_event_message(user_name, action, url, number=None, message=None, a
     )
 
 def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed'):
-    # type: (text_type, text_type, Optional[text_type], Optional[text_type]) -> text_type
+    # type: (Text, Text, Optional[Text], Optional[Text]) -> Text
     if tag_url:
         tag_part = TAG_WITH_URL_TEMPLATE.format(tag_name=tag_name, tag_url=tag_url)
     else:
@@ -112,7 +111,7 @@ def get_push_tag_event_message(user_name, tag_name, tag_url=None, action='pushed
     )
 
 def get_commits_comment_action_message(user_name, action, commit_url, sha, message=None):
-    # type: (text_type, text_type, text_type, text_type, Optional[text_type]) -> text_type
+    # type: (Text, Text, Text, Text, Optional[Text]) -> Text
     content = COMMITS_COMMENT_MESSAGE_TEMPLATE.format(
         user_name=user_name,
         action=action,
@@ -126,7 +125,7 @@ def get_commits_comment_action_message(user_name, action, commit_url, sha, messa
     return content
 
 def get_commits_content(commits_data, is_truncated=False):
-    # type: (List[Dict[str, Any]], Optional[bool]) -> text_type
+    # type: (List[Dict[str, Any]], Optional[bool]) -> Text
     commits_content = u''
     for commit in commits_data[:COMMITS_LIMIT]:
         commits_content += COMMIT_ROW_TEMPLATE.format(
@@ -146,5 +145,5 @@ def get_commits_content(commits_data, is_truncated=False):
     return commits_content.rstrip()
 
 def get_short_sha(sha):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return sha[:7]
