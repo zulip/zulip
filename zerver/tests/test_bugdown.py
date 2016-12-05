@@ -269,9 +269,8 @@ class BugdownTest(TestCase):
 
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png"><img src="https://www.dropbox.com/static/images/home_logo.png"></a></div>')
 
-    @mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None)
-    def test_inline_dropbox_bad(self, url_preview):
-        # type: (Any) -> None
+    def test_inline_dropbox_bad(self):
+        # type: () -> None
         # Don't fail on bad dropbox links
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
         converted = bugdown_convert(msg)
@@ -287,9 +286,8 @@ class BugdownTest(TestCase):
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/photo/1'), '410766290349879296')
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/'), '410766290349879296')
 
-    @mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None)
-    def test_inline_interesting_links(self, url_preview):
-        # type: (Any) -> None
+    def test_inline_interesting_links(self):
+        # type: () -> None
         def make_link(url):
             # type: (Text) -> Text
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
@@ -435,9 +433,8 @@ class BugdownTest(TestCase):
         converted = bugdown_convert(msg)
         self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
 
-    @mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None)
-    def test_realm_patterns(self, link_embed_data_from_cache):
-        # type: (Any) -> None
+    def test_realm_patterns(self):
+        # type: () -> None
         realm = get_realm_by_string_id('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
@@ -814,9 +811,8 @@ class BugdownTest(TestCase):
             '</div>'
         )
 
-    @mock.patch('zerver.lib.url_preview.preview.link_embed_data_from_cache', return_value=None)
-    def test_mit_rendering(self, link_embed_data_from_cache):
-        # type: (Any) -> None
+    def test_mit_rendering(self):
+        # type: () -> None
         """Test the markdown configs for the MIT Zephyr mirroring system;
         verifies almost all inline patterns are disabled, but
         inline_interesting_links is still enabled"""
@@ -838,7 +834,6 @@ class BugdownTest(TestCase):
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
-
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):

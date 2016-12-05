@@ -2690,50 +2690,6 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
-def do_update_embeded_data(user_profile, message, content, rendered_content):
-    # type: (UserProfile, Message, Optional[text_type], Optional[text_type]) -> None
-    event = {
-        'type': 'update_message',
-        'sender': user_profile.email,
-        'message_id': message.id}  # type: Dict[str, Any]
-    changed_messages = [message]
-
-    ums = UserMessage.objects.filter(message=message.id)
-
-    if content is not None:
-        update_user_message_flags(message, ums)
-        message.content = content
-        message.rendered_content = rendered_content
-        message.rendered_content_version = bugdown_version
-        event["content"] = content
-        event["rendered_content"] = rendered_content
-
-    log_event(event)
-    message.save(update_fields=["content", "rendered_content"])
-
-    # Update the message as stored in the (deprecated) message
-    # cache (for shunting the message over to Tornado in the old
-    # get_messages API) and also the to_dict caches.
-    items_for_remote_cache = {}
-    event['message_ids'] = []
-    for changed_message in changed_messages:
-        event['message_ids'].append(changed_message.id)
-        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
-        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
-    cache_set_many(items_for_remote_cache)
-
-    def user_info(um):
-        # type: (UserMessage) -> Dict[str, Any]
-        return {
-            'id': um.user_profile_id,
-            'flags': um.flags_list()
-        }
-    send_event(event, list(map(user_info, ums)))
-
-# We use transaction.atomic to support select_for_update in the attachment codepath.
-@transaction.atomic
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
     # type: (UserProfile, Message, Optional[text_type], str, Optional[text_type], Optional[text_type]) -> None
     event = {'type': 'update_message',
