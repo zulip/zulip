@@ -792,7 +792,9 @@ function _setup_page() {
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');
         var emoji = {};
-        $(this).serializeArray().map(function (x) {emoji[x.name] = x.value;});
+        _.each($(this).serializeArray(), function (obj) {
+            emoji[obj.name] = obj.value;
+        });
 
         channel.put({
             url: "/json/realm/emoji",
@@ -844,7 +846,9 @@ function _setup_page() {
         pattern_status.hide();
         format_status.hide();
         var filter = {};
-        $(this).serializeArray().map(function (x) {filter[x.name] = x.value;});
+        _.each($(this).serializeArray(), function (obj) {
+            filter[obj.name] = obj.value;
+        });
 
         channel.post({
             url: "/json/realm/filters",
