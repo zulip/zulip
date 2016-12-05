@@ -11,6 +11,6 @@
 	"window": false
     },
     "rules": {
-	"no-sync": 1
+	"no-sync": 0
     }
 }
