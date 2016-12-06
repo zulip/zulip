@@ -202,7 +202,6 @@ def main(options):
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    run(["tools/setup/download-zxcvbn"])
     if not os.path.isdir(EMOJI_CACHE_PATH):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
