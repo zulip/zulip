@@ -11,6 +11,7 @@ from sqlalchemy.sql import (
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    Reaction
 )
 from zerver.lib.message import (
     MessageDict,
@@ -333,7 +334,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             for field in ("content", "content_type", "display_recipient",
                           "avatar_url", "recipient_id", "sender_full_name",
-                          "sender_short_name", "timestamp"):
+                          "sender_short_name", "timestamp", "reactions"):
                 self.assertIn(field, message)
             # TODO: deprecate soon in favor of avatar_url
             self.assertIn('gravatar_hash', message)
@@ -354,6 +355,50 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['othello_recipient'] = get_recipient(Recipient.PERSONAL, othello_user.id).id
 
         return query_ids
+
+    def add_reaction_to_message(self, message_id, email):
+        self.login(email)
+        payload = self.client_post('/json/reactions',
+                                   {'emoji': 'simple_smile',
+                                    'message_id': message_id})
+        self.assert_json_success(payload)
+        result = ujson.loads(payload.content)
+        return result
+
+    def test_successful_get_old_messages_reaction(self):
+        """
+        Test old `/json/messages` returns reactions.
+
+        - Login as a `User A`, subscribe to stream `S1`.
+        - Login as a `User B` and subscribe to the stream `S1`.
+        - Login as a `User A` and send a message `m1` to the stream `S1`.
+        - Login as a `User B` and react to the message `m1`.
+        - Login as a `User A` and fetch the messages.
+        - Assert on reaction for the message `m1`.
+        """
+        stream = "metamorphosis"
+        hamlet_email = "hamlet@zulip.com"
+        othello_email = "othello@zulip.com"
+
+        self.login(hamlet_email)
+        self.subscribe_to_stream(hamlet_email, stream)
+
+        self.login(othello_email)
+        self.subscribe_to_stream(othello_email, stream)
+
+        self.login(hamlet_email)
+        message_id = self.send_message(hamlet_email, stream, Recipient.STREAM)
+        reaction = self.add_reaction_to_message(message_id,
+                                                othello_email)
+        self.login(othello_email)
+        messages = self.get_and_check_messages(dict())
+
+        for message in messages['messages']:
+            if message['id'] == message_id:
+                self.assertEquals(message['reactions'], 1)
+                self.assertEquals(message['reactions'][0]['emoji_name'],
+                                  reaction.emoji_name)
+                break
 
     def test_successful_get_old_messages(self):
         """
