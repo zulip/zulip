@@ -13,6 +13,7 @@ from sqlalchemy.sql import compiler # type: ignore
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
     get_display_recipient, get_recipient, get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    Reaction
 )
 from zerver.lib.message import (
     MessageDict,
@@ -389,7 +390,7 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             for field in ("content", "content_type", "display_recipient",
                           "avatar_url", "recipient_id", "sender_full_name",
-                          "sender_short_name", "timestamp"):
+                          "sender_short_name", "timestamp", "reactions"):
                 self.assertIn(field, message)
             # TODO: deprecate soon in favor of avatar_url
             self.assertIn('gravatar_hash', message)
@@ -411,6 +412,34 @@ class GetOldMessagesTest(ZulipTestCase):
         query_ids['othello_recipient'] = get_recipient(Recipient.PERSONAL, othello_user.id).id
 
         return query_ids
+
+    def test_successful_get_old_messages_reaction(self):
+        # type: () -> None
+        """
+        Test old `/json/messages` returns reactions.
+        """
+        self.login("hamlet@zulip.com")
+        messages = self.get_and_check_messages(dict())
+        message_id = messages['messages'][0]['id']
+
+        self.login("othello@zulip.com")
+        reaction_name = 'simple_smile'
+
+        url = '/json/messages/{}/emoji_reactions/{}'.format(message_id, reaction_name)
+        payload = self.client_put(url)
+        self.assert_json_success(payload)
+
+        self.login("hamlet@zulip.com")
+        messages = self.get_and_check_messages({})
+        message_to_assert = None
+        for message in messages['messages']:
+            if message['id'] == message_id:
+                message_to_assert = message
+                break
+
+        self.assertEquals(len(message_to_assert['reactions']), 1)
+        self.assertEquals(message_to_assert['reactions'][0]['emoji_name'],
+                          reaction_name)
 
     def test_successful_get_old_messages(self):
         # type: () -> None

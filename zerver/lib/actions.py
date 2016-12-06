@@ -941,6 +941,9 @@ def do_add_reaction(user_profile, message, emoji_name):
              'message_id': message.id,
              'emoji_name': emoji_name} # type: Dict[str, Any]
 
+    # Update the cached message since new reaction is added.
+    update_to_dict_cache([message])
+
     # Recipients for message update events, including reactions, are
     # everyone who got the original message.  This means reactions
     # won't live-update in preview narrows, but it's the right
@@ -965,6 +968,9 @@ def do_remove_reaction(user_profile, message, emoji_name):
              'user': user_dict,
              'message_id': message.id,
              'emoji_name': emoji_name} # type: Dict[str, Any]
+
+    # Clear the cached message since reaction is removed.
+    update_to_dict_cache([message])
 
     # Recipients for message update events, including reactions, are
     # everyone who got the original message.  This means reactions
