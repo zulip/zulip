@@ -28,6 +28,7 @@ Contents:
 * :ref:`dev-install-docs`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
+* :ref:`code-testing`
 * :ref:`system-docs`
 
 .. _user-docs:
@@ -88,9 +89,21 @@ Contents:
    git-guide
    version-control
    code-style
-   testing
    mypy
    code-reviewing
+
+.. _code-testing:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code testing
+
+   testing
+   linters
+   testing-with-node
+   testing-with-django
+   testing-with-casper
+   manual-testing
 
 .. _system-docs:
 
