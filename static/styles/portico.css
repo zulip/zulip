@@ -41,6 +41,10 @@
     height: 56px;
 }
 
+.breakpoint {
+    display: inline-block;
+}
+
 html {
     height: 100%;
 }
@@ -80,7 +84,7 @@ li {
 }
 
 .help-box {
-    width: 500px;
+    max-width: 500px;
 
     padding: 10px;
     margin: 10px 0px;
@@ -976,7 +980,7 @@ a.bottom-signup-button {
 }
 
 .center-container {
-    height: calc(100vh - 94px);
+    min-height: calc(100vh - 94px);
     min-height: 700px;
     display: flex;
     align-items: center;
@@ -1138,6 +1142,10 @@ a.bottom-signup-button {
 }
 
 @media (max-width: 500px) {
+  .center-container {
+    display: block;
+  }
+
   .app-main,
   .header-main,
   .footer-main {
