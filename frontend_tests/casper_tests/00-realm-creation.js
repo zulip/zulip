@@ -26,7 +26,7 @@ casper.then(function () {
     });
     // Make sure confirmation email is send
     this.waitWhileSelector('form[action^="/create_realm/"]', function () {
-         var regex = new RegExp('^http:\/\/[^\/]+\/accounts\/send_confirm\/' + email);
+         var regex = new RegExp('^http://[^/]+/accounts/send_confirm/' + email);
          this.test.assertUrlMatch(regex, 'Confirmation mail send');
     });
 });

@@ -22,7 +22,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible("#settings-change-box", function () {
-        casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
+        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, 'URL suggests we are on settings page');
         casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
 
         casper.test.assertNotVisible("#pw_change_controls");

@@ -172,7 +172,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: 'And this is a #**wrong** stream link',
      expected: '<p>And this is a #**wrong** stream link</p>'},
     {input: 'mmm...:burrito:s',
-     expected: '<p>mmm...<img alt=\":burrito:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/burrito.png\" title=\":burrito:\">s</p>'},
+     expected: '<p>mmm...<img alt=":burrito:" class="emoji" src="/static/third/gemoji/images/emoji/burrito.png" title=":burrito:">s</p>'},
     {input: 'This is an :poop: message',
      expected: '<p>This is an <img alt=":poop:" class="emoji" src="/static/third/gemoji/images/emoji/poop.png" title=":poop:"> message</p>'},
     {input: "\ud83d\udca9",
