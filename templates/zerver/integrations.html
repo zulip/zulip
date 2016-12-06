@@ -1243,7 +1243,27 @@
       <p><img class="screenshot" src="/static/images/integrations/librato/009.png" /></p>
 
     </div>
+    <div id="mailchimp" class="integration-instructions">
+      <p>A Zulip fixture for Mail Chimp!</p>
 
+        <p>Before using this integation you will need to create a new stream called <code>mailchimp</code>. To do this go to the panel on the left side with all you streams listed. Then click the gear icon next to <code>STREAMS</code> which says <code>Subscribe, add, or configure streams</code>. Now click the blue button to the left of the search bar which says <code>Create new stream</code> then set the stream name to <code>mailchimp</code> and click <code>Create</code> in the bottom right corner.</p>
+
+        <p>Next, on your {{ settings_html|safe }}, create a Mail Chimp bot.  Construct the URL for
+        the bot using the API key:
+          <code>{{ external_api_uri_subdomain }}/v1/external/mailchimp?api_key=<b>key</b></code>
+        then setup Mail Chimp using these tutorials <a href="http://kb.mailchimp.com/lists/growth/create-a-new-list">Setup list</a> and <a href="http://kb.mailchimp.com/integrations/api-integrations/how-to-set-up-webhooks">Add Webhook</a> (use the url you constructed)
+        </p>
+        <p>To manually trigger a notication for testing goto the <code>zulip</code> directory through the zulip command line and...</p>
+
+        <p>Run this curl command:</p>
+        <div class="codehilite">
+          <pre>curl -X POST -H "Content-Type: application/json" -d @zerver/fixtures/mailchimp/mailchimp_unsubscribe.txt {{ external_api_uri_subdomain }}/v1/external/mailchimp?api_key=<b>apikey</b></pre>
+        </div>
+        <p>or you can have someone subscribe/unsubscribe! <b>If you need any help look on the mailchimp docs!</b></p>
+
+        <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
+        <img class="screenshot" src="/static/images/integrations/mailchimp/001.PNG"/>
+    </div>
     <div id="mercurial" class="integration-instructions">
 
       <p>Get Zulip notifications when you <code>hg push</code>!</p>

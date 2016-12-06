@@ -22,9 +22,9 @@ def api_mailchimp_webhook(request, user_profile, client, stream=REQ(default='mai
         returned = request.body
         returned = urlparse.unquote(returned)
         payload = {}
-        split1 = returned.split("&")
-        for spli in split1:
-            para = spli.split("=")
+        breakup = returned.split("&")
+        for Break in breakup:
+            para = Break.split("=")
             payload[para[0]] = para[1]
         subject = "["+payload['fired_at']+"]|"+payload['type']+"d|"+payload['data[merges][EMAIL]']
         body = payload['data[merges][FNAME]'] + " " + payload['data[merges][LNAME]'] + \
