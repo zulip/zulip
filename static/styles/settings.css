@@ -410,3 +410,7 @@ input[type=checkbox].inline-block {
 #show_api_key_box {
     padding-bottom: 20px;
 }
+
+#administration #deactivation_stream_modal h3 {
+    overflow-wrap: break-word;
+}
