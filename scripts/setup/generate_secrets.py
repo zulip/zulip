@@ -6,7 +6,7 @@ import sys, os, os.path
 from os.path import dirname, abspath
 from typing import Text
 if False:
-    from typing import Dict, Optional, Text
+    from typing import Dict, Optional
 
 BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
 sys.path.append(BASE_DIR)
