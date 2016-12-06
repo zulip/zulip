@@ -15,7 +15,8 @@
     "jquery": "1.12.1",
     "jquery-validation": "1.15.1",
     "sockjs-client":"1.1.1",
-    "webpack": "1.12.2"
+    "webpack": "1.12.2",
+    "zxcvbn": "4.4.1"
   },
   "devDependencies": {
     "casperjs": "1.1.3",

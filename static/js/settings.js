@@ -187,7 +187,7 @@ function _setup_page() {
         if (page_params.password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            $.getScript('/static/third/zxcvbn/zxcvbn.js', function () {
+            $.getScript('/static/node_modules/zxcvbn/dist/zxcvbn.js', function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
