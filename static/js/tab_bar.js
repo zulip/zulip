@@ -35,7 +35,8 @@ function make_tab_data() {
     }
 
     if (narrow.active() && narrow.operators().length > 0) {
-        var stream, ops = narrow.operators();
+        var stream;
+        var ops = narrow.operators();
         var hash = hashchange.operators_to_hash(ops);
         // Second breadcrumb item
         var hashed = hashchange.operators_to_hash(ops.slice(0, 1));

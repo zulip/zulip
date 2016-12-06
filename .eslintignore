@@ -1,0 +1,3 @@
+static/js/bundle.js
+static/js/blueslip.js
+puppet/zulip_ops/files/statsd/local.js

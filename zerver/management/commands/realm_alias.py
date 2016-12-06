@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 print(alias)
             sys.exit(0)
 
-        alias = options['alias']
+        alias = options['alias'].lower()
         if options["op"] == "add":
             if not can_add_alias(alias):
                 print("A Realm already exists for this domain, cannot add it as an alias for another realm!")
@@ -47,5 +47,5 @@ class Command(BaseCommand):
             RealmAlias.objects.get(realm=realm, domain=alias).delete()
             sys.exit(0)
         else:
-            self.print_help("python manage.py", "realm_alias")
+            self.print_help("./manage.py", "realm_alias")
             sys.exit(1)

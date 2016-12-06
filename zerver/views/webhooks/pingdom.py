@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Text
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
@@ -11,7 +11,6 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import Client, UserProfile
 
 import ujson
-import six
 
 
 PINGDOM_SUBJECT_TEMPLATE = '{name} status.'
@@ -37,7 +36,7 @@ SUPPORTED_CHECK_TYPES = (
 @has_request_variables
 def api_pingdom_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
                         stream=REQ(default='pingdom')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], six.text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     check_type = get_check_type(payload)
 
     if check_type in SUPPORTED_CHECK_TYPES:
@@ -51,12 +50,12 @@ def api_pingdom_webhook(request, user_profile, client, payload=REQ(argument_type
 
 
 def get_subject_for_http_request(payload):
-    # type: (Dict[str, Any]) -> six.text_type
+    # type: (Dict[str, Any]) -> Text
     return PINGDOM_SUBJECT_TEMPLATE.format(name=payload['check_name'])
 
 
 def get_body_for_http_request(payload):
-    # type: (Dict[str, Any]) -> six.text_type
+    # type: (Dict[str, Any]) -> Text
     current_state = payload['current_state']
     previous_state = payload['previous_state']
 
@@ -74,5 +73,5 @@ def get_body_for_http_request(payload):
 
 
 def get_check_type(payload):
-    # type: (Dict[str, Any]) -> six.text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['check_type']

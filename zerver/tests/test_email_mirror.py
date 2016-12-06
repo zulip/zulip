@@ -4,14 +4,17 @@ from __future__ import absolute_import
 from django.test import TestCase
 
 from zerver.lib.test_helpers import (
-    ZulipTestCase,
     most_recent_message,
     most_recent_usermessage,
 )
 
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
+
 from zerver.models import (
     get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient, get_realm,
+    Recipient, get_realm_by_string_id,
 )
 
 from zerver.lib.actions import (
@@ -39,19 +42,18 @@ import mock
 import os
 import sys
 from os.path import dirname, abspath
-from six import text_type
 from six.moves import cStringIO as StringIO
 from django.conf import settings
 
 from zerver.lib.str_utils import force_str
-from typing import Any, Callable, Mapping, Union
+from typing import Any, Callable, Mapping, Union, Text
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self):
         # type: () -> None
 
         def get_token(address):
-            # type: (text_type) -> text_type
+            # type: (Text) -> Text
             with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                 return get_missed_message_token_from_address(address)
 
@@ -133,9 +135,9 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # so calling process_stream_message directly
         try:
             process_stream_message(incoming_valid_message['To'],
-                incoming_valid_message['Subject'],
-                incoming_valid_message,
-                debug_info)
+                                   incoming_valid_message['Subject'],
+                                   incoming_valid_message,
+                                   debug_info)
         except ZulipEmailForwardError as e:
             # empty body throws exception
             exception_message = str(e)
@@ -282,7 +284,7 @@ class TestReplyExtraction(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
 
         stream_to_address = encode_email_address(stream)
-        text =  """Reply
+        text = """Reply
 
         -----Original Message-----
 
@@ -355,7 +357,7 @@ class TestCommandMTA(TestCase):
         # type: (mock.Mock) -> None
 
         sender = "hamlet@zulip.com"
-        stream = get_stream("Denmark", get_realm("zulip.com"))
+        stream = get_stream("Denmark", get_realm_by_string_id("zulip"))
         stream_to_address = encode_email_address(stream)
 
         template_path = os.path.join(MAILS_DIR, "simple.txt")

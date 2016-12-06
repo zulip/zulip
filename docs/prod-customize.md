@@ -65,7 +65,7 @@ themselves with joining streams on their own. You can use the
 command to set default streams for users within a realm:
 
 ```
-python manage.py set_default_streams --domain=example.com --streams=foo,bar,...
+./manage.py set_default_streams --domain=example.com --streams=foo,bar,...
 ```
 
 ## Notification settings

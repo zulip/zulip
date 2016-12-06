@@ -10,10 +10,12 @@ from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     make_client,
     queries_captured,
+)
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import (
-    split_email_to_domain,
+    email_to_domain,
     Client,
     UserActivity,
     UserProfile,
@@ -29,7 +31,7 @@ class ActivityTest(ZulipTestCase):
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
         last_visit = timezone.now()
-        count=150
+        count = 150
         for user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(
                 user_profile=user_profile,
@@ -131,7 +133,6 @@ class UserPresenceTests(ZulipTestCase):
         json = post_presence()
         self.assertEqual(json['zephyr_mirror_active'], True)
 
-
     def _simulate_mirror_activity_for_user(self, user_profile):
         # type: (UserProfile) -> None
         last_visit = timezone.now()
@@ -144,7 +145,6 @@ class UserPresenceTests(ZulipTestCase):
             count=2,
             last_visit=last_visit
         )
-
 
     def test_same_realm(self):
         # type: () -> None
@@ -160,4 +160,4 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences']["hamlet@zulip.com"]["website"]['status'], 'idle')
         # We only want @zulip.com emails
         for email in json['presences'].keys():
-            self.assertEqual(split_email_to_domain(email), 'zulip.com')
+            self.assertEqual(email_to_domain(email), 'zulip.com')

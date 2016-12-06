@@ -10,7 +10,8 @@ import logging
 import dateutil.parser
 import pytz
 from datetime import datetime, timedelta
-if False: from typing import List
+if False:
+    from typing import List
 
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)

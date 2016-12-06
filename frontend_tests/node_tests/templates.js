@@ -1,13 +1,13 @@
 set_global('page_params', {realm_emoji: {
   burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
-            source_url: '/static/third/gemoji/images/emoji/burrito.png'}
+            source_url: '/static/third/gemoji/images/emoji/burrito.png'},
 }});
 
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
     emoji: 'js/emoji',
-    i18n: 'i18next'
+    i18n: 'i18next',
 });
 
 var i18n = global.i18n;
@@ -16,14 +16,12 @@ i18n.init({
     keySeparator: false,
     interpolation: {
         prefix: "__",
-        suffix: "__"
+        suffix: "__",
     },
-    lng: 'en'
+    lng: 'en',
 });
 
 var jsdom = require("jsdom");
-var fs = require("fs");
-var path = require("path");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
 var _ = global._;
@@ -35,7 +33,7 @@ function render(template_name, args) {
     return global.render_template(template_name, args);
 }
 
-(function test_finding_partials () {
+(function test_finding_partials() {
     var fns = global.find_included_partials('settings_tab');
     assert.deepEqual(fns, [
         'account-settings',
@@ -43,11 +41,11 @@ function render(template_name, args) {
         'notification-settings',
         'bot-settings',
         'alert-word-settings',
-        'ui-settings'
+        'ui-settings',
     ]);
 }());
 
-(function test_handlebars_bug () {
+(function test_handlebars_bug() {
     // There was a bug in 1.0.9 where identically structured
     // blocks get confused, so when foo is false, it still
     // renders the foo-is-true block.
@@ -73,16 +71,16 @@ function render(template_name, args) {
 
 (function actions_popover_content() {
     var args = {
-        "message": {
+        message: {
             is_stream: true,
             id: "99",
             stream: "devel",
             subject: "testing",
-            sender_full_name: "King Lear"
+            sender_full_name: "King Lear",
         },
-        "can_edit_message": true,
-        "can_mute_topic": true,
-        "narrowed": true
+        can_edit_message: true,
+        can_mute_topic: true,
+        narrowed: true,
     };
 
     var html = '<div style="height: 250px">';
@@ -109,10 +107,10 @@ function render(template_name, args) {
 (function admin_emoji_list() {
     var args = {
         emoji: {
-            "name": "MouseFace",
-            "display_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
-            "source_url": "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png"
-        }
+            name: "MouseFace",
+            display_url: "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
+            source_url: "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png",
+        },
     };
 
     var html = '';
@@ -127,6 +125,28 @@ function render(template_name, args) {
 
     assert.equal(emoji_name.text(), 'MouseFace');
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
+}());
+
+(function admin_filter_list() {
+    var args = {
+        filter: {
+            pattern: "#(?P<id>[0-9]+)",
+            url_format_string: "https://trac.example.com/ticket/%(id)s",
+        },
+    };
+
+    var html = '';
+    html += '<tbody id="admin_filters_table">';
+    html += render('admin_filter_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_filter_list', html);
+
+    var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
+    var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+
+    assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
+    assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
 }());
 
 (function admin_streams_list() {
@@ -144,7 +164,7 @@ function render(template_name, args) {
 
 (function admin_tab() {
     var args = {
-        realm_name: 'Zulip'
+        realm_name: 'Zulip',
     };
     var html = render('admin_tab', args);
     var admin_features = ["admin_users_table", "admin_bots_table",
@@ -161,12 +181,12 @@ function render(template_name, args) {
     var users = ['alice', 'bob', 'carl'];
     _.each(users, function (user) {
         var args = {
-            "user": {
-                "is_active": true,
-                "is_active_human": true,
-                "email": user + '@zulip.com',
-                "full_name": user
-            }
+            user: {
+                is_active: true,
+                is_active_human: true,
+                email: user + '@zulip.com',
+                full_name: user,
+            },
         };
         html += render('admin_user_list', args);
     });
@@ -191,7 +211,7 @@ function render(template_name, args) {
     var words = ['lunch', 'support'];
     _.each(words, function (word) {
         var args = {
-            word: word
+            word: word,
         };
         html += render('alert_word_settings_item', args);
     });
@@ -208,7 +228,7 @@ function render(template_name, args) {
 
 (function bankruptcy_modal() {
     var args = {
-        unread_count: 99
+        unread_count: 99,
     };
     var html = render('bankruptcy_modal', args);
     global.write_handlebars_output("bankruptcy_modal", html);
@@ -219,9 +239,9 @@ function render(template_name, args) {
 (function admin_auth_methods_list() {
     var args = {
         method: {
-            "method": "Email",
-            "enabled": false
-        }
+            method: "Email",
+            enabled: false,
+        },
     };
 
     var html = '';
@@ -241,7 +261,7 @@ function render(template_name, args) {
     var args = {
         bookend_content: "subscribed to stream",
         trailing: true,
-        subscribed: true
+        subscribed: true,
     };
     var html;
     var all_html = '';
@@ -255,7 +275,7 @@ function render(template_name, args) {
     args = {
         bookend_content: "Not subscribed to stream",
         trailing: true,
-        subscribed: false
+        subscribed: false,
     };
 
     html = render('bookend', args);
@@ -274,10 +294,10 @@ function render(template_name, args) {
     html += '<div class="bot-settings-form">';
     html += '<ol id="bots_list" style="display: block">';
     var args = {
-        "email": "hamlet@zulip.com",
-        "api_key": "123456ABCD",
-        "name": "Hamlet",
-        "avatar_url": "/hamlet/avatar/url"
+        email: "hamlet@zulip.com",
+        api_key: "123456ABCD",
+        name: "Hamlet",
+        avatar_url: "/hamlet/avatar/url",
     };
     html += render('bot_avatar_row', args);
     html += '</ol>';
@@ -293,7 +313,7 @@ function render(template_name, args) {
 (function compose_invite_users() {
     var args = {
         email: 'hamlet@zulip.com',
-        name: 'Hamlet'
+        name: 'Hamlet',
     };
     var html = render('compose-invite-users', args);
     global.write_handlebars_output("compose-invite-users", html);
@@ -304,22 +324,22 @@ function render(template_name, args) {
 (function compose_all_everyone() {
     var args = {
         count: '101',
-        name: 'all'
+        name: 'all',
     };
     var html = render('compose_all_everyone', args);
     global.write_handlebars_output("compose_all_everyone", html);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "YES, Send");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
-    assert.equal(error_msg, "Are you sure you want to message all 101 people in this stream?");
+    assert.equal(error_msg, "Are you sure you want to mention all 101 people in this stream?");
 }());
 
 (function compose_notification() {
     var args = {
-        "note": "You sent a message to a muted topic.",
-        "link_text": "Narrow to here",
-        "link_msg_id": "99",
-        "link_class": "compose_notification_narrow_by_subject"
+        note: "You sent a message to a muted topic.",
+        link_text: "Narrow to here",
+        link_msg_id: "99",
+        link_class: "compose_notification_narrow_by_subject",
     };
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
@@ -338,7 +358,7 @@ function render(template_name, args) {
 
 (function emoji_popover_content() {
     var args = {
-        emoji_list: global.emoji.emojis_name_to_css_class
+        emoji_list: global.emoji.emojis_name_to_css_class,
     };
 
     var html = '<div style="height: 250px">';
@@ -352,14 +372,14 @@ function render(template_name, args) {
 
 (function group_pms() {
     var args = {
-        "group_pms": [
+        group_pms: [
             {
-                "fraction_present": 0.1,
-                "emails": "alice@zulip.com,bob@zulip.com",
-                "short_name": "Alice and Bob",
-                "name": "Alice and Bob"
-            }
-        ]
+                fraction_present: 0.1,
+                emails: "alice@zulip.com,bob@zulip.com",
+                short_name: "Alice and Bob",
+                name: "Alice and Bob",
+            },
+        ],
     };
     var html = render('group_pms', args);
     global.write_handlebars_output("group_pms", html);
@@ -372,12 +392,12 @@ function render(template_name, args) {
     var args = {
         streams: [
             {
-                name: "devel"
+                name: "devel",
             },
             {
-                name: "social"
-            }
-        ]
+                name: "social",
+            },
+        ],
     };
     var html = render('invite_subscription', args);
     global.write_handlebars_output("invite_subscription", html);
@@ -395,8 +415,8 @@ function render(template_name, args) {
             is_stream: true,
             content: 'This is message one.',
             last_edit_timestr: '11:00',
-            starred: true
-        }
+            starred: true,
+        },
     };
 
     var html = render('single_message', message);
@@ -415,9 +435,9 @@ function render(template_name, args) {
 
 (function message_edit_form() {
     var args = {
-        "topic": "lunch",
-        "content": "Let's go to lunch!",
-        "is_stream": true
+        topic: "lunch",
+        content: "Let's go to lunch!",
+        is_stream: true,
     };
     var html = render('message_edit_form', args);
     global.write_handlebars_output("message_edit_form", html);
@@ -434,11 +454,11 @@ function render(template_name, args) {
                 match_content: 'This is message one.',
                 starred: true,
                 is_stream: true,
-                content: 'This is message one.'
+                content: 'This is message one.',
             },
             include_recipient: true,
             display_recipient: 'devel',
-            last_edit_timestr: '11:00'
+            last_edit_timestr: '11:00',
         },
         {
             msg: {
@@ -446,9 +466,9 @@ function render(template_name, args) {
                 match_content: 'This is message <span class="highlight">two</span>.',
                 is_stream: true,
                 unread: true,
-                id: 2
-            }
-        }
+                id: 2,
+            },
+        },
     ];
 
     var groups = [
@@ -459,8 +479,8 @@ function render(template_name, args) {
             message_containers: messages,
             show_date: '"<span id="timerender82">Jan&nbsp;07</span>"',
             subject: 'two messages',
-            match_subject: '<span class="highlight">two</span> messages'
-        }
+            match_subject: '<span class="highlight">two</span> messages',
+        },
     ];
 
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
@@ -483,10 +503,10 @@ function render(template_name, args) {
             full_date_str: 'Monday',
             full_time_str: '12:00',
             sender_full_name: 'Alice Smith',
-            sender_email: 'alice@zulip.com'
+            sender_email: 'alice@zulip.com',
         },
         sent_by_uri: '/sent_by/uri',
-        pm_with_uri: '/pm_with/uri'
+        pm_with_uri: '/pm_with/uri',
     };
 
     var html = render('message_info_popover_content', args);
@@ -501,8 +521,8 @@ function render(template_name, args) {
     var args = {
         message: {
             is_stream: true,
-            stream: 'devel'
-        }
+            stream: 'devel',
+        },
     };
 
     var html = render('message_info_popover_title', args);
@@ -517,13 +537,13 @@ function render(template_name, args) {
         users: [
             {
                 email: 'lear@zulip.com',
-                full_name: 'King Lear'
+                full_name: 'King Lear',
             },
             {
                 email: 'othello@zulip.com',
-                full_name: 'Othello the Moor'
-            }
-        ]
+                full_name: 'Othello the Moor',
+            },
+        ],
     };
 
     var html = render('new_stream_users', args);
@@ -535,9 +555,9 @@ function render(template_name, args) {
 
 (function notification() {
     var args = {
-        "content": "Hello",
-        "gravatar_url": "/gravatar/url",
-        "title": "You have a notification"
+        content: "Hello",
+        gravatar_url: "/gravatar/url",
+        title: "You have a notification",
     };
 
     var html = render('notification', args);
@@ -563,12 +583,12 @@ function render(template_name, args) {
         sounds_enabled: true, enable_offline_email_notifications: true,
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
         enable_digest_emails: true,
-        autoscroll_forever: true, default_desktop_notifications: true
+        autoscroll_forever: true, default_desktop_notifications: true,
     };
     var page_params = $.extend(page_param_checkbox_options, {
         fullname: "Alyssa P. Hacker", password_auth_enabled: true,
         avatar_url: "https://google.com",
-        domain: "zulip.com"
+        domain: "zulip.com",
     });
 
     var checkbox_ids = ["enable_stream_desktop_notifications",
@@ -606,9 +626,9 @@ function render(template_name, args) {
         want_show_more_messages_links: true,
         messages: [
             {
-                recipients: "alice,bob"
-            }
-        ]
+                recipients: "alice,bob",
+            },
+        ],
     };
 
     var html = '';
@@ -651,8 +671,8 @@ function render(template_name, args) {
             color: 'red',
             name: 'devel',
             in_home_view: true,
-            id: 55
-        }
+            id: 55,
+        },
     };
 
     var html = render('stream_sidebar_actions', args);
@@ -668,7 +688,7 @@ function render(template_name, args) {
         color: "red",
         dark_background: "maroon",
         uri: "/devel/uri",
-        id: 999
+        id: 999,
     };
 
     var html = '<ul id="stream_filters">';
@@ -697,14 +717,14 @@ function render(template_name, args) {
                 can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
                 id: 888,
-                in_home_view: true
+                in_home_view: true,
             },
             {
                 name: 'social',
                 color: 'green',
-                id: 999
-            }
-        ]
+                id: 999,
+            },
+        ],
     };
 
     var html = '';
@@ -732,15 +752,15 @@ function render(template_name, args) {
                 cls: 'root',
                 title: 'Home',
                 hash: '#',
-                data: 'home'
+                data: 'home',
             },
             {
                 cls: 'stream',
                 title: 'Devel',
                 hash: '/stream/uri',
-                data: 'devel'
-            }
-        ]
+                data: 'devel',
+            },
+        ],
     };
 
     var html = render('tab_bar', args);
@@ -765,7 +785,7 @@ function render(template_name, args) {
         is_muted: false,
         topic_name: 'lunch',
         url: '/lunch/url',
-        unread: 5
+        unread: 5,
     };
 
     var html = render('topic_list_item', args);
@@ -780,7 +800,7 @@ function render(template_name, args) {
     var args = {
         stream_name: 'social',
         topic_name: 'lunch',
-        can_mute_topic: true
+        can_mute_topic: true,
     };
     var html = render('topic_sidebar_actions', args);
 
@@ -798,13 +818,13 @@ function render(template_name, args) {
         'tutorial_reply',
         'tutorial_stream',
         'tutorial_subject',
-        'tutorial_title'
+        'tutorial_title',
     ];
     var html = '';
     _.each(tutorials, function (tutorial) {
         var args = {
             placement: 'left',
-            title: 'Title'
+            title: 'Title',
         };
         html = render(tutorial, args);
         global.write_handlebars_output(tutorial, html);
@@ -815,21 +835,21 @@ function render(template_name, args) {
     var args = {
         users: [
             {
-                "my_fullname": true,
-                "type_desc": "Active",
-                "type": "active",
-                "num_unread": 0,
-                "email": "lear@zulip.com",
-                "name": "King Lear"
+                my_fullname: true,
+                type_desc: "Active",
+                type: "active",
+                num_unread: 0,
+                email: "lear@zulip.com",
+                name: "King Lear",
             },
             {
-                "type_desc": "Away",
-                "type": "away",
-                "num_unread": 5,
-                "email": "othello@zulip.com",
-                "name": "Othello"
-            }
-        ]
+                type_desc: "Away",
+                type: "away",
+                num_unread: 5,
+                email: "othello@zulip.com",
+                name: "Othello",
+            },
+        ],
     };
 
     var html = '';
@@ -846,7 +866,7 @@ function render(template_name, args) {
 (function user_sidebar_actions() {
     var args = {
         email: 'hamlet@zulip.com',
-        name: 'Hamlet'
+        name: 'Hamlet',
     };
 
     var html = render('user_sidebar_actions', args);

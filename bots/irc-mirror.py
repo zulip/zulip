@@ -13,7 +13,8 @@ from irc.client import ip_numstr_to_quad, ip_quad_to_numstr, Event, ServerConnec
 import zulip
 import optparse
 
-if False: from typing import Any
+if False:
+    from typing import Any
 
 IRC_DOMAIN = "irc.example.com"
 
@@ -35,6 +36,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         # type: (ServerConnection, Event) -> None
         c.join(self.channel)
+
         def forward_to_irc(msg):
             # type: (Dict[str, Any]) -> None
             if msg["type"] == "stream":
@@ -104,11 +106,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 return
             self.dcc_connect(address, port)
 
-usage = """python irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> [optional args]
+usage = """./irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix=<NICK> [optional args]
 
 Example:
 
-python irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
+./irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
   --site=https://zulip.example.com --user=irc-bot@example.com
   --api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 

@@ -2,6 +2,7 @@ var admin = (function () {
 
 var exports = {};
 var all_streams = [];
+var user_row_to_deactivate;
 
 exports.show_or_hide_menu_item = function () {
     var item = $('.admin-menu-item').expectOne();
@@ -12,13 +13,28 @@ exports.show_or_hide_menu_item = function () {
     }
 };
 
+function get_user_info(email) {
+    var self = {};
+    self.user_row = $("tr[id='user_" + email + "']");
+    self.form_row = $("tr[id='user_form_" + email + "']");
+
+    return self;
+}
+
+function get_email_for_user_row(row) {
+    var email = row.find('.email').text();
+    return email;
+}
+
 exports.update_user_full_name = function (email, new_full_name) {
-    var user_row = $("tr[id='user_" + email + "']");
-    var user_name = user_row.find(".user_name");
-    var form_row = $("tr[id='user_form_" + email + "']");
+    var user_info = get_user_info(email);
+
+    var user_row = user_info.user_row;
+    var form_row = user_info.form_row;
 
     // Update the full name in the table
-    user_name.text(new_full_name);
+    user_row.find(".user_name").text(new_full_name);
+    form_row.find("input[name='full_name']").val(new_full_name);
 
     // Hide name change form
     form_row.hide();
@@ -42,7 +58,7 @@ function failed_changing_name(xhr, error) {
     ui.report_error(i18n.t("Error changing name"), xhr, $("#administration-status"));
 }
 
-function populate_users (realm_people_data) {
+function populate_users(realm_people_data) {
     var users_table = $("#admin_users_table");
     var deactivated_users_table = $("#admin_deactivated_users_table");
     var bots_table = $("#admin_bots_table");
@@ -151,9 +167,8 @@ function stringify_list_with_conjunction(lst, conjunction) {
         return lst.toString();
     } else if (lst.length === 2) {
         return lst.join(" " + conjunction + " ");
-    } else {
-        return lst.slice(0, lst.length-1).join(", ") + ", " + conjunction + " " + lst[lst.length-1].toString();
     }
+    return lst.slice(0, lst.length-1).join(", ") + ", " + conjunction + " " + lst[lst.length-1].toString();
 }
 
 exports.populate_emoji = function (emoji_data) {
@@ -168,6 +183,25 @@ exports.populate_emoji = function (emoji_data) {
         }));
     });
     loading.destroy_indicator($('#admin_page_emoji_loading_indicator'));
+};
+
+exports.populate_filters = function (filters_data) {
+    var filters_table = $("#admin_filters_table").expectOne();
+    filters_table.find("tr.filter_row").remove();
+    _.each(filters_data, function (filter) {
+        filters_table.append(
+            templates.render(
+                "admin_filter_list", {
+                    filter: {
+                        pattern: filter[0],
+                        url_format_string: filter[1],
+                        id: filter[2]
+                    }
+                }
+            )
+        );
+    });
+    loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
 
 exports.reset_realm_default_language = function () {
@@ -188,11 +222,48 @@ exports.populate_auth_methods = function (auth_methods) {
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
+exports.set_up_deactivate_user_modal = function (row) {
+    $("#do_deactivate_user_button").expectOne().click(function (e) {
+        var email = row.find(".email").text();
+        if ($("#deactivation_user_modal .email").html() !== email) {
+            blueslip.error("User deactivation canceled due to non-matching fields.");
+            ui.report_message("Deactivation encountered an error. Please reload and try again.",
+               $("#home-error"), 'alert-error');
+        }
+        $("#deactivation_user_modal").modal("hide");
+        row.find("button").prop("disabled", true).text("Working…");
+        channel.del({
+            url: '/json/users/' + email,
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    row.find("button").closest("td").html(
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                    );
+                } else {
+                     row.find("button").text("Failed!");
+                }
+            },
+            success: function () {
+                var button = row.find("button.deactivate");
+                button.prop("disabled", false);
+                button.addClass("btn-warning");
+                button.removeClass("btn-danger");
+                button.addClass("reactivate");
+                button.removeClass("deactivate");
+                button.text(i18n.t("Reactivate"));
+                row.addClass("deactivated_user");
+                row.find(".user-admin-settings").hide();
+            }
+        });
+    });
+};
+
+
 function _setup_page() {
     var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
     var atdomains = page_params.domains.slice();
     var i;
-    for (i = 0; i < atdomains.length; i++) {
+    for (i = 0; i < atdomains.length; i += 1) {
         atdomains[i] = '@' + atdomains[i];
     }
     var atdomains_string = stringify_list_with_conjunction(atdomains, "or");
@@ -206,7 +277,8 @@ function _setup_page() {
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
-        realm_message_content_edit_limit_minutes: Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
+        realm_message_content_edit_limit_minutes:
+            Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         language_list: page_params.language_list,
         realm_default_language: page_params.realm_default_language
     };
@@ -222,6 +294,9 @@ function _setup_page() {
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
+    $('#admin-filter-status').expectOne().hide();
+    $('#admin-filter-pattern-status').expectOne().hide();
+    $('#admin-filter-format-status').expectOne().hide();
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
@@ -232,6 +307,7 @@ function _setup_page() {
     loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
     loading.make_indicator($('#admin_page_emoji_loading_indicator'));
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
+    loading.make_indicator($('#admin_page_filters_loading_indicator'));
 
     // Populate users and bots tables
     channel.get({
@@ -258,21 +334,24 @@ function _setup_page() {
     exports.populate_emoji(page_params.realm_emoji);
     exports.update_default_streams_table();
 
+    // Populate filters table
+    exports.populate_filters(page_params.realm_filters);
+
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
 
         var user_name = row.find('.user_name').text();
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
 
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
         $("#deactivation_user_modal").modal("show");
+
+        exports.set_up_deactivate_user_modal(row);
     });
 
     $(".admin_stream_table").on("click", ".deactivate", function (e) {
@@ -299,7 +378,7 @@ function _setup_page() {
         var stream_name = row.find('.default_stream_name').text();
 
         channel.del({
-            url: '/json/default_streams'+ '?' + $.param({"stream_name": stream_name}),
+            url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
             error: function (xhr, error_type) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_default_stream_row button").closest("td").html(
@@ -338,12 +417,11 @@ function _setup_page() {
         e.preventDefault();
         e.stopPropagation();
 
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
 
         var user_name = row.find('.user_name').text();
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
+
         channel.del({
             url: '/json/bots/' + email,
             error: function (xhr, error_type) {
@@ -372,11 +450,9 @@ function _setup_page() {
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
+        var email = get_email_for_user_row(row);
 
-        var email = row.find('.email').text();
         channel.post({
             url: '/json/users/' + email + "/reactivate",
             error: function (xhr, error_type) {
@@ -463,7 +539,8 @@ function _setup_page() {
             if ((parseInt(new_message_content_edit_limit_minutes, 10).toString() !==
                  new_message_content_edit_limit_minutes) ||
                 new_message_content_edit_limit_minutes < 0) {
-            new_message_content_edit_limit_minutes = 10; // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
+            // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
+            new_message_content_edit_limit_minutes = 10;
             }
         }
 
@@ -476,7 +553,8 @@ function _setup_page() {
             authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
-            message_content_edit_limit_seconds: JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
+            message_content_edit_limit_seconds:
+                JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
             default_language: JSON.stringify(new_default_language)
         };
 
@@ -489,7 +567,7 @@ function _setup_page() {
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
-                        ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {'atdomains_string': atdomains_string}), restricted_to_domain_status);
+                        ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {atdomains_string: atdomains_string}), restricted_to_domain_status);
                     } else {
                         ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
                     }
@@ -523,11 +601,14 @@ function _setup_page() {
                 if (response_data.allow_message_editing !== undefined) {
                     // We expect message_content_edit_limit_seconds was sent in the
                     // response as well
-                    var data_message_content_edit_limit_minutes = Math.ceil(response_data.message_content_edit_limit_seconds / 60);
+                    var data_message_content_edit_limit_minutes =
+                        Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui.report_success(i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
-                                                     {'num_minutes' : data_message_content_edit_limit_minutes}),
+                            ui.report_success(i18n.t("Users can now edit topics for all their messages,"
+                                                      +" and the content of messages which are less than __num_minutes__ minutes old.",
+                                                     {num_minutes :
+                                                       data_message_content_edit_limit_minutes}),
                                               message_editing_status);
                         } else {
                             ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
@@ -561,10 +642,8 @@ function _setup_page() {
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
 
         var url = "/json/users/" + email;
         var data = {
@@ -594,10 +673,8 @@ function _setup_page() {
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the email element
-        $(".active_user_row").removeClass("active_user_row");
         var row = $(e.target).closest(".user_row");
-        row.addClass("active_user_row");
-        var email = row.find('.email').text();
+        var email = get_email_for_user_row(row);
 
         var url = "/json/users/" + email;
         var data = {
@@ -624,8 +701,9 @@ function _setup_page() {
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
         var email = $(e.currentTarget).data("email");
-        var user_row = $("tr[id='user_" + email + "']");
-        var form_row = $("tr[id='user_form_" + email + "'");
+        var user_info = get_user_info(email);
+        var user_row = user_info.user_row;
+        var form_row = user_info.form_row;
         var reset_button = form_row.find(".reset_edit_user");
         var submit_button = form_row.find(".submit_name_changes");
         var full_name = form_row.find("input[name='full_name']");
@@ -657,41 +735,6 @@ function _setup_page() {
                 },
                 error: failed_changing_name
             });
-        });
-    });
-
-    $("#do_deactivate_user_button").click(function (e) {
-        var row = $(".active_user_row");
-        var email = row.find(".email").text();
-        if ($("#deactivation_user_modal .email").html() !== email) {
-            blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui.report_message("Deactivation encountered an error. Please reload and try again.",
-               $("#home-error"), 'alert-error');
-        }
-        $("#deactivation_user_modal").modal("hide");
-        row.find("button").prop("disabled", true).text("Working…");
-        channel.del({
-            url: '/json/users/' + email,
-            error: function (xhr, error_type) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                     row.find("button").text("Failed!");
-                }
-            },
-            success: function () {
-                var button = row.find("button.deactivate");
-                button.prop("disabled", false);
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("reactivate");
-                button.removeClass("deactivate");
-                button.text(i18n.t("Reactivate"));
-                row.addClass("deactivated_user");
-                row.find(".user-admin-settings").hide();
-            }
         });
     });
 
@@ -749,7 +792,7 @@ function _setup_page() {
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');
         var emoji = {};
-        $(this).serializeArray().map(function (x){emoji[x.name] = x.value;});
+        $(this).serializeArray().map(function (x) {emoji[x.name] = x.value;});
 
         channel.put({
             url: "/json/realm/emoji",
@@ -764,6 +807,66 @@ function _setup_page() {
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
                 ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
+            }
+        });
+    });
+
+    $('.admin_filters_table').on('click', '.delete', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var btn = $(this);
+
+        channel.del({
+            url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
+            error: function (xhr, error_type) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    btn.closest("td").html(
+                        $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
+                    );
+                } else {
+                     btn.text("Failed!");
+                }
+            },
+            success: function () {
+                var row = btn.parents('tr');
+                row.remove();
+            }
+        });
+    });
+
+    $(".administration").on("submit", "form.admin-filter-form", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var filter_status = $('#admin-filter-status');
+        var pattern_status = $('#admin-filter-pattern-status');
+        var format_status = $('#admin-filter-format-status');
+        filter_status.hide();
+        pattern_status.hide();
+        format_status.hide();
+        var filter = {};
+        $(this).serializeArray().map(function (x) {filter[x.name] = x.value;});
+
+        channel.post({
+            url: "/json/realm/filters",
+            data: $(this).serialize(),
+            success: function (data) {
+                filter.id = data.id;
+                ui.report_success(i18n.t("Custom filter added!"), filter_status);
+            },
+            error: function (xhr, error) {
+                var errors = $.parseJSON(xhr.responseText).errors;
+                if (errors.pattern !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.pattern});
+                    ui.report_error(i18n.t("Failed"), xhr, pattern_status);
+                }
+                if (errors.url_format_string !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+                    ui.report_error(i18n.t("Failed"), xhr, format_status);
+                }
+                if (errors.__all__ !== undefined) {
+                    xhr.responseText = JSON.stringify({msg: errors.__all__});
+                    ui.report_error(i18n.t("Failed"), xhr, filter_status);
+                }
             }
         });
     });

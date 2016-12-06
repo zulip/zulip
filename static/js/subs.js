@@ -19,7 +19,8 @@ function get_color() {
 }
 
 function selectText(element) {
-  var range, sel;
+  var range;
+  var sel;
     if (window.getSelection) {
         sel = window.getSelection();
         range = document.createRange();
@@ -42,7 +43,7 @@ function set_stream_property(stream_name, property, value) {
     var sub_data = {stream: stream_name, property: property, value: value};
     return channel.post({
         url:      '/json/subscriptions/property',
-        data: {"subscription_data": JSON.stringify([sub_data])},
+        data: {subscription_data: JSON.stringify([sub_data])},
         timeout:  10*1000
     });
 }
@@ -66,7 +67,7 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
 
 // Finds the stream name of a jquery object that's inside a
 // .stream-row or .subscription_settings element.
-function get_stream_name (target) {
+function get_stream_name(target) {
     if (target.constructor !== jQuery) {
         target = $(target);
     }
@@ -97,7 +98,8 @@ function update_in_home_view(sub, value) {
     sub.in_home_view = value;
 
     setTimeout(function () {
-        var msg_offset, saved_ypos;
+        var msg_offset;
+        var saved_ypos;
         // Save our current scroll position
         if (ui.home_tab_obscured()) {
             saved_ypos = viewport.scrollTop();
@@ -125,9 +127,9 @@ function update_in_home_view(sub, value) {
             }
         }
 
-        // In case we added messages to what's visible in the home view, we need to re-scroll to make
-        // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
-        // to the old scroll location before we have a chance to update it.
+        // In case we added messages to what's visible in the home view, we need to re-scroll to
+        // make sure the pointer is still visible. We don't want the auto-scroll handler to move
+        // our pointer to the old scroll location before we have a chance to update it.
         pointer.recenter_pointer_on_display = true;
         pointer.suppress_scroll_pointer_update = true;
 
@@ -245,10 +247,10 @@ function add_email_hint(row, email_address_hint_content) {
     // Add a popover explaining stream e-mail addresses on hover.
     var hint_id = "#email-address-hint-" + row.stream_id;
     var email_address_hint = $(hint_id);
-    email_address_hint.popover({"placement": "bottom",
-                "title": "Email integration",
-                "content": email_address_hint_content,
-                "trigger": "manual"});
+    email_address_hint.popover({placement: "bottom",
+                title: "Email integration",
+                content: email_address_hint_content,
+                trigger: "manual"});
 
     $("body").on("mouseover", hint_id, function (e) {
         email_address_hint.popover('show');
@@ -442,11 +444,7 @@ exports.mark_sub_unsubscribed = function (sub) {
         // We don't know about this stream
         return;
     } else if (sub.subscribed) {
-        stream_list.remove_narrow_filter(sub.name, 'stream');
-        // Remove user from subscriber's list
-        stream_data.remove_subscriber(sub.name, page_params.email);
-
-        sub.subscribed = false;
+        stream_data.unsubscribe_myself(sub);
 
         var button = button_for_sub(sub);
         button.toggleClass("checked");
@@ -481,42 +479,29 @@ exports.mark_sub_unsubscribed = function (sub) {
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 };
 
+// query is now an object rather than a string.
+// Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
-    var sub_name_elements = $('#subscriptions_table .stream-name');
-
-    if (query === '') {
-        _.each(sub_name_elements, function (sub_name_elem) {
-            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
-        });
-        return;
-    }
-
-    var search_terms = query.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
+    var search_terms = query.input.toLowerCase().split(",").map(function (s) {
         return s.trim();
     });
 
-    _.each(sub_name_elements, function (sub_name_elem) {
-        var sub_name = $(sub_name_elem).text();
-        var matches = _.any(search_terms, function (search_term) {
-            var lower_sub_name = sub_name.toLowerCase();
-            var idx = lower_sub_name.indexOf(search_term);
-            if (idx === 0) {
-                // matched at beginning of the string
-                return true;
-            }
-            // we know now that idx === -1 or idx > 0
-            if (idx !== -1 && lower_sub_name.charAt(idx - 1) === ' ') {
-                // matched with a space immediately preceding
-                return true;
-            }
-            return false;
-        });
+    _.each($("#subscriptions_table .stream-row"), function (row) {
+        var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
+        var flag = true;
 
-        if (matches) {
-            $(sub_name_elem).parents('.stream-row').removeClass("notdisplayed");
+        flag = flag && (function () {
+            var sub_name = sub.name.toLowerCase();
+            var matches_list = search_terms.indexOf(sub_name) > -1;
+            var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
+            return matches_list || matches_last_val;
+        }());
+        flag = flag && (sub.subscribed || !query.subscribed_only);
+
+        if (flag) {
+            $(row).removeClass("notdisplayed");
         } else {
-            $(sub_name_elem).parents('.stream-row').addClass("notdisplayed");
+            $(row).addClass("notdisplayed");
         }
     });
 };
@@ -524,7 +509,7 @@ exports.filter_table = function (query) {
 function actually_filter_streams() {
     var search_box = $("#create_or_filter_stream_row input[type='text']");
     var query = search_box.expectOne().val().trim();
-    exports.filter_table(query);
+    exports.filter_table({input: query});
 }
 
 var filter_streams = _.throttle(actually_filter_streams, 50);
@@ -575,7 +560,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
                                                             value: value});
         return;
     }
-    switch(property) {
+    switch (property) {
     case 'color':
         stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
         break;
@@ -613,16 +598,16 @@ function ajaxSubscribe(stream) {
 
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream}]) },
+        data: {subscriptions: JSON.stringify([{name: stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
-            exports.filter_table("");
+            exports.filter_table({input: ""});
 
             var res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[page_params.email][0];
-                ui.report_success(i18n.t("Already subscribed to __stream__", {'stream': true_stream_name}),
+                ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                   $("#subscriptions-status"), 'subscriptions-status');
             }
             // The rest of the work is done via the subscribe event we will get
@@ -637,9 +622,10 @@ function ajaxSubscribe(stream) {
 function ajaxUnsubscribe(stream) {
     return channel.post({
         url: "/json/subscriptions/remove",
-        data: {"subscriptions": JSON.stringify([stream]) },
+        data: {subscriptions: JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            var name, res = JSON.parse(xhr.responseText);
+            var name;
+            var res = JSON.parse(xhr.responseText);
             $("#subscriptions-status").hide();
             // The rest of the work is done via the unsubscribe event we will get
         },
@@ -654,17 +640,18 @@ function hide_new_stream_modal() {
     $('#stream-creation').modal("hide");
 }
 
-function ajaxSubscribeForCreation(stream, principals, invite_only, announce) {
+function ajaxSubscribeForCreation(stream, description, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream}]),
-               "principals": JSON.stringify(principals),
-               "invite_only": JSON.stringify(invite_only),
-               "announce": JSON.stringify(announce)
+        data: {subscriptions: JSON.stringify([{name: stream, description: description}]),
+               principals: JSON.stringify(principals),
+               invite_only: JSON.stringify(invite_only),
+               announce: JSON.stringify(announce)
         },
         success: function (data) {
             $("#create_stream_name").val("");
+            $("#create_stream_description").val("");
             $("#subscriptions-status").hide();
             hide_new_stream_modal();
             // The rest of the work is done via the subscribe event we will get
@@ -715,8 +702,8 @@ function show_new_stream_modal() {
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
         url: "/json/users/me/subscriptions",
-        data: {"subscriptions": JSON.stringify([{"name": stream_name}]),
-               "principals": JSON.stringify([user_email])},
+        data: {subscriptions: JSON.stringify([{name: stream_name}]),
+               principals: JSON.stringify([user_email])},
         success: success,
         error: failure
     });
@@ -725,8 +712,8 @@ exports.invite_user_to_stream = function (user_email, stream_name, success, fail
 exports.remove_user_from_stream = function (user_email, stream_name, success, failure) {
     return channel.post({
         url: "/json/subscriptions/remove",
-        data: {"subscriptions": JSON.stringify([stream_name]),
-               "principals": JSON.stringify([user_email])},
+        data: {subscriptions: JSON.stringify([stream_name]),
+               principals: JSON.stringify([user_email])},
         success: success,
         error: failure
     });
@@ -792,7 +779,7 @@ $(function () {
         // Hide users which aren't in filtered users
         _.each(users, function (user) {
             var display_type = filtered_users.hasOwnProperty(user.email)? "block" : "none";
-            $("label[data-name='" + user.email + "']").css({"display":display_type});
+            $("label[data-name='" + user.email + "']").css({display: display_type});
         });
 
         update_announce_stream_state();
@@ -800,9 +787,9 @@ $(function () {
     });
 
     var announce_stream_docs = $("#announce-stream-docs");
-    announce_stream_docs.popover({"placement": "right",
-                                  "content": templates.render('announce_stream_docs'),
-                                  "trigger": "manual"});
+    announce_stream_docs.popover({placement: "right",
+                                  content: templates.render('announce_stream_docs'),
+                                  trigger: "manual"});
     $("body").on("mouseover", "#announce-stream-docs", function (e) {
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
@@ -830,6 +817,7 @@ $(function () {
     $("#stream_creation_form").on("submit", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
+        var description = $.trim($("#create_stream_description").val());
         if (!$("#stream_name_error").is(":visible")) {
             var principals = _.map(
                 $("#stream_creation_form input:checkbox[name=user]:checked"),
@@ -840,6 +828,7 @@ $(function () {
             // You are always subscribed to streams you create.
             principals.push(page_params.email);
             ajaxSubscribeForCreation(stream,
+                description,
                 principals,
                 $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
                 $('#announce-new-stream input').prop('checked')
@@ -861,7 +850,7 @@ $(function () {
         selectText(this);
     });
 
-    function sub_or_unsub (stream_name) {
+    function sub_or_unsub(stream_name) {
         var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {
@@ -1032,7 +1021,7 @@ $(function () {
         channel.patch({
             // Stream names might contain unsafe characters so we must encode it first.
             url: "/json/streams/" + encodeURIComponent(sub.name),
-            data: {"new_name": JSON.stringify(new_name)},
+            data: {new_name: JSON.stringify(new_name)},
             success: function (data) {
                 new_name_box.val('');
                 ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
@@ -1059,7 +1048,7 @@ $(function () {
             // Stream names might contain unsafe characters so we must encode it first.
             url: '/json/streams/' + encodeURIComponent(stream_name),
             data: {
-                'description': JSON.stringify(description)
+                description: JSON.stringify(description)
             },
             success: function () {
                 // The event from the server will update the rest of the UI
@@ -1104,7 +1093,7 @@ $(function () {
         var sub = stream_data.get_sub_by_id(stream_id);
 
         $("#subscriptions-status").hide();
-        var data = {"stream_name": sub.name};
+        var data = {stream_name: sub.name};
 
         channel.post({
             url: url,

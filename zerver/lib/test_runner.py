@@ -107,7 +107,7 @@ def run_test(test):
             print("Actual test to be run is %s, but import failed." % (actual_test_name,))
             print("Importing test module directly to generate clearer traceback:")
             try:
-                command = ["python", "-c", "import %s" % (actual_test_name,)]
+                command = [sys.executable, "-c", "import %s" % (actual_test_name,)]
                 print("Import test command: `%s`" % (' '.join(command),))
                 subprocess.check_call(command)
             except subprocess.CalledProcessError:
@@ -163,7 +163,7 @@ class Runner(DiscoverRunner):
         if hasattr(sender, 'template'):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
-                if context.get('shallow_tested'):
+                if context.get('shallow_tested') and template_name not in self.templates_rendered:
                     self.shallow_tested_templates.add(template_name)
                 else:
                     self.templates_rendered.add(template_name)
@@ -186,8 +186,9 @@ class Runner(DiscoverRunner):
                     return failed
         return failed
 
-    def run_tests(self, test_labels, extra_tests=None, **kwargs):
-        # type: (List[str], Optional[List[TestCase]], **Any) -> bool
+    def run_tests(self, test_labels, extra_tests=None,
+                  full_suite=False, **kwargs):
+        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> bool
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -208,5 +209,5 @@ class Runner(DiscoverRunner):
         failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
         self.teardown_test_environment()
         if not failed:
-            write_instrumentation_reports()
+            write_instrumentation_reports(full_suite=full_suite)
         return failed

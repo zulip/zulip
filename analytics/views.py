@@ -89,7 +89,6 @@ def get_realm_day_counts():
     for row in rows:
         counts[row['domain']][row['age']] = row['cnt']
 
-
     result = {}
     for domain in counts:
         raw_cnts = [counts[domain].get(age, 0) for age in range(8)]
@@ -259,7 +258,6 @@ def realm_summary_table(realm_minutes):
         total_user_profile_count += int(row['user_profile_count'])
         total_bot_count += int(row['bot_count'])
         total_at_risk_count += int(row['at_risk_count'])
-
 
     rows.append(dict(
         domain='Total',
@@ -655,6 +653,7 @@ def get_user_activity_summary(records):
     # `Union[Dict[str, Dict[str, int]], Dict[str, Dict[str, datetime]]]`
     #: but that would require this long `Union` to carry on throughout inner functions.
     summary = {} # type: Dict[str, Dict[str, Any]]
+
     def update(action, record):
         # type: (str, QuerySet) -> None
         if action not in summary:
@@ -693,7 +692,6 @@ def get_user_activity_summary(records):
         if query in ['/json/update_pointer', '/json/users/me/pointer', '/api/v1/update_pointer']:
             update('pointer', record)
         update(client, record)
-
 
     return summary
 
@@ -868,7 +866,7 @@ def get_realm_activity(request, realm):
     all_user_records = {} # type: Dict[str, Any]
 
     try:
-        admins = get_realm(realm).get_admin_users()
+        admins = Realm.objects.get(domain=realm).get_admin_users()
     except Realm.DoesNotExist:
         return HttpResponseNotFound("Realm %s does not exist" % (realm,))
 
@@ -885,7 +883,6 @@ def get_realm_activity(request, realm):
     page_title = 'Clients'
     content = realm_client_table(all_user_records)
     data += [(page_title, content)]
-
 
     page_title = 'History'
     content = sent_messages_report(realm)

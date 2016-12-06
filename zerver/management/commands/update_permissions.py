@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from typing import Any
 
 from django.core.management.base import BaseCommand
-from django.db.models import get_app, get_models
+from django.apps import apps
 from django.contrib.auth.management import create_permissions
 
 class Command(BaseCommand):
@@ -12,4 +12,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         # From http://stackoverflow.com/a/11914435/90777
-        create_permissions(get_app("zerver"), get_models(), 2)
+        create_permissions(apps.get_app_config("zerver"), apps.get_models(), 2)

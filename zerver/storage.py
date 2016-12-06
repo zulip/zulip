@@ -78,6 +78,6 @@ class RemoveUnminifiedFilesMixin(object):
 
 
 class ZulipStorage(PipelineMixin,
-        AddHeaderMixin, RemoveUnminifiedFilesMixin,
-        CachedFilesMixin, StaticFilesStorage):
+                   AddHeaderMixin, RemoveUnminifiedFilesMixin,
+                   CachedFilesMixin, StaticFilesStorage):
     pass

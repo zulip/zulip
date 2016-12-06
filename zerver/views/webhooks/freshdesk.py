@@ -13,8 +13,7 @@ from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_
 import logging
 import ujson
 
-from six import text_type
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union, Text
 
 
 class TicketDict(dict):
@@ -116,7 +115,7 @@ def format_freshdesk_ticket_creation_message(ticket):
 @has_request_variables
 def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body'),
                           stream=REQ(default='freshdesk')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
     ticket_data = payload["freshdesk_webhook"]
 
     required_keys = [

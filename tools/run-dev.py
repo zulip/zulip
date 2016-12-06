@@ -19,7 +19,8 @@ from tornado import web
 from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler, websocket_connect
 
-if False: from typing import Any, Callable, Generator, Optional
+if False:
+    from typing import Any, Callable, Generator, Optional
 
 if 'posix' in os.name and os.geteuid() == 0:
     raise RuntimeError("run-dev.py should not be run as root.")
@@ -38,6 +39,13 @@ behavior, the reverse proxy itself does *not* automatically restart on changes
 to this file.
 """)
 
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+from tools.lib.test_script import (
+    get_provisioning_status,
+)
+
 parser.add_option('--test',
                   action='store_true', dest='test',
                   help='Use the testing database and ports')
@@ -50,19 +58,34 @@ parser.add_option('--no-clear-memcached',
                   action='store_false', dest='clear_memcached',
                   default=True, help='Do not clear memcached')
 
+parser.add_option('--force', dest='force',
+                  action="store_true",
+                  default=False, help='Run tests despite possible problems.')
+
 (options, arguments) = parser.parse_args()
+
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
 
 if options.interface is None:
     user_id = os.getuid()
     user_name = pwd.getpwuid(user_id).pw_name
-    if user_name == "vagrant":
+    if user_name in ["vagrant", "zulipdev"]:
         # In the Vagrant development environment, we need to listen on
         # all ports, and it's safe to do so, because Vagrant is only
-        # exposing certain guest ports (by default just 9991) to the host.
-        options.interface = ""
+        # exposing certain guest ports (by default just 9991) to the
+        # host.  The same argument applies to the remote development
+        # servers using username "zulipdev".
+        options.interface = None
     else:
         # Otherwise, only listen to requests on localhost for security.
         options.interface = "127.0.0.1"
+elif options.interface == "":
+    options.interface = None
 
 base_port = 9991
 if options.test:
@@ -105,9 +128,9 @@ os.setpgrp()
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['python', 'manage.py', 'rundjango'] +
+        ['./manage.py', 'rundjango'] +
         manage_args + ['127.0.0.1:%d' % (django_port,)],
-        ['python', '-u', 'manage.py', 'runtornado'] +
+        ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
@@ -342,7 +365,7 @@ print("".join((WARNING,
 
 try:
     app = Application()
-    app.listen(proxy_port)
+    app.listen(proxy_port, address=options.interface)
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)

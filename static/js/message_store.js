@@ -15,7 +15,8 @@ exports.get = function get(message_id) {
 };
 
 exports.get_private_message_recipient = function (message, attr, fallback_attr) {
-    var recipient, i;
+    var recipient;
+    var i;
     var other_recipients = _.filter(message.display_recipient,
                                   function (element) {
                                       return !util.is_current_user(element.email);
@@ -29,7 +30,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     if (recipient === undefined && fallback_attr !== undefined) {
         recipient = other_recipients[0][fallback_attr];
     }
-    for (i = 1; i < other_recipients.length; i++) {
+    for (i = 1; i < other_recipients.length; i += 1) {
         var attr_value = other_recipients[i][attr];
         if (attr_value === undefined && fallback_attr !== undefined) {
             attr_value = other_recipients[i][fallback_attr];
@@ -39,16 +40,25 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     return recipient;
 };
 
-exports.process_message_for_recent_private_messages = function process_message_for_recent_private_messages(message, remove_message) {
+exports.process_message_for_recent_private_messages =
+    function process_message_for_recent_private_messages(message, remove_message) {
     var current_timestamp = 0;
+
+    var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+
+    if (!user_ids_string) {
+        blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
+        return;
+    }
 
     // If this conversation is already tracked, we'll replace with new timestamp,
     // so remove it from the current list.
-    exports.recent_private_messages = _.filter(exports.recent_private_messages, function (recent_pm) {
-        return recent_pm.reply_to !== message.reply_to;
+    exports.recent_private_messages = _.filter(exports.recent_private_messages,
+                                               function (recent_pm) {
+        return recent_pm.user_ids_string !== user_ids_string;
     });
 
-    var new_conversation = {reply_to: message.reply_to,
+    var new_conversation = {user_ids_string: user_ids_string,
                             display_reply_to: message.display_reply_to,
                             timestamp: Math.max(message.timestamp, current_timestamp)};
 
@@ -110,9 +120,9 @@ function add_message_metadata(message) {
 
         stream_data.process_message_for_recent_topics(message);
 
-        involved_people = [{'full_name': message.sender_full_name,
-                            'user_id': message.sender_id,
-                            'email': message.sender_email}];
+        involved_people = [{full_name: message.sender_full_name,
+                            user_id: message.sender_id,
+                            email: message.sender_email}];
         set_topic_edit_properties(message);
         break;
 
@@ -334,14 +344,12 @@ exports.update_messages = function update_messages(events) {
     }
     unread.update_unread_counts();
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 };
 
 
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
-    activity.process_loaded_messages(messages);
-    activity.update_huddles();
     unread.process_loaded_messages(messages);
     unread.update_unread_counts();
     resize.resize_page_components();
@@ -367,6 +375,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
         notifications.possibly_notify_new_messages_outside_viewport(messages);
     }
 
+    activity.process_loaded_messages(messages);
     exports.do_unread_count_updates(messages);
 
     if (narrow.narrowed_by_reply()) {
@@ -378,7 +387,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
 
         // Iterate backwards to find the last message sent_by_me, stopping at
         // the pointer position.
-        for (i = messages.length-1; i>=0; i--) {
+        for (i = messages.length-1; i>=0; i -= 1) {
             var id = messages[i].id;
             if (id <= selected_id) {
                 break;
@@ -395,7 +404,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
     unread.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 };
 
 function process_result(messages, opts) {
@@ -422,8 +431,9 @@ function process_result(messages, opts) {
         exports.add_messages(messages, opts.msg_list, {messages_are_new: false});
     }
 
+    activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
-    stream_list.update_private_messages();
+    pm_list.update_private_messages();
 
     if (opts.cont !== undefined) {
         opts.cont(messages);
@@ -582,8 +592,8 @@ util.execute_early(function () {
 
         // backfill more messages after the user is idle
         var backfill_batch_size = 1000;
-        $(document).idle({'idle': 1000*10,
-                          'onIdle': function () {
+        $(document).idle({idle: 1000*10,
+                          onIdle: function () {
                               var first_id = message_list.all.first().id;
                               exports.load_old_messages({
                                   anchor: first_id,
@@ -607,7 +617,8 @@ util.execute_early(function () {
     }
 
     $(document).on('message_id_changed', function (event) {
-        var old_id = event.old_id, new_id = event.new_id;
+        var old_id = event.old_id;
+        var new_id = event.new_id;
         if (pointer.furthest_read === old_id) {
             pointer.furthest_read = new_id;
         }
@@ -633,6 +644,9 @@ util.execute_early(function () {
         });
     });
 });
+
+// This is for testing.
+exports._add_message_metadata = add_message_metadata;
 
 return exports;
 

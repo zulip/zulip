@@ -31,15 +31,12 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
     now = timezone.now()
     email = UserManager.normalize_email(email)
 
-    enable_stream_desktop_notifications = (realm.domain != 'zulip.com')
-
     user_profile = UserProfile(email=email, is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
                                pointer=-1, is_bot=bool(bot_type), bot_type=bot_type,
                                is_mirror_dummy=is_mirror_dummy,
                                tos_version=tos_version,
-                               enable_stream_desktop_notifications=enable_stream_desktop_notifications,
                                onboarding_steps=ujson.dumps([]),
                                default_language=realm.default_language)
     if bot_owner is not None:

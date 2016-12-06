@@ -37,6 +37,7 @@ class zulip::postgres_common {
     group => "postgres",
     mode => 750,
     source => "puppet:///modules/zulip/postgresql/env-wal-e",
+    require => Package["postgresql-${zulip::base::postgres_version}"],
   }
 
   file { "/usr/local/bin/pg_backup_and_purge.py":
@@ -52,6 +53,7 @@ class zulip::postgres_common {
   @user { 'postgres':
     groups     => ['ssl-cert'],
     membership => minimum,
+    require    => Package["postgresql-${zulip::base::postgres_version}"],
   }
   User <| title == postgres |> { groups +> "zulip" }
 }

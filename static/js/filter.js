@@ -25,8 +25,7 @@ function zephyr_topic_name_match(message, operand) {
     // instance "personal" to be the same.
     if (base_topic === ''
         || base_topic.toLowerCase() === 'personal'
-        || base_topic.toLowerCase() === '(instance "")')
-    {
+        || base_topic.toLowerCase() === '(instance "")') {
         related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
     } else {
         related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
@@ -82,9 +81,8 @@ function message_matches_search_term(message, operator, operand) {
         operand = operand.toLowerCase();
         if (page_params.is_zephyr_mirror_realm) {
             return zephyr_stream_name_match(message, operand);
-        } else {
-            return (message.stream.toLowerCase() === operand);
         }
+        return (message.stream.toLowerCase() === operand);
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -94,16 +92,18 @@ function message_matches_search_term(message, operator, operand) {
         operand = operand.toLowerCase();
         if (page_params.is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
-        } else {
-            return (message.subject.toLowerCase() === operand);
         }
+        return (message.subject.toLowerCase() === operand);
+
 
     case 'sender':
         return (message.sender_email.toLowerCase() === operand.toLowerCase());
 
     case 'pm-with':
+        // TODO: use user_ids, not emails here
         return (message.type === 'private') &&
-            (message.reply_to.toLowerCase() === operand.split(',').sort().join(',').toLowerCase());
+            (util.normalize_recipients(message.reply_to) ===
+            util.normalize_recipients(operand));
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -118,15 +118,14 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {"from": "sender", "subject": "topic"};
+var canonical_operators = {from: "sender", subject: "topic"};
 
 Filter.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
     if (canonical_operators.hasOwnProperty(operator)) {
         return canonical_operators[operator];
-    } else {
-        return operator;
     }
+    return operator;
 };
 
 Filter.canonicalize_term = function (opts) {
@@ -216,7 +215,8 @@ Filter.parse = function (str) {
         return operators;
     }
     _.each(matches, function (token) {
-        var parts, operator;
+        var parts;
+        var operator;
         parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
@@ -269,10 +269,9 @@ Filter.unparse = function (operators) {
             // All tokens that don't start with a known operator and
             // a colon are glued together to form a search term.
             return elem.operand;
-        } else {
-            var sign = elem.negated ? '-' : '';
-            return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
         }
+        var sign = elem.negated ? '-' : '';
+        return sign + elem.operator + ':' + encodeOperand(elem.operand.toString());
     });
     return parts.join(' ');
 };
@@ -456,7 +455,8 @@ Filter.describe = function (operators) {
                 return verb + 'alerted messages';
             }
         } else {
-            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator, elem.negated);
+            var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
+                                                                elem.negated);
             if (prefix_for_operator !== '') {
                 return prefix_for_operator + ' ' + operand;
             }

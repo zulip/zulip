@@ -104,8 +104,11 @@ function get_hotkey_from_event(e) {
 //
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
-    var row, alert_words_content, focused_message_edit_content, focused_message_edit_save, message_edit_form;
-
+    var row;
+    var alert_words_content;
+    var focused_message_edit_content;
+    var focused_message_edit_save;
+    var message_edit_form;
     var hotkey = get_hotkey_from_event(e);
     var event_name = hotkey.name;
     activity.new_user_input = true;
@@ -374,7 +377,7 @@ function process_hotkey(e) {
 $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
     // check if 27 (esc) because it doesn't register under .keypress()
-    if (48 > e.which || 90 < e.which || e.which === 27) {
+    if (e.which < 48 || e.which > 90 || e.which === 27) {
         if (process_hotkey(e)) {
             e.preventDefault();
         }

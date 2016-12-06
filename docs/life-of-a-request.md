@@ -18,7 +18,7 @@ itself for static content).
 In development, `tools/run-dev.py` fills the role of nginx. Static files
 are in your git checkout under `static`, and are served unminified.
 
-## Nginx secures traffic with [SSL](https://zulip.readthedocs.io/en/latest/prod-install.html)
+## Nginx secures traffic with [SSL](prod-install.html)
 
 If you visit your Zulip server in your browser and discover that your
 traffic isn't being properly encrypted, an [nginx misconfiguration](https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/sites-available/zulip-enterprise) is the
@@ -36,7 +36,7 @@ location /static/ {
 }
 ```
 
-## Nginx routes other requests [between tornado and django](http://zulip.readthedocs.io/en/latest/architecture-overview.html?highlight=tornado#tornado-and-django)
+## Nginx routes other requests [between tornado and django](architecture-overview.html?highlight=tornado#tornado-and-django)
 
 All our connected clients hold open long-polling connections so that
 they can recieve events (messages, presence notifications, and so on) in
@@ -50,7 +50,7 @@ application.
 ## Django routes the request to a view in urls.py files
 
 There are various [urls.py](https://docs.djangoproject.com/en/1.8/topics/http/urls/) files throughout the server codebase, which are
-covered in more detail in [the directory structure doc](http://zulip.readthedocs.io/en/latest/directory-structure.html).
+covered in more detail in [the directory structure doc](directory-structure.html).
 
 The main Zulip Django app is `zerver`. The routes are found in
 ```
@@ -167,7 +167,7 @@ find the correct view to show: `zerver.views.users.create_user_backend`.
 
 ## The view will authorize the user, extract request variables, and validate them
 
-This is covered in good detail in the [writing views doc](https://zulip.readthedocs.io/en/latest/writing-views.html)
+This is covered in good detail in the [writing views doc](writing-views.html).
 
 ## Results are given as JSON
 

@@ -127,7 +127,7 @@ def parse_selectors_section(tokens):
     assert pre_fluff == ''
     i = start
     text = ''
-    while i < len(tokens) and tokens[i].s != '{' :
+    while i < len(tokens) and tokens[i].s != '{':
         s = tokens[i].s
         text += s
         i += 1

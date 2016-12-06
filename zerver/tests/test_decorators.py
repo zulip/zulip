@@ -11,8 +11,13 @@ from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_user, do_reactivate_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_helpers import (
-    HostRequestMock, ZulipTestCase, WebhookTestCase
+    HostRequestMock,
 )
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+    WebhookTestCase,
+)
+from zerver.lib.response import json_response
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
     RequestVariableConversionError, JsonableError
@@ -21,13 +26,14 @@ from zerver.decorator import (
     authenticated_json_post_view, authenticated_json_view,
     authenticate_notify,
     get_client_name, internal_notify_view, is_local_addr,
-    rate_limit, validate_api_key, logged_in_and_active
+    rate_limit, validate_api_key, logged_in_and_active,
+    return_success_on_head_request
     )
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
 from zerver.models import \
-    get_realm, get_user_profile_by_email
+    get_realm_by_string_id, get_user_profile_by_email
 
 import ujson
 
@@ -57,7 +63,6 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(get_client_name(req, is_json_view=True), 'website')
         self.assertEqual(get_client_name(req, is_json_view=False), 'Mozilla')
 
-
         req = Request(
             GET=dict(),
             POST=dict(),
@@ -75,7 +80,6 @@ class DecoratorTestCase(TestCase):
 
         self.assertEqual(get_client_name(req, is_json_view=True), 'fancy phone')
         self.assertEqual(get_client_name(req, is_json_view=False), 'fancy phone')
-
 
     def test_REQ_converter(self):
 
@@ -258,6 +262,7 @@ class RateLimitTestCase(TestCase):
     def test_internal_local_clients_skip_rate_limiting(self):
         class Client(object):
             name = 'internal'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '127.0.0.1'}
@@ -279,6 +284,7 @@ class RateLimitTestCase(TestCase):
     def test_debug_clients_skip_rate_limiting(self):
         class Client(object):
             name = 'internal'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
@@ -301,6 +307,7 @@ class RateLimitTestCase(TestCase):
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self):
         class Client(object):
             name = 'external'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
@@ -323,6 +330,7 @@ class RateLimitTestCase(TestCase):
     def test_rate_limiting_happens_in_normal_case(self):
         class Client(object):
             name = 'external'
+
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
@@ -439,8 +447,8 @@ class DeactivatedRealmTest(ZulipTestCase):
         rest_dispatch rejects requests in a deactivated realm, both /json and api
 
         """
-        realm = get_realm("zulip.com")
-        do_deactivate_realm(get_realm("zulip.com"))
+        realm = get_realm_by_string_id("zulip")
+        do_deactivate_realm(get_realm_by_string_id("zulip"))
 
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
@@ -473,7 +481,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         authenticated_json_view views fail in a deactivated realm
 
         """
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         email = "hamlet@zulip.com"
         test_password = "abcd1234"
         user_profile = get_user_profile_by_email(email)
@@ -490,7 +498,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         logging in fails in a deactivated realm
 
         """
-        do_deactivate_realm(get_realm("zulip.com"))
+        do_deactivate_realm(get_realm_by_string_id("zulip"))
         result = self.login_with_return("hamlet@zulip.com")
         self.assert_in_response("has been deactivated", result)
 
@@ -499,7 +507,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         Using a webhook while in a deactivated realm fails
 
         """
-        do_deactivate_realm(get_realm("zulip.com"))
+        do_deactivate_realm(get_realm_by_string_id("zulip"))
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
@@ -603,8 +611,9 @@ class InactiveUserTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         test_password = "abcd1234"
         user_profile.set_password(test_password)
+        user_profile.save()
 
-        self.login(email)
+        self.login(email, password=test_password)
         user_profile.is_active = False
         user_profile.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
@@ -786,8 +795,9 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def test_authenticated_json_post_view_if_user_is_not_active(self):
         user_email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(user_email)
         self._login(user_email, password="test")
+        # Get user_profile after _login so that we have the latest data.
+        user_profile = get_user_profile_by_email(user_email)
         # we deactivate user manually because do_deactivate_user removes user session
         user_profile.is_active = False
         user_profile.save()
@@ -866,3 +876,31 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             with mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
                 result = self.client_get('/accounts/accept_terms/')
                 self.assertEqual(result.status_code, 302)
+
+class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
+    def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
+        class HeadRequest(object):
+            method = 'HEAD'
+
+        request = HeadRequest()
+
+        @return_success_on_head_request
+        def test_function(request):
+            return json_response(msg=u'from_test_function')
+
+        response = test_function(request)
+        self.assert_json_success(response)
+        self.assertNotEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+
+    def test_return_success_on_head_request_returns_normal_response_if_request_method_is_not_head(self):
+            class HeadRequest(object):
+                method = 'POST'
+
+            request = HeadRequest()
+
+            @return_success_on_head_request
+            def test_function(request):
+                return json_response(msg=u'from_test_function')
+
+            response = test_function(request)
+            self.assertEqual(ujson.loads(response.content).get('msg'), u'from_test_function')

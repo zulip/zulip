@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from typing import Any, Dict
-from zerver.lib.test_helpers import WebhookTestCase
+from typing import Any, Dict, Text
+from zerver.lib.test_classes import WebhookTestCase
 
 class YoHookTests(WebhookTestCase):
     STREAM_NAME = 'yo'
@@ -18,11 +17,11 @@ class YoHookTests(WebhookTestCase):
                                            content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> Dict[str, Any]
+        # type: (Text) -> Dict[str, Any]
         return {}
 
     def build_webhook_url(self):
-        # type: () -> text_type
+        # type: () -> Text
         api_key = self.get_api_key(self.TEST_USER_EMAIL)
         email = "cordelia@zulip.com"
         username = "IAGO"

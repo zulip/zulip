@@ -9,7 +9,7 @@ from zerver.lib.actions import (
     check_add_realm_emoji,
     do_remove_realm_emoji,
     do_set_alert_words,
-    get_realm,
+    get_realm_by_string_id,
 )
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
@@ -17,7 +17,7 @@ from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
 )
-from zerver.lib.test_helpers import (
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.str_utils import force_str
@@ -26,6 +26,7 @@ from zerver.models import (
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
+    get_realm_by_string_id,
     get_user_profile_by_email,
     get_stream,
     realm_filters_for_domain,
@@ -41,10 +42,9 @@ import os
 import ujson
 import six
 
-from six import text_type
 from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
-from typing import Any, AnyStr, Dict, List, Optional, Tuple
+from typing import Any, AnyStr, Dict, List, Optional, Tuple, Text
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self):
@@ -158,17 +158,17 @@ class FencedBlockPreprocessorTest(TestCase):
         self.assertEqual(lines, expected)
 
 def bugdown_convert(text):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return bugdown.convert(text, "zulip.com")
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
-        # type: (text_type, text_type) -> None
+        # type: (Text, Text) -> None
         converted = bugdown_convert(text)
         self.assertEqual(converted, expected)
 
     def load_bugdown_tests(self):
-        # type: () -> Tuple[Dict[text_type, Any], List[List[text_type]]]
+        # type: () -> Tuple[Dict[Text, Any], List[List[Text]]]
         test_fixtures = {}
         data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/bugdown-data.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
@@ -189,7 +189,7 @@ class BugdownTest(TestCase):
             self.assertEqual(converted, test['expected_output'])
 
         def replaced(payload, url, phrase=''):
-            # type: (text_type, text_type, text_type) -> text_type
+            # type: (Text, Text, Text) -> Text
             target = " target=\"_blank\""
             if url[:4] == 'http':
                 href = url
@@ -199,7 +199,6 @@ class BugdownTest(TestCase):
             else:
                 href = 'http://' + url
             return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
-
 
         print("Running Bugdown Linkify tests")
         self.maxDiff = None # type: Optional[int]
@@ -290,7 +289,7 @@ class BugdownTest(TestCase):
     def test_inline_interesting_links(self):
         # type: () -> None
         def make_link(url):
-            # type: (text_type) -> text_type
+            # type: (Text) -> Text
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
         normal_tweet_html = ('<a href="https://twitter.com/twitter" target="_blank"'
@@ -309,18 +308,18 @@ class BugdownTest(TestCase):
                             'http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>')
 
         def make_inline_twitter_preview(url, tweet_html, image_html=''):
-            # type: (text_type, text_type, text_type) -> text_type
+            # type: (Text, Text, Text) -> Text
             ## As of right now, all previews are mocked to be the exact same tweet
             return ('<div class="inline-preview-twitter">'
-                      '<div class="twitter-tweet">'
-                        '<a href="%s" target="_blank">'
-                          '<img class="twitter-avatar"'
-                          ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
-                        '</a>'
-                        '<p>%s</p>'
-                        '<span>- Eoin McMillan  (@imeoin)</span>'
-                        '%s'
-                      '</div>'
+                    '<div class="twitter-tweet">'
+                    '<a href="%s" target="_blank">'
+                    '<img class="twitter-avatar"'
+                    ' src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png">'
+                    '</a>'
+                    '<p>%s</p>'
+                    '<span>- Eoin McMillan  (@imeoin)</span>'
+                    '%s'
+                    '</div>'
                     '</div>') % (url, tweet_html, image_html)
 
         msg = 'http://www.twitter.com'
@@ -395,9 +394,9 @@ class BugdownTest(TestCase):
             make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315459',
                                         media_tweet_html,
                                         ('<div class="twitter-image">'
-                                           '<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
-                                             '<img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small">'
-                                           '</a>'
+                                         '<a href="http://t.co/xo7pAhK6n3" target="_blank" title="http://t.co/xo7pAhK6n3">'
+                                         '<img src="https://pbs.twimg.com/media/BdoEjD4IEAIq86Z.jpg:small">'
+                                         '</a>'
                                          '</div>'))))
 
     def test_fetch_tweet_data_settings_validation(self):
@@ -408,17 +407,17 @@ class BugdownTest(TestCase):
     def test_realm_emoji(self):
         # type: () -> None
         def emoji_img(name, url):
-            # type: (text_type, text_type) -> text_type
+            # type: (Text, Text) -> Text
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
-        zulip_realm = get_realm('zulip.com')
+        zulip_realm = get_realm_by_string_id('zulip')
         url = "https://zulip.com/test_realm_emoji.png"
         check_add_realm_emoji(zulip_realm, "test", url)
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
         converted = bugdown.convert(":test:", "zulip.com", msg)
-        self.assertEqual(converted, '<p>%s</p>' %(emoji_img(':test:', url)))
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', url)))
 
         do_remove_realm_emoji(zulip_realm, 'test')
         converted = bugdown.convert(":test:", "zulip.com", msg)
@@ -436,17 +435,16 @@ class BugdownTest(TestCase):
 
     def test_realm_patterns(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
                                    url_format_string=url_format_string)
         realm_filter.save()
         self.assertEqual(
-            str(realm_filter),
+            realm_filter.__unicode__(),
             '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
-
 
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                       subject="#444")
@@ -460,9 +458,18 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
 
+        RealmFilter(realm=get_realm_by_string_id('zulip'), pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
+                    url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
+        msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
+
+        content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
+        converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
+
+        self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
+
     def test_maybe_update_realm_filters(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
@@ -475,12 +482,11 @@ class BugdownTest(TestCase):
         zulip_filters = all_filters['zulip.com']
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
-            (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s'))
+                         (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
 
     def test_flush_realm_filter(self):
         # type: () -> None
-        domain = 'zulip.com'
-        realm = get_realm(domain)
+        realm = get_realm_by_string_id('zulip')
 
         def flush():
             # type: () -> None
@@ -503,24 +509,24 @@ class BugdownTest(TestCase):
 
         # start fresh for our domain
         flush()
-        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+        self.assertFalse(domain_in_local_realm_filters_cache(domain=realm.domain))
 
         # call this just for side effects of populating the cache
-        realm_filters_for_domain(domain=domain)
-        self.assertTrue(domain_in_local_realm_filters_cache(domain))
+        realm_filters_for_domain(domain=realm.domain)
+        self.assertTrue(domain_in_local_realm_filters_cache(realm.domain))
 
         # Saving a new RealmFilter should have the side effect of
         # flushing the cache.
         save_new_realm_filter()
-        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+        self.assertFalse(domain_in_local_realm_filters_cache(realm.domain))
 
         # and flush it one more time, to make sure we don't get a KeyError
         flush()
-        self.assertFalse(domain_in_local_realm_filters_cache(domain))
+        self.assertFalse(domain_in_local_realm_filters_cache(realm.domain))
 
     def test_realm_patterns_negative(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
         boring_msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
@@ -557,7 +563,7 @@ class BugdownTest(TestCase):
         realm_alert_words = alert_words_in_realm(user_profile.realm)
 
         def render(msg, content):
-            # type: (Message, text_type) -> text_type
+            # type: (Message, Text) -> Text
             return render_markdown(msg,
                                    content,
                                    realm_alert_words=realm_alert_words,
@@ -643,7 +649,7 @@ class BugdownTest(TestCase):
 
     def test_stream_single(self):
         # type: () -> None
-        denmark = get_stream('Denmark', get_realm('zulip.com'))
+        denmark = get_stream('Denmark', get_realm_by_string_id('zulip'))
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**Denmark**"
@@ -657,7 +663,7 @@ class BugdownTest(TestCase):
         # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         denmark = get_stream('Denmark', realm)
         scotland = get_stream('Scotland', realm)
         content = "Look to #**Denmark** and #**Scotland**, there something"
@@ -673,7 +679,7 @@ class BugdownTest(TestCase):
 
     def test_stream_case_sensitivity(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         case_sens = Stream.objects.create(name='CaseSens', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -689,7 +695,7 @@ class BugdownTest(TestCase):
         """#StreamName requires the stream be spelled with the correct case
         currently.  If we change that in the future, we'll need to change this
         test."""
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         Stream.objects.create(name='CaseSens', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -700,7 +706,7 @@ class BugdownTest(TestCase):
 
     def test_stream_unicode(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         uni = Stream.objects.create(name=u'привет', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -841,7 +847,21 @@ class BugdownApiTests(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
-            u'<p>That is a <strong>bold</strong> statement</p>')
+                         u'<p>That is a <strong>bold</strong> statement</p>')
+
+    def test_render_mention_stream_api(self):
+        # type: () -> None
+        """Determines whether we're correctly passing the realm context"""
+        content = 'This mentions #**Denmark** and @**King Hamlet**.'
+        result = self.client_get(
+            '/api/v1/messages/render',
+            dict(content=content),
+            **self.api_auth('othello@zulip.com')
+        )
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        self.assertEqual(data['rendered'],
+                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):

@@ -4,7 +4,7 @@ add_dependencies({
     muting: 'js/muting',
     narrow: 'js/narrow',
     stream_data: 'js/stream_data',
-    templates: 'js/templates'
+    templates: 'js/templates',
 });
 
 set_global('unread', {});
@@ -23,20 +23,22 @@ global.compile_template('topic_list_item');
     var max_topics = 5;
 
     var topics = [
-        {subject: "coding"}
+        {subject: "coding"},
     ];
-    global.stream_data.populate_stream_topics_for_tests({"devel": topics});
+    global.stream_data.populate_stream_topics_for_tests({devel: topics});
     global.unread.num_unread_for_subject = function () {
         return 1;
     };
 
-    var widget = topic_list.build_widget(stream, active_topic, max_topics);
+    var parent_elem = $('<div>');
+    var widget = topic_list.build_widget(parent_elem, stream, active_topic, max_topics);
     var topic_html = widget.get_dom();
+
+    assert.equal(widget.get_parent(), parent_elem);
+    assert.equal(widget.get_stream_name(), 'devel');
 
     var topic = $(topic_html).find('a').text().trim();
     assert.equal(topic, 'coding');
 
-    var output_html = '<div>' + topic_html.html() + '</div>';
-    global.write_test_output("test_topic_list_build_widget", topic_html.html());
+    global.write_test_output("test_topic_list_build_widget", parent_elem.html());
 }());
-

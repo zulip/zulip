@@ -7,24 +7,12 @@ label {
     margin: 0;
 }
 
-.display-none {
-    display: none;
-}
-
-.inline-block {
-    display: inline-block;
-}
-
 .center-block {
     margin: 0 auto;
 }
 
 .w-70 {
     width: 70%;
-}
-
-.light {
-    font-weight: 300;
 }
 
 .padded-container {
@@ -193,6 +181,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form,
     #settings .settings-section .new-alert-word-form,
     #emoji-settings .new-emoji-form,
+    #filter-settings .new-filter-form,
     #settings .settings-section .notification-settings-form,
     #settings .settings-section .display-settings-form,
     #settings .settings-section .edit-bot-form-box {
@@ -204,6 +193,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form .control-label,
     #settings .settings-section .new-alert-word-form .control-label,
     #emoji-settings .new-emoji-form .control-label,
+    #filter-settings .new-filter-form .control-label,
     #settings .settings-section .edit-bot-form-box .control-label {
         display: block;
         width: 120px;
@@ -219,6 +209,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form .controls,
     #settings .settings-section .new-alert-word-form button,
     #emoji-settings .new-emoji-form .controls,
+    #filter-settings .new-filter-form .controls,
     #settings .settings-section .edit-bot-form-box .controls {
         margin: auto;
         text-align: center;
@@ -269,6 +260,14 @@ input[type=checkbox].inline-block {
 .admin-table-wrapper {
     width: 90%;
     margin: 0 auto;
+}
+
+.admin_filters_table {
+    margin-top: 20px;
+}
+
+#admin-filter-pattern-status, #admin-filter-format-status {
+    margin: 20px 0 0 0;
 }
 
 #bots_list {
@@ -349,6 +348,7 @@ input[type=checkbox].inline-block {
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
 .admin-emoji-form .control-label,
+.admin-filter-form .control-label,
 .default-stream-form .control-label {
     width: 10em;
     text-align: right;
@@ -368,6 +368,7 @@ input[type=checkbox].inline-block {
     display: none;
     width: 90%;
     margin: 0 auto;
+    margin-bottom: 15px;
     padding: 10px;
 }
 
@@ -404,4 +405,8 @@ input[type=checkbox].inline-block {
 
 .open-user-form {
     min-width: initial !important;
+}
+
+#show_api_key_box {
+    padding-bottom: 20px;
 }

@@ -17,9 +17,10 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
-- [jslint](https://github.com/douglascrockford/JSLint)
+- [eslint](http://eslint.org)
 - [mypy](http://mypy-lang.org/)
-- [puppet](https://puppet.com/) (puppet provides its own mechanism for validating manifests)
+- [puppet](https://puppet.com/) (puppet provides its own mechanism for
+  validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
 
 Zulip also uses some home-grown code to perform tasks like validating
@@ -81,7 +82,7 @@ Most of our lint checks get performed by `./tools/lint-all`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
-- Check JavaScript code with jslint.
+- Check JavaScript code with eslint.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
 - Check puppet manifests with the puppet validator.
@@ -102,7 +103,7 @@ The rest of this document pertains to the checks that occur in `./tools/lint-all
 Zulip has a script called `lint-all` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
 dispatches the heavy lifting to other components such as pyflakes,
-jslint, and other home grown tools.
+eslint, and other home grown tools.
 
 You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint-all).
 
@@ -161,7 +162,7 @@ that we exempt may be deemed not worthwhile to fix.
 #### JavaScript code
 
 We check our JavaScript code in a few different ways:
-- We run jslint.
+- We run eslint.
 - We perform custom Zulip regex checks on the code.
 - We verify that all addClass calls, with a few exceptions, explicitly
   contain a CSS class.

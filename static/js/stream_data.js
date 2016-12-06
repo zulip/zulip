@@ -30,6 +30,13 @@ exports.rename_sub = function (stream_id, new_name) {
     return sub;
 };
 
+exports.unsubscribe_myself = function (sub) {
+    // Remove user from subscriber's list
+    var user_id = people.get_user_id(page_params.email);
+    exports.remove_subscriber(sub.name, user_id);
+    sub.subscribed = false;
+};
+
 exports.add_sub = function (stream_name, sub) {
     if (!_.has(sub, 'subscribers')) {
         sub.subscribers = Dict.from_array([]);
@@ -74,8 +81,8 @@ exports.update_subscribers_count = function (sub) {
 
 exports.all_subscribed_streams_are_in_home_view = function () {
     return _.every(exports.subscribed_subs(), function (sub) {
-        return sub.in_home_view; }
-    );
+        return sub.in_home_view;
+    });
 };
 
 exports.home_view_stream_names = function () {
@@ -146,29 +153,28 @@ exports.set_subscriber_emails = function (sub, emails) {
     });
 };
 
-exports.add_subscriber = function (stream_name, user_email) {
+exports.add_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
         return;
     }
-    var user_id = people.get_user_id(user_email);
-    if (!user_id) {
-        blueslip.error("We tried to add invalid subscriber: " + user_email);
+    var person = people.get_person_from_user_id(user_id);
+    if (person === undefined) {
+        blueslip.error("We tried to add invalid subscriber: " + user_id);
         return;
     }
     sub.subscribers.set(user_id, true);
 };
 
-exports.remove_subscriber = function (stream_name, user_email) {
+exports.remove_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_name);
         return;
     }
-    var user_id = people.get_user_id(user_email);
-    if (!user_id) {
-        blueslip.error("We tried to remove invalid subscriber: " + user_email);
+    if (!sub.subscribers.has(user_id)) {
+        blueslip.warn("We tried to remove invalid subscriber: " + user_id);
         return;
     }
 
@@ -264,13 +270,14 @@ exports.receives_audible_notifications = function (stream_name) {
 
 exports.add_admin_options = function (sub) {
     return _.extend(sub, {
-        'is_admin': page_params.is_admin,
-        'can_make_public': page_params.is_admin && sub.invite_only && sub.subscribed,
-        'can_make_private': page_params.is_admin && !sub.invite_only
+        is_admin: page_params.is_admin,
+        can_make_public: page_params.is_admin && sub.invite_only && sub.subscribed,
+        can_make_private: page_params.is_admin && !sub.invite_only
     });
 };
 
-exports.process_message_for_recent_topics = function process_message_for_recent_topics(message, remove_message) {
+exports.process_message_for_recent_topics = function process_message_for_recent_topics(
+                                                message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
     var stream = message.stream;

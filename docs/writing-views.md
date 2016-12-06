@@ -3,16 +3,16 @@
 ## What this covers
 
 This page documents how views work in Zulip. You may want to read the
-[new feature tutorial](https://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
-or the [integration guide](https://zulip.readthedocs.io/en/latest/integration-guide.html),
+[new feature tutorial](new-feature-tutorial.html)
+or the [integration guide](integration-guide.html),
 and treat this as a reference.
 
 If you have experience with Django, much of this will be familiar, but
 you may want to read about how REST requests are dispatched, and how
 request authentication works.
 
-This document supplements the [new feature tutorial](https://zulip.readthedocs.io/en/latest/new-feature-tutorial.html)
-and the [testing](https://zulip.readthedocs.io/en/latest/testing.html)
+This document supplements the [new feature tutorial](new-feature-tutorial.html)
+and the [testing](testing.html)
 documentation.
 
 ## What is a view?

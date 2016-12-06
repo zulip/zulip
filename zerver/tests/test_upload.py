@@ -6,7 +6,7 @@ from unittest import skip
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -17,7 +17,6 @@ from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
 from six.moves import urllib
-from six import text_type
 from PIL import Image
 
 from boto.s3.connection import S3Connection
@@ -38,7 +37,7 @@ from moto import mock_s3
 
 TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, Text
 
 def destroy_uploads():
     # type: () -> None
@@ -268,7 +267,7 @@ class FileUploadTest(ZulipTestCase):
 
         self.subscribe_to_stream("hamlet@zulip.com", "test")
         body = ("[f1.txt](http://localhost:9991/user_uploads/" + f1_path_id + ")"
-               "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
+                "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         msg_id = self.send_message("hamlet@zulip.com", "test", Recipient.STREAM, body, "test")
 
         result = self.client_post("/json/upload_file", {'file': f3})
@@ -277,7 +276,7 @@ class FileUploadTest(ZulipTestCase):
         f3_path_id = re.sub('/user_uploads/', '', uri)
 
         new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
-                   "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
+                    "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
         result = self.client_post("/json/update_message", {
             'message_id': msg_id,
             'content': new_body

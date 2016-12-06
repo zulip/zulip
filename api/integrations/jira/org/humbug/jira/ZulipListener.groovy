@@ -31,8 +31,8 @@ class ZulipListener extends AbstractIssueEventListener {
     // The base JIRA url for browsing
     String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 
-    // Your zulip domain, only change if you have a custom one
-    String base_url = "https://api.zulip.com"
+    // Your zulip domain
+    String base_url = "https://zulip.example.com/"
 
     @Override
     void workflowEvent(IssueEvent event) {
@@ -144,6 +144,6 @@ class ZulipListener extends AbstractIssueEventListener {
     }
 
     String zulipUrl(method) {
-      return base_url + "/v1/" + method
+      return base_url.replaceAll("/+$", "") + "/api/v1/" + method
     }
 }

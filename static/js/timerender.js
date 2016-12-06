@@ -8,7 +8,7 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
-function now () { return new XDate(); }
+function now() { return new XDate(); }
 
 // Given an XDate object 'time', return a two-element list containing
 //   - a string for the current human-formatted version
@@ -33,14 +33,13 @@ exports.render_now = function (time) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is over a year old.
         return [time.toString("MMM\xa0dd,\xa0yyyy"), false];
-    } else {
-        // For now, if we get a message from tomorrow, we don't bother
-        // rewriting the timestamp when it gets to be tomorrow.
-
-        // "\xa0" is U+00A0 NO-BREAK SPACE.
-        // Can't use &nbsp; as that represents the literal string "&nbsp;".
-        return [time.toString("MMM\xa0dd"), false];
     }
+    // For now, if we get a message from tomorrow, we don't bother
+    // rewriting the timestamp when it gets to be tomorrow.
+
+    // "\xa0" is U+00A0 NO-BREAK SPACE.
+    // Can't use &nbsp; as that represents the literal string "&nbsp;".
+    return [time.toString("MMM\xa0dd"), false];
 };
 
 // List of the dates that need to be updated when the day changes.
@@ -57,7 +56,7 @@ $(function () {
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
-function maybe_add_update_list_entry (needs_update, id, time, time_above) {
+function maybe_add_update_list_entry(needs_update, id, time, time_above) {
     if (needs_update) {
         if (time_above !== undefined) {
             update_list.push([id, time, time_above]);
@@ -73,9 +72,8 @@ function render_date_span(elem, time_str, time_above_str) {
         return elem.append('<i class="date-direction icon-vector-caret-up"></i>' +
                            time_above_str).append($('<hr class="date-line">')).append('<i class="date-direction icon-vector-caret-down"></i>'
                            + time_str);
-    } else {
-        return elem.append(time_str);
     }
+    return elem.append(time_str);
 }
 
 // Given an XDate object 'time', return a DOM node that initially
@@ -89,7 +87,7 @@ function render_date_span(elem, time_str, time_above_str) {
 // okay since to update the time later we look up the node by its id.)
 exports.render_date = function (time, time_above) {
     var id = "timerender" + next_timerender_id;
-    next_timerender_id++;
+    next_timerender_id += 1;
     var rendered_time = exports.render_now(time);
     var node = $("<span />").attr('id', id);
     if (time_above !== undefined) {

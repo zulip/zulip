@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from zerver.lib.test_helpers import WebhookTestCase
+from typing import Text
+from zerver.lib.test_classes import WebhookTestCase
 
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
@@ -147,5 +147,5 @@ Making a comment, **Othello, the Moor of Venice** is watching this issue
         self.send_and_test_stream_message('updated_priority', expected_subject, expected_message)
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data('jira', fixture_name)

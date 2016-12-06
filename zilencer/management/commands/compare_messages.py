@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand, CommandParser
 class Command(BaseCommand):
     help = """
     Render messages to a file.
-    Usage: python manage.py render_messages <destination> <--amount>
+    Usage: ./manage.py render_messages <destination> <--amount>
     """
 
     def add_arguments(self, parser):

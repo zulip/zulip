@@ -14,8 +14,8 @@ from zerver.lib.actions import do_change_password, is_inactive, user_email_is_un
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    completely_open, resolve_email_to_domain, get_realm, get_realm_by_string_id, \
-    get_unique_open_realm, split_email_to_domain
+    completely_open, get_realm, get_realm_by_email_domain, get_realm_by_string_id, \
+    get_unique_open_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
 import logging
@@ -25,15 +25,6 @@ import DNS
 from six import text_type
 from typing import Any, Callable, Optional
 
-SIGNUP_STRING = u'Your e-mail does not match any existing open organization. ' + \
-                u'Use a different e-mail address, or contact %s with questions.' % (settings.ZULIP_ADMINISTRATOR,)
-
-if settings.SHOW_OSS_ANNOUNCEMENT:
-    SIGNUP_STRING = u'Your e-mail does not match any existing organization. <br />' + \
-                    u"The zulip.com service is not taking new customer teams. <br /> " + \
-                    u"<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project/\">" + \
-                    u"Zulip is open source</a>, so you can install your own Zulip server " + \
-                    u"by following the instructions on <a href=\"https://www.zulip.org\">www.zulip.org</a>!"
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
                        u'If you want to sign up an alias for Zulip, ' + \
@@ -48,15 +39,6 @@ def get_registration_string(domain):
     register_account_string = _('The organization with the domain already exists. '
                                 'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
     return register_account_string
-
-def get_valid_realm(email):
-    # type: (str) -> Optional[Realm]
-    """Checks if there is a realm without invite_required
-    matching the domain of the input e-mail."""
-    realm = get_realm(resolve_email_to_domain(email))
-    if realm is None or realm.invite_required:
-        return None
-    return realm
 
 def email_is_not_mit_mailing_list(email):
     # type: (text_type) -> None
@@ -81,7 +63,7 @@ class RegistrationForm(forms.Form):
     realm_name = forms.CharField(max_length=100, required=False)
     realm_subdomain = forms.CharField(max_length=40, required=False)
     realm_org_type = forms.ChoiceField(((Realm.COMMUNITY, 'Community'),
-                                        (Realm.CORPORATE, 'Corporate')), \
+                                        (Realm.CORPORATE, 'Corporate')),
                                        initial=Realm.COMMUNITY, required=False)
 
     if settings.TERMS_OF_SERVICE:
@@ -122,16 +104,13 @@ class HomepageForm(forms.Form):
     # This form is important because it determines whether users can
     # register for our product. Be careful when modifying the
     # validators.
-    email = forms.EmailField(validators=[is_inactive,])
+    email = forms.EmailField(validators=[is_inactive])
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.domain = kwargs.get("domain")
-        self.subdomain = kwargs.get("subdomain")
-        if "domain" in kwargs:
-            del kwargs["domain"]
-        if "subdomain" in kwargs:
-            del kwargs["subdomain"]
+        self.string_id = kwargs.get("string_id")
+        if "string_id" in kwargs:
+            del kwargs["string_id"]
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -139,24 +118,31 @@ class HomepageForm(forms.Form):
         """Returns the email if and only if the user's email address is
         allowed to join the realm they are trying to join."""
         email = self.cleaned_data['email']
-        # If the server has a unique open realm, pass
+
         if get_unique_open_realm():
             return email
 
-        # If a realm is specified and that realm is open, pass
-        if completely_open(self.domain):
-            return email
+        # Otherwise, the user is trying to join a specific realm.
+        realm = None
+        if self.string_id:
+            realm = get_realm_by_string_id(self.string_id)
+        elif not settings.REALMS_HAVE_SUBDOMAINS:
+            realm = get_realm_by_email_domain(email)
 
-        # If the subdomain encodes a complete open realm, pass
-        subdomain_realm = get_realm_by_string_id(self.subdomain)
-        if (subdomain_realm is not None and
-            completely_open(subdomain_realm.domain)):
-            return email
-
-        # If no realm is specified, fail
-        realm = get_valid_realm(email)
         if realm is None:
-            raise ValidationError(mark_safe(SIGNUP_STRING))
+            if settings.REALMS_HAVE_SUBDOMAINS:
+                raise ValidationError(_("The organization you are trying to join does not exist."))
+            else:
+                raise ValidationError(_("Your email address does not correspond to any existing organization."))
+
+        if realm.invite_required:
+            raise ValidationError(_("Please request an invite from the organization administrator."))
+
+        if not email_allowed_for_realm(email, realm):
+            raise ValidationError(
+                _("The organization you are trying to join, %(string_id)s, only allows users with e-mail "
+                  "addresses within the organization. Please try a different e-mail address."
+                  % {'string_id': realm.string_id}))
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
@@ -165,7 +151,7 @@ class HomepageForm(forms.Form):
 
 def email_is_not_disposable(email):
     # type: (text_type) -> None
-    if is_disposable_domain(split_email_to_domain(email)):
+    if is_disposable_domain(email_to_domain(email)):
         raise ValidationError(_("Please use your real email address."))
 
 class RealmCreationForm(forms.Form):

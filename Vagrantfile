@@ -7,6 +7,18 @@ def command?(name)
   $?.success?
 end
 
+if Vagrant::VERSION == "1.8.7" then
+    path = `which curl`
+    if path.include?('/opt/vagrant/embedded/bin/curl') then
+        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 1.8.6 "\
+             "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the "\
+             "issue before provisioning. See "\
+             "https://github.com/mitchellh/vagrant/issues/7997 "\
+             "for reference."
+        exit
+    end
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # For LXC. VirtualBox hosts use a different box, described below.
@@ -80,8 +92,13 @@ $provision_script = <<SCRIPT
 set -x
 set -e
 set -o pipefail
+# If the host is running SELinux remount the /sys/fs/selinux directory as read only,
+# needed for apt-get to work.
+if [ -d "/sys/fs/selinux" ]; then
+  sudo mount -o remount,ro /sys/fs/selinux
+fi
 ln -nsf /srv/zulip ~/zulip
-/usr/bin/python /srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
+/srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
 SCRIPT
 
   config.vm.provision "shell",

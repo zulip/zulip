@@ -1,4 +1,3 @@
-/*jslint nomen: true */
 var message_list = (function () {
 
 var exports = {};
@@ -120,9 +119,8 @@ exports.MessageList.prototype = {
         var i = this._items.length - n;
         if (i < 0) {
             return -1;
-        } else {
-            return this._items[i].id;
         }
+        return this._items[i].id;
     },
 
     clear: function  MessageList_clear(opts) {
@@ -217,10 +215,11 @@ exports.MessageList.prototype = {
     // nature of local message IDs in the message list
     _lower_bound: function MessageList__lower_bound(id) {
         var self = this;
-        function less_func (msg, ref_id, a_idx) {
+        function less_func(msg, ref_id, a_idx) {
             if (self._is_localonly_id(msg.id)) {
                 // First non-local message before this one
-                var effective = self._next_nonlocal_message(self._items, a_idx, function (idx) { return idx - 1; });
+                var effective = self._next_nonlocal_message(self._items, a_idx,
+                                                            function (idx) { return idx - 1; });
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
                     var decimal = parseFloat((msg.id % 1).toFixed(0.02));
@@ -260,16 +259,16 @@ exports.MessageList.prototype = {
             // for lower_bound purposes, find the real leftmost index (first non-local id)
             do {
                 potential_closest_matches.push(closest);
-                closest--;
-            } while(closest > 0 && this._is_localonly_id(items[closest - 1].id));
+                closest -= 1;
+            } while (closest > 0 && this._is_localonly_id(items[closest - 1].id));
         }
         potential_closest_matches.push(closest);
 
         if (closest === items.length) {
             closest = closest - 1;
         } else {
-            // Any of the ids that we skipped over (due to them being local-only) might be the closest ID to the desired one,
-            // in case there is no exact match.
+            // Any of the ids that we skipped over (due to them being local-only) might be the
+            // closest ID to the desired one, in case there is no exact match.
             potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
             var best_match = items[closest].id;
 
@@ -308,7 +307,7 @@ exports.MessageList.prototype = {
                 break;
             }
             next_msg_id = msg_id;
-            ++idx;
+            idx += 1;
         }
 
         if (next_msg_id > 0) {
@@ -362,7 +361,8 @@ exports.MessageList.prototype = {
         if (stream === undefined) {
             return;
         }
-        var trailing_bookend_content, subscribed = stream_data.is_subscribed(stream);
+        var trailing_bookend_content;
+        var subscribed = stream_data.is_subscribed(stream);
         if (subscribed) {
             trailing_bookend_content = this.subscribed_bookend_content(stream);
         } else {
@@ -546,11 +546,12 @@ exports.MessageList.prototype = {
         return id % 1 !== 0;
     },
 
-    _next_nonlocal_message: function MessageList__next_nonlocal_message(item_list, start_index, op) {
+    _next_nonlocal_message: function MessageList__next_nonlocal_message(item_list,
+                                                                        start_index, op) {
         var cur_idx = start_index;
         do {
             cur_idx = op(cur_idx);
-        } while(item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
+        } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
         return item_list[cur_idx];
     },
 
@@ -602,8 +603,10 @@ exports.MessageList.prototype = {
                 return;
             }
 
-            var next = self._next_nonlocal_message(self._items, index, function (idx) { return idx + 1; });
-            var prev = self._next_nonlocal_message(self._items, index, function (idx) { return idx - 1; });
+            var next = self._next_nonlocal_message(self._items, index,
+                                                   function (idx) { return idx + 1; });
+            var prev = self._next_nonlocal_message(self._items, index,
+                                                   function (idx) { return idx - 1; });
 
             if ((next !== undefined && current_message.id > next.id) ||
                 (prev !== undefined && current_message.id < prev.id)) {
@@ -638,7 +641,6 @@ $(document).on('message_selected.zulip zuliphashchange.zulip mousewheel', functi
 return exports;
 
 }());
-/*jslint nomen: false */
 if (typeof module !== 'undefined') {
     module.exports = message_list;
 }

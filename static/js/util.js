@@ -19,7 +19,10 @@ exports.random_int = function random_int(min, max) {
 // Usage: lower_bound(array, value, [less])
 //        lower_bound(array, first, last, value, [less])
 exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
-    var first, last, value, less;
+    var first;
+    var last;
+    var value;
+    var less;
     if (arg3 === undefined) {
         first = 0;
         last = array.length;
@@ -39,13 +42,12 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     var len = last - first;
     var middle;
     var step;
-    var lower = 0;
     while (len > 0) {
         step = Math.floor(len / 2);
         middle = first + step;
         if (less(array[middle], value, middle)) {
             first = middle;
-            first++;
+            first += 1;
             len = len - step - 1;
         } else {
             len = step;
@@ -70,7 +72,9 @@ exports.is_pm_recipient = function (email, message) {
 };
 
 exports.extract_pm_recipients = function (recipients) {
-    return recipients.split(/\s*[,;]\s*/);
+    return _.filter(recipients.split(/\s*[,;]\s*/), function (recipient) {
+        return recipient.trim() !== "";
+    });
 };
 
 exports.same_major_recipient = function (a, b) {
@@ -122,7 +126,8 @@ exports.normalize_recipients = function (recipients) {
     // Converts a string listing emails of message recipients
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
-    recipients = _.map(recipients.split(','), $.trim);
+    recipients = _.map(recipients.split(','), function (s) { return s.trim(); });
+    recipients = _.map(recipients, function (s) { return s.toLowerCase(); });
     recipients = _.filter(recipients, function (s) { return s.length > 0; });
     recipients.sort();
     return recipients.join(',');
@@ -141,7 +146,7 @@ exports.robust_uri_decode = function (str) {
             if (!(e instanceof URIError)) {
                 throw e;
             }
-            end--;
+            end -= 1;
         }
     }
     return '';
@@ -156,9 +161,10 @@ exports.strcmp = (function () {
         var collator = new Intl.Collator();
         return collator.compare;
     } catch (e) {
+        // continue regardless of error
     }
 
-    return function util_strcmp (a, b) {
+    return function util_strcmp(a, b) {
         return (a < b ? -1 : (a > b ? 1 : 0));
     };
 }());
@@ -174,7 +180,7 @@ exports.array_compare = function util_array_compare(a, b) {
         return false;
     }
     var i;
-    for (i = 0; i < a.length; ++i) {
+    for (i = 0; i < a.length; i += 1) {
         if (a[i] !== b[i]) {
             return false;
         }
@@ -206,17 +212,6 @@ exports.CachedValue.prototype = {
     reset: function CachedValue_reset() {
         this._value = unassigned_value_sentinel;
     }
-};
-
-exports.enforce_arity = function util_enforce_arity(func) {
-    return function () {
-        if (func.length !== arguments.length) {
-            throw new Error("Function '" + func.name + "' called with "
-                            + arguments.length + " arguments, but expected "
-                            + func.length);
-        }
-        return func.apply(this, arguments);
-    };
 };
 
 exports.execute_early = function (func) {

@@ -1,6 +1,8 @@
 /*global Dict */
 var path = require('path');
 var fs = require('fs');
+var jsdom = require("jsdom");
+var window = jsdom.jsdom().defaultView;
 
 global.stub_out_jquery();
 
@@ -8,29 +10,31 @@ set_global('page_params', {
     people_list: [],
     realm_emoji: {
         burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
-                  source_url: '/static/third/gemoji/images/emoji/burrito.png'}
+                  source_url: '/static/third/gemoji/images/emoji/burrito.png'},
     },
     realm_filters: [
         [
             "#(?P<id>[0-9]{2,8})",
-            "https://trac.zulip.net/ticket/%(id)s"
+            "https://trac.zulip.net/ticket/%(id)s",
         ],
         [
             "ZBUG_(?P<id>[0-9]{2,8})",
-            "https://trac2.zulip.net/ticket/%(id)s"
+            "https://trac2.zulip.net/ticket/%(id)s",
         ],
         [
             "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
-            "https://zone_%(zone)s.zulip.net/ticket/%(id)s"
-        ]
-    ]
+            "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
+        ],
+    ],
 });
 
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
     emoji: 'js/emoji.js',
     people: 'js/people.js',
-    fenced_code: 'js/fenced_code.js'
+    stream_data: 'js/stream_data.js',
+    hashchange: 'js/hashchange',
+    fenced_code: 'js/fenced_code.js',
 });
 
 var doc = "";
@@ -49,13 +53,35 @@ set_global('$', function (obj) {
 
 set_global('feature_flags', {local_echo: true});
 
+jsdom.changeURL(window, 'http://zulip.zulipdev.com');
+set_global('window', window);
+
 var people = global.people;
 
 people.add({
     full_name: 'Cordelia Lear',
     user_id: 101,
-    email: 'cordelia@zulip.com'
+    email: 'cordelia@zulip.com',
 });
+
+var stream_data = global.stream_data;
+var denmark = {
+    subscribed: false,
+    color: 'blue',
+    name: 'Denmark',
+    stream_id: 1,
+    in_home_view: false,
+};
+var social = {
+    subscribed: true,
+    color: 'red',
+    name: 'social',
+    stream_id: 2,
+    in_home_view: true,
+    invite_only: true,
+};
+stream_data.add_sub('Denmark', denmark);
+stream_data.add_sub('social', social);
 
 var echo = require('js/echo.js');
 
@@ -79,8 +105,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                      "User Mention @**leo**",
                      "User Mention @**leo f**",
                      "User Mention @**leo with some name**",
+                     "Stream #**Verona**",
                      "This contains !gravatar(leo@zulip.com)",
-                     "And an avatar !avatar(leo@zulip.com) is here"
+                     "And an avatar !avatar(leo@zulip.com) is here",
                     ];
 
     var markup = [
@@ -95,7 +122,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                    "https://twitter.com/jacobian/status/407886996565016579",
                    "then https://twitter.com/jacobian/status/407886996565016579",
                    "twitter url http://twitter.com/jacobian/status/407886996565016579",
-                   "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a"
+                   "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
                  ];
 
     no_markup.forEach(function (content) {
@@ -138,6 +165,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
      expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
      expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
+    {input: 'This is a #**Denmark** stream link',
+     expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
+    {input: 'This is #**Denmark** and #**social** stream links',
+     expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
+    {input: 'And this is a #**wrong** stream link',
+     expected: '<p>And this is a #**wrong** stream link</p>'},
     {input: 'mmm...:burrito:s',
      expected: '<p>mmm...<img alt=\":burrito:\" class=\"emoji\" src=\"/static/third/gemoji/images/emoji/burrito.png\" title=\":burrito:\">s</p>'},
     {input: 'This is an :poop: message',
@@ -151,7 +184,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: 'This is an !avatar(cordelia@zulip.com) of Cordelia Lear',
      expected: '<p>This is an <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
     {input: 'This is a !gravatar(cordelia@zulip.com) of Cordelia Lear',
-     expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'}
+     expected: '<p>This is a <img alt="cordelia@zulip.com" class="message_body_gravatar" src="/avatar/cordelia@zulip.com?s=30" title="cordelia@zulip.com"> of Cordelia Lear</p>'},
+    {input: 'Test *italic*',
+     expected: '<p>Test <em>italic</em></p>'},
   ];
 
   test_cases.forEach(function (test_case) {

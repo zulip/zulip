@@ -19,7 +19,7 @@ subject of US/task should be in bold.
 """
 
 from __future__ import absolute_import
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional, Tuple, Text
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
@@ -31,14 +31,13 @@ from zerver.models import UserProfile, Client
 
 import ujson
 from six.moves import range
-import six
 
 
 @api_key_only_webhook_view('Taiga')
 @has_request_variables
 def api_taiga_webhook(request, user_profile, client, message=REQ(argument_type='body'),
                       stream=REQ(default='taiga'), topic=REQ(default='General')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], six.text_type, six.text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Text) -> HttpResponse
     parsed_events = parse_message(message)
 
     content_lines = []
@@ -55,15 +54,15 @@ templates = {
         'create': u':package: %(user)s created user story **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned user story **%(subject)s**'
-                                ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'points': u':game_die: %(user)s changed estimation of user story **%(subject)s**.',
         'blocked': u':lock: %(user)s blocked user story **%(subject)s**.',
         'unblocked': u':unlock: %(user)s unblocked user story **%(subject)s**.',
         'set_milestone': u':calendar: %(user)s added user story **%(subject)s** to sprint %(new)s.',
         'changed_milestone': u':calendar: %(user)s changed sprint of user story **%(subject)s** from %(old)s'
-                              ' to %(new)s.',
+        ' to %(new)s.',
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of user story **%(subject)s**'
-                           ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'closed': u':checkered_flag: %(user)s closed user story **%(subject)s**.',
         'reopened': u':package: %(user)s reopened user story **%(subject)s**.',
         'renamed': u':notebook: %(user)s renamed user story from %(old)s to **%(new)s**.',
@@ -75,22 +74,22 @@ templates = {
         'create': u':calendar: %(user)s created sprint **%(subject)s**.',
         'renamed': u':notebook: %(user)s renamed sprint from %(old)s to **%(new)s**.',
         'estimated_start': u':calendar: %(user)s changed estimated start of sprint **%(subject)s**'
-                            ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'estimated_finish': u':calendar: %(user)s changed estimated finish of sprint **%(subject)s**'
-                             ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'delete': u':x: %(user)s deleted sprint **%(subject)s**.'
     },
     'task': {
         'create': u':clipboard: %(user)s created task **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned task **%(subject)s** to %(new)s.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned task **%(subject)s**'
-                                ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'blocked': u':lock: %(user)s blocked task **%(subject)s**.',
         'unblocked': u':unlock: %(user)s unblocked task **%(subject)s**.',
         'set_milestone': u':calendar: %(user)s added task **%(subject)s** to sprint %(new)s.',
         'changed_milestone': u':calendar: %(user)s changed sprint of task **%(subject)s** from %(old)s to %(new)s.',
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s**'
-                           ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'renamed': u':notebook: %(user)s renamed task %(old)s to **%(new)s**.',
         'description': u':notebook: %(user)s updated description of task **%(subject)s**.',
         'commented': u':thought_balloon: %(user)s commented on task **%(subject)s**.',
@@ -101,7 +100,7 @@ templates = {
         'create': u':bulb: %(user)s created issue **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.', #
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
-                                ' from %(old)s to %(new)s.',
+        ' from %(old)s to %(new)s.',
         'changed_priority': u':rocket: %(user)s changed priority of issue **%(subject)s** from %(old)s to %(new)s.',
         'changed_severity': u':warning: %(user)s changed severity of issue **%(subject)s** from %(old)s to %(new)s.',
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of issue **%(subject)s**'
@@ -157,7 +156,7 @@ def parse_comment(message):
         'values': {
             'user': message["change"]["user"]["name"],
             'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
-                       message["data"]["name"]
+                 (message["data"]["name"])
         }
     }
 
@@ -171,7 +170,7 @@ def parse_create_or_delete(message):
             {
                 'user': message["data"]["owner"]["name"],
                 'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
-                           message["data"]["name"]
+                (message["data"]["name"])
             }
     }
 
@@ -197,7 +196,6 @@ def parse_change_event(change_type, message):
             event_type = "changed_" + change_type
             values.update({'old': old, 'new': new})
 
-
     elif change_type == "is_blocked":
         if message["change"]["diff"]["is_blocked"]["to"]:
             event_type = "blocked"
@@ -219,7 +217,6 @@ def parse_change_event(change_type, message):
         event_type = 'renamed'
         old, new = get_old_and_new_values(change_type, message)
         values.update({'old': old, 'new': new})
-
 
     elif change_type in ["estimated_finish", "estimated_start"]:
         old, new = get_old_and_new_values(change_type, message)
@@ -253,7 +250,8 @@ def parse_message(message):
         if message["change"]["diff"]:
             for value in message["change"]["diff"]:
                 parsed_event = parse_change_event(value, message)
-                if parsed_event: events.append(parsed_event)
+                if parsed_event:
+                    events.append(parsed_event)
         if message["change"]["comment"]:
             events.append(parse_comment(message))
 

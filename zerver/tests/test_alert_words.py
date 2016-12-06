@@ -13,6 +13,9 @@ from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     most_recent_message,
     most_recent_usermessage,
+)
+
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
@@ -21,7 +24,7 @@ from zerver.models import (
     UserProfile,
 )
 
-from six import text_type
+from typing import Text
 
 import ujson
 
@@ -41,7 +44,6 @@ class AlertWordTests(ZulipTestCase):
         user = get_user_profile_by_email(email)
         words = user_alert_words(user)
         self.assertEqual(words, ['milk', 'cookies'])
-
 
     def test_default_no_words(self):
         # type: () -> None
@@ -129,7 +131,6 @@ class AlertWordTests(ZulipTestCase):
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
 
-
         result = self.client_get('/json/users/me/alert_words')
         self.assert_json_success(result)
         data = ujson.loads(result.content)
@@ -166,7 +167,7 @@ class AlertWordTests(ZulipTestCase):
         self.assertEqual(data['alert_words'], ['a', 'b', 'c'])
 
     def message_does_alert(self, user_profile, message):
-        # type: (UserProfile, text_type) -> bool
+        # type: (UserProfile, Text) -> bool
         """Send a bunch of messages as othello, so Hamlet is notified"""
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)
         user_message = most_recent_usermessage(user_profile)
@@ -240,4 +241,3 @@ class AlertWordTests(ZulipTestCase):
         user_message = most_recent_usermessage(user_profile)
         self.assertEqual(user_message.message.content, 'sorry false alarm')
         self.assertNotIn('has_alert_word', user_message.flags_list())
-

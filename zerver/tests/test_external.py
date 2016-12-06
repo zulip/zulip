@@ -14,7 +14,9 @@ from zerver.lib.rate_limiter import (
 )
 
 from zerver.lib.actions import compute_mit_user_fullname
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.models import get_user_profile_by_email
 from zerver.lib.test_runner import slow
 
@@ -25,7 +27,7 @@ import ujson
 
 from six.moves import urllib
 from six.moves import range
-from six import text_type
+from typing import Text
 
 class MITNameTest(TestCase):
     def test_valid_hesiod(self):
@@ -48,6 +50,7 @@ class MITNameTest(TestCase):
             self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
             self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "ec-discuss@mit.edu")
+
     def test_notmailinglist(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['POP IMAP.EXCHANGE.MIT.EDU starnine']]):
@@ -60,14 +63,13 @@ class RateLimitTests(ZulipTestCase):
         settings.RATE_LIMITING = True
         add_ratelimit_rule(1, 5)
 
-
     def tearDown(self):
         # type: () -> None
         settings.RATE_LIMITING = False
         remove_ratelimit_rule(1, 5)
 
     def send_api_message(self, email, content):
-        # type: (text_type, text_type, text_type) -> HttpResponse
+        # type: (Text, Text) -> HttpResponse
         return self.client_post("/api/v1/messages", {"type": "stream",
                                                      "to": "Verona",
                                                      "client": "test suite",

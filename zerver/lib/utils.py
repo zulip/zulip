@@ -73,7 +73,7 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
     if len(all_list) == 0:
         return
 
-    limit = (len(all_list) // batch_size) + 1;
+    limit = (len(all_list) // batch_size) + 1
     for i in range(limit):
         start = i*batch_size
         end = (i+1) * batch_size
@@ -131,7 +131,6 @@ def mkdir_p(path):
 
 def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=None):
     # type: (List[Any], Set[int], int, int) -> Iterable[Any]
-
     '''
     This merges one or more Django ascending-id queries into
     a generator that returns chunks of chunk_size row objects

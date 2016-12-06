@@ -248,7 +248,7 @@ exports.compose_content_begins_typeahead = function (query) {
             email: "everyone",
             full_name: "everyone"
         };
-        var persons = people.get_all_persons();
+        var persons = people.get_realm_persons();
         return [].concat(persons, [all_item, everyone_item]);
     }
 
@@ -302,8 +302,8 @@ exports.content_typeahead_selected = function (item) {
         $(document).trigger('streamname_completed.zulip', {stream: item});
     }
 
-    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
-    // in the textbox.
+    // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
+    // overwrite the text in the textbox.
     setTimeout(function () {
         $('#new_message_content').caret(beginning.length, beginning.length);
     }, 0);
@@ -368,7 +368,7 @@ exports.initialize = function () {
         return channel.post({
             url: '/json/users/me/enter-sends',
             idempotent: true,
-            data: {'enter_sends': page_params.enter_sends}
+            data: {enter_sends: page_params.enter_sends}
         });
     });
     $("#enter_sends").prop('checked', page_params.enter_sends);

@@ -92,6 +92,7 @@ function dispatch_normal_event(event) {
     case 'realm_filters':
         page_params.realm_filters = event.realm_filters;
         echo.set_realm_filters(page_params.realm_filters);
+        admin.populate_filters(page_params.realm_filters);
         break;
 
     case 'realm_user':
@@ -120,6 +121,9 @@ function dispatch_normal_event(event) {
         break;
 
     case 'subscription':
+        var person;
+        var email;
+
         if (event.op === 'add') {
             _.each(event.subscriptions, function (sub) {
                 subs.mark_subscribed(sub.name, sub);
@@ -127,17 +131,20 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'peer_add') {
             // TODO: remove email shim here and fix called functions
             //       to use user_ids
-            var person = people.get_person_from_user_id(event.user_id);
-            var email = person.email;
+            person = people.get_person_from_user_id(event.user_id);
+            email = person.email;
             _.each(event.subscriptions, function (sub) {
-                stream_data.add_subscriber(sub, email);
+                stream_data.add_subscriber(sub, event.user_id);
                 $(document).trigger('peer_subscribe.zulip',
                                     {stream_name: sub, user_email: email});
             });
         } else if (event.op === 'peer_remove') {
+            // TODO: remove email shim here and fix called functions
+            //       to use user_ids
+            person = people.get_person_from_user_id(event.user_id);
+            email = person.email;
             _.each(event.subscriptions, function (sub) {
-                var email = event.user_email;
-                stream_data.remove_subscriber(sub, email);
+                stream_data.remove_subscriber(sub, event.user_id);
                 $(document).trigger('peer_unsubscribe.zulip',
                                     {stream_name: sub, user_email: email});
             });
@@ -175,7 +182,7 @@ function dispatch_normal_event(event) {
 
     case 'update_message_flags':
         var new_value = event.operation === "add";
-        switch(event.flag) {
+        switch (event.flag) {
         case 'starred':
             _.each(event.messages, function (message_id) {
                 ui.update_starred(message_id, new_value);
@@ -197,7 +204,7 @@ function get_events_success(events) {
     var messages_to_update = [];
     var new_pointer;
 
-    var clean_event = function clean_event (event) {
+    var clean_event = function clean_event(event) {
         // Only log a whitelist of the event to remove private data
         return _.pick(event, 'id', 'type', 'op');
     };
@@ -281,8 +288,7 @@ function get_events_success(events) {
     }
 
     if (new_pointer !== undefined
-        && new_pointer > pointer.furthest_read)
-    {
+        && new_pointer > pointer.furthest_read) {
         pointer.furthest_read = new_pointer;
         pointer.server_furthest_read = new_pointer;
         home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});

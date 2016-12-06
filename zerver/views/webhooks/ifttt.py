@@ -8,7 +8,6 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import UserProfile, Client
 
 
-
 @api_key_only_webhook_view('IFTTT')
 @has_request_variables
 def api_iftt_app_webhook(request, user_profile, client,

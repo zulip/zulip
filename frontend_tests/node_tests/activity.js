@@ -1,72 +1,86 @@
 global.stub_out_jquery();
 
 set_global('page_params', {
-    people_list: []
+    people_list: [],
 });
 
 add_dependencies({
     util: 'js/util.js',
-    people: 'js/people.js'
+    people: 'js/people.js',
+});
+
+set_global('resize', {
+    resize_page_components: function () {},
 });
 
 set_global('document', {
     hasFocus: function () {
         return true;
-    }
+    },
 });
 
-global.people.add({
+var alice = {
     email: 'alice@zulip.com',
     user_id: 1,
-    full_name: 'Alice Smith'
-});
-global.people.add({
+    full_name: 'Alice Smith',
+};
+var fred = {
     email: 'fred@zulip.com',
     user_id: 2,
-    full_name: "Fred Flintstone"
-});
-global.people.add({
+    full_name: "Fred Flintstone",
+};
+var jill = {
     email: 'jill@zulip.com',
     user_id: 3,
-    full_name: 'Jill Hill'
-});
-global.people.add({
+    full_name: 'Jill Hill',
+};
+var mark = {
     email: 'mark@zulip.com',
     user_id: 4,
-    full_name: 'Marky Mark'
-});
-global.people.add({
+    full_name: 'Marky Mark',
+};
+var norbert = {
     email: 'norbert@zulip.com',
     user_id: 5,
-    full_name: 'Norbert Oswald'
-});
+    full_name: 'Norbert Oswald',
+};
+
+global.people.add(alice);
+global.people.add(fred);
+global.people.add(jill);
+global.people.add(mark);
+global.people.add(norbert);
+
+
+var people = global.people;
 
 var activity = require('js/activity.js');
 
+activity.update_huddles = function () {};
+
 (function test_sort_users() {
-    var users = ['alice@zulip.com', 'fred@zulip.com', 'jill@zulip.com'];
+    var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    var user_info = {
-        'alice@zulip.com': {status: 'inactive'},
-        'fred@zulip.com': {status: 'active'},
-        'jill@zulip.com': {status: 'active'}
-    };
+    var user_info = {};
+    user_info[alice.user_id] = {status: 'inactive'};
+    user_info[fred.user_id] = {status: 'active'};
+    user_info[jill.user_id] = {status: 'active'};
 
-    activity._sort_users(users, user_info);
+    activity._sort_users(user_ids, user_info);
 
-    assert.deepEqual(users, [
-        'fred@zulip.com',
-        'jill@zulip.com',
-        'alice@zulip.com'
+    assert.deepEqual(user_ids, [
+        fred.user_id,
+        jill.user_id,
+        alice.user_id,
     ]);
 }());
 
 (function test_process_loaded_messages() {
 
-    var huddle1 = 'bar@zulip.com,foo@zulip.com';
+    var huddle1 = 'jill@zulip.com,norbert@zulip.com';
     var timestamp1 = 1382479029; // older
 
-    var huddle2 = 'alice@zulip.com,bob@zulip.com';
+    var huddle2 = 'alice@zulip.com,fred@zulip.com';
     var timestamp2 = 1382479033; // newer
 
     var old_timestamp = 1382479000;
@@ -75,86 +89,90 @@ var activity = require('js/activity.js');
         {
             type: 'private',
             reply_to: huddle1,
-            timestamp: timestamp1
+            timestamp: timestamp1,
         },
         {
-            type: 'stream'
-        },
-        {
-            type: 'private',
-            reply_to: 'ignore@zulip.com'
+            type: 'stream',
         },
         {
             type: 'private',
-            reply_to: huddle2,
-            timestamp: timestamp2
+            reply_to: 'ignore@zulip.com',
         },
         {
             type: 'private',
             reply_to: huddle2,
-            timestamp: old_timestamp
-        }
+            timestamp: timestamp2,
+        },
+        {
+            type: 'private',
+            reply_to: huddle2,
+            timestamp: old_timestamp,
+        },
     ];
 
     activity.process_loaded_messages(messages);
 
-    assert.deepEqual(activity.get_huddles(), [huddle2, huddle1]);
+    var user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
+    var user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
+    assert.deepEqual(activity.get_huddles(), [user_ids_string2, user_ids_string1]);
 }());
 
 (function test_full_huddle_name() {
-    assert.equal(
-        activity.full_huddle_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill'
-    );
+    function full_name(emails_string) {
+        var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+        return activity.full_huddle_name(user_ids_string);
+    }
 
     assert.equal(
-        activity.full_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill'
-    );
+        full_name('alice@zulip.com,jill@zulip.com'),
+        'Alice Smith, Jill Hill');
+
+    assert.equal(
+        full_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
+        'Alice Smith, Fred Flintstone, Jill Hill');
 }());
 
 (function test_short_huddle_name() {
-    assert.equal(
-        activity.short_huddle_name('alice@zulip.com'),
-        'Alice Smith'
-    );
+    function short_name(emails_string) {
+        var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+        return activity.short_huddle_name(user_ids_string);
+    }
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,jill@zulip.com'),
-        'Alice Smith, Jill Hill'
-    );
+        short_name('alice@zulip.com'),
+        'Alice Smith');
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill'
-    );
+        short_name('alice@zulip.com,jill@zulip.com'),
+        'Alice Smith, Jill Hill');
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other'
-    );
+        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
+        'Alice Smith, Fred Flintstone, Jill Hill');
 
     assert.equal(
-        activity.short_huddle_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
-        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others'
-    );
+        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com'),
+        'Alice Smith, Fred Flintstone, Jill Hill, + 1 other');
+
+    assert.equal(
+        short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
+        'Alice Smith, Fred Flintstone, Jill Hill, + 2 others');
 
 }());
 
 (function test_huddle_fraction_present() {
     var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+    huddle = people.emails_strings_to_user_ids_string(huddle);
 
-    var presence_list = {
-        'alice@zulip.com': {status: 'active'},
-        'fred@zulip.com': {status: 'idle'}, // counts as present
-        // jill not in list
-        'mark@zulip.com': {status: 'offline'} // does not count
-    };
+    var presence_list = {};
+    presence_list[alice.user_id] = {status: 'active'};
+    presence_list[fred.user_id] = {status: 'idle'}; // counts as present
+    // jill not in list
+    presence_list[mark.user_id] = {status: 'offline'}; // does not count
 
     assert.equal(
         activity.huddle_fraction_present(huddle, presence_list),
-        '0.50'
-    );
+        '0.50');
 }());
 
 
@@ -163,57 +181,50 @@ var activity = require('js/activity.js');
     var presence = {
         website: {
             status: "active",
-            timestamp: base_time
-        }
+            timestamp: base_time,
+        },
     };
     var status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
     assert.equal(status.mobile, false);
 
     presence.Android = {
         status: "active",
         timestamp: base_time + activity._OFFLINE_THRESHOLD_SECS / 2,
-        pushable: false
+        pushable: false,
     };
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "active");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "offline");
 
     presence.Android = {
         status: "idle",
         timestamp: base_time + activity._OFFLINE_THRESHOLD_SECS / 2,
-        pushable: true
+        pushable: true,
     };
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "idle");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
     status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence
-    );
+        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 

@@ -131,9 +131,9 @@ exports.actions_menu_handle_keyboard = function (key) {
     if (index === -1) {
         index = 0;
     } else if ((key === 'down_arrow' || key === 'vim_down') && index < items.length - 1) {
-        ++index;
+        index += 1;
     } else if ((key === 'up_arrow' || key === 'vim_up') && index > 0) {
-        --index;
+        index -= 1;
     }
     items.eq(index).focus();
 };
@@ -206,7 +206,7 @@ exports.show_pm_list_sidebar = function () {
 
 var current_stream_sidebar_elem;
 var current_topic_sidebar_elem;
-var current_user_sidebar_email;
+var current_user_sidebar_user_id;
 var current_user_sidebar_popover;
 
 
@@ -249,11 +249,11 @@ exports.hide_user_sidebar_popover = function () {
         // this hide_* method looks different from all the others since
         // the presence list may be redrawn. Due to funkiness with jquery's .data()
         // this would confuse $.popover("destroy"), which looks at the .data() attached
-        // to a certain element. We thus save off the .data("popover") in the show_user_sidebar_popover
-        // and inject it here before calling destroy.
+        // to a certain element. We thus save off the .data("popover") in the
+        // show_user_sidebar_popover and inject it here before calling destroy.
         $('#user_presences').data("popover", current_user_sidebar_popover);
         $('#user_presences').popover("destroy");
-        current_user_sidebar_email = undefined;
+        current_user_sidebar_user_id = undefined;
         current_user_sidebar_popover = undefined;
     }
 };
@@ -349,23 +349,29 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+
         popovers.hide_user_sidebar_popover();
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.user_popover .narrow_to_messages_sent', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+
         popovers.hide_user_sidebar_popover();
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.user_popover .compose_private_message', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         popovers.hide_user_sidebar_popover();
-        compose.start('private', {"private_message_recipient": email, trigger: 'sidebar user actions'});
+
+        compose.start('private', {private_message_recipient: email, trigger: 'sidebar user actions'});
         e.stopPropagation();
     });
 
@@ -391,10 +397,10 @@ exports.register_click_handlers = function () {
         // use email of currently selected user, rather than some elem comparison,
         // as the presence list may be redrawn with new elements.
         var target = $(this).closest('li');
-        var email = target.find('a').attr('data-email');
+        var user_id = target.find('a').attr('data-user-id');
         var name = target.find('a').attr('data-name');
 
-        if (current_user_sidebar_email === email) {
+        if (current_user_sidebar_user_id === user_id) {
             // If the popover is already shown, clicking again should toggle it.
             popovers.hide_all();
             return;
@@ -404,7 +410,7 @@ exports.register_click_handlers = function () {
         if (userlist_placement === "right") {
             popovers.show_userlist_sidebar();
         }
-        var template_vars = {email: email, name: name};
+        var template_vars = {user_id: user_id, name: name};
         var content = templates.render('user_sidebar_actions', template_vars);
 
         target.popover({
@@ -414,7 +420,7 @@ exports.register_click_handlers = function () {
             fixed: true
         });
         target.popover("show");
-        current_user_sidebar_email = email;
+        current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');
 
     });
@@ -441,10 +447,10 @@ exports.register_click_handlers = function () {
         var can_unmute_topic = is_muted;
 
         var content = templates.render('topic_sidebar_actions', {
-            'stream_name': stream_name,
-            'topic_name': topic_name,
-            'can_mute_topic': can_mute_topic,
-            'can_unmute_topic': can_unmute_topic
+            stream_name: stream_name,
+            topic_name: topic_name,
+            can_mute_topic: can_mute_topic,
+            can_unmute_topic: can_unmute_topic
         });
 
         $(elt).popover({
@@ -517,7 +523,7 @@ exports.register_click_handlers = function () {
 
         var ypos = $(elt).offset().top - viewport.scrollTop();
         $(elt).popover({
-            content:   templates.render('stream_sidebar_actions', {'stream': stream_data.get_sub(stream)}),
+            content:   templates.render('stream_sidebar_actions', {stream: stream_data.get_sub(stream)}),
             trigger:   "manual",
             fixed: true
         });
@@ -625,6 +631,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.popover_mute_topic', function (e) {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
+        popovers.hide_actions_popover();
         exports.topic_ops.mute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
@@ -657,7 +664,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.compose_to_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        compose.start('stream', {"stream": stream, trigger: 'sidebar stream actions'});
+        compose.start('stream', {stream: stream, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
 
@@ -695,7 +702,8 @@ exports.register_click_handlers = function () {
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
-    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() || topic_sidebar_popped() || message_info_popped() || emoji_map_is_open;
+    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() ||
+           topic_sidebar_popped() || message_info_popped() || emoji_map_is_open;
 };
 
 exports.hide_all = function () {

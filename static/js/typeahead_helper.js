@@ -50,7 +50,7 @@ exports.highlight_query_in_phrase = function (query, phrase) {
 
     var result = "";
     var parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i++) {
+    for (i = 0; i < parts.length; i += 1) {
         if (i > 0) {
             result += " ";
         }
@@ -122,9 +122,8 @@ exports.compare_by_pms = function (user_a, user_b) {
         return -1;
     } else if (user_a === user_b) {
         return 0;
-    } else {
-        return 1;
     }
+    return 1;
 };
 
 exports.sort_by_pms = function (objs) {
@@ -139,7 +138,8 @@ function identity(item) {
 exports.sort_recipients = function (matches, query) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
-    var matches_sorted_by_pms = exports.sort_by_pms(name_results.matches.concat(email_results.matches));
+    var matches_sorted_by_pms =
+        exports.sort_by_pms(name_results.matches.concat(email_results.matches));
     var rest_sorted_by_pms = exports.sort_by_pms(email_results.rest);
     return matches_sorted_by_pms.concat(rest_sorted_by_pms);
 };
@@ -159,7 +159,8 @@ exports.sort_recipientbox_typeahead = function (matches) {
     // input_text may be one or more pm recipients
     var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
     var query = cleaned[cleaned.length - 1];
-    return exports.sort_recipients(matches, query);};
+    return exports.sort_recipients(matches, query);
+};
 
 return exports;
 

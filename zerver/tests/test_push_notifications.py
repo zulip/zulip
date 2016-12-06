@@ -1,8 +1,7 @@
 import mock
 from mock import call
 import time
-from typing import Any, Union, SupportsInt
-from six import text_type
+from typing import Any, Union, SupportsInt, Text
 
 import gcmclient
 
@@ -12,7 +11,9 @@ from django.conf import settings
 from zerver.models import PushDeviceToken, UserProfile, Message
 from zerver.models import get_user_profile_by_email
 from zerver.lib import push_notifications as apn
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 
 class MockRedis(object):
     data = {}  # type: Dict[str, Any]
@@ -141,7 +142,6 @@ class TestPushApi(ZulipTestCase):
             result = self.client_delete(endpoint, {'token': 'non-existent token'})
             self.assert_json_error(result, 'Token does not exist')
 
-
         # Add tokens
         for endpoint, token in endpoints:
             # Test that we can push twice
@@ -185,6 +185,7 @@ class SendNotificationTest(PushNotificationTest):
     def test_do_push_to_apns_service(self, mock_push):
         # type: (mock.MagicMock) -> None
         msg = apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+
         def test_push(message):
             # type: (Message) -> None
             self.assertIs(message, msg.get_frame())
@@ -300,7 +301,7 @@ class GCMCanonicalTest(GCMTest):
         mock_send.return_value = res
 
         def get_count(hex_token):
-            # type: (text_type) -> int
+            # type: (Text) -> int
             token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
@@ -330,7 +331,7 @@ class GCMCanonicalTest(GCMTest):
         mock_send.return_value = res
 
         def get_count(hex_token):
-            # type: (text_type) -> int
+            # type: (Text) -> int
             token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
@@ -358,7 +359,7 @@ class GCMNotRegisteredTest(GCMTest):
         mock_send.return_value = res
 
         def get_count(hex_token):
-            # type: (text_type) -> int
+            # type: (Text) -> int
             token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()

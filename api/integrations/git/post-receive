@@ -30,6 +30,7 @@
 #  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
 
 from __future__ import absolute_import
+from typing import Text
 import os
 import sys
 import subprocess
@@ -49,22 +50,8 @@ client = zulip.Client(
     api_key=config.ZULIP_API_KEY,
     client="ZulipGit/" + VERSION)
 
-# check_output is backported from subprocess.py in Python 2.7
-def check_output(*popenargs, **kwargs):
-    if 'stdout' in kwargs:
-        raise ValueError('stdout argument not allowed, it will be overridden.')
-    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-    if retcode:
-        cmd = kwargs.get("args")
-        if cmd is None:
-            cmd = popenargs[0]
-        raise subprocess.CalledProcessError(retcode, cmd, output=output)
-    return output
-subprocess.check_output = check_output
-
 def git_repository_name():
+    # type: () -> Text
     output = subprocess.check_output(["git", "rev-parse", "--is-bare-repository"])
     if output.strip() == "true":
         return os.path.basename(os.getcwd())[:-len(".git")]
@@ -72,6 +59,7 @@ def git_repository_name():
         return os.path.basename(os.path.dirname(os.getcwd()))
 
 def git_commit_range(oldrev, newrev):
+    # type: (str, str) -> str
     log_cmd = ["git", "log", "--reverse",
                "--pretty=%aE %H %s", "%s..%s" % (oldrev, newrev)]
     commits = ''
@@ -84,6 +72,7 @@ def git_commit_range(oldrev, newrev):
     return commits
 
 def send_bot_message(oldrev, newrev, refname):
+    # type: (str, str, str) -> None
     repo_name   = git_repository_name()
     branch      = refname.replace('refs/heads/', '')
     destination = config.commit_notice_destination(repo_name, branch, newrev)
@@ -95,7 +84,7 @@ def send_bot_message(oldrev, newrev, refname):
     old_head = oldrev[:12]
 
     if (oldrev == '0000000000000000000000000000000000000000' or
-        newrev == '0000000000000000000000000000000000000000'):
+            newrev == '0000000000000000000000000000000000000000'):
         # New branch pushed or old branch removed
         added = ''
         removed = ''

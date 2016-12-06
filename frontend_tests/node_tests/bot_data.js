@@ -1,5 +1,5 @@
 add_dependencies({
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 var _ = global._;
@@ -15,12 +15,12 @@ set_global('document', null);
 var page_params = {
     bot_list: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
     is_admin: false,
-    email: 'owner@zulip.com'
+    email: 'owner@zulip.com',
 };
 set_global('page_params', page_params);
 
 var patched_underscore = _.clone(_);
-patched_underscore.debounce = function (f) { return(f); };
+patched_underscore.debounce = function (f) { return f; };
 global.patch_builtin('_', patched_underscore);
 
 
@@ -37,7 +37,7 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         default_events_register_stream: '',
         default_sending_stream: '',
         full_name: 'Bot 1',
-        extra: 'Not in data'
+        extra: 'Not in data',
     };
 
     (function test_add() {

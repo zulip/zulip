@@ -49,7 +49,7 @@ function update_table_stream_color(table, stream_name, color) {
         if ($.trim($label.text()) === stream_name) {
             var messages = $label.closest(".recipient_row").children(".message_row");
             messages.children(".messagebox").css("box-shadow", "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style);
-            $label.css({"background": style,
+            $label.css({background: style,
                           "border-left-color": style});
             $label.removeClass(exports.color_classes);
             $label.addClass(color_class);
@@ -105,7 +105,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     tab_bar.colorize_tab_bar();
 };
 
-function picker_do_change_color (color) {
+function picker_do_change_color(color) {
     var stream_id = $(this).attr('stream_id');
     var hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
@@ -155,7 +155,11 @@ $(function () {
 //
 // This gets called on every message, so cache the results.
 exports.get_color_class = _.memoize(function (color) {
-    var match, i, lightness, channel = [0, 0, 0], mult = 1;
+    var match;
+    var i;
+    var lightness;
+    var channel = [0, 0, 0];
+    var mult = 1;
 
     match = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/.exec(color);
     if (!match) {
@@ -172,7 +176,7 @@ exports.get_color_class = _.memoize(function (color) {
 
     // CSS colors are specified in the sRGB color space.
     // Convert to linear intensity values.
-    for (i=0; i<3; i++) {
+    for (i=0; i<3; i += 1) {
         channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
     }
 

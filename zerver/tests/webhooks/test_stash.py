@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from zerver.lib.test_helpers import WebhookTestCase
+from typing import Text
+from zerver.lib.test_classes import WebhookTestCase
 
 class StashHookTests(WebhookTestCase):
     STREAM_NAME = 'stash'
@@ -23,5 +23,5 @@ class StashHookTests(WebhookTestCase):
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data("stash", fixture_name, file_type="json")

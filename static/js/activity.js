@@ -11,7 +11,7 @@ var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
 /* Mark users as offline after 140 seconds since their last checkin,
- * Keep in sync with zerver/lib/event_queue.py:receiver_is_idle
+ * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
  */
 var OFFLINE_THRESHOLD_SECS = 140;
 
@@ -51,19 +51,79 @@ exports.presence_info = {};
 
 var huddle_timestamps = new Dict();
 
+function update_count_in_dom(count_span, value_span, count) {
+    if (count === 0) {
+        count_span.hide();
+        if (count_span.parent().hasClass("user_sidebar_entry")) {
+            count_span.parent(".user_sidebar_entry").removeClass("user-with-count");
+        } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+            count_span.parent(".group-pms-sidebar-entry").removeClass("group-with-count");
+        }
+        value_span.text('');
+        return;
+    }
+
+    count_span.show();
+
+    if (count_span.parent().hasClass("user_sidebar_entry")) {
+        count_span.parent(".user_sidebar_entry").addClass("user-with-count");
+    } else if (count_span.parent().hasClass("group-pms-sidebar-entry")) {
+        count_span.parent(".group-pms-sidebar-entry").addClass("group-with-count");
+    }
+    value_span.text(count);
+}
+
+function get_filter_li(user_ids_string) {
+    if (name.indexOf(",") < 0) {
+        return $("li.user_sidebar_entry[data-user-id='" + user_ids_string + "']");
+    }
+    return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
+}
+
+function set_count(user_ids_string, count) {
+    var count_span = get_filter_li(user_ids_string).find('.count');
+    var value_span = count_span.find('.value');
+    update_count_in_dom(count_span, value_span, count);
+}
+
+exports.update_dom_with_unread_counts = function (counts) {
+    // counts is just a data object that gets calculated elsewhere
+    // Our job is to update some DOM elements.
+
+    counts.pm_count.each(function (count, user_ids_string) {
+        // TODO: just use user_ids_string in our markup
+        set_count(user_ids_string, count);
+    });
+};
 
 exports.process_loaded_messages = function (messages) {
+    var need_resize = false;
+
     _.each(messages, function (message) {
         if (message.type === 'private') {
             if (message.reply_to.indexOf(',') > 0) {
-                var old_timestamp = huddle_timestamps.get(message.reply_to);
+                var user_ids_string = people.emails_strings_to_user_ids_string(
+                    message.reply_to);
+
+                if (!user_ids_string) {
+                    blueslip.warn('Bad reply_to for huddle: ' + message.reply_to);
+                }
+
+                var old_timestamp = huddle_timestamps.get(user_ids_string);
 
                 if (!old_timestamp || (old_timestamp < message.timestamp)) {
-                    huddle_timestamps.set(message.reply_to, message.timestamp);
+                    huddle_timestamps.set(user_ids_string, message.timestamp);
+                    need_resize = true;
                 }
             }
         }
     });
+
+    exports.update_huddles();
+
+    if (need_resize) {
+        resize.resize_page_components(); // big hammer
+    }
 };
 
 exports.get_huddles = function () {
@@ -75,25 +135,28 @@ exports.get_huddles = function () {
 };
 
 exports.full_huddle_name = function (huddle) {
-    var emails = huddle.split(',');
+    var user_ids = huddle.split(',');
 
-    var names = _.map(emails, function (email) {
-        var person = people.get_by_email(email);
-        return person ? person.full_name : email;
+    var names = _.map(user_ids, function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        return person.full_name;
     });
 
     return names.join(', ');
 };
 
 exports.short_huddle_name = function (huddle) {
-    var emails = huddle.split(',');
+    var user_ids = huddle.split(',');
 
     var num_to_show = 3;
-    var names = _.map(emails.slice(0, num_to_show), function (email) {
-        var person = people.get_by_email(email);
-        return person ? person.full_name : email;
+    var names = _.map(user_ids, function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        return person.full_name;
     });
-    var others = emails.length - num_to_show;
+
+    names = _.sortBy(names, function (name) { return name.toLowerCase(); });
+    names = names.slice(0, num_to_show);
+    var others = user_ids.length - num_to_show;
 
     if (others === 1) {
         names.push("+ 1 other");
@@ -105,26 +168,26 @@ exports.short_huddle_name = function (huddle) {
 };
 
 exports.huddle_fraction_present = function (huddle, presence_info) {
-    var emails = huddle.split(',');
+    var user_ids = huddle.split(',');
 
     var num_present = 0;
-    _.each(emails, function (email) {
-        if (presence_info[email]) {
-            var status = presence_info[email].status;
+    _.each(user_ids, function (user_id) {
+        if (presence_info[user_id]) {
+            var status = presence_info[user_id].status;
             if (status && (status !== 'offline')) {
-                ++num_present;
+                num_present += 1;
             }
         }
     });
 
-    var ratio = num_present / emails.length;
+    var ratio = num_present / user_ids.length;
 
     return ratio.toFixed(2);
 };
 
-function sort_users(users, presence_info) {
+function sort_users(user_ids, presence_info) {
     // TODO sort by unread count first, once we support that
-    users.sort(function (a, b) {
+    user_ids.sort(function (a, b) {
         if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
             return -1;
         } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
@@ -140,16 +203,16 @@ function sort_users(users, presence_info) {
         // Sort equivalent PM names alphabetically
         var full_name_a = a;
         var full_name_b = b;
-        if (people.get_by_email(a)) {
-            full_name_a = people.get_by_email(a).full_name;
+        if (people.get_person_from_user_id(a)) {
+            full_name_a = people.get_person_from_user_id(a).full_name;
         }
-        if (people.get_by_email(b)) {
-            full_name_b = people.get_by_email(b).full_name;
+        if (people.get_person_from_user_id(b)) {
+            full_name_b = people.get_person_from_user_id(b).full_name;
         }
         return util.strcmp(full_name_a, full_name_b);
     });
 
-    return users;
+    return user_ids;
 }
 
 // for testing:
@@ -163,20 +226,19 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
-function filter_users_by_search(users) {
+function filter_user_ids(user_ids) {
     var user_list = $(".user-list-filter");
     if (user_list.length === 0) {
         // We may have received an activity ping response after
         // initiating a reload, in which case the user list may no
         // longer be available.
         // Return user list: useful for testing user list performance fix
-        return users;
+        return user_ids;
     }
 
     var search_term = user_list.expectOne().val().trim();
-
     if (search_term === '') {
-        return users;
+        return user_ids;
     }
 
     var search_terms = search_term.toLowerCase().split(",");
@@ -184,35 +246,24 @@ function filter_users_by_search(users) {
         return s.trim();
     });
 
-    var filtered_users = _.filter(users, function (user) {
-        var person = people.get_by_email(user);
-        if (!person || !person.full_name) {
-            return false;
-        }
-        var names = person.full_name.toLowerCase().split(/\s+/);
-        names = _.map(names, function (s) {
-            return s.trim();
-        });
-        return _.any(search_terms, function (search_term) {
-            return _.any(names, function (name) {
-                return name.indexOf(search_term) === 0;
-            });
-        });
+    var persons = _.map(user_ids, function (user_id) {
+        return people.get_person_from_user_id(user_id);
     });
 
-    return filtered_users;
+    var email_dict = people.filter_people_by_search_terms(persons, search_terms);
+    user_ids = _.map(_.keys(email_dict), function (email) {
+        return people.get_user_id(email);
+    });
+    return user_ids;
 }
 
 function filter_and_sort(users) {
-    users = Object.keys(users);
-    users = filter_users_by_search(users);
-    users = _.filter(users, function (email) {
-        return people.get_by_email(email);
-    });
-
-    users = sort_users(users, exports.presence_info);
-    return users;
+    var user_ids = Object.keys(users);
+    user_ids = filter_user_ids(user_ids);
+    user_ids = sort_users(user_ids, exports.presence_info);
+    return user_ids;
 }
+
 exports._filter_and_sort = filter_and_sort;
 
 exports.update_users = function (user_list) {
@@ -228,35 +279,36 @@ exports.update_users = function (user_list) {
     }
     users = filter_and_sort(users);
 
-    function get_num_unread(email) {
+    function get_num_unread(user_id) {
         if (unread.suppress_unread_counts) {
             return 0;
         }
-        return unread.num_unread_for_person(email);
+        return unread.num_unread_for_person(user_id);
     }
 
     // Note that we do not include ourselves in the user list any more.
     // If you want to figure out how to get details for "me", then revert
     // the commit that added this comment.
 
-    function info_for(email) {
-        var presence = exports.presence_info[email].status;
+    function info_for(user_id) {
+        var presence = exports.presence_info[user_id].status;
+        var person = people.get_person_from_user_id(user_id);
         return {
-            name: people.get_by_email(email).full_name,
-            email: email,
-            num_unread: get_num_unread(email),
+            name: person.full_name,
+            user_id: user_id,
+            num_unread: get_num_unread(user_id),
             type: presence,
             type_desc: presence_descriptions[presence],
-            mobile: exports.presence_info[email].mobile
+            mobile: exports.presence_info[user_id].mobile
         };
     }
 
     var user_info = _.map(users, info_for);
     if (user_list !== undefined) {
         // Render right panel partially
-        $.each(user_info, function (index, user) {
-            var user_index = all_users.indexOf(user.email);
-            $('#user_presences').find('[data-email="' + user.email + '"]').remove();
+        _.each(user_info, function (user) {
+            var user_index = all_users.indexOf(user.user_id);
+            $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
             $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
         });
     } else {
@@ -277,23 +329,29 @@ function actually_update_users_for_search() {
 
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
+function show_huddles() {
+    $('#group-pm-list').expectOne().show();
+}
+
+function hide_huddles() {
+    $('#group-pm-list').expectOne().hide();
+}
+
 exports.update_huddles = function () {
     if (page_params.presence_disabled) {
         return;
     }
 
-    var section = $('#group-pm-list').expectOne();
-
     var huddles = exports.get_huddles().slice(0, 10);
 
     if (huddles.length === 0) {
-        section.hide();
+        hide_huddles();
         return;
     }
 
     var group_pms = _.map(huddles, function (huddle) {
         return {
-            emails: huddle,
+            user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
             fraction_present: exports.huddle_fraction_present(huddle, exports.presence_info),
             short_name: exports.short_huddle_name(huddle)
@@ -303,12 +361,12 @@ exports.update_huddles = function () {
     var html = templates.render('group_pms', {group_pms: group_pms});
     $('#group-pms').expectOne().html(html);
 
-    _.each(huddles, function (huddle) {
-        var count = unread.num_unread_for_person(huddle);
-        stream_list.set_presence_list_count(huddle, count);
+    _.each(huddles, function (user_ids_string) {
+        var count = unread.num_unread_for_person(user_ids_string);
+        set_count(user_ids_string, count);
     });
 
-    section.show();
+    show_huddles();
 };
 
 function status_from_timestamp(baseline_time, presence) {
@@ -341,7 +399,7 @@ function status_from_timestamp(baseline_time, presence) {
                     }
                     break;
                 default:
-                    blueslip.error('Unexpected status', {'presence_object': device_presence, 'device': device}, undefined);
+                    blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
             }
         }
     });
@@ -372,7 +430,12 @@ function focus_ping() {
             // Ping returns the active peer list
             _.each(data.presences, function (presence, this_email) {
                 if (!util.is_current_user(this_email)) {
-                    exports.presence_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
+                    var user_id = people.get_user_id(this_email);
+                    if (user_id) {
+                        var status = status_from_timestamp(data.server_timestamp,
+                                                           presence);
+                        exports.presence_info[user_id] = status;
+                    }
                 }
             });
             exports.update_users();
@@ -420,8 +483,13 @@ exports.set_user_statuses = function (users, server_time) {
             return;
         }
         status = status_from_timestamp(server_time, presence);
-        exports.presence_info[email] = status;
-        updated_users[email] = status;
+        var user_id = people.get_user_id(email);
+        if (user_id) {
+            exports.presence_info[user_id] = status;
+            updated_users[user_id] = status;
+        } else {
+            blueslip.warn('unknown email: ' + email);
+        }
     });
 
     exports.update_users(updated_users);
@@ -451,25 +519,26 @@ exports.blur_search = function () {
     $('.user-list-filter').blur();
 };
 
-function maybe_select_person (e) {
+function maybe_select_person(e) {
     if (e.keyCode === 13) {
         // Enter key was pressed
 
         // Prevent a newline from being entered into the soon-to-be-opened composebox
         e.preventDefault();
 
-        var topPerson = $('#user_presences li.user_sidebar_entry').first().data('email');
+        var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
         if (topPerson !== undefined) {
             // undefined if there are no results
+            var email = people.get_person_from_user_id(topPerson).email;
             compose.start('private',
-                    {trigger: 'sidebar enter key', "private_message_recipient": topPerson});
+                    {trigger: 'sidebar enter key', private_message_recipient: email});
         }
         // Clear the user filter
         exports.escape_search();
     }
 }
 
-function focus_user_filter (e) {
+function focus_user_filter(e) {
     e.stopPropagation();
 }
 

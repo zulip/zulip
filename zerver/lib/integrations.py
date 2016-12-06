@@ -2,6 +2,7 @@ from typing import Dict, List, Optional, TypeVar
 from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
+from django.utils.module_loading import import_string
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -60,6 +61,10 @@ class WebhookIntegration(Integration):
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
+
+        if isinstance(function, str):
+            function = import_string(function)
+
         self.function = function
 
         if url is None:
@@ -70,6 +75,20 @@ class WebhookIntegration(Integration):
     def url_object(self):
         # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
+
+class HubotLozenge(Integration):
+    GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
+
+    def __init__(self, name, display_name=None, logo=None, logo_alt=None, git_url=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+        if logo_alt is None:
+            logo_alt = "{} logo".format(name.title())
+        self.logo_alt = logo_alt
+
+        if git_url is None:
+            git_url = self.GIT_URL_TEMPLATE.format(name)
+        self.git_url = git_url
+        super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
 
 
 WEBHOOK_INTEGRATIONS = [
@@ -82,7 +101,20 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('crashlytics'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
-    WebhookIntegration('github', function='zerver.views.webhooks.github.api_github_landing', display_name='GitHub'),
+    WebhookIntegration(
+        'github',
+        function='zerver.views.webhooks.github.api_github_landing',
+        display_name='GitHub',
+        secondary_line_text='(deprecated)'
+    ),
+    WebhookIntegration(
+        'github_webhook',
+        display_name='GitHub',
+        url='api/v1/external/webhook_github',
+        logo='static/images/integrations/logos/github.png',
+        secondary_line_text='(webhook)',
+        function='zerver.views.webhooks.github_webhook.api_github_webhook'
+    ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
@@ -95,6 +127,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('semaphore'),
     WebhookIntegration('sentry'),
     WebhookIntegration('stash'),
+    WebhookIntegration('stripe', display_name='Stripe'),
     WebhookIntegration('taiga'),
     WebhookIntegration('teamcity'),
     WebhookIntegration('transifex'),
@@ -145,6 +178,18 @@ INTEGRATIONS = {
     'twitter': Integration('twitter', 'twitter'),
 
 }  # type: Dict[str, Integration]
+
+HUBOT_LOZENGES = {
+    'assembla': HubotLozenge('assembla'),
+    'bonusly': HubotLozenge('bonusly'),
+    'chartbeat': HubotLozenge('chartbeat'),
+    'darksky': HubotLozenge('darksky', display_name='Dark Sky', logo_alt='Dark Sky logo'),
+    'hangouts': HubotLozenge('google-hangouts', display_name="Hangouts"),
+    'instagram': HubotLozenge('instagram'),
+    'mailchump': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
+    'translate': HubotLozenge('google-translate', display_name="Translate", logo_alt='Google Translate logo'),
+    'youtube': HubotLozenge('youtube', display_name='YouTube', logo_alt='YouTube logo')
+}
 
 for integration in WEBHOOK_INTEGRATIONS:
     INTEGRATIONS[integration.name] = integration

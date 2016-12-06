@@ -3,11 +3,14 @@ var compose = (function () {
 var exports = {};
 var is_composing_message = false;
 
-// Track the state of the @all warning. The user must acknowledge that they are spamming the entire stream
-// before the warning will go away. If they try to send before explicitly dismissing the warning, they will
-// get an error message too.
-// NOTE: Streams smaller than all_everyone_warn_threshold will get no @all warning.
-// undefined: no @all/@everyone in message; false: user typed @all/@everyone; true: user clicked YES
+/* Track the state of the @all warning. The user must acknowledge that they are spamming the entire
+   stream before the warning will go away. If they try to send before explicitly dismissing the
+   warning, they will get an error message too.
+
+   undefined: no @all/@everyone in message;
+   false: user typed @all/@everyone;
+   true: user clicked YES */
+
 var user_acknowledged_all_everyone;
 
 var all_everyone_warn_threshold = 15;
@@ -35,9 +38,8 @@ function client() {
     if ((window.bridge !== undefined) &&
         (window.bridge.desktopAppVersion !== undefined)) {
         return "desktop app " + window.bridge.desktopAppVersion();
-    } else {
-        return "website";
     }
+    return "website";
 }
 
 // This function resets an input type="file".  Pass in the
@@ -131,7 +133,7 @@ function clear_box() {
     $("#send-status").hide(0);
 }
 
-function clear_preview_area () {
+function clear_preview_area() {
     $("#new_message_content").show();
     $("#undo_markdown_preview").hide();
     $("#preview_message_area").hide();
@@ -175,7 +177,7 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(stream_color.get_color_class(color));
 };
 
-function update_fade () {
+function update_fade() {
     if (!is_composing_message) {
         return;
     }
@@ -282,7 +284,7 @@ exports.start = function (msg_type, opts) {
     resize.resize_bottom_whitespace();
 };
 
-function abort_xhr () {
+function abort_xhr() {
     $("#compose-send-button").removeAttr("disabled");
     var xhr = $("#compose").data("filedrop_xhr");
     if (xhr !== undefined) {
@@ -429,10 +431,10 @@ function send_message_ajax(request, success, error) {
 }
 
 function report_send_time(send_time, receive_time, display_time, locally_echoed, rendered_changed) {
-    var data = {"time": send_time.toString(),
-                "received": receive_time.toString(),
-                "displayed": display_time.toString(),
-                "locally_echoed": locally_echoed};
+    var data = {time: send_time.toString(),
+                received: receive_time.toString(),
+                displayed: display_time.toString(),
+                locally_echoed: locally_echoed};
     if (locally_echoed) {
         data.rendered_content_disparity = rendered_changed;
     }
@@ -610,7 +612,8 @@ function send_message(request) {
 }
 
 exports.respond_to_message = function (opts) {
-    var message, msg_type;
+    var message;
+    var msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
     compose.snapshot_message();
@@ -642,10 +645,10 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    compose.start(msg_type, {'stream': stream, 'subject': subject,
-                             'private_message_recipient': pm_recipient,
-                             'replying_to_message': message,
-                             'trigger': opts.trigger});
+    compose.start(msg_type, {stream: stream, subject: subject,
+                             private_message_recipient: pm_recipient,
+                             replying_to_message: message,
+                             trigger: opts.trigger});
 
 };
 
@@ -655,7 +658,7 @@ exports.respond_to_message = function (opts) {
 exports.test_send_many_messages = function (stream, subject, count) {
     var num_sent = 0;
 
-    function do_send_one () {
+    function do_send_one() {
         var message = {};
         num_sent += 1;
 
@@ -729,7 +732,7 @@ exports.has_message_content = function () {
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name, autosubscribe) {
     var result = "error";
-    var request = {'stream': stream_name};
+    var request = {stream: stream_name};
     if (autosubscribe) {
         request.autosubscribe = true;
     }
@@ -809,7 +812,7 @@ function validate_stream_message() {
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
-        switch(check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
+        switch (check_stream_for_send(stream_name, page_params.narrow_stream !== undefined)) {
         case "does-not-exist":
             response = "<p>The stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
@@ -833,7 +836,8 @@ function validate_stream_message() {
 
     return true;
 }
-// The function checks whether the recipients are users of the realm or cross realm users (bots for now)
+// The function checks whether the recipients are users of the realm or cross realm users (bots
+// for now)
 function validate_private_message() {
     if (exports.recipient() === "") {
         compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
@@ -841,36 +845,33 @@ function validate_private_message() {
     } else if (page_params.is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
-    } else {
-        var private_recipients = util.extract_pm_recipients(compose.recipient());
-        var invalid_recipients = [];
-        var context = {};
-        _.each(private_recipients, function (email) {
-            // This case occurs when exports.recipient() ends with ','
-            if (email === "") {
-                return;
-            }
-            if (people.realm_get(email) !== undefined) {
-                return;
-            }
-            if (people.is_cross_realm_email(email)) {
-                return;
-            }
-            invalid_recipients.push(email);
-        });
-
-        if (invalid_recipients.length === 1) {
-            context = {'recipient': invalid_recipients.join()};
-            compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
-            return false;
-        } else if (invalid_recipients.length > 1) {
-            context = {'recipients': invalid_recipients.join()};
-            compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
-            return false;
-        } else {
-            return true;
-        }
     }
+    var private_recipients = util.extract_pm_recipients(compose.recipient());
+    var invalid_recipients = [];
+    var context = {};
+    _.each(private_recipients, function (email) {
+        // This case occurs when exports.recipient() ends with ','
+        if (email === "") {
+            return;
+        }
+        if (people.realm_get(email) !== undefined) {
+            return;
+        }
+        if (people.is_cross_realm_email(email)) {
+            return;
+        }
+        invalid_recipients.push(email);
+    });
+    if (invalid_recipients.length === 1) {
+        context = {recipient: invalid_recipients.join()};
+        compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
+        return false;
+    } else if (invalid_recipients.length > 1) {
+        context = {recipients: invalid_recipients.join()};
+        compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
+        return false;
+    }
+    return true;
 }
 
 exports.validate = function () {
@@ -889,9 +890,8 @@ exports.validate = function () {
 
     if (exports.composing() === 'private') {
         return validate_private_message();
-    } else {
-        return validate_stream_message();
     }
+    return validate_stream_message();
 };
 
 $(function () {
@@ -936,8 +936,8 @@ $(function () {
             }
 
             if (compose_fade.would_receive_message(email) === false) {
-                var new_row = templates.render("compose-invite-users", {email: email,
-                                                                        name: data.mentioned.full_name});
+                var new_row = templates.render("compose-invite-users",
+                                               {email: email, name: data.mentioned.full_name});
                 var error_area = $("#compose_invite_users");
 
                 var existing_invites = _.map($(".compose_invite_user", error_area), function (user_row) {
@@ -1094,7 +1094,7 @@ $(function () {
         $("#send-status").addClass("alert-error")
                         .removeClass("alert-info");
         $("#compose-send-button").removeAttr("disabled");
-        switch(err) {
+        switch (err) {
             case 'BrowserNotSupported':
                 msg = "File upload is not yet available for your browser.";
                 break;
@@ -1119,9 +1119,9 @@ $(function () {
         if (response.uri === undefined) {
             return;
         }
-        var textbox = $("#new_message_content"),
-            split_uri = response.uri.split("/"),
-            filename = split_uri[split_uri.length - 1];
+        var textbox = $("#new_message_content");
+        var split_uri = response.uri.split("/");
+        var filename = split_uri[split_uri.length - 1];
         // Urgh, yet another hack to make sure we're "composing"
         // when text gets added into the composebox.
         if (!compose.composing()) {
@@ -1195,7 +1195,8 @@ $(function () {
         if (exports.send_times_data[event.old_id] !== undefined) {
             var value = exports.send_times_data[event.old_id];
             delete exports.send_times_data[event.old_id];
-            exports.send_times_data[event.new_id] = _.extend({}, exports.send_times_data[event.old_id], value);
+            exports.send_times_data[event.new_id] =
+                _.extend({}, exports.send_times_data[event.old_id], value);
         }
     });
 });

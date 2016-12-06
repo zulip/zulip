@@ -30,10 +30,9 @@ function update_pointer() {
                 pointer_update_in_flight = false;
             }
         });
-    } else {
-        // Return an empty, resolved Deferred.
-        return $.when();
     }
+    // Return an empty, resolved Deferred.
+    return $.when();
 }
 
 
@@ -53,9 +52,8 @@ function unconditionally_send_pointer_update() {
             deferred.resolve(unconditionally_send_pointer_update());
         }, 100);
         return deferred;
-    } else {
-        return update_pointer();
     }
+    return update_pointer();
 }
 
 exports.fast_forward_pointer = function () {

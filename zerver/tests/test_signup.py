@@ -9,11 +9,13 @@ from fakeldap import MockLDAP
 
 from zilencer.models import Deployment
 
-from zerver.views import do_change_password
+from zerver.views import do_change_password, create_homepage_form
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
-    get_realm, get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
-    PreregistrationUser, Realm, RealmAlias, Recipient, ScheduledJob, UserProfile, UserMessage,
+    get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
+    PreregistrationUser, Realm, RealmAlias, Recipient,
+    Referral, ScheduledJob, UserProfile, UserMessage,
+    Stream, Subscription,
 )
 
 from zerver.lib.actions import (
@@ -22,10 +24,15 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language
+from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language, \
+    add_new_user_history
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
-from zerver.lib.test_helpers import ZulipTestCase, find_key_by_email, queries_captured
+from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
+    HostRequestMock
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
 
@@ -35,8 +42,7 @@ import ujson
 from six.moves import urllib
 from six.moves import range
 import six
-from six import text_type
-from typing import Any
+from typing import Any, Text
 
 class PublicURLTest(ZulipTestCase):
     """
@@ -50,7 +56,7 @@ class PublicURLTest(ZulipTestCase):
             response = getattr(self.client, method)(url) # e.g. self.client_post(url) if method is "post"
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
-                    expected_status, response.status_code, method, url))
+                                 expected_status, response.status_code, method, url))
 
     def test_public_urls(self):
         # type: () -> None
@@ -62,7 +68,8 @@ class PublicURLTest(ZulipTestCase):
         # through Tornado.
         get_urls = {200: ["/accounts/home/", "/accounts/login/"
                           "/en/accounts/home/", "/ru/accounts/home/",
-                          "/en/accounts/login/", "/ru/accounts/login/"],
+                          "/en/accounts/login/", "/ru/accounts/login/",
+                          "/help/"],
                     302: ["/", "/en/", "/ru/"],
                     401: ["/api/v1/streams/Denmark/members",
                           "/api/v1/users/me/subscriptions",
@@ -70,7 +77,8 @@ class PublicURLTest(ZulipTestCase):
                           "/json/messages",
                           "/api/v1/streams",
                           ],
-                }
+                    404: ["/help/nonexistent"],
+                    }
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
@@ -87,9 +95,9 @@ class PublicURLTest(ZulipTestCase):
                      400: ["/api/v1/external/github",
                            "/api/v1/fetch_api_key",
                            ],
-                }
+                     }
         put_urls = {401: ["/json/users/me/pointer"],
-                }
+                    }
         for status_code, url_set in six.iteritems(get_urls):
             self.fetch("get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
@@ -102,8 +110,8 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID=None):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(400, resp.status_code,
-                msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
-            )
+                              msg="Expected 400, received %d for GET /api/v1/fetch_google_client_id" % (
+                                  resp.status_code,))
             data = ujson.loads(resp.content)
             self.assertEqual('error', data['result'])
 
@@ -112,11 +120,27 @@ class PublicURLTest(ZulipTestCase):
         with self.settings(GOOGLE_CLIENT_ID="ABCD"):
             resp = self.client_get("/api/v1/fetch_google_client_id")
             self.assertEquals(200, resp.status_code,
-                msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % resp.status_code,
-            )
+                              msg="Expected 200, received %d for GET /api/v1/fetch_google_client_id" % (
+                                  resp.status_code,))
             data = ujson.loads(resp.content)
             self.assertEqual('success', data['result'])
             self.assertEqual('ABCD', data['google_client_id'])
+
+class AddNewUserHistoryTest(ZulipTestCase):
+    def test_add_new_user_history_race(self):
+        # type: () -> None
+        """Sends a message during user creation"""
+        # Create a user who hasn't had historical messages added
+        set_default_streams(get_realm_by_string_id("zulip"), ["Denmark", "Verona"])
+        with patch("zerver.lib.actions.add_new_user_history"):
+            self.register("test", "test")
+        user_profile = get_user_profile_by_email("test@zulip.com")
+
+        subs = Subscription.objects.select_related("recipient").filter(
+            user_profile=user_profile, recipient__type=Recipient.STREAM)
+        streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
+        self.send_message("hamlet@zulip.com", streams[0].name, Recipient.STREAM, "test")
+        add_new_user_history(user_profile, streams)
 
 class PasswordResetTest(ZulipTestCase):
     """
@@ -163,6 +187,23 @@ class PasswordResetTest(ZulipTestCase):
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
 
+    def test_redirect_endpoints(self):
+        # type: () -> None
+        '''
+        These tests are mostly designed to give us 100% URL coverage
+        in our URL coverage reports.  Our mechanism for finding URL
+        coverage doesn't handle redirects, so we just have a few quick
+        tests here.
+        '''
+        result = self.client_get('/accounts/password/reset/done/')
+        self.assert_in_success_response(["Check your email"], result)
+
+        result = self.client_get('/accounts/password/done/')
+        self.assert_in_success_response(["We've reset your password!"], result)
+
+        result = self.client_get('/accounts/send_confirm/alice@example.com')
+        self.assert_in_success_response(["Still no email?"], result)
+
 class LoginTest(ZulipTestCase):
     """
     Logging in, registration, and logging out.
@@ -186,7 +227,7 @@ class LoginTest(ZulipTestCase):
 
     def test_register(self):
         # type: () -> None
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         stream_names = ["stream_%s" % i for i in range(40)]
         for stream_name in stream_names:
             self.make_stream(stream_name, realm=realm)
@@ -198,6 +239,7 @@ class LoginTest(ZulipTestCase):
         self.assert_max_length(queries, 69)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+        self.assertFalse(user_profile.enable_stream_desktop_notifications)
 
     def test_register_deactivated(self):
         # type: () -> None
@@ -205,7 +247,7 @@ class LoginTest(ZulipTestCase):
         If you try to register for a deactivated realm, you get a clear error
         page.
         """
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -220,7 +262,7 @@ class LoginTest(ZulipTestCase):
         """
         If you try to log in to a deactivated realm, you get a clear error page.
         """
-        realm = get_realm("zulip.com")
+        realm = get_realm_by_string_id("zulip")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -256,7 +298,7 @@ class LoginTest(ZulipTestCase):
 class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams):
-        # type: (str, List[text_type]) -> HttpResponse
+        # type: (str, List[Text]) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -267,8 +309,8 @@ class InviteUserTest(ZulipTestCase):
         """
 
         return self.client_post("/json/invite_users",
-                {"invitee_emails": users,
-                    "stream": streams})
+                                {"invitee_emails": users,
+                                    "stream": streams})
 
     def check_sent_emails(self, correct_recipients):
         # type: (List[str]) -> None
@@ -363,8 +405,8 @@ class InviteUserTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         # Intentionally use a weird string.
         self.assert_json_success(self.invite(
-"""bob-test@zulip.com,     carol-test@zulip.com,
-dave-test@zulip.com
+            """bob-test@zulip.com,     carol-test@zulip.com,
+            dave-test@zulip.com
 
 
 earl-test@zulip.com""", ["Denmark"]))
@@ -396,7 +438,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
-                "Stream does not exist: NotARealStream. No invites were sent.")
+                               "Stream does not exist: NotARealStream. No invites were sent.")
         self.check_sent_emails([])
 
     def test_invite_existing_user(self):
@@ -412,7 +454,7 @@ earl-test@zulip.com""", ["Denmark"]))
             "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
-                email="hamlet@zulip.com"))
+                            email="hamlet@zulip.com"))
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self):
@@ -436,7 +478,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for email in existing:
             self.assertRaises(PreregistrationUser.DoesNotExist,
                               lambda: PreregistrationUser.objects.get(
-                    email=email))
+                                email=email))
         for email in new:
             self.assertTrue(PreregistrationUser.objects.get(email=email))
 
@@ -452,7 +494,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = get_realm("zulip.com")
+        zulip_realm = get_realm_by_string_id("zulip")
         zulip_realm.restricted_to_domain = True
         zulip_realm.save()
 
@@ -469,7 +511,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = get_realm("zulip.com")
+        zulip_realm = get_realm_by_string_id("zulip")
         zulip_realm.restricted_to_domain = False
         zulip_realm.save()
 
@@ -493,6 +535,24 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.subscribe_to_stream("hamlet@zulip.com", stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
+
+    def test_refer_friend(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted = 1
+        user.invites_used = 0
+        user.save()
+
+        invitee = "alice-test@zulip.com"
+        result = self.client_post('/json/refer_friend', dict(email=invitee))
+        self.assert_json_success(result)
+
+        # verify this works
+        Referral.objects.get(user_profile=user, email=invitee)
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 1)
 
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
@@ -607,18 +667,19 @@ class RealmCreationTest(ZulipTestCase):
         username = "user1"
         password = "test"
         string_id = "zuliptest"
-        domain = "test.com"
+        domain = 'test.com'
         email = "user1@test.com"
+        realm = get_realm_by_string_id('test')
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm(domain))
+        self.assertIsNone(realm)
 
         with self.settings(OPEN_REALM_CREATION=True):
             # Create new realm with the email
             result = self.client_post('/create_realm/', {'email': email})
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s@%s" % (username, domain)))
+                    "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
@@ -654,14 +715,14 @@ class RealmCreationTest(ZulipTestCase):
         realm_name = "Test"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm(domain))
+        self.assertIsNone(get_realm_by_string_id('test'))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.settings(OPEN_REALM_CREATION=True):
             # Create new realm with the email
             result = self.client_post('/create_realm/', {'email': email})
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s@%s" % (username, domain)))
+                    "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
@@ -737,9 +798,9 @@ class UserSignUpTest(ZulipTestCase):
         """
         username = "newguy"
         email = "newguy@zulip.com"
-        domain = "zulip.com"
         password = "newpassword"
-        realm = get_realm(domain)
+        realm = get_realm_by_string_id('zulip')
+        domain = realm.domain
         do_set_realm_default_language(realm, "de")
 
         result = self.client_post('/accounts/home/', {'email': email})
@@ -763,68 +824,20 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         outbox.pop()
 
-    def test_completely_open_domain_under_subdomains(self):
-        # type: () -> None
-        username = "user1"
-        password = "test"
-        domain = "zulip.com"
-        email = "user1@acme.com"
-        subdomain = "zulip"
-        realm_name = "Zulip"
-
-        realm = get_realm(domain)
-        realm.restricted_to_domain = False
-        realm.invite_required = False
-        realm.save()
-
-        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
-            with patch('zerver.views.get_subdomain', return_value=subdomain):
-                result = self.client_post('/register/', {'email': email})
-
-            self.assertEquals(result.status_code, 302)
-            self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s" % (email,)))
-            result = self.client_get(result["Location"])
-            self.assert_in_response("Check your email so we can get started.", result)
-            # Visit the confirmation link.
-            from django.core.mail import outbox
-            for message in reversed(outbox):
-                if email in message.to:
-                    confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
-                    confirmation_url = confirmation_link_pattern.search(
-                        message.body).groups()[0]
-                    break
-            else:
-                raise ValueError("Couldn't find a confirmation email.")
-
-            result = self.client_get(confirmation_url)
-            self.assertEquals(result.status_code, 200)
-
-            result = self.submit_reg_form_for_user(username,
-                                                   password,
-                                                   domain='acme.com',
-                                                   realm_name=realm_name,
-                                                   realm_subdomain=subdomain,
-                                                   # Pass HTTP_HOST for the target subdomain
-                                                   HTTP_HOST=subdomain + ".testserver")
-            self.assertEquals(result.status_code, 200)
-            self.assertIn('Register through proper link', result.content.decode('utf8'))
-
     def test_unique_completely_open_domain(self):
         # type: () -> None
         username = "user1"
         password = "test"
-        domain = "zulip.com"
         email = "user1@acme.com"
         subdomain = "zulip"
         realm_name = "Zulip"
 
-        realm = get_realm(domain)
+        realm = get_realm_by_string_id('zulip')
         realm.restricted_to_domain = False
         realm.invite_required = False
         realm.save()
 
-        realm = get_realm("mit.edu")
+        realm = get_realm_by_string_id('mit')
         do_deactivate_realm(realm)
         realm.save()
 
@@ -856,19 +869,17 @@ class UserSignUpTest(ZulipTestCase):
                                                realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
-        self.assertEquals(result.status_code, 200)
-        self.assertIn("You're almost there.", result.content.decode('utf8'))
+        self.assert_in_success_response(["You're almost there."], result)
 
     def test_completely_open_domain_success(self):
         # type: () -> None
         username = "user1"
         password = "test"
-        domain = "zulip.com"
         email = "user1@acme.com"
         subdomain = "zulip"
         realm_name = "Zulip"
 
-        realm = get_realm(domain)
+        realm = get_realm_by_string_id('zulip')
         realm.restricted_to_domain = False
         realm.invite_required = False
         realm.save()
@@ -901,8 +912,34 @@ class UserSignUpTest(ZulipTestCase):
                                                realm_subdomain=subdomain,
                                                # Pass HTTP_HOST for the target subdomain
                                                HTTP_HOST=subdomain + ".testserver")
-        self.assertEquals(result.status_code, 200)
-        self.assertIn("You're almost there.", result.content.decode('utf8'))
+        self.assert_in_success_response(["You're almost there."], result)
+
+    def test_failed_signup_due_to_restricted_domain(self):
+        # type: () -> None
+        realm = get_realm_by_string_id('zulip')
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True):
+            request = HostRequestMock(host = realm.host)
+            request.session = {} # type: ignore
+            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            self.assertIn("trying to join, zulip, only allows users with e-mail", form.errors['email'][0])
+
+    def test_failed_signup_due_to_invite_required(self):
+        # type: () -> None
+        realm = get_realm_by_string_id('zulip')
+        realm.invite_required = True
+        realm.save()
+        request = HostRequestMock(host = realm.host)
+        request.session = {} # type: ignore
+        form = create_homepage_form(request, {'email': 'user@zulip.com'})
+        self.assertIn("Please request an invite from", form.errors['email'][0])
+
+    def test_failed_signup_due_to_nonexistent_realm(self):
+        # type: () -> None
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True):
+            request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
+            request.session = {} # type: ignore
+            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            self.assertIn("organization you are trying to join does not exist", form.errors['email'][0])
 
     def test_registration_through_ldap(self):
         # type: () -> None
@@ -963,10 +1000,10 @@ class UserSignUpTest(ZulipTestCase):
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
 
-            self.assertEquals(result.status_code, 200)
-            self.assertIn("You're almost there.", result.content.decode('utf8'))
-            self.assertIn("New User Name", result.content.decode('utf8'))
-            self.assertIn("newuser@zulip.com", result.content.decode('utf8'))
+            self.assert_in_success_response(["You're almost there.",
+                                             "New User Name",
+                                             "newuser@zulip.com"],
+                                            result)
 
             # Test the TypeError exception handler
             mock_ldap.directory = {
@@ -983,10 +1020,9 @@ class UserSignUpTest(ZulipTestCase):
                                                    from_confirmation='1',
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
-
-            self.assertEquals(result.status_code, 200)
-            self.assertIn("You're almost there.", result.content.decode('utf8'))
-            self.assertIn("newuser@zulip.com", result.content.decode('utf8'))
+            self.assert_in_success_response(["You're almost there.",
+                                             "newuser@zulip.com"],
+                                            result)
 
         mock_ldap.reset()
         mock_initialize.stop()

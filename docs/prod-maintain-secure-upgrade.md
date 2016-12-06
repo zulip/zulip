@@ -613,11 +613,5 @@ server, and suggested procedure.
 ### Other useful manage.py commands
 
 There are a large number of useful management commands under
-`zerver/manangement/commands/`; you can also see them listed using
+`zerver/management/commands/`; you can also see them listed using
 `./manage.py` with no arguments.
-
-One such command worth highlighting because it's a valuable feature
-with no UI in the Administration page is `./manage.py realm_filters`,
-which allows you to configure certain patterns in messages to be
-automatically linkified, e.g., whenever someone mentions "T1234", it
-could be auto-linkified to ticket 1234 in your team's Trac instance.

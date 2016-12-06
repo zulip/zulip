@@ -58,9 +58,8 @@ exports.bottom_message_visible = function () {
         var message_bottom = last_row[0].getBoundingClientRect().bottom;
         var bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
         return bottom_of_feed > message_bottom;
-    } else {
-        return false;
     }
+    return false;
 };
 
 exports.is_below_visible_bottom = function (offset) {
@@ -111,9 +110,8 @@ function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
                 ((rect.bottom < bottom_of_feed) || // message is fully in view or
                  ((rect.height > bottom_of_feed - top_of_feed) &&
                   (rect.top < bottom_of_feed)))); // message is tall.
-    } else {
-        return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
     }
+    return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
 }
 
 function add_to_visible(candidates, visible,
@@ -127,9 +125,8 @@ function add_to_visible(candidates, visible,
                                 require_fully_visible)) {
             visible.push(row_to_id(row));
             return true;
-        } else {
-            return false;
         }
+        return false;
     });
 }
 
@@ -145,7 +142,8 @@ var bottom_of_feed = new util.CachedValue({
     }
 });
 
-function _visible_divs(selected_row, row_min_height, row_to_output, div_class, require_fully_visible) {
+function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
+                       require_fully_visible) {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
     // getting offsets relative to the full scrollable window. You can't try to
@@ -158,12 +156,12 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class, r
     var visible = [];
     var above_pointer = selected_row.prevAll("div." + div_class + ":lt(" + num_neighbors + ")");
     var below_pointer = selected_row.nextAll("div." + div_class + ":lt(" + num_neighbors + ")");
-    add_to_visible(selected_row, visible,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
-    add_to_visible(above_pointer, visible,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
-    add_to_visible(below_pointer, visible,
-                            top_of_feed.get(), bottom_of_feed.get(), require_fully_visible, row_to_output);
+    add_to_visible(selected_row, visible, top_of_feed.get(), bottom_of_feed.get(),
+            require_fully_visible, row_to_output);
+    add_to_visible(above_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
+            require_fully_visible, row_to_output);
+    add_to_visible(below_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
+            require_fully_visible, row_to_output);
 
     return visible;
 }
@@ -195,7 +193,7 @@ exports.visible_messages = function (require_fully_visible) {
     return _visible_divs(selected_row, 25, row_to_id, "message_row", require_fully_visible);
 };
 
-exports.scrollTop = function viewport_scrollTop (target_scrollTop) {
+exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     var orig_scrollTop = exports.message_pane.scrollTop();
     if (target_scrollTop === undefined) {
         return orig_scrollTop;

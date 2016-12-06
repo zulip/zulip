@@ -7,7 +7,10 @@ from zerver.models import (
     get_user_profile_by_email, Recipient, UserMessage
 )
 
-from zerver.lib.test_helpers import ZulipTestCase, tornado_redirected_to_list
+from zerver.lib.test_helpers import tornado_redirected_to_list
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 import ujson
 
 class PointerTest(ZulipTestCase):
@@ -135,14 +138,14 @@ class UnreadCountTests(ZulipTestCase):
                                          Recipient.PERSONAL, "test2")]
 
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps(message_ids),
-                                                                 "op": "add",
-                                                                 "flag": "read"})
+                                                           "op": "add",
+                                                           "flag": "read"})
         self.assert_json_success(result)
 
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
-                                                                 "op": "remove",
-                                                                 "flag": "read",
-                                                                 "all": ujson.dumps(True)})
+                                                           "op": "remove",
+                                                           "flag": "read",
+                                                           "all": ujson.dumps(True)})
         self.assert_json_success(result)
 
         for msg in self.get_old_messages():
@@ -188,7 +191,6 @@ class UnreadCountTests(ZulipTestCase):
         for msg in unrelated_messages:
             if msg.user_profile.email == "hamlet@zulip.com":
                 self.assertFalse(msg.flags.read)
-
 
     def test_mark_all_in_invalid_stream_read(self):
         # type: () -> None
@@ -238,7 +240,6 @@ class UnreadCountTests(ZulipTestCase):
         for msg in unrelated_messages:
             if msg.user_profile.email == "hamlet@zulip.com":
                 self.assertFalse(msg.flags.read)
-
 
     def test_mark_all_in_invalid_topic_read(self):
         # type: () -> None

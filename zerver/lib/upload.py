@@ -137,8 +137,7 @@ def upload_image_to_s3(
         file_name,
         content_type,
         user_profile,
-        contents,
-    ):
+        contents):
     # type: (NonBinaryStr, text_type, Optional[text_type], UserProfile, binary_type) -> None
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)

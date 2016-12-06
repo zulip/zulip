@@ -7,20 +7,26 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies (except _).
 
+global.stub_out_jquery();
+
 add_dependencies({
     muting: 'js/muting.js',
-    unread: 'js/unread.js'
+    people: 'js/people.js',
+    unread: 'js/unread.js',
 });
 
 var stream_data = require('js/stream_data.js');
 
 stream_data = {
-    canonicalized_name: stream_data.canonicalized_name
+    canonicalized_name: stream_data.canonicalized_name,
 };
 set_global('stream_data', stream_data);
+set_global('blueslip', {});
 
 var Dict = global.Dict;
 var muting = global.muting;
+var people = global.people;
+
 var unread = require('js/unread.js');
 
 var narrow = {};
@@ -39,7 +45,7 @@ var zero_counts = {
     stream_count: new Dict(),
     subject_count: new Dict(),
     pm_count: new Dict(),
-    unread_in_current_view: 0
+    unread_in_current_view: 0,
 };
 
 (function test_empty_counts_while_narrowed() {
@@ -76,14 +82,14 @@ var zero_counts = {
         id: 15,
         type: 'stream',
         stream: 'social',
-        subject: 'lunch'
+        subject: 'lunch',
     };
 
     var other_message = {
         id: 16,
         type: 'stream',
         stream: 'social',
-        subject: 'lunch'
+        subject: 'lunch',
     };
 
     unread.process_loaded_messages([message, other_message]);
@@ -92,7 +98,7 @@ var zero_counts = {
     assert.equal(count, 2);
 
     var event = {
-        subject: 'dinner'
+        subject: 'dinner',
     };
 
     unread.update_unread_topics(message, event);
@@ -104,7 +110,7 @@ var zero_counts = {
     assert.equal(count, 1);
 
     event = {
-        subject: 'snack'
+        subject: 'snack',
     };
 
     unread.update_unread_topics(other_message, event);
@@ -121,10 +127,10 @@ var zero_counts = {
         id: 18,
         type: 'stream',
         stream: 'social',
-        subject: 'lunch'
+        subject: 'lunch',
     };
     event = {
-        subject: 'brunch'
+        subject: 'brunch',
     };
     unread.update_unread_topics(other_message, event);
 
@@ -155,7 +161,7 @@ var zero_counts = {
         id: 15,
         type: 'stream',
         stream: 'social',
-        subject: 'test_muting'
+        subject: 'test_muting',
     };
 
     unread.process_loaded_messages([message]);
@@ -180,12 +186,12 @@ var zero_counts = {
     var message = {
         type: 'stream',
         stream: 'social',
-        subject: 'lunch'
+        subject: 'lunch',
     };
 
     var num_msgs = 10000;
     var i;
-    for (i = 0; i < num_msgs; ++i) {
+    for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
         unread.process_loaded_messages([message]);
     }
@@ -193,7 +199,7 @@ var zero_counts = {
     count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, num_msgs);
 
-    for (i = 0; i < num_msgs; ++i) {
+    for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
         unread.process_read_message(message);
     }
@@ -218,7 +224,7 @@ var zero_counts = {
         id: 15,
         type: 'stream',
         stream: 'social',
-        subject: 'lunch'
+        subject: 'lunch',
     };
 
     home_msg_list.get = function (msg_id) {
@@ -255,7 +261,7 @@ var zero_counts = {
         id: 999,
         type: 'stream',
         stream: 'foo',
-        subject: 'phantom'
+        subject: 'phantom',
     };
 
     unread.process_read_message(message);
@@ -277,47 +283,56 @@ var zero_counts = {
     var message = {
         id: 15,
         type: 'private',
-        reply_to: 'alice@zulip.com'
+        reply_to: 'anybody@example.com',
     };
+
+    var anybody = {
+        email: 'anybody@example.com',
+        user_id: 999,
+        full_name: 'Any Body',
+    };
+    people.add_in_realm(anybody);
 
     unread.process_loaded_messages([message]);
 
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 1);
+    assert.equal(counts.pm_count.get('999'), 1);
     unread.process_read_message(message);
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
-
-    // Test unknown message is harmless
-    message = {
-        id: 9,
-        type: 'private',
-        reply_to: 'unknown@zulip.com'
-    };
-
-    unread.process_read_message(message);
-    counts = unread.get_counts();
-    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.pm_count.get('999'), 0);
 }());
 
 (function test_num_unread_for_person() {
-    var email = 'unknown@zulip.com';
-    assert.equal(unread.num_unread_for_person(email), 0);
+    var alice = {
+        email: 'alice@example.com',
+        user_id: 101,
+        full_name: 'Alice',
+    };
+    people.add_in_realm(alice);
 
-    email = 'alice@zulip.com';
-    assert.equal(unread.num_unread_for_person(email), 0);
+    var bob = {
+        email: 'bob@example.com',
+        user_id: 102,
+        full_name: 'Bob',
+    };
+    people.add_in_realm(bob);
+
+    assert.equal(unread.num_unread_for_person(alice.user_id), 0);
+    assert.equal(unread.num_unread_for_person(bob.user_id), 0);
 
     var message = {
         id: 15,
-        reply_to: email,
-        type: 'private'
+        reply_to: 'alice@example.com',
+        type: 'private',
     };
 
     var read_message = {
-        flags: ['read']
+        flags: ['read'],
     };
     unread.process_loaded_messages([message, read_message]);
-    assert.equal(unread.num_unread_for_person(email), 1);
+    assert.equal(unread.num_unread_for_person(alice.user_id), 1);
 }());
 
 
@@ -337,7 +352,7 @@ var zero_counts = {
         type: 'stream',
         stream: 'social',
         subject: 'lunch',
-        mentioned: true
+        mentioned: true,
     };
 
     unread.process_loaded_messages([message]);
@@ -361,7 +376,7 @@ var zero_counts = {
     assert.equal(count, 0);
 
     var message = {
-        id: 15
+        id: 15,
     };
     current_msg_list.all_messages = function () {
         return [message];
@@ -387,3 +402,19 @@ var zero_counts = {
     assert(unread.message_unread({flags: []}));
     assert(!unread.message_unread({flags: ['read']}));
 }());
+
+(function test_errors() {
+    global.blueslip.error = function () {};
+
+    // Test unknown message leads to zero count
+    var message = {
+        id: 9,
+        type: 'private',
+        reply_to: 'unknown@zulip.com',
+    };
+
+    unread.process_read_message(message);
+    var counts = unread.get_counts();
+    assert.equal(counts.private_message_count, 0);
+}());
+

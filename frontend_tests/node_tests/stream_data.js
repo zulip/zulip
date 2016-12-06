@@ -2,13 +2,13 @@ global.stub_out_jquery();
 
 set_global('page_params', {
     is_admin: false,
-    people_list: []
+    people_list: [],
 });
 
 add_dependencies({
     people: 'js/people.js',
     stream_color: 'js/stream_color.js',
-    util: 'js/util.js'
+    util: 'js/util.js',
 });
 
 set_global('blueslip', {});
@@ -22,7 +22,7 @@ var people = global.people;
         color: 'blue',
         name: 'Denmark',
         stream_id: 1,
-        in_home_view: false
+        in_home_view: false,
     };
     var social = {
         subscribed: true,
@@ -30,7 +30,7 @@ var people = global.people;
         name: 'social',
         stream_id: 2,
         in_home_view: true,
-        invite_only: true
+        invite_only: true,
     };
     var test = {
         subscribed: true,
@@ -38,7 +38,7 @@ var people = global.people;
         name: 'test',
         stream_id: 3,
         in_home_view: false,
-        invite_only: false
+        invite_only: false,
     };
     stream_data.add_sub('Denmark', denmark);
     stream_data.add_sub('social', social);
@@ -77,7 +77,7 @@ var people = global.people;
         name: 'Denmark',
         subscribed: true,
         color: 'red',
-        stream_id: id
+        stream_id: id,
     };
     stream_data.add_sub('Denmark', sub);
     sub = stream_data.get_sub('Denmark');
@@ -91,6 +91,38 @@ var people = global.people;
     assert.equal(sub.name, 'Sweden');
 }());
 
+(function test_unsubscribe() {
+    stream_data.clear_subscriptions();
+
+    var sub = {name: 'devel', subscribed: false, stream_id: 1};
+    var me = {
+        email: 'me@zulip.com',
+        full_name: 'Current User',
+        user_id: 81,
+    };
+
+    // set up user data
+    global.page_params.email = 'me@zulip.com';
+    people.add(me);
+
+    // set up our subscription
+    stream_data.add_sub('devel', sub);
+    sub.subscribed = true;
+    stream_data.set_subscribers(sub, [me.user_id]);
+
+    // ensure our setup is accurate
+    assert(stream_data.is_subscribed('devel'));
+
+    // DO THE UNSUBSCRIBE HERE
+    stream_data.unsubscribe_myself(sub);
+    assert(!sub.subscribed);
+    assert(!stream_data.is_subscribed('devel'));
+
+    // make sure subsequent calls work
+    sub = stream_data.get_sub('devel');
+    assert(!sub.subscribed);
+}());
+
 (function test_subscribers() {
     stream_data.clear_subscriptions();
     var sub = {name: 'Rome', subscribed: true, stream_id: 1};
@@ -100,17 +132,17 @@ var people = global.people;
     var fred = {
         email: 'fred@zulip.com',
         full_name: 'Fred',
-        user_id: 101
+        user_id: 101,
     };
     var not_fred = {
         email: 'not_fred@zulip.com',
         full_name: 'Not Fred',
-        user_id: 102
+        user_id: 102,
     };
     var george = {
         email: 'george@zulip.com',
         full_name: 'George',
-        user_id: 103
+        user_id: 103,
     };
     people.add(fred);
     people.add(not_fred);
@@ -128,34 +160,38 @@ var people = global.people;
     var brutus = {
         email: email,
         full_name: 'Brutus',
-        user_id: 104
+        user_id: 104,
     };
     people.add(brutus);
     assert(!stream_data.user_is_subscribed('Rome', email));
 
     // add
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
 
     // verify that adding an already-added subscriber is a noop
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
 
     // remove
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
+    // Defensive code will give warnings, which we ignore for the
+    // tests, but the defensive code needs to not actually blow up.
+    global.blueslip.warn = function () {};
+
     // verify that removing an already-removed subscriber is a noop
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -165,16 +201,15 @@ var people = global.people;
     // can be undefined.
     stream_data.set_subscribers(sub);
     stream_data.add_sub('Rome', sub);
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     sub.subscribed = true;
     assert(stream_data.user_is_subscribed('Rome', email));
 
-    // Verify that we noop and don't crash when unsubsribed.
+    // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
-    global.blueslip.warn = function () {};
-    stream_data.add_subscriber('Rome', email);
+    stream_data.add_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
-    stream_data.remove_subscriber('Rome', email);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
 
 }());
@@ -183,7 +218,7 @@ var people = global.people;
     var message = {
         stream: 'Rome',
         timestamp: 101,
-        subject: 'toPic1'
+        subject: 'toPic1',
     };
     stream_data.process_message_for_recent_topics(message);
 
@@ -193,14 +228,14 @@ var people = global.people;
             subject: 'toPic1',
             canon_subject: 'topic1',
             count: 1,
-            timestamp: 101
-        }
+            timestamp: 101,
+        },
     ]);
 
     message = {
         stream: 'Rome',
         timestamp: 102,
-        subject: 'Topic1'
+        subject: 'Topic1',
     };
     stream_data.process_message_for_recent_topics(message);
     history = stream_data.get_recent_topics('Rome');
@@ -209,14 +244,14 @@ var people = global.people;
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 
     message = {
         stream: 'Rome',
         timestamp: 103,
-        subject: 'topic2'
+        subject: 'topic2',
     };
     stream_data.process_message_for_recent_topics(message);
     history = stream_data.get_recent_topics('Rome');
@@ -225,14 +260,14 @@ var people = global.people;
             subject: 'topic2',
             canon_subject: 'topic2',
             count: 1,
-            timestamp: 103
+            timestamp: 103,
         },
         {
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 
     stream_data.process_message_for_recent_topics(message, true);
@@ -242,8 +277,8 @@ var people = global.people;
             subject: 'Topic1',
             canon_subject: 'topic1',
             count: 2,
-            timestamp: 102
-        }
+            timestamp: 102,
+        },
     ]);
 }());
 
@@ -255,7 +290,7 @@ var people = global.people;
             name: 'stream_to_admin',
             stream_id: 1,
             in_home_view: false,
-            invite_only: false
+            invite_only: false,
         };
     }
 
@@ -304,21 +339,21 @@ var people = global.people;
         stream_id: 1,
         name: 'c',
         color: 'cinnamon',
-        subscribed: true
+        subscribed: true,
     };
 
     var blue = {
         stream_id: 2,
         name: 'b',
         color: 'blue',
-        subscribed: false
+        subscribed: false,
     };
 
     var amber = {
         stream_id: 3,
         name: 'a',
         color: 'amber',
-        subscribed: true
+        subscribed: true,
     };
     stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon.name, cinnamon);

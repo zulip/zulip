@@ -29,7 +29,7 @@ from zerver.lib.utils import (
     mkdir_p,
     query_chunker,
 )
-from zerver.lib.test_helpers import (
+from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
@@ -267,7 +267,6 @@ class ExportTest(TestCase):
                 r for r in data[table]
                 if r['id'] == db_id][0]
 
-
         exported_user_emails = get_set('zerver_userprofile', 'email')
         self.assertIn('cordelia@zulip.com', exported_user_emails)
         self.assertIn('default-bot@zulip.com', exported_user_emails)
@@ -287,7 +286,6 @@ class ExportTest(TestCase):
 
         exported_message = find_by_id('zerver_message', um.message_id)
         self.assertEqual(exported_message['content'], um.message.content)
-
 
         # TODO, extract get_set/find_by_id, so we can split this test up
 

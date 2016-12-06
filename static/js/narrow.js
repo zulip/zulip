@@ -97,12 +97,23 @@ exports.stream = function () {
     return undefined;
 };
 
+exports.topic = function () {
+    if (current_filter === undefined) {
+        return undefined;
+    }
+    var operands = current_filter.operands("topic");
+    if (operands.length === 1) {
+        return operands[0];
+    }
+    return undefined;
+};
+
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
         url: '/json/report_narrow_time',
-        data: {"initial_core": initial_core_time.toString(),
-               "initial_free": initial_free_time.toString(),
-               "network": network_time.toString()}
+        data: {initial_core: initial_core_time.toString(),
+               initial_free: initial_free_time.toString(),
+               network: network_time.toString()}
     });
 }
 
@@ -130,8 +141,8 @@ function report_unnarrow_time() {
 
     channel.post({
         url: '/json/report_unnarrow_time',
-        data: {"initial_core": initial_core_time.toString(),
-               "initial_free": initial_free_time.toString()}
+        data: {initial_core: initial_core_time.toString(),
+               initial_free: initial_free_time.toString()}
     });
 
     unnarrow_times = {};
@@ -227,7 +238,8 @@ exports.activate = function (raw_operators, opts) {
             blueslip.debug("narrow.activate missing selected row", {
                 selected_id: current_msg_list.selected_id(),
                 selected_idx: current_msg_list.selected_idx(),
-                selected_idx_exact: current_msg_list._items.indexOf(current_msg_list.get(current_msg_list.selected_id())),
+                selected_idx_exact: current_msg_list._items.indexOf(
+                                        current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
                 render_end: current_msg_list.view._render_win_end
             });
@@ -264,7 +276,8 @@ exports.activate = function (raw_operators, opts) {
         if (! message_list.narrowed.empty()) {
             if (opts.select_first_unread) {
                 then_select_id = message_list.narrowed.last().id;
-                var first_unread = _.find(message_list.narrowed.all_messages(), unread.message_unread);
+                var first_unread =
+                    _.find(message_list.narrowed.all_messages(), unread.message_unread);
                 if (first_unread) {
                     then_select_id = first_unread.id;
                 }
@@ -295,7 +308,8 @@ exports.activate = function (raw_operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_store.add_messages(message_list.all.all_messages(), message_list.narrowed, {delay_render: true});
+        message_store.add_messages(message_list.all.all_messages(), message_list.narrowed,
+                                   {delay_render: true});
     }
 
     var defer_selecting_closest = message_list.narrowed.empty();
@@ -549,15 +563,13 @@ function pick_empty_narrow_banner() {
         if (first_operand.indexOf(',') === -1) {
             // You have no private messages with this person
             return $("#empty_narrow_private_message");
-        } else {
-            return $("#empty_narrow_multi_private_message");
         }
+        return $("#empty_narrow_multi_private_message");
     } else if (first_operator === "sender") {
         if (people.get_by_email(first_operand)) {
             return $("#silent_user");
-        } else {
-            return $("#non_existing_user");
         }
+        return $("#non_existing_user");
     }
     return default_banner;
 }
@@ -601,10 +613,9 @@ exports.by_conversation_and_time_uri = function (message) {
         return "#narrow/stream/" + hashchange.encodeHashComponent(message.stream) +
             "/subject/" + hashchange.encodeHashComponent(message.subject) +
             "/near/" + hashchange.encodeHashComponent(message.id);
-    } else {
-        return "#narrow/pm-with/" + hashchange.encodeHashComponent(message.reply_to) +
-            "/near/" + hashchange.encodeHashComponent(message.id);
     }
+    return "#narrow/pm-with/" + hashchange.encodeHashComponent(message.reply_to) +
+        "/near/" + hashchange.encodeHashComponent(message.id);
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.
@@ -643,7 +654,8 @@ exports.narrowed_to_search = function () {
 };
 
 exports.muting_enabled = function () {
-    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() && !exports.narrowed_to_pms());
+    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
+            !exports.narrowed_to_pms());
 };
 
 return exports;

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.db.models.query import QuerySet
 import glob
 import logging
 import os
@@ -151,7 +152,23 @@ def make_raw(query, exclude=None):
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
     '''
-    return [model_to_dict(x, exclude=exclude) for x in query]
+    rows = []
+    for instance in query:
+        data = model_to_dict(instance, exclude=exclude)
+        """
+        In Django 1.10, model_to_dict resolves ManyToManyField as a QuerySet.
+        Previously, we used to get primary keys. Following code converts the
+        QuerySet into primary keys.
+        For reference: https://www.mail-archive.com/django-updates@googlegroups.com/msg163020.html
+        """
+        for field in instance._meta.many_to_many:
+            value = data[field.name]
+            if isinstance(value, QuerySet):
+                data[field.name] = [row.pk for row in value]
+
+        rows.append(data)
+
+    return rows
 
 def floatify_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
@@ -182,14 +199,14 @@ class Config(object):
     append itself to the parent's list of children.
 
     '''
-    def __init__(self, table=None, model=None,
-                normal_parent=None, virtual_parent=None,
-                filter_args=None, custom_fetch=None, custom_tables=None,
-                post_process_data=None,
-                concat_and_destroy=None, id_source=None, source_filter=None,
-                parent_key=None, use_all=False, is_seeded=False, exclude=None):
-        # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
+    def __init__(self, table=None, model=None,
+                 normal_parent=None, virtual_parent=None,
+                 filter_args=None, custom_fetch=None, custom_tables=None,
+                 post_process_data=None,
+                 concat_and_destroy=None, id_source=None, source_filter=None,
+                 parent_key=None, use_all=False, is_seeded=False, exclude=None):
+        # type: (str, Any, Config, Config, FilterArgs, CustomFetch, List[TableName], PostProcessData, List[TableName], IdSource, SourceFilter, Field, bool, bool, List[Field]) -> None
 
         assert table or custom_tables
         self.table = table
@@ -206,7 +223,7 @@ class Config(object):
         self.post_process_data = post_process_data
         self.concat_and_destroy = concat_and_destroy
         self.id_source = id_source
-        self.source_filter= source_filter
+        self.source_filter = source_filter
         self.children = [] # type: List[Config]
 
         if normal_parent:
@@ -254,7 +271,6 @@ def export_from_config(response, config, seed_object=None, context=None):
 
     if context is None:
         context = {}
-
 
     if table:
         exported_tables = [table]
@@ -475,7 +491,6 @@ def get_realm_config():
         post_process_data=sanity_check_stream_data
     )
 
-
     #
 
     Config(
@@ -539,7 +554,7 @@ def fetch_user_profile(response, config, context):
     exportable_user_ids = context['exportable_user_ids']
 
     query = UserProfile.objects.filter(realm_id=realm.id)
-    exclude=['password', 'api_key']
+    exclude = ['password', 'api_key']
     rows = make_raw(list(query), exclude=exclude)
 
     normal_rows = [] # type: List[Record]
@@ -571,10 +586,10 @@ def fetch_user_profile_cross_realm(response, config, context):
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
-        get_user_profile_by_email(settings.NOTIFICATION_BOT),
-        get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
-        get_user_profile_by_email(settings.WELCOME_BOT),
-    ]]
+            get_user_profile_by_email(settings.NOTIFICATION_BOT),
+            get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
+            get_user_profile_by_email(settings.WELCOME_BOT),
+            ]]
 
 def fetch_attachment_data(response, realm_id, message_ids):
     # type: (TableData, int, Set[int]) -> None
@@ -988,7 +1003,7 @@ def do_write_stats_file_for_realm_export(output_dir):
     logging.info('Writing stats file: %s\n' % (stats_file,))
     with open(stats_file, 'w') as f:
         for fn in fns:
-            f.write(os.path.basename(fn) +'\n')
+            f.write(os.path.basename(fn) + '\n')
             payload = open(fn).read()
             data = ujson.loads(payload)
             for k in sorted(data):
@@ -1084,6 +1099,7 @@ def create_soft_link(source, in_progress=True):
 def launch_user_message_subprocesses(threads, output_dir):
     # type: (int, Path) -> None
     logging.info('Launching %d PARALLEL subprocesses to export UserMessage rows' % (threads,))
+
     def run_job(shard):
         # type: (str) -> int
         subprocess.call(["./manage.py", 'export_usermessage_batch', '--path',
@@ -1253,9 +1269,9 @@ def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
             new_id = lookup_table[old_id]
             if verbose:
                 logging.info('Remapping %s%s from %s to %s' % (table,
-                                                              field_name + '_id',
-                                                              old_id,
-                                                              new_id))
+                                                               field_name + '_id',
+                                                               old_id,
+                                                               new_id))
         else:
             new_id = old_id
         item[field_name + "_id"] = new_id
@@ -1572,8 +1588,8 @@ def import_attachments(data):
     with connection.cursor() as cursor:
         sql_template = '''
             insert into %s (%s, %s) values(%%s, %%s);''' % (m2m_table_name,
-                                                           parent_id,
-                                                           child_id)
+                                                            parent_id,
+                                                            child_id)
         tups = [(row[parent_id], row[child_id]) for row in m2m_rows]
         cursor.executemany(sql_template, tups)
 

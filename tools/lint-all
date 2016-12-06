@@ -12,7 +12,7 @@ import traceback
 
 try:
     import lister
-    from typing import cast, Any, Callable, Dict, List, Optional, Generator, Tuple
+    from typing import cast, Any, Callable, Dict, Iterator, List, Optional, Tuple
 except ImportError as e:
     print("ImportError: {}".format(e))
     print("You need to run the Zulip linters inside a Zulip dev environment.")
@@ -23,13 +23,13 @@ except ImportError as e:
 EXCLUDED_FILES = """
 api/integrations/perforce/git_p4.py
 api/setup.py
+docs/conf.py
 docs/html_unescape.py
 node_modules
 puppet/apt/.forge-release
 puppet/apt/README.md
 static/locale
 static/third
-tools/jslint/jslint.js
 zerver/migrations
 zproject/dev_settings.py
 zproject/settings.py
@@ -38,7 +38,7 @@ zproject/test_settings.py
 
 @contextmanager
 def bright_red_output():
-    # type: () -> Generator[None, None, None]
+    # type: () -> Iterator[None]
     # Make the lint output bright red
     sys.stdout.write('\x1B[1;31m')
     sys.stdout.flush()
@@ -69,13 +69,33 @@ def check_pyflakes(options, by_lang):
                       " undefined name 'bugdown'" in ln) or
                      ("scripts/lib/pythonrc.py" in ln and
                       " import *' used; unable to detect undefined names" in ln) or
-                     ("zerver/lib/tornado_ioloop_logging.py" in ln and
+                     ("zerver/tornado/ioloop_logging.py" in ln and
                       "redefinition of function 'instrument_tornado_ioloop'" in ln) or
                      ("zephyr_mirror_backend.py:" in ln and
                       "redefinition of unused 'simplejson' from line" in ln)):
                 sys.stdout.write(ln)
                 failed = True
     return failed
+
+
+def check_pep8(files):
+    # type: (List[str]) -> bool
+    failed = False
+    ignored_rules = [
+        'E402', 'E501', 'W503', 'E711', 'E128', 'E226',
+        'E126', 'E121', 'E123', 'E266', 'E265', 'E261', 'E221',
+        'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E731', 'E302',
+        'E741', 'E714', 'W391', 'E713', 'E305', 'E251', 'E306',
+    ]
+    pep8 = subprocess.Popen(
+        ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    for pipe in (pep8.stdout, pep8.stderr):
+        for ln in pipe:
+            sys.stdout.write(ln)
+            failed = True
+    return failed
+
 
 def run_parallel(lint_functions):
     # type: (Dict[str, Callable[[], int]]) -> bool
@@ -118,7 +138,7 @@ def build_custom_checkers(by_lang):
                 continue
             for rule in rules:
                 exclude_list = rule.get('exclude', set())
-                if fn in exclude_list:
+                if fn in exclude_list or os.path.dirname(fn) in exclude_list:
                     continue
                 exclude_list = rule.get('exclude_line', set())
                 if (fn, line_fully_stripped) in exclude_list:
@@ -139,7 +159,7 @@ def build_custom_checkers(by_lang):
                     traceback.print_exc()
             if (max_length is not None and len(line) > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
-                "#ignorelongline" not in line):
+                    "#ignorelongline" not in line):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             lastLine = line
         if lineFlag and '\n' not in lastLine:
@@ -188,6 +208,13 @@ def build_custom_checkers(by_lang):
          'description': 'Write JS else statements on same line as }'},
         {'pattern': '^else if',
          'description': 'Write JS else statements on same line as }'},
+        {'pattern': 'console[.][a-z]',
+         'exclude': set(['static/js/blueslip.js',
+                         'frontend_tests/zjsunit',
+                         'frontend_tests/casper_lib/common.js',
+                         'frontend_tests/node_tests',
+                         'static/js/debug.js']),
+         'description': 'console.log and similar should not be used in webapp'},
         {'pattern': 'button\.text\(["\']',
          'exclude': set(['tools/lint-all',
                          'frontend_tests/node_tests/templates.js']),
@@ -269,12 +296,13 @@ def build_custom_checkers(by_lang):
              # are already captured
              ('zerver/middleware.py',
               'return json_error(exception.to_json_error_msg(), status=status_code)'),
-             ('zerver/tornadoviews.py', 'return json_error(result["message"])'),
+             ('zerver/tornado/views.py', 'return json_error(result["message"])'),
              ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
              # We can't do anything about this.
              ('zerver/views/realm_emoji.py', 'return json_error(e.messages[0])'),
+             ('zerver/views/realm_filters.py', 'return json_error(e.messages[0], data={"errors": dict(e)})'),
          ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
@@ -318,20 +346,21 @@ def build_custom_checkers(by_lang):
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
          'exclude': set(['static/styles/thirdparty-fonts.css']),
-         'strip': '\n',},
+         'strip': '\n'},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
         ]) + whitespace_rules # type: RuleList
     prose_style_rules = [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
-         {'pattern': '[^\/\-\.\"\'\_]([gG]ithub)[^\.\-\_\"]', # exclude usage in hrefs/divs
+        {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]', # exclude usage in hrefs/divs
          'description': "github should be spelled GitHub"},
     ] # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
-         'exclude': "static/templates/settings/emoji-settings-admin.handlebars"},
+         'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
+                         "static/templates/settings/realm-filter-settings-admin.handlebars"])},
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
         ] # type: RuleList
@@ -394,9 +423,15 @@ def build_custom_checkers(by_lang):
 def run():
     # type: () -> None
     parser = optparse.OptionParser()
+    parser.add_option('--force', default=False,
+        action="store_true",
+        help='Run tests despite possible problems.')
     parser.add_option('--full',
         action='store_true',
         help='Check some things we typically ignore')
+    parser.add_option('--pep8',
+        action='store_true',
+        help='Run the pep8 checker')
     parser.add_option('--modified', '-m',
         action='store_true',
         help='Only check modified files')
@@ -405,8 +440,22 @@ def run():
         help='Print verbose timing output')
     (options, args) = parser.parse_args()
 
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    tools_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(tools_dir)
+    sys.path.insert(0, root_dir)
 
+    from tools.lib.test_script import (
+        get_provisioning_status,
+    )
+
+    os.chdir(root_dir)
+
+    if not options.force:
+        ok, msg = get_provisioning_status()
+        if not ok:
+            print(msg)
+            print('If you really know what you are doing, use --force to run anyway.')
+            sys.exit(1)
 
     by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
         ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
@@ -433,6 +482,12 @@ def run():
 
     with bright_red_output():
         @lint
+        def check_urls():
+            # type: () -> int
+            result = subprocess.call(['tools/check-urls'])
+            return result
+
+        @lint
         def templates():
             # type: () -> int
             args = ['tools/check-templates']
@@ -454,9 +509,11 @@ def run():
             return result
 
         @lint
-        def jslint():
+        def eslint():
             # type: () -> int
-            result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
+            if len(by_lang['js']) == 0:
+                return 0
+            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet']
                                      + by_lang['js'])
             return result
 
@@ -485,6 +542,13 @@ def run():
             # type: () -> int
             failed = check_pyflakes(options, by_lang)
             return 1 if failed else 0
+
+        if options.pep8:
+            @lint
+            def pep8():
+                # type: () -> int
+                failed = check_pep8(by_lang['py'])
+                return 1 if failed else 0
 
         failed = run_parallel(lint_functions)
 

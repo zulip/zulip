@@ -12,6 +12,11 @@
                  placeholder="{{ _('Stream name') }}" value="" autocomplete="off" />
             <div id="stream_name_error"></div>
           </div>
+          <div>
+            <b>{% trans %}Stream description (optional){% endtrans %}</b><br />
+            <input type="text" name="stream_description" id="create_stream_description"
+               placeholder="{{_('Stream description') }}" value="" autocomplete="off" />
+          </div>
           <div id="make-invite-only">
             <b>{% trans %}Stream accessibility{% endtrans %}</b><br />
             <label class="radio">

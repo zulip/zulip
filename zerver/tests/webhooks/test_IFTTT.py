@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class IFTTTHookTests(WebhookTestCase):
     STREAM_NAME = 'ifttt'

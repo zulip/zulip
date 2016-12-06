@@ -35,6 +35,48 @@ exports.get_user_id = function (email) {
     return user_id;
 };
 
+exports.user_ids_string_to_emails_string = function (user_ids_string) {
+    var user_ids = user_ids_string.split(',');
+    var emails = _.map(user_ids, function (user_id) {
+        var person = people_by_user_id_dict.get(user_id);
+        if (person) {
+            return person.email;
+        }
+    });
+
+    if (!_.all(emails)) {
+        blueslip.error('Unknown user ids: ' + user_ids_string);
+        return;
+    }
+
+    emails = _.map(emails, function (email) {
+        return email.toLowerCase();
+    });
+
+    emails.sort();
+
+    return emails.join(',');
+};
+
+exports.emails_strings_to_user_ids_string = function (emails_string) {
+    var emails = emails_string.split(',');
+    var user_ids = _.map(emails, function (email) {
+        var person = people_dict.get(email);
+        if (person) {
+            return person.user_id;
+        }
+    });
+
+    if (!_.all(user_ids)) {
+        blueslip.error('Unknown emails: ' + emails_string);
+        return;
+    }
+
+    user_ids.sort();
+
+    return user_ids.join(',');
+};
+
 exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(email);
 };
@@ -72,6 +114,27 @@ exports.incr_recipient_count = function (email) {
 exports.filter_people_by_search_terms = function (users, search_terms) {
         var filtered_users = {};
 
+        var matchers = _.map(search_terms, function (search_term) {
+            var termlets = search_term.toLowerCase().split(/\s+/);
+            termlets = _.map(termlets, function (termlet) {
+                return termlet.trim();
+            });
+
+            return function (email, names) {
+                if (email.indexOf(search_term.trim()) === 0) {
+                    return true;
+                }
+                return _.all(termlets, function (termlet) {
+                    return _.any(names, function (name) {
+                        if (name.indexOf(termlet) === 0) {
+                            return true;
+                        }
+                    });
+                });
+            };
+        });
+
+
         // Loop through users and populate filtered_users only
         // if they include search_terms
         _.each(users, function (user) {
@@ -81,20 +144,23 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
                 return;
             }
 
+            var email = user.email.toLowerCase();
+
             // Remove extra whitespace
             var names = person.full_name.toLowerCase().split(/\s+/);
             names = _.map(names, function (name) {
                 return name.trim();
             });
 
+
             // Return user emails that include search terms
-            return _.any(search_terms, function (search_term) {
-                return _.any(names, function (name) {
-                    if (name.indexOf(search_term.trim()) === 0) {
-                        filtered_users[user.email] = true;
-                    }
-                });
+            var match = _.any(matchers, function (matcher) {
+                return matcher(email, names);
             });
+
+            if (match) {
+                filtered_users[email] = true;
+            }
         });
         return filtered_users;
 };
@@ -117,8 +183,8 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
     var people_minus_you = [];
     realm_people_dict.each(function (person) {
         if (!util.is_current_user(person.email)) {
-            people_minus_you.push({"email": person.email,
-                                   "full_name": person.full_name});
+            people_minus_you.push({email: person.email,
+                                   full_name: person.full_name});
         }
     });
     return people_minus_you.sort(people_cmp);

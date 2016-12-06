@@ -39,7 +39,7 @@ Example:
     def handle(self, **options):
         # type: (*Any, **str) -> None
         if options['fixture'] is None or options['url'] is None:
-            self.print_help('python manage.py', 'send_webhook_fixture_message')
+            self.print_help('./manage.py', 'send_webhook_fixture_message')
             exit(1)
 
         full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options['fixture'])

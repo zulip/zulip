@@ -12,6 +12,26 @@
     display: none;
 }
 
+.light {
+    font-weight: 300;
+}
+
+.display-none {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.box-shadow {
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+.bg-white {
+    background-color: #FFF;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
@@ -146,4 +166,54 @@
     pointer-events: none;
     color: #CCC;
     border-color: #DDD;
+}
+
+.new-style label.checkbox {
+    padding: 0px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.new-style label.checkbox input[type=checkbox] {
+    display: none;
+}
+
+.new-style label.checkbox + label {
+    width: calc(100% - 40px);
+}
+
+.new-style label.checkbox input[type=checkbox] ~ span {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    top: -2px;
+
+    padding: 1px;
+    margin: 0px 10px 0px 0px;
+    height: 16px;
+    width: 16px;
+
+    font-weight: 300;
+    line-height: 0.8;
+    font-size: 1.3rem;
+    text-align: center;
+    border: 2px solid #24cac2;
+    color: #fff;
+
+    border-radius: 4px;
+
+    cursor: pointer;
+}
+
+.new-style label.checkbox input[type=checkbox]:checked ~ span {
+    color: transparent;
+
+    background-image: url(/static/images/checkbox-green.png);
+    background-size: 85%;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
+
+.new-style a.no-style {
+    color: inherit;
 }

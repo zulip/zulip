@@ -477,6 +477,7 @@ var inline = {
   emoji: noop,
   unicodeemoji: noop,
   usermention: noop,
+  stream: noop,
   avatar: noop,
   gravatar: noop,
   realm_filters: [],
@@ -535,14 +536,15 @@ inline.breaks = merge({}, inline.gfm, {
 
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
-  unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])/,
+  unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])/,
   usermention: /^(@(?:\*\*([^\*]+)?\*\*|(\w+)?))/m, // Match multi-word string between @** ** or match any one-word
+  stream: /^#\*\*([^\*]+)\*\*/m,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
   realm_filters: [],
   text: replace(inline.breaks.text)
-    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff])|')
-    (']|', '@:]|')
+    ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])|')
+    (']|', '#@:]|')
     ()
 });
 
@@ -725,6 +727,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // stream (zulip)
+    if (cap = this.rules.stream.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.stream(cap[1], cap[0]);
+      continue;
+    }
+
     // strong
     if (cap = this.rules.strong.exec(src)) {
       src = src.substring(cap[0].length);
@@ -735,7 +744,7 @@ InlineLexer.prototype.output = function(src) {
     // em
     if (cap = this.rules.em.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.renderer.em(this.output(cap[2] || cap[1]));
+      out += this.renderer.em(cap[1] + cap[2]);
       continue;
     }
 
@@ -860,6 +869,17 @@ InlineLexer.prototype.usermention = function (username, orig) {
     return handled;
   }
 
+  return orig;
+};
+
+InlineLexer.prototype.stream = function (streamName, orig) {
+  if (typeof this.options.streamHandler !== 'function')
+    return orig;
+
+  var handled = this.options.streamHandler(streamName);
+  if (handled !== undefined) {
+    return handled;
+  }
   return orig;
 };
 
@@ -1270,7 +1290,7 @@ function escape(html, encode) {
 }
 
 function unescape(html) {
-	// explicitly match decimal, hex, and named HTML entities 
+  // explicitly match decimal, hex, and named HTML entities
   return html.replace(/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/g, function(_, n) {
     n = n.toLowerCase();
     if (n === 'colon') return ':';

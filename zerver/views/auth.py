@@ -148,7 +148,15 @@ def remote_user_jwt(request):
 
 def google_oauth2_csrf(request, value):
     # type: (HttpRequest, str) -> HttpResponse
-    return hmac.new(get_token(request).encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
+    # In Django 1.10, get_token returns a salted token which changes
+    # everytime get_token is called.
+    try:
+        from django.middleware.csrf import _unsalt_cipher_token
+        token = _unsalt_cipher_token(get_token(request))
+    except ImportError:
+        token = get_token(request)
+
+    return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
@@ -426,7 +434,7 @@ def api_get_auth_backends(request):
     return json_success({"password": password_auth_enabled(None),
                          "dev": dev_auth_enabled(),
                          "google": google_auth_enabled(),
-                        })
+                         })
 
 @authenticated_json_post_view
 @has_request_variables

@@ -54,14 +54,18 @@ import sys
 import boto.utils
 import netifaces
 from six.moves import range
+if False:
+    from typing import Optional
 
 def address_of(device_id):
+    # type: (int) -> Optional[str]
     try:
         return netifaces.ifaddresses("ens%i" % device_id)[netifaces.AF_INET][0]['addr']
     except KeyError:
         return None
 
 def guess_gateway(device_id):
+    # type: (int) -> str
     # This will not work if the default gateway isn't n.n.n.1.
     address = address_of(device_id).split('.')
     address[3] = '1'
@@ -113,7 +117,6 @@ for device in macs.values():
         subprocess.check_call(
                 ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
                     address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
-
 
     to_configure.remove(address_of(device_number))
 

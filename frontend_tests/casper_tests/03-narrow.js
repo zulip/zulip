@@ -39,7 +39,7 @@ common.then_send_many([
       content:   'personal D' },
 
     { recipient: 'cordelia@zulip.com',
-      content:   'personal E' }
+      content:   'personal E' },
 ]);
 
 
@@ -51,11 +51,11 @@ function expect_home() {
             common.expected_messages('zhome', [
                 'Verona > frontend test',
                 'You and Cordelia Lear, King Hamlet',
-                'You and Cordelia Lear'
+                'You and Cordelia Lear',
             ], [
                 '<p>test message D</p>',
                 '<p>personal D</p>',
-                '<p>personal E</p>'
+                '<p>personal E</p>',
             ]);
         });
     });
@@ -67,12 +67,12 @@ function expect_stream() {
             common.expected_messages('zfilt', [
                 'Verona > frontend test',
                 'Verona > other subject',
-                'Verona > frontend test'
+                'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
                 '<p>test message C</p>',
-                '<p>test message D</p>'
+                '<p>test message D</p>',
             ]);
         });
     });
@@ -82,11 +82,11 @@ function expect_stream_subject() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test'
+                'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
-                '<p>test message D</p>'
+                '<p>test message D</p>',
             ]);
         });
     });
@@ -98,12 +98,12 @@ function expect_subject() {
             common.expected_messages('zfilt', [
                 'Verona > frontend test',
                 'Denmark > frontend test',
-                'Verona > frontend test'
+                'Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
                 '<p>other message</p>',
-                '<p>test message D</p>'
+                '<p>test message D</p>',
             ]);
         });
     });
@@ -113,11 +113,11 @@ function expect_huddle() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear, King Hamlet'
+                'You and Cordelia Lear, King Hamlet',
             ], [
                 '<p>personal A</p>',
                 '<p>personal B</p>',
-                '<p>personal D</p>'
+                '<p>personal D</p>',
             ]);
         });
     });
@@ -127,10 +127,10 @@ function expect_1on1() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'You and Cordelia Lear'
+                'You and Cordelia Lear',
             ], [
                 '<p>personal C</p>',
-                '<p>personal E</p>'
+                '<p>personal E</p>',
             ]);
         });
     });
@@ -141,13 +141,13 @@ function expect_all_pm() {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
                 'You and Cordelia Lear, King Hamlet',
-                'You and Cordelia Lear'
+                'You and Cordelia Lear',
             ], [
                 '<p>personal A</p>',
                 '<p>personal B</p>',
                 '<p>personal C</p>',
                 '<p>personal D</p>',
-                '<p>personal E</p>'
+                '<p>personal E</p>',
             ]);
         });
     });

@@ -14,6 +14,7 @@ from zerver.lib.notifications import build_message_list, hashchange_encode, \
     send_future_email, one_click_unsubscribe_link
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams
+from zerver.context_processors import common_context
 
 import logging
 
@@ -86,15 +87,15 @@ def gather_hot_conversations(user_profile, stream_messages):
         count = conversation_length[h]
 
         # We'll display up to 2 messages from the conversation.
-        first_few_messages = [user_message.message for user_message in \
-                                  stream_messages.filter(
-                message__recipient__type_id=stream_id,
-                message__subject=subject)[:2]]
+        first_few_messages = [user_message.message for user_message in
+                            stream_messages.filter(
+                                message__recipient__type_id=stream_id,
+                                message__subject=subject)[:2]]
 
         teaser_data = {"participants": users,
                        "count": count - len(first_few_messages),
                        "first_few_messages": build_message_list(
-                user_profile, first_few_messages)}
+                        user_profile, first_few_messages)}
 
         hot_conversation_render_payloads.append(teaser_data)
     return hot_conversation_render_payloads
@@ -158,7 +159,7 @@ def send_digest_email(user_profile, html_content, text_content):
 
 def handle_digest_email(user_profile_id, cutoff):
     # type: (int, float) -> None
-    user_profile=UserProfile.objects.get(id=user_profile_id)
+    user_profile = UserProfile.objects.get(id=user_profile_id)
     # Convert from epoch seconds to a datetime object.
     cutoff_date = datetime.datetime.utcfromtimestamp(int(cutoff))
 
@@ -166,22 +167,20 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile=user_profile,
         message__pub_date__gt=cutoff_date).order_by("message__pub_date")
 
+    template_payload = common_context(user_profile)
+
     # Start building email template data.
-    template_payload = {
+    template_payload.update({
         'name': user_profile.full_name,
-        'external_host': settings.EXTERNAL_HOST,
-        'external_uri_scheme': settings.EXTERNAL_URI_SCHEME,
-        'server_uri': settings.SERVER_URI,
-        'realm_uri': user_profile.realm.uri,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
-        } # type: Dict[str, Any]
+        })
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     # You can't have an unread message that you sent, but when testing
     # this causes confusion so filter your messages out.
     pms = all_messages.filter(
-        ~Q(message__recipient__type=Recipient.STREAM) & \
-             ~Q(message__sender=user_profile))
+        ~Q(message__recipient__type=Recipient.STREAM) &
+        ~Q(message__sender=user_profile))
 
     # Show up to 4 missed PMs.
     pms_limit = 4
@@ -190,9 +189,11 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, [pm.message for pm in pms[:pms_limit]])
     template_payload['remaining_unread_pms_count'] = min(0, len(pms) - pms_limit)
 
-    home_view_recipients = [sub.recipient for sub in \
-                                Subscription.objects.filter(
-            user_profile=user_profile, active=True, in_home_view=True)]
+    home_view_recipients = [sub.recipient for sub in
+                            Subscription.objects.filter(
+                                user_profile=user_profile,
+                                active=True,
+                                in_home_view=True)]
 
     stream_messages = all_messages.filter(
         message__recipient__type=Recipient.STREAM,

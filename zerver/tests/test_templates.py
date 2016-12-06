@@ -10,7 +10,12 @@ from django.template import Template, Context
 from django.template.loader import get_template
 
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_helpers import get_all_templates, ZulipTestCase
+from zerver.lib.test_helpers import get_all_templates
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
+from zerver.context_processors import common_context
+
 
 class get_form_value(object):
     def __init__(self, value):
@@ -43,7 +48,66 @@ class TemplateTestCase(ZulipTestCase):
         # Just add the templates whose context has a conflict with other
         # templates' context in `defer`.
         defer = ['analytics/activity.html']
-        skip = defer + ['tests/test_markdown.html', 'zerver/terms.html']
+        email = [
+            'zerver/emails/invitation/invitation_reminder_email.html',
+            'zerver/emails/invitation/invitation_reminder_email.subject',
+            'zerver/emails/invitation/invitation_reminder_email.text',
+        ]
+        logged_out = [
+            '404.html',
+            '500.html',
+            'confirmation/confirm.html',
+            'confirmation/confirm_mituser.html',
+            'zerver/reset_confirm.html',
+            'zerver/reset_done.html',
+            'zerver/reset_emailed.html',
+            'zerver/reset.html',
+            'zerver/unsubscribe_link_error.html',
+            'zerver/portico.html',
+            'zerver/portico_signup.html',
+            'zerver/register.html',
+        ]
+        logged_in = [
+            'zerver/home.html',
+            'zerver/invite_user.html',
+            'zerver/keyboard_shortcuts.html',
+            'zerver/left-sidebar.html',
+            'zerver/logout.html',
+            'zerver/markdown_help.html',
+            'zerver/navbar.html',
+            'zerver/right-sidebar.html',
+            'zerver/search_operators.html',
+            'zerver/stream_creation_prompt.html',
+            'zerver/subscriptions.html',
+            'zerver/tutorial_finale.html',
+        ]
+        unusual = [
+            'confirmation/mituser_confirmation_email_body.txt',
+            'confirmation/mituser_confirmation_email_subject.txt',
+            'confirmation/mituser_invite_email_body.txt',
+            'confirmation/mituser_invite_email_subject.txt',
+            'corporate/mit.html',
+            'corporate/privacy.html',
+            'corporate/terms-enterprise.html',
+            'corporate/zephyr.html',
+            'corporate/zephyr-mirror.html',
+            'pipeline/css.jinja',
+            'pipeline/inline_js.jinja',
+            'pipeline/js.jinja',
+            'zilencer/enterprise_tos_accept_body.txt',
+            'zerver/zulipchat_migration_tos.html',
+            'zilencer/enterprise_tos_accept_body.txt',
+            'zerver/closed_realm.html',
+            'zerver/topic_is_muted.html',
+            'zerver/bankruptcy.html',
+            'zerver/image-overlay.html',
+            'zerver/invalid_realm.html',
+            'zerver/compose.html',
+            'zerver/debug.html',
+            'zerver/base.html',
+            'zerver/api_content.json',
+        ]
+        skip = defer + email + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
         templates = [t for t in get_all_templates() if t not in skip]
         self.render_templates(templates, self.get_context())
 
@@ -52,9 +116,9 @@ class TemplateTestCase(ZulipTestCase):
         self.render_templates(defer, self.get_context(**update))
 
     def render_templates(self, templates, context):
-        # type: (Iterable[Template], Dict[str, Any]) -> None
-        for template in templates:
-            template = get_template(template)
+        # type: (Iterable[str], Dict[str, Any]) -> None
+        for template_name in templates:
+            template = get_template(template_name)
             try:
                 template.render(context)
             except Exception:
@@ -86,6 +150,7 @@ class TemplateTestCase(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
 
         context = dict(
+            article="templates/zerver/help/index.md",
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
@@ -96,6 +161,7 @@ class TemplateTestCase(ZulipTestCase):
                 email=get_form_value(email),
             ),
             current_url=lambda: 'www.zulip.com',
+            hubot_lozenges_dict={},
             integrations_dict={},
             referrer=dict(
                 full_name='John Doe',
@@ -122,11 +188,12 @@ class TemplateTestCase(ZulipTestCase):
 
         content_sans_whitespace = content.replace(" ", "").replace('\n', '')
         self.assertEqual(content_sans_whitespace,
-                         'header<h1>Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
+                         'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
     def test_custom_tos_template(self):
         # type: () -> None
         response = self.client_get("/terms/")
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_response(u"Thanks for using our products and services (\"Services\"). ", response)
-        self.assert_in_response(u"By using our Services, you are agreeing to these terms", response)
+
+        self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
+                                         u"By using our Services, you are agreeing to these terms"],
+                                        response)

@@ -4,7 +4,7 @@ import types
 from datetime import datetime, timedelta
 
 from django.utils import timezone
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, Recipient, UserProfile
 from zerver.lib.retention import get_expired_messages
 

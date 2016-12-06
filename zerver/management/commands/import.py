@@ -27,7 +27,7 @@ class Command(BaseCommand):
 This command should be used only on a newly created, empty Zulip instance to
 import a database dump from one or more JSON files.
 
-Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
+Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] <export path name> [<export path name>...]"""
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
@@ -47,7 +47,7 @@ Usage: python2.7 manage.py import [--destroy-rebuild-database] [--import-into-no
         # type: (Model) -> None
         count = model.objects.count()
         if count:
-            print("Zulip instance is not empty, found %d rows in %s table. " \
+            print("Zulip instance is not empty, found %d rows in %s table. "
                 % (count, model._meta.db_table))
             print("You may use --destroy-rebuild-database to destroy and rebuild the database prior to import.")
             exit(1)

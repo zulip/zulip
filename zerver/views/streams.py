@@ -9,14 +9,14 @@ from django.http import HttpRequest, HttpResponse
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
     authenticated_json_view, \
-    get_user_profile_by_email, require_realm_admin
+    get_user_profile_by_email, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
     create_streams_if_needed, gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream
+    do_remove_default_stream, get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
@@ -31,9 +31,15 @@ from six.moves import urllib
 import six
 from six import text_type
 
-def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
-    # type: (Iterable[text_type], UserProfile, Optional[bool], Optional[bool]) -> Tuple[List[Stream], List[Stream]]
-    """Converts plaintext stream names to a list of Streams, validating input in the process
+def is_active_subscriber(user_profile, recipient):
+    # type: (UserProfile, Recipient) -> bool
+    return Subscription.objects.filter(user_profile=user_profile,
+                                       recipient=recipient,
+                                       active=True).exists()
+
+def list_to_streams(streams_raw, user_profile, autocreate=False):
+    # type: (Iterable[Mapping[str, Any]], UserProfile, Optional[bool]) -> Tuple[List[Stream], List[Stream]]
+    """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
     requirements for a proper stream name: that is, that it is shorter
@@ -43,33 +49,37 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
 
-    @param streams_raw The list of stream names to process
+    @param streams_raw The list of stream dictionaries to process;
+      names should already be stripped of whitespace by the caller.
     @param user_profile The user for whom we are retreiving the streams
     @param autocreate Whether we should create streams if they don't already exist
-    @param invite_only Whether newly created streams should have the invite_only bit set
     """
     # Validate all streams, getting extant ones, then get-or-creating the rest.
-    stream_set = set(stream_name.strip() for stream_name in streams_raw)
+
+    stream_set = set(stream_dict["name"] for stream_dict in streams_raw)
 
     for stream_name in stream_set:
+        # Stream names should already have been stripped by the
+        # caller, but it makes sense to verify anyway.
+        assert stream_name == stream_name.strip()
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
             raise JsonableError(_("Stream name (%s) too long.") % (stream_name,))
         if not valid_stream_name(stream_name):
             raise JsonableError(_("Invalid stream name (%s).") % (stream_name,))
 
     existing_streams = [] # type: List[Stream]
-    missing_stream_names = [] # type: List[text_type]
-
+    missing_stream_dicts = [] # type: List[Mapping[str, Any]]
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
-    for stream_name in stream_set:
+    for stream_dict in streams_raw:
+        stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
-            missing_stream_names.append(stream_name)
+            missing_stream_dicts.append(stream_dict)
         else:
             existing_streams.append(stream)
 
-    if not missing_stream_names:
+    if len(missing_stream_dicts) == 0:
         # This is the happy path for callers who expected all of these
         # streams to exist already.
         created_streams = [] # type: List[Stream]
@@ -78,7 +88,8 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         if not user_profile.can_create_streams():
             raise JsonableError(_('User cannot create streams.'))
         elif not autocreate:
-            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(missing_stream_names))
+            raise JsonableError(_("Stream(s) (%s) do not exist") % ", ".join(
+                stream_dict["name"] for stream_dict in missing_stream_dicts))
 
         # We already filtered out existing streams, so dup_streams
         # will normally be an empty list below, but we protect against somebody
@@ -86,8 +97,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         # paranoid approach, since often on Zulip two people will discuss
         # creating a new stream, and both people eagerly do it.)
         created_streams, dup_streams = create_streams_if_needed(realm=user_profile.realm,
-                                                                stream_names=missing_stream_names,
-                                                                invite_only=invite_only)
+                                                                stream_dicts=missing_stream_dicts)
         existing_streams += dup_streams
 
     return existing_streams, created_streams
@@ -112,7 +122,7 @@ def principal_to_user_profile(agent, principal):
         principal_doesnt_exist = True
 
     if (principal_doesnt_exist
-        or agent.realm != principal_user_profile.realm):
+            or agent.realm != principal_user_profile.realm):
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do
         # something a little more clever and check the domain part of the
@@ -235,7 +245,11 @@ def remove_subscriptions_backend(request, user_profile,
         # admin.
         return json_error(_("This action requires administrative rights"))
 
-    streams, __ = list_to_streams(streams_raw, user_profile)
+    streams_as_dict = []
+    for stream_name in streams_raw:
+        streams_as_dict.append({"name": stream_name.strip()})
+
+    streams, __ = list_to_streams(streams_as_dict, user_profile)
 
     for stream in streams:
         if removing_someone_else and stream.invite_only and \
@@ -282,7 +296,7 @@ def filter_stream_authorization(user_profile, streams):
             unauthorized_streams.append(stream)
 
     authorized_streams = [stream for stream in streams if
-               stream.id not in set(stream.id for stream in unauthorized_streams)]
+                          stream.id not in set(stream.id for stream in unauthorized_streams)]
     return authorized_streams, unauthorized_streams
 
 def stream_link(stream_name):
@@ -299,24 +313,27 @@ def stream_button(stream_name):
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ("subscriptions",
-                              validator=check_list(check_dict([('name', check_string)]))),
+                                                validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
                               announce = REQ(validator=check_bool, default=False),
                               principals = REQ(validator=check_list(check_string), default=None),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
     # type: (HttpRequest, UserProfile, Iterable[Mapping[str, text_type]], bool, bool, Optional[List[text_type]], bool) -> HttpResponse
-    stream_names = []
+    stream_dicts = []
     for stream_dict in streams_raw:
-        stream_name = stream_dict["name"].strip()
-        if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            return json_error(_("Stream name (%s) too long.") % (stream_name,))
-        if not valid_stream_name(stream_name):
-            return json_error(_("Invalid stream name (%s).") % (stream_name,))
-        stream_names.append(stream_name)
+        stream_dict_copy = {} # type: Dict[str, Any]
+        for field in stream_dict:
+            stream_dict_copy[field] = stream_dict[field]
+        # Strip the stream name here.
+        stream_dict_copy['name'] = stream_dict_copy['name'].strip()
+        stream_dict_copy["invite_only"] = invite_only
+        stream_dicts.append(stream_dict_copy)
 
-    # Enforcement of can_create_streams policy is inside list_to_streams.
+    # Validation of the streams arguments, including enforcement of
+    # can_create_streams policy and valid_stream_name policy is inside
+    # list_to_streams.
     existing_streams, created_streams = \
-        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+        list_to_streams(stream_dicts, user_profile, autocreate=True)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
     if len(unauthorized_streams) > 0 and authorization_errors_fatal:
@@ -361,7 +378,7 @@ def add_subscriptions_backend(request, user_profile,
                           " **invite-only**" if private_streams[subscriptions[0]] else "",
                           subscriptions[0],
                           stream_link(subscriptions[0]),
-                        ))
+                          ))
             else:
                 msg = ("Hi there!  We thought you'd like to know that %s just "
                        "subscribed you to the following streams: \n\n"
@@ -388,14 +405,15 @@ def add_subscriptions_backend(request, user_profile,
 
             stream_buttons = ' '.join(stream_button(s.name) for s in created_streams)
             msg = ("%s just created %s. %s" % (user_profile.full_name,
-                                                stream_msg, stream_buttons))
-            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
-                                   "stream",
-                                   notifications_stream.name, "Streams", msg,
-                                   realm=notifications_stream.realm))
+                                               stream_msg, stream_buttons))
+            notifications.append(
+                internal_prep_message(settings.NOTIFICATION_BOT,
+                                      "stream",
+                                      notifications_stream.name, "Streams", msg,
+                                      realm=notifications_stream.realm))
         else:
             msg = ("Hi there!  %s just created a new stream '%s'. %s"
-                       % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
+                   % (user_profile.full_name, created_streams[0].name, stream_button(created_streams[0].name)))
             for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).
@@ -440,12 +458,42 @@ def get_streams_backend(request, user_profile,
                         include_default=REQ(validator=check_bool, default=False)):
     # type: (HttpRequest, UserProfile, bool, bool, bool, bool) -> HttpResponse
 
-
     streams = do_get_streams(user_profile, include_public=include_public,
                              include_subscribed=include_subscribed,
                              include_all_active=include_all_active,
                              include_default=include_default)
     return json_success({"streams": streams})
+
+@has_request_variables
+def get_topics_backend(request, user_profile,
+                       stream_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+
+    try:
+        stream = Stream.objects.get(pk=stream_id)
+    except Stream.DoesNotExist:
+        return json_error(_("Invalid stream id"))
+
+    if stream.realm_id != user_profile.realm_id:
+        return json_error(_("Invalid stream id"))
+
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+
+    if not stream.is_public():
+        if not is_active_subscriber(user_profile=user_profile,
+                                    recipient=recipient):
+            return json_error(_("Invalid stream id"))
+
+    result = get_topic_history_for_stream(
+        user_profile=user_profile,
+        recipient=recipient,
+    )
+
+    # Our data structure here is a list of tuples of
+    # (topic name, unread count), and it's reverse chronological,
+    # so the most recent topic is the first element of the list.
+    return json_success(dict(topics=result))
+
 
 @authenticated_json_post_view
 @has_request_variables
@@ -464,9 +512,10 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
         recipient = get_recipient(Recipient.STREAM, stream.id)
         if autosubscribe:
             bulk_add_subscriptions([stream], [user_profile])
-        result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
-                                                           recipient=recipient,
-                                                           active=True).exists()
+        result["subscribed"] = is_active_subscriber(
+                user_profile=user_profile,
+                recipient=recipient)
+
         return json_success(result) # results are ignored for HEAD requests
     return json_response(data=result, status=404)
 

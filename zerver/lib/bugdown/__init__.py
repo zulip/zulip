@@ -75,7 +75,7 @@ def list_of_tlds():
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
     tlds = [force_text(tld).lower().strip() for tld in open(tlds_file, 'r')
-                if tld not in blacklist and not tld[0].startswith('#')]
+            if tld not in blacklist and not tld[0].startswith('#')]
     tlds.sort(key=len, reverse=True)
     return tlds
 
@@ -138,7 +138,7 @@ def fetch_tweet_data(tweet_id):
             'access_token_secret': settings.TWITTER_ACCESS_TOKEN_SECRET,
         }
         if not all(creds.values()):
-           return None
+            return None
 
         try:
             api = twitter.Api(**creds)
@@ -259,7 +259,7 @@ def get_tweet_id(url):
     to_match = parsed_url.path
     # In old-style twitter.com/#!/wdaher/status/1231241234-style URLs, we need to look at the fragment instead
     if parsed_url.path == '/' and len(parsed_url.fragment) > 5:
-        to_match= parsed_url.fragment
+        to_match = parsed_url.fragment
 
     tweet_id_match = re.match(r'^!?/.*?/status(es)?/(?P<tweetid>\d{10,18})(/photo/[0-9])?/?$', to_match)
     if not tweet_id_match:
@@ -659,6 +659,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
     """
     A pattern that allows including in-app modal links in messages.
     """
+
     def handleMatch(self, match):
         # type: (Match[text_type]) -> Element
         relative_url = match.group('relative_url')
@@ -815,8 +816,10 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 
             # If we're not in a fenced block and we detect an upcoming list
             #  hanging off a paragraph, add a newline
-            if not fence and lines[i] and \
-                self.LI_RE.match(lines[i+1]) and not self.LI_RE.match(lines[i]):
+            if (not fence and lines[i] and
+                self.LI_RE.match(lines[i+1]) and
+                    not self.LI_RE.match(lines[i])):
+
                 copy.insert(i+inserts+1, '')
                 inserts += 1
         return copy
@@ -824,6 +827,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
+
     def handleMatch(self, m):
         # type: (Match[text_type]) -> Optional[Element]
         href = m.group(9)
@@ -853,6 +857,7 @@ def prepare_realm_pattern(source):
 # using the provided format string to construct the URL.
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
+
     def __init__(self, source_pattern, format_string, markdown_instance=None):
         # type: (text_type, text_type, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)
@@ -954,9 +959,9 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
             for word in realm_words:
                 escaped = re.escape(word.lower())
                 match_re = re.compile(u'(?:%s)%s(?:%s)' %
-                                        (allowed_before_punctuation,
-                                         escaped,
-                                         allowed_after_punctuation))
+                                      (allowed_before_punctuation,
+                                       escaped,
+                                       allowed_after_punctuation))
                 if re.search(match_re, content):
                     current_message.alert_words.add(word)
 
@@ -981,7 +986,7 @@ class Bugdown(markdown.Extension):
         # define default configs
         self.config = {
             "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
-             "realm": [kwargs['realm'], "Realm name"]
+            "realm": [kwargs['realm'], "Realm name"]
         }
 
         super(Bugdown, self).__init__(*args, **kwargs)
@@ -1014,6 +1019,13 @@ class Bugdown(markdown.Extension):
             markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
             '>strong')
 
+        # Text inside ** must start and end with a word character
+        # it need for things like "const char *x = (char *)y"
+        md.inlinePatterns.add(
+            'emphasis',
+            markdown.inlinepatterns.SimpleTagPattern(r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*', 'em'),
+            '>strong')
+
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
             del md.parser.blockprocessors[k]
 
@@ -1037,14 +1049,20 @@ class Bugdown(markdown.Extension):
                         \*\*                         # ends by double asterisks
                        """
         md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
-        md.inlinePatterns.add('emoji', Emoji(r'(?<!\w)(?P<syntax>:[^:\s]+:)(?!\w)'), '_end')
+        md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
-            u'(?<!\\w)(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])(?!\\w)'),
+            u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),
             '_end')
+        # The equalent JS regex is \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|
+        # [\u2600-\u26FF]|[\u2700-\u27BF]. See below comments for explanation. The JS regex is used
+        # by marked.js for frontend unicode emoji processing.
+        # The JS regex \ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f] represents U0001F300-\U0001F64F
+        # The JS regex \ud83d[\ude80-\udeff] represents \U0001F680-\U0001F6FF
+        # Similiarly [\u2600-\u26FF]|[\u2700-\u27BF] represents \u2600-\u26FF\u2700-\u27BF
 
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
-        for (pattern, format_string) in self.getConfig("realm_filters"):
+        for (pattern, format_string, id) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
                                   RealmFilterPattern(pattern, format_string), '>link')
 
@@ -1095,8 +1113,8 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
-                                 BugdownUListPreprocessor(md),
-                                 "_begin")
+                             BugdownUListPreprocessor(md),
+                             "_begin")
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md, self), "_end")
 
@@ -1122,7 +1140,7 @@ class Bugdown(markdown.Extension):
                     del md.parser.blockprocessors[k]
 
 md_engines = {}
-realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type]]]
+realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
@@ -1160,7 +1178,7 @@ def subject_links(domain, subject):
     return matches
 
 def make_realm_filters(domain, filters):
-    # type: (text_type, List[Tuple[text_type, text_type]]) -> None
+    # type: (text_type, List[Tuple[text_type, text_type, int]]) -> None
     global md_engines, realm_filter_data
     if domain in md_engines:
         del md_engines[domain]
@@ -1188,8 +1206,6 @@ def maybe_update_realm_filters(domain):
         if domain not in realm_filter_data or realm_filter_data[domain] != realm_filters:
             # Data has changed, re-load filters
             make_realm_filters(domain, realm_filters)
-
-maybe_update_realm_filters(domain=None)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -1231,6 +1247,9 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
     if realm_domain in md_engines:
         _md_engine = md_engines[realm_domain]
     else:
+        if 'default' not in md_engines:
+            maybe_update_realm_filters(domain=None)
+
         _md_engine = md_engines["default"]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()

@@ -188,10 +188,10 @@ var fake_messages = [
 ];
 
 function send_delayed_stream_message(stream, topic, content, delay) {
-    var data = {'type': JSON.stringify('stream'),
-                'recipient': JSON.stringify(stream),
-                'topic': JSON.stringify(topic),
-                'content': JSON.stringify(content)};
+    var data = {type: JSON.stringify('stream'),
+                recipient: JSON.stringify(stream),
+                topic: JSON.stringify(topic),
+                content: JSON.stringify(content)};
     setTimeout(function () {
         $.ajax({
             dataType: 'json',
@@ -203,7 +203,7 @@ function send_delayed_stream_message(stream, topic, content, delay) {
 }
 
 function disable_event_handlers() {
-    $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
+    $('body').css({overflow: 'hidden'}); // prevents scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
         var existing_events = $._data(document, "events")[event_name];
         if (existing_events === undefined) {
@@ -215,7 +215,7 @@ function disable_event_handlers() {
 }
 
 function enable_event_handlers() {
-    $('body').css({'overflow':'auto'}); // enables scrolling the feed
+    $('body').css({overflow: 'auto'}); // enables scrolling the feed
     _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
         $._data(document, "events")[event_name] = event_handlers[event_name];
     });

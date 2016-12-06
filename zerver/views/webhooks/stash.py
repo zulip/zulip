@@ -11,15 +11,14 @@ from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_
 from zerver.models import UserProfile
 import ujson
 
-from six import text_type
-from typing import Any, Dict
+from typing import Any, Dict, Text
 
 
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
 def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'),
                       stream=REQ(default='commits')):
-    # type: (HttpRequest, UserProfile, Dict[str, Any], text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
     # We don't get who did the push, or we'd try to report that.
     try:
         repo_name = payload["repository"]["name"]
@@ -27,8 +26,8 @@ def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'),
         branch_name = payload["refChanges"][0]["refId"].split("/")[-1]
         commit_entries = payload["changesets"]["values"]
         commits = [(entry["toCommit"]["displayId"],
-                    entry["toCommit"]["message"].split("\n")[0]) for \
-                       entry in commit_entries]
+                    entry["toCommit"]["message"].split("\n")[0]) for
+                   entry in commit_entries]
         head_ref = commit_entries[-1]["toCommit"]["displayId"]
     except KeyError as e:
         return json_error(_("Missing key %s in JSON") % (str(e),))

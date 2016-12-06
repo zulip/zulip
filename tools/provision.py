@@ -57,6 +57,33 @@ if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print("from GitHub, rather than using a Zulip production release tarball.")
     sys.exit(1)
 
+# Check the RAM on the user's system, and throw an effort if <1.5GB.
+# This avoids users getting segfaults running `pip install` that are
+# generally more annoying to debug.
+with open("/proc/meminfo") as meminfo:
+    ram_size = meminfo.readlines()[0].strip().split(" ")[-2]
+ram_gb = float(ram_size) / 1024.0 / 1024.0
+if ram_gb < 1.5:
+    print("You have insufficient RAM (%s GB) to run the Zulip development environment." % (
+        round(ram_gb, 2),))
+    print("We recommend at least 2 GB of RAM, and require at least 1.5 GB.")
+    sys.exit(1)
+
+try:
+    run(["mkdir", "-p", VAR_DIR_PATH])
+    if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
+        os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+    os.symlink(
+        os.path.join(ZULIP_PATH, 'README.md'),
+        os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')
+    )
+    os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
+except OSError as err:
+    print("Error: Unable to create symlinks. Make sure you have permission to create symbolic links.")
+    print("See this page for more information:")
+    print("  http://zulip.readthedocs.io/en/latest/dev-env-first-time-contributors.html#os-symlink-error")
+    sys.exit(1)
+
 if platform.architecture()[0] == '64bit':
     arch = 'amd64'
 elif platform.architecture()[0] == '32bit':
@@ -179,7 +206,7 @@ def main(options):
     if not os.path.isdir(EMOJI_CACHE_PATH):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
-    run(["python", "tools/setup/emoji_dump/build_emoji"])
+    run(["tools/setup/emoji_dump/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])
@@ -206,7 +233,7 @@ def main(options):
             run(["tools/do-destroy-rebuild-test-database"])
         else:
             print("No need to regenerate the test DB.")
-        run(["python", "./manage.py", "compilemessages"])
+        run(["./manage.py", "compilemessages"])
 
     # Here we install nvm, node, and npm.
     run(["sudo", "tools/setup/install-node"])

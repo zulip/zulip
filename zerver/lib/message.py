@@ -222,7 +222,6 @@ class MessageDict(object):
 
 def re_render_content_for_management_command(message):
     # type: (Message) -> None
-
     '''
     Please avoid using this function, as its only used in a management command that
     is somewhat deprecated.

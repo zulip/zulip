@@ -41,7 +41,7 @@ def write_config(config, since_id, user):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
+%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle --site=https://zulip.example.com
 
     Slurp tweets on your timeline into a specific zulip stream.
 
@@ -98,10 +98,10 @@ try:
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
 except (six.moves.configparser.NoSectionError, six.moves.configparser.NoOptionError):
-   parser.error("Please provide a ~/.zulip_twitterrc")
+    parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not consumer_key or not consumer_secret or not access_token_key or not access_token_secret:
-   parser.error("Please provide a ~/.zulip_twitterrc")
+    parser.error("Please provide a ~/.zulip_twitterrc")
 
 try:
     import twitter
@@ -141,10 +141,10 @@ if since_id < 0 or options.twitter_id != user_id:
     # No since id yet, fetch the latest and then start monitoring from next time
     # Or, a different user id is being asked for, so start from scratch
     # Either way, fetch last 5 tweets to start off
-    statuses = api.GetFriendsTimeline(user=options.twitter_id, count=5)
+    statuses = api.GetUserTimeline(screen_name=options.twitter_id, count=5)
 else:
     # We have a saved last id, so insert all newer tweets into the zulip stream
-    statuses = api.GetFriendsTimeline(user=options.twitter_id, since_id=since_id)
+    statuses = api.GetUserTimeline(screen_name=options.twitter_id, since_id=since_id)
 
 for status in statuses[::-1][:options.limit_tweets]:
     composed = "%s (%s)" % (status.user.name, status.user.screen_name)

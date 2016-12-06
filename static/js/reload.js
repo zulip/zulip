@@ -225,9 +225,10 @@ exports.initiate = function (options) {
     var unconditional_timeout = 1000*60*30 + util.random_int(0, 1000*60*5);
     var composing_timeout     = 1000*60*5  + util.random_int(0, 1000*60);
     var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
-    var compose_done_handler, compose_started_handler;
+    var compose_done_handler;
+    var compose_started_handler;
 
-    function reload_from_idle () {
+    function reload_from_idle() {
         do_reload_app(false,
                       options.save_pointer,
                       options.save_narrow,
@@ -240,29 +241,29 @@ exports.initiate = function (options) {
 
     compose_done_handler = function () {
         idle_control.cancel();
-        idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: home_timeout,
+                                         onIdle: reload_from_idle});
         $(document).off('compose_canceled.zulip compose_finished.zulip',
                         compose_done_handler);
         $(document).on('compose_started.zulip', compose_started_handler);
     };
     compose_started_handler = function () {
         idle_control.cancel();
-        idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: composing_timeout,
+                                         onIdle: reload_from_idle});
         $(document).off('compose_started.zulip', compose_started_handler);
         $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     };
 
     if (compose.composing()) {
-        idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: composing_timeout,
+                                         onIdle: reload_from_idle});
         $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     } else {
-        idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': reload_from_idle});
+        idle_control = $(document).idle({idle: home_timeout,
+                                         onIdle: reload_from_idle});
         $(document).on('compose_started.zulip', compose_started_handler);
     }
 };

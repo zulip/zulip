@@ -98,16 +98,15 @@ function message_unhover() {
         return;
     }
     message = current_msg_list.get(rows.id(current_message_hover));
-    if (message && message.sent_by_me) {
-        current_message_hover.find('.message_content').find('span.edit_content').remove();
-    }
+    current_message_hover.find('span.edit_content').html("");
     current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
 }
 
 function message_hover(message_row) {
     var message;
-    var edit_content_button = '<span class="edit_content"><i class="icon-vector-pencil edit_content_button"></i></span>';
+
+    var id = parseInt(message_row.attr("zid"), 10);
     if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
         return;
     }
@@ -120,7 +119,9 @@ function message_hover(message_row) {
     message_row.addClass('message_hovered');
     if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
         !message.status_message) {
-        message_row.find('.message_content').find('p:last').append(edit_content_button);
+        message_row.find(".edit_content").html('<i class="icon-vector-pencil edit_content_button"></i>');
+    } else {
+        message_row.find(".edit_content").html('<i class="icon-vector-file-text-alt edit_content_button" data-msgid="' + id + '"></i>');
     }
     current_message_hover = message_row;
 }
@@ -169,11 +170,10 @@ exports.report_success = function (response, status_box, type) {
 function need_skinny_mode() {
     if (window.matchMedia !== undefined) {
         return window.matchMedia("(max-width: 767px)").matches;
-    } else {
-        // IE<10 doesn't support window.matchMedia, so do this
-        // as best we can without it.
-        return window.innerWidth <= 767;
     }
+    // IE<10 doesn't support window.matchMedia, so do this
+    // as best we can without it.
+    return window.innerWidth <= 767;
 }
 
 function update_message_in_all_views(message_id, callback) {
@@ -272,9 +272,8 @@ exports.small_avatar_url = function (message) {
             url += "&stamp=" + settings.avatar_stamp;
         }
         return url;
-    } else {
-        return "";
     }
+    return "";
 };
 
 exports.lightbox = function (data) {
@@ -294,8 +293,8 @@ exports.lightbox = function (data) {
 
 exports.lightbox_photo = function (image, user) {
     // image should be an Image Object in JavaScript.
-    var url = $(image).attr("src"),
-        title = $(image).parent().attr("title");
+    var url = $(image).attr("src");
+    var title = $(image).parent().attr("title");
 
     $("#overlay .player-container").hide();
     $("#overlay .image-actions, .image-description, .download").show();
@@ -539,6 +538,7 @@ $(function () {
     $('#streams_header i[data-toggle="tooltip"]').tooltip({ placement: 'left',
                                        animation: false });
 
+    $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
     if (!page_params.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();

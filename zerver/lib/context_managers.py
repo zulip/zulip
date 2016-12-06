@@ -6,11 +6,11 @@ from __future__ import absolute_import
 
 import fcntl
 from contextlib import contextmanager
-from typing import Generator
+from typing import Iterator
 
 @contextmanager
 def flock(lockfile, shared=False):
-    # type: (int, bool) -> Generator[None, None, None]
+    # type: (int, bool) -> Iterator[None]
     """Lock a file object using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX."""
@@ -23,7 +23,7 @@ def flock(lockfile, shared=False):
 
 @contextmanager
 def lockfile(filename, shared=False):
-    # type: (str, bool) -> Generator[None, None, None]
+    # type: (str, bool) -> Iterator[None]
     """Lock a file using flock(2) for the duration of a 'with' statement.
 
        If shared is True, use a LOCK_SH lock, otherwise LOCK_EX.

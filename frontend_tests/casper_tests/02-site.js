@@ -8,8 +8,6 @@
 // Provides a few utility functions.
 // See http://casperjs.org/api.html#utils
 // For example, utils.dump() prints an Object with nice formatting.
-var utils = require('utils');
-
 var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
@@ -60,14 +58,14 @@ common.wait_for_receive(function () {
         'Verona > frontend test',
         'Verona > other subject',
         'You and Cordelia Lear, King Hamlet',
-        'You and Cordelia Lear'
+        'You and Cordelia Lear',
     ], [
         '<p>test verona A</p>',
         '<p>test verona B</p>',
         '<p>test verona C</p>',
         '<p>personal A</p>',
         '<p>personal B</p>',
-        '<p>personal C</p>'
+        '<p>personal C</p>',
     ]);
 
     casper.test.info('Sending more messages');
@@ -78,7 +76,7 @@ common.then_send_many([
       content: 'test verona D' },
 
     { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
-      content:   'personal D' }
+      content:   'personal D' },
 ]);
 
 common.then_log_out();

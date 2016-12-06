@@ -137,9 +137,8 @@ $(function () {
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
-        } else {
-            return nearest.id;
         }
+        return nearest.id;
     }
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
@@ -185,7 +184,9 @@ $(function () {
     });
 
     $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        var email = $(e.target).parents('li').data('email');
+        var user_id = $(e.target).parents('li').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
+
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'sidebar'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
@@ -203,7 +204,8 @@ $(function () {
     });
 
     $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        var emails = $(e.target).parents('li').data('emails');
+        var user_ids_string = $(e.target).parents('li').attr('data-user-ids');
+        var emails = people.user_ids_string_to_emails_string(user_ids_string);
         narrow.by('pm-with', emails, {select_first_unread: true, trigger: 'sidebar'});
         e.preventDefault();
         e.stopPropagation();
@@ -288,10 +290,7 @@ $(function () {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in popover.js
-        if ($(e.target).is("#emoji_map") ||
-            $(e.target).is(".emoji_popover") ||
-            $(e.target).is(".emoji_popover.inner") ||
-            $(e.target).is("img.emoji")) {
+        if ($(e.target).is("#emoji_map, .emoji_popover, .emoji_popover.inner, img.emoji, .drag")) {
             return;
         }
         // Don't let clicks in the compose area count as
@@ -318,15 +317,15 @@ $(function () {
     // Keep these 2 feedback bot triggers separate because they have to
     // propagate the event differently.
     $('.feedback').click(function (e) {
-        compose.start('private', { 'private_message_recipient': 'feedback@zulip.com',
-                                   trigger: 'feedback menu item' });
+        compose.start('private', {private_message_recipient: 'feedback@zulip.com',
+                                  trigger: 'feedback menu item'});
 
     });
     $('#feedback_button').click(function (e) {
         e.stopPropagation();
         popovers.hide_all();
-        compose.start('private', { 'private_message_recipient': 'feedback@zulip.com',
-                                   trigger: 'feedback button' });
+        compose.start('private', {private_message_recipient: 'feedback@zulip.com',
+                                  trigger: 'feedback button'});
 
     });
 
@@ -386,10 +385,10 @@ $(function () {
 
     (function () {
         $("#main_div").on("click", ".message_inline_image a", function (e) {
-            var img = e.target,
-                row = rows.id($(img).closest(".message_row")),
-                user = current_msg_list.get(row).sender_full_name,
-                $target = $(this);
+            var img = e.target;
+            var row = rows.id($(img).closest(".message_row"));
+            var user = current_msg_list.get(row).sender_full_name;
+            var $target = $(this);
 
             // prevent the link from opening in a new page.
             e.preventDefault();
@@ -424,7 +423,7 @@ $(function () {
     // MAIN CLICK HANDLER
 
     $(document).on('click', function (e) {
-        if (e.button !== 0) {
+        if (e.button !== 0 || $(e.target).is(".drag")) {
             // Firefox emits right click events on the document, but not on
             // the child nodes, so the #compose stopPropagation doesn't get a
             // chance to capture right clicks.
@@ -438,7 +437,7 @@ $(function () {
 
         // Unfocus our compose area if we click out of it. Don't let exits out
         // of modals or selecting text (for copy+paste) trigger cancelling.
-        if (compose.composing() && !$(e.target).is("a, .drag") &&
+        if (compose.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&
             ($(e.target).closest('#emoji_map').length === 0)) {

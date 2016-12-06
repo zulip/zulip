@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from zerver.lib.test_helpers import WebhookTestCase
+from typing import Text
+from zerver.lib.test_classes import WebhookTestCase
 
 class NewRelicHookTests(WebhookTestCase):
     STREAM_NAME = 'newrelic'
@@ -14,6 +14,7 @@ Apdex score fell below critical level of 0.90\n\
 [View alert](https://rpm.newrelc.com/accounts/[account_id]/applications/[application_id]/incidents/[incident_id])'
         self.send_and_test_stream_message('alert', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
+
     def test_deployment(self):
         # type: () -> None
         expected_subject = 'Test App deploy'
@@ -23,5 +24,5 @@ Description sent via curl\n\nChangelog string'
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data("newrelic", fixture_name, file_type="txt")

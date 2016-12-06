@@ -100,12 +100,12 @@ def unwrap_lines(body):
     for line in lines[1:]:
         line = line.rstrip()
         if (re.match(r'^\W', line, flags=re.UNICODE)
-            and re.match(r'^\W', previous_line, flags=re.UNICODE)):
+                and re.match(r'^\W', previous_line, flags=re.UNICODE)):
             result += previous_line + "\n"
         elif (line == "" or
-            previous_line == "" or
-            re.match(r'^\W', line, flags=re.UNICODE) or
-            different_paragraph(previous_line, line)):
+              previous_line == "" or
+              re.match(r'^\W', line, flags=re.UNICODE) or
+              different_paragraph(previous_line, line)):
             # Use 2 newlines to separate sections so that we
             # trigger proper Markdown processing on things like
             # bulleted lists
@@ -205,7 +205,7 @@ def update_subscriptions():
     for stream in public_streams:
         zephyr_class = stream.encode("utf-8")
         if (options.shard is not None and
-            not hashlib.sha1(zephyr_class).hexdigest().startswith(options.shard)):
+                not hashlib.sha1(zephyr_class).hexdigest().startswith(options.shard)):
             # This stream is being handled by a different zephyr_mirror job.
             continue
         if zephyr_class in current_zephyr_subs:
@@ -369,7 +369,7 @@ def process_notice(notice, log):
         logger.debug("Skipping message we got from Zulip!")
         return
     if (zephyr_class == "mail" and notice.instance.lower() == "inbox" and is_personal and
-        not options.forward_mail_zephyrs):
+            not options.forward_mail_zephyrs):
         # Only forward mail zephyrs if forwarding them is enabled.
         return
 
@@ -386,10 +386,10 @@ def process_notice(notice, log):
     if options.forward_class_messages and notice.opcode.lower() == "crypt":
         body = decrypt_zephyr(zephyr_class, notice.instance.lower(), body)
 
-    zeph = { 'time'      : str(notice.time),
-             'sender'    : notice.sender,
-             'zsig'      : zsig,  # logged here but not used by app
-             'content'   : body }
+    zeph = {'time': str(notice.time),
+            'sender': notice.sender,
+            'zsig': zsig,  # logged here but not used by app
+            'content': body}
     if is_huddle:
         zeph['type'] = 'private'
         zeph['recipient'] = huddle_recipients
@@ -602,7 +602,7 @@ Feedback button or at support@zulipchat.com."""
 
     wrapper = textwrap.TextWrapper(break_long_words=False, break_on_hyphens=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
-            for line in message["content"].replace("@", "@@").split("\n"))
+                                for line in message["content"].replace("@", "@@").split("\n"))
 
     zwrite_args = ["zwrite", "-n", "-s", message["sender_full_name"],
                    "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df",
@@ -622,7 +622,7 @@ Feedback button or at support@zulipchat.com."""
             # appropriate WHITESPACE instance for bidirectional mirroring
             instance = match_whitespace_instance.group(1)
         elif (instance == "instance %s" % (zephyr_class,) or
-            instance == "test instance %s" % (zephyr_class,)):
+              instance == "test instance %s" % (zephyr_class,)):
             # Forward messages to e.g. -c -i white-magic back from the
             # place we forward them to
             if instance.startswith("test"):

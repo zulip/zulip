@@ -26,9 +26,8 @@ if (window.webkitNotifications) {
         checkPermission: function checkPermission() {
             if (window.Notification.permission === 'granted') {
                 return 0;
-            } else {
-                return 2;
             }
+            return 2;
         },
         requestPermission: window.Notification.requestPermission,
         createNotification: function createNotification(icon, title, content) {
@@ -41,7 +40,7 @@ if (window.webkitNotifications) {
 }
 
 
-function browser_desktop_notifications_on () {
+function browser_desktop_notifications_on() {
     return (notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             /webkit/i.test(navigator.userAgent) &&
@@ -51,7 +50,7 @@ function browser_desktop_notifications_on () {
         (window.bridge !== undefined);
 }
 
-function cancel_notification_object (notification_object) {
+function cancel_notification_object(notification_object) {
         // We must remove the .onclose so that it does not trigger on .cancel
         notification_object.onclose = function () {};
         notification_object.onclick = function () {};
@@ -240,7 +239,11 @@ exports.notify_above_composebox = function (note, link_class, link_msg_id, link_
 };
 
 function process_notification(notification) {
-    var i, notification_object, key, content, other_recipients;
+    var i;
+    var notification_object;
+    var key;
+    var content;
+    var other_recipients;
     var message = notification.message;
     var title = message.sender_full_name;
     var msg_count = 1;
@@ -276,7 +279,7 @@ function process_notification(notification) {
 
     if (content.length > 150) {
         // Truncate content at a word boundary
-        for (i = 150; i > 0; i--) {
+        for (i = 150; i > 0; i -= 1) {
             if (content[i] === ' ') {
                 break;
             }
@@ -557,7 +560,8 @@ $(function () {
     }
 
     $(document).on('message_id_changed', function (event) {
-        var old_id = event.old_id, new_id = event.new_id;
+        var old_id = event.old_id;
+        var new_id = event.new_id;
 
         // If a message ID that we're currently storing (as a link) has changed,
         // update that link as well

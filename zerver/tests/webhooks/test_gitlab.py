@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from zerver.lib.webhooks.git import COMMITS_LIMIT
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class GitlabHookTests(WebhookTestCase):
     STREAM_NAME = 'gitlab'
@@ -33,7 +33,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_add_tag_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek pushed xyz tag."
+        expected_message = u"Tomasz Kolek pushed tag xyz"
 
         self.send_and_test_stream_message(
             'add_tag',
@@ -45,7 +45,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_remove_tag_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project"
-        expected_message = u"Tomasz Kolek removed xyz tag."
+        expected_message = u"Tomasz Kolek removed tag xyz"
 
         self.send_and_test_stream_message(
             'remove_tag',
@@ -173,6 +173,7 @@ class GitlabHookTests(WebhookTestCase):
             expected_message,
             HTTP_X_GITLAB_EVENT="Merge Request Hook"
         )
+
     def test_merge_request_created_with_assignee_event_message(self):
         # type: () -> None
         expected_subject = u"my-awesome-project / MR #3 New Merge Request"

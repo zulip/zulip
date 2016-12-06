@@ -16,10 +16,18 @@ var editability_types = {
 };
 exports.editability_types = editability_types;
 
-function get_editability (message, edit_limit_seconds_buffer) {
+function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
-    if (!message || !message.sent_by_me || message.local_id !== undefined ||
-        !page_params.realm_allow_message_editing) {
+    if (!(message && message.sent_by_me)) {
+        return editability_types.NO;
+    }
+    if (message.failed_request) {
+        return editability_types.FULL;
+    }
+    if (message.local_id !== undefined) {
+        return editability_types.NO;
+    }
+    if (!page_params.realm_allow_message_editing) {
         return editability_types.NO;
     }
     if (page_params.realm_message_content_edit_limit_seconds === 0) {
@@ -68,6 +76,7 @@ exports.save = function (row, from_topic_edited_only) {
     if (message.local_id !== undefined) {
         if (new_content !== message.raw_content || topic_changed) {
             echo.edit_locally(message, new_content, topic_changed ? new_topic : undefined);
+            row = current_msg_list.get_row(message_id);
         }
         message_edit.end(row);
         return;
@@ -112,7 +121,8 @@ exports.save = function (row, from_topic_edited_only) {
 };
 
 function handle_edit_keydown(from_topic_edited_only, e) {
-    var row, code = e.keyCode || e.which;
+    var row;
+    var code = e.keyCode || e.which;
 
     if (e.target.id === "message_edit_content" && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
@@ -133,14 +143,14 @@ function timer_text(seconds_left) {
     var minutes = Math.floor(seconds_left / 60);
     var seconds = seconds_left % 60;
     if (minutes >= 1) {
-        return i18n.t("__minutes__ min to edit", {'minutes': minutes.toString()});
+        return i18n.t("__minutes__ min to edit", {minutes: minutes.toString()});
     } else if (seconds_left >= 10) {
-        return i18n.t("__seconds__ sec to edit", {'seconds': (seconds - seconds % 5).toString()});
+        return i18n.t("__seconds__ sec to edit", {seconds: (seconds - seconds % 5).toString()});
     }
-    return i18n.t("__seconds__ sec to edit", {'seconds': seconds.toString()});
+    return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
 }
 
-function edit_message (row, raw_content) {
+function edit_message(row, raw_content) {
     var content_top = row.find('.message_content')[0]
         .getBoundingClientRect().top;
 
@@ -230,7 +240,7 @@ function edit_message (row, raw_content) {
         // since otherwise there is a noticeable lag
         message_edit_countdown_timer.text(timer_text(seconds_left));
         var countdown_timer = setInterval(function () {
-            if (--seconds_left <= 0) {
+            if (seconds_left - 1 <= 0) {
                 clearInterval(countdown_timer);
                 message_edit_content.prop("readonly", "readonly");
                 if (message.type === 'stream') {

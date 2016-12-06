@@ -28,7 +28,7 @@ def message_fetch_objects():
     except IndexError:
         return []
     return Message.objects.select_related().filter(~Q(sender__email='tabbott/extra@mit.edu'),
-                                                    id__gt=max_id - MESSAGE_CACHE_SIZE)
+                                                   id__gt=max_id - MESSAGE_CACHE_SIZE)
 
 def message_cache_items(items_for_remote_cache, message):
     # type: (Dict[text_type, Tuple[binary_type]], Message) -> None
@@ -72,10 +72,10 @@ cache_fillers = {
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
     'recipient': (lambda: Recipient.objects.select_related().all(), recipient_cache_items, 3600*24*7, 10000),
     'stream': (lambda: Stream.objects.select_related().all(), stream_cache_items, 3600*24*7, 10000),
-### Message cache fetching disabled until we can fix the fact that it
-### does a bunch of inefficient memcached queries as part of filling
-### the display_recipient cache
-#    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
+    # Message cache fetching disabled until we can fix the fact that it
+    # does a bunch of inefficient memcached queries as part of filling
+    # the display_recipient cache
+    #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
     } # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[text_type, Any], Any], None], int, int]]
@@ -94,6 +94,6 @@ def fill_remote_cache(cache):
             cache_set_many(items_for_remote_cache, timeout=3600*24)
             items_for_remote_cache = {}
     cache_set_many(items_for_remote_cache, timeout=3600*24*7)
-    logging.info("Succesfully populated %s cache!  Consumed %s remote cache queries (%s time)" % \
-                     (cache, get_remote_cache_requests() - remote_cache_requests_start,
-                      round(get_remote_cache_time() - remote_cache_time_start, 2)))
+    logging.info("Succesfully populated %s cache!  Consumed %s remote cache queries (%s time)" %
+                 (cache, get_remote_cache_requests() - remote_cache_requests_start,
+                  round(get_remote_cache_time() - remote_cache_time_start, 2)))

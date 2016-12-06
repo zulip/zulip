@@ -2,11 +2,12 @@
 from __future__ import absolute_import
 from typing import Any, Callable, Optional
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
 from zerver.models import (
-    get_client, get_realm, get_stream, get_user_profile_by_email,
+    get_client, get_realm_by_string_id, get_stream, get_user_profile_by_email,
     Message, Recipient, UserProfile
 )
 
@@ -50,9 +51,11 @@ from zerver.lib.actions import (
     get_subscription
 )
 
-from zerver.lib.event_queue import allocate_client_descriptor
 from zerver.lib.message import render_markdown
-from zerver.lib.test_helpers import ZulipTestCase, POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_classes import (
+    ZulipTestCase,
+)
 from zerver.lib.validator import (
     check_bool, check_dict, check_int, check_list, check_string,
     equals, check_none_or, Validator
@@ -60,13 +63,42 @@ from zerver.lib.validator import (
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
-from zerver.tornadoviews import get_events_backend
+from zerver.tornado.event_queue import allocate_client_descriptor, EventQueue
+from zerver.tornado.views import get_events_backend
 
 from collections import OrderedDict
+import mock
 import time
 import ujson
 from six.moves import range
 
+class TornadoTest(ZulipTestCase):
+    def test_tornado_endpoint(self):
+        # type: () -> None
+
+        # This test is mostly intended to get minimal coverage on
+        # the /notify_tornado endpoint, so we can have 100% URL coverage,
+        # but it does exercise a little bit of the codepath.
+        post_data = dict(
+            data=ujson.dumps(
+                dict(
+                    event=dict(
+                        type='other'
+                    ),
+                    users=[get_user_profile_by_email('hamlet@zulip.com').id],
+                ),
+            ),
+        )
+        req = POSTRequestMock(post_data, user_profile=None)
+        req.META['REMOTE_ADDR'] = '127.0.0.1'
+        result = self.client_post_request('/notify_tornado', req)
+        self.assert_json_error(result, 'Access denied', status_code=403)
+
+        post_data['secret'] = settings.SHARED_SECRET
+        req = POSTRequestMock(post_data, user_profile=None)
+        req.META['REMOTE_ADDR'] = '127.0.0.1'
+        result = self.client_post_request('/notify_tornado', req)
+        self.assert_json_success(result)
 
 class GetEventsTest(ZulipTestCase):
     def tornado_call(self, view_func, user_profile, post_data):
@@ -213,7 +245,7 @@ class EventsRegisterTest(ZulipTestCase):
     def create_bot(self, email):
         # type: (str) -> UserProfile
         return do_create_user(email, '123',
-                              get_realm('zulip.com'), 'Test Bot', 'test',
+                              get_realm_by_string_id('zulip'), 'Test Bot', 'test',
                               bot_type=UserProfile.DEFAULT_BOT, bot_owner=self.user_profile)
 
     def realm_bot_schema(self, field_name, check):
@@ -478,12 +510,12 @@ class EventsRegisterTest(ZulipTestCase):
         # Test transitions; any new backends should be tested with T/T/T/F/T
         for (auth_method_dict) in \
                 ({'Google': True, 'Email': True, 'GitHub': True, 'LDAP': False, 'Dev': False},
-                {'Google': True, 'Email': True, 'GitHub': False, 'LDAP': False, 'Dev': False},
-                {'Google': True, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': False},
-                {'Google': True, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': False },
-                {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
-                {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
-                {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
+                 {'Google': True, 'Email': True, 'GitHub': False, 'LDAP': False, 'Dev': False},
+                 {'Google': True, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': False},
+                 {'Google': True, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': False},
+                 {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
+                 {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
+                 {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
             events = self.do_test(lambda: do_set_realm_authentication_methods(self.user_profile.realm,
                                                                               auth_method_dict))
             error = schema_checker('events[0]', events[0])
@@ -526,7 +558,7 @@ class EventsRegisterTest(ZulipTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for create_stream_by_admins_only in (False, True, False):
             events = self.do_test(lambda: do_set_realm_create_stream_by_admins_only(self.user_profile.realm,
-                                                                                create_stream_by_admins_only))
+                                                                                    create_stream_by_admins_only))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -561,7 +593,7 @@ class EventsRegisterTest(ZulipTestCase):
              (False, 0), (False, 1234), (False, 0), (True, 1234), (False, 0),
              (True, 1234), (True, 600), (False, 600), (False, 1234), (True, 600)):
             events = self.do_test(lambda: do_set_realm_message_editing(self.user_profile.realm,
-                                      allow_message_editing, message_content_edit_limit_seconds))
+                                                                       allow_message_editing, message_content_edit_limit_seconds))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -616,12 +648,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip.com"), "my_emoji",
-                                                         "https://realm.com/my_emoji"))
+        events = self.do_test(lambda: check_add_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji",
+                                                            "https://realm.com/my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip.com"), "my_emoji"))
+        events = self.do_test(lambda: do_remove_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -631,15 +663,14 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_filters')),
             ('realm_filters', check_list(None)), # TODO: validate tuples in the list
         ])
-        events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip.com"), "#[123]",
+        events = self.do_test(lambda: do_add_realm_filter(get_realm_by_string_id("zulip"), "#(?P<id>[123])",
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        self.do_test(lambda: do_remove_realm_filter(get_realm("zulip.com"), "#[123]"))
+        self.do_test(lambda: do_remove_realm_filter(get_realm_by_string_id("zulip"), "#(?P<id>[123])"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
-
 
     def test_create_bot(self):
         # type: () -> None
@@ -724,7 +755,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_rename_stream(self):
         # type: () -> None
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
@@ -820,7 +851,7 @@ class EventsRegisterTest(ZulipTestCase):
         peer_remove_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_remove')),
-            ('user_email', check_string),
+            ('user_id', check_int),
             ('subscriptions', check_list(check_string)),
         ])
         stream_update_schema_checker = check_dict([
@@ -862,7 +893,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-        action = lambda: do_change_stream_description(get_realm('zulip.com'), 'test_stream', u'new description')
+        action = lambda: do_change_stream_description(get_realm_by_string_id('zulip'), 'test_stream', u'new description')
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -891,7 +922,6 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, None, "")
         self.assertTrue(len(result['realm_bots']) > 5)
 
-from zerver.lib.event_queue import EventQueue
 class EventQueueTest(TestCase):
     def test_one_event(self):
         # type: () -> None
@@ -933,7 +963,7 @@ class EventQueueTest(TestCase):
         queue.push({"type": "restart", "server_generation": "2"})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9,},
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,
@@ -947,7 +977,7 @@ class EventQueueTest(TestCase):
                         "timestamp": str(pointer_val)})
         self.assertEqual(queue.contents(),
                          [{"type": "unknown",
-                           "id": 9,},
+                           "id": 9},
                           {'id': 19,
                            'type': 'pointer',
                            "pointer": 19,

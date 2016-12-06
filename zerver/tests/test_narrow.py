@@ -10,7 +10,7 @@ from sqlalchemy.sql import (
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
+    get_display_recipient, get_recipient, get_realm_by_string_id, get_stream, get_user_profile_by_email,
 )
 from zerver.lib.message import (
     MessageDict,
@@ -20,9 +20,12 @@ from zerver.lib.narrow import (
 )
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
-    ZulipTestCase, POSTRequestMock,
+    POSTRequestMock,
     TestCase,
     get_user_messages, message_ids, queries_captured,
+)
+from zerver.lib.test_classes import (
+    ZulipTestCase,
 )
 from zerver.views.messages import (
     exclude_muting_conditions,
@@ -30,7 +33,7 @@ from zerver.views.messages import (
     NarrowBuilder, BadNarrowOperator
 )
 
-from six import text_type
+from typing import Text
 from six.moves import range
 import os
 import re
@@ -58,7 +61,7 @@ def mute_stream(realm, user_profile, stream_name):
 
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self):
-        self.realm = get_realm('zulip.com')
+        self.realm = get_realm_by_string_id('zulip')
         self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.builder = NarrowBuilder(self.user_profile, column('id'))
         self.raw_query = select([column("id")], None, "zerver_message")
@@ -274,7 +277,7 @@ class BuildNarrowFilterTest(TestCase):
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.make_stream('public_stream', realm=realm)
 
         # Negated stream searches should not include history.
@@ -374,12 +377,13 @@ class GetOldMessagesTest(ZulipTestCase):
         conversations with that user.
         """
         me = 'hamlet@zulip.com'
+
         def dr_emails(dr):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
         personals = [m for m in get_user_messages(get_user_profile_by_email(me))
-            if m.recipient.type == Recipient.PERSONAL
-            or m.recipient.type == Recipient.HUDDLE]
+                     if m.recipient.type == Recipient.PERSONAL
+                     or m.recipient.type == Recipient.HUDDLE]
         if not personals:
             # FIXME: This is bad.  We should use test data that is guaranteed
             # to contain some personals for every user.  See #617.
@@ -476,7 +480,6 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-
     def test_get_old_messages_with_narrow_sender(self):
         """
         A request for old messages with a narrow by sender only returns
@@ -516,7 +519,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login(email)
 
         def send(content):
-            # type: (text_type) -> None
+            # type: (Text) -> None
             msg_id = self.send_message(
                 sender_name=email,
                 raw_recipients="Verona",
@@ -544,8 +547,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(list(messages.keys())), 1)
         message = messages[str(good_id)]
         self.assertEqual(message['match_content'],
-            u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
-
+                         u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
 
     @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search(self):
@@ -708,9 +710,9 @@ class GetOldMessagesTest(ZulipTestCase):
             for type in bad_types:
                 # Rotate through every bad type for every integer
                 # parameter, one at a time.
-                post_params = dict(other_params + [(param, type)] + \
-                                       [(other_param, 0) for other_param in \
-                                            int_params[:idx] + int_params[idx + 1:]]
+                post_params = dict(other_params + [(param, type)] +
+                                   [(other_param, 0) for other_param in
+                                    int_params[:idx] + int_params[idx + 1:]]
                                    )
                 result = self.client_get("/json/messages", post_params)
                 self.assert_json_error(result,
@@ -725,7 +727,7 @@ class GetOldMessagesTest(ZulipTestCase):
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
 
         bad_types = (False, 0, '', '{malformed json,',
-            '{foo: 3}', '[1,2]', '[["x","y","z"]]')
+                     '{foo: 3}', '[1,2]', '[["x","y","z"]]')
         for type in bad_types:
             post_params = dict(other_params + [("narrow", type)])
             result = self.client_get("/json/messages", post_params)
@@ -752,7 +754,7 @@ class GetOldMessagesTest(ZulipTestCase):
             params = dict(anchor=0, num_before=0, num_after=0, narrow=ujson.dumps(narrow))
             result = self.client_get("/json/messages", params)
             self.assert_json_error_contains(result,
-                "Invalid narrow operator: unknown operator")
+                                            "Invalid narrow operator: unknown operator")
 
     def test_non_string_narrow_operand_in_dict(self):
         """
@@ -781,7 +783,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         bad_stream_content = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
-            "Bad value for 'narrow'")
+                                         "Bad value for 'narrow'")
 
     def test_bad_narrow_one_on_one_email_content(self):
         """
@@ -791,17 +793,17 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         bad_stream_content = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
-            "Bad value for 'narrow'")
+                                         "Bad value for 'narrow'")
 
     def test_bad_narrow_nonexistent_stream(self):
         self.login("hamlet@zulip.com")
         self.exercise_bad_narrow_operand("stream", ['non-existent stream'],
-            "Invalid narrow operator: unknown stream")
+                                         "Invalid narrow operator: unknown stream")
 
     def test_bad_narrow_nonexistent_email(self):
         self.login("hamlet@zulip.com")
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@zulip.com'],
-            "Invalid narrow operator: unknown user")
+                                         "Invalid narrow operator: unknown user")
 
     def test_message_without_rendered_content(self):
         """Older messages may not have rendered_content in the database"""
@@ -893,7 +895,7 @@ class GetOldMessagesTest(ZulipTestCase):
         doing.
         """
 
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
@@ -928,7 +930,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
 
     def test_exclude_muting_conditions(self):
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
@@ -1022,7 +1024,7 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = sql_template.format(**query_ids)
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["sender", "othello@zulip.com"]]'},
-                                                sql)
+                                                 sql)
 
         sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
@@ -1047,7 +1049,7 @@ class GetOldMessagesTest(ZulipTestCase):
         sql = sql_template.format(**query_ids)
         self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                                   'narrow': '[["pm-with", "hamlet@zulip.com"]]'},
-                                                sql)
+                                                 sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)

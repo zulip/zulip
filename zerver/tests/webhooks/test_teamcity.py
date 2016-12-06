@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import ujson
 from zerver.models import Recipient
-from zerver.lib.test_helpers import WebhookTestCase
+from zerver.lib.test_classes import WebhookTestCase
 
 class TeamcityHookTests(WebhookTestCase):
     STREAM_NAME = 'teamcity'

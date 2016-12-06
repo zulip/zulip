@@ -1,16 +1,15 @@
 var assert = require('assert');
-var _ = global._;
 
 add_dependencies({
     util: 'js/util.js',
-    tutorial: 'js/tutorial.js'
+    tutorial: 'js/tutorial.js',
 });
 
 var noop = function () {};
 
 set_global('document', {});
 set_global('window', {
-    addEventListener: noop
+    addEventListener: noop,
 });
 
 global.stub_out_jquery();
@@ -19,20 +18,18 @@ set_global('blueslip', {});
 set_global('channel', {});
 set_global('home_msg_list', {
     select_id: noop,
-    selected_id: function () {return 1;}
+    selected_id: function () {return 1;},
 });
 set_global('page_params', {test_suite: false});
 set_global('reload', {
-    is_in_progress: function () {return false;}
+    is_in_progress: function () {return false;},
 });
-
-var page_params = global.page_params;
 
 set_global('echo', {
     process_from_server: function (messages) {
         return messages;
     },
-    set_realm_filters: noop
+    set_realm_filters: noop,
 });
 
 var server_events = require('js/server_events.js');
@@ -47,12 +44,12 @@ var setup = function (results) {
         },
         update_messages: function () {
             throw Error('update error');
-        }
+        },
     });
     set_global('subs', {
         update_subscription_properties: function () {
             throw Error('subs update error');
-        }
+        },
     });
     global.blueslip.error = function (msg, more_info, stack) {
         results.msg = msg;

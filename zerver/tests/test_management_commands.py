@@ -4,10 +4,10 @@ from mock import patch, MagicMock
 from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from datetime import timedelta
-from zerver.lib.test_helpers import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
@@ -23,7 +23,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, url=self.url)
 
-        print_help_mock.assert_any_call('python manage.py', self.COMMAND_NAME)
+        print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.Command.print_help')
     def test_check_if_command_exits_when_url_param_is_empty(self, print_help_mock):
@@ -31,7 +31,7 @@ class TestSendWebhookFixtureMessage(TestCase):
         with self.assertRaises(SystemExit):
             call_command(self.COMMAND_NAME, fixture=self.fixture_path)
 
-        print_help_mock.assert_any_call('python manage.py', self.COMMAND_NAME)
+        print_help_mock.assert_any_call('./manage.py', self.COMMAND_NAME)
 
     @patch('zerver.management.commands.send_webhook_fixture_message.os.path.exists')
     def test_check_if_command_exits_when_fixture_path_does_not_exist(self, os_path_exists_mock):
@@ -70,30 +70,26 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
     def test_generate_link_and_create_realm(self):
         # type: () -> None
-        username = "user1"
-        domain = "test.com"
         email = "user1@test.com"
         generated_link = generate_realm_creation_url()
 
         with self.settings(OPEN_REALM_CREATION=False):
             # Check realm creation page is accessible
             result = self.client_get(generated_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response(u"Let's get started…", result)
+            self.assert_in_success_response([u"Let's get started…"], result)
 
             # Create Realm with generated link
-            self.assertIsNone(get_realm(domain))
+            self.assertIsNone(get_realm_by_string_id('test'))
             result = self.client_post(generated_link, {'email': email})
             self.assertEquals(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s@%s" % (username, domain)))
+                    "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
             # Generated link used for creating realm
             result = self.client_get(generated_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
+            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
 
     def test_realm_creation_with_random_link(self):
         # type: () -> None
@@ -101,8 +97,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             # Realm creation attempt with an invalid link should fail
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
             result = self.client_get(random_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
+            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
 
     def test_realm_creation_with_expired_link(self):
         # type: () -> None
@@ -115,5 +110,4 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             obj.save()
 
             result = self.client_get(generated_link)
-            self.assertEquals(result.status_code, 200)
-            self.assert_in_response("The organization creation link has been expired or is not valid.", result)
+            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)

@@ -38,11 +38,14 @@
               <span class="message_star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty empty-star{{/if}}"
                     title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}"></span>
             </div>
+            <span class="edit_content"></span>
             <div class="info actions_hover">
               <i class="icon-vector-chevron-down"></i>
             </div>
             <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-              <span class="failed_text">Not delivered </span><i class="icon-vector-refresh refresh-failed-message"></i><i class="icon-vector-pencil edit-failed-message"></i><i class="icon-vector-remove-sign remove-failed-message"></i>
+              <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="Not Delivered: Resend"></i>
+              <i class="icon-vector-pencil edit-failed-message" data-toggle="tooltip" title="Not Delivered: Edit"></i>
+              <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="Not Delivered: Delete"></i>
             </div>
           </div>
         </div>

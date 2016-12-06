@@ -20,9 +20,9 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, \
-    split_email_to_domain, resolve_email_to_domain, email_to_username, get_realm, \
+    email_to_domain, email_to_username, get_realm, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm_by_string_id, list_of_domains_for_realm
+    get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -104,45 +104,24 @@ def accounts_register(request):
     unique_open_realm = get_unique_open_realm()
     if unique_open_realm is not None:
         realm = unique_open_realm
-        domain = realm.domain
     elif prereg_user.referred_by:
         # If someone invited you, you are joining their realm regardless
         # of your e-mail address.
         realm = prereg_user.referred_by.realm
-        domain = realm.domain
-        if not email_allowed_for_realm(email, realm):
-            return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     elif prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
-        # happens if you sign up through a special URL for an open
-        # realm.
-        domain = prereg_user.realm.domain
-        realm = get_realm(domain)
+        # happens if you sign up through a special URL for an open realm.
+        realm = prereg_user.realm
     elif realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None
-        domain = None
     elif settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain_realm = get_realm_by_string_id(get_subdomain(request))
-        domain = resolve_email_to_domain(email)
-        domain = subdomain_realm.domain if subdomain_realm else domain
-        if completely_open(domain):
-            # When subdomains are enabled and the user is registering into a
-            # completely open subdomain without going through the correct url
-            # for the completely open domains.
-            # NOTE: When the user comes through the correct url then
-            # `prereg_user.realm` will have the correct value and this branch
-            # will not run.
-            path = reverse('zerver.views.accounts_home_with_domain',
-                           kwargs={'domain': subdomain_realm.domain})
-            ctx = {"link": "%s%s" % (subdomain_realm.uri, path)}
-            return render_to_response("zerver/completely_open_link.html", ctx)
-        else:
-            realm = get_realm(domain)
+        realm = get_realm_by_string_id(get_subdomain(request))
     else:
-        domain = resolve_email_to_domain(email)
-        realm = get_realm(domain)
+        realm = get_realm_by_email_domain(email)
 
+    if realm and not email_allowed_for_realm(email, realm):
+        return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
@@ -170,8 +149,11 @@ def accounts_register(request):
             del request.session['authenticated_full_name']
         except KeyError:
             pass
-        if realm is not None and realm.is_zephyr_mirror_realm and domain == "mit.edu":
-            # for MIT users, we can get an authoritative name from Hesiod
+        if realm is not None and realm.is_zephyr_mirror_realm:
+            # For MIT users, we can get an authoritative name from Hesiod.
+            # Technically we should check that this is actually an MIT
+            # realm, but we can cross that bridge if we ever get a non-MIT
+            # zephyr mirroring realm.
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
                     initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
@@ -279,21 +261,19 @@ def accounts_register(request):
         login(request, auth_result)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home'))
 
-    return render_to_response('zerver/register.html',
-            {'form': form,
-             'company_name': domain,
-             'email': email,
-             'key': key,
-             'full_name': request.session.get('authenticated_full_name', None),
-             'lock_name': name_validated and name_changes_disabled(realm),
-             # password_auth_enabled is normally set via our context processor,
-             # but for the registration form, there is no logged in user yet, so
-             # we have to set it here.
-             'creating_new_team': realm_creation,
-             'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
-             'password_auth_enabled': password_auth_enabled(realm),
-            },
-        request=request)
+    return render_to_response(
+        'zerver/register.html',
+        {'form': form,
+         'email': email,
+         'key': key,
+         'full_name': request.session.get('authenticated_full_name', None),
+         'lock_name': name_validated and name_changes_disabled(realm),
+         # password_auth_enabled is normally set via our context processor,
+         # but for the registration form, there is no logged in user yet, so
+         # we have to set it here.
+         'creating_new_team': realm_creation,
+         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
+         'password_auth_enabled': password_auth_enabled(realm), }, request=request)
 
 @zulip_login_required
 def accounts_accept_terms(request):
@@ -307,23 +287,32 @@ def accounts_accept_terms(request):
         form = ToSForm()
 
     email = request.user.email
-    domain = resolve_email_to_domain(email)
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
         special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
-    return render_to_response('zerver/accounts_accept_terms.html',
-        { 'form': form, 'company_name': domain, 'email': email, \
-          'special_message_template' : special_message_template },
+    return render_to_response(
+        'zerver/accounts_accept_terms.html',
+        {'form': form,
+         'email': email,
+         'special_message_template': special_message_template},
         request=request)
 
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        string_id = get_subdomain(request)
+    else:
+        realm = get_realm(request.session.get("domain"))
+        if realm is not None:
+            string_id = realm.string_id
+        else:
+            string_id = ''
+
     if user_info:
-        return HomepageForm(user_info, domain=request.session.get("domain"),
-                            subdomain=get_subdomain(request))
+        return HomepageForm(user_info, string_id = string_id)
     # An empty fields dict is not treated the same way as not
     # providing it.
-    return HomepageForm(domain=request.session.get("domain"), subdomain=get_subdomain(request))
+    return HomepageForm(string_id = string_id)
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
@@ -342,7 +331,7 @@ def create_preregistration_user(email, request, realm_creation=False):
 
 def accounts_home_with_domain(request, domain):
     # type: (HttpRequest, str) -> HttpResponse
-    if completely_open(domain):
+    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(domain):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
         # URL. We store this information in the session rather than
@@ -394,7 +383,7 @@ def create_realm(request, creation_key=None):
             email = form.cleaned_data['email']
             confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
             if settings.DEVELOPMENT:
-                 request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
+                request.session['confirmation_key'] = {'confirmation_key': confirmation_key}
             if (creation_key is not None and check_key_is_valid(creation_key)):
                 RealmCreationKey.objects.get(creation_key=creation_key).delete()
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
@@ -437,9 +426,9 @@ def accounts_home(request):
 
 def approximate_unread_count(user_profile):
     # type: (UserProfile) -> int
-    not_in_home_view_recipients = [sub.recipient.id for sub in \
-                                       Subscription.objects.filter(
-            user_profile=user_profile, in_home_view=False)]
+    not_in_home_view_recipients = [sub.recipient.id for sub in
+                                   Subscription.objects.filter(
+                                        user_profile=user_profile, in_home_view=False)]
 
     # TODO: We may want to exclude muted messages from this count.
     #       It was attempted in the past, but the original attempt
@@ -460,8 +449,23 @@ def sent_time_in_epoch_seconds(user_message):
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-@zulip_login_required
 def home(request):
+    # type: (HttpRequest) -> HttpResponse
+    if not settings.SUBDOMAINS_HOMEPAGE:
+        return home_real(request)
+
+    # If settings.SUBDOMAINS_HOMEPAGE, sends the user the landing
+    # page, not the login form, on the root domain
+
+    subdomain = get_subdomain(request)
+    if subdomain != "":
+        return home_real(request)
+
+    return render_to_response('zerver/hello.html',
+                              request=request)
+
+@zulip_login_required
+def home_real(request):
     # type: (HttpRequest) -> HttpResponse
     # We need to modify the session object every two weeks or it will expire.
     # This line makes reloading the page a sufficient action to keep the
@@ -603,22 +607,16 @@ def home(request):
         cross_realm_bots      = list(get_cross_realm_dicts()),
 
         # Stream message notification settings:
-        stream_desktop_notifications_enabled =
-            user_profile.enable_stream_desktop_notifications,
+        stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
         stream_sounds_enabled = user_profile.enable_stream_sounds,
 
         # Private message and @-mention notification settings:
         desktop_notifications_enabled = desktop_notifications_enabled,
-        sounds_enabled =
-            user_profile.enable_sounds,
-        enable_offline_email_notifications =
-            user_profile.enable_offline_email_notifications,
-        enable_offline_push_notifications =
-            user_profile.enable_offline_push_notifications,
-        enable_online_push_notifications =
-            user_profile.enable_online_push_notifications,
+        sounds_enabled = user_profile.enable_sounds,
+        enable_offline_email_notifications = user_profile.enable_offline_email_notifications,
+        enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
+        enable_online_push_notifications = user_profile.enable_online_push_notifications,
         twenty_four_hour_time = register_ret['twenty_four_hour_time'],
-
         enable_digest_emails  = user_profile.enable_digest_emails,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
@@ -671,7 +669,7 @@ def home(request):
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
-                                   'page_params' : simplejson.encoder.JSONEncoderForHTML().encode(page_params),
+                                   'page_params': simplejson.encoder.JSONEncoderForHTML().encode(page_params),
                                    'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                    'avatar_url': avatar_url(user_profile),
                                    'show_debug':
@@ -707,7 +705,7 @@ def is_buggy_ua(agent):
 @authenticated_json_post_view
 @has_request_variables
 def json_set_muted_topics(request, user_profile,
-                         muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
+                          muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
     # type: (HttpRequest, UserProfile, List[List[text_type]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()

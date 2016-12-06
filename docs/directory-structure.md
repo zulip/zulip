@@ -23,7 +23,7 @@ paths will be familiar to Django developers.
 
 * `zerver/views/webhooks/` Webhook views for [Zulip integrations](integration-guide.html).
 
-* `zerver/tornadoviews.py` Tornado views.
+* `zerver/tornado/views.py` Tornado views.
 
 * `zerver/worker/queue_processors.py` [Queue workers](queuing.html).
 
