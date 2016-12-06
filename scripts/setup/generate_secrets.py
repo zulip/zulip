@@ -4,6 +4,7 @@
 from __future__ import print_function
 import sys, os, os.path
 from os.path import dirname, abspath
+from typing import Text
 if False:
     from typing import Dict, Optional, Text
 
