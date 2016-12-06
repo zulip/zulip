@@ -29,6 +29,7 @@ as a “**realm**”.
 - **[Posting and replying](#posting-and-replying)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Message formatting](/help/message-formatting.md)**
+- **[Streams and private messages](/help/streams-and-private-messages.md)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out.md)**
