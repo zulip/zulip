@@ -1,4 +1,8 @@
+### ## Warning: The following instructions are only for production environments !
+If you are going to test or develop a new feature, please follow [here](https://zulip.readthedocs.io/en/latest/dev-overview.html#requirements) or you will have issues with your setup.
+
 # Installation
+
 
 Ensure you have an Ubuntu system that satisfies [the installation
 requirements](prod-requirements.html).  In short, you should have an
