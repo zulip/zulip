@@ -103,7 +103,64 @@ exports.sorter = function (query, objs, get_item) {
 exports.compare_by_pms = function (user_a, user_b) {
     var count_a = people.get_recipient_count(user_a);
     var count_b = people.get_recipient_count(user_b);
-
+    var current_subject = $('#subject.recipient_box').val();
+    var current_subject_personsv = {};
+    var current_stream = $('#stream.recipient_box').val();
+    function pSubject(cMessage){
+        if(cMessage.sent_by_me == false && cMessage.subject == current_subject){
+            return true;
+        } else {
+            return false;    
+        }
+    }
+    function pStream(cMessage){
+        if(cMessage.sent_by_me == false && cMessage.stream == current_stream) { 
+           return true;
+        } else {
+            return false;
+        }
+    }
+    var current_subject_persons_infov = message_list.all._items.filter(pSubject);
+    var current_stream_persons_infov = message_list.all._items.filter(pStream);
+    var current_subject_persons = [];
+    var current_stream_persons = [];
+    var current_subject_personsv = [];
+    var current_stream_personsv = [];
+    for(i = 0; i < current_subject_persons_infov.length; i += 1){
+         current_subject_personsv.push(current_subject_persons_infov[i].sender_full_name);
+    }
+    for(i = 0; i < current_stream_persons_infov.length; i += 1){
+        current_stream_personsv.push(current_stream_persons_infov[i].sender_full_name);
+    }
+    current_subject_persons = current_subject_personsv.filter(function(elem, pos) {
+        return current_subject_personsv.indexOf(elem) == pos;
+    });
+    if(current_subject_persons.length > 10){
+        current_subject_persons.splice(0, current_subject_persons.length - 10)
+    }
+    current_stream_persons = current_stream_personsv.filter(function(elem, pos) {
+        return current_stream_personsv.indexOf(elem) == pos;
+    });
+    if(current_stream_persons.length > 10){
+        current_stream_persons.splice(0, current_stream_persons.length - 10)
+    }
+    console.log(current_subject_persons)
+    if(current_subject_persons.indexOf(user_a.full_name) >= 0 && current_subject_persons.indexOf(user_b.full_name) >= 0){
+        return 0;
+     }
+    if(current_stream_persons.indexOf(user_a.full_name) >= 0 && current_stream_persons.indexOf(user_b.full_name) >= 0){
+        return 0;
+     }
+     if(current_subject_persons.indexOf(user_a.full_name) >= 0){
+         return -1;
+     } else if(current_subject_persons.indexOf(user_b.full_name) >= 0) {
+         return 1;
+     }
+    if(current_stream_persons.indexOf(user_a.full_name) >= 0){
+        return -1;
+    } else if(current_stream_persons.indexOf(user_b.full_name) >= 0) {
+        return 1;
+    }
     if (count_a > count_b) {
         return -1;
     } else if (count_a < count_b) {
