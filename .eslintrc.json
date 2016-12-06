@@ -122,6 +122,8 @@
         "no-array-constructor": "error",
         "array-callback-return": "error",
         "template-curly-spacing": "error",
+        //The Zulip codebase complies partially with the "no-useless-escape" rule; only regex expressions haven't been updated yet.
+        //Updated regex expressions are currently being tested in casper files and will decide about a potential future enforcement of this rule.
         "no-useless-escape": 1,
         "func-style": ["off", "expression"],
         "wrap-iife": ["error", "outside", { "functionPrototypeMethods": false }],

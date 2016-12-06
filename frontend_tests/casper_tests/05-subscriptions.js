@@ -12,7 +12,7 @@ casper.then(function () {
         casper.then(function () {
             casper.click('a[href^="#subscriptions"]');
             casper.test.assertUrlMatch(
-                /^http:\/\/[^\/]+\/#subscriptions/,
+                /^http:\/\/[^/]+\/#subscriptions/,
                 'URL suggests we are on subscriptions page');
             casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
         });
