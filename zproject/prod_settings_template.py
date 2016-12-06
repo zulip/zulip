@@ -371,3 +371,10 @@ CAMO_URI = '/external_content/'
 
 # Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True
+
+# Websocket configuration
+#
+# By default Zulip will use websocket connnections rather than ajax requests,
+# websockets are faster than ajax requests however they may cause issues in some
+# scenarios.
+USE_WEBSOCKETS = True
