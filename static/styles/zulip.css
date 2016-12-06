@@ -2429,6 +2429,11 @@ button.topic_edit_cancel {
     font-weight: 300;
 }
 
+#administration #deactivation_stream_modal h3 {
+    overflow-wrap: break-word;
+}
+
+
 #administration .administration-icon,
 #settings .settings-icon {
     margin-right: 10px;
