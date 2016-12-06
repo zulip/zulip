@@ -26,7 +26,8 @@ function password_quality(password, bar) {
     if (bar !== undefined) {
         // Compute a quality score in [0,1].
         var result  = zxcvbn(password);
-        var quality = Math.min(1, Math.log(1 + result.crack_time) / 22);
+        var quality = Math.min(1,Math.log(1 + result.crack_times_seconds.
+                                              offline_slow_hashing_1e4_per_second) / 22);
 
         // Even if zxcvbn loves your short password, the bar should be filled
         // at most 1/3 of the way, because we won't accept it.

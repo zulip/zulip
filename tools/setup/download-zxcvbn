@@ -4,7 +4,7 @@ set -x
 
 output_path=static/third/zxcvbn
 commit_file_path=$output_path/commit
-commit=0890678ede1488ecb02cda7eb793cd308a59c49d # Change this to upgrade
+commit=f15783727ac828f5a7e54ff5aed8dd8b38a62ffd # Change this to upgrade
 
 mkdir -p "$output_path"
 
