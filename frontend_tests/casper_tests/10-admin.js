@@ -213,10 +213,10 @@ casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
 
 function get_suggestions(str) {
     casper.then(function () {
-        casper.evaluate(function (str) {
+        casper.evaluate(function (test_str) {
             $('.create_default_stream')
             .focus()
-            .val(str)
+            .val(test_str)
             .trigger($.Event('keyup', { which: 0 }));
         }, str);
     });
@@ -224,10 +224,10 @@ function get_suggestions(str) {
 
 function select_from_suggestions(item) {
     casper.then(function () {
-        casper.evaluate(function (item) {
+        casper.evaluate(function (test_item) {
             var tah = $('.create_default_stream').data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
+                currentTarget: $('.typeahead:visible li:contains("'+test_item+'")')[0]
             });
             tah.select();
         }, {item: item});
@@ -313,9 +313,9 @@ casper.then(function () {
 var edited_value = 'admin tests: test edit';
 
 casper.waitForSelector(".message_edit_content", function () {
-    casper.evaluate(function (edited_value) {
+    casper.evaluate(function (test_edited_value) {
         var msg = $('#zhome .message_row:last');
-        msg.find('.message_edit_content').val(edited_value);
+        msg.find('.message_edit_content').val(test_edited_value);
         msg.find('.message_edit_save').click();
     }, edited_value);
 });

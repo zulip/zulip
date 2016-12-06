@@ -274,24 +274,24 @@ exports.update_messages = function update_messages(events) {
             }
 
             _.each(event.message_ids, function (id) {
-                var msg = message_store.get(id);
-                if (msg === undefined) {
+                var message = message_store.get(id);
+                if (message === undefined) {
                     return;
                 }
 
                 // Remove the recent topics entry for the old topics;
                 // must be called before we update msg.subject
-                stream_data.process_message_for_recent_topics(msg, true);
+                stream_data.process_message_for_recent_topics(message, true);
                 // Update the unread counts; again, this must be called
                 // before we update msg.subject
-                unread.update_unread_topics(msg, event);
+                unread.update_unread_topics(message, event);
 
-                msg.subject = event.subject;
-                msg.subject_links = event.subject_links;
-                set_topic_edit_properties(msg);
+                message.subject = event.subject;
+                message.subject_links = event.subject_links;
+                set_topic_edit_properties(message);
                 // Add the recent topics entry for the new topics; must
                 // be called after we update msg.subject
-                stream_data.process_message_for_recent_topics(msg);
+                stream_data.process_message_for_recent_topics(message);
             });
         }
 
@@ -468,8 +468,8 @@ exports.load_old_messages = function load_old_messages(opts) {
         url:      '/json/messages',
         data:     data,
         idempotent: true,
-        success: function (data) {
-            get_old_messages_success(data, opts);
+        success: function (messages) {
+            get_old_messages_success(messages, opts);
         },
         error: function (xhr) {
             if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {

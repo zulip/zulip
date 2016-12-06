@@ -21,10 +21,10 @@ function filter_streams_by_search(streams) {
     });
 
     var filtered_streams = _.filter(streams, function (stream) {
-        return _.any(search_terms, function (search_term) {
+        return _.any(search_terms, function (current_search_term) {
             var lower_stream_name = stream.toLowerCase().split(" ");
             return _.any(lower_stream_name, function (name) {
-                return name.indexOf(search_term) === 0;
+                return name.indexOf(current_search_term) === 0;
             });
         });
     });

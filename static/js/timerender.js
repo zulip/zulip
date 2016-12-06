@@ -103,8 +103,8 @@ exports.render_date = function (time, time_above) {
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {
-    var time = now();
-    if (time >= next_update) {
+    var current_time = now();
+    if (current_time >= next_update) {
         var to_process = update_list;
         update_list = [];
 
@@ -129,7 +129,7 @@ exports.update_timestamps = function () {
             }
         });
 
-        next_update = set_to_start_of_day(time.clone().addDays(1));
+        next_update = set_to_start_of_day(current_time.clone().addDays(1));
     }
 };
 

@@ -9,6 +9,7 @@ var CLOSE_REASONS = {
     unsuspend:    {code: 4005, msg: "Got unsuspend event"}
 };
 
+// eslint-disable-next-line no-shadow
 function Socket(url) {
     this.url = url;
     this._is_open = false;

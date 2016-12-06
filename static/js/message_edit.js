@@ -112,8 +112,9 @@ exports.save = function (row, from_topic_edited_only) {
         },
         error: function (xhr) {
             if (msg_list === current_msg_list) {
-                var message = channel.xhr_error_message("Error saving edit", xhr);
-                row.find(".edit_error").text(message).show();
+                row.find(".edit_error")
+                    .text(channel.xhr_error_message("Error saving edit", xhr))
+                    .show();
             }
         }
     });

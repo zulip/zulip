@@ -125,12 +125,12 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
     casper.then(function () {
         casper.test.info('Looking in ' + field_selector + ' to select ' + str + ', ' + item);
 
-        casper.evaluate(function (field_selector, str, item) {
+        casper.evaluate(function (test_field_selector, test_str, test_item) {
             // Set the value and then send a bogus keyup event to trigger
             // the typeahead.
-            $(field_selector)
+            $(test_field_selector)
                 .focus()
-                .val(str)
+                .val(test_str)
                 .trigger($.Event('keyup', { which: 0 }));
 
             // You might think these steps should be split by casper.then,
@@ -141,9 +141,9 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
             // Reaching into the guts of Bootstrap Typeahead like this is not
             // great, but I found it very hard to do it any other way.
 
-            var tah = $(field_selector).data().typeahead;
+            var tah = $(test_field_selector).data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
+                currentTarget: $('.typeahead:visible li:contains("'+test_item+'")')[0]
             });
             tah.select();
         }, {field_selector:field_selector, str: str, item: item});
@@ -182,8 +182,8 @@ exports.turn_off_press_enter_to_send = function () {
     var enter_send_selector = '#enter_sends';
     casper.waitForSelector(enter_send_selector);
 
-    var is_checked = casper.evaluate(function (enter_send_selector) {
-        return document.querySelector(enter_send_selector).checked;
+    var is_checked = casper.evaluate(function (test_enter_send_selector) {
+        return document.querySelector(test_enter_send_selector).checked;
     }, enter_send_selector);
 
     if (is_checked) {
@@ -233,8 +233,8 @@ exports.then_send_message = function (type, params) {
 // script's context is awkward (c.f. the various appearances of
 // 'table' here).
 exports.get_rendered_messages = function (table) {
-    return casper.evaluate(function (table) {
-        var tbl = $('#'+table);
+    return casper.evaluate(function (test_table) {
+        var tbl = $('#'+test_table);
         return {
             headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
                 var $clone = $(elem).clone(true);
@@ -253,8 +253,8 @@ exports.get_rendered_messages = function (table) {
 };
 
 exports.get_form_field_value = function (selector) {
-    return casper.evaluate(function (selector) {
-        return $(selector).val();
+    return casper.evaluate(function (sel) {
+        return $(sel).val();
     }, selector);
 };
 
@@ -262,8 +262,8 @@ exports.get_form_field_value = function (selector) {
 // PhantomJS and CasperJS don't provide a clean way to insert key
 // presses by code, only strings of printable characters.
 exports.keypress = function (code) {
-    casper.evaluate(function (code) {
-        $('body').trigger($.Event('keydown', { which: code }));
+    casper.evaluate(function (test_code) {
+        $('body').trigger($.Event('keydown', { which: test_code }));
     }, {
         code: code,
     });

@@ -123,7 +123,7 @@ exports.process_fenced_code = function (content) {
         };
     }
 
-    consume_line = function consume_line(output_lines, line) {
+    consume_line = function (output_lines, line) {
         var match = fence_re.exec(line);
         if (match) {
             var fence = match[1];

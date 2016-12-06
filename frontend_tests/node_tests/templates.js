@@ -821,13 +821,13 @@ function render(template_name, args) {
         'tutorial_title',
     ];
     var html = '';
-    _.each(tutorials, function (tutorial) {
+    _.each(tutorials, function (test_tutorial) {
         var args = {
             placement: 'left',
             title: 'Title',
         };
-        html = render(tutorial, args);
-        global.write_handlebars_output(tutorial, html);
+        html = render(test_tutorial, args);
+        global.write_handlebars_output(test_tutorial, html);
     });
 }());
 

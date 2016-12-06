@@ -144,23 +144,23 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function test_edit_bot_form_values() {
-        var form_sel = '.edit_bot_form[data-email="1-bot@zulip.com"]';
+        var bot_sel = '.edit_bot_form[data-email="1-bot@zulip.com"]';
         casper.test.info('Testing edit bot form values');
 
     //     casper.test.assertEqual(
-    //         common.get_form_field_value(form_sel + ' [name=bot_name]'),
+    //         common.get_form_field_value(bot_sel + ' [name=bot_name]'),
     //         'Bot 1'
     //     );
     //     casper.test.assertEqual(
-    //         common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
+    //         common.get_form_field_value(bot_sel + ' [name=bot_default_sending_stream]'),
     //         'Denmark'
     //     );
     //     casper.test.assertEqual(
-    //         common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
+    //         common.get_form_field_value(bot_sel + ' [name=bot_default_events_register_stream]'),
     //         'Rome'
     //     );
         casper.test.assertEqual(
-            common.get_form_field_value(form_sel + ' [name=bot_name]'),
+            common.get_form_field_value(bot_sel + ' [name=bot_name]'),
             'Bot 1'
         );
     });

@@ -5,16 +5,16 @@ var exports = {};
 var fs = require('fs');
 var path = require('path');
 
-function mkdir_p(path) {
+function mkdir_p(test_path) {
     // This works like mkdir -p in Unix.
     try {
-        fs.mkdirSync(path);
+        fs.mkdirSync(test_path);
     } catch (e) {
         if ( e.code !== 'EEXIST' ) {
             throw e;
         }
     }
-    return path;
+    return test_path;
 }
 
 function make_output_dir() {
@@ -70,12 +70,12 @@ exports.start_writing = function () {
 };
 
 
-exports.write_test_output = function (label, output) {
+exports.write_test_output = function (label, test_output) {
     var data = '';
 
     data += '<hr>';
     data += '<h3>' + label + '</h3>';
-    data += output;
+    data += test_output;
     data += '\n';
     fs.appendFileSync(output_fn, data);
 };
@@ -83,7 +83,7 @@ exports.write_test_output = function (label, output) {
 exports.write_handlebars_output = (function () {
     var last_label = '';
 
-    return function (label, output) {
+    return function (label, test_output) {
         if (last_label && (last_label >= label)) {
             // This is kind of an odd requirement, but it allows us
             // to render output on the fly in alphabetical order, and
@@ -109,13 +109,13 @@ exports.write_handlebars_output = (function () {
         data += '<style type="text/css">body {width: 500px; margin: auto; overflow: scroll}</style>\n';
         data += '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">';
         data += '<b>' + href + '</b><hr />\n';
-        data += output;
+        data += test_output;
         fs.writeFileSync(fn, data);
     };
 }());
 
-exports.append_test_output = function (output) {
-    fs.appendFileSync(output_fn, output);
+exports.append_test_output = function (test_output) {
+    fs.appendFileSync(output_fn, test_output);
 };
 
 

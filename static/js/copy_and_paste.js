@@ -58,8 +58,8 @@ function copy_handler() {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (row) {
-            return row.next();
+        start_data = find_boundary_tr($(startc.parents('.selectable_row, .message_header')[0]), function (current_row) {
+            return current_row.next();
         });
         if (start_data === undefined) {
             return;
@@ -77,8 +77,8 @@ function copy_handler() {
         } else {
             initial_end_tr = $(endc.parents('.selectable_row')[0]);
         }
-        end_data = find_boundary_tr(initial_end_tr, function (row) {
-            return row.prev();
+        end_data = find_boundary_tr(initial_end_tr, function (current_row) {
+            return current_row.prev();
         });
         if (end_data === undefined) {
             return;
@@ -133,8 +133,8 @@ function copy_handler() {
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
-        _.each(ranges, function (range) {
-            selection.addRange(range);
+        _.each(ranges, function (selection_range) {
+            selection.addRange(selection_range);
         });
         $('#copytempdiv').remove();
     },0);

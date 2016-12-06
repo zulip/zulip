@@ -6,9 +6,9 @@ exports.toggle = (function () {
     var keys = {};
 
     var __toggle = function (opts) {
-        var component = (function render_component(opts) {
+        var component = (function render_component(options) {
             var _component = $("<div class='tab-switcher'></div>");
-            opts.values.forEach(function (value, i) {
+            options.values.forEach(function (value, i) {
                 var tab = $("<div class='ind-tab' data-tab-id='" + i + "'>" + value.label + "</div>");
                 if (i === 0) {
                     tab.addClass("first");

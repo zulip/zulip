@@ -411,9 +411,9 @@ var run = (function () {
 
         var clobber_callbacks = [];
 
-        var override = function (module, func_name, f) {
+        var override = function (module, func_name, func) {
             var impl = {};
-            impl[func_name] = f;
+            impl[func_name] = func;
             set_global(module, impl);
 
             clobber_callbacks.push(function () {
@@ -426,8 +426,8 @@ var run = (function () {
 
         f(override, capture, args);
 
-        _.each(clobber_callbacks, function (f) {
-            f();
+        _.each(clobber_callbacks, function (func) {
+            func();
         });
     };
 

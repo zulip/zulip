@@ -45,7 +45,8 @@ exports.set_count = function (stream_name, topic, count) {
     }
 };
 
-exports.build_widget = function (parent_elem, stream, active_topic, max_topics) {
+exports.build_widget = function (parent_elem, current_stream,
+                                 current_active_topic, current_max_topics) {
     var self = {};
     self.topic_items = new Dict({fold_case: true});
 
@@ -108,11 +109,11 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
     };
 
     self.is_for_stream = function (stream_name) {
-        return stream.toLowerCase() === stream_name.toLowerCase();
+        return current_stream.toLowerCase() === stream_name.toLowerCase();
     };
 
     self.get_stream_name = function () {
-        return stream;
+        return current_stream;
     };
 
     self.get_dom = function () {
@@ -135,19 +136,19 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
         update_unread_count(unread_count_elem, count);
     };
 
-    self.activate_topic = function (active_topic) {
-        var li = self.topic_items.get(active_topic);
+    self.activate_topic = function (active_topics) {
+        var li = self.topic_items.get(active_topics);
         if (li) {
             li.addClass('active-sub-filter');
         }
     };
 
-    self.dom = build_list(stream, active_topic, max_topics);
+    self.dom = build_list(current_stream, current_active_topic, current_max_topics);
 
     parent_elem.append(self.dom);
 
-    if (active_topic) {
-        self.activate_topic(active_topic);
+    if (current_active_topic) {
+        self.activate_topic(current_active_topic);
     }
 
 

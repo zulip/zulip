@@ -46,10 +46,10 @@ exports.hide = function () {
 };
 
 exports.update = function () {
-    var floating_recipient_bar = $("#floating_recipient_bar");
-    var floating_recipient_bar_top = floating_recipient_bar.offset().top;
+    var floating_recipient_bar_sel = $("#floating_recipient_bar");
+    var floating_recipient_bar_top = floating_recipient_bar_sel.offset().top;
     var floating_recipient_bar_bottom =
-        floating_recipient_bar_top + floating_recipient_bar.outerHeight();
+        floating_recipient_bar_top + floating_recipient_bar_sel.outerHeight();
 
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.

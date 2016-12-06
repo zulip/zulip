@@ -23,8 +23,8 @@ exports.pick_color = function (used_colors) {
         used_color_hash[color] = true;
     });
 
-    var color = _.find(colors, function (color) {
-        return !_.has(used_color_hash, color);
+    var color = _.find(colors, function (current_color) {
+        return !_.has(used_color_hash, current_color);
     });
 
     if (color) {

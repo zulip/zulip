@@ -187,9 +187,9 @@ var fake_messages = [
     }
 ];
 
-function send_delayed_stream_message(stream, topic, content, delay) {
+function send_delayed_stream_message(current_stream, topic, content, delay) {
     var data = {type: JSON.stringify('stream'),
-                recipient: JSON.stringify(stream),
+                recipient: JSON.stringify(current_stream),
                 topic: JSON.stringify(topic),
                 content: JSON.stringify(content)};
     setTimeout(function () {

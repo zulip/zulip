@@ -348,8 +348,7 @@ function _setup_page() {
                 }
             },
             success: function () {
-                var row = $(".active_default_stream_row");
-                row.remove();
+                $(".active_default_stream_row").remove();
             }
         });
     });
@@ -699,8 +698,8 @@ function _setup_page() {
         });
     });
 
-    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        var email = $(e.currentTarget).data("email");
+    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (click_event) {
+        var email = $(click_event.currentTarget).data("email");
         var user_info = get_user_info(email);
         var user_row = user_info.user_row;
         var form_row = user_info.form_row;
