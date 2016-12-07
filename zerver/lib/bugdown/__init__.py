@@ -40,8 +40,6 @@ import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
 import six
 from six.moves import range, html_parser
-from six import text_type
-
 if six.PY3:
     import html
 
@@ -55,7 +53,7 @@ _T = TypeVar('_T')
 # which means that at runtime Union causes this to blow up.
 if False:
     # mypy requires the Optional to be inside Union
-    ElementStringNone = Union[Element, Optional[text_type]]
+    ElementStringNone = Union[Element, Optional[Text]]
 
 class BugdownRenderingException(Exception):
     pass
