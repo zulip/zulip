@@ -49,7 +49,7 @@ Contents:
    :caption: Zulip in production
 
    prod-requirements
-   prod-install
+   Installing a production server <prod-install>
    prod-troubleshooting
    prod-customize
    prod-maintain-secure-upgrade
@@ -60,9 +60,9 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Installation for developers
+   :caption: Development environment
 
-   Overview <dev-overview>
+   Development environment installation <dev-overview>
    Recommended setup (Vagrant) <dev-env-first-time-contributors>
    Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
    Using the development environment <using-dev-environment>

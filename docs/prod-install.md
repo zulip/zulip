@@ -1,11 +1,15 @@
-# Installation
+# Production Installation
 
-Ensure you have an Ubuntu system that satisfies [the installation
-requirements](prod-requirements.html).  In short, you should have an
-Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit server instance,
-with at least 4GB RAM, 2 CPUs, and 10 GB disk space.  You should also
-have a domain name available and have updated its DNS record to point
-to the server.
+Make sure you want to install a Zulip production server; if you'd
+instead like to test or develop a new feature, we recommend the
+[Zulip server development environment](dev-overview.html#requirements) instead.
+
+You will need an Ubuntu system that satisfies
+[the installation requirements](prod-requirements.html).  In short,
+you should have an Ubuntu 14.04 Trusty or Ubuntu 16.04 Xenial 64-bit
+server instance, with at least 4GB RAM, 2 CPUs, and 10 GB disk space.
+You should also have a domain name available and have updated its DNS
+record to point to your server.
 
 ## Step 0: Subscribe
 
