@@ -30,14 +30,13 @@ http://stackoverflow.com/questions/2090717/getting-translation-strings-for-jinja
 """
 from __future__ import absolute_import
 
-from typing import Any, Dict, Iterable, Optional, Mapping, Set, Tuple
+from typing import Any, Dict, Iterable, Optional, Mapping, Set, Tuple, Text
 
 from argparse import ArgumentParser
 import os
 import re
 import glob
 import json
-from six import text_type
 from six.moves import filter
 from six.moves import map
 from six.moves import zip
@@ -65,7 +64,7 @@ multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
 def strip_whitespaces(src):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     src = strip_whitespace_left.sub(u'\\1', src)
     src = strip_whitespace_right.sub(u'\\1', src)
     return src
@@ -120,7 +119,7 @@ class Command(makemessages.Command):
         trans_real.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
         def my_templatize(src, origin=None):
-            # type: (text_type, Optional[text_type]) -> text_type
+            # type: (Text, Optional[Text]) -> Text
             new_src = strip_whitespaces(src)
             return old_templatize(new_src, origin)
 

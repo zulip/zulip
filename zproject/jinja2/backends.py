@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 import sys
-from typing import Any, Optional, Union
-from six import text_type
+from typing import Any, Optional, Union, Text
 
 import jinja2
 from django.utils import six
@@ -60,7 +59,7 @@ class Template(django_jinja2.Template):
             super(Template, self).__init__(template, *args, **kwargs)
 
         def render(self, context=None, request=None):
-            # type: (Optional[Union[Dict[str, Any], Context]], Optional[HttpRequest]) -> text_type
+            # type: (Optional[Union[Dict[str, Any], Context]], Optional[HttpRequest]) -> Text
             if context is None:
                 context = {}
 
