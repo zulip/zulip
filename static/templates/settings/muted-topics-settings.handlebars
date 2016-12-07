@@ -1,0 +1,21 @@
+<div id="muted-topic-settings" class="settings-section" data-name="muted-topics">
+  <div class="settings-section-title">
+    <i class="icon-vector-eye-close settings-section-icon"></i>
+    {{t "Muted Topics" }}
+  </div>
+  <form class="form-horizontal" id="muted_topic_info_box">
+    {{#tr this}}
+    <p class="alert-word-settings-note">
+      {{t "Currrent muted topics"}}
+    </p>
+    {{/tr}}
+  </form>
+  <table id="muted_topics_table" class="table">
+    <thead>
+      <th>Stream</th>
+      <th>Topic</th>
+      <th>Actions</th>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
