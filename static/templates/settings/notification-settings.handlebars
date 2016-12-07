@@ -67,6 +67,20 @@
 
       <div class="input-group">
         <label class="checkbox">
+          <input type="checkbox" name="pm_content_in_desktop_notifications"
+                    id="pm_content_in_desktop_notifications"
+                 {{#if page_params.pm_content_in_desktop_notifications}}
+                 checked="checked"
+                 {{/if}} />
+          <span></span>
+        </label>
+        <label for="pm_content_in_desktop_notifications" class="inline-block">
+          {{t "Include content of private messages in desktop notifications" }}
+        </label>
+      </div>
+
+      <div class="input-group">
+        <label class="checkbox">
           <input type="checkbox" name="enable_sounds" id="enable_sounds"
                  {{#if page_params.sounds_enabled}}
                  checked="checked"

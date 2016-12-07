@@ -264,6 +264,10 @@ function process_notification(notification) {
     }
 
     if (message.type === "private") {
+        if (page_params.pm_content_in_desktop_notifications !== undefined
+            && !page_params.pm_content_in_desktop_notifications) {
+            content = "New private message from " + message.sender_full_name;
+        }
         key = message.display_reply_to;
         other_recipients = message.display_reply_to;
         // Remove the sender from the list of other recipients
@@ -625,6 +629,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params.enable_online_push_notifications = setting;
     } else if (notification_name === "enable_digest_emails") {
         page_params.enable_digest_emails = setting;
+    } else if (notification_name === "pm_content_in_desktop_notifications") {
+        page_params.pm_content_in_desktop_notifications = setting;
     }
 };
 
