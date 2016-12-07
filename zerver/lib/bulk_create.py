@@ -66,14 +66,20 @@ def bulk_create_users(realms, users_raw, bot_type=None, tos_version=None):
                          recipient=recipients_by_email[email]))
     Subscription.objects.bulk_create(subscriptions_to_create)
 
-def bulk_create_streams(realms, stream_list):
-    # type: (Mapping[text_type, Realm], Iterable[Tuple[text_type, text_type]]) -> None
+def bulk_create_streams(realms, stream_dict):
+    # type: (Mapping[text_type, Realm], Dict[text_type, Dict[text_type, Any]]) -> None
     existing_streams = set((stream.realm.domain, stream.name.lower())
                            for stream in Stream.objects.select_related().all())
     streams_to_create = [] # type: List[Stream]
-    for (domain, name) in stream_list:
-        if (domain, name.lower()) not in existing_streams:
-            streams_to_create.append(Stream(realm=realms[domain], name=name))
+    for name, options in stream_dict.items():
+        if (options["domain"], name.lower()) not in existing_streams:
+            streams_to_create.append(
+                Stream(
+                    realm=realms[options["domain"]],
+                    name=name, description=options["description"],
+                    invite_only=options["invite_only"]
+                )
+            )
     Stream.objects.bulk_create(streams_to_create)
 
     recipients_to_create = [] # type: List[Recipient]
