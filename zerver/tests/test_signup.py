@@ -43,6 +43,7 @@ from six.moves import urllib
 from six.moves import range
 import six
 from typing import Any, Text
+import os
 
 class PublicURLTest(ZulipTestCase):
     """
@@ -79,6 +80,13 @@ class PublicURLTest(ZulipTestCase):
                           ],
                     404: ["/help/nonexistent"],
                     }
+
+        # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
+        # 'index.md') to `get_urls['200']` list.
+        for doc in os.listdir('./templates/zerver/help'):
+            if not (doc == 'main.html' or doc == 'index.md'):
+                get_urls[200].append('/help/' + os.path.splitext(doc)[0]) # Strip the extension.
+
         post_urls = {200: ["/accounts/login/"],
                      302: ["/accounts/logout/"],
                      401: ["/json/messages",
