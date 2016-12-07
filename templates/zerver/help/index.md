@@ -32,6 +32,7 @@ as a “**realm**”.
 - **[Message formatting](/help/message-formatting.md)**
 - **[Streams and private messages](/help/streams-and-private-messages.md)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
+- **[Changing your name](/help/change-your-name)**
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out.md)**
 - **[Terminology](#special-terms-used-with-zulip)**
