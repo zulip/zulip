@@ -16,7 +16,7 @@ from zerver.lib.actions import do_change_password, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
-    do_change_left_side_userlist, do_change_default_language
+    do_change_left_side_userlist, do_change_default_language, do_change_hide_private_message_desktop_notifications
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
@@ -148,8 +148,11 @@ def json_change_notify_settings(request, user_profile,
                                 enable_online_push_notifications=REQ(validator=check_bool,
                                                                      default=None),
                                 enable_digest_emails=REQ(validator=check_bool,
-                                                         default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
+                                                         default=None),
+                                hide_private_message_desktop_notifications=REQ(validator=check_bool,
+                                                                               default=None)
+                                ):
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     result = {}
 
     # Stream notification settings.
@@ -196,6 +199,12 @@ def json_change_notify_settings(request, user_profile,
             user_profile.enable_digest_emails != enable_digest_emails:
         do_change_enable_digest_emails(user_profile, enable_digest_emails)
         result['enable_digest_emails'] = enable_digest_emails
+
+    if hide_private_message_desktop_notifications is not None and \
+            user_profile.hide_private_message_desktop_notifications != hide_private_message_desktop_notifications:
+        do_change_hide_private_message_desktop_notifications(
+            user_profile, hide_private_message_desktop_notifications)
+        result['hide_private_message_desktop_notifications'] = hide_private_message_desktop_notifications
 
     return json_success(result)
 
