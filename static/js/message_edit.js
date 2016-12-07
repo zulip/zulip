@@ -205,7 +205,7 @@ function edit_message(row, raw_content) {
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
-        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
+        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
     }
 
     // Add tooltip
