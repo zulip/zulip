@@ -99,7 +99,10 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <div class="breakpoint">
                 <input id="id_team_subdomain" class="required" type="text"
                     placeholder="{{ _("acme") }}"
-                    name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
+                       name="realm_subdomain" maxlength="40" />
+                {% if realms_have_subdomains %}
+                <b> .{{ external_host }}</b>
+                {% endif %}
                     {% if form.realm_subdomain.errors %}
                         {% for error in form.realm_subdomain.errors %}
                             <div class="alert alert-error">{{ error }}</div>
