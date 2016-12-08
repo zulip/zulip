@@ -30,6 +30,7 @@ as a “**realm**”.
 - **[Create a stream](/help/create-a-stream)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
+- **[Using emoji in messages](/help/emoji)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Change Your Name](/help/name-change)**
 - **[Message formatting](/help/message-formatting)**
@@ -38,6 +39,7 @@ as a “**realm**”.
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
+- **[Zulip glossary](/help/glossary.md)**
 
 ---
 
@@ -462,5 +464,3 @@ You can't do any of that with a unsubscribed stream.
 
 **[Go back to “Terminology”](#special-terms-used-with-zulip)** |
   **[Go back to “Table of contents”](#table-of-contents)**
-
-[end]
