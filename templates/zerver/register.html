@@ -105,13 +105,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             <div class="alert alert-error">{{ error }}</div>
                         {% endfor %}
                     {% endif %}
-                <div class="help-box">
-                    {% if realms_have_subdomains %}
-                        {{ _("The address you'll use to sign in to your organization.") }}
-                    {% else %}
-                        {{ _("A short, unique name for your organization, with no spaces.") }}
-                    {% endif %}
-                </div>
+            </div>
+            <div class="help-box">
+                {% if realms_have_subdomains %}
+                    {{ _("The address you'll use to sign in to your organization.") }}
+                {% else %}
+                    {{ _("A short, unique name for your organization, with no spaces.") }}
+                {% endif %}
             </div>
         </div>
 
