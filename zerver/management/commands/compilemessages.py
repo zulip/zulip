@@ -4,8 +4,7 @@ import os
 import re
 import ujson
 
-from six import text_type
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Text
 
 from django.core.management.commands import compilemessages
 from django.conf import settings
@@ -20,12 +19,12 @@ class Command(compilemessages.Command):
         self.extract_language_options()
 
     def get_po_filename(self, locale_path, locale):
-        # type: (text_type, text_type) -> text_type
+        # type: (Text, Text) -> Text
         po_template = '{}/{}/LC_MESSAGES/django.po'
         return po_template.format(locale_path, locale)
 
     def get_json_filename(self, locale_path, locale):
-        # type: (text_type, text_type) -> text_type
+        # type: (Text, Text) -> Text
         return "{}/{}/translations.json".format(locale_path, locale)
 
     def extract_language_options(self):
@@ -81,7 +80,7 @@ class Command(compilemessages.Command):
             ujson.dump(data, writer, indent=2)
 
     def get_translation_percentage(self, locale_path, locale):
-        # type: (text_type, text_type) -> int
+        # type: (Text, Text) -> int
 
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))
