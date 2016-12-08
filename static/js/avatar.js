@@ -162,7 +162,7 @@ exports.build_direct_upload_widget = function (
         upload_function
 ) {
 
-    function accept(file) {
+    function accept() {
         input_error.hide();
         upload_function(get_file_input());
     }

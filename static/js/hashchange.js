@@ -209,7 +209,6 @@ function hashchanged(from_reload, e) {
         ignore.last = old_hash;
     }
 
-    var base = get_main_hash(window.location.hash);
     if (should_ignore(window.location.hash)) {
         if (!should_ignore(old_hash || "#")) {
             ignore.prev = old_hash;

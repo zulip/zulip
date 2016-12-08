@@ -370,7 +370,7 @@ exports.update_dom_with_unread_counts = function (counts) {
                                       counts.mentioned_message_count);
 };
 
-exports.rename_stream = function (sub, new_name) {
+exports.rename_stream = function (sub) {
     // TODO: we don't actually need new_name, since the sub
     //       will have been updated
     build_stream_sidebar_row(sub);
@@ -429,7 +429,7 @@ $(function () {
         }
     });
 
-    $(document).on('narrow_deactivated.zulip', function (event) {
+    $(document).on('narrow_deactivated.zulip', function () {
         reset_to_unnarrowed();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });

@@ -403,8 +403,6 @@ function compose_error(error_text, bad_input) {
     }
 }
 
-var send_options;
-
 function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/messages',
@@ -1067,7 +1065,7 @@ $(function () {
         Dropbox.choose(options);
     });
 
-    function uploadStarted(i, file, len) {
+    function uploadStarted() {
         $("#compose-send-button").attr("disabled", "");
         $("#send-status").addClass("alert-info")
                          .show();
@@ -1109,7 +1107,7 @@ $(function () {
         $("#error-msg").text(msg);
     }
 
-    function uploadFinished(i, file, response, time) {
+    function uploadFinished(i, file, response) {
         if (response.uri === undefined) {
             return;
         }

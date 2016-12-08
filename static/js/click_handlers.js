@@ -255,10 +255,10 @@ $(function () {
     popovers.register_click_handlers();
     notifications.register_click_handlers();
 
-    $('.logout_button').click(function (e) {
+    $('.logout_button').click(function () {
         $('#logout_form').submit();
     });
-    $('.restart_get_events_button').click(function (e) {
+    $('.restart_get_events_button').click(function () {
         server_events.restart_get_events({dont_block: true});
     });
 
@@ -272,10 +272,10 @@ $(function () {
     );
 
 
-    $('.compose_stream_button').click(function (e) {
+    $('.compose_stream_button').click(function () {
         compose.start('stream');
     });
-    $('.compose_private_button').click(function (e) {
+    $('.compose_private_button').click(function () {
         compose.start('private');
     });
 
@@ -308,7 +308,7 @@ $(function () {
     $("#compose_buttons").click(handle_compose_click);
     $(".compose-content").click(handle_compose_click);
 
-    $("#compose_close").click(function (e) {
+    $("#compose_close").click(function () {
         compose.cancel();
     });
 
@@ -316,7 +316,7 @@ $(function () {
 
     // Keep these 2 feedback bot triggers separate because they have to
     // propagate the event differently.
-    $('.feedback').click(function (e) {
+    $('.feedback').click(function () {
         compose.start('private', {private_message_recipient: 'feedback@zulip.com',
                                   trigger: 'feedback menu item'});
 
@@ -355,10 +355,10 @@ $(function () {
             channel.post({
                 url:      "/accounts/webathena_kerberos_login/",
                 data:     {cred: JSON.stringify(r.session)},
-                success: function (data, success) {
+                success: function () {
                     $("#zephyr-mirror-error").hide();
                 },
-                error: function (data, success) {
+                error: function () {
                     $("#zephyr-mirror-error").show();
                 }
             });
@@ -371,11 +371,11 @@ $(function () {
 
     // BANKRUPTCY
 
-    $(".bankruptcy_button").click(function (e) {
+    $(".bankruptcy_button").click(function () {
         unread.enable();
     });
 
-    $('#yes-bankrupt').click(function (e) {
+    $('#yes-bankrupt').click(function () {
         pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
@@ -415,7 +415,7 @@ $(function () {
             }
         });
 
-        $("#overlay .download").click(function (e) {
+        $("#overlay .download").click(function () {
           this.blur();
         });
     }());

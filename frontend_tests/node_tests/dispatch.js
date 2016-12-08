@@ -435,7 +435,7 @@ var run = (function () {
 }());
 
 
-run(function (override, capture, args) {
+run(function () {
     // alert_words
     var event = event_fixtures.alert_words;
     dispatch(event);
@@ -443,7 +443,7 @@ run(function (override, capture, args) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // default_streams
     var event = event_fixtures.default_streams;
     override('admin', 'update_default_streams_table', noop);
@@ -471,7 +471,7 @@ run(function (override, capture, args) {
 
 });
 
-run(function (override, capture, args) {
+run(function () {
     // pointer
     var event = event_fixtures.pointer;
     global.pointer.furthest_read = 0;
@@ -492,7 +492,7 @@ run(function (override, capture, args) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
@@ -565,7 +565,7 @@ run(function (override, capture, args) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // realm_filters
     var event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
@@ -684,7 +684,7 @@ run(function (override, capture, args) {
 
 });
 
-run(function (override, capture, args) {
+run(function () {
     // update_display_settings
     var event = event_fixtures.update_display_settings__default_language;
     page_params.default_language = 'en';

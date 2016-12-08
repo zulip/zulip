@@ -93,11 +93,9 @@ exports.replace_emoji_with_text = function (element) {
 
 var current_message_hover;
 function message_unhover() {
-    var message;
     if (current_message_hover === undefined) {
         return;
     }
-    message = current_msg_list.get(rows.id(current_message_hover));
     current_message_hover.find('span.edit_content').html("");
     current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
@@ -166,15 +164,6 @@ exports.report_error = function (response, xhr, status_box, type) {
 exports.report_success = function (response, status_box, type) {
     ui.report_message(response, status_box, 'alert-success', type);
 };
-
-function need_skinny_mode() {
-    if (window.matchMedia !== undefined) {
-        return window.matchMedia("(max-width: 767px)").matches;
-    }
-    // IE<10 doesn't support window.matchMedia, so do this
-    // as best we can without it.
-    return window.innerWidth <= 767;
-}
 
 function update_message_in_all_views(message_id, callback) {
     _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
@@ -310,7 +299,7 @@ exports.lightbox_photo = function (image, user) {
     $(".image-actions .open, .image-actions .download").attr("href", url);
 };
 
-exports.exit_lightbox_photo = function (image) {
+exports.exit_lightbox_photo = function () {
     $("#overlay").removeClass("show");
     $(".player-container iframe").remove();
     document.activeElement.blur();
@@ -446,30 +435,30 @@ $(function () {
         $("#navbar-buttons").addClass("right-userlist");
     }
 
-    $("#main_div").on("mouseover", ".message_row", function (e) {
+    $("#main_div").on("mouseover", ".message_row", function () {
         var row = $(this).closest(".message_row");
         message_hover(row);
     });
 
-    $("#main_div").on("mouseleave", ".message_row", function (e) {
+    $("#main_div").on("mouseleave", ".message_row", function () {
         message_unhover();
     });
 
-    $("#main_div").on("mouseover", ".message_sender", function (e) {
+    $("#main_div").on("mouseover", ".message_sender", function () {
         var row = $(this).closest(".message_row");
         row.addClass("sender_name_hovered");
     });
 
-    $("#main_div").on("mouseout", ".message_sender", function (e) {
+    $("#main_div").on("mouseout", ".message_sender", function () {
         var row = $(this).closest(".message_row");
         row.removeClass("sender_name_hovered");
     });
 
-    $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {
+    $("#subscriptions_table").on("mouseover", ".subscription_header", function () {
         $(this).addClass("active");
     });
 
-    $("#subscriptions_table").on("mouseout", ".subscription_header", function (e) {
+    $("#subscriptions_table").on("mouseout", ".subscription_header", function () {
         $(this).removeClass("active");
     });
 
@@ -569,8 +558,6 @@ $(function () {
 });
 
 
-var scroll_start_message;
-
 function scroll_finished() {
     actively_scrolling = false;
 
@@ -608,7 +595,7 @@ function scroll_finish() {
 var saved_compose_cursor = 0;
 
 $(function () {
-    viewport.message_pane.scroll($.throttle(50, function (e) {
+    viewport.message_pane.scroll($.throttle(50, function () {
         unread.process_visible();
         scroll_finish();
     }));

@@ -50,8 +50,8 @@ exports.initialize = function () {
 
     // If the streams page is shown by clicking directly on the "Streams"
     // link (in the gear menu), then focus the new stream textbox.
-    subs_link.on('click', function (e) {
-        $(document).one('subs_page_loaded.zulip', function (e) {
+    subs_link.on('click', function () {
+        $(document).one('subs_page_loaded.zulip', function () {
             $('#create_or_filter_stream_row input[type="text"]').focus().select();
         });
     });

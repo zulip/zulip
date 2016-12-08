@@ -1,7 +1,6 @@
 var common = require('../casper_lib/common.js').common;
 
 var email = 'alice@test.example.com';
-var domain = 'test.example.com';
 var subdomain = 'testsubdomain';
 var organization_name = 'Awesome Organization';
 var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');

@@ -170,7 +170,7 @@ function _setup_page() {
 
     clear_password_change();
 
-    $('#api_key_button').click(function (e) {
+    $('#api_key_button').click(function () {
         if (page_params.password_auth_enabled !== false) {
             $("#get_api_key_box").show();
         } else {
@@ -220,7 +220,7 @@ function _setup_page() {
 
     $("form.your-account-settings").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function (arr, form, options) {
+        beforeSubmit: function () {
             if (page_params.password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
@@ -241,21 +241,20 @@ function _setup_page() {
             }
             return true;
         },
-        success: function (resp, statusText, xhr, form) {
+        success: function () {
             settings_change_success("Updated settings!");
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             settings_change_error("Error changing settings", xhr);
         },
-        complete: function (xhr, statusText) {
+        complete: function () {
             // Whether successful or not, clear the password boxes.
             // TODO: Clear these earlier, while the request is still pending.
             clear_password_change();
         }
     });
 
-    function update_notification_settings_success(resp, statusText, xhr, form) {
-        var message = "Updated notification settings!";
+    function update_notification_settings_success(resp, statusText, xhr) {
         var result = JSON.parse(xhr.responseText);
         var notify_settings_status = $('#notify-settings-status').expectOne();
 
@@ -301,7 +300,7 @@ function _setup_page() {
         ui.report_success(i18n.t("Updated notification settings!"), notify_settings_status);
     }
 
-    function update_notification_settings_error(xhr, error_type, xhn) {
+    function update_notification_settings_error(xhr) {
         ui.report_error(i18n.t("Error changing settings"), xhr, $('#notify-settings-status').expectOne());
     }
 
@@ -315,7 +314,7 @@ function _setup_page() {
         });
     }
 
-    $("#change_notification_settings").on("click", function (e) {
+    $("#change_notification_settings").on("click", function () {
         var updated_settings = {};
         _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
                 "enable_desktop_notifications", "enable_sounds",
@@ -357,22 +356,22 @@ function _setup_page() {
         var control_group = notification_checkbox.closest(".control-group");
         var checkbox_status = notification_checkbox.is(":checked");
         control_group.find(".propagate_stream_notifications_change").html(html);
-        control_group.find(".yes_propagate_notifications").on("click", function (e) {
+        control_group.find(".yes_propagate_notifications").on("click", function () {
             propagate_setting_function(checkbox_status);
             control_group.find(".propagate_stream_notifications_change").empty();
         });
-        control_group.find(".no_propagate_notifications").on("click", function (e) {
+        control_group.find(".no_propagate_notifications").on("click", function () {
             control_group.find(".propagate_stream_notifications_change").empty();
         });
     }
 
-    $("#enable_stream_desktop_notifications").on("click", function (e) {
+    $("#enable_stream_desktop_notifications").on("click", function () {
         var notification_checkbox = $("#enable_stream_desktop_notifications");
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_desktop_notification_setting);
     });
 
-    $("#enable_stream_sounds").on("click", function (e) {
+    $("#enable_stream_sounds").on("click", function () {
         var notification_checkbox = $("#enable_stream_sounds");
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_audible_notification_setting);
@@ -392,11 +391,11 @@ function _setup_page() {
         channel.patch({
             url: '/json/left_side_userlist',
             data: data,
-            success: function (resp, statusText, xhr, form) {
+            success: function () {
                 ui.report_success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
                                   $('#display-settings-status').expectOne());
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
@@ -416,11 +415,11 @@ function _setup_page() {
         channel.patch({
             url: '/json/time_setting',
             data: data,
-            success: function (resp, statusText, xhr, form) {
+            success: function () {
                 ui.report_success(i18n.t("Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
@@ -445,11 +444,11 @@ function _setup_page() {
         channel.patch({
             url: '/json/language_setting',
             data: data,
-            success: function (resp, statusText, xhr, form) {
+            success: function () {
                 ui.report_success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
@@ -467,14 +466,14 @@ function _setup_page() {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $("#do_deactivate_self_button").on('click',function (e) {
+    $("#do_deactivate_self_button").on('click',function () {
         $("#deactivate_self_modal").modal("hide");
         channel.del({
             url: '/json/users/me',
             success: function () {
                 window.location.href = "/login";
             },
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
             }
         });
@@ -484,8 +483,7 @@ function _setup_page() {
     $("#show_api_key_box").hide();
     $("#get_api_key_box form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr, form) {
-            var message = "Updated settings!";
+        success: function (resp, statusText, xhr) {
             var result = JSON.parse(xhr.responseText);
             var settings_status = $('#settings-status').expectOne();
 
@@ -495,7 +493,7 @@ function _setup_page() {
             $("#get_api_key_box").hide();
             settings_status.hide();
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
@@ -576,17 +574,17 @@ function _setup_page() {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success: function (data) {
+                success: function () {
                     $('#bot_table_error').hide();
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
                     $('#create_bot_button').show();
                     create_avatar_widget.clear();
                 },
-                error: function (xhr, error_type, exn) {
+                error: function (xhr) {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
                 },
-                complete: function (xhr, status) {
+                complete: function () {
                     $('#create_bot_button').val('Create bot').prop('disabled', false);
                 }
             });
@@ -659,7 +657,7 @@ function _setup_page() {
 
         form.validate({
             errorClass: 'text-error',
-            success: function (label) {
+            success: function () {
                 errors.hide();
             },
             submitHandler: function () {
@@ -701,7 +699,7 @@ function _setup_page() {
                             image.find('img').attr('src', data.avatar_url+'&v='+image_version.toString());
                         }
                     },
-                    error: function (xhr, error_type, exn) {
+                    error: function (xhr) {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
@@ -713,7 +711,7 @@ function _setup_page() {
 
     });
 
-    $("#show_api_key_box").on("click", "button.regenerate_api_key", function (e) {
+    $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
         channel.post({
             url: '/json/users/me/api_key/regenerate',
             idempotent: true,
@@ -726,7 +724,7 @@ function _setup_page() {
         });
     });
 
-    $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
+    $("#ui-settings").on("click", "input[name='change_settings']", function () {
         var labs_updates = {};
         _.each(["autoscroll_forever", "default_desktop_notifications"],
             function (setting) {
@@ -736,7 +734,7 @@ function _setup_page() {
         channel.post({
             url: '/json/ui_settings/change',
             data: labs_updates,
-            success: function (resp, statusText, xhr, form) {
+            success: function (resp, statusText, xhr) {
                 var message = i18n.t("Updated __product_name__ Labs settings!", page_params);
                 var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
@@ -748,7 +746,7 @@ function _setup_page() {
 
                 ui.report_success(message, ui_settings_status);
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
             }
         });
