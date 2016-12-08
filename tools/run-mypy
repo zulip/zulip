@@ -16,6 +16,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
 exclude_common = """
+zerver/tests/webhooks/test_mailchimp.py
 api/integrations/asana/zulip_asana_config.py
 api/integrations/basecamp/zulip_basecamp_config.py
 api/integrations/codebase/zulip_codebase_config.py

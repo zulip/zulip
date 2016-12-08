@@ -99,6 +99,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
+    WebhookIntegration('mailchimp', logo='static/images/integrations/logos/chimp.png', display_name='Mail Chimp'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
     WebhookIntegration(
@@ -189,7 +190,8 @@ HUBOT_LOZENGES = {
     'darksky': HubotLozenge('darksky', display_name='Dark Sky', logo_alt='Dark Sky logo'),
     'hangouts': HubotLozenge('google-hangouts', display_name="Hangouts"),
     'instagram': HubotLozenge('instagram'),
-    'mailchump': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
+    'mailchump': HubotLozenge('mailchump', display_name='MailChimp',
+logo_alt='MailChimp logo', logo='static/images/integrations/logos/chimp.png'),
     'translate': HubotLozenge('google-translate', display_name="Translate", logo_alt='Google Translate logo'),
     'youtube': HubotLozenge('youtube', display_name='YouTube', logo_alt='YouTube logo')
 }
