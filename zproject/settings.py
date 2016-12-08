@@ -138,6 +138,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ADMINS': '',
                     'SHARE_THE_LOVE': False,
                     'INLINE_IMAGE_PREVIEW': True,
+                    'INLINE_URL_EMBED_PREVIEW': False,
                     'CAMO_URI': '',
                     'ENABLE_FEEDBACK': PRODUCTION,
                     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
@@ -182,7 +183,6 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'POST_MIGRATION_CACHE_FLUSHING': False,
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
-                    'INLINE_URL_EMBED_PREVIEW': False,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
