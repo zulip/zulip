@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Iterable, Tuple
+from typing import Any, Iterable, Tuple, Text
 
 from django.core.management.base import BaseCommand
 
@@ -12,12 +12,11 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.actions import set_default_streams, do_create_realm
 
 from argparse import ArgumentParser
-from six import text_type
 
 settings.TORNADO_SERVER = None
 
 def create_users(name_list, bot_type=None):
-    # type: (Iterable[Tuple[text_type, text_type]], int) -> None
+    # type: (Iterable[Tuple[Text, Text]], int) -> None
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm

@@ -19,15 +19,14 @@ from zilencer.models import Deployment
 import random
 import os
 from optparse import make_option
-from six import text_type
 from six.moves import range
-from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None
 
 def create_users(realms, name_list, bot_type=None):
-    # type: (Mapping[text_type, Realm], Iterable[Tuple[text_type, text_type]], int) -> None
-    user_set = set() # type: Set[Tuple[text_type, text_type, text_type, bool]]
+    # type: (Mapping[Text, Realm], Iterable[Tuple[Text, Text]], int) -> None
+    user_set = set() # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
@@ -35,8 +34,8 @@ def create_users(realms, name_list, bot_type=None):
     bulk_create_users(realms, user_set, bot_type=bot_type, tos_version=tos_version)
 
 def create_streams(realms, realm, stream_list):
-    # type: (Mapping[text_type, Realm], Realm, Iterable[text_type]) -> None
-    stream_set = set() # type: Set[Tuple[text_type, text_type]]
+    # type: (Mapping[Text, Realm], Realm, Iterable[Text]) -> None
+    stream_set = set() # type: Set[Tuple[Text, Text]]
     for stream_name in stream_list:
         stream_set.add((realm.domain, stream_name))
     bulk_create_streams(realms, stream_set)
@@ -127,7 +126,7 @@ class Command(BaseCommand):
                     string_id="mit", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
-            realms = {} # type: Dict[text_type, Realm]
+            realms = {} # type: Dict[Text, Realm]
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
 
@@ -363,7 +362,7 @@ def send_messages(data):
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).user_profile
-            message.subject = stream.name + text_type(random.randint(1, 3))
+            message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
         message.pub_date = now()
