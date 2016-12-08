@@ -179,12 +179,12 @@ def build_custom_checkers(by_lang):
          'description': 'Fix tab-based whitespace'},
         ] # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
-       # Two spaces trailing a line with other content is okay--it's a markdown line break.
-       # This rule finds one space trailing a non-space, three or more trailing spaces, and
-       # spaces on an empty line.
-       {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
-        'strip': '\n',
-        'description': 'Fix trailing whitespace'},
+        # Two spaces trailing a line with other content is okay--it's a markdown line break.
+        # This rule finds one space trailing a non-space, three or more trailing spaces, and
+        # spaces on an empty line.
+        {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
+         'strip': '\n',
+         'description': 'Fix trailing whitespace'},
        ] # type: RuleList
     js_rules = cast(RuleList, [
         {'pattern': '[^_]function\(',
