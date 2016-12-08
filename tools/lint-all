@@ -185,6 +185,9 @@ def build_custom_checkers(by_lang):
         {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
          'strip': '\n',
          'description': 'Fix trailing whitespace'},
+        {'pattern': '^#+[A-Za-z0-9]',
+         'strip': '\n',
+         'description': 'Missing space after # in heading'},
        ] # type: RuleList
     js_rules = cast(RuleList, [
         {'pattern': '[^_]function\(',

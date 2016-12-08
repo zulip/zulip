@@ -1,4 +1,4 @@
-#Mention a Team Member
+# Mention a Team Member
 
 ![Mention a Team Member](/static/images/help/mention_user.png)
 
