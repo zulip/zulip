@@ -259,7 +259,8 @@ function process_notification(notification) {
     }
 
     if (message.type === "private") {
-        if(page_params.hide_private_message_desktop_notifications !== undefined && page_params.hide_private_message_desktop_notifications){
+        if (page_params.hide_private_message_desktop_notifications !== undefined
+            && page_params.hide_private_message_desktop_notifications) {
             content = "You got a message from " + message.sender_full_name;
         }
         key = message.display_reply_to;

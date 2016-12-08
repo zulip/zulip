@@ -293,7 +293,8 @@ function _setup_page() {
         }
 
         if (result.hide_private_message_desktop_notifications !== undefined) {
-            page_params.hide_private_message_desktop_notifications = result.hide_private_message_desktop_notifications;
+            page_params.hide_private_message_desktop_notifications
+                = result.hide_private_message_desktop_notifications;
         }
         // Other notification settings.
 
