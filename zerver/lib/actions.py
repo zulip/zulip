@@ -2221,14 +2221,14 @@ def do_change_enable_offline_push_notifications(user_profile, offline_push_notif
         log_event(event)
     send_event(event, [user_profile.id])
 
-def do_change_enable_online_push_notifications(user_profile, online_push_notifications, log=True):
+def do_change_enable_online_push_notifications(user_profile, enable_online_push_notifications, log=True):
     # type: (UserProfile, bool, bool) -> None
-    user_profile.enable_online_push_notifications = online_push_notifications
+    user_profile.enable_online_push_notifications = enable_online_push_notifications
     user_profile.save(update_fields=["enable_online_push_notifications"])
     event = {'type': 'update_global_notifications',
              'user': user_profile.email,
-             'notification_name': 'online_push_notifications',
-             'setting': online_push_notifications}
+             'notification_name': 'enable_online_push_notifications',
+             'setting': enable_online_push_notifications}
     if log:
         log_event(event)
     send_event(event, [user_profile.id])
@@ -3081,6 +3081,16 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
         state['default_language'] = default_language
 
+    if want('update_global_notifications'):
+        state['enable_stream_desktop_notifications'] = user_profile.enable_stream_desktop_notifications
+        state['enable_stream_sounds'] = user_profile.enable_stream_sounds
+        state['enable_desktop_notifications'] = user_profile.enable_desktop_notifications
+        state['enable_sounds'] = user_profile.enable_sounds
+        state['enable_offline_email_notifications'] = user_profile.enable_offline_email_notifications
+        state['enable_offline_push_notifications'] = user_profile.enable_offline_push_notifications
+        state['enable_online_push_notifications'] = user_profile.enable_online_push_notifications
+        state['enable_digest_emails'] = user_profile.enable_digest_emails
+
     return state
 
 def apply_events(state, events, user_profile):
@@ -3257,6 +3267,23 @@ def apply_events(state, events, user_profile):
                 state['twenty_four_hour_time'] = event["setting"]
             if event['setting_name'] == 'left_side_userlist':
                 state['left_side_userlist'] = event["setting"]
+        elif event['type'] == "update_global_notifications":
+            if event['notification_name'] == "enable_stream_desktop_notifications":
+                state['enable_stream_desktop_notifications'] = event['setting']
+            elif event['notification_name'] == "enable_stream_sounds":
+                state['enable_stream_sounds'] = event['setting']
+            elif event['notification_name'] == "enable_desktop_notifications":
+                state['enable_desktop_notifications'] = event['setting']
+            elif event['notification_name'] == "enable_sounds":
+                state['enable_sounds'] = event['setting']
+            elif event['notification_name'] == "enable_offline_email_notifications":
+                state['enable_offline_email_notifications'] = event['setting']
+            elif event['notification_name'] == "enable_offline_push_notifications":
+                state['enable_offline_push_notifications'] = event['setting']
+            elif event['notification_name'] == "enable_online_push_notifications":
+                state['enable_online_push_notifications'] = event['setting']
+            elif event['notification_name'] == "enable_digest_emails":
+                state['enable_digest_emails'] = event['setting']
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
