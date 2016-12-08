@@ -18,7 +18,6 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_runner import slow
 
 import DNS
 import mock
@@ -100,7 +99,6 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
-    @slow('has to sleep to work')
     def test_hit_ratelimits(self):
         # type: () -> None
         email = "cordelia@zulip.com"
@@ -120,8 +118,7 @@ class RateLimitTests(ZulipTestCase):
         # We actually wait a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
-        time.sleep(1)
+        with mock.patch('time.time', return_value=(time.time() + 1)):
+            result = self.send_api_message(email, "Good message")
 
-        result = self.send_api_message(email, "Good message")
-
-        self.assert_json_success(result)
+            self.assert_json_success(result)
