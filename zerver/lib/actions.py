@@ -2302,11 +2302,13 @@ def do_change_default_language(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
-def set_default_streams(realm, stream_names):
-    # type: (Realm, Iterable[text_type]) -> None
+def set_default_streams(realm, stream_dict):
+    # type: (Realm, Dict[text_type, Dict[text_type, Any]]) -> None
     DefaultStream.objects.filter(realm=realm).delete()
-    for stream_name in stream_names:
-        stream, _ = create_stream_if_needed(realm, stream_name)
+    stream_names = []
+    for name, options in stream_dict.items():
+        stream_names.append(name)
+        stream, _ = create_stream_if_needed(realm, name, options["invite_only"], options["description"])
         DefaultStream.objects.create(stream=stream, realm=realm)
 
     # Always include the realm's default notifications streams, if it exists
@@ -2316,7 +2318,6 @@ def set_default_streams(realm, stream_names):
     log_event({'type': 'default_streams',
                'domain': realm.domain,
                'streams': stream_names})
-
 
 def notify_default_streams(realm):
     # type: (Realm) -> None

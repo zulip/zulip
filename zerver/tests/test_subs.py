@@ -617,25 +617,50 @@ class DefaultStreamTest(ZulipTestCase):
         stream_names = [s.name for s in streams]
         return set(stream_names)
 
+    def get_default_stream_descriptions(self, realm):
+        # type: (Realm) -> Set[Text]
+        streams = get_default_streams_for_realm(realm)
+        stream_descriptions = [s.description for s in streams]
+        return set(stream_descriptions)
+
     def test_set_default_streams(self):
         # type: () -> None
         (realm, _) = do_create_realm("testrealm", "Test Realm")
-        stream_names = ['apple', 'banana', 'Carrot Cake']
-        expected_names = stream_names + ['announce']
-        set_default_streams(realm, stream_names)
+        stream_dict = {
+            "apple": {"description": "A red fruit", "invite_only": False},
+            "banana": {"description": "A yellow fruit", "invite_only": False},
+            "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
+        }  # type: Dict[Text, Dict[Text, Any]]
+        expected_names = []
+        for i in stream_dict.keys():
+            expected_names.append(i)
+        expected_names.append("announce")
+        expected_descriptions = [i["description"] for i in stream_dict.values()] + [""]
+        set_default_streams(realm, stream_dict)
         stream_names_set = self.get_default_stream_names(realm)
+        stream_descriptions_set = self.get_default_stream_descriptions(realm)
         self.assertEqual(stream_names_set, set(expected_names))
+        self.assertEqual(stream_descriptions_set, set(expected_descriptions))
 
     def test_set_default_streams_no_notifications_stream(self):
         # type: () -> None
         (realm, _) = do_create_realm("testrealm", "Test Realm")
         realm.notifications_stream = None
         realm.save(update_fields=["notifications_stream"])
-        stream_names = ['apple', 'banana', 'Carrot Cake']
-        expected_names = stream_names
-        set_default_streams(realm, stream_names)
+        stream_dict = {
+            "apple": {"description": "A red fruit", "invite_only": False},
+            "banana": {"description": "A yellow fruit", "invite_only": False},
+            "Carrot Cake": {"description": "A delicious treat", "invite_only": False}
+        }  # type: Dict[Text, Dict[Text, Any]]
+        expected_names = []
+        for i in stream_dict.keys():
+            expected_names.append(i)
+        expected_descriptions = [i["description"] for i in stream_dict.values()]
+        set_default_streams(realm, stream_dict)
         stream_names_set = self.get_default_stream_names(realm)
+        stream_descriptions_set = self.get_default_stream_descriptions(realm)
         self.assertEqual(stream_names_set, set(expected_names))
+        self.assertEqual(stream_descriptions_set, set(expected_descriptions))
 
     def test_add_and_remove_default_stream(self):
         # type: () -> None

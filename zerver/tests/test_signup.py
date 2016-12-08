@@ -139,7 +139,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
         # type: () -> None
         """Sends a message during user creation"""
         # Create a user who hasn't had historical messages added
-        set_default_streams(get_realm_by_string_id("zulip"), ["Denmark", "Verona"])
+        stream_dict = {
+            "Denmark": {"description": "A Scandinavian country", "invite_only": False},
+            "Verona": {"description": "A city in Italy", "invite_only": False}
+        }  # type: Dict[Text, Dict[Text, Any]]
+        set_default_streams(get_realm_by_string_id("zulip"), stream_dict)
         with patch("zerver.lib.actions.add_new_user_history"):
             self.register("test", "test")
         user_profile = get_user_profile_by_email("test@zulip.com")
@@ -236,11 +240,12 @@ class LoginTest(ZulipTestCase):
     def test_register(self):
         # type: () -> None
         realm = get_realm_by_string_id("zulip")
-        stream_names = ["stream_%s" % i for i in range(40)]
-        for stream_name in stream_names:
+        stream_dict = {"stream_"+str(i): {"description": "stream_%s_description" % i, "invite_only": False}
+            for i in range(40)}  # type: Dict[Text, Dict[Text, Any]]
+        for stream_name in stream_dict.keys():
             self.make_stream(stream_name, realm=realm)
 
-        set_default_streams(realm, stream_names)
+        set_default_streams(realm, stream_dict)
         with queries_captured() as queries:
             self.register("test", "test")
         # Ensure the number of queries we make is not O(streams)
