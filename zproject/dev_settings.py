@@ -35,7 +35,7 @@ TERMS_OF_SERVICE = 'zproject/terms.md.template'
 SAVE_FRONTEND_STACKTRACES = True
 EVENT_LOGS_ENABLED = True
 SYSTEM_ONLY_REALMS = set() # type: Set[str]
-USING_PGROONGA = True
+USING_PGROONGA = False
 # Flush cache after migration.
 POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
 

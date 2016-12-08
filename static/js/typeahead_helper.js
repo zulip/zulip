@@ -99,66 +99,24 @@ exports.sorter = function (query, objs, get_item) {
    var results = prefix_sort(query, objs, get_item);
    return results.matches.concat(results.rest);
 };
-
-exports.compare_by_pms = function (user_a, user_b) {
+exports.compare_by_pms = function (user_a, user_b, selected_recipient,
+                                   current_stream_persons,
+                                   current_subject_persons) {
     var count_a = people.get_recipient_count(user_a);
     var count_b = people.get_recipient_count(user_b);
-    var current_subject = $('#subject.recipient_box').val();
-    var current_subject_personsv = {};
-    var current_stream = $('#stream.recipient_box').val();
-    function pSubject(cMessage){
-        if(cMessage.sent_by_me == false && cMessage.subject == current_subject){
-            return true;
-        } else {
-            return false;    
-        }
+    if (user_a.full_name === selected_recipient) {
+        return -1;
+    } else if (user_b.full_name === selected_recipient) {
+        return 1;
     }
-    function pStream(cMessage){
-        if(cMessage.sent_by_me == false && cMessage.stream == current_stream) { 
-           return true;
-        } else {
-            return false;
-        }
-    }
-    var current_subject_persons_infov = message_list.all._items.filter(pSubject);
-    var current_stream_persons_infov = message_list.all._items.filter(pStream);
-    var current_subject_persons = [];
-    var current_stream_persons = [];
-    var current_subject_personsv = [];
-    var current_stream_personsv = [];
-    for(i = 0; i < current_subject_persons_infov.length; i += 1){
-         current_subject_personsv.push(current_subject_persons_infov[i].sender_full_name);
-    }
-    for(i = 0; i < current_stream_persons_infov.length; i += 1){
-        current_stream_personsv.push(current_stream_persons_infov[i].sender_full_name);
-    }
-    current_subject_persons = current_subject_personsv.filter(function(elem, pos) {
-        return current_subject_personsv.indexOf(elem) == pos;
-    });
-    if(current_subject_persons.length > 10){
-        current_subject_persons.splice(0, current_subject_persons.length - 10)
-    }
-    current_stream_persons = current_stream_personsv.filter(function(elem, pos) {
-        return current_stream_personsv.indexOf(elem) == pos;
-    });
-    if(current_stream_persons.length > 10){
-        current_stream_persons.splice(0, current_stream_persons.length - 10)
-    }
-    console.log(current_subject_persons)
-    if(current_subject_persons.indexOf(user_a.full_name) >= 0 && current_subject_persons.indexOf(user_b.full_name) >= 0){
-        return 0;
-     }
-    if(current_stream_persons.indexOf(user_a.full_name) >= 0 && current_stream_persons.indexOf(user_b.full_name) >= 0){
-        return 0;
-     }
-     if(current_subject_persons.indexOf(user_a.full_name) >= 0){
+     if (current_subject_persons.indexOf(user_a.full_name) >= 0) {
          return -1;
-     } else if(current_subject_persons.indexOf(user_b.full_name) >= 0) {
+     } else if (current_subject_persons.indexOf(user_b.full_name) >= 0) {
          return 1;
      }
-    if(current_stream_persons.indexOf(user_a.full_name) >= 0){
+    if (current_stream_persons.indexOf(user_a.full_name) >= 0) {
         return -1;
-    } else if(current_stream_persons.indexOf(user_b.full_name) >= 0) {
+    } else if (current_stream_persons.indexOf(user_b.full_name) >= 0) {
         return 1;
     }
     if (count_a > count_b) {
@@ -183,6 +141,56 @@ exports.compare_by_pms = function (user_a, user_b) {
     return 1;
 };
 
+exports.organize = function (user_a, user_b) {
+    var current_subject = $('#subject.recipient_box').val();
+    var current_stream = $('#stream.recipient_box').val();
+    // Filter functions for subject and stream passes the ones that the user
+    // itself didn't send and the ones that belong to current subject and stream
+    function pSubject(message) {
+        if (message.sent_by_me === false && message.subject === current_subject) {
+            return true;
+        }
+    }
+    function pStream(message) {
+        if (message.sent_by_me === false && message.stream === current_stream) {
+           return true;
+        }
+    }
+    var current_subject_persons_info = message_list.all._items.filter(pSubject);
+    var current_stream_persons_info = message_list.all._items.filter(pStream);
+    var current_subject_persons = [];
+    var current_stream_persons = [];
+    var names_in_current_subject = [];
+    var names_in_current_stream = [];
+    var selected_recipient = "";
+    var i = 0;
+    for (i = 0; i < current_subject_persons_info.length; i += 1) {
+         names_in_current_subject.push(current_subject_persons_info[i].sender_full_name);
+    }
+    for (i = 0; i < current_stream_persons_info.length; i += 1) {
+        names_in_current_stream.push(current_stream_persons_info[i].sender_full_name);
+    }
+    // Deleting repeated objects in these arrays
+    current_subject_persons = names_in_current_subject.filter(function (elem, pos) {
+        return names_in_current_subject.indexOf(elem) === pos;
+    });
+    if (current_subject_persons.length > 10) {
+        current_subject_persons.splice(0, current_subject_persons.length - 10);
+    }
+    current_stream_persons = names_in_current_stream.filter(function (elem, pos) {
+        return names_in_current_stream.indexOf(elem) === pos;
+    });
+    if (current_stream_persons.length > 10) {
+        current_stream_persons.splice(0, current_stream_persons.length - 10);
+    }
+    for (i = message_list.all._items.length - 1; i > 0; i -= 1) {
+        if ($("#zfilt" + String(message_list.all._items[i].id)).hasClass('selected_message') === true ||$("#zhome" + String(message_list.all._items[i].id)).hasClass('selected_message') === true ) {
+            selected_recipient = message_list.all._items[i].sender_full_name;
+        }
+    }
+    return exports.compare_by_pms(user_a, user_b, selected_recipient,
+                                  current_stream_persons, current_subject_persons);
+};
 exports.sort_by_pms = function (objs) {
     objs.sort(exports.compare_by_pms);
     return objs;
