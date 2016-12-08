@@ -117,12 +117,28 @@ function render_bots() {
             email: elem.email,
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
+            zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
             default_sending_stream: elem.default_sending_stream,
             default_events_register_stream: elem.default_events_register_stream,
             default_all_public_streams: elem.default_all_public_streams
         });
     });
 }
+
+exports.generate_zuliprc_uri = function (email, api_key) {
+    var data = settings.generate_zuliprc_content(email, api_key);
+
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(data);
+};
+
+exports.generate_zuliprc_content = function (email, api_key) {
+    return "[api]" +
+           "\nemail=" + email +
+           "\nkey=" + api_key +
+           "\nsite=" + page_params.realm_uri +
+           // Some tools would not work in files without a trailing new line.
+           "\n";
+};
 
 // Choose avatar stamp fairly randomly, to help get old avatars out of cache.
 exports.avatar_stamp = Math.floor(Math.random()*100);
@@ -148,7 +164,8 @@ function _setup_page() {
         });
     }
 
-    var settings_tab = templates.render('settings_tab', {page_params: page_params});
+    // Most browsers do not allow filenames to start with `.` without the user manually changing it.
+    var settings_tab = templates.render('settings_tab', {page_params: page_params, zuliprc: 'zuliprc'});
     $("#settings").html(settings_tab);
     $("#settings-status").hide();
     $("#notify-settings-status").hide();
@@ -713,6 +730,23 @@ function _setup_page() {
 
     });
 
+    $("#bots_list").on("click", "a.download_bot_zuliprc", function (e) {
+        var bot_info = $(this).parent().parent();
+        var email = bot_info.find(".email .value").text();
+        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+
+        $(this).attr("href", settings.generate_zuliprc_uri(
+            $.trim(email), $.trim(api_key)
+        ));
+    });
+
+    $("#download_zuliprc").on("click", function (e) {
+        $(this).attr("href", settings.generate_zuliprc_uri(
+            page_params.email,
+            $("#api_key_value").text()
+        ));
+    });
+
     $("#show_api_key_box").on("click", "button.regenerate_api_key", function (e) {
         channel.post({
             url: '/json/users/me/api_key/regenerate',
@@ -761,3 +795,6 @@ exports.setup_page = function () {
 
 return exports;
 }());
+if (typeof module !== "undefined") {
+    module.exports = settings;
+}
