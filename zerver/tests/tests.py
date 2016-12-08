@@ -1809,6 +1809,7 @@ class HomeTest(ZulipTestCase):
             "furthest_read_time",
             "has_mobile_devices",
             "have_initial_messages",
+            "hide_private_message_desktop_notifications",
             "initial_pointer",
             "initial_presences",
             "initial_servertime",
