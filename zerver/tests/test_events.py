@@ -47,6 +47,14 @@ from zerver.lib.actions import (
     do_update_pointer,
     do_change_twenty_four_hour_time,
     do_change_left_side_userlist,
+    do_change_enable_stream_desktop_notifications,
+    do_change_enable_stream_sounds,
+    do_change_enable_desktop_notifications,
+    do_change_enable_sounds,
+    do_change_enable_offline_email_notifications,
+    do_change_enable_offline_push_notifications,
+    do_change_enable_online_push_notifications,
+    do_change_enable_digest_emails,
     fetch_initial_state_data,
     get_subscription
 )
@@ -638,6 +646,118 @@ class EventsRegisterTest(ZulipTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_stream_desktop_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_stream_desktop_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_stream_desktop_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_stream_sounds(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_stream_sounds')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_stream_sounds(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_desktop_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_desktop_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_desktop_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_sounds(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_sounds')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_sounds(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_offline_email_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_offline_email_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_offline_email_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_offline_push_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_offline_push_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_offline_push_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_online_push_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_online_push_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_online_push_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_enable_digest_emails(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('enable_digest_emails')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_enable_digest_emails(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
