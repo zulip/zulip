@@ -18,7 +18,7 @@ from scripts.lib.node_cache import setup_node_modules
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
-                  help='a previous deploy from which to reuse files if possible')
+                    help='a previous deploy from which to reuse files if possible')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 

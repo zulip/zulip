@@ -43,7 +43,7 @@ def do_send_message(client, message_data):
 
     if message_data['type'] == 'stream':
         log.info('Sending message to stream "%s", subject "%s"... ' %
-            (message_data['to'], message_data['subject']))
+                 (message_data['to'], message_data['subject']))
     else:
         log.info('Sending message to %s... ' % message_data['to'])
     response = client.send_message(message_data)

@@ -11,8 +11,8 @@ import unittest
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--coverage', dest='coverage',
-                      action="store_true",
-                      default=False, help='compute test coverage')
+                        action="store_true",
+                        default=False, help='compute test coverage')
     args = parser.parse_args()
 
     def dir_join(dir1, dir2):

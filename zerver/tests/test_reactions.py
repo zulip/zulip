@@ -168,7 +168,7 @@ class ReactionTest(ZulipTestCase):
         self.assert_json_success(first)
 
         second = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
-                                                         'emoji': 'smile'},
+                                                          'emoji': 'smile'},
                                     **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction does not exist")
 
