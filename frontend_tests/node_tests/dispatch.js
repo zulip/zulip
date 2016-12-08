@@ -329,19 +329,19 @@ var event_fixtures = {
     update_display_settings__default_language: {
         type: 'update_display_settings',
         setting_name: 'default_language',
-        default_language: 'fr',
+        setting: 'fr',
     },
 
     update_display_settings__left_side_userlist: {
         type: 'update_display_settings',
         setting_name: 'left_side_userlist',
-        left_side_userlist: true,
+        setting: true,
     },
 
     update_display_settings__twenty_four_hour_time: {
         type: 'update_display_settings',
         setting_name: 'twenty_four_hour_time',
-        twenty_four_hour_time: true,
+        setting: true,
     },
 
     update_global_notifications: {

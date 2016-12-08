@@ -160,24 +160,30 @@ function dispatch_normal_event(event) {
 
     case 'update_display_settings':
         if (event.setting_name === 'twenty_four_hour_time') {
-            page_params.twenty_four_hour_time = event.twenty_four_hour_time;
+            page_params.twenty_four_hour_time = event.setting;
             // TODO: Make this rerender the existing elements to not require a reload.
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.
-            page_params.left_side_userlist = event.left_side_userlist;
+            page_params.left_side_userlist = event.setting;
         }
         if (event.setting_name === 'default_language') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.
-            page_params.default_language = event.default_language;
+            page_params.default_language = event.setting;
+        }
+        if ($("#settings.tab-pane.active").length) {
+            settings.update_page();
         }
         break;
 
     case 'update_global_notifications':
         notifications.handle_global_notification_updates(event.notification_name,
                                                          event.setting);
+        if ($("#settings.tab-pane.active").length) {
+            settings.update_page();
+        }
         break;
 
     case 'update_message_flags':

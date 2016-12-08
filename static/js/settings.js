@@ -789,8 +789,27 @@ function _setup_page() {
     });
 }
 
+function _update_page() {
+    $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
+    $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
+    $("#default_language_name").text(page_params.default_language_name);
+
+    $("#enable_stream_desktop_notifications").prop('checked', page_params.stream_desktop_notifications_enabled);
+    $("#enable_stream_sounds").prop('checked', page_params.stream_sounds_enabled);
+    $("#enable_desktop_notifications").prop('checked', page_params.desktop_notifications_enabled);
+    $("#enable_sounds").prop('checked', page_params.sounds_enabled);
+    $("#enable_offline_email_notifications").prop('checked', page_params.enable_offline_email_notifications);
+    $("#enable_offline_push_notifications").prop('checked', page_params.enable_offline_push_notifications);
+    $("#enable_online_push_notifications").prop('checked', page_params.enable_online_push_notifications);
+    $("#enable_digest_emails").prop('checked', page_params.enable_digest_emails);
+}
+
 exports.setup_page = function () {
     i18n.ensure_i18n(_setup_page);
+};
+
+exports.update_page = function () {
+    i18n.ensure_i18n(_update_page);
 };
 
 return exports;
