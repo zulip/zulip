@@ -85,6 +85,29 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address):
                                salt='zerver.views.auth')
     return response
 
+def get_stream_info_from_settings():
+    # type: () -> Dict[text_type, Dict[text_type, Any]]
+    # We have to deal with some legacy settings configurations
+    # Note that if a stream is in either of the data structures
+    # below, we'll set up a default stream for it, and the
+    # more modern setting overrides the legacy one
+
+    stream_dict = {}  # type: Dict[text_type, Dict[text_type, Any]]
+
+    # legacy
+    for name in settings.DEFAULT_NEW_REALM_STREAMS:
+        stream_dict[name] = dict(
+            description='',
+            invite_only=False,
+        )
+    # modern
+    for row in settings.DEFAULT_NEW_REALM_STREAM_FIELDS:
+        stream_dict[row] = dict(
+            description=stream_dict[row].get('description', ''),
+            invite_only=stream_dict[row].get('invite_only', False),
+        )
+    return stream_dict
+
 @require_post
 def accounts_register(request):
     # type: (HttpRequest) -> HttpResponse
@@ -213,7 +236,8 @@ def accounts_register(request):
             org_type = int(form.cleaned_data['realm_org_type'])
             realm = do_create_realm(string_id, realm_name, org_type=org_type)[0]
 
-            set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
+            stream_dict = get_stream_info_from_settings()
+            set_default_streams(realm, stream_dict)
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
