@@ -8,8 +8,7 @@ from analytics.models import InstallationCount, RealmCount, \
 from zerver.models import Realm, UserProfile, Message, Stream, models
 from zerver.lib.timestamp import floor_to_day
 
-from typing import Any, Optional, Type, Tuple
-from six import text_type
+from typing import Any, Optional, Type, Tuple, Text
 
 import logging
 import time
@@ -37,7 +36,7 @@ class CountStat(object):
     GAUGE = 'gauge'
 
     def __init__(self, property, zerver_count_query, filter_args, group_by, frequency, is_gauge):
-        # type: (text_type, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, bool) -> None
+        # type: (Text, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, bool) -> None
         self.property = property
         self.zerver_count_query = zerver_count_query
         # might have to do something different for bitfields
@@ -50,7 +49,7 @@ class CountStat(object):
 
 class ZerverCountQuery(object):
     def __init__(self, zerver_table, analytics_table, query):
-        # type: (Type[models.Model], Type[BaseCount], text_type) -> None
+        # type: (Type[models.Model], Type[BaseCount], Text) -> None
         self.zerver_table = zerver_table
         self.analytics_table = analytics_table
         self.query = query
