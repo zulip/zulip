@@ -35,12 +35,15 @@ def deactivate_user_backend(request, user_profile, email):
 
 def deactivate_user_own_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    admins = set(user_profile.realm.get_admin_users())
 
-    if user_profile.is_realm_admin and len(admins) == 1:
+    if user_profile.is_realm_admin and _check_last_admin(user_profile):
         return json_error(_('Cannot deactivate the only admin'))
     do_deactivate_user(user_profile)
     return json_success()
+
+def _check_last_admin(user_profile):
+    admins = set(user_profile.realm.get_admin_users())
+    return len(admins) == 1
 
 def deactivate_bot_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
@@ -87,6 +90,8 @@ def update_user_backend(request, user_profile, email,
         return json_error(_('Insufficient permission'))
 
     if is_admin is not None:
+        if not is_admin and _check_last_admin(user_profile):
+            return json_error(_('Cannot remove the only admin'))
         do_change_is_admin(target, is_admin)
 
     if (full_name is not None and target.full_name != full_name and
