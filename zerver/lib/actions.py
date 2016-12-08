@@ -2625,6 +2625,21 @@ def update_user_message_flags(message, ums):
     for um in changed_ums:
         um.save(update_fields=['flags'])
 
+def update_to_dict_cache(changed_messages):
+    # type: (List[Message]) -> List[int]
+    """Updates the message as stored in the to_dict cache (for serving
+    messages)."""
+    items_for_remote_cache = {}
+    message_ids = []
+    for changed_message in changed_messages:
+        message_ids.append(changed_message.id)
+        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
+        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
+    cache_set_many(items_for_remote_cache)
+    return message_ids
+
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
@@ -2722,18 +2737,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
 
-    # Update the message as stored in the (deprecated) message
-    # cache (for shunting the message over to Tornado in the old
-    # get_messages API) and also the to_dict caches.
-    items_for_remote_cache = {}
-    event['message_ids'] = []
-    for changed_message in changed_messages:
-        event['message_ids'].append(changed_message.id)
-        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
-        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
-    cache_set_many(items_for_remote_cache)
+    event['message_ids'] = update_to_dict_cache(changed_messages)
 
     def user_info(um):
         # type: (UserMessage) -> Dict[str, Any]
