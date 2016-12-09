@@ -1,0 +1,8 @@
+{{! Contents of the "emoji reaction" popup }}
+<div class="reaction-container">
+    <div message_id="{{message_id}}" class="reaction-popover">
+    {{#each emoji_list}}
+        <div class="reaction-emoji emoji-{{this}}" title= "emoji-{{@key}}" />
+    {{/each}}
+    </div>
+</div> 
