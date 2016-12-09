@@ -31,6 +31,7 @@ as a “**realm**”.
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
 - **[Using emoji in messages](/help/emoji)**
+- **[Keyboard shortcuts](/help/keyboard-shortcuts)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Change Your Name](/help/name-change)**
 - **[Message formatting](/help/message-formatting)**
