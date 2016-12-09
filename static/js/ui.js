@@ -228,6 +228,20 @@ exports.update_starred = function (message_id, starred) {
     });
 };
 
+exports.update_reaction = function (message_id, reaction_choice) {
+  var message = exports.find_message(message_id);
+  update_message_in_all_views(message_id, function update_row(row) {
+    // reaction_choice = ':smiley:'
+    // var reaction_item = row.find(".reaction_" + reaction_choice);
+    var row = current_msg_list.get_row(message_id).find(`.${reaction_choice}`)
+    var sibling = row.siblings()[0];
+    sibling.innerHTML = parseInt(sibling.innerHTML) + 1
+    row.parent().css('display', 'inline-block')
+    // toggle display: inline-block on parent
+    // increment sibling
+  });
+};
+
 var local_messages_to_show = [];
 var show_message_timestamps = _.throttle(function () {
     _.each(local_messages_to_show, function (message_id) {

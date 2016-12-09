@@ -110,6 +110,16 @@ function dispatch_normal_event(event) {
         referral.update_state(event.referrals.granted, event.referrals.used);
         break;
 
+    case 'reaction':
+      /* All emoji notification
+       */
+      switch (event.action){
+      case 'add':
+        ui.update_reaction(event.message_id, event.emoji_name);
+          break;
+      }
+      break;
+
     case 'stream':
         if (event.op === 'update') {
             // Legacy: Stream properties are still managed by subs.js on the client side.
