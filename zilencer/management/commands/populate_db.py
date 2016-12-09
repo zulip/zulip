@@ -5,7 +5,7 @@ from __future__ import print_function
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now
 
-from zerver.models import Message, UserProfile, Stream, Recipient, \
+from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
@@ -15,6 +15,7 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.models import DefaultStream, get_stream, get_realm
 from zilencer.models import Deployment
+import datetime
 
 import random
 import os
@@ -44,6 +45,7 @@ def create_streams(realms, realm, stream_dict):
     } # type: Dict[Text, Dict[Text, Any]]
 
     bulk_create_streams(realms, stream_dictionary)
+
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -188,14 +190,26 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = [user_profile.id for user_profile in UserProfile.objects.all()] # type: List[int]
+        user_profiles = list(UserProfile.objects.all()) # type: List[UserProfile]
+
+        if not options["test_suite"]:
+            # Populate users with some bar data
+            for user in user_profiles:
+                status = 1 # type: int
+                date = datetime.datetime.now() # type: datetime.datetime
+                client = get_client("website")
+                for i in range(3):
+                    client = get_client("API")
+                UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
+
+        user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_huddle(random.sample(user_profiles, random.randint(3, 4)))
+            get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = [random.sample(user_profiles, 2)
+        personals_pairs = [random.sample(user_profiles_ids, 2)
                            for i in range(options["num_personals"])]
 
         threads = options["threads"]
@@ -393,3 +407,4 @@ def send_messages(data):
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
+
