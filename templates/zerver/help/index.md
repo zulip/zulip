@@ -49,19 +49,18 @@ as a “**realm**”.
 
 ## The Zulip browser window
 
- * There are three panes in your browser window.
+There are three panes in your browser window.
 
-   The middle one, the “**message table**”, is the stream of messages.
+ * The middle one, the “**message table**”, is the stream of messages.
 
-   To its left is the “**left sidebar**”, showing “filters” or “views”
+ * To its left is the “**left sidebar**”, showing “filters” or “views”
    for different kinds of messages, and below it a menu of streams you
-   are subscribed to:
+   are subscribed to.
 
-   ![Left sidebar](/static/images/help/left_sidebar.png)
-
-   On the right side of the browser window is the “**right sidebar**”,
+ * On the right side of the browser window is the “**right sidebar**”,
    showing users and some configuration settings:
 
+   ![Left sidebar](/static/images/help/left_sidebar.png)
    ![Right sidebar](/static/images/help/right_sidebar.png)
 
  * If your browser window is narrow, you’ll see only the message
@@ -105,7 +104,8 @@ individual users. ![New message](/static/images/help/new_message.png)
   **[Go back to “Table of contents”](#table-of-contents)**
 
 ### Posting and replying to individual users (“PM”: private message)
-    ![Post to user](/static/images/help/post_to_user.png)
+
+![Post to user](/static/images/help/post_to_user.png)
 
  * Enter the name or email address of a user, or the first letters of
    one. There is no topic when you PM someone.
