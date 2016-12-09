@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css?family=Yantramanav:300,400,500,700');
 .container-fluid {
     padding: 0px;
     min-height: 100%;
@@ -1029,6 +1030,103 @@ a.bottom-signup-button {
     border-radius: 2px;
     font-size: 16px;
     font-weight: 300;
+}
+
+/* -- markdown styling -- */
+
+.markdown {
+    width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+
+    font-family: "Yantramanav", Helvetica Neue, sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #666;
+
+    -webkit-font-smoothing: antialiased;
+    outline: 10000px solid rgba(240,240,240,0.5);
+    box-shadow: 0px 0px 30px rgba(0,0,0,0.2);
+}
+
+.markdown a {
+    background: -webkit-linear-gradient(180deg, #20c9aa, #61beda);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.markdown strong {
+    font-weight: 600;
+    white-space: pre;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+    font-weight: 400;
+}
+
+.markdown h3 {
+    margin-top: 30px;
+    margin-bottom: 5px;
+}
+
+.markdown img {
+    vertical-align: top;
+    box-shadow: 0px 0px 40px rgba(0,0,0,0.1);
+}
+
+.markdown img.inline {
+    height: 1.4em;
+    box-shadow: none;
+}
+
+.markdown .warn {
+    display: block;
+    background-color: #f5f7f9;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.markdown .indicator {
+    position: relative;
+    display: inline-block;
+    top: 1px;
+    padding: 5px;
+    border-radius: 6px;
+}
+
+.markdown .indicator.grey {
+    border: 1px solid #CCC;
+}
+
+.markdown .indicator.orange {
+    border: 1px solid #ec7e18;
+    background: linear-gradient(to bottom,rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%)
+}
+
+.markdown .indicator.green {
+    border: 1px solid #44c21d;
+    background-color: rgba(68,194,29,0.3);
+}
+
+.markdown .indicator.green.solid {
+    background-color: #44c21d;
+}
+
+/* make sure that it doesn't wrap and disappear around the line.. odd bug. */
+.markdown a {
+    white-space: pre;
+}
+
+.markdown ul {
+    margin: 15px 10px 15px 25px;
+}
+
+.markdown ul li {
+    margin: 5px 0px;
 }
 
 @media (max-height: 600px) {

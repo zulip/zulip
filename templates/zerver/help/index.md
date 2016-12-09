@@ -1,11 +1,12 @@
 # Zulip User Documentation (draft)
 
+<span class="warn">
 **Caveat**: This file is intended to collect all proposed user
 documentation into one place. Ultimately, a single file is probably
 not the best format for documentation when it is published to the
 world, but for purposes of discussion it seems easiest to put
 everything into a solitary and linear page.
-
+</span>
 ---
 
 Zulip is a chat app. Its most distinctive characteristic is that
@@ -137,7 +138,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
    (GFM), and the **A** icon under the message field brings up a
    cheat-sheet for what we support. You can also see that cheat-sheat
-   by going to the cog (![cog](/static/images/help/cog.png)) in the
+   by going to the cog (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the
    upper right corner of the right sidebar and choosing “Message
    formatting” from the drop-down menu.
 
@@ -182,7 +183,7 @@ individual users. ![New message](/static/images/help/new_message.png)
 
 ### Keyboard shortcuts
 
-Go to the cog (![cog](/static/images/help/cog.png)) in the upper right
+Go to the cog (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right
 corner of the right sidebar and choose “Keyboard shortcuts” from the
 drop-down menu.
 
@@ -280,7 +281,7 @@ of the message is unchanged.
 Zulip uses a subset of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
 (GFM), To see the current subset, go to the cog
-(![cog](/static/images/help/cog.png)) in the upper right corner of the
+(<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right corner of the
 right sidebar and choose “Message formatting” from the drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
@@ -291,27 +292,23 @@ right sidebar and choose “Message formatting” from the drop-down menu.
 … is marked by little circles to the left of a user’s name:
 
  * A green circle
-   (![green circle](/static/images/help/green_circle.png)) means the
+   (<span class="indicator green solid"></span>) means the
    user is “active” — the browser has determined that the Zulip page
    has “focus” at the moment on the user’s computer.
 
- * A white, circle
-   (![white empty circle](/static/images/help/white_empty_circle.png))
-   means the user is not active and was not recently so.
+ * A white, circle (<span class="indicator grey"></span>) means the user is
+   not active and was not recently so.
 
  * A orange half-filled circle
-   (![orange half circle](/static/images/help/orange_half_circle.png))
+   (<span class="indicator orange"></span>)
    means the user is “not active” but was recently so.
 
  The same information is available by mousing over a given user’s name.
 
  If you have messaged multiple individual users, their names will
  appear at the bottom of the right sidebar. In that case, a pale green
- circle
- (![pale green circle](/static/images/help/pale_green_circle.png))
- means that some are recently but not currently active, while others
- are state unknown. A regular green circle
- (![green circle](/static/images/help/green_circle.png)) means they
+ circle (<span class="indicator green"></span>) means that some are recently but not currently active, while others are state unknown. A regular green circle
+ (<span class="indicator green solid"></span>) means they
  are all at least recently active.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
@@ -321,7 +318,7 @@ right sidebar and choose “Message formatting” from the drop-down menu.
 
 You can receive all activity from all streams, or just some streams,
 or just messages in which you were mentioned, by playing with the
-Settings — go to the cog (![cog](/static/images/help/cog.png)) in the
+Settings — go to the cog (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the
 upper right corner of the right sidebar and choose “Settings”
 there. You can also post to a stream by email — the Manage Streams
 pane shows you the email address to use for any particular stream.
@@ -342,9 +339,9 @@ pane shows you the email address to use for any particular stream.
    * Zulip also lets you enter emoji by name, using the format
      `:name:`. So sending `:octopus: :film_projector:
      :revolving_hearts:` will produce
-     ![octopus](/static/third/gemoji/images/emoji/octopus.png)
-     ![film_projector](/static/third/gemoji/images/emoji/film_projector.png)
-     ![revolving_hearts](/static/third/gemoji/images/emoji/revolving_hearts.png). You
+     <img alt="octopus" class="inline" src="/static/third/gemoji/images/emoji/octopus.png"/>
+     <img alt="film_projector" class="inline" src="/static/third/gemoji/images/emoji/film_projector.png"/>
+     <img alt="revolving_hearts" class="inline" src="/static/third/gemoji/images/emoji/revolving_hearts.png"/>
      can find emoji that are accessible this way by typing a colon and
      two or more letters of the alphabet — a pop-up menu will appear
      showing the first five emoji-names containing the letters you
@@ -362,7 +359,7 @@ pane shows you the email address to use for any particular stream.
 ### Customization
 
  * **Zulip**. For customizing Zulip itself, there is a cog
-   (![cog](/static/images/help/cog.png)) in the upper right corner of
+   (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right corner of
    the right sidebar, and it brings up a menu of options.
 
  * **Streams**. For customizing your stream subscriptions and
