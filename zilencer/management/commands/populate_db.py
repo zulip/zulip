@@ -5,7 +5,7 @@ from __future__ import print_function
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now
 
-from zerver.models import Message, UserProfile, Stream, Recipient, \
+from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
@@ -15,6 +15,7 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.models import DefaultStream, get_stream, get_realm
 from zilencer.models import Deployment
+import datetime
 
 import random
 import os
@@ -41,69 +42,70 @@ def create_streams(realms, realm, stream_list):
         stream_set.add((realm.domain, stream_name))
     bulk_create_streams(realms, stream_set)
 
+
 class Command(BaseCommand):
     help = "Populate a test database"
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
         parser.add_argument('-n', '--num-messages',
-                    dest='num_messages',
-                    type=int,
-                    default=600,
-                    help='The number of messages to create.')
+                            dest='num_messages',
+                            type=int,
+                            default=600,
+                            help='The number of messages to create.')
 
         parser.add_argument('--extra-users',
-                    dest='extra_users',
-                    type=int,
-                    default=0,
-                    help='The number of extra users to create')
+                            dest='extra_users',
+                            type=int,
+                            default=0,
+                            help='The number of extra users to create')
 
         parser.add_argument('--huddles',
-                    dest='num_huddles',
-                    type=int,
-                    default=3,
-                    help='The number of huddles to create.')
+                            dest='num_huddles',
+                            type=int,
+                            default=3,
+                            help='The number of huddles to create.')
 
         parser.add_argument('--personals',
-                    dest='num_personals',
-                    type=int,
-                    default=6,
-                    help='The number of personal pairs to create.')
+                            dest='num_personals',
+                            type=int,
+                            default=6,
+                            help='The number of personal pairs to create.')
 
         parser.add_argument('--threads',
-                    dest='threads',
-                    type=int,
-                    default=10,
-                    help='The number of threads to use.')
+                            dest='threads',
+                            type=int,
+                            default=10,
+                            help='The number of threads to use.')
 
         parser.add_argument('--percent-huddles',
-                    dest='percent_huddles',
-                    type=float,
-                    default=15,
-                    help='The percent of messages to be huddles.')
+                            dest='percent_huddles',
+                            type=float,
+                            default=15,
+                            help='The percent of messages to be huddles.')
 
         parser.add_argument('--percent-personals',
-                    dest='percent_personals',
-                    type=float,
-                    default=15,
-                    help='The percent of messages to be personals.')
+                            dest='percent_personals',
+                            type=float,
+                            default=15,
+                            help='The percent of messages to be personals.')
 
         parser.add_argument('--stickyness',
-                    dest='stickyness',
-                    type=float,
-                    default=20,
-                    help='The percent of messages to repeat recent folks.')
+                            dest='stickyness',
+                            type=float,
+                            default=20,
+                            help='The percent of messages to repeat recent folks.')
 
         parser.add_argument('--nodelete',
-                    action="store_false",
-                    default=True,
-                    dest='delete',
-                    help='Whether to delete all the existing messages.')
+                            action="store_false",
+                            default=True,
+                            dest='delete',
+                            help='Whether to delete all the existing messages.')
 
         parser.add_argument('--test-suite',
-                    default=False,
-                    action="store_true",
-                    help='Whether to delete all the existing messages.')
+                            default=False,
+                            action="store_true",
+                            help='Whether to delete all the existing messages.')
 
     def handle(self, **options):
         # type: (**Any) -> None
@@ -177,14 +179,26 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = [user_profile.id for user_profile in UserProfile.objects.all()] # type: List[int]
+        user_profiles = list(UserProfile.objects.all()) # type: List[UserProfile]
+
+        if not options["test_suite"]:
+            # Populate users with some bar data
+            for user in user_profiles:
+                status = 1 # type: int
+                date = datetime.datetime.now() # type: datetime.datetime
+                client = get_client("website")
+                for i in range(3):
+                    client = get_client("API")
+                UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
+
+        user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_huddle(random.sample(user_profiles, random.randint(3, 4)))
+            get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = [random.sample(user_profiles, 2)
+        personals_pairs = [random.sample(user_profiles_ids, 2)
                            for i in range(options["num_personals"])]
 
         threads = options["threads"]
@@ -328,7 +342,7 @@ def send_messages(data):
 
         randkey = random.randint(1, random_max)
         if (num_messages > 0 and
-            random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
+                random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
             # Use an old recipient
             message_type, recipient_id, saved_data = recipients[num_messages - 1]
             if message_type == Recipient.PERSONAL:
@@ -355,7 +369,7 @@ def send_messages(data):
             message.sender = get_user_profile_by_id(sender_id)
         elif message_type == Recipient.PERSONAL:
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                         type_id=personals_pair[0])
+                                                      type_id=personals_pair[0])
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data['personals_pair'] = personals_pair
         elif message_type == Recipient.STREAM:
@@ -372,3 +386,4 @@ def send_messages(data):
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
+
