@@ -119,9 +119,6 @@ class RateLimitTests(ZulipTestCase):
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
         with mock.patch('time.time', return_value=(time.time() + 1)):
-            with mock.patch('time.sleep'):
-                    time.sleep(1)
+            result = self.send_api_message(email, "Good message")
 
-                    result = self.send_api_message(email, "Good message")
-
-                    self.assert_json_success(result)
+            self.assert_json_success(result)
