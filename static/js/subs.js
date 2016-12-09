@@ -664,6 +664,32 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
     });
 }
 
+function create_stream() {
+    var stream = $("#create_stream_name").val().trim();
+    var description = $("#create_stream_description").val().trim();
+    var accessibility = $("#stream_creation_form input[name=privacy]:checked").val();
+    var announce = $("#announce-new-stream input").prop("checked");
+
+    var invite_only = (accessibility === "invite-only");
+
+    var principals = _.map(
+        $("#stream_creation_form input:checkbox[name=user]:checked"),
+        function (elem) {
+            return $(elem).val();
+        }
+    );
+
+    // You are always subscribed to streams you create.
+    principals.push(page_params.email);
+
+    ajaxSubscribeForCreation(stream,
+        description,
+        principals,
+        invite_only,
+        announce
+    );
+}
+
 // Within the new stream modal...
 function update_announce_stream_state() {
     // If the stream is invite only, or everyone's added, disable
@@ -684,6 +710,10 @@ function update_announce_stream_state() {
 }
 
 function show_new_stream_modal() {
+    $("#stream-creation").modal("show");
+}
+
+function init_new_stream_modal() {
     $('#people_to_add').html(templates.render('new_stream_users', {
         users: people.get_rest_of_realm()
     }));
@@ -696,7 +726,16 @@ function show_new_stream_modal() {
 
     $("#stream_name_error").hide();
 
-    $('#stream-creation').modal("show");
+    show_new_stream_modal();
+}
+
+function hide_principals_size_warning() {
+    $("#principals-size-warning").modal("hide");
+}
+
+function show_principals_size_warning(principals) {
+    $("#principals-size-warning").modal("show");
+    $("#btn-invite").text(i18n.t("Invite __count__ people", { count: principals.length }));
 }
 
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
@@ -741,7 +780,7 @@ $(function () {
         var stream_status = compose.check_stream_existence(stream);
         if (stream_status === "does-not-exist" || !stream) {
             $('#create_stream_name').val(stream);
-            show_new_stream_modal();
+            init_new_stream_modal();
             $('#create_stream_name').focus();
         } else {
             ajaxSubscribe(stream);
@@ -816,8 +855,7 @@ $(function () {
 
     $("#stream_creation_form").on("submit", function (e) {
         e.preventDefault();
-        var stream = $.trim($("#create_stream_name").val());
-        var description = $.trim($("#create_stream_description").val());
+
         if (!$("#stream_name_error").is(":visible")) {
             var principals = _.map(
                 $("#stream_creation_form input:checkbox[name=user]:checked"),
@@ -825,14 +863,13 @@ $(function () {
                     return $(elem).val();
                 }
             );
-            // You are always subscribed to streams you create.
-            principals.push(page_params.email);
-            ajaxSubscribeForCreation(stream,
-                description,
-                principals,
-                $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
-                $('#announce-new-stream input').prop('checked')
-            );
+
+            if (principals.length >= 100) {
+                hide_new_stream_modal();
+                show_principals_size_warning(principals);
+            } else {
+                create_stream();
+            }
         }
     });
 
@@ -1163,6 +1200,15 @@ $(function () {
                               data.user_email +
                               "']");
         tr.remove();
+    });
+
+    $("#principals-size-warning").on("click", "#btn-cancel", function (e) {
+        show_new_stream_modal();
+        hide_principals_size_warning();
+    });
+
+    $("#principals-size-warning").on("click", "#btn-invite", function (e) {
+        create_stream();
     });
 
 });

@@ -50,3 +50,18 @@
       </div>
   </form>
 </div>
+
+<div class="modal hide" id="principals-size-warning" tabindex="-1" role="dialog"
+     aria-labelledby="principals-size-warning-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="principals-size-warning-label">{% trans %}Confirm invites{% endtrans %}</h3>
+  </div>
+  <div class="modal-body">
+    <p>{% trans %}You're going to invite a lot of people! Are you sure?{% endtrans %}</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" id="btn-cancel" aria-hidden="true">{{ _("Let me change it") }}</button>
+    <button class="btn btn-warning" id="btn-invite" data-dismiss="modal">{{ _("Invite") }}</button>
+  </div>
+</div>
