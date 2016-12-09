@@ -31,6 +31,7 @@ as a “**realm**”.
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
 - **[Using emoji in messages](/help/emoji)**
+- **[Keyboard shortcuts](/help/keyboard-shortcuts)**
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Change Your Name](/help/name-change)**
 - **[Message formatting](/help/message-formatting)**
@@ -463,5 +464,3 @@ You can't do any of that with a unsubscribed stream.
 
 **[Go back to “Terminology”](#special-terms-used-with-zulip)** |
   **[Go back to “Table of contents”](#table-of-contents)**
-
-[end]
