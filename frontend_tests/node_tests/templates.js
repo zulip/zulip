@@ -417,7 +417,15 @@ function render(template_name, args) {
             is_stream: true,
             content: 'This is message one.',
             last_edit_timestr: '11:00',
-            starred: true
+            starred: true,
+            reaction_list: {
+                thumbs_up : "thumbs_up",
+                hearts : "hearts",
+                laughing : "laughing",
+                face_with_open_mouth : "face_with_open_mouth",
+                disappointed : "disappointed",
+                rage : "rage"
+            }
         }
     };
 

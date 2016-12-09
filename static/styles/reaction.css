@@ -9,7 +9,7 @@
 
 
 div.message_content .reaction_content_emoji_wrapper {
-    display: inline-block;
+    display: none;
     height: 20px;
     border-radius: 5px;
     border: 1px solid #dddddd;

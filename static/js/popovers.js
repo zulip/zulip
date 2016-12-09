@@ -102,9 +102,20 @@ exports.toggle_actions_popover = function (element, id) {
 };
 
 
+// Reaction
+function update_reaction(message_id) {
+  // Update the message object pointed to by the various message
+  // lists.
+  var message = ui.find_message(message_id);
+  var reaction_name = "simple_smile";
+  unread.mark_message_as_read(message);
+  ui.update_reaction(message.id, reaction_name);
+  reaction.send_reaction(message.id, reaction_name);
+}
+
 
 exports.toggle_reactions_popover = function (element, id) {
-     console.log('in emoji toggle')
+
      var last_popover_elem = current_actions_popover_elem;
      popovers.hide_all();
      if (last_popover_elem !== undefined
@@ -113,24 +124,36 @@ exports.toggle_reactions_popover = function (element, id) {
          // by clicking on the same element that caused the popover.
          return;
      }
- 
+
      current_msg_list.select_id(id);
      var elt = $(element);
 
+     var reaction_emojis = {
+            thumbs_up : "thumbs_up",
+            hearts : "hearts",
+            laughing : "laughing",
+            face_with_open_mouth : "face_with_open_mouth",
+            disappointed : "disappointed",
+            rage : "rage"
+     }
+
+
      var content = templates.render('emoji_reaction_popover_content', {
-         emoji_list: emoji.reaction_name_to_css_class
+         emoji_list: reaction_emojis,
+         message_id: id
      });
+
      if (elt.data('popover') === undefined) {
          var message = current_msg_list.get(id);
- 
+
          var args = {
              message: message,
          };
- 
+
          var ypos = elt.offset().top - viewport.scrollTop();
          elt.popover({
              placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
-             title:     "Reactions",
+             title:     "",
              content:   content,
              trigger:   "manual"
          });
@@ -326,7 +349,6 @@ exports.register_click_handlers = function () {
 
     // Reaction Popover We want to Create our own submenu
     $("#main_div").on("click", ".message-reaction", function (e) {
-        console.log('foo')
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         popovers.toggle_reactions_popover(this, rows.id(row));

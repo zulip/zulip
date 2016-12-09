@@ -799,6 +799,7 @@ JS_SPECS = {
             'js/floating_recipient_bar.js',
             'js/ui.js',
             'js/pointer.js',
+            'js/reaction.js',
             'js/click_handlers.js',
             'js/scroll_bar.js',
             'js/gear_menu.js',

@@ -127,6 +127,24 @@ $(function () {
         popovers.hide_all();
     });
 
+    $("body").on("click", ".reaction-emoji", function (e) {
+
+        e.stopPropagation();
+        popovers.hide_all();
+        var reaction_choice = $(e.target).attr("title");
+        update_reaction($(this).parent().attr('message_id'), reaction_choice);
+    });
+
+    function update_reaction(message_id, reaction_choice) {
+        // Update the message object pointed to by the various message
+        // lists.
+        var message = ui.find_message(message_id);
+
+        unread.mark_message_as_read(message);
+        ui.update_reaction(message.id, reaction_choice);
+        reaction.send_reaction(message.id, reaction_choice);
+    }
+
     // RECIPIENT BARS
 
     function get_row_id_for_narrowing(narrow_link_elem) {
