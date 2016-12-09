@@ -38,6 +38,9 @@
               <span class="message_star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty empty-star{{/if}}"
                     title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}"></span>
             </div>
+             <div zid="{{msg/id}}" class="reaction_hover" >
+                  <span class="message-reaction icon-vector-smile">
+            </div>
             <span class="edit_content"></span>
             <div class="info actions_hover">
               <i class="icon-vector-chevron-down"></i>
@@ -49,7 +52,34 @@
             </div>
           </div>
         </div>
-        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
+        <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}
+          <div class="reaction_content_group">
+            <div class="reaction_content_emoji_wrapper">
+              <span class="reaction-content-emoji emoji-thumbs_up"></span>
+              <span class="reaction-content-emoji-count ">1</span>
+            </div>
+            <div class="reaction_content_emoji_wrapper">
+              <span class="reaction-content-emoji emoji-hearts"></span>
+              <span class="reaction-content-emoji-count ">1</span>
+            </div> 
+            <div class="reaction_content_emoji_wrapper">
+              <span class="reaction-content-emoji emoji-laughing"></span>
+              <span class="reaction-content-emoji-count ">1</span>
+            </div>
+            <div class="reaction_content_emoji_wrapper">
+              <span class="reaction-content-emoji emoji-face_with_open_mouth"></span>
+              <span class="reaction-content-emoji-count ">1</span>
+            </div>
+            <div class="reaction_content_emoji_wrapper">
+              <span class="reaction-content-emoji emoji-disappointed"></span>
+              <span class="reaction-content-emoji-count ">1</span>
+            </div> 
+            <div class="reaction_content_emoji_wrapper">
+              <span class="reaction-content-emoji emoji-rage"></span>
+              <span class="reaction-content-emoji-count ">1</span>
+            </div> 
+          </div>
+        </div>
         {{#if last_edit_timestr}}
           {{#unless include_sender}}
             <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>

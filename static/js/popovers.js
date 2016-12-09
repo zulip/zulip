@@ -101,6 +101,44 @@ exports.toggle_actions_popover = function (element, id) {
     }
 };
 
+
+
+exports.toggle_reactions_popover = function (element, id) {
+     console.log('in emoji toggle')
+     var last_popover_elem = current_actions_popover_elem;
+     popovers.hide_all();
+     if (last_popover_elem !== undefined
+         && last_popover_elem.get()[0] === element) {
+         // We want it to be the case that a user can dismiss a popover
+         // by clicking on the same element that caused the popover.
+         return;
+     }
+ 
+     current_msg_list.select_id(id);
+     var elt = $(element);
+
+     var content = templates.render('emoji_reaction_popover_content', {
+         emoji_list: emoji.reaction_name_to_css_class
+     });
+     if (elt.data('popover') === undefined) {
+         var message = current_msg_list.get(id);
+ 
+         var args = {
+             message: message,
+         };
+ 
+         var ypos = elt.offset().top - viewport.scrollTop();
+         elt.popover({
+             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
+             title:     "Reactions",
+             content:   content,
+             trigger:   "manual"
+         });
+         elt.popover("show");
+         current_actions_popover_elem = elt;
+     }
+};
+
 function get_action_menu_menu_items() {
     return $('li:not(.divider):visible a', current_actions_popover_elem.data('popover').$tip);
 }
@@ -286,6 +324,29 @@ exports.register_click_handlers = function () {
         show_message_info_popover(this, rows.id(row));
     });
 
+    // Reaction Popover We want to Create our own submenu
+    $("#main_div").on("click", ".message-reaction", function (e) {
+        console.log('foo')
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        popovers.toggle_reactions_popover(this, rows.id(row));
+    });
+
+    $("#reaction-box").on("click", ".emoji", function (e) {
+        var emoji_choice = $(e.target).attr("title");
+        console.log(emoji_choice);
+        // var textarea = $("#new_message_content");
+        // textarea.val(textarea.val() + " " + emoji_choice);
+        // textarea.focus();
+        // update_reaction(rows.id($(this).closest(".message_row")));
+        e.stopPropagation();
+    });
+
+    $("#main_div").on("click", ".reaction", function (e) {
+        e.stopPropagation();
+        popovers.hide_all();
+        update_reaction(rows.id($(this).closest(".message_row")));
+    });
     (function () {
         // create locally scoped variables for drag tracking.
         var meta = {
