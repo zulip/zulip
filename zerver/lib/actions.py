@@ -913,10 +913,11 @@ def update_to_dict_cache(message):
     """This function is called when a reaction is added/removed to a message.
     """
     items_for_remote_cache = {}
-    items_for_remote_cache[to_dict_cache_key(message, True)] = \
-      (MessageDict.to_dict_uncached(message, apply_markdown=True),)
-    items_for_remote_cache[to_dict_cache_key(message, False)] = \
-      (MessageDict.to_dict_uncached(message, apply_markdown=False),)
+    val = (MessageDict.to_dict_uncached(message, apply_markdown=True),)
+    items_for_remote_cache[to_dict_cache_key(message, True)] = val
+
+    val = (MessageDict.to_dict_uncached(message, apply_markdown=False),)
+    items_for_remote_cache[to_dict_cache_key(message, False)] = val
     cache_set_many(items_for_remote_cache)
 
 
