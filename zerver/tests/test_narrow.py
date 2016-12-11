@@ -414,6 +414,7 @@ class GetOldMessagesTest(ZulipTestCase):
         return query_ids
 
     def test_successful_get_old_messages_reaction(self):
+        # type: () -> None
         """
         Test old `/json/messages` returns reactions.
         """
@@ -423,9 +424,9 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.login("othello@zulip.com")
         reaction_name = 'simple_smile'
-        payload = self.client_post('/json/reactions',
-                                   {'emoji': reaction_name,
-                                    'message_id': message_id})
+
+        url = '/json/messages/{}/emoji_reactions/{}'.format(message_id, reaction_name)
+        payload = self.client_put(url)
         self.assert_json_success(payload)
 
         self.login("hamlet@zulip.com")
