@@ -636,7 +636,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
         sending_client = make_client(name="test suite")
 
         needed_ids = []
-        for i in range(100):
+        for i in range(5):
             for recipient in [pm_recipient, stream_recipient]:
                 message = Message(
                     sender=sender,

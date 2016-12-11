@@ -22,6 +22,7 @@ from zerver.models import (
     Stream,
     UserProfile,
     UserMessage,
+    Reaction
 )
 
 from typing import Any, Dict, List, Optional, Tuple
@@ -78,7 +79,7 @@ class MessageDict(object):
                 recipient_id = message.recipient.id,
                 recipient_type = message.recipient.type,
                 recipient_type_id = message.recipient.type_id,
-                reactions = message.reaction_set.all()
+                reactions = Reaction.get_raw_db_rows([message.id])
         )
 
     @staticmethod

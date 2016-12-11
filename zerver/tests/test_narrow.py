@@ -333,7 +333,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIsInstance(result["messages"], list)
         for message in result["messages"]:
             for field in ("content", "content_type", "display_recipient",
-                          "avatar_url", "recipient_id", "sender_full_name",
+                         "avatar_url", "recipient_id", "sender_full_name",
                           "sender_short_name", "timestamp", "reactions"):
                 self.assertIn(field, message)
             # TODO: deprecate soon in favor of avatar_url
@@ -356,49 +356,32 @@ class GetOldMessagesTest(ZulipTestCase):
 
         return query_ids
 
-    def add_reaction_to_message(self, message_id, email):
-        self.login(email)
-        payload = self.client_post('/json/reactions',
-                                   {'emoji': 'simple_smile',
-                                    'message_id': message_id})
-        self.assert_json_success(payload)
-        result = ujson.loads(payload.content)
-        return result
-
     def test_successful_get_old_messages_reaction(self):
         """
         Test old `/json/messages` returns reactions.
-
-        - Login as a `User A`, subscribe to stream `S1`.
-        - Login as a `User B` and subscribe to the stream `S1`.
-        - Login as a `User A` and send a message `m1` to the stream `S1`.
-        - Login as a `User B` and react to the message `m1`.
-        - Login as a `User A` and fetch the messages.
-        - Assert on reaction for the message `m1`.
         """
-        stream = "metamorphosis"
-        hamlet_email = "hamlet@zulip.com"
-        othello_email = "othello@zulip.com"
-
-        self.login(hamlet_email)
-        self.subscribe_to_stream(hamlet_email, stream)
-
-        self.login(othello_email)
-        self.subscribe_to_stream(othello_email, stream)
-
-        self.login(hamlet_email)
-        message_id = self.send_message(hamlet_email, stream, Recipient.STREAM)
-        reaction = self.add_reaction_to_message(message_id,
-                                                othello_email)
-        self.login(othello_email)
+        self.login("hamlet@zulip.com")
         messages = self.get_and_check_messages(dict())
+        message_id = messages['messages'][0]['id']
 
+        self.login("othello@zulip.com")
+        reaction_name = 'simple_smile'
+        payload = self.client_post('/json/reactions',
+                                   {'emoji': reaction_name,
+                                    'message_id': message_id})
+        self.assert_json_success(payload)
+
+        self.login("hamlet@zulip.com")
+        messages = self.get_and_check_messages({})
+        message_to_assert = None
         for message in messages['messages']:
             if message['id'] == message_id:
-                self.assertEquals(message['reactions'], 1)
-                self.assertEquals(message['reactions'][0]['emoji_name'],
-                                  reaction.emoji_name)
+                message_to_assert = message
                 break
+
+        self.assertEquals(len(message_to_assert['reactions']), 1)
+        self.assertEquals(message_to_assert['reactions'][0]['emoji_name'],
+                          reaction_name)
 
     def test_successful_get_old_messages(self):
         """
