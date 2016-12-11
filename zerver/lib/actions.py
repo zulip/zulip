@@ -919,19 +919,6 @@ def do_send_messages(messages):
     return already_sent_ids + [message['message'].id for message in messages]
 
 
-def update_to_dict_cache(message):
-    # type: (Message) -> None
-    """This function is called when a reaction is added/removed to a message.
-    """
-    items_for_remote_cache = {}
-    val = (MessageDict.to_dict_uncached(message, apply_markdown=True),)
-    items_for_remote_cache[to_dict_cache_key(message, True)] = val
-
-    val = (MessageDict.to_dict_uncached(message, apply_markdown=False),)
-    items_for_remote_cache[to_dict_cache_key(message, False)] = val
-    cache_set_many(items_for_remote_cache)
-
-
 def do_add_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, text_type) -> None
     reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
@@ -948,7 +935,7 @@ def do_add_reaction(user_profile, message, emoji_name):
              'emoji_name': emoji_name} # type: Dict[str, Any]
 
     # Update the cached message since new reaction is added.
-    update_to_dict_cache(message)
+    update_to_dict_cache([message])
 
     # Recipients for message update events, including reactions, are
     # everyone who got the original message.  This means reactions
@@ -977,7 +964,7 @@ def do_remove_reaction(user_profile, message, emoji_name):
              'emoji_name': emoji_name} # type: Dict[str, Any]
 
     # Clear the cached message since reaction is removed.
-    update_to_dict_cache(message)
+    update_to_dict_cache([message])
 
     # Recipients for message update events, including reactions, are
     # everyone who got the original message.  This means reactions
