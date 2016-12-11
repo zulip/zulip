@@ -336,6 +336,22 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['email'], 'othello@zulip.com')
         self.assertEqual(person['is_admin'], False)
 
+        # Cannot take away from last admin
+        self.login('iago@zulip.com')
+        req = dict(is_admin=ujson.dumps(False))
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_success(result)
+        admin_users = realm.get_admin_users()
+        self.assertFalse(admin in admin_users)
+        person = events[0]['event']['person']
+        self.assertEqual(person['email'], 'hamlet@zulip.com')
+        self.assertEqual(person['is_admin'], False)
+        with tornado_redirected_to_list([]):
+            result = self.client_patch('/json/users/iago@zulip.com', req)
+        self.assert_json_error(result, 'Cannot remove the only organization administrator')
+
         # Make sure only admins can patch other user's info.
         self.login('othello@zulip.com')
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
@@ -719,6 +735,12 @@ class ActivateTest(ZulipTestCase):
         # Can not deactivate a nonexistent user.
         result = self.client_delete('/json/users/nonexistent@zulip.com')
         self.assert_json_error(result, 'No such user')
+
+        result = self.client_delete('/json/users/iago@zulip.com')
+        self.assert_json_success(result)
+
+        result = self.client_delete('/json/users/othello@zulip.com')
+        self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
 
         # Can not reactivate a nonexistent user.
         result = self.client_post('/json/users/nonexistent@zulip.com/reactivate')

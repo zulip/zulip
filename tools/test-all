@@ -16,7 +16,7 @@ function run {
 
 run ./tools/clean-repo
 run ./tools/test-tools
-run ./tools/lint-all
+run ./tools/lint-all --pep8
 run ./tools/test-migrations
 run ./tools/test-js-with-node
 run ./tools/run-mypy

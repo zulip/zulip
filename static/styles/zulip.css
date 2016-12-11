@@ -2483,3 +2483,17 @@ button.topic_edit_cancel {
 .add-user-list-filter {
     width: 80%;
 }
+
+/* embed */
+.message_embed {
+    border-left: 4px solid #ccc;
+    padding-left: 5px;
+    display: block;
+    margin-bottom: 10px;
+}
+.message_embed_title {
+    font-weight: bold;
+}
+.message_embed_image {
+    max-width: 80px;
+}

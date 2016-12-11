@@ -213,3 +213,7 @@ exports.build_direct_upload_widget = function (
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = avatar;
+}

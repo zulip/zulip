@@ -5,7 +5,7 @@ from __future__ import print_function
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now
 
-from zerver.models import Message, UserProfile, Stream, Recipient, \
+from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
@@ -15,31 +15,37 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.models import DefaultStream, get_stream, get_realm
 from zilencer.models import Deployment
+import datetime
 
 import random
 import os
 from optparse import make_option
-from six import text_type
 from six.moves import range
-from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None
 
 def create_users(realms, name_list, bot_type=None):
-    # type: (Mapping[text_type, Realm], Iterable[Tuple[text_type, text_type]], int) -> None
-    user_set = set() # type: Set[Tuple[text_type, text_type, text_type, bool]]
+    # type: (Mapping[Text, Realm], Iterable[Tuple[Text, Text]], int) -> None
+    user_set = set() # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realms, user_set, bot_type=bot_type, tos_version=tos_version)
 
-def create_streams(realms, realm, stream_list):
-    # type: (Mapping[text_type, Realm], Realm, Iterable[text_type]) -> None
-    stream_set = set() # type: Set[Tuple[text_type, text_type]]
-    for stream_name in stream_list:
-        stream_set.add((realm.domain, stream_name))
-    bulk_create_streams(realms, stream_set)
+def create_streams(realms, realm, stream_dict):
+    # type: (Mapping[Text, Realm], Realm, Dict[Text, Dict[Text, Any]]) -> None
+    stream_dictionary = {
+        name: {
+            "domain": realm.domain,
+            "description": options["description"],
+            "invite_only": options["invite_only"],
+              } for name, options in stream_dict.items()
+    } # type: Dict[Text, Dict[Text, Any]]
+
+    bulk_create_streams(realms, stream_dictionary)
+
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -127,7 +133,7 @@ class Command(BaseCommand):
                     string_id="mit", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
-            realms = {} # type: Dict[text_type, Realm]
+            realms = {} # type: Dict[Text, Realm]
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
 
@@ -149,8 +155,15 @@ class Command(BaseCommand):
             do_change_is_admin(iago, True)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+            stream_dict = {
+                "Verona": {"description": "A city in Italy", "invite_only": False},
+                "Denmark": {"description": "A Scandinavian country", "invite_only": False},
+                "Scotland": {"description": "Located in the United Kingdom", "invite_only": False},
+                "Venice": {"description": "A northeastern Italian city", "invite_only": False},
+                "Rome": {"description": "Yet another Italian city", "invite_only": False}
+            } # type: Dict[Text, Dict[Text, Any]]
 
-            create_streams(realms, zulip_realm, stream_list)
+            create_streams(realms, zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
                                  for name in stream_list] # type: List[int]
             # Create subscriptions to streams.  The following
@@ -177,14 +190,26 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = [user_profile.id for user_profile in UserProfile.objects.all()] # type: List[int]
+        user_profiles = list(UserProfile.objects.all()) # type: List[UserProfile]
+
+        if not options["test_suite"]:
+            # Populate users with some bar data
+            for user in user_profiles:
+                status = 1 # type: int
+                date = datetime.datetime.now() # type: datetime.datetime
+                client = get_client("website")
+                for i in range(3):
+                    client = get_client("API")
+                UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
+
+        user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_huddle(random.sample(user_profiles, random.randint(3, 4)))
+            get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = [random.sample(user_profiles, 2)
+        personals_pairs = [random.sample(user_profiles_ids, 2)
                            for i in range(options["num_personals"])]
 
         threads = options["threads"]
@@ -242,18 +267,28 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                zulip_stream_list = ["devel", "all", "announce", "design", "support", "social", "test",
-                                     "errors", "sales"]
-                create_streams(realms, zulip_realm, zulip_stream_list)
+                zulip_stream_dict = {
+                    "devel": {"description": "For developing", "invite_only": False},
+                    "all": {"description": "For everything", "invite_only": False},
+                    "announce": {"description": "For announcements", "invite_only": False},
+                    "design": {"description": "For design", "invite_only": False},
+                    "support": {"description": "For support", "invite_only": False},
+                    "social": {"description": "For socializing", "invite_only": False},
+                    "test": {"description": "For testing", "invite_only": False},
+                    "errors": {"description": "For errors", "invite_only": False},
+                    "sales": {"description": "For sales discussion", "invite_only": False}
+                }  # type: Dict[Text, Dict[Text, Any]]
+                create_streams(realms, zulip_realm, zulip_stream_dict)
 
                 # Add a few default streams
-                for stream_name in ["design", "devel", "social", "support"]:
-                    DefaultStream.objects.create(realm=zulip_realm, stream=get_stream(stream_name, zulip_realm))
+                for default_stream_name in ["design", "devel", "social", "support"]:
+                    DefaultStream.objects.create(realm=zulip_realm,
+                                                 stream=get_stream(default_stream_name, zulip_realm))
 
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
                 profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
-                for i, stream_name in enumerate(zulip_stream_list):
+                for i, stream_name in enumerate(zulip_stream_dict):
                     stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
                     recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                     for profile in profiles:
@@ -363,7 +398,7 @@ def send_messages(data):
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).user_profile
-            message.subject = stream.name + text_type(random.randint(1, 3))
+            message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
         message.pub_date = now()
@@ -372,3 +407,4 @@ def send_messages(data):
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
+

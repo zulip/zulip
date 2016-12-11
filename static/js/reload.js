@@ -280,3 +280,7 @@ window.addEventListener('beforeunload', function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = reload;
+}

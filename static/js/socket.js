@@ -409,3 +409,7 @@ Socket.prototype = {
 
 return Socket;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = Socket;
+}

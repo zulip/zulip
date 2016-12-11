@@ -1,5 +1,9 @@
 var subs = (function () {
 
+var meta = {
+    callbacks: {},
+    stream_created: false
+};
 var exports = {};
 
 function settings_for_sub(sub) {
@@ -240,7 +244,7 @@ exports.set_color = function (stream_id, color) {
 exports.rerender_subscribers_count = function (sub) {
     var id = parseInt(sub.stream_id, 10);
     stream_data.update_subscribers_count(sub);
-    $(".stream-row[data-stream-id='" + id + "'] .subscriber-count").text(sub.subscriber_count);
+    $(".stream-row[data-stream-id='" + id + "'] .subscriber-count-text").text(sub.subscriber_count);
 };
 
 function add_email_hint(row, email_address_hint_content) {
@@ -266,10 +270,17 @@ function add_sub_to_table(sub) {
     sub = stream_data.add_admin_options(sub);
     stream_data.update_subscribers_count(sub);
     var html = templates.render('subscription', sub);
-    $('#create_or_filter_stream_row').after(html);
-    settings_for_sub(sub).collapse('show');
+    var settings_html = templates.render('subscription_settings', sub);
+    $(".streams-list").append(html);
+    $(".subscriptions .settings").append($(settings_html));
+
     var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
     add_email_hint(sub, email_address_hint_content);
+
+    if (meta.stream_created) {
+        $(".stream-row[data-stream-name='" + meta.stream_created + "']").click();
+        meta.stream_created = false;
+    }
 }
 
 function format_member_list_elem(email) {
@@ -374,7 +385,6 @@ exports.show_settings_for = function (stream_name) {
     var stream = $(".subscription_settings[data-stream-name='" + stream_name + "']");
     $(".subscription_settings[data-stream].show").removeClass("show");
 
-    $("#subscription_overlay").fadeIn(300);
     $("#subscription_overlay .subscription_settings.show").removeClass("show");
     sub_settings.addClass("show");
 
@@ -399,11 +409,11 @@ exports.mark_subscribed = function (stream_name, attrs) {
         }
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
+
         if (button.length !== 0) {
             exports.rerender_subscribers_count(sub);
 
             button.toggleClass("checked");
-            button.parent().children(".preview-stream").text(i18n.t("Narrow"));
             // Add the user to the member list if they're currently
             // viewing the members of this stream
             if (sub.render_subscribers && settings.hasClass('in')) {
@@ -448,7 +458,6 @@ exports.mark_sub_unsubscribed = function (sub) {
 
         var button = button_for_sub(sub);
         button.toggleClass("checked");
-        button.parent().children(".preview-stream").text(i18n.t("Preview"));
 
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {
@@ -477,7 +486,18 @@ exports.mark_sub_unsubscribed = function (sub) {
     }
 
     $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
+
+    $(".stream-row[data-stream-id='" + sub.stream_id + "']").attr("data-temp-view", true);
 };
+
+// these streams are miscategorized so they don't jump off the page when being
+// unsubscribed from, but should be cleared and sorted when you apply an actual
+// filter.
+function remove_temporarily_miscategorized_streams() {
+    $("[data-temp-view]").removeAttr("data-temp-view", "false");
+}
+
+exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
@@ -494,9 +514,11 @@ exports.filter_table = function (query) {
             var sub_name = sub.name.toLowerCase();
             var matches_list = search_terms.indexOf(sub_name) > -1;
             var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
+
             return matches_list || matches_last_val;
         }());
-        flag = flag && (sub.subscribed || !query.subscribed_only);
+        flag = flag && ((sub.subscribed || !query.subscribed_only) ||
+                        $(row).attr("data-temp-view") === "true");
 
         if (flag) {
             $(row).removeClass("notdisplayed");
@@ -504,17 +526,50 @@ exports.filter_table = function (query) {
             $(row).addClass("notdisplayed");
         }
     });
+
+    if ($(".stream-row.active").hasClass("notdisplayed")) {
+        $(".right .settings").hide();
+        $(".nothing-selected").show();
+        $(".stream-row.active").removeClass("active");
+    }
 };
 
 function actually_filter_streams() {
-    var search_box = $("#create_or_filter_stream_row input[type='text']");
+    var search_box = $("#add_new_subscription input[type='text']");
     var query = search_box.expectOne().val().trim();
-    exports.filter_table({input: query});
+    var subscribed_only;
+    if (components.toggle.lookup("stream-filter-toggle")) {
+        subscribed_only = components.toggle.lookup("stream-filter-toggle").value() === "Subscribed";
+    } else {
+        subscribed_only = false;
+    }
+    exports.filter_table({ input: query, subscribed_only: subscribed_only });
 }
 
 var filter_streams = _.throttle(actually_filter_streams, 50);
 
-exports.setup_page = function () {
+exports.setup_page = function (callback) {
+    function initialize_components() {
+        var stream_filter_toggle = components.toggle({
+            name: "stream-filter-toggle",
+            selected: 0,
+            values: [
+                { label: "Subscribed" },
+                { label: "All Streams" },
+            ],
+            callback: function (name) {
+                actually_filter_streams();
+                remove_temporarily_miscategorized_streams();
+            }
+        }).get();
+
+        if (should_list_all_streams()) {
+            $("#subscriptions_table .search-container").prepend(stream_filter_toggle);
+        }
+
+        // show the "Stream Settings" header by default.
+        $(".display-type #stream_settings_title").show();
+    }
 
     function _populate_and_fill() {
         var sub_rows = stream_data.get_streams_for_settings_page();
@@ -528,14 +583,24 @@ exports.setup_page = function () {
         };
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
-
+        initialize_components();
+        actually_filter_streams();
         var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
         _.each(sub_rows, function (row) {
             add_email_hint(row, email_address_hint_content);
         });
 
-        $("#create_or_filter_stream_row input[type='text']").on("input", filter_streams);
+        $("#add_new_subscription input[type='text']").on("input", function () {
+            remove_temporarily_miscategorized_streams();
+            actually_filter_streams();
+        });
+
         $(document).trigger($.Event('subs_page_loaded.zulip'));
+
+        if (callback) {
+            callback();
+            exports.onlaunchtrigger();
+        }
     }
 
     function populate_and_fill() {
@@ -549,6 +614,34 @@ exports.setup_page = function () {
     if (!should_list_all_streams()) {
         $('#create_stream_button').val(i18n.t("Subscribe"));
     }
+};
+
+// add a function to run on subscription page launch by name,
+// and specify whether it should be kept or just run once (boolean).
+exports.onlaunch = function (name, callback, keep) {
+    meta.callbacks[name] = {
+        func: callback,
+        keep: keep
+    };
+};
+
+exports.onlaunchtrigger = function () {
+    for (var x in meta.callbacks) {
+        if (typeof meta.callbacks[x].func === "function") {
+            meta.callbacks[x].func();
+
+            // delete if it should not be kept.
+            if (!meta.callbacks[x].keep) {
+                delete meta.callbacks[x];
+            }
+        }
+    }
+};
+
+exports.launch = function () {
+    exports.setup_page(function () {
+        $("#subscription_overlay").fadeIn(300);
+    });
 };
 
 exports.update_subscription_properties = function (stream_name, property, value) {
@@ -601,7 +694,8 @@ function ajaxSubscribe(stream) {
         data: {subscriptions: JSON.stringify([{name: stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
-            exports.filter_table({input: ""});
+
+            actually_filter_streams();
 
             var res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
@@ -636,10 +730,6 @@ function ajaxUnsubscribe(stream) {
     });
 }
 
-function hide_new_stream_modal() {
-    $('#stream-creation').modal("hide");
-}
-
 function ajaxSubscribeForCreation(stream, description, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
@@ -653,13 +743,11 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
             $("#subscriptions-status").hide();
-            hide_new_stream_modal();
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
             ui.report_error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-            hide_new_stream_modal();
         }
     });
 }
@@ -684,6 +772,8 @@ function update_announce_stream_state() {
 }
 
 function show_new_stream_modal() {
+    $("#stream-creation").removeClass("hide");
+    $(".right .settings").hide();
     $('#people_to_add').html(templates.render('new_stream_users', {
         users: people.get_rest_of_realm()
     }));
@@ -695,8 +785,6 @@ function show_new_stream_modal() {
     $('#announce-new-stream input').prop('checked', true);
 
     $("#stream_name_error").hide();
-
-    $('#stream-creation').modal("show");
 }
 
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
@@ -729,8 +817,31 @@ $(function () {
     // when new messages come in, but it's fairly quick.
     stream_list.build_stream_list();
 
-    $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {
+    var show_subs_pane = {
+        nothing_selected: function () {
+            $(".nothing-selected, #stream_settings_title").show();
+            $("#add_new_stream_title, .settings, #stream-creation").hide();
+        },
+        stream_creation: function () {
+            $("#stream-creation, #add_new_stream_title").show();
+            $("#stream_settings_title, .settings, .nothing-selected").hide();
+        },
+        settings: function () {
+            $(".settings, #stream_settings_title").show();
+            $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
+        },
+    };
+
+    $("#subscriptions_table").on("click", "#create_stream_button", function (e) {
         e.preventDefault();
+        // this changes the tab switcher (settings/preview) which isn't necessary
+        // to a add new stream title.
+        $(".display-type #add_new_stream_title").show();
+        $(".display-type #stream_settings_title").hide();
+
+        $(".stream-row.active").removeClass("active");
+
+        show_subs_pane.stream_creation();
 
         if (!should_list_all_streams()) {
             ajaxSubscribe($("#search_stream_name").val());
@@ -738,19 +849,18 @@ $(function () {
         }
 
         var stream = $.trim($("#search_stream_name").val());
-        var stream_status = compose.check_stream_existence(stream);
-        if (stream_status === "does-not-exist" || !stream) {
-            $('#create_stream_name').val(stream);
-            show_new_stream_modal();
-            $('#create_stream_name').focus();
-        } else {
-            ajaxSubscribe(stream);
-        }
+        $('#create_stream_name').val(stream);
+        show_new_stream_modal();
+        $('#create_stream_name').focus();
     });
 
-    $('#stream_creation_form').on('change',
-                                  '#user-checkboxes input, #make-invite-only input',
-                                  update_announce_stream_state);
+    $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
+
+
+    $(".subscriptions").on("click", "[data-dismiss]", function (e) {
+        e.preventDefault();
+        show_subs_pane.nothing_selected();
+    });
 
     // 'Check all' and 'Uncheck all' links
     $(document).on('click', '.subs_set_all_users', function (e) {
@@ -786,35 +896,38 @@ $(function () {
         e.preventDefault();
     });
 
-    var announce_stream_docs = $("#announce-stream-docs");
-    announce_stream_docs.popover({placement: "right",
-                                  content: templates.render('announce_stream_docs'),
-                                  trigger: "manual"});
     $("body").on("mouseover", "#announce-stream-docs", function (e) {
+        var announce_stream_docs = $("#announce-stream-docs");
+        announce_stream_docs.popover({placement: "right",
+                                      content: templates.render('announce_stream_docs'),
+                                      trigger: "manual"});
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
         e.stopPropagation();
     });
     $("body").on("mouseout", "#announce-stream-docs", function (e) {
-        announce_stream_docs.popover('hide');
+        $("#announce-stream-docs").popover('hide');
         e.stopPropagation();
     });
 
-    $("#create_stream_name").on("focusout", function () {
+    $(".subscriptions").on("focusout", "#create_stream_name", function () {
         var stream = $.trim($("#create_stream_name").val());
-        var stream_status = compose.check_stream_existence(stream);
-        if (stream.length < 1) {
+        if (stream.length !== 0) {
+            var stream_status = compose.check_stream_existence(stream);
+
+            if (stream_status !== "does-not-exist") {
+                $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+                $("#stream_name_error").show();
+            } else {
+                $("#stream_name_error").hide();
+            }
+        } else {
             $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
             $("#stream_name_error").show();
-        } else if (stream_status !== "does-not-exist") {
-            $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
-            $("#stream_name_error").show();
-        } else {
-            $("#stream_name_error").hide();
         }
     });
 
-    $("#stream_creation_form").on("submit", function (e) {
+    $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
         var description = $.trim($("#create_stream_description").val());
@@ -827,6 +940,9 @@ $(function () {
             );
             // You are always subscribed to streams you create.
             principals.push(page_params.email);
+
+            meta.stream_created = stream;
+
             ajaxSubscribeForCreation(stream,
                 description,
                 principals,
@@ -842,7 +958,7 @@ $(function () {
         $(e.target).removeClass("btn-danger").text(i18n.t("Subscribed"));
     });
 
-    $("#subscriptions-status").on("click", "#close-subscriptions-status", function (e) {
+    $(".subscriptions").on("click", "#close-subscriptions-status", function (e) {
         $("#subscriptions-status").hide();
     });
 
@@ -964,11 +1080,35 @@ $(function () {
         exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
     });
 
+    function show_stream_row(node, e) {
+        $(".display-type #add_new_stream_title").hide();
+        $(".display-type #stream_settings_title, .right .settings").show();
+        $(".stream-row.active").removeClass("active");
+        if (e) {
+            show_subs_pane.settings();
+
+            $(node).addClass("active");
+            exports.show_settings_for(get_stream_name(node));
+        } else {
+            show_subs_pane.nothing_selected();
+        }
+    }
+
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            exports.show_settings_for(get_stream_name($(e.target)));
+            show_stream_row(this, e);
         }
     });
+
+    (function defocus_sub_settings() {
+        var sel = ".search-container, .streams-list, .subscriptions-header";
+
+        $("#subscriptions_table").on("click", sel, function (e) {
+            if ($(e.target).is(sel)) {
+                show_stream_row(this);
+            }
+        });
+    }());
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", function (e) {
         e.preventDefault();
@@ -1062,12 +1202,6 @@ $(function () {
         });
     });
 
-    $("body").on("click", "#subscription_overlay", function (e) {
-        if ($(e.target).is(".flex, #subscription_overlay")) {
-            $("#subscription_overlay").fadeOut(300);
-        }
-    });
-
     function redraw_privacy_related_stuff(sub_row, sub) {
         var stream_settings = settings_for_sub(sub);
         var html;
@@ -1079,6 +1213,16 @@ $(function () {
 
         html = templates.render('subscription_type', sub);
         stream_settings.find('.subscription-type').expectOne().html(html);
+
+        if (sub.invite_only) {
+            stream_settings.find(".large-icon")
+                .removeClass("hash").addClass("lock")
+                .html("<i class='icon-vector-lock'></i>");
+        } else {
+            stream_settings.find(".large-icon")
+                .addClass("hash").removeClass("lock")
+                .html("");
+        }
 
         html = templates.render('change_stream_privacy', sub);
         stream_settings.find('.change-stream-privacy').expectOne().html(html);

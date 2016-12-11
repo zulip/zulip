@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any
+from typing import Any, Text
 
 from django.core.management.base import BaseCommand, CommandParser
 
@@ -46,6 +46,9 @@ For example:
 set of streams (which can be empty, with `--streams=`).", file=sys.stderr)
             exit(1)
 
-        stream_names = [stream.strip() for stream in options["streams"].split(",")]
+        stream_dict = {
+            stream.strip(): {"description": stream.strip(), "invite_only": False}
+            for stream in options["streams"].split(",")
+        } # type: Dict[Text, Dict[Text, Any]]
         realm = get_realm(options["domain"])
-        set_default_streams(realm, stream_names)
+        set_default_streams(realm, stream_dict)

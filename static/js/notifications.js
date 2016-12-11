@@ -623,3 +623,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = notifications;
+}

@@ -308,6 +308,7 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     message.is_me_message = False
     message.mentions_user_ids = set()
     message.alert_words = set()
+    message.links_for_preview = set()
 
     if not domain:
         domain = message.sender.realm.domain

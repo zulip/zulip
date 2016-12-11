@@ -46,6 +46,14 @@ To include hyperlinks in your messages, you can either enter the link's url addr
 
 Zulip currently does not support image embedding through links.
 
+## Stream Links
+
+To link to another stream in one of your messages, you can either type `#streamName` and click the stream name in the popup, or you can start with `#` and surround your message with double asteriks `**`.
+
+![Stream Link Popup](/static/images/help/stream-link-pop-screenshot.png)
+
+![Stream Links](/static/images/help/stream-link-screenshot.png)
+
 ## Lists
 
 Begin each item in your list with `* an asterisk followed by a space` to include lists in your messages.

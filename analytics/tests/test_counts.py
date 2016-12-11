@@ -14,8 +14,7 @@ from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
 
 from datetime import datetime, timedelta
 
-from typing import Any, Type, Optional
-from six import text_type
+from typing import Any, Type, Optional, Text
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -71,7 +70,7 @@ class AnalyticsTestCase(TestCase):
     # kwargs should only ever be a UserProfile or Stream.
     def assertCountEquals(self, table, property, value, end_time = TIME_ZERO, interval = CountStat.HOUR,
                           realm = None, **kwargs):
-        # type: (Type[BaseCount], text_type, int, datetime, str, Optional[Realm], **models.Model) -> None
+        # type: (Type[BaseCount], Text, int, datetime, str, Optional[Realm], **models.Model) -> None
         if realm is None:
             realm = self.default_realm
         self.assertEqual(table.objects.filter(realm=realm,
@@ -134,7 +133,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         return count_stat
 
     def assertFillStateEquals(self, end_time, state = FillState.DONE, property = None):
-        # type: (datetime, int, Optional[text_type]) -> None
+        # type: (datetime, int, Optional[Text]) -> None
         count_stat = self.make_dummy_count_stat(end_time)
         if property is None:
             property = count_stat.property

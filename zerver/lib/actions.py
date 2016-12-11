@@ -802,6 +802,7 @@ def do_send_messages(messages):
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
 
+    links_for_embed = set() # type: Set[text_type]
     # Render our messages.
     for message in messages:
         assert message['message'].rendered_content is None
@@ -811,6 +812,7 @@ def do_send_messages(messages):
             message_users=message['active_recipients'])
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
+        links_for_embed |= message['message'].links_for_preview
 
     for message in messages:
         message['message'].update_calculated_fields()
@@ -843,6 +845,7 @@ def do_send_messages(messages):
                     um.flags |= UserMessage.flags.has_alert_word
                 if is_me_message:
                     um.flags |= UserMessage.flags.is_me_message
+
                 user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
@@ -892,6 +895,14 @@ def do_send_messages(messages):
         if message['sender_queue_id'] is not None:
             event['sender_queue_id'] = message['sender_queue_id']
         send_event(event, users)
+
+        if settings.INLINE_URL_EMBED_PREVIEW and links_for_embed:
+            event_data = {
+                'message_id': message['message'].id,
+                'message_content': message['message'].content,
+                'urls': links_for_embed}
+            queue_json_publish('embed_links', event_data, lambda x: None)
+
         if (settings.ENABLE_FEEDBACK and
             message['message'].recipient.type == Recipient.PERSONAL and
                 settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
@@ -2323,11 +2334,16 @@ def do_change_default_language(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
-def set_default_streams(realm, stream_names):
-    # type: (Realm, Iterable[text_type]) -> None
+def set_default_streams(realm, stream_dict):
+    # type: (Realm, Dict[text_type, Dict[text_type, Any]]) -> None
     DefaultStream.objects.filter(realm=realm).delete()
-    for stream_name in stream_names:
-        stream, _ = create_stream_if_needed(realm, stream_name)
+    stream_names = []
+    for name, options in stream_dict.items():
+        stream_names.append(name)
+        stream, _ = create_stream_if_needed(realm,
+                                            name,
+                                            invite_only = options["invite_only"],
+                                            stream_description = options["description"])
         DefaultStream.objects.create(stream=stream, realm=realm)
 
     # Always include the realm's default notifications streams, if it exists
@@ -2337,7 +2353,6 @@ def set_default_streams(realm, stream_names):
     log_event({'type': 'default_streams',
                'domain': realm.domain,
                'streams': stream_names})
-
 
 def notify_default_streams(realm):
     # type: (Realm) -> None
@@ -2646,6 +2661,54 @@ def update_user_message_flags(message, ums):
     for um in changed_ums:
         um.save(update_fields=['flags'])
 
+def update_to_dict_cache(changed_messages):
+    # type: (List[Message]) -> List[int]
+    """Updates the message as stored in the to_dict cache (for serving
+    messages)."""
+    items_for_remote_cache = {}
+    message_ids = []
+    for changed_message in changed_messages:
+        message_ids.append(changed_message.id)
+        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
+        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
+            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
+    cache_set_many(items_for_remote_cache)
+    return message_ids
+
+# We use transaction.atomic to support select_for_update in the attachment codepath.
+@transaction.atomic
+def do_update_embedded_data(user_profile, message, content, rendered_content):
+    # type: (UserProfile, Message, Optional[text_type], Optional[text_type]) -> None
+    event = {
+        'type': 'update_message',
+        'sender': user_profile.email,
+        'message_id': message.id}  # type: Dict[str, Any]
+    changed_messages = [message]
+
+    ums = UserMessage.objects.filter(message=message.id)
+
+    if content is not None:
+        update_user_message_flags(message, ums)
+        message.content = content
+        message.rendered_content = rendered_content
+        message.rendered_content_version = bugdown_version
+        event["content"] = content
+        event["rendered_content"] = rendered_content
+
+    log_event(event)
+    message.save(update_fields=["content", "rendered_content"])
+
+    event['message_ids'] = update_to_dict_cache(changed_messages)
+
+    def user_info(um):
+        # type: (UserMessage) -> Dict[str, Any]
+        return {
+            'id': um.user_profile_id,
+            'flags': um.flags_list()
+        }
+    send_event(event, list(map(user_info, ums)))
+
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
@@ -2743,18 +2806,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
 
-    # Update the message as stored in the (deprecated) message
-    # cache (for shunting the message over to Tornado in the old
-    # get_messages API) and also the to_dict caches.
-    items_for_remote_cache = {}
-    event['message_ids'] = []
-    for changed_message in changed_messages:
-        event['message_ids'].append(changed_message.id)
-        items_for_remote_cache[to_dict_cache_key(changed_message, True)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=True),)
-        items_for_remote_cache[to_dict_cache_key(changed_message, False)] = \
-            (MessageDict.to_dict_uncached(changed_message, apply_markdown=False),)
-    cache_set_many(items_for_remote_cache)
+    event['message_ids'] = update_to_dict_cache(changed_messages)
 
     def user_info(um):
         # type: (UserMessage) -> Dict[str, Any]

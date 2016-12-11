@@ -117,6 +117,7 @@ WEBHOOK_INTEGRATIONS = [
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('helloworld', display_name='Hello World'),
+    WebhookIntegration('heroku', display_name='Heroku'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato'),

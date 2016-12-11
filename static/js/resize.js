@@ -259,3 +259,7 @@ exports.handler = function (e) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = resize;
+}

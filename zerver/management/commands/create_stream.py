@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from six import text_type
 from typing import Any
 
 from django.core.management.base import BaseCommand

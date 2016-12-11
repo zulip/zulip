@@ -361,8 +361,8 @@ var people = global.people;
     stream_data.add_sub(blue.name, blue);
 
     var sub_rows = stream_data.get_streams_for_settings_page();
-    assert.equal(sub_rows[0].color, 'amber');
-    assert.equal(sub_rows[1].color, 'cinnamon');
-    assert.equal(sub_rows[2].color, 'blue');
+    assert.equal(sub_rows[0].color, 'blue');
+    assert.equal(sub_rows[1].color, 'amber');
+    assert.equal(sub_rows[2].color, 'cinnamon');
 
 }());

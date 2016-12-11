@@ -196,10 +196,14 @@ function get_main_hash(hash) {
 
 function should_ignore(hash) {
     // an array of hashes to ignore (eg. ["subscriptions", "settings", "administration"]).
-    var ignore_list = [];
+    var ignore_list = ["subscriptions"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
+}
+
+function hide_overlays() {
+    $("#subscription_overlay").fadeOut(500);
 }
 
 function hashchanged(from_reload, e) {
@@ -212,9 +216,14 @@ function hashchanged(from_reload, e) {
     var base = get_main_hash(window.location.hash);
     if (should_ignore(window.location.hash)) {
         if (!should_ignore(old_hash || "#")) {
+            if (base === "subscriptions") {
+                subs.launch();
+            }
+
             ignore.prev = old_hash;
         }
     } else if (!should_ignore(window.location.hash) && !ignore.flag) {
+        hide_overlays();
         changing_hash = true;
         var ret = do_hashchange(from_reload);
         changing_hash = false;

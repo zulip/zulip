@@ -30,3 +30,7 @@ exports.dropbox_integration = false;
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = feature_flags;
+}

@@ -32,12 +32,16 @@ It looks like you checked out a branch that expects an older
 version of dependencies than the version you provisioned last.
 This may be ok, but it's likely that you either want to rebase
 your branch on top of upstream/master or re-provision your VM.
+
+Do this: `./tools/provision.py`
 '''
 
 NEED_TO_UPGRADE = '''
 It looks like you checked out a branch that has added
 dependencies beyond what you last provisioned.  Your tests
 are likely to fail until you add dependencies by provisioning.
+
+Do this: `./tools/provision.py`
 '''
 
 def get_provisioning_status():
