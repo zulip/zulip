@@ -88,7 +88,7 @@ def gather_hot_conversations(user_profile, stream_messages):
 
         # We'll display up to 2 messages from the conversation.
         first_few_messages = [user_message.message for user_message in
-                            stream_messages.filter(
+                              stream_messages.filter(
                                 message__recipient__type_id=stream_id,
                                 message__subject=subject)[:2]]
 

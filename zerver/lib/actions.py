@@ -122,8 +122,8 @@ def log_event(event):
         os.mkdir(settings.EVENT_LOG_DIR)
 
     template = os.path.join(settings.EVENT_LOG_DIR,
-        '%s.' + platform.node()
-        + datetime.datetime.now().strftime('.%Y-%m-%d'))
+                            '%s.' + platform.node()
+                            + datetime.datetime.now().strftime('.%Y-%m-%d'))
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
@@ -234,14 +234,14 @@ def send_signup_message(sender, signups_stream, user_profile,
                               realm=user_profile.realm)
 
     internal_send_message(sender,
-            "stream", signups_stream, user_profile.realm.domain,
-            "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
-                user_profile.full_name,
-                user_profile.email,
-                internal_blurb,
-                user_count,
-                )
-            )
+                          "stream", signups_stream, user_profile.realm.domain,
+                          "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
+                              user_profile.full_name,
+                              user_profile.email,
+                              internal_blurb,
+                              user_count,
+                              )
+                          )
 
 def notify_new_user(user_profile, internal=False):
     # type: (UserProfile, bool) -> None
@@ -304,12 +304,12 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
             and settings.NOTIFICATION_BOT is not None:
         # This is a cross-realm private message.
         internal_send_message(settings.NOTIFICATION_BOT,
-                "private", prereg_user.referred_by.email, user_profile.realm.domain,
-                "%s <`%s`> accepted your invitation to join Zulip!" % (
-                    user_profile.full_name,
-                    user_profile.email,
-                    )
-                )
+                              "private", prereg_user.referred_by.email, user_profile.realm.domain,
+                              "%s <`%s`> accepted your invitation to join Zulip!" % (
+                                  user_profile.full_name,
+                                  user_profile.email,
+                                  )
+                              )
     # Mark any other PreregistrationUsers that are STATUS_ACTIVE as
     # inactive so we can keep track of the PreregistrationUser we
     # actually used for analytics
@@ -1508,7 +1508,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
                     subscribers=stream_emails(stream))
-            for (subscription, stream) in sub_pairs]
+               for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
                  subscriptions=payload)
     send_event(event, [user_profile.id])
@@ -2862,7 +2862,7 @@ def gather_subscriptions_helper(user_profile):
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
-        "realm__domain", "email_token", "description")
+                        "realm__domain", "email_token", "description")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
