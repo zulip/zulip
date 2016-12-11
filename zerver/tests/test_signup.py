@@ -241,7 +241,7 @@ class LoginTest(ZulipTestCase):
         # type: () -> None
         realm = get_realm_by_string_id("zulip")
         stream_dict = {"stream_"+str(i): {"description": "stream_%s_description" % i, "invite_only": False}
-            for i in range(40)}  # type: Dict[Text, Dict[Text, Any]]
+                       for i in range(40)}  # type: Dict[Text, Dict[Text, Any]]
         for stream_name in stream_dict.keys():
             self.make_stream(stream_name, realm=realm)
 

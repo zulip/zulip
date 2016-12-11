@@ -89,11 +89,11 @@ def run():
 
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--quiet', '-q',
-        action='store_true',
-        help='Turn off logging output.')
+                      action='store_true',
+                      help='Turn off logging output.')
     parser.add_option('--config-file',
-        action='store',
-        help='(alternate config file to ~/.zuliprc)')
+                      action='store',
+                      help='(alternate config file to ~/.zuliprc)')
     (options, args) = parser.parse_args()
 
     if len(args) == 0:

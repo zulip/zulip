@@ -1053,13 +1053,13 @@ class Bugdown(markdown.Extension):
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
-            markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
-            '>not_strong')
+                              markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
+                              '>not_strong')
 
         # Custom strikethrough syntax: ~~foo~~
         md.inlinePatterns.add('del',
-            markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
-            '>strong')
+                              markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
+                              '>strong')
 
         # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
@@ -1078,7 +1078,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '>backtick')
 
         md.inlinePatterns.add('stream_subscribe_button',
-            StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
+                              StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
@@ -1229,7 +1229,7 @@ def make_realm_filters(domain, filters):
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
     make_md_engine(domain, {"realm_filters": [filters, "Realm-specific filters for %s" % (domain,)],
-                           "realm": [domain, "Realm name"]})
+                            "realm": [domain, "Realm name"]})
 
 def maybe_update_realm_filters(domain):
     # type: (Optional[Text]) -> None
@@ -1326,11 +1326,11 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
 
         # Output error to log as well as sending a zulip and email
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
-            % (traceback.format_exc(), cleaned))
+                          % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
             internal_send_message(settings.ERROR_BOT, "stream",
-                    "errors", subject, "Markdown parser failed, email sent with details.")
+                                  "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
