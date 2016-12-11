@@ -41,6 +41,7 @@ as a “**realm**”.
 - **[Signing out](signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
 - **[Zulip glossary](/help/glossary.md)**
+- **[Changing the Default Language](/help/changing-the-default-language)**
 
 ---
 
