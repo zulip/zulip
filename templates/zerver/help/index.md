@@ -35,6 +35,7 @@ as a “**realm**”.
 - **[Mention a Team Member](/help/mention-a-team-member)**
 - **[Change Your Name](/help/name-change)**
 - **[Message formatting](/help/message-formatting)**
+- **[Message display settings](/help/message-display-settings)**
 - **[Streams and private messages](/help/streams-and-private-messages)**
 - **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
