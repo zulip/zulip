@@ -1,3 +1,9 @@
+var Filter = require('./filter');
+var narrow = require('./narrow');
+var people = require('./people');
+var stream_data = require('./stream_data');
+var typeahead_helper = require('./typeahead_helper');
+
 var search_suggestion = (function () {
 
 var exports = {};

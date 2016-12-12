@@ -1,3 +1,6 @@
+var composebox_typeahead = require('./composebox_typeahead');
+var people = require('./people');
+
 var typeahead_helper = (function () {
 
 var exports = {};

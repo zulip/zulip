@@ -1,3 +1,22 @@
+var compose = require('./compose');
+var condense = require('./condense');
+var emoji = require('./emoji');
+var message_edit = require('./message_edit');
+var muting = require('./muting');
+var muting_ui = require('./muting_ui');
+var narrow = require('./narrow');
+var people = require('./people');
+var resize = require('./resize');
+var rows = require('./rows');
+var stream_color = require('./stream_color');
+var stream_data = require('./stream_data');
+var subs = require('./subs');
+var templates = require('./templates');
+var timerender = require('./timerender');
+var ui = require('./ui');
+var unread = require('./unread');
+var viewport = require('./viewport');
+
 var popovers = (function () {
 
 var exports = {};

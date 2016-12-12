@@ -1,3 +1,13 @@
+var channel = require('./channel');
+var narrow = require('./narrow');
+var rows = require('./rows');
+var server_events = require('./server_events');
+var stream_color = require('./stream_color');
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+var ui = require('./ui');
+var viewport = require('./viewport');
+
 var tutorial = (function () {
 
 var exports = {};

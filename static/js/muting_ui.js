@@ -1,3 +1,8 @@
+var channel = require('./channel');
+var muting = require('./muting');
+var popovers = require('./popovers');
+var stream_list = require('./stream_list');
+
 var muting_ui = (function () {
 
 var exports = {};

@@ -1,3 +1,14 @@
+var activity = require('./activity');
+var compose = require('./compose');
+var message_edit = require('./message_edit');
+var narrow = require('./narrow');
+var navigate = require('./navigate');
+var popovers = require('./popovers');
+var resize = require('./resize');
+var search = require('./search');
+var stream_list = require('./stream_list');
+var ui = require('./ui');
+
 var hotkeys = (function () {
 
 var exports = {};

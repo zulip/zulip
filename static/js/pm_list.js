@@ -1,3 +1,13 @@
+var blueslip = require('./blueslip');
+var message_store = require('./message_store');
+var narrow = require('./narrow');
+var people = require('./people');
+var popovers = require('./popovers');
+var resize = require('./resize');
+var templates = require('./templates');
+var unread = require('./unread');
+var unread_ui = require('./unread_ui');
+
 var pm_list = (function () {
 
 var exports = {};

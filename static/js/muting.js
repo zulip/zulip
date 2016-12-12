@@ -1,3 +1,6 @@
+var Dict = require('./dict');
+var unread = require('./unread');
+
 var muting = (function () {
 
 var exports = {};

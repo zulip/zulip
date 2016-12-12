@@ -1,6 +1,22 @@
 // See http://zulip.readthedocs.io/en/latest/pointer.html for notes on
 // how this system is designed.
 
+var activity = require('./activity');
+var channel = require('./channel');
+var Dict = require('./dict');
+var feature_flags = require('./feature_flags');
+var message_flags = require('./message_flags');
+var message_list = require('./message_list');
+var muting = require('./muting');
+var narrow = require('./narrow');
+var notifications = require('./notifications');
+var people = require('./people');
+var pm_list = require('./pm_list');
+var stream_data = require('./stream_data');
+var stream_list = require('./stream_list');
+var templates = require('./templates');
+var viewport = require('./viewport');
+
 var unread = (function () {
 
 var exports = {};

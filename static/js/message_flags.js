@@ -1,3 +1,4 @@
+var channel = require('./channel');
 var message_flags = (function () {
 var exports = {};
 

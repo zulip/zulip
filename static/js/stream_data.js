@@ -1,3 +1,9 @@
+var blueslip = require('./blueslip');
+var Dict = require('./dict');
+var people = require('./people');
+var stream_color = require('./stream_color');
+var util = require('./util');
+
 var stream_data = (function () {
 
 var exports = {};

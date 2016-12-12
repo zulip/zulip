@@ -1,3 +1,13 @@
+var channel = require('./channel');
+var compose = require('./compose');
+var Dict = require('./dict');
+var emoji = require('./emoji');
+var people = require('./people');
+var stream_data = require('./stream_data');
+var typeahead_helper = require('./typeahead_helper');
+var ui = require('./ui');
+var util = require('./util');
+
 var composebox_typeahead = (function () {
 
 //************************************

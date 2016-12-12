@@ -1,3 +1,5 @@
+var message_store = require('./message_store');
+
 var rows = (function () {
 
 var exports = {};

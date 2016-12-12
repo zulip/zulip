@@ -1,3 +1,7 @@
+var alert_words = require('./alert_words');
+var channel = require('./channel');
+var templates = require('./templates');
+
 var alert_words_ui = (function () {
 
 var exports = {};

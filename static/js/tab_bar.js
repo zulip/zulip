@@ -1,3 +1,11 @@
+var colorspace = require('./colorspace');
+var hashchange = require('./hashchange');
+var narrow = require('./narrow');
+var people = require('./people');
+var stream_color = require('./stream_color');
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+
 var tab_bar = (function () {
 
 var exports = {};

@@ -1,3 +1,12 @@
+var compose = require('./compose');
+var feature_flags = require('./feature_flags');
+var floating_recipient_bar = require('./floating_recipient_bar');
+var people = require('./people');
+var rows = require('./rows');
+var stream_data = require('./stream_data');
+var util = require('./util');
+var viewport = require('./viewport');
+
 var compose_fade = (function () {
 
 var exports = {};

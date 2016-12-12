@@ -1,3 +1,7 @@
+var colorspace = require('./colorspace');
+var subs = require('./subs');
+var tab_bar = require('./tab_bar');
+
 var stream_color = (function () {
 
 var exports = {};

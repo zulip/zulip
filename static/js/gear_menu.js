@@ -1,3 +1,11 @@
+var admin = require('./admin');
+var hashchange = require('./hashchange');
+var navigate = require('./navigate');
+var resize = require('./resize');
+var settings = require('./settings');
+var subs = require('./subs');
+var viewport = require('./viewport');
+
 var gear_menu = (function () {
 
 var exports = {};

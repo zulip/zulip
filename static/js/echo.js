@@ -1,6 +1,25 @@
 // This contains zulip's frontend markdown implementation; see
 // docs/markdown.md for docs on our Markdown syntax.
 
+var blueslip = require('./blueslip');
+var compose = require('./compose');
+var emoji = require('./emoji');
+var feature_flags = require('./feature_flags');
+var fenced_code = require('./fenced_code');
+var hashchange = require('./hashchange');
+var message_edit = require('./message_edit');
+var message_list = require('./message_list');
+var message_store = require('./message_store');
+var narrow = require('./narrow');
+var people = require('./people');
+var pm_list = require('./pm_list');
+var popovers = require('./popovers');
+var rows = require('./rows');
+var stream_data = require('./stream_data');
+var stream_list = require('./stream_list');
+var ui = require('./ui');
+var util = require('./util');
+
 var echo = (function () {
 
 var exports = {};

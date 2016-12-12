@@ -1,3 +1,8 @@
+var blueslip = require('./blueslip');
+var pointer = require('./pointer');
+var rows = require('./rows');
+var util = require('./util');
+
 var viewport = (function () {
 var exports = {};
 

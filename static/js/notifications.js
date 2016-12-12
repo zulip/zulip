@@ -1,3 +1,16 @@
+var alert_words = require('./alert_words');
+var favicon = require('./favicon');
+var feature_flags = require('./feature_flags');
+var muting = require('./muting');
+var narrow = require('./narrow');
+var navigate = require('./navigate');
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+var tutorial = require('./tutorial');
+var ui = require('./ui');
+var unread = require('./unread');
+var util = require('./util');
+
 var notifications = (function () {
 
 var exports = {};

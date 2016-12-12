@@ -1,4 +1,6 @@
 // Miscellaneous early setup.
+var blueslip = require('./blueslip');
+var loading = require('./loading');
 
 var csrf_token;
 $(function () {

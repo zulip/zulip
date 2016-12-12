@@ -1,3 +1,5 @@
+var rows = require('./rows');
+
 var floating_recipient_bar = (function () {
 
 var exports = {};

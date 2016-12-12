@@ -1,3 +1,9 @@
+var blueslip = require('./blueslip');
+var favicon = require('./favicon');
+var floating_recipient_bar = require('./floating_recipient_bar');
+var narrow = require('./narrow');
+var ui = require('./ui');
+
 var hashchange = (function () {
 
 var exports = {};

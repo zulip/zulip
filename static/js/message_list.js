@@ -1,3 +1,13 @@
+var blueslip = require('./blueslip');
+var feature_flags = require('./feature_flags');
+var Filter = require('./filter');
+var MessageListView = require('./message_list_view');
+var muting = require('./muting');
+var narrow = require('./narrow');
+var stream_data = require('./stream_data');
+var util = require('./util');
+var viewport = require('./viewport');
+
 var message_list = (function () {
 
 var exports = {};

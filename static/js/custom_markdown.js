@@ -1,3 +1,7 @@
+var channel = require('./channel');
+var stream_data = require('./stream_data');
+var ui = require('./ui');
+
 var custom_markdown = (function () {
 
 var exports = {};

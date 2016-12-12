@@ -1,3 +1,9 @@
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var loading = require('./loading');
+var templates = require('./templates');
+var ui = require('./ui');
+
 var admin = (function () {
 
 var meta = {};
