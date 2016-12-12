@@ -4,6 +4,7 @@ import mock
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
+from django.db.models import Q
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import internal_send_private_message
@@ -21,6 +22,11 @@ from zerver.lib.retention import (
     move_expired_messages_to_archive,
     move_expired_user_messages_to_archive,
     move_messages_to_archive
+    restore_archived_messages_by_realm,
+    restore_archived_usermessages_by_realm,
+    restore_archived_attachments_by_realm,
+    restore_archived_attachments_message_rows_by_realm,
+    restore_realm_archived_data,
 )
 
 ZULIP_REALM_DAYS = 30
@@ -369,6 +375,134 @@ class TestRetentionLib(ZulipTestCase):
             ArchivedAttachment.objects.count(),
             0
         )
+
+    def test_restoring_archived_messages(self):
+        # type: () -> None
+        exp_msgs_ids_dict = self._make_expired_messages()
+        archive_messages()
+        self.assertEqual(
+            ArchivedMessage.objects.filter(Q(id__in=exp_msgs_ids_dict['zulip_msgs_ids']) | Q(
+                id__in=exp_msgs_ids_dict['mit_msgs_ids'])).count(),
+            len(exp_msgs_ids_dict['zulip_msgs_ids']) + len(exp_msgs_ids_dict['mit_msgs_ids'])
+        )
+        self.assertEqual(
+            Message.objects.filter(Q(id__in=exp_msgs_ids_dict['zulip_msgs_ids']) | Q(
+                id__in=exp_msgs_ids_dict['mit_msgs_ids'])).count(),
+            0
+        )
+        restore_archived_messages_by_realm(self.zulip_realm.id)
+        self.assertEqual(
+            Message.objects.filter(id__in=exp_msgs_ids_dict['zulip_msgs_ids']).count(),
+            len(exp_msgs_ids_dict['zulip_msgs_ids'])
+        )
+        self.assertEqual(
+            Message.objects.filter(id__in=exp_msgs_ids_dict['mit_msgs_ids']).count(),
+            0
+        )
+        restore_archived_messages_by_realm(self.mit_realm.id)
+        self.assertEqual(
+            Message.objects.filter(id__in=exp_msgs_ids_dict['mit_msgs_ids']).count(),
+            len(exp_msgs_ids_dict['mit_msgs_ids'])
+        )
+
+    def test_restoring_archived_user_messages(self):
+        # type: () -> None
+        exp_msgs_ids_dict = self._make_expired_messages()
+        archive_messages()
+        zulip_archived_user_messages = ArchivedUserMessage.objects.filter(
+            message_id__in=exp_msgs_ids_dict['zulip_msgs_ids'])
+        mit_archived_user_messages = ArchivedUserMessage.objects.filter(
+            message_id__in=exp_msgs_ids_dict['mit_msgs_ids'])
+        self.assertEqual(
+            UserMessage.objects.filter(Q(id__in=zulip_archived_user_messages) or Q(
+                id__in=mit_archived_user_messages)).count(),
+            0
+        )
+        restore_archived_messages_by_realm(self.zulip_realm.id)
+        restore_archived_usermessages_by_realm(self.zulip_realm.id)
+        self.assertEqual(
+            UserMessage.objects.filter(
+                id__in=zulip_archived_user_messages).count(),
+            zulip_archived_user_messages.count()
+        )
+        self.assertEqual(
+            UserMessage.objects.filter(
+                id__in=mit_archived_user_messages).count(),
+            0
+        )
+        restore_archived_messages_by_realm(self.mit_realm.id)
+        restore_archived_usermessages_by_realm(self.mit_realm.id)
+        self.assertEqual(
+            UserMessage.objects.filter(
+                id__in=mit_archived_user_messages).count(),
+            mit_archived_user_messages.count()
+        )
+
+    def test_restoring_archived_attachments(self):
+        # type: () -> None
+        msgs_with_attachments_ids = self._send_msgs_with_attachments()
+        self._change_msgs_pub_date([msgs_with_attachments_ids['actual_message_id'],
+                                    msgs_with_attachments_ids['other_user_message_id']],
+                                   timezone_now() - timedelta(days=101))
+        archive_messages()
+        self.assertEqual(ArchivedAttachment.objects.count(), 3)
+        self.assertEqual(Attachment.objects.count(), 0)
+        restore_archived_attachments_by_realm(self.zulip_realm.id)
+        self.assertEqual(Attachment.objects.count(), 3)
+
+    def test_restoring_archived_attachments_message(self):
+        # type: () -> None
+        msgs_with_attachments_ids = self._send_msgs_with_attachments()
+        self._change_msgs_pub_date([msgs_with_attachments_ids['actual_message_id'],
+                                    msgs_with_attachments_ids['other_user_message_id']],
+                                   timezone_now() - timedelta(days=101))
+        archive_messages()
+        self.assertEqual(ArchivedAttachment.objects.count(), 3)
+        self.assertEqual(ArchivedAttachment.objects.filter(messages__isnull=False).count(), 9)
+        self.assertEqual(Attachment.objects.count(), 0)
+        self.assertEqual(Attachment.objects.filter(messages__isnull=False).count(), 0)
+        restore_archived_attachments_by_realm(self.zulip_realm.id)
+        self.assertEqual(Attachment.objects.filter(messages__isnull=False).count(), 0)
+        restore_archived_messages_by_realm(self.zulip_realm.id)
+        restore_archived_attachments_message_rows_by_realm(self.zulip_realm.id)
+        self.assertEqual(Attachment.objects.count(), 3)
+        self.assertEqual(Attachment.objects.filter(messages__isnull=False).count(), 9)
+
+    def test_restore_realm_archived_data_tool(self):
+        # type: () -> None
+        msgs_with_attachments_ids = self._send_msgs_with_attachments()
+        self._change_msgs_pub_date([msgs_with_attachments_ids['actual_message_id']],
+                                   timezone_now() - timedelta(days=101))
+        exp_msgs_ids_dict = self._make_expired_messages()
+        self._change_msgs_pub_date([msgs_with_attachments_ids['actual_message_id'],
+                                    msgs_with_attachments_ids['other_user_message_id']],
+                                   timezone_now() - timedelta(days=101))
+        archive_messages()
+        self.assertEqual(Message.objects.filter(
+            Q(id__in=[msgs_with_attachments_ids['expired_message_id']]) | Q(
+                id__in=exp_msgs_ids_dict['mit_msgs_ids']) | Q(
+                id__in=exp_msgs_ids_dict['zulip_msgs_ids'])).count(), 0)
+        self.assertEqual(Attachment.objects.count(), 0)
+        self.assertEqual(UserMessage.objects.filter(
+            Q(message_id__in=[msgs_with_attachments_ids['expired_message_id']]) | Q(
+                message_id__in=exp_msgs_ids_dict['mit_msgs_ids']) | Q(
+                message_id__in=exp_msgs_ids_dict['zulip_msgs_ids'])).count(), 0)
+        restore_realm_archived_data(self.zulip_realm.id)
+        self.assertEqual(
+            Message.objects.filter(
+                Q(id__in=[msgs_with_attachments_ids['expired_message_id']]) | Q(
+                    id__in=exp_msgs_ids_dict['zulip_msgs_ids'])).count(),
+            len(exp_msgs_ids_dict['zulip_msgs_ids']) + 1)
+        self.assertEqual(
+            UserMessage.objects.filter(
+                Q(message_id__in=[msgs_with_attachments_ids['expired_message_id']]) | Q(
+                    message_id__in=exp_msgs_ids_dict['zulip_msgs_ids'])).count(),
+            ArchivedUserMessage.objects.filter(
+                Q(message_id__in=[msgs_with_attachments_ids['expired_message_id']]) | Q(
+                    message_id__in=exp_msgs_ids_dict['zulip_msgs_ids'])).count())
+        self.assertEqual(Attachment.objects.count(), 3)
+        realm = Realm.objects.get(id=self.zulip_realm.id)
+        self.assertIsNone(realm.message_retention_days)
 
 
 class TestMoveMessageToArchive(ZulipTestCase):
