@@ -154,7 +154,7 @@ exports.topic_ops = {
         popovers.hide_topic_sidebar_popover();
         muting.mute_topic(stream, topic);
         muting_ui.persist_and_rerender();
-        muting_ui.notify_with_undo_option(stream, topic);
+        muting_ui.mute_notification(stream, topic, "unmute_muted_topic_notification", 4000);
     },
     // we don't run a unmute_notif function because it isn't an issue as much
     // if someone accidentally unmutes a stream rather than if they mute it

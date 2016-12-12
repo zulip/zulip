@@ -51,6 +51,60 @@ exports.set_muted_topics = function (tuples) {
     });
 };
 
+exports.mute_message_topic = function () {
+    var message;
+    message = current_msg_list.selected_message();
+
+    if (message === undefined) {
+        return;
+    }
+    unread.mark_message_as_read(message);
+    if (message.type === "stream") {
+        var stream = message.stream;
+        var subject = message.subject;
+        var $muted_topic_notification = $('#unmute_muted_topic_notification');
+
+        // if topic already muted notify the user. Else notify the
+        // topic and stream muted by the user.
+        if (exports.is_topic_muted(stream, subject) === true) {
+            if ($muted_topic_notification.css("display") === "block") {
+                $muted_topic_notification.hide();
+            }
+            muting_ui.persist_and_rerender();
+            muting_ui.mute_notification(stream, subject, "already_muted_topic_notification", 1500);
+        } else {
+            muting.mute_topic(stream, subject);
+            muting_ui.persist_and_rerender();
+            popovers.topic_ops.mute(stream, subject);
+        }
+    } else {
+        return;
+    }
+};
+
+exports.unmute_message_topic = function () {
+    var message;
+    message = current_msg_list.selected_message();
+    if (message === undefined) {
+        return;
+    }
+    unread.mark_message_as_read(message);
+    if (message.type === "stream") {
+        var stream = message.stream;
+        var subject = message.subject;
+        var $muted_topic_notification = $("#unmute_muted_topic_notification");
+
+        // hide the mute topic notification, if it exists
+        if ($muted_topic_notification.css("display") === "block") {
+            $muted_topic_notification.hide();
+        }
+        muting.unmute_topic(stream, subject);
+        muting_ui.persist_and_rerender();
+    } else {
+        return;
+    }
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

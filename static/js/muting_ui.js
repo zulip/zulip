@@ -16,7 +16,7 @@ exports.rerender = function () {
     }
 };
 
-exports.notify_with_undo_option = (function () {
+exports.mute_notification = (function () {
     var event_added = false;
     var meta = {
         stream: null,
@@ -43,47 +43,52 @@ exports.notify_with_undo_option = (function () {
         }
     }, 100);
 
-    return function (stream, topic) {
-        var $exit = $("#unmute_muted_topic_notification .exit-me");
+    return function (stream, topic, element_id, delay_time) {
+        meta.$mute = $("#" + element_id);
+        var $exit = meta.$mute.find(".exit-me");
 
-        if (!meta.$mute) {
-          meta.$mute = $("#unmute_muted_topic_notification");
+        $exit.click(function () {
+          animate.fadeOut();
+        });
 
-          $exit.click(function () {
-              animate.fadeOut();
-          });
-
-          meta.$mute.find("#unmute").click(function () {
-              // it should reference the meta variable and not get stuck with
-              // a pass-by-value of stream, topic.
-              popovers.topic_ops.unmute(meta.stream, meta.topic);
-              animate.fadeOut();
-          });
+        var $mute_btn = meta.$mute.find("#unmute");
+        // check if mute button exists, if it does add the click event
+        if ($mute_btn.length) {
+            $mute_btn.click(function () {
+                // it should reference the meta variable and not get stuck with
+                // a pass-by-value of stream, topic.
+                popovers.topic_ops.unmute(meta.stream, meta.topic);
+                animate.fadeOut();
+            });
         }
 
         meta.stream = stream;
         meta.topic = topic;
-        // add a four second delay before closing up.
-        meta.hide_me_time = new Date().getTime() + 4000;
+        // add a delay_time second delay before closing up.
+        meta.hide_me_time = new Date().getTime() + delay_time;
 
         meta.$mute.find(".topic").html(topic);
         meta.$mute.find(".stream").html(stream);
 
         animate.fadeIn();
 
-        // if the user mouses over the notification, don't hide it.
-        meta.$mute.mouseenter(function () {
-            meta.alert_hover_state = true;
-        });
+        // add mouse events only if the topic being muted is not already muted
+        if (element_id === "unmute_muted_topic_notification") {
+            // if the user mouses over the notification, don't hide it.
+            meta.$mute.mouseenter(function () {
+                meta.alert_hover_state = true;
+            });
 
-        // once the user's mouse leaves the notification, restart the countdown.
-        meta.$mute.mouseleave(function () {
-            meta.alert_hover_state = false;
-            // add at least 2000ms but if more than that exists just keep the
-            // current amount.
-            meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
-        });
+            // once the user's mouse leaves the notification, restart the countdown.
+            meta.$mute.mouseleave(function () {
+                meta.alert_hover_state = false;
+                // add at least 2000ms but if more than that exists just keep the
+                // current amount.
+                meta.hide_me_time = Math.max(meta.hide_me_time, new Date().getTime() + 2000);
+            });
+        }
     };
+
 }());
 
 exports.persist_and_rerender = function () {

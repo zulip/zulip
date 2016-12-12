@@ -69,7 +69,8 @@ p.n-margin {
     border-radius: 4px;
 }
 
-#unmute_muted_topic_notification {
+#unmute_muted_topic_notification,
+#already_muted_topic_notification {
     display: none;
     position: absolute;
     width: 400px;
@@ -90,11 +91,13 @@ p.n-margin {
     transition-duration: 0.5s;
 }
 
-#unmute_muted_topic_notification.show {
+#unmute_muted_topic_notification.show,
+#already_muted_topic_notification.show {
     top: 50px;
 }
 
-#unmute_muted_topic_notification h3 {
+#unmute_muted_topic_notification h3,
+#already_muted_topic_notification h3 {
     font-size: 16pt;
     margin-top: 2px;
 }
@@ -123,13 +126,18 @@ p.n-margin {
     color: #FAFAFA;
 }
 
-#unmute_muted_topic_notification .exit-me {
+#unmute_muted_topic_notification .exit-me,
+#already_muted_topic_notification .exit-me {
     font-size: 30pt;
     font-weight: 200;
     margin: 5px 0px 0px 10px;
     cursor: pointer;
 }
 
+.topic,
+.stream {
+    font-weight: bold;
+}
 .header {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
