@@ -108,6 +108,32 @@ To enable realm retention policy you should add value to the
 `Organization settings` form from administration part. To disable this
 feature leave this field empty.
 
+## Restoring of archived data by Realm
+
+Retention tools methods:
+
+
+  `zerver.lib.retention.restore_archived_messages_by_realm`
+  `zerver.lib.retention.restore_archived_usermessages_by_realm`
+  `zerver.lib.retention.restore_archived_attachments_by_realm`
+  `zerver.lib.retention.restore_archived_attachments_message_rows_by_realm`
+
+These tools restore archived data by realm without removing records
+from archived tables. Archived data is removed by deleting tools.
+
+To restore archived data you should run management console command,
+which is located:
+
+  `zerver.lib.retention.restore_realm_archived_data`
+
+Also it disables retention feature for Realm by adding empty value to
+`message_retention_days` field. Tools order in this command is
+important too.
+
+Example of command:
+
+  `./management restore_realm_archived_data zulip.com`
+
 
 ## Tests
 
