@@ -58,6 +58,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
     if not quiet:
         print(message_handler.usage())
 
+    message_handler.start_up(client=restricted_client, state_handler=state_handler)
     def handle_message(message):
         logging.info('waiting for next message')
         if message_handler.triage_message(message=message):
@@ -66,7 +67,6 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
                 client=restricted_client,
                 state_handler=state_handler
                 )
-
     logging.info('starting message handling...')
     client.call_on_each_message(handle_message)
 
