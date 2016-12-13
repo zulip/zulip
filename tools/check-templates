@@ -19,8 +19,8 @@ def check_our_files():
     # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--modified',
-        action='store_true', default=False,
-        help='only check modified files')
+                        action='store_true', default=False,
+                        help='only check modified files')
     args = parser.parse_args()
 
     by_lang = cast(
