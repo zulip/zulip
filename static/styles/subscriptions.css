@@ -412,7 +412,11 @@ form#add_new_subscription {
     vertical-align: top;
     width: 50%;
     height: calc(100% - 45px);
-    margin: 0px -1px;
+    margin: 0px -2px;
+}
+
+.subscriptions-container .right {
+    width: calc(50% + 1px);
 }
 
 .subscriptions-container .right .nothing-selected {
@@ -764,7 +768,7 @@ form#add_new_subscription {
     }
 
     #subscription_overlay .right {
-        width: 60%;
+        width: calc(60% - 1px);
     }
 
     #search_stream_name {
