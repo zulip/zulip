@@ -1729,6 +1729,24 @@ class GetProfileTest(ZulipTestCase):
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
+    def test_get_user_profile(self):
+        # type: () -> None
+        self.login('hamlet@zulip.com')
+        result = ujson.loads(self.client_get('/json/users/me').content)
+        self.assertEqual(result['short_name'], 'hamlet')
+        self.assertEqual(result['email'], 'hamlet@zulip.com')
+        self.assertEqual(result['full_name'], 'King Hamlet')
+        self.assertIn("user_id", result)
+        self.assertFalse(result['is_bot'])
+        self.assertFalse(result['is_admin'])
+        self.login('iago@zulip.com')
+        result = ujson.loads(self.client_get('/json/users/me').content)
+        self.assertEqual(result['short_name'], 'iago')
+        self.assertEqual(result['email'], 'iago@zulip.com')
+        self.assertEqual(result['full_name'], 'Iago')
+        self.assertFalse(result['is_bot'])
+        self.assertTrue(result['is_admin'])
+
     def test_api_get_empty_profile(self):
         # type: () -> None
         """
