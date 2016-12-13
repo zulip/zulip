@@ -859,7 +859,10 @@ $(function () {
 
     $(".subscriptions").on("click", "[data-dismiss]", function (e) {
         e.preventDefault();
-        show_subs_pane.nothing_selected();
+        // we want to make sure that the click is not just a simulated click.
+        if (e.clientY !== 0) {
+            show_subs_pane.nothing_selected();
+        }
     });
 
     // 'Check all' and 'Uncheck all' links
