@@ -45,7 +45,12 @@ def get_profile_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     result = dict(pointer        = user_profile.pointer,
                   client_id      = generate_client_id(),
-                  max_message_id = -1)
+                  max_message_id = -1,
+                  full_name      = user_profile.full_name,
+                  email          = user_profile.email,
+                  is_bot         = user_profile.is_bot,
+                  is_admin       = user_profile.is_realm_admin,
+                  short_name     = user_profile.short_name)
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
     if messages:
