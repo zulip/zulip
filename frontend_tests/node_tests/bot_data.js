@@ -72,32 +72,6 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         assert.equal(undefined, bot);
     }());
 
-    (function test_owner_can_admin() {
-        var bot;
-
-        bot_data.add(_.extend({owner: 'owner@zulip.com'}, test_bot));
-
-        bot = bot_data.get('bot1@zulip.com');
-        assert(bot.can_admin);
-
-        bot_data.add(_.extend({owner: 'notowner@zulip.com'}, test_bot));
-
-        bot = bot_data.get('bot1@zulip.com');
-        assert.equal(false, bot.can_admin);
-    }());
-
-    (function test_admin_can_admin() {
-        var bot;
-        page_params.is_admin = true;
-
-        bot_data.add(test_bot);
-
-        bot = bot_data.get('bot1@zulip.com');
-        assert(bot.can_admin);
-
-        page_params.is_admin = false;
-    }());
-
     (function test_get_editable() {
         var can_admin;
 
