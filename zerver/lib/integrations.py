@@ -93,6 +93,7 @@ class HubotLozenge(Integration):
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake'),
+    WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
     WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.png', display_name='Bitbucket'),
     WebhookIntegration('bitbucket', secondary_line_text='(Enterprise)'),
