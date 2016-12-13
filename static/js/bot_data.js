@@ -40,7 +40,9 @@ var bot_data = (function () {
     };
 
     exports.get_editable = function bots_data__get_editable() {
-        return _.filter(bots, function (bot) { return bot.can_admin; });
+        return _.filter(bots, function (bot) {
+            return util.is_current_user(bot.owner);
+        });
     };
 
     exports.get = function bot_data__get(email) {
