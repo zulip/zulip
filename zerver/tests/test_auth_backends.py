@@ -45,7 +45,7 @@ from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
 from six.moves import urllib
 from six.moves.http_cookies import SimpleCookie
 import ujson
-from fakeldap import MockLDAP
+from zerver.lib.test_helpers import MockLDAP
 
 class AuthBackendTest(TestCase):
     def verify_backend(self, backend, good_args=None,
@@ -1263,9 +1263,8 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
-                                        'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
-                self.backend.authenticate('hamlet@zulip.com', 'wrong')
+                user = self.backend.authenticate('hamlet@zulip.com', 'wrong')
+                self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_failure_due_to_nonexistent_user(self):
@@ -1279,9 +1278,8 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
-                                        'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
-                self.backend.authenticate('nonexistent@zulip.com', 'testing')
+                user = self.backend.authenticate('nonexistent@zulip.com', 'testing')
+                self.assertIs(user, None)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_permissions(self):
