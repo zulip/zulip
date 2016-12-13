@@ -6,9 +6,7 @@ from six import text_type
 from typing import Any, Optional
 from typing.re import Match
 import requests
-from django.conf import settings
 from zerver.lib.cache import cache_with_key, get_cache_with_key
-from zerver.lib.bugdown import testing_mocks
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import OpenGraphParser, GenericParser
 
@@ -38,8 +36,6 @@ def get_link_embed_data(url, maxwidth=640, maxheight=480):
     # type: (text_type, Optional[int], Optional[int]) -> Any
     if not is_link(url):
         return None
-    if settings.TEST_SUITE:
-        return testing_mocks.fake_urlembed_data()
     # Fetch information from URL.
     # We are using three sources in next order:
     # 1. OEmbed

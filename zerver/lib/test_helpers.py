@@ -216,6 +216,17 @@ class HostRequestMock(object):
         # type: () -> text_type
         return self.host
 
+class MockPythonResponse(object):
+    def __init__(self, text, status_code):
+        # type: (text_type, int) -> None
+        self.text = text
+        self.status_code = status_code
+
+    @property
+    def ok(self):
+        # type: () -> bool
+        return self.status_code == 200
+
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
 INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
