@@ -192,10 +192,3 @@ def twitter(tweet_id):
         return ujson.loads(MEDIA_TWEET)
     else:
         return None
-
-
-def fake_urlembed_data():
-    # type: () -> Dict[text_type, text_type]
-    return {
-        'title': 'Test',
-        'description': 'Short description'}
