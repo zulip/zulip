@@ -28,6 +28,7 @@ as a “**realm**”.
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Editing your profile](/help/edit-profile)**
 - **[Create a stream](/help/create-a-stream)**
+- **[Browse and join streams](/help/browse-join-streams)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
 - **[Using emoji in messages](/help/emoji)**
