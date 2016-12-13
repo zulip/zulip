@@ -5,6 +5,7 @@ from typing import (
     Optional, Sequence, Set, Text, Tuple, TypeVar, Union
 )
 
+from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
@@ -1265,7 +1266,7 @@ def check_message(sender, client, message_type_name, message_to,
         send_pm_if_empty_stream(sender, stream, stream_name, realm)
 
         if stream is None:
-            raise JsonableError(_("Stream does not exist"))
+            raise JsonableError(_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
         if not stream.invite_only:
