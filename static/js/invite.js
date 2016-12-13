@@ -87,9 +87,11 @@ exports.initialize = function () {
                               .show();
             } else {
                 // Some users were not invited.
+                var invitee_emails_errored = [];
                 var error_list = $('<ul>');
                 _.each(arr.errors, function (value) {
                     error_list.append($('<li>').text(value.join(': ')));
+                    invitee_emails_errored.push(value[0]);
                 });
 
                 invite_status.addClass('alert-warning')
@@ -98,6 +100,13 @@ exports.initialize = function () {
                               .append(error_list)
                               .show();
                 invitee_emails_group.addClass('warning');
+
+                if (arr.sent_invitations) {
+                    invitee_emails.val(invitee_emails_errored.join('\n'));
+                } else { // Invitations not sent -- keep all emails in the list
+                    var current_emails = invitee_emails.val().split(/\n|,/);
+                    invitee_emails.val(util.move_array_elements_to_front(current_emails, invitee_emails_errored).join('\n'));
+                }
 
             }
 
