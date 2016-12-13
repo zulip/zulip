@@ -63,6 +63,9 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
 };
 
 exports.is_current_user = function (email) {
+    if (email === null || email === undefined) {
+        return false;
+    }
     return email.toLowerCase() === page_params.email.toLowerCase();
 };
 
