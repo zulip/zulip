@@ -230,6 +230,25 @@ exports.is_all_or_everyone_mentioned = function (message_content) {
     return all_everyone_re.test(message_content);
 };
 
+exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
+    var i;
+    var selected_hash = {};
+    for (i = 0; i < selected.length; i += 1) {
+        selected_hash[selected[i]] = true;
+    }
+    var selected_elements = [];
+    var unselected_elements = [];
+    for (i = 0; i < array.length; i += 1) {
+        if (selected_hash[array[i]]) {
+            selected_elements.push(array[i]);
+        } else {
+            unselected_elements.push(array[i]);
+        }
+    }
+    // Add the unselected elements after the selected ones
+    return selected_elements.concat(unselected_elements);
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
