@@ -3,7 +3,7 @@ from mock import call
 import time
 from typing import Any, Union, SupportsInt, Text
 
-import gcmclient
+import gcm
 
 from django.test import TestCase
 from django.conf import settings
@@ -228,7 +228,7 @@ class GCMTest(PushNotificationTest):
     def setUp(self):
         # type: () -> None
         super(GCMTest, self).setUp()
-        apn.gcm = gcmclient.GCM('fake key')
+        apn.gcm = gcm.GCM('fake key')
         self.gcm_tokens = [u'1111', u'2222']
         for token in self.gcm_tokens:
             PushDeviceToken.objects.create(
@@ -259,12 +259,11 @@ class GCMNotSetTest(GCMTest):
 class GCMSuccessTest(GCMTest):
     @mock.patch('logging.warning')
     @mock.patch('logging.info')
-    @mock.patch('gcmclient.GCM.send')
+    @mock.patch('gcm.GCM.json_request')
     def test_success(self, mock_send, mock_info, mock_warning):
         # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
-        res = mock.MagicMock()
-        res.success = {token: ind for ind, token in enumerate(self.gcm_tokens)}
-        res.needs_retry.return_value = False
+        res = {}
+        res['success'] = {token: ind for ind, token in enumerate(self.gcm_tokens)}
         mock_send.return_value = res
 
         data = self.get_gcm_data()
@@ -277,12 +276,11 @@ class GCMSuccessTest(GCMTest):
 
 class GCMCanonicalTest(GCMTest):
     @mock.patch('logging.warning')
-    @mock.patch('gcmclient.GCM.send')
+    @mock.patch('gcm.GCM.json_request')
     def test_equal(self, mock_send, mock_warning):
         # type: (mock.MagicMock, mock.MagicMock) -> None
-        res = mock.MagicMock()
-        res.canonical = {1: 1}
-        res.needs_retry.return_value = False
+        res = {}
+        res['canonical'] = {1: 1}
         mock_send.return_value = res
 
         data = self.get_gcm_data()
@@ -291,14 +289,13 @@ class GCMCanonicalTest(GCMTest):
                                              "already matches our ID 1!")
 
     @mock.patch('logging.warning')
-    @mock.patch('gcmclient.GCM.send')
+    @mock.patch('gcm.GCM.json_request')
     def test_pushdevice_not_present(self, mock_send, mock_warning):
         # type: (mock.MagicMock, mock.MagicMock) -> None
-        res = mock.MagicMock()
+        res = {}
         t1 = apn.hex_to_b64(u'1111')
         t2 = apn.hex_to_b64(u'3333')
-        res.canonical = {t1: t2}
-        res.needs_retry.return_value = False
+        res['canonical'] = {t1: t2}
         mock_send.return_value = res
 
         def get_count(hex_token):
@@ -321,14 +318,13 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'3333'), 1)
 
     @mock.patch('logging.info')
-    @mock.patch('gcmclient.GCM.send')
+    @mock.patch('gcm.GCM.json_request')
     def test_pushdevice_different(self, mock_send, mock_info):
         # type: (mock.MagicMock, mock.MagicMock) -> None
-        res = mock.MagicMock()
+        res = {}
         old_token = apn.hex_to_b64(u'1111')
         new_token = apn.hex_to_b64(u'2222')
-        res.canonical = {old_token: new_token}
-        res.needs_retry.return_value = False
+        res['canonical'] = {old_token: new_token}
         mock_send.return_value = res
 
         def get_count(hex_token):
@@ -350,13 +346,12 @@ class GCMCanonicalTest(GCMTest):
 
 class GCMNotRegisteredTest(GCMTest):
     @mock.patch('logging.info')
-    @mock.patch('gcmclient.GCM.send')
+    @mock.patch('gcm.GCM.json_request')
     def test_not_registered(self, mock_send, mock_info):
         # type: (mock.MagicMock, mock.MagicMock) -> None
-        res = mock.MagicMock()
+        res = {}
         token = apn.hex_to_b64(u'1111')
-        res.not_registered = [token]
-        res.needs_retry.return_value = False
+        res['errors'] = {'NotRegistered': [token]}
         mock_send.return_value = res
 
         def get_count(hex_token):
@@ -374,20 +369,18 @@ class GCMNotRegisteredTest(GCMTest):
 
 class GCMFailureTest(GCMTest):
     @mock.patch('logging.warning')
-    @mock.patch('gcmclient.GCM.send')
+    @mock.patch('gcm.GCM.json_request')
     def test_failure(self, mock_send, mock_warn):
         # type: (mock.MagicMock, mock.MagicMock) -> None
-        res = mock.MagicMock()
+        res = {}
         token = apn.hex_to_b64(u'1111')
-        res.failed = {token: 1}
-        res.needs_retry.return_value = True
+        res['errors'] = {'Failed': [token]}
         mock_send.return_value = res
 
         data = self.get_gcm_data()
         apn.send_android_push_notification(self.user_profile, data)
-        c1 = call("GCM: Delivery to %s failed: 1" % (token,))
-        c2 = call("GCM: delivery needs a retry but ignoring")
-        mock_warn.assert_has_calls([c1, c2], any_order=True)
+        c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
+        mock_warn.assert_has_calls([c1], any_order=True)
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self):

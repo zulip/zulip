@@ -56,7 +56,7 @@ fonttools==3.2.1
 funcsigs==1.0.2
 
 # Needed for Android push notifications
-gcm-client==0.1.4
+python-gcm==0.4
 
 gitdb==0.6.4
 
