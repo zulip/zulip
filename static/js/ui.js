@@ -35,6 +35,11 @@ exports.focus_on = function (field_id) {
     $("#" + field_id).focus();
 };
 
+exports.blur_active_element = function () {
+    // this blurs anything that may perhaps be actively focused on.
+    document.activeElement.blur();
+};
+
 function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same

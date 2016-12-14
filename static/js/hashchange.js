@@ -248,6 +248,7 @@ exports.initialize = function () {
 
 exports.exit_settings = function (callback) {
     if (should_ignore(window.location.hash)) {
+        ui.blur_active_element();
         ignore.flag = true;
         window.location.hash = ignore.prev || "#";
         if (typeof callback === "function") {
