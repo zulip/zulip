@@ -55,7 +55,7 @@ class CommuteHandler(object):
         content_list = original_content.split()
 
         if "help" in content_list:
-            help_info='''
+            help_info = '''
     Obligatory Inputs:
         Origin (origin=New York,NY,USA)
         Destination (destinations=Chicago,IL,USA)
@@ -96,10 +96,10 @@ class CommuteHandler(object):
 
                 key = org[0]
                 value = org[1]
-                para.update({key:value})
+                para.update({key: value})
 
-            #adds API Authentication Key to url request
-            para.update({'key':'AIzaSyCGrx2FIMDVvfjYGgIjN9ocKyd5cfOiH-M'})
+            # adds API Authentication Key to url request
+            para.update({'key': 'AIzaSyCGrx2FIMDVvfjYGgIjN9ocKyd5cfOiH-M'})
 
             # sends url api request and converts response into json format
             r = requests.get('https://maps.googleapis.com/maps/api/distancematrix/json', params=para)
@@ -122,7 +122,8 @@ class CommuteHandler(object):
                 elif test1 or test2:
                     raise IndexError
             except IndexError:
-                self.send_info(message, "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
+                self.send_info(message,
+                "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
                 again_message = False
 
             if again_message:
@@ -135,14 +136,18 @@ class CommuteHandler(object):
 
                 # determines if fare information is available
                 try:
-                    fare =  'Fare: ' + rjson["rows"][0]["elements"][0]["fare"]["currency"] + rjson["rows"][0]["elements"][0]["fare"]["text"]
+                    fare =  (
+                    'Fare: '
+                    + rjson["rows"][0]["elements"][0]["fare"]["currency"]
+                    + rjson["rows"][0]["elements"][0]["fare"]["text"])
                     output += '\n' + fare
                 except (KeyError, IndexError):
                     print('')
 
                 # determines if traffic duration information is available
                 try:
-                    traf_dur = 'Duration in traffic: ' + rjson["rows"][0]["elements"][0]["duration_in_traffic"]["text"]
+                    traf_dur = ('Duration in traffic: ' +
+                     rjson["rows"][0]["elements"][0]["duration_in_traffic"]["text"])
                     output += '\n' + traf_dur
                 except (KeyError, IndexError):
                     output += '\n' + duration
