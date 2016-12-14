@@ -333,6 +333,8 @@ function _setup_page() {
     }
 
     $("#change_notification_settings").on("click", function (e) {
+        e.preventDefault();
+
         var updated_settings = {};
         _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
                 "enable_desktop_notifications", "enable_sounds",
@@ -761,6 +763,8 @@ function _setup_page() {
     });
 
     $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
+        e.preventDefault();
+
         var labs_updates = {};
         _.each(["autoscroll_forever", "default_desktop_notifications"],
             function (setting) {
