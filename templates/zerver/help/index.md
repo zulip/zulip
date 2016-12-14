@@ -22,28 +22,110 @@ cross-platform version and a version for Platform 9. See
 One Zulip account, associated with a particular organization, is known
 as a “**realm**”.
 
-# Table of contents:
+---
 
-- **[Change Your Password](/help/change-your-password)**
+# Using Zulip
+
+## Account Basics
+* [Change your name](/help/name-change)
+* [Change your password](/help/change-your-password)
+* Change your email address (not implemented)
+* Change your avatar
+* [Change your language](/help/changing-the-default-language)
+* Change the date and time format
+* Join a Zulip organization
+* Sign in to Zulip
+* [Sign out of Zulip
+* Find your Zulip organization (not implemented)
+* Set up two-factor authentication (not implemented)
+* Deactivate your account
+
+## Messages
+### Sending
+* Send a stream message
+* Send a private message
+* [Format your message using Markdown](/help/message-formatting)
+* Preview your message before sending
+* [Add emoji](/help/emoji)
+* [Upload and share files](/help/uploading_sharing_files)
+* Restore the last unsent message
+* Automatically link to an external issue tracker (improve wording)
+* Add a link preview
+* Enable or disable pressing enter to send
+* Verify that your message has been successfully sent
+* What to do if the server returns an error
+* Send a status message
+* [@-mention a team member](/help/mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
+* Make an announcement
+* Send a message in a different language
+* Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
+### Reading
+* View the Markdown source of a message
+* View the exact time a message was sent
+* View information about the message sender
+* View an image at full size
+* Collapse a message
+* Star a message
+* Share a message or conversation (permanent link)
+### Editing
+* Edit or delete a message
+* Change the topic of a message
+* Change the topic of a group of messages
+
+## People
+* See whether someone is here or away
+* Invite a friend to Zulip
+* Send someone a private message
+* Send a group of people a private message
+
+## Streams & Topics
+* About streams and topics
+* [Browse and join streams](/help/manage-streams)
+* [Create a stream](/help/create-a-stream)
+* View your current stream subscriptions
+* View messages from a stream
+* The #announce stream
+* Add or invite someone to a stream
+* Change the stream description
+* Rename a stream
+* Preview a stream (not implemented)
+* Unsubscribe from a stream
+* Change who can join a stream
+* Pin a stream
+* Change the color of a stream
+* Message a stream by email
+* Convert a group PM to a private stream (not implemented)
+* Remove someone from a stream
+* Delete a stream (admin only)
+
+## Notifications
+
+## Integrations & Bots
+
+## Apps
+* Use Zulip on Mac OS
+* Use Zulip on Linux
+* Use Zulip on Windows
+* Use Zulip on Android
+* Use Zulip on iOS
+* Use Zulip in a terminal
+* Connect to Zulip over IRC/etc (not implemented?)
+
+---
+
+# Old table of contents:
+
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Editing your profile](/help/edit-profile)**
-- **[Create a stream](/help/create-a-stream)**
-- **[Browse and subscribe to streams](/help/manage-streams)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
-- **[Using emoji in messages](/help/emoji)**
 - **[Keyboard shortcuts](/help/keyboard-shortcuts)**
-- **[Mention a Team Member](/help/mention-a-team-member)**
-- **[Change Your Name](/help/name-change)**
-- **[Message formatting](/help/message-formatting)**
 - **[Message display settings](/help/message-display-settings)**
 - **[Streams and private messages](/help/streams-and-private-messages)**
-- **[Uploading and Sharing Files](/help/uploading_sharing_files)**
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
 - **[Zulip glossary](/help/glossary.md)**
-- **[Changing the Default Language](/help/changing-the-default-language)**
 
 ---
 
