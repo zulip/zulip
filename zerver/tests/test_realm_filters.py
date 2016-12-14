@@ -32,11 +32,11 @@ class RealmFilterTest(ZulipTestCase):
 
         data['pattern'] = '$a'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format PREFIX-(?P<id>.+)')
+        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX-(?P<id>.+)')
 
         data['pattern'] = 'ZUL-(?P<id>\d++)'
         result = self.client_post("/json/realm/filters", info=data)
-        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format PREFIX-(?P<id>.+)')
+        self.assert_json_error(result, 'Invalid filter pattern, you must use the following format OPTIONAL_PREFIX-(?P<id>.+)')
 
         data['pattern'] = 'ZUL-(?P<id>\d+)'
         data['url_format_string'] = '$fgfg'

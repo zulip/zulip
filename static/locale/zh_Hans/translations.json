@@ -250,7 +250,7 @@
   "Name successfully updated!": "Name successfully updated!", 
   "Password strength": "Password strength", 
   "Warning: the below features are experimental features and may not work as well as you would like.": "Warning: the below features are experimental features and may not work as well as you would like.", 
-  "Configure patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example, you could make typing \"#123\" automatically become a link to issue #123 in an issue tracker.": "Configure patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example, you could make typing \"#123\" automatically become a link to issue #123 in an issue tracker.", 
+  "Configure regular expression patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example to automatically linkify commit IDs and issue numbers (e.g. #123) to the corresponding items in a GitHub project, you could use the following:": "Configure regular expression patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example to automatically linkify commit IDs and issue numbers (e.g. #123) to the corresponding items in a GitHub project, you could use the following:", 
   "Audible notifications": "Audible notifications", 
   "Error listing streams": "Error listing streams", 
   "Error updating default language setting": "Error updating default language setting", 
