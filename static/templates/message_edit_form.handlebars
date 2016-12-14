@@ -14,8 +14,7 @@
         </div>
     </div>
 {{/if}}
-
-    <div class="control-group">
+    <div class="control-group no-margin">
         <div class="controls edit-controls">
             <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
         </div>
@@ -31,6 +30,9 @@
             {{#if has_been_editable}}
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
+                <div class="message-edit-timer-control-group">
+                <a class="message-control-button icon-vector-font" href="#markdown-help" title="{{t 'Formatting' }}" data-toggle="modal" ></a>
+                </div>
                 <span><i id="message_edit_tooltip" class="message_edit_tooltip icon-vector-question-sign" data-toggle="tooltip"
                          title="This organization is configured to restrict editing of message content to {{minutes_to_edit}} minutes after it is sent."></i>
                 </span>
