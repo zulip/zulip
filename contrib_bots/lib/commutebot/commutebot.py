@@ -50,7 +50,6 @@ class CommuteHandler(object):
             ))
 
     def handle_message(self, message, client, state_handler):
-        original_subject = message['subject']
         original_content = message['content']
         content_list = original_content.split()
 
@@ -71,11 +70,13 @@ class CommuteHandler(object):
         @commute origin=Chicago,IL,USA destination=New+York,NY,USA mode=driving language=fr
 
     Please note:
-        Fare information can be derived, though is solely dependent on the availability of the information released by public transport operators
+        Fare information can be derived, though is solely dependent on the
+         availability of the information released by public transport operators
         Duration in traffic can only be derived if a departure time is set.
         If a location has spaces in its name, please use a + symbol in the place of the space/s
         A departure time and a arrival time can not be inputted at the same time
-        To add more than 1 input for a category, eg. more than 1 destinations, use |, eg. destinations=Trump+Tower|The+White+House
+        To add more than 1 input for a category,
+        eg. more than 1 destinations, use |, eg. destinations=Trump+Tower|The+White+House
         No spaces within addresses.
 
 
@@ -136,7 +137,7 @@ class CommuteHandler(object):
                     fare =  'Fare: ' + rjson["rows"][0]["elements"][0]["fare"]["currency"] + rjson["rows"][0]["elements"][0]["fare"]["text"]
                     output += '\n' + fare
                 except (KeyError, IndexError):
-                    print ''
+                    print('')
 
                 # determines if traffic duration information is available
                 try:
