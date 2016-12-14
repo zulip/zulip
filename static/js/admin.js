@@ -1,5 +1,6 @@
 var admin = (function () {
 
+var meta = {};
 var exports = {};
 var all_streams = [];
 
@@ -217,39 +218,7 @@ exports.populate_auth_methods = function (auth_methods) {
 };
 
 exports.set_up_deactivate_user_modal = function (row) {
-    $("#do_deactivate_user_button").expectOne().click(function () {
-        var email = row.find(".email").text();
-        if ($("#deactivation_user_modal .email").html() !== email) {
-            blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui.report_message("Deactivation encountered an error. Please reload and try again.",
-               $("#home-error"), 'alert-error');
-        }
-        $("#deactivation_user_modal").modal("hide");
-        row.find("button").prop("disabled", true).text("Working…");
-        channel.del({
-            url: '/json/users/' + email,
-            error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                     row.find("button").text("Failed!");
-                }
-            },
-            success: function () {
-                var button = row.find("button.deactivate");
-                button.prop("disabled", false);
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("reactivate");
-                button.removeClass("deactivate");
-                button.text(i18n.t("Reactivate"));
-                row.addClass("deactivated_user");
-                row.find(".user-admin-settings").hide();
-            }
-        });
-    });
+    meta.current_deactivate_user_modal_row = row;
 };
 
 
@@ -409,6 +378,38 @@ function _setup_page() {
         }
     });
 
+    $("#do_deactivate_user_button").expectOne().click(function () {
+        var email = meta.current_deactivate_user_modal_row.find(".email").text();
+
+        if ($("#deactivation_user_modal .email").html() !== email) {
+            blueslip.error("User deactivation canceled due to non-matching fields.");
+            ui.report_message("Deactivation encountered an error. Please reload and try again.",
+               $("#home-error"), 'alert-error');
+        }
+        $("#deactivation_user_modal").modal("hide");
+        meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text("Working…");
+        channel.del({
+            url: '/json/users/' + email,
+            error: function (xhr) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    meta.current_deactivate_user_modal_row.find("button").closest("td").html(
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                    );
+                } else {
+                     meta.current_deactivate_user_modal_row.find("button").text("Failed!");
+                }
+            },
+            success: function () {
+                var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+                button.prop("disabled", false);
+                button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
+                button.text(i18n.t("Reactivate"));
+                meta.current_deactivate_user_modal_row.addClass("deactivated_user");
+                meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
+            }
+        });
+    });
+
     $(".admin_bot_table").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -461,6 +462,7 @@ function _setup_page() {
                 }
             },
             success: function () {
+                row.find(".user-admin-settings").show();
                 var button = row.find("button.reactivate");
                 button.addClass("btn-danger");
                 button.removeClass("btn-warning");
