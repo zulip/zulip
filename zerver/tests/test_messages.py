@@ -648,7 +648,21 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject"})
-        self.assert_json_error(result, "Stream does not exist")
+        self.assert_json_error(result, "Stream, nonexistent_stream, does not exist")
+
+    def test_message_to_nonexistent_stream_with_bad_characters(self):
+        # type: () -> None
+        """
+        Nonexistent stream name with bad characters should be escaped properly.
+        """
+        self.login("hamlet@zulip.com")
+        self.assertFalse(Stream.objects.filter(name="""&<"'><non-existent>"""))
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "to": """&<"'><non-existent>""",
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject"})
+        self.assert_json_error(result, "Stream, &amp;&lt;&quot;&#39;&gt;&lt;non-existent&gt;, does not exist")
 
     def test_personal_message(self):
         # type: () -> None
