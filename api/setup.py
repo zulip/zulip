@@ -30,7 +30,7 @@ package_info = dict(
     name='zulip',
     version=version(),
     description='Bindings for the Zulip message API',
-    author='Zulip, Inc.',
+    author='Zulip Open Source Project',
     author_email='zulip-devel@googlegroups.com',
     classifiers=[
         'Development Status :: 3 - Alpha',
