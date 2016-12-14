@@ -877,6 +877,21 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
                 result = self.client_get('/accounts/accept_terms/')
                 self.assertEqual(result.status_code, 302)
 
+class TestZulipInternalDecorator(ZulipTestCase):
+    def test_zulip_internal_decorator(self):
+        user_email = 'hamlet@zulip.com'
+        self.login(user_email)
+
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = get_user_profile_by_email(user_email)
+        user_profile.is_staff = True
+        user_profile.save()
+
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 200)
+
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
         class HeadRequest(object):
