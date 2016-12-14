@@ -59,6 +59,9 @@ participating in code review.
   and unparameterized containser should be limited to cases where a
   more precise type cannot be specified.
 
+* *Translation.* Make sure that the strings are marked for 
+  [translation]. 
+
 * *Clear function, argument, variable, and test names.* Every new
   piece of Zulip code will be read many times by other developers, and
   future developers will grep for relevant terms when researching a
