@@ -62,7 +62,7 @@ setuptools_info = dict(
     install_requires=['requests>=0.12.1',
                       'simplejson',
                       'six',
-                      'typing',
+                      'typing>=3.5.2.2',
     ],
 )
 
