@@ -813,7 +813,9 @@ td.pointer {
 }
 
 .recipient_row_date {
-    display: inline-block;
+    position: absolute;
+    right: 0;
+    top: 0;
 
     color: #888;
     font-size: 0.8em;
@@ -821,7 +823,6 @@ td.pointer {
     padding: 3px 10px 2px 10px;
     height: 17px;
     line-height: 17px;
-    float: right;
 }
 
 .recipient_row_date .hide-date {
