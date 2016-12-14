@@ -22,7 +22,7 @@ class RestrictedClient(object):
 
 def get_lib_module(lib_fn):
     lib_fn = os.path.abspath(lib_fn)
-    if os.path.dirname(lib_fn) != os.path.join(our_dir, 'lib'):
+    if not os.path.dirname(lib_fn).startswith(os.path.join(our_dir, 'lib')):
         print('Sorry, we will only import code from contrib_bots/lib.')
         sys.exit(1)
 
