@@ -62,4 +62,4 @@ class Command(BaseCommand):
             else:
                 prereg_user = PreregistrationUser(email=email)
             prereg_user.save()
-            print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user))
+            print(email + ": " + Confirmation.objects.get_link_for_object(prereg_user, host=realm.host))
