@@ -4,6 +4,8 @@ add_dependencies({
 
 global.stub_out_jquery();
 
+var _ = global._;
+
 var people = require("js/people.js");
 
 set_global('page_params', {
@@ -249,4 +251,37 @@ var _ = global._;
     emails_string = 'emp402@example.com,EMP401@EXAMPLE.COM';
     var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, '401,402');
+}());
+
+(function test_filtered_users() {
+     var alice1 = {
+        email: 'alice1@example.com',
+        full_name: 'Alice'
+    };
+    var alice2 = {
+        email: 'alice2@example.com',
+        full_name: 'Alice Bing'
+    };
+    var bob = {
+        email: 'bob@example.com',
+        full_name: 'Bob van Roberts'
+    };
+    people.add(alice1);
+    people.add(alice2);
+    people.add(bob);
+    var search_term = "a";
+    var users = people.get_rest_of_realm();
+    var filtered_people = people.filter_people_by_search_terms(users,search_term);
+    var expected = [
+        { email: 'alice1@example.com', full_name: 'Alice' },
+        { email: 'alice2@example.com', full_name: 'Alice Bing' }
+    ];
+
+    assert.equal(filtered_people["alice1@example.com"],true);
+    assert.equal(filtered_people["alice2@example.com"],true);
+    assert.equal(_.keys(filtered_people).length, 2);
+    assert(!_.has(filtered_people, 'bob@example.com'));
+    people.remove(alice1);
+    people.remove(alice2);
+    people.remove(bob);
 }());
