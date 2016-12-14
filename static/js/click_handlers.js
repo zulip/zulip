@@ -128,6 +128,11 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+    $("body").on("click", "a", function (e) {
+        if (document.activeElement === this) {
+            ui.blur_active_element();
+        }
+    });
 
     $(window).on("focus", function (e) {
         meta.focusing = true;
