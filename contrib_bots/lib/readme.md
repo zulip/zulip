@@ -66,6 +66,18 @@ information anywhere in your Zulip directory.  Instead,
 create a separate configuration file for the third party's
 configuration in your home directory.
 
+### Python dependencies
+
+If your module requires Python modules that are not either
+part of the standard Python library or the Zulip API
+distribution, we ask that you put a comment at the top
+of your bot explaining how to install the dependencies.
+
+Right now we don't support any kind of automatic build
+environment for bots, so it's currently up to the users
+of the bots to manage their dependencies.  This may change
+in the future.
+
 ## Architecture
 
 In order to make bot development easy, we separate
