@@ -392,7 +392,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             return ''
 
     def do_auth(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[UserProfile]
+        # type: (*Any, **Any) -> Optional[HttpResponse]
         kwargs['return_data'] = {}
 
         request = self.strategy.request
