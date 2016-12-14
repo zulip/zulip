@@ -93,3 +93,7 @@ messages, @-mentions, etc.
   e.g. clicking the stream `rabbits` will search for `stream:rabbits`.
 
 * The search executed by clicking on a link is visible in the search bar.
+
+### Learning more
+
+* See the article on [Advanced search for messages](/help/advanced-search).
