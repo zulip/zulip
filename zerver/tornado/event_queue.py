@@ -746,6 +746,8 @@ def process_message_event(event_template, users):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
 
+        if flags is not None:
+            message_dict['is_mentioned'] = 'mentioned' in flags
         user_event = dict(type='message', message=message_dict, flags=flags) # type: Dict[str, Any]
         if extra_data is not None:
             user_event.update(extra_data)
