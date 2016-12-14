@@ -36,13 +36,16 @@ For Google Summer of Code students and applicants, we have [a mailing
 list](https://groups.google.com/forum/#!forum/zulip-gsoc) for help,
 questions, and announcements.
 
-We have [a Google mailing
-list](https://groups.google.com/forum/#!forum/zulip-devel) that is
-currently pretty low traffic because a lot of discussions happen in
-our public Zulip instance.  We use it to announce Zulip developer
-community gatherings and ask for feedback on technical or design
-decisions.  You can use it to ask questions about features or possible
-bugs, but not to ask about Google Summer of Code.
+We have
+[a public mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+that is currently pretty low traffic because most discussions happen
+in our public Zulip instance.  We use it to announce Zulip developer
+community gatherings and ask for feedback on major technical or design
+decisions.  It has several hundred subscribers, so you can use it to
+ask questions about features or possible bugs, but please don't use it
+ask for generic help getting started as a contributor (e.g. because
+you want to do Google Summer of Code).  The rest of this page covers
+how to get involved in the Zulip project in detail.
 
 Zulip also has a [blog](https://blog.zulip.org/).
 
