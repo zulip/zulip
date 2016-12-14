@@ -27,11 +27,11 @@ as a “**realm**”.
 # Using Zulip
 
 ## Account Basics
-* [Change your name](/help/name-change)
+* [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
 * Change your email address (not implemented)
 * Change your avatar
-* [Change your language](/help/changing-the-default-language)
+* [Change your language](/help/change-your-language)
 * Change the date and time format
 * Join a Zulip organization
 * Sign in to Zulip
@@ -44,10 +44,10 @@ as a “**realm**”.
 ### Sending
 * Send a stream message
 * Send a private message
-* [Format your message using Markdown](/help/message-formatting)
+* [Format your message using Markdown](/help/format-your-message-using-markdown)
 * Preview your message before sending
-* [Add emoji](/help/emoji)
-* [Upload and share files](/help/uploading_sharing_files)
+* [Add emoji](/help/add-emoji)
+* [Upload and share files](/help/upload-and-share-files)
 * Restore the last unsent message
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
@@ -55,7 +55,7 @@ as a “**realm**”.
 * Verify that your message has been successfully sent
 * What to do if the server returns an error
 * Send a status message
-* [@-mention a team member](/help/mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
+* [@-mention a team member](/help/at-mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
 * Make an announcement
 * Send a message in a different language
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
@@ -80,7 +80,7 @@ as a “**realm**”.
 
 ## Streams & Topics
 * About streams and topics
-* [Browse and join streams](/help/manage-streams)
+* [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
 * View your current stream subscriptions
 * View messages from a stream
