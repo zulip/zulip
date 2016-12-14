@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, Mapping, MutableMapping,
-    Optional, Sequence, Set, Tuple, TypeVar, Union
+    Optional, Sequence, Set, Text, Tuple, TypeVar, Union
 )
 
 from django.utils.translation import ugettext as _
@@ -51,7 +51,6 @@ from django.utils.timezone import now
 
 from confirmation.models import Confirmation
 import six
-from six import text_type
 from six.moves import filter
 from six.moves import map
 from six.moves import range
@@ -99,7 +98,7 @@ import copy
 
 # This will be used to type annotate parameters in a function if the function
 # works on both str and unicode in python 2 but in python 3 it only works on str.
-SizedTextIterable = Union[Sequence[text_type], AbstractSet[text_type]]
+SizedTextIterable = Union[Sequence[Text], AbstractSet[Text]]
 
 STREAM_ASSIGNMENT_COLORS = [
     "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
@@ -216,7 +215,7 @@ def get_topic_history_for_stream(user_profile, recipient):
 
 def send_signup_message(sender, signups_stream, user_profile,
                         internal=False, realm=None):
-    # type: (UserProfile, text_type, UserProfile, bool, Optional[Realm]) -> None
+    # type: (UserProfile, Text, UserProfile, bool, Optional[Realm]) -> None
     if internal:
         # When this is done using manage.py vs. the web interface
         internal_blurb = " **INTERNAL SIGNUP** "
@@ -359,7 +358,7 @@ def notify_created_bot(user_profile):
     # type: (UserProfile) -> None
 
     def stream_name(stream):
-        # type: (Stream) -> Optional[text_type]
+        # type: (Stream) -> Optional[Text]
         if not stream:
             return None
         return stream.name
@@ -386,7 +385,7 @@ def do_create_user(email, password, realm, full_name, short_name,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
                    newsletter_data=None):
-    # type: (text_type, text_type, Realm, text_type, text_type, bool, Optional[int], Optional[UserProfile], Optional[text_type], text_type, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+    # type: (Text, Text, Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
     event = {'type': 'user_created',
              'timestamp': time.time(),
              'full_name': full_name,
@@ -458,7 +457,7 @@ def active_humans_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
 def do_set_realm_name(realm, name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     realm.name = name
     realm.save(update_fields=['name'])
     event = dict(
@@ -546,7 +545,7 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
     send_event(event, active_user_ids(realm))
 
 def do_set_realm_default_language(realm, default_language):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
 
     if default_language == 'zh_CN':
         # NB: remove this once we upgrade to Django 1.9
@@ -665,7 +664,7 @@ def do_deactivate_stream(stream, log=True):
         send_event(event, active_user_ids(stream.realm))
 
 def do_change_user_email(user_profile, new_email):
-    # type: (UserProfile, text_type) -> None
+    # type: (UserProfile, Text) -> None
     old_email = user_profile.email
     user_profile.email = new_email
     user_profile.save(update_fields=["email"])
@@ -706,7 +705,7 @@ def compute_mit_user_fullname(email):
 @cache_with_key(lambda realm, email, f: user_profile_by_email_cache_key(email),
                 timeout=3600*24*7)
 def create_mirror_user_if_needed(realm, email, email_to_fullname):
-    # type: (Realm, text_type, Callable[[text_type], text_type]) -> UserProfile
+    # type: (Realm, Text, Callable[[Text], Text]) -> UserProfile
     try:
         return get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -725,7 +724,7 @@ def log_message(message):
 
 # Helper function. Defaults here are overriden by those set in do_send_messages
 def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None):
-    # type: (Union[int, Message], Optional[text_type], bool, Optional[Stream], Optional[int]) -> int
+    # type: (Union[int, Message], Optional[Text], bool, Optional[Stream], Optional[int]) -> int
     return do_send_messages([{'message': message,
                               'rendered_content': rendered_content,
                               'no_log': no_log,
@@ -733,7 +732,7 @@ def do_send_message(message, rendered_content = None, no_log = False, stream = N
                               'local_id': local_id}])[0]
 
 def render_incoming_message(message, content, message_users):
-    # type: (Message, text_type, Set[UserProfile]) -> text_type
+    # type: (Message, Text, Set[UserProfile]) -> Text
     realm_alert_words = alert_words_in_realm(message.get_realm())
     try:
         rendered_content = render_markdown(
@@ -747,7 +746,7 @@ def render_incoming_message(message, content, message_users):
     return rendered_content
 
 def get_recipient_user_profiles(recipient, sender_id):
-    # type: (Recipient, text_type) -> List[UserProfile]
+    # type: (Recipient, Text) -> List[UserProfile]
     if recipient.type == Recipient.PERSONAL:
         recipients = list(set([get_user_profile_by_id(recipient.type_id),
                                get_user_profile_by_id(sender_id)]))
@@ -810,7 +809,7 @@ def do_send_messages(messages):
         message['active_recipients'] = [user_profile for user_profile in message['recipients']
                                         if user_profile.is_active]
 
-    links_for_embed = set() # type: Set[text_type]
+    links_for_embed = set() # type: Set[Text]
     # Render our messages.
     for message in messages:
         assert message['message'].rendered_content is None
@@ -927,7 +926,7 @@ def do_send_messages(messages):
     return already_sent_ids + [message['message'].id for message in messages]
 
 def do_add_reaction(user_profile, message, emoji_name):
-    # type: (UserProfile, Message, text_type) -> None
+    # type: (UserProfile, Message, Text) -> None
     reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
     reaction.save()
 
@@ -951,7 +950,7 @@ def do_add_reaction(user_profile, message, emoji_name):
     send_event(event, [um.user_profile.id for um in ums])
 
 def do_remove_reaction(user_profile, message, emoji_name):
-    # type: (UserProfile, Message, text_type) -> None
+    # type: (UserProfile, Message, Text) -> None
     Reaction.objects.filter(user_profile=user_profile,
                             message=message,
                             emoji_name=emoji_name).delete()
@@ -995,7 +994,7 @@ def do_send_typing_notification(notification):
 # check_send_typing_notification:
 # Checks the typing notification and sends it
 def check_send_typing_notification(sender, notification_to, operator):
-    # type: (UserProfile, Sequence[text_type], text_type) -> None
+    # type: (UserProfile, Sequence[Text], Text) -> None
     typing_notification = check_typing_notification(sender, notification_to, operator)
     do_send_typing_notification(typing_notification)
 
@@ -1003,7 +1002,7 @@ def check_send_typing_notification(sender, notification_to, operator):
 # Returns typing notification ready for sending with do_send_typing_notification on success
 # or the error message (string) on error.
 def check_typing_notification(sender, notification_to, operator):
-    # type: (UserProfile, Sequence[text_type], text_type) -> Dict[str, Any]
+    # type: (UserProfile, Sequence[Text], Text) -> Dict[str, Any]
     if len(notification_to) == 0:
         raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
     elif operator not in ('start', 'stop'):
@@ -1020,7 +1019,7 @@ def check_typing_notification(sender, notification_to, operator):
     return {'sender': sender, 'recipient': recipient, 'op': operator}
 
 def do_create_stream(realm, stream_name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     # This is used by a management command now, mostly to facilitate testing.  It
     # doesn't simulate every single aspect of creating a subscription; for example,
     # we don't send Zulips to users to tell them they have been subscribed.
@@ -1033,7 +1032,7 @@ def do_create_stream(realm, stream_name):
     bulk_add_subscriptions([stream], subscribers)
 
 def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
-    # type: (Realm, text_type, bool, text_type) -> Tuple[Stream, bool]
+    # type: (Realm, Text, bool, Text) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
         defaults={'name': stream_name,
@@ -1068,7 +1067,7 @@ def create_streams_if_needed(realm, stream_dicts):
 
 def recipient_for_emails(emails, not_forged_mirror_message,
                          user_profile, sender):
-    # type: (Iterable[text_type], bool, UserProfile, UserProfile) -> Recipient
+    # type: (Iterable[Text], bool, UserProfile, UserProfile) -> Recipient
     recipient_profile_ids = set()
 
     # We exempt cross-realm bots from the check that all the recipients
@@ -1134,7 +1133,7 @@ def already_sent_mirrored_message_id(message):
     return None
 
 def extract_recipients(s):
-    # type: (Union[str, Iterable[text_type]]) -> List[text_type]
+    # type: (Union[str, Iterable[Text]]) -> List[Text]
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
@@ -1161,14 +1160,14 @@ def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
-    # type: (UserProfile, Client, text_type, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[text_type], Optional[text_type]) -> int
+    # type: (UserProfile, Client, Text, Sequence[Text], Text, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
     return do_send_messages([message])[0]
 
 def check_stream_name(stream_name):
-    # type: (text_type) -> None
+    # type: (Text) -> None
     if stream_name == "":
         raise JsonableError(_("Stream can't be empty"))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
@@ -1177,7 +1176,7 @@ def check_stream_name(stream_name):
         raise JsonableError(_("Invalid stream name"))
 
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
-    # type: (UserProfile, Stream, text_type, Realm) -> None
+    # type: (UserProfile, Stream, Text, Realm) -> None
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
     cross-realm bot) so that the owner can correct the issue."""
@@ -1230,7 +1229,7 @@ def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, text_type, Sequence[text_type], text_type, text_type, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[text_type], Optional[text_type]) -> Dict[str, Any]
+    # type: (UserProfile, Client, Text, Sequence[Text], Text, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
@@ -1323,7 +1322,7 @@ def check_message(sender, client, message_type_name, message_to,
 
 def internal_prep_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):
-    # type: (text_type, str, text_type, text_type, text_type, Optional[Realm]) -> Optional[Dict[str, Any]]
+    # type: (Text, str, Text, Text, Text, Optional[Realm]) -> Optional[Dict[str, Any]]
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -1350,7 +1349,7 @@ def internal_prep_message(sender_email, recipient_type_name, recipients,
 
 def internal_send_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):
-    # type: (text_type, str, text_type, text_type, text_type, Optional[Realm]) -> None
+    # type: (Text, str, Text, Text, Text, Optional[Realm]) -> None
     msg = internal_prep_message(sender_email, recipient_type_name, recipients,
                                 subject, content, realm)
 
@@ -1361,14 +1360,14 @@ def internal_send_message(sender_email, recipient_type_name, recipients,
     do_send_messages([msg])
 
 def pick_color(user_profile):
-    # type: (UserProfile) -> text_type
+    # type: (UserProfile) -> Text
     subs = Subscription.objects.filter(user_profile=user_profile,
                                        active=True,
                                        recipient__type=Recipient.STREAM)
     return pick_color_helper(user_profile, subs)
 
 def pick_color_helper(user_profile, subs):
-    # type: (UserProfile, Iterable[Subscription]) -> text_type
+    # type: (UserProfile, Iterable[Subscription]) -> Text
     # These colors are shared with the palette in subs.js.
     used_colors = [sub.color for sub in subs if sub.active]
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
@@ -1379,7 +1378,7 @@ def pick_color_helper(user_profile, subs):
         return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
 
 def get_subscription(stream_name, user_profile):
-    # type: (text_type, UserProfile) -> Subscription
+    # type: (Text, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
     recipient = get_recipient(Recipient.STREAM, stream.id)
     return Subscription.objects.get(user_profile=user_profile,
@@ -1471,13 +1470,13 @@ def get_subscribers(stream, requesting_user=None):
     return [subscription.user_profile for subscription in subscriptions]
 
 def get_subscriber_emails(stream, requesting_user=None):
-    # type: (Stream, Optional[UserProfile]) -> List[text_type]
+    # type: (Stream, Optional[UserProfile]) -> List[Text]
     subscriptions_query = get_subscribers_query(stream, requesting_user)
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
 def maybe_get_subscriber_emails(stream, user_profile):
-    # type: (Stream, UserProfile) -> List[text_type]
+    # type: (Stream, UserProfile) -> List[Text]
     """ Alternate version of get_subscriber_emails that takes a Stream object only
     (not a name), and simply returns an empty list if unable to get a real
     subscriber list (because we're on the MIT realm). """
@@ -1488,7 +1487,7 @@ def maybe_get_subscriber_emails(stream, user_profile):
     return subscribers
 
 def set_stream_color(user_profile, stream_name, color=None):
-    # type: (UserProfile, text_type, Optional[text_type]) -> text_type
+    # type: (UserProfile, Text, Optional[Text]) -> Text
     subscription = get_subscription(stream_name, user_profile)
     if not color:
         color = pick_color(user_profile)
@@ -1497,7 +1496,7 @@ def set_stream_color(user_profile, stream_name, color=None):
     return color
 
 def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
-    # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[text_type]], bool) -> None
+    # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[Text]], bool) -> None
     if not no_log:
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
@@ -1626,7 +1625,7 @@ def bulk_add_subscriptions(streams, users):
     all_subs_by_stream = query_all_subs_by_stream(streams=streams)
 
     def fetch_stream_subscriber_emails(stream):
-        # type: (Stream) -> List[text_type]
+        # type: (Stream) -> List[Text]
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             return []
         users = all_subs_by_stream[stream.id]
@@ -1759,7 +1758,7 @@ def bulk_remove_subscriptions(users, streams):
             not_subscribed)
 
 def log_subscription_property_change(user_email, stream_name, property, value):
-    # type: (text_type, text_type, text_type, Any) -> None
+    # type: (Text, Text, Text, Any) -> None
     event = {'type': 'subscription_property',
              'property': property,
              'user': user_email,
@@ -1769,7 +1768,7 @@ def log_subscription_property_change(user_email, stream_name, property, value):
 
 def do_change_subscription_property(user_profile, sub, stream_name,
                                     property_name, value):
-    # type: (UserProfile, Subscription, text_type, text_type, Any) -> None
+    # type: (UserProfile, Subscription, Text, Text, Any) -> None
     setattr(sub, property_name, value)
     sub.save(update_fields=[property_name])
     log_subscription_property_change(user_profile.email, stream_name,
@@ -1817,7 +1816,7 @@ def do_reactivate_user(user_profile):
 
 def do_change_password(user_profile, password, log=True, commit=True,
                        hashed_password=False):
-    # type: (UserProfile, text_type, bool, bool, bool) -> None
+    # type: (UserProfile, Text, bool, bool, bool) -> None
     if hashed_password:
         # This is a hashed password, not the password itself.
         user_profile.set_password(password)
@@ -1831,7 +1830,7 @@ def do_change_password(user_profile, password, log=True, commit=True,
                    'pwhash': user_profile.password})
 
 def do_change_full_name(user_profile, full_name, log=True):
-    # type: (UserProfile, text_type, bool) -> None
+    # type: (UserProfile, Text, bool) -> None
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
     if log:
@@ -1849,7 +1848,7 @@ def do_change_full_name(user_profile, full_name, log=True):
                    bot_owner_userids(user_profile))
 
 def do_change_tos_version(user_profile, tos_version, log=True):
-    # type: (UserProfile, text_type, bool) -> None
+    # type: (UserProfile, Text, bool) -> None
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
     if log:
@@ -1876,7 +1875,7 @@ def do_regenerate_api_key(user_profile, log=True):
                    bot_owner_userids(user_profile))
 
 def do_change_avatar_source(user_profile, avatar_source, log=True):
-    # type: (UserProfile, text_type, bool) -> None
+    # type: (UserProfile, Text, bool) -> None
     user_profile.avatar_source = avatar_source
     user_profile.save(update_fields=["avatar_source"])
 
@@ -2002,7 +2001,7 @@ def do_change_bot_type(user_profile, value):
     user_profile.save(update_fields=["bot_type"])
 
 def do_make_stream_public(user_profile, realm, stream_name):
-    # type: (UserProfile, Realm, text_type) -> None
+    # type: (UserProfile, Realm, Text) -> None
     stream_name = stream_name.strip()
     stream = get_stream(stream_name, realm)
 
@@ -2016,7 +2015,7 @@ def do_make_stream_public(user_profile, realm, stream_name):
     stream.save(update_fields=['invite_only'])
 
 def do_make_stream_private(realm, stream_name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     stream_name = stream_name.strip()
     stream = get_stream(stream_name, realm)
 
@@ -2027,7 +2026,7 @@ def do_make_stream_private(realm, stream_name):
     stream.save(update_fields=['invite_only'])
 
 def do_rename_stream(realm, old_name, new_name, log=True):
-    # type: (Realm, text_type, text_type, bool) -> Dict[str, text_type]
+    # type: (Realm, Text, Text, bool) -> Dict[str, Text]
     old_name = old_name.strip()
     new_name = new_name.strip()
 
@@ -2099,7 +2098,7 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     return {"email_address": new_email}
 
 def do_change_stream_description(realm, stream_name, new_description):
-    # type: (Realm, text_type, text_type) -> None
+    # type: (Realm, Text, Text) -> None
     stream = get_stream(stream_name, realm)
     stream.description = new_description
     stream.save(update_fields=['description'])
@@ -2111,7 +2110,7 @@ def do_change_stream_description(realm, stream_name, new_description):
 
 def do_create_realm(string_id, name, restricted_to_domain=None,
                     invite_required=None, org_type=None):
-    # type: (text_type, text_type, Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
+    # type: (Text, Text, Optional[bool], Optional[bool], Optional[int]) -> Tuple[Realm, bool]
     realm = get_realm_by_string_id(string_id)
     created = not realm
     if created:
@@ -2303,7 +2302,7 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
     send_event(event, [user_profile.id])
 
 def do_change_default_language(user_profile, setting_value, log=True):
-    # type: (UserProfile, text_type, bool) -> None
+    # type: (UserProfile, Text, bool) -> None
 
     if setting_value == 'zh_CN':
         # NB: remove this once we upgrade to Django 1.9
@@ -2322,7 +2321,7 @@ def do_change_default_language(user_profile, setting_value, log=True):
     send_event(event, [user_profile.id])
 
 def set_default_streams(realm, stream_dict):
-    # type: (Realm, Dict[text_type, Dict[text_type, Any]]) -> None
+    # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
     DefaultStream.objects.filter(realm=realm).delete()
     stream_names = []
     for name, options in stream_dict.items():
@@ -2350,14 +2349,14 @@ def notify_default_streams(realm):
     send_event(event, active_user_ids(realm))
 
 def do_add_default_stream(realm, stream_name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     stream, _ = create_stream_if_needed(realm, stream_name)
     if not DefaultStream.objects.filter(realm=realm, stream=stream).exists():
         DefaultStream.objects.create(realm=realm, stream=stream)
         notify_default_streams(realm)
 
 def do_remove_default_stream(realm, stream_name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     stream = get_stream(stream_name, realm)
     if stream is None:
         raise JsonableError(_("Stream does not exist"))
@@ -2407,7 +2406,7 @@ def do_update_user_activity_interval(user_profile, log_time):
 
 @statsd_increment('user_activity')
 def do_update_user_activity(user_profile, client, query, log_time):
-    # type: (UserProfile, Client, text_type, datetime.datetime) -> None
+    # type: (UserProfile, Client, Text, datetime.datetime) -> None
     (activity, created) = UserActivity.objects.get_or_create(
         user_profile = user_profile,
         client = client,
@@ -2527,7 +2526,7 @@ def do_update_pointer(user_profile, pointer, update_flags=False):
     send_event(event, [user_profile.id])
 
 def do_update_message_flags(user_profile, operation, flag, messages, all, stream_obj, topic_name):
-    # type: (UserProfile, text_type, text_type, Sequence[int], bool, Optional[Stream], Optional[text_type]) -> int
+    # type: (UserProfile, Text, Text, Sequence[int], bool, Optional[Stream], Optional[Text]) -> int
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:
@@ -2601,17 +2600,17 @@ def subscribed_to_stream(user_profile, stream):
         return False
 
 def truncate_content(content, max_length, truncation_message):
-    # type: (text_type, int, text_type) -> text_type
+    # type: (Text, int, Text) -> Text
     if len(content) > max_length:
         content = content[:max_length - len(truncation_message)] + truncation_message
     return content
 
 def truncate_body(body):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return truncate_content(body, MAX_MESSAGE_LENGTH, "...")
 
 def truncate_topic(topic):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return truncate_content(topic, MAX_SUBJECT_LENGTH, "...")
 
 
@@ -2666,7 +2665,7 @@ def update_to_dict_cache(changed_messages):
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_embedded_data(user_profile, message, content, rendered_content):
-    # type: (UserProfile, Message, Optional[text_type], Optional[text_type]) -> None
+    # type: (UserProfile, Message, Optional[Text], Optional[Text]) -> None
     event = {
         'type': 'update_message',
         'sender': user_profile.email,
@@ -2699,7 +2698,7 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
-    # type: (UserProfile, Message, Optional[text_type], str, Optional[text_type], Optional[text_type]) -> None
+    # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text]) -> None
     event = {'type': 'update_message',
              'sender': user_profile.email,
              'message_id': message.id} # type: Dict[str, Any]
@@ -2804,11 +2803,11 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     send_event(event, list(map(user_info, ums)))
 
 def encode_email_address(stream):
-    # type: (Stream) -> text_type
+    # type: (Stream) -> Text
     return encode_email_address_helper(stream.name, stream.email_token)
 
 def encode_email_address_helper(name, email_token):
-    # type: (text_type, text_type) -> text_type
+    # type: (Text, Text) -> Text
     # Some deployments may not use the email gateway
     if settings.EMAIL_GATEWAY_PATTERN == '':
         return ''
@@ -2826,7 +2825,7 @@ def encode_email_address_helper(name, email_token):
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
 def get_email_gateway_message_string_from_address(address):
-    # type: (text_type) -> Optional[text_type]
+    # type: (Text) -> Optional[Text]
     pattern_parts = [re.escape(part) for part in settings.EMAIL_GATEWAY_PATTERN.split('%s')]
     if settings.EMAIL_GATEWAY_EXTRA_PATTERN_HACK:
         # Accept mails delivered to any Zulip server
@@ -2842,7 +2841,7 @@ def get_email_gateway_message_string_from_address(address):
     return msg_string
 
 def decode_email_address(email):
-    # type: (text_type) -> Tuple[text_type, text_type]
+    # type: (Text) -> Tuple[Text, Text]
     # Perform the reverse of encode_email_address. Returns a tuple of (streamname, email_token)
     msg_string = get_email_gateway_message_string_from_address(email)
 
@@ -2968,7 +2967,7 @@ def gather_subscriptions(user_profile):
     return (subscribed, unsubscribed)
 
 def get_status_dict(requesting_user_profile):
-    # type: (UserProfile) -> Dict[text_type, Dict[text_type, Dict[str, Any]]]
+    # type: (UserProfile) -> Dict[Text, Dict[Text, Dict[str, Any]]]
     if requesting_user_profile.realm.presence_disabled:
         # Return an empty dict if presence is disabled in this realm
         return defaultdict(dict)
@@ -2977,7 +2976,7 @@ def get_status_dict(requesting_user_profile):
 
 
 def get_realm_user_dicts(user_profile):
-    # type: (UserProfile) -> List[Dict[str, text_type]]
+    # type: (UserProfile) -> List[Dict[str, Text]]
     return [{'email': userdict['email'],
              'user_id': userdict['id'],
              'is_admin': userdict['is_realm_admin'],
@@ -3188,7 +3187,7 @@ def apply_events(state, events, user_profile):
                     item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
 
             def name(sub):
-                # type: (Dict[str, Any]) -> text_type
+                # type: (Dict[str, Any]) -> Text
                 return sub['name'].lower()
 
             if event['op'] == "add":
@@ -3271,7 +3270,7 @@ def apply_events(state, events, user_profile):
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
                        narrow=[]):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[text_type]]) -> Dict[str, Any]
+    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -3387,7 +3386,7 @@ def handle_push_notification(user_profile_id, missed_message):
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
 
 def is_inactive(email):
-    # type: (text_type) -> None
+    # type: (Text) -> None
     try:
         if get_user_profile_by_email(email).is_active:
             raise ValidationError(u'%s is already active' % (email,))
@@ -3395,7 +3394,7 @@ def is_inactive(email):
         pass
 
 def user_email_is_unique(email):
-    # type: (text_type) -> None
+    # type: (Text) -> None
     try:
         get_user_profile_by_email(email)
         raise ValidationError(u'%s is already registered' % (email,))
@@ -3403,13 +3402,13 @@ def user_email_is_unique(email):
         pass
 
 def do_invite_users(user_profile, invitee_emails, streams):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, List[Tuple[text_type, str]]]]
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, List[Tuple[Text, str]]]]
     new_prereg_users = [] # type: List[PreregistrationUser]
-    errors = [] # type: List[Tuple[text_type, str]]
-    skipped = [] # type: List[Tuple[text_type, str]]
+    errors = [] # type: List[Tuple[Text, str]]
+    skipped = [] # type: List[Tuple[Text, str]]
 
     ret_error = None # type: Optional[str]
-    ret_error_data = {} # type: Dict[str, List[Tuple[text_type, str]]]
+    ret_error_data = {} # type: Dict[str, List[Tuple[Text, str]]]
 
     for email in invitee_emails:
         if email == '':
@@ -3484,7 +3483,7 @@ def send_referral_event(user_profile):
     send_event(event, [user_profile.id])
 
 def do_refer_friend(user_profile, email):
-    # type: (UserProfile, text_type) -> None
+    # type: (UserProfile, Text) -> None
     content = ('Referrer: "%s" <%s>\n'
                'Realm: %s\n'
                'Referred: %s') % (user_profile.full_name, user_profile.email,
@@ -3511,39 +3510,39 @@ def notify_realm_emoji(realm):
     send_event(event, user_ids)
 
 def check_add_realm_emoji(realm, name, img_url):
-    # type: (Realm, text_type, text_type) -> None
+    # type: (Realm, Text, Text) -> None
     emoji = RealmEmoji(realm=realm, name=name, img_url=img_url)
     emoji.full_clean()
     emoji.save()
     notify_realm_emoji(realm)
 
 def do_remove_realm_emoji(realm, name):
-    # type: (Realm, text_type) -> None
+    # type: (Realm, Text) -> None
     RealmEmoji.objects.get(realm=realm, name=name).delete()
     notify_realm_emoji(realm)
 
 def notify_alert_words(user_profile, words):
-    # type: (UserProfile, Iterable[text_type]) -> None
+    # type: (UserProfile, Iterable[Text]) -> None
     event = dict(type="alert_words", alert_words=words)
     send_event(event, [user_profile.id])
 
 def do_add_alert_words(user_profile, alert_words):
-    # type: (UserProfile, Iterable[text_type]) -> None
+    # type: (UserProfile, Iterable[Text]) -> None
     words = add_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
 
 def do_remove_alert_words(user_profile, alert_words):
-    # type: (UserProfile, Iterable[text_type]) -> None
+    # type: (UserProfile, Iterable[Text]) -> None
     words = remove_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, words)
 
 def do_set_alert_words(user_profile, alert_words):
-    # type: (UserProfile, List[text_type]) -> None
+    # type: (UserProfile, List[Text]) -> None
     set_user_alert_words(user_profile, alert_words)
     notify_alert_words(user_profile, alert_words)
 
 def do_set_muted_topics(user_profile, muted_topics):
-    # type: (UserProfile, Union[List[List[text_type]], List[Tuple[text_type, text_type]]]) -> None
+    # type: (UserProfile, Union[List[List[Text]], List[Tuple[Text, Text]]]) -> None
     user_profile.muted_topics = ujson.dumps(muted_topics)
     user_profile.save(update_fields=['muted_topics'])
     event = dict(type="muted_topics", muted_topics=muted_topics)
@@ -3561,7 +3560,7 @@ def notify_realm_filters(realm):
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 def do_add_realm_filter(realm, pattern, url_format_string):
-    # type: (Realm, text_type, text_type) -> int
+    # type: (Realm, Text, Text) -> int
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
     realm_filter = RealmFilter(
@@ -3574,7 +3573,7 @@ def do_add_realm_filter(realm, pattern, url_format_string):
     return realm_filter.id
 
 def do_remove_realm_filter(realm, pattern=None, id=None):
-    # type: (Realm, Optional[text_type], Optional[int]) -> None
+    # type: (Realm, Optional[Text], Optional[int]) -> None
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
@@ -3582,12 +3581,12 @@ def do_remove_realm_filter(realm, pattern=None, id=None):
     notify_realm_filters(realm)
 
 def get_emails_from_user_ids(user_ids):
-    # type: (Sequence[int]) -> Dict[int, text_type]
+    # type: (Sequence[int]) -> Dict[int, Text]
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)
 
 def realm_aliases(realm):
-    # type: (Realm) -> List[text_type]
+    # type: (Realm) -> List[Text]
     return [alias.domain for alias in realm.realmalias_set.all()]
 
 def get_occupied_streams(realm):
@@ -3645,7 +3644,7 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     return streams
 
 def do_claim_attachments(message):
-    # type: (Message) -> List[Tuple[text_type, bool]]
+    # type: (Message) -> List[Tuple[Text, bool]]
     attachment_url_list = attachment_url_re.findall(message.content)
 
     results = []
@@ -3672,7 +3671,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago):
         attachment.delete()
 
 def check_attachment_reference_change(prev_content, message):
-    # type: (text_type, Message) -> None
+    # type: (Text, Message) -> None
     new_content = message.content
     prev_attachments = set(attachment_url_re.findall(prev_content))
     new_attachments = set(attachment_url_re.findall(new_content))
