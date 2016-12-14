@@ -1,5 +1,5 @@
-import requests
 from __future__ import print_function
+import requests
 
 class CommuteHandler(object):
     '''
