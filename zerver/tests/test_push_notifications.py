@@ -9,7 +9,8 @@ from django.test import TestCase
 from django.conf import settings
 
 from zerver.models import PushDeviceToken, UserProfile, Message
-from zerver.models import get_user_profile_by_email, receives_online_notifications
+from zerver.models import get_user_profile_by_email, receives_online_notifications,\
+    receives_offline_notifications
 from zerver.lib import push_notifications as apn
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -388,7 +389,7 @@ class GCMFailureTest(GCMTest):
         c2 = call("GCM: delivery needs a retry but ignoring")
         mock_warn.assert_has_calls([c1, c2], any_order=True)
 
-class TestReceivesOnlineNotificationsFunction(ZulipTestCase):
+class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         email = "cordelia@zulip.com"
@@ -413,3 +414,43 @@ class TestReceivesOnlineNotificationsFunction(ZulipTestCase):
 
         self.user.enable_online_push_notifications = False
         self.assertFalse(receives_online_notifications(self.user))
+
+    def test_receivers_offline_notifications_when_user_is_a_bot(self):
+        # type: () -> None
+        self.user.is_bot = True
+
+        self.user.enable_offline_email_notifications = True
+        self.user.enable_offline_push_notifications = True
+        self.assertFalse(receives_offline_notifications(self.user))
+
+        self.user.enable_offline_email_notifications = False
+        self.user.enable_offline_push_notifications = False
+        self.assertFalse(receives_offline_notifications(self.user))
+
+        self.user.enable_offline_email_notifications = True
+        self.user.enable_offline_push_notifications = False
+        self.assertFalse(receives_offline_notifications(self.user))
+
+        self.user.enable_offline_email_notifications = False
+        self.user.enable_offline_push_notifications = True
+        self.assertFalse(receives_offline_notifications(self.user))
+
+    def test_receivers_offline_notifications_when_user_is_not_a_bot(self):
+        # type: () -> None
+        self.user.is_bot = False
+
+        self.user.enable_offline_email_notifications = True
+        self.user.enable_offline_push_notifications = True
+        self.assertTrue(receives_offline_notifications(self.user))
+
+        self.user.enable_offline_email_notifications = False
+        self.user.enable_offline_push_notifications = False
+        self.assertFalse(receives_offline_notifications(self.user))
+
+        self.user.enable_offline_email_notifications = True
+        self.user.enable_offline_push_notifications = False
+        self.assertTrue(receives_offline_notifications(self.user))
+
+        self.user.enable_offline_email_notifications = False
+        self.user.enable_offline_push_notifications = True
+        self.assertTrue(receives_offline_notifications(self.user))
