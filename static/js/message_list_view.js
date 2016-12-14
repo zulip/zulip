@@ -89,7 +89,7 @@ function populate_group_from_message_container(group, message_container) {
     var time = new XDate(message_container.msg.timestamp * 1000);
     var date_element = timerender.render_date(time)[0];
 
-    if (!message_container.print_date) {
+    if (!message_container.show_date) {
         date_element.className = "hide-date";
     }
 
@@ -165,10 +165,6 @@ MessageListView.prototype = {
         _.each(message_containers, function (message_container) {
             message_container.include_recipient = false;
             message_container.include_footer    = false;
-
-            if (!same_day(prev, message_container)) {
-                message_container.print_date = true;
-            }
 
             if (same_recipient(prev, message_container) && self.collapse_messages &&
                 prev.msg.historical === message_container.msg.historical &&
