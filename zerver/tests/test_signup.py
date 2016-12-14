@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+import datetime
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase
 
 from mock import patch
 from fakeldap import MockLDAP
+
+from confirmation.models import Confirmation
 
 from zilencer.models import Deployment
 
@@ -15,8 +18,9 @@ from zerver.models import (
     get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, RealmAlias, Recipient,
     Referral, ScheduledJob, UserProfile, UserMessage,
-    Stream, Subscription,
+    Stream, Subscription, ScheduledJob
 )
+from zerver.management.commands.deliver_email import send_email_job
 
 from zerver.lib.actions import (
     set_default_streams,
@@ -27,7 +31,8 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language, \
     add_new_user_history
 from zerver.lib.digest import send_digest_email
-from zerver.lib.notifications import enqueue_welcome_emails, one_click_unsubscribe_link
+from zerver.lib.notifications import (
+    enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock
 from zerver.lib.test_classes import (
@@ -35,6 +40,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.session_user import get_session_dict_user
+from zerver.context_processors import common_context
 
 import re
 import ujson
@@ -165,6 +171,10 @@ class PasswordResetTest(ZulipTestCase):
         old_password = initial_password(email)
 
         self.login(email)
+
+        # test password reset template
+        result = self.client_get('/accounts/password/reset/')
+        self.assert_in_response('Reset your password.', result)
 
         # start the password reset process by supplying an email address
         result = self.client_post('/accounts/password/reset/', {'email': email})
@@ -567,6 +577,44 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(user.invites_used, 1)
 
+    def test_invation_reminder_email(self):
+        # type: () -> None
+        from django.core.mail import outbox
+        current_user_email = "hamlet@zulip.com"
+        self.login(current_user_email)
+        invitee = "alice-test@zulip.com"
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(invitee))
+        self.check_sent_emails([invitee])
+
+        data = {"email": invitee, "referrer_email": current_user_email}
+        invitee = get_prereg_user_by_email(data["email"])
+        referrer = get_user_profile_by_email(data["referrer_email"])
+        link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
+        context = common_context(referrer)
+        context.update({
+            'activate_url': link,
+            'referrer': referrer,
+            'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+            'support_email': settings.ZULIP_ADMINISTRATOR
+        })
+        with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
+            send_local_email_template_with_delay(
+                [{'email': data["email"], 'name': ""}],
+                "zerver/emails/invitation/invitation_reminder_email",
+                context,
+                datetime.timedelta(days=0),
+                tags=["invitation-reminders"],
+                sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
+        email_jobs_to_deliver = ScheduledJob.objects.filter(
+            type=ScheduledJob.EMAIL,
+            scheduled_timestamp__lte=datetime.datetime.utcnow())
+        self.assertEqual(len(email_jobs_to_deliver), 1)
+        email_count = len(outbox)
+        for job in email_jobs_to_deliver:
+            self.assertTrue(send_email_job(job))
+        self.assertEqual(len(outbox), email_count + 1)
+
 class InviteeEmailsParserTests(TestCase):
     def setUp(self):
         # type: () -> None
@@ -600,6 +648,11 @@ class InviteeEmailsParserTests(TestCase):
 
 
 class EmailUnsubscribeTests(ZulipTestCase):
+    def test_error_unsubscribe(self):
+        # type: () -> None
+        result = self.client_get('/accounts/unsubscribe/missed_messages/test123')
+        self.assert_in_response('Unknown email unsubscribe request', result)
+
     def test_missedmessage_unsubscribe(self):
         # type: () -> None
         """
