@@ -537,7 +537,6 @@ class ZulipStream(object):
 
 Client._register('send_message', url='messages', make_request=(lambda request: request))
 Client._register('update_message', method='PATCH', url='messages', make_request=(lambda request: request))
-Client._register('get_messages', method='GET', url='messages/latest', longpolling=True)
 Client._register('get_events', url='events', method='GET', longpolling=True, make_request=(lambda **kwargs: kwargs))
 Client._register('register', make_request=_mk_events)
 Client._register('export', method='GET', url='export')
