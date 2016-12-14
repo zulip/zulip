@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any, Text
 
 from django.core.management.base import BaseCommand, CommandParser
@@ -26,8 +27,15 @@ For example:
 ./manage.py set_default_streams --realm=foo --streams=
 """
 
+    # Fix support for multi-line usage
+    def create_parser(self, *args, **kwargs):
+        # type: (*Any, **Any) -> ArgumentParser
+        parser = super(Command, self).create_parser(*args, **kwargs)
+        parser.formatter_class = RawTextHelpFormatter
+        return parser
+
     def add_arguments(self, parser):
-        # type: (CommandParser) -> None
+        # type: (ArgumentParser) -> None
         parser.add_argument('-r', '--realm',
                             dest='string_id',
                             type=str,
