@@ -71,6 +71,9 @@ as a “**realm**”.
 * Edit or delete a message
 * Change the topic of a message
 * Change the topic of a group of messages
+### Searching
+* [Search messages](/help/search-messages)
+* [Advanced search for messages](/help/advanced-search)
 
 ## People
 * See whether someone is here or away
