@@ -233,8 +233,8 @@ class ReactionDict(object):
         # type: (Dict[str, Any]) -> Dict[str, Any]
         return {'emoji_name': row.get('emoji_name'),
                 'user': {'email': row.get('user_profile__email'),
-                        'id': row.get('user_profile__id'),
-                        'full_name': row.get('user_profile__full_name')}}
+                         'id': row.get('user_profile__id'),
+                         'full_name': row.get('user_profile__full_name')}}
 
 
 def re_render_content_for_management_command(message):
