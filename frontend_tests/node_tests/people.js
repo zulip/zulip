@@ -77,10 +77,14 @@ var _ = global._;
     people.update({email: email, full_name: 'The Godfather of Calculus'});
     assert.equal(global.page_params.fullname, 'The Godfather of Calculus');
 
-    // Now remove isaac
-    people.remove(isaac);
-    person = people.get_by_email(email);
+    // Now deactivate isaac
+    people.deactivate(isaac);
+    person = people.realm_get(email);
     assert(!person);
+
+    // We can still get their info for non-realm needs.
+    person = people.get_by_email(email);
+    assert.equal(person.email, email);
 
     // The original person should still be there
     person = people.get_by_email('orig@example.com');
@@ -113,13 +117,14 @@ var _ = global._;
     person = people.get_person_from_user_id(42);
     assert.equal(person.full_name, 'Mary New');
 
-    // remove() should eventually just take a user_id, but
-    // now it takes a full person object
-    people.remove(person);
-    person = people.get_by_email('mary@example.com');
+    // deactivate() should eventually just take a user_id, but
+    // now it takes a full person object.  Note that deactivate()
+    // won't actually make the user disappear completely.
+    people.deactivate(person);
+    person = people.realm_get('mary@example.com');
     assert.equal(person, undefined);
     person = people.get_person_from_user_id(42);
-    assert.equal(person, undefined);
+    assert.equal(person.user_id, 42);
 }());
 
 (function test_get_rest_of_realm() {

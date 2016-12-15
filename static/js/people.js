@@ -226,10 +226,10 @@ exports.add_in_realm = function add_in_realm(person) {
     exports.add(person);
 };
 
-exports.remove = function remove(person) {
-    people_dict.del(person.email);
-    people_by_user_id_dict.del(person.user_id);
-    people_by_name_dict.del(person.full_name);
+exports.deactivate = function (person) {
+    // We don't fully remove a person from all of our data
+    // structures, because deactivated users can be part
+    // of somebody's PM list.
     realm_people_dict.del(person.email);
 };
 
