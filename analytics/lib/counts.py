@@ -47,6 +47,10 @@ class CountStat(object):
         self.frequency = frequency
         self.interval = self.GAUGE if is_gauge else frequency
 
+    def __unicode__(self):
+        # type: () -> Text
+        return u"<CountStat: %s>" % (self.property,)
+
 class ZerverCountQuery(object):
     def __init__(self, zerver_table, analytics_table, query):
         # type: (Type[models.Model], Type[BaseCount], Text) -> None
