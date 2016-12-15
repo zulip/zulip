@@ -218,7 +218,7 @@ v1_api_and_json_patterns = [
 
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
-        {'GET': 'zerver.views.pointer.get_profile_backend',
+        {'GET': 'zerver.views.users.get_profile_backend',
          'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
     url(r'^users/me/pointer$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_pointer_backend',
