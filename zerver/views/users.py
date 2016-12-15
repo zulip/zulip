@@ -17,7 +17,8 @@ from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import UserProfile, Stream, Realm, get_user_profile_by_email, \
+from zerver.lib.utils import generate_random_token
+from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
     get_stream, email_allowed_for_realm
 
 from six import text_type
@@ -338,3 +339,25 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
 
     do_create_user(email, password, realm, full_name, short_name)
     return json_success()
+
+def generate_client_id():
+    # type: () -> text_type
+    return generate_random_token(32)
+
+def get_profile_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    result = dict(pointer        = user_profile.pointer,
+                  client_id      = generate_client_id(),
+                  max_message_id = -1,
+                  user_id        = user_profile.id,
+                  full_name      = user_profile.full_name,
+                  email          = user_profile.email,
+                  is_bot         = user_profile.is_bot,
+                  is_admin       = user_profile.is_realm_admin,
+                  short_name     = user_profile.short_name)
+
+    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+    if messages:
+        result['max_message_id'] = messages[0].id
+
+    return json_success(result)
