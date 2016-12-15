@@ -583,7 +583,7 @@ run(function (override, capture, args) {
     assert_same(args.person, event.person);
 
     event = event_fixtures.realm_user__remove;
-    override('people', 'remove', capture(['person']));
+    override('people', 'deactivate', capture(['person']));
     dispatch(event);
     assert_same(args.person, event.person);
 
