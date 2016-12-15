@@ -56,7 +56,7 @@ class HowdoiHandler(object):
                 * @howdowe! OR @howdoi! > Full answer from SO
             '''
 
-    def triage_message(self, message):
+    def triage_message(self, message, client):
         cmd_list = ['@howdowe', '@howdoi', '@howdowe!', '@howdoi!']
         question = message['content']
 

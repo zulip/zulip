@@ -52,7 +52,7 @@ class IssueHandler(object):
             github_token    (The personal access token for the github bot)
             '''
 
-    def triage_message(self, message):
+    def triage_message(self, message, client):
         # return True if we want to (possibly) respond to this message
         original_content = message['content']
         # This next line of code is defensive, as we
