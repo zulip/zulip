@@ -68,8 +68,9 @@ def bulk_create_users(realms, users_raw, bot_type=None, tos_version=None):
 
 def bulk_create_streams(realm, stream_dict):
     # type: (Realm, Dict[text_type, Dict[text_type, Any]]) -> None
-    existing_streams = set(stream.name.lower()
-                           for stream in Stream.objects.select_related().filter(realm=realm))
+    existing_streams = frozenset([name.lower() for name in
+                                  Stream.objects.filter(realm=realm)
+                                  .values_list('name', flat=True)])
     streams_to_create = [] # type: List[Stream]
     for name, options in stream_dict.items():
         if name.lower() not in existing_streams:
@@ -82,9 +83,9 @@ def bulk_create_streams(realm, stream_dict):
     Stream.objects.bulk_create(streams_to_create)
 
     recipients_to_create = [] # type: List[Recipient]
-    for stream in Stream.objects.select_related().filter(realm=realm):
-        if stream.name.lower() not in existing_streams:
-            recipients_to_create.append(Recipient(type_id=stream.id,
+    for stream in Stream.objects.filter(realm=realm).values('id', 'name'):
+        if stream['name'].lower() not in existing_streams:
+            recipients_to_create.append(Recipient(type_id=stream['id'],
                                                   type=Recipient.STREAM))
     Recipient.objects.bulk_create(recipients_to_create)
 
