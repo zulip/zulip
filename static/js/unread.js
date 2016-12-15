@@ -67,6 +67,10 @@ exports.unread_topic_counter = (function () {
         res.subject_count = str_dict(); // hash of hashes (stream, then subject -> count)
         unread_topics.each(function (_, stream) {
 
+            // We track unread counts for streams that may be currently
+            // unsubscribed.  Since users may re-subscribe, we don't
+            // completely throw away the data.  But we do ignore it here,
+            // so that callers have a view of the **current** world.
             if (! stream_data.is_subscribed(stream)) {
                 return true;
             }
