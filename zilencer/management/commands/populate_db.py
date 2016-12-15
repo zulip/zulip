@@ -27,14 +27,14 @@ from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, 
 
 settings.TORNADO_SERVER = None
 
-def create_users(realms, name_list, bot_type=None):
-    # type: (Mapping[Text, Realm], Iterable[Tuple[Text, Text]], int) -> None
+def create_users(realm, name_list, bot_type=None):
+    # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
     user_set = set() # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
-    bulk_create_users(realms, user_set, bot_type=bot_type, tos_version=tos_version)
+    bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
 
 
 class Command(BaseCommand):
@@ -140,7 +140,7 @@ class Command(BaseCommand):
             ]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
-            create_users(realms, names)
+            create_users(zulip_realm, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
             # Create public streams.
@@ -228,7 +228,7 @@ class Command(BaseCommand):
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                     ]
-                create_users(realms, testsuite_mit_users)
+                create_users(mit_realm, testsuite_mit_users)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -240,12 +240,12 @@ class Command(BaseCommand):
                 ("Zulip Default Bot", "default-bot@zulip.com"),
                 ]
             zulip_realm_bots.extend(all_realm_bots)
-            create_users(realms, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
-            create_users(realms, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+            create_users(zulip_realm, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
@@ -296,12 +296,12 @@ class Command(BaseCommand):
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ]
-                create_users(realms, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
+                create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_cross_realm_bots = [
                 ("Zulip Feedback Bot", "feedback@zulip.com"),
                 ]
-            create_users(realms, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(zulip_realm, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)
