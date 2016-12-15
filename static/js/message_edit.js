@@ -298,7 +298,7 @@ function start_edit_maintaining_scroll(row, content) {
     }
 }
 
-exports.start = function (row) {
+exports.start = function (row, edit_box_open_callback) {
     var message = current_msg_list.get(rows.id(row));
     var msg_list = current_msg_list;
     channel.post({
@@ -309,6 +309,9 @@ exports.start = function (row) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
                 start_edit_maintaining_scroll(row, data.raw_content);
+                if (edit_box_open_callback) {
+                    edit_box_open_callback();
+                }
             }
         }
     });
@@ -352,6 +355,22 @@ exports.end = function (row) {
 exports.maybe_show_edit = function (row, id) {
     if (currently_editing_messages[id] !== undefined) {
         current_msg_list.show_edit_message(row, currently_editing_messages[id]);
+    }
+};
+
+exports.edit_last_sent_message = function () {
+    var msg = current_msg_list.get_last_own_editable_message();
+    if (msg !== undefined) {
+        var msg_row = current_msg_list.get_row(msg.id);
+        current_msg_list.select_id(rows.id(msg_row), {then_scroll: true, from_scroll: true});
+        message_edit.start(msg_row, function () {
+            var editability_type = message_edit.get_editability(msg, 5);
+            if (editability_type === message_edit.editability_types.TOPIC_ONLY) {
+                ui.focus_on('message_edit_topic');
+            } else {
+                ui.focus_on('message_edit_content');
+            }
+        });
     }
 };
 
