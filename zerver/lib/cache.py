@@ -61,18 +61,18 @@ def remote_cache_stats_finish():
 
 def get_or_create_key_prefix():
     # type: () -> text_type
-    if settings.TEST_SUITE:
+    if settings.CASPER_TESTS:
         # This sets the prefix for the benefit of the Casper tests.
-        # The Python tests overwrite KEY_PREFIX on each test, but use
-        # this codepath as well, just to save running the more complex
-        # code below for reading the normal key prefix.
         #
         # Having a fixed key is OK since we don't support running
         # multiple copies of the casper tests at the same time anyway.
-        if settings.TORNADO_SERVER:
-            return u'casper_tests:'
-        else:
-            return u'django_tests:'
+        return u'casper_tests:'
+    elif settings.TEST_SUITE:
+        # The Python tests overwrite KEY_PREFIX on each test, but use
+        # this codepath as well, just to save running the more complex
+        # code below for reading the normal key prefix.
+        return u'django_tests_unused:'
+
     # directory `var` should exist in production
     subprocess.check_call(["mkdir", "-p", os.path.join(settings.DEPLOY_ROOT, "var")])
 

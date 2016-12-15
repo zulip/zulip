@@ -51,6 +51,9 @@ else:
     CAMO_URI = 'https://external-content.zulipcdn.net/'
     CAMO_KEY = 'dummy'
 
+if "CASPER_TESTS" in os.environ:
+    CASPER_TESTS = True
+
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000

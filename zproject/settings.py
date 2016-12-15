@@ -78,6 +78,8 @@ else:
 TEST_SUITE = False
 # The new user tutorial is enabled by default, but disabled for client tests.
 TUTORIAL_ENABLED = True
+# This is overridden in test_settings.py for the test suites
+CASPER_TESTS = False
 
 # Import variables like secrets from the prod_settings file
 # Import prod_settings after determining the deployment/machine type
