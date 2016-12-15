@@ -100,6 +100,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
+    WebhookIntegration('foursquare', display_name='FourSquare'),
     WebhookIntegration('freshdesk'),
     WebhookIntegration(
         'github',
