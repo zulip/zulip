@@ -36,6 +36,10 @@
     clear: both;
 }
 
+.invisible {
+    visibility: hidden;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
