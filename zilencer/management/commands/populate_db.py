@@ -123,9 +123,6 @@ class Command(BaseCommand):
                     string_id="mit", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
-            realms = {} # type: Dict[Text, Realm]
-            for realm in Realm.objects.all():
-                realms[realm.domain] = realm
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
