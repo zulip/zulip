@@ -289,7 +289,7 @@ zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream
 count_message_type_by_user_query = """
     INSERT INTO analytics_usercount
             (realm_id, user_id, value, property, subgroup, end_time, interval)
-    SELECT realm_id, id, SUM(count) AS value, 'message_type_by_user', message_type, %%(time_end)s, '%(interval)s'
+    SELECT realm_id, id, SUM(count) AS value, '%(property)s', message_type, %%(time_end)s, '%(interval)s'
     FROM
     (
         SELECT zerver_userprofile.realm_id, zerver_userprofile.id, count(*),
