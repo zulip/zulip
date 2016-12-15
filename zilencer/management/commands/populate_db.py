@@ -36,17 +36,17 @@ def create_users(realms, name_list, bot_type=None):
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realms, user_set, bot_type=bot_type, tos_version=tos_version)
 
-def create_streams(realms, realm, stream_dict):
-    # type: (Mapping[Text, Realm], Realm, Dict[Text, Dict[Text, Any]]) -> None
+def create_streams(realm, stream_dict):
+    # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
     stream_dictionary = {
         name: {
-            "domain": realm.domain,
+            "realm": realm,
             "description": options["description"],
             "invite_only": options["invite_only"],
               } for name, options in stream_dict.items()
     } # type: Dict[Text, Dict[Text, Any]]
 
-    bulk_create_streams(realms, stream_dictionary)
+    bulk_create_streams(realm, stream_dictionary)
 
 
 class Command(BaseCommand):
@@ -165,7 +165,7 @@ class Command(BaseCommand):
                 "Rome": {"description": "Yet another Italian city", "invite_only": False}
             } # type: Dict[Text, Dict[Text, Any]]
 
-            create_streams(realms, zulip_realm, stream_dict)
+            create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
                                  for name in stream_list] # type: List[int]
             # Create subscriptions to streams.  The following
@@ -280,7 +280,7 @@ class Command(BaseCommand):
                     "errors": {"description": "For errors", "invite_only": False},
                     "sales": {"description": "For sales discussion", "invite_only": False}
                 }  # type: Dict[Text, Dict[Text, Any]]
-                create_streams(realms, zulip_realm, zulip_stream_dict)
+                create_streams(zulip_realm, zulip_stream_dict)
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
@@ -409,4 +409,3 @@ def send_messages(data):
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
-
