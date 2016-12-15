@@ -14,9 +14,9 @@ from typing import Dict, Any, Iterable, Optional
 @api_key_only_webhook_view('FourSquare')
 @has_request_variables
 def api_foursquare_webhook(request, user_profile, client,
-                            payload=REQ(argument_type='body'),
-                            stream=REQ(default='test'),
-                            topic=REQ(default='FourSquare')):
+                           payload=REQ(argument_type='body'),
+                           stream=REQ(default='test'),
+                           topic=REQ(default='FourSquare')):
                                 # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], text_type, Optional[text_type]) -> HttpResponse
 
     # construct the body/ start of the message
@@ -42,12 +42,12 @@ def api_foursquare_webhook(request, user_profile, client,
         fulladdress3 = location3[0] + ', ' + location3[1] + ', ' + location3[2]
 
         body_template = ("{displayString} coming right up\n\n {name1}\n{formattedAddress1}\n{text1}\n\n"
-                        +"{name2}\n{formattedAddress2}\n{text2}\n\n {name3}\n{formattedAddress3}\n{text3}")
+                         + "{name2}\n{formattedAddress2}\n{text2}\n\n {name3}\n{formattedAddress3}\n{text3}")
 
         body += body_template.format(displayString=payload['response']['geocode']['displayString'],
-                                    name1=place1['name'], formattedAddress1=fulladdress1, text1=venue_list[0]['tips'][0]['text'],
-                                    name2=place2['name'], formattedAddress2=fulladdress2, text2=venue_list[1]['tips'][0]['text'],
-                                    name3=place3['name'], formattedAddress3=fulladdress3, text3=venue_list[2]['tips'][0]['text'])
+                                     name1=place1['name'], formattedAddress1=fulladdress1, text1=venue_list[0]['tips'][0]['text'],
+                                     name2=place2['name'], formattedAddress2=fulladdress2, text2=venue_list[1]['tips'][0]['text'],
+                                     name3=place3['name'], formattedAddress3=fulladdress3, text3=venue_list[2]['tips'][0]['text'])
 
     except KeyError as e:
 
