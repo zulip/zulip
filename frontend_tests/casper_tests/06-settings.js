@@ -257,6 +257,14 @@ casper.waitUntilVisible('#display-settings-status', function () {
     casper.test.assertSelectorHasText('#display-settings-status', 'English is now the default language');
 });
 
+if (REALMS_HAVE_SUBDOMAINS) {
+    settings_url = 'http://zulip.zulipdev.com:9981/';
+} else {
+    settings_url = 'http://zulipdev.com:9981/';
+}
+
+casper.thenOpen(settings_url);
+
 // TODO: test the "Declare Zulip Bankruptcy option"
 
 common.then_log_out();
