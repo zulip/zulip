@@ -2174,14 +2174,16 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
         log_event(event)
     send_event(event, [user_profile.id])
 
-def do_change_hide_private_message_desktop_notifications(user_profile, hide_private_message_desktop_notifications, log=True):
+def do_change_include_content_of_private_messages_in_desktop_notifications(user_profile,
+                            include_content_of_private_messages_in_desktop_notifications, log=True):
     # type: (UserProfile, bool, bool) -> None
-    user_profile.hide_private_message_desktop_notifications = hide_private_message_desktop_notifications
-    user_profile.save(update_fields=["hide_private_message_desktop_notifications"])
+    user_profile.include_content_of_private_messages_in_desktop_notifications \
+        = include_content_of_private_messages_in_desktop_notifications
+    user_profile.save(update_fields=["include_content_of_private_messages_in_desktop_notifications"])
     event = {'type': 'update_global_notifications',
              'user': user_profile.email,
-             'notification_name': 'hide_private_message_desktop_notifications',
-             'setting': hide_private_message_desktop_notifications}
+             'notification_name': 'include_content_of_private_messages_in_desktop_notifications',
+             'setting': include_content_of_private_messages_in_desktop_notifications}
     if log:
         log_event(event)
     send_event(event, [user_profile.id])

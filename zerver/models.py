@@ -508,7 +508,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True) # type: bool
-    hide_private_message_desktop_notifications = models.BooleanField(default=True)  # type: bool
+    include_content_of_private_messages_in_desktop_notifications = models.BooleanField(default=False)  # type: bool
     enable_sounds = models.BooleanField(default=True) # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True) # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True) # type: bool

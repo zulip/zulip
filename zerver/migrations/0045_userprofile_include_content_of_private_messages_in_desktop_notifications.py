@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='userprofile',
-            name='hide_private_message_desktop_notifications',
-            field=models.BooleanField(default=True),
+            name='include_content_of_private_messages_in_desktop_notifications',
+            field=models.BooleanField(default=False),
         ),
     ]
