@@ -156,10 +156,9 @@ var _ = global._;
     ];
     assert.deepEqual(others, expected);
 
-    people.remove(alice1);
-    people.remove(alice2);
-    people.remove(bob);
 }());
+
+people.init();
 
 (function test_recipient_counts() {
     var email = 'anybody@example.com';
@@ -218,14 +217,12 @@ var _ = global._;
     assert(_.has(filtered_people, 'charles@example.com'));
     assert(_.has(filtered_people, 'athens@example.com'));
 
-    people.remove(charles);
-    people.remove(maria);
-    people.remove(ashton);
-    people.remove(linus);
 }());
 
+people.init();
+
 (function test_multi_user_methods() {
-     var emp401 = {
+    var emp401 = {
         email: 'emp401@example.com',
         user_id: 401,
         full_name: 'whatever 401',

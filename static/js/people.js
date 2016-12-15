@@ -2,15 +2,29 @@ var people = (function () {
 
 var exports = {};
 
-// The following three Dicts point to the same objects
-// All people we've seen
-var people_dict = new Dict({fold_case: true});
-var people_by_name_dict = new Dict({fold_case: true});
-var people_by_user_id_dict = new Dict();
-// People in this realm
-var realm_people_dict = new Dict({fold_case: true});
-var cross_realm_dict = new Dict({fold_case: true});
-var pm_recipient_count_dict = new Dict({fold_case: true});
+var people_dict;
+var people_by_name_dict;
+var people_by_user_id_dict;
+var realm_people_dict;
+var cross_realm_dict;
+var pm_recipient_count_dict;
+
+// We have an init() function so that our automated tests
+// can easily clear data.
+exports.init = function () {
+    // The following three Dicts point to the same objects
+    // All people we've seen
+    people_dict = new Dict({fold_case: true});
+    people_by_name_dict = new Dict({fold_case: true});
+    people_by_user_id_dict = new Dict();
+    // People in this realm
+    realm_people_dict = new Dict({fold_case: true});
+    cross_realm_dict = new Dict({fold_case: true});
+    pm_recipient_count_dict = new Dict({fold_case: true});
+};
+
+// WE INITIALIZE DATA STRUCTURES HERE!
+exports.init();
 
 exports.get_person_from_user_id = function (user_id) {
     return people_by_user_id_dict.get(user_id);
