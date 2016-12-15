@@ -1,6 +1,6 @@
 #### Dependencies
 
-The [Zulip API](https://zulip.com/api) Python bindings require the
+The [Zulip API](https://zulipchat.com/api) Python bindings require the
 following Python libraries:
 
 * requests (version >= 0.12.1)
