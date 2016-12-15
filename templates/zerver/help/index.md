@@ -92,7 +92,7 @@ as a “**realm**”.
 * Unsubscribe from a stream
 * Change who can join a stream
 * Pin a stream
-* Change the color of a stream
+* [Change the color of a stream](/help/change-stream-color)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
 * Remove someone from a stream
