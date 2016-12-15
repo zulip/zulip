@@ -926,6 +926,7 @@ def do_send_messages(messages):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
+
 def do_add_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
     reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
@@ -941,6 +942,9 @@ def do_add_reaction(user_profile, message, emoji_name):
              'message_id': message.id,
              'emoji_name': emoji_name} # type: Dict[str, Any]
 
+    # Update the cached message since new reaction is added.
+    update_to_dict_cache([message])
+
     # Recipients for message update events, including reactions, are
     # everyone who got the original message.  This means reactions
     # won't live-update in preview narrows, but it's the right
@@ -949,6 +953,7 @@ def do_add_reaction(user_profile, message, emoji_name):
     # client in the organization, which doesn't scale.
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile.id for um in ums])
+
 
 def do_remove_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
@@ -966,12 +971,16 @@ def do_remove_reaction(user_profile, message, emoji_name):
              'message_id': message.id,
              'emoji_name': emoji_name} # type: Dict[str, Any]
 
+    # Clear the cached message since reaction is removed.
+    update_to_dict_cache([message])
+
     # Recipients for message update events, including reactions, are
     # everyone who got the original message.  This means reactions
     # won't live-update in preview narrows, but it's the right
     # performance tradeoff, since otherwise we'd need to send all
     # reactions to public stream messages to every browser for every
     # client in the organization, which doesn't scale.
+
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile.id for um in ums])
 
@@ -1262,7 +1271,6 @@ def check_message(sender, client, message_type_name, message_to,
         #     return json_error(_("Invalid subject name"))
 
         stream = get_stream(stream_name, realm)
-
         send_pm_if_empty_stream(sender, stream, stream_name, realm)
 
         if stream is None:

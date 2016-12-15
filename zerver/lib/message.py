@@ -22,6 +22,7 @@ from zerver.models import (
     Stream,
     UserProfile,
     UserMessage,
+    Reaction
 )
 
 from typing import Any, Dict, List, Optional, Tuple
@@ -78,6 +79,7 @@ class MessageDict(object):
                 recipient_id = message.recipient.id,
                 recipient_type = message.recipient.type,
                 recipient_type_id = message.recipient.type_id,
+                reactions = Reaction.get_raw_db_rows([message.id])
         )
 
     @staticmethod
@@ -109,6 +111,7 @@ class MessageDict(object):
                 recipient_id = row['recipient_id'],
                 recipient_type = row['recipient__type'],
                 recipient_type_id = row['recipient__type_id'],
+                reactions=row['reactions']
         )
 
     @staticmethod
@@ -134,8 +137,9 @@ class MessageDict(object):
             recipient_id,
             recipient_type,
             recipient_type_id,
+            reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
@@ -218,7 +222,20 @@ class MessageDict(object):
             obj['content'] = content
             obj['content_type'] = 'text/x-markdown'
 
+        obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
+                            for reaction in reactions]
         return obj
+
+
+class ReactionDict(object):
+    @staticmethod
+    def build_dict_from_raw_db_row(row):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        return {'emoji_name': row.get('emoji_name'),
+                'user': {'email': row.get('user_profile__email'),
+                        'id': row.get('user_profile__id'),
+                        'full_name': row.get('user_profile__full_name')}}
+
 
 def re_render_content_for_management_command(message):
     # type: (Message) -> None
