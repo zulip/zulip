@@ -233,6 +233,42 @@ exports.deactivate = function (person) {
     realm_people_dict.del(person.email);
 };
 
+exports.extract_people_from_message = function (message) {
+    var involved_people;
+
+    switch (message.type) {
+    case 'stream':
+        involved_people = [{full_name: message.sender_full_name,
+                            user_id: message.sender_id,
+                            email: message.sender_email}];
+        break;
+
+    case 'private':
+        involved_people = message.display_recipient;
+        break;
+    }
+
+    // Add new people involved in this message to the people list
+    _.each(involved_people, function (person) {
+        if (!person.unknown_local_echo_user) {
+            if (! exports.get_by_email(person.email)) {
+                exports.add({
+                    email: person.email,
+                    user_id: person.user_id || person.id,
+                    full_name: person.full_name,
+                    is_admin: person.is_realm_admin || false,
+                    is_bot: person.is_bot || false
+                });
+            }
+
+            if (message.type === 'private' && message.sent_by_me) {
+                // Track the number of PMs we've sent to this person to improve autocomplete
+                exports.incr_recipient_count(person.email);
+            }
+        }
+    });
+};
+
 exports.update = function update(person) {
     if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",

@@ -96,8 +96,6 @@ function add_message_metadata(message) {
         return cached_msg;
     }
 
-    var involved_people;
-
     message.sent_by_me = util.is_current_user(message.sender_email);
 
     message.flags = message.flags || [];
@@ -111,6 +109,8 @@ function add_message_metadata(message) {
     message.alerted = message.flags.indexOf("has_alert_word") !== -1;
     message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
 
+    people.extract_people_from_message(message);
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
@@ -119,10 +119,6 @@ function add_message_metadata(message) {
         message.reply_to = message.sender_email;
 
         stream_data.process_message_for_recent_topics(message);
-
-        involved_people = [{full_name: message.sender_full_name,
-                            user_id: message.sender_id,
-                            email: message.sender_email}];
         set_topic_edit_properties(message);
         break;
 
@@ -133,29 +129,8 @@ function add_message_metadata(message) {
         message.display_reply_to = exports.get_private_message_recipient(message, 'full_name', 'email');
 
         exports.process_message_for_recent_private_messages(message);
-        involved_people = message.display_recipient;
         break;
     }
-
-    // Add new people involved in this message to the people list
-    _.each(involved_people, function (person) {
-        if (!person.unknown_local_echo_user) {
-            if (! people.get_by_email(person.email)) {
-                people.add({
-                    email: person.email,
-                    user_id: person.user_id || person.id,
-                    full_name: person.full_name,
-                    is_admin: person.is_realm_admin || false,
-                    is_bot: person.is_bot || false
-                });
-            }
-
-            if (message.type === 'private' && message.sent_by_me) {
-                // Track the number of PMs we've sent to this person to improve autocomplete
-                people.incr_recipient_count(person.email);
-            }
-        }
-    });
 
     alert_words.process_message(message);
     stored_messages[message.id] = message;
