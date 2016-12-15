@@ -366,6 +366,14 @@ def build_custom_checkers(by_lang):
                          "static/templates/settings/realm-filter-settings-admin.handlebars"])},
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
+        {'pattern': "title='[^{]",
+         'description': "`title` value should be translatable."},
+        {'pattern': 'title="[^{]',
+         'exclude_line': set([
+             ('templates/zerver/markdown_help.html',
+              '<td><img alt=":heart:" class="emoji" src="/static/third/gemoji/images/emoji/heart.png" title=":heart:" /></td>')
+         ]),
+         'description': "`title` value should be translatable."},
         ] # type: RuleList
     handlebars_rules = html_rules
     json_rules = [] # type: RuleList # fix newlines at ends of files
