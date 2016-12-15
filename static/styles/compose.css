@@ -193,7 +193,8 @@ table.compose_table {
 }
 
 .compose-all-everyone-controls,
-.compose_invite_user_controls {
+.compose_invite_user_controls,
+.compose-muted-context-controls {
     float: right;
 }
 

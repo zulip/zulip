@@ -11,6 +11,8 @@ var is_composing_message = false;
    false: user typed @all/@everyone;
    true: user clicked YES */
 var user_acknowledged_all_everyone;
+var user_acknowledged_muted_context;
+var unmute_context;
 
 var message_snapshot;
 
@@ -115,6 +117,27 @@ function clear_all_everyone_warnings() {
     $("#send-status").hide();
 }
 
+function show_muted_context_warning() {
+    var muted_context_template = templates.render("compose_muted_context", {context: unmute_context[0]});
+    var error_area_muted_context = $("#compose-muted-context");
+
+    if (!error_area_muted_context.is(':visible')) {
+        error_area_muted_context.append(muted_context_template);
+    }
+
+    error_area_muted_context.show();
+    user_acknowledged_muted_context = false;
+
+    $("#compose-send-button").removeAttr('disabled');
+    $("#sending-indicator").hide();
+}
+
+function clear_muted_context_warning() {
+    $("#compose-muted-context").hide();
+    $("#compose-muted-context").empty();
+    $("#send-status").hide();
+}
+
 function clear_invites() {
     $("#compose_invite_users").hide();
     $("#compose_invite_users").empty();
@@ -125,6 +148,7 @@ function clear_box() {
     clear_invites();
     clear_all_everyone_warnings();
     user_acknowledged_all_everyone = undefined;
+    user_acknowledged_muted_context = undefined;
     $("#compose").find('input[type=text], textarea').val('');
     autosize_textarea();
     $("#send-status").hide(0);
@@ -389,6 +413,11 @@ exports.restore_message = function () {
         util.is_all_or_everyone_mentioned(snapshot_copy.content)) {
         show_all_everyone_warnings();
     }
+
+    if (unmute_context) {
+        show_muted_context_warning();
+    }
+
 };
 
 function compose_error(error_text, bad_input) {
@@ -770,13 +799,14 @@ function check_stream_for_send(stream_name, autosubscribe) {
 
 function validate_stream_message() {
     var stream_name = exports.stream_name();
+    var topic = exports.subject();
+
     if (stream_name === "") {
         compose_error(i18n.t("Please specify a stream"), $("#stream"));
         return false;
     }
 
     if (page_params.mandatory_topics) {
-        var topic = exports.subject();
         if (topic === "") {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;
@@ -789,7 +819,7 @@ function validate_stream_message() {
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings();
-            // user has not acknowledge the warning message yet
+            // user has not acknowledged the warning message yet
             compose_error(i18n.t("Please remove @all / @everyone or acknowledge that you will be spamming everyone!"));
             return false;
         }
@@ -799,6 +829,29 @@ function validate_stream_message() {
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
     user_acknowledged_all_everyone = undefined;
+
+    if (!stream_data.in_home_view(stream_name)) {
+        if (user_acknowledged_muted_context === undefined ||
+            user_acknowledged_muted_context === false) {
+            unmute_context = [ "stream", stream_name ];
+            // this is only checked on send, whereas @all/@everyone mention is checked
+            // also on completed mention - thus no additional error message
+            show_muted_context_warning();
+            return false;
+        }
+    } else if (muting.is_topic_muted(stream_name, topic)) {
+        if (user_acknowledged_muted_context === undefined ||
+            user_acknowledged_muted_context === false) {
+            unmute_context = [ "topic", stream_name, topic ];
+            show_muted_context_warning();
+            return false;
+        }
+    } else {
+        clear_muted_context_warning();
+    }
+
+    user_acknowledged_muted_context = undefined;
+    unmute_context = undefined;
 
     var response;
 
@@ -952,6 +1005,30 @@ $(function () {
         $(event.target).parents('.compose-all-everyone').remove();
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
+        $('#new_message_content').focus().select();
+    });
+
+    $("#compose-muted-context").on('click', '.compose-muted-context-confirm', function (event) {
+        event.preventDefault();
+
+        $(event.target).parents('.compose-muted-context').remove();
+        user_acknowledged_muted_context = true;
+        if (unmute_context[0] === "stream") {
+            subs.toggle_home(unmute_context[1]);
+        } else if (unmute_context[0] === "topic") {
+            muting.unmute_topic(unmute_context[1], unmute_context[2]);
+            muting_ui.persist_and_rerender();
+        }
+        clear_muted_context_warning();
+        $('#new_message_content').focus().select();
+    });
+
+    $("#compose-muted-context").on('click', '.compose-muted-context-decline', function (event) {
+        event.preventDefault();
+
+        $(event.target).parents('.compose-muted-context').remove();
+        user_acknowledged_muted_context = true;
+        clear_muted_context_warning();
         $('#new_message_content').focus().select();
     });
 

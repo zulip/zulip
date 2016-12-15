@@ -8,6 +8,8 @@ add_dependencies({
     templates: 'js/templates',
     emoji: 'js/emoji',
     i18n: 'i18next',
+    subs: 'js/subs',
+    muting: 'js/muting',
 });
 
 var i18n = global.i18n;
@@ -332,6 +334,30 @@ function render(template_name, args) {
     assert.equal(button.text(), "YES");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
     assert.equal(error_msg, "Are you sure you want to mention all 101 people in this stream?");
+}());
+
+(function compose_muted_context() {
+    // muted stream
+    var unmute_context = [ "stream", "all" ];
+    subs.toggle_home(unmute_context[1]);
+    var html = render('compose_muted_context', unmute_context[0]);
+    global.write_handlebars_output("compose_all_everyone", html);
+    var button_yes = $(html).find("button:first");
+    assert.equal(button_yes.text(), "YES");
+    var button_no = $(html).find("button:second");
+    assert.equal(button_no.text(), "NO");
+    var error_msg = $(html).find('span.compose-muted-context-msg').text().trim();
+    assert.equal(error_msg, "You are sending a message in a muted stream. Would you like to unmute it?");
+
+    // muted topic
+    unmute_context = [ "topic", "all", "muting" ];
+    subs.toggle_home(unmute_context[1]);
+    muting.mute_topic(unmute_context[1], unmute_context[2]);
+    html = render('compose_muted_context', unmute_context[0]);
+    global.write_handlebars_output("compose_all_everyone", html);
+    assert.equal(button_yes.text(), "YES");
+    assert.equal(button_no.text(), "NO");
+    assert.equal(error_msg, "You are sending a message in a muted topic. Would you like to unmute it?");
 }());
 
 (function compose_notification() {
