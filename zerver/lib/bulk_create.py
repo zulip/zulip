@@ -24,14 +24,8 @@ def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
     Creates and saves a UserProfile with the given email.
     Has some code based off of UserManage.create_user, but doesn't .save()
     """
-    users = [] # type: List[Tuple[text_type, text_type, text_type, bool]]
-    existing_users = set(u.email for u in UserProfile.objects.all()) # type: Set[text_type]
-    for (email, full_name, short_name, active) in users_raw:
-        if email in existing_users:
-            continue
-        users.append((email, full_name, short_name, active))
-        existing_users.add(email)
-    users = sorted(users)
+    existing_users = frozenset(UserProfile.objects.values_list('email', flat=True))
+    users = sorted([user_raw for user_raw in users_raw if user_raw[0] not in existing_users])
 
     # Now create user_profiles
     profiles_to_create = [] # type: List[UserProfile]
