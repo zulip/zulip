@@ -36,7 +36,7 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message
+from zerver.models import Message, UserProfile, get_user_profile_by_email
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
@@ -624,8 +624,15 @@ class Avatar(markdown.inlinepatterns.Pattern):
         # type: (Match[Text]) -> Optional[Element]
         img = markdown.util.etree.Element('img')
         email_address = match.group('email')
+        profile_id = None
+        try:
+            profile = get_user_profile_by_email(email_address)
+        except UserProfile.DoesNotExist:
+            pass
+        else:
+            profile_id = str(profile.id)
         img.set('class', 'message_body_gravatar')
-        img.set('src', '/avatar/%s?s=30' % (email_address,))
+        img.set('src', '/avatar/{0}?s=30'.format(profile_id or email_address))
         img.set('title', email_address)
         img.set('alt', email_address)
         return img
