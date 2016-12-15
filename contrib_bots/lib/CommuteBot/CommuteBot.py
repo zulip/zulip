@@ -123,7 +123,7 @@ class CommuteHandler(object):
                     raise IndexError
             except IndexError:
                 self.send_info(message,
-                              "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
+                               "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
                 again_message = False
 
             if again_message:
