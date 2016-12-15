@@ -40,7 +40,6 @@ def create_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
     stream_dictionary = {
         name: {
-            "realm": realm,
             "description": options["description"],
             "invite_only": options["invite_only"],
               } for name, options in stream_dict.items()
