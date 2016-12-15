@@ -21,7 +21,7 @@ class DefineHandler(object):
             messages with "@define".
             '''
 
-    def triage_message(DefineHandler, message):
+    def triage_message(DefineHandler, message, client):
         # return True if we want to (possibly) response to this message
         original_content = message['content']
         # This next line of code is defensive, as we
