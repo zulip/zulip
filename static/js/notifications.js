@@ -259,9 +259,9 @@ function process_notification(notification) {
     }
 
     if (message.type === "private") {
-        if (page_params.hide_private_message_desktop_notifications !== undefined
-            && page_params.hide_private_message_desktop_notifications) {
-            content = "You got a message from " + message.sender_full_name;
+        if (page_params.include_content_of_private_messages_in_desktop_notifications !== undefined
+            && !page_params.include_content_of_private_messages_in_desktop_notifications) {
+            content = "New private message from " + message.sender_full_name;
         }
         key = message.display_reply_to;
         other_recipients = message.display_reply_to;
@@ -621,8 +621,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
         page_params.enable_online_push_notifications = setting;
     } else if (notification_name === "enable_digest_emails") {
         page_params.enable_digest_emails = setting;
-    } else if (notification_name === "hide_private_message_desktop_notifications") {
-        page_params.hide_private_message_desktop_notifications = setting;
+    } else if (notification_name === "include_content_of_private_messages_in_desktop_notifications") {
+        page_params.include_content_of_private_messages_in_desktop_notifications = setting;
     }
 };
 
