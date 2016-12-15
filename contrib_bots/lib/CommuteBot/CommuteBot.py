@@ -123,7 +123,7 @@ class CommuteHandler(object):
                     raise IndexError
             except IndexError:
                 self.send_info(message,
-                    "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
+                                "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
                 again_message = False
 
             if again_message:
@@ -137,8 +137,8 @@ class CommuteHandler(object):
                 # determines if fare information is available
                 try:
                     fare = (
-                    'Fare: '
-                        + rjson["rows"][0]["elements"][0]["fare"]["currency"]
+                            'Fare: '
+                            + rjson["rows"][0]["elements"][0]["fare"]["currency"]
                             + rjson["rows"][0]["elements"][0]["fare"]["text"])
                     output += '\n' + fare
                 except (KeyError, IndexError):
@@ -147,7 +147,7 @@ class CommuteHandler(object):
                 # determines if traffic duration information is available
                 try:
                     traf_dur = ('Duration in traffic: ' +
-                        rjson["rows"][0]["elements"][0]["duration_in_traffic"]["text"])
+                                rjson["rows"][0]["elements"][0]["duration_in_traffic"]["text"])
                     output += '\n' + traf_dur
                 except (KeyError, IndexError):
                     output += '\n' + duration
