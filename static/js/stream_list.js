@@ -428,7 +428,7 @@ $(function () {
         }
     });
 
-    $(document).on('narrow_deactivated.zulip', function (event) {
+    $(document).on('narrow_deactivated.zulip', function () {
         reset_to_unnarrowed();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });

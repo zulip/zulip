@@ -128,13 +128,13 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
-    $("body").on("click", "a", function (e) {
+    $("body").on("click", "a", function () {
         if (document.activeElement === this) {
             ui.blur_active_element();
         }
     });
 
-    $(window).on("focus", function (e) {
+    $(window).on("focus", function () {
         meta.focusing = true;
     });
 

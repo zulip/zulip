@@ -730,7 +730,7 @@ function _setup_page() {
 
     });
 
-    $("#bots_list").on("click", "a.download_bot_zuliprc", function (e) {
+    $("#bots_list").on("click", "a.download_bot_zuliprc", function () {
         var bot_info = $(this).parent().parent();
         var email = bot_info.find(".email .value").text();
         var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
@@ -740,7 +740,7 @@ function _setup_page() {
         ));
     });
 
-    $("#download_zuliprc").on("click", function (e) {
+    $("#download_zuliprc").on("click", function () {
         $(this).attr("href", settings.generate_zuliprc_uri(
             page_params.email,
             $("#api_key_value").text()

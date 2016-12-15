@@ -545,7 +545,7 @@ exports.setup_page = function (callback) {
                 { label: "Subscribed" },
                 { label: "All Streams" },
             ],
-            callback: function (name) {
+            callback: function () {
                 actually_filter_streams();
                 remove_temporarily_miscategorized_streams();
             }

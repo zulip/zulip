@@ -1065,7 +1065,7 @@ $(function () {
         Dropbox.choose(options);
     });
 
-    function uploadStarted(i, file, len) {
+    function uploadStarted() {
         $("#compose-send-button").attr("disabled", "");
         $("#send-status").addClass("alert-info")
                          .show();
@@ -1107,7 +1107,7 @@ $(function () {
         $("#error-msg").text(msg);
     }
 
-    function uploadFinished(i, file, response, time) {
+    function uploadFinished(i, file, response) {
         if (response.uri === undefined) {
             return;
         }

@@ -36,7 +36,7 @@ exports.notify_with_undo_option = (function () {
             }
         }
     };
-    var interval = setInterval(function () {
+    setInterval(function () {
         if (meta.hide_me_time < new Date().getTime() && !meta.alert_hover_state) {
             animate.fadeOut();
         }
