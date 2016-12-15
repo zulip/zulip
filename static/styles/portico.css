@@ -95,7 +95,7 @@ li {
 
     color: #444;
 
-    border-width: order: 1px solid #CCC;
+    border: 1px solid #CCC;
     border-radius: 4px;
     background-color: #FAFAFA;
 }
@@ -1295,6 +1295,38 @@ label.label-title {
 }
 
 /* -- dropdown css --*/
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 100;
+    src: "/static/third/yantramanav/Yantramanav-Thin.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 300;
+    src: "/static/third/yantramanav/Yantramanav-Light.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 400;
+    src: "/static/third/yantramanav/Yantramanav-Regular.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 500;
+    src: "/static/third/yantramanav/Yantramanav-Medium.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 600;
+    src: "/static/third/yantramanav/Yantramanav-Bold.woff2";
+}
+
+
 .dropdown-container {
     font-family: "Yantramanav", Helvetica Neue, sans-serif;
     position: fixed;
