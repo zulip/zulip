@@ -580,7 +580,8 @@ exports.setup_page = function (callback) {
 
         $("#add_new_subscription input[type='text']").on("input", function () {
             remove_temporarily_miscategorized_streams();
-            actually_filter_streams();
+            // Debounce filtering in case a user is typing quickly
+            filter_streams();
         });
 
         $(document).trigger($.Event('subs_page_loaded.zulip'));
