@@ -60,7 +60,9 @@ exports.unread_topic_counter = (function () {
         }
     };
 
-    self.get_counts = function (res) {
+    self.get_counts = function () {
+        var res = {};
+        res.stream_unread_messages = 0;
         res.stream_count = str_dict();  // hash by stream -> count
         res.subject_count = str_dict(); // hash of hashes (stream, then subject -> count)
         unread_topics.each(function (_, stream) {
@@ -81,11 +83,13 @@ exports.unread_topic_counter = (function () {
                 });
                 res.stream_count.set(stream, stream_count);
                 if (stream_data.in_home_view(stream)) {
-                    res.home_unread_messages += stream_count;
+                    res.stream_unread_messages += stream_count;
                 }
             }
 
         });
+
+        return res;
     };
 
     self.get = function (stream, subject) {
@@ -194,12 +198,14 @@ exports.get_counts = function () {
     // pretty cheap, even if you don't care about all the counts, and you
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
-    res.home_unread_messages = 0;
     res.mentioned_message_count = unread_mentioned.num_items();
     res.pm_count = new Dict(); // Hash by email -> count
 
     // This sets stream_count, subject_count, and home_unread_messages
-    exports.unread_topic_counter.get_counts(res);
+    var topic_res = exports.unread_topic_counter.get_counts(res);
+    res.home_unread_messages = topic_res.stream_unread_messages;
+    res.stream_count = topic_res.stream_count;
+    res.subject_count = topic_res.subject_count;
 
     var pm_count = 0;
     unread_privates.each(function (obj, user_ids_string) {
