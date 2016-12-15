@@ -792,7 +792,8 @@ function validate_stream_message() {
     var stream_count = current_stream.subscribers.num_items();
 
     // check if @all or @everyone is in the message
-    if (util.is_all_or_everyone_mentioned(exports.message_content()) && stream_count > all_everyone_warn_threshold) {
+    if (util.is_all_or_everyone_mentioned(exports.message_content()) &&
+        stream_count > all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
