@@ -1791,12 +1791,6 @@ class GetProfileTest(ZulipTestCase):
                     get_avatar_url(user_profile.avatar_source, user_profile.email),
                 )
 
-class HelpTest(ZulipTestCase):
-    def test_browser_window_help(self):
-        # type: () -> None
-        result = self.client_get('/help/#the-browser-window')
-        self.assert_in_success_response(["There are three panes"], result)
-
 class HomeTest(ZulipTestCase):
     @slow('big method')
     def test_home(self):
