@@ -182,7 +182,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         def assert_message_received(to_user, from_user):
             # type: (UserProfile, UserProfile) -> None
             messages = get_user_messages(to_user)
-            self.assertEquals(messages[-1].sender.pk, from_user.pk)
+            self.assertEqual(messages[-1].sender.pk, from_user.pk)
 
         def assert_disallowed():
             # type: () -> Any
@@ -854,7 +854,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
-        self.assertEquals(sent_message.content,
+        self.assertEqual(sent_message.content,
                           "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
 
     def test_long_topic(self):
@@ -871,7 +871,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_success(result)
 
         sent_message = self.get_last_message()
-        self.assertEquals(sent_message.topic_name(),
+        self.assertEqual(sent_message.topic_name(),
                           "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
 
     def test_send_forged_message_as_not_superuser(self):
@@ -1007,7 +1007,7 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_post('/json/fetch_raw_message', dict(message_id=msg_id))
         self.assert_json_success(result)
         data = ujson.loads(result.content)
-        self.assertEquals(data['raw_content'], '**before** edit')
+        self.assertEqual(data['raw_content'], '**before** edit')
 
         # Test error cases
         result = self.client_post('/json/fetch_raw_message', dict(message_id=999999))

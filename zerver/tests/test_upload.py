@@ -65,19 +65,19 @@ class FileUploadTest(ZulipTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
 
         # Download file via API
         self.client_post('/accounts/logout/')
         response = self.client_get(uri, **auth_headers)
         data = b"".join(response.streaming_content)
-        self.assertEquals(b"zulip!", data)
+        self.assertEqual(b"zulip!", data)
 
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
         response = self.client_get(uri)
         data = b"".join(response.streaming_content)
-        self.assertEquals(b"zulip!", data)
+        self.assertEqual(b"zulip!", data)
 
     def test_file_too_big_failure(self):
         # type: () -> None
@@ -122,7 +122,7 @@ class FileUploadTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         response = self.client_get('/user_uploads/unk/nonexistent_file')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
         self.assertIn('File not found', str(response.content))
 
     def test_serve_s3_error_handling(self):
@@ -137,7 +137,7 @@ class FileUploadTest(ZulipTestCase):
         # nonexistent_file
         with use_s3(), getting_realm_id(None):
             response = self.client_get('/user_uploads/unk/nonexistent_file')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
         self.assertIn('File not found', str(response.content))
 
         # invalid realm of 999999 (for non-zulip.com)
@@ -147,7 +147,7 @@ class FileUploadTest(ZulipTestCase):
 
         with use_s3(), getting_realm_id(999999):
             response = self.client_get('/user_uploads/unk/whatever')
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
@@ -168,17 +168,17 @@ class FileUploadTest(ZulipTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
         response = self.client_get(uri)
         data = b"".join(response.streaming_content)
-        self.assertEquals(b"zulip!", data)
+        self.assertEqual(b"zulip!", data)
 
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
-        self.assertEquals(entry.is_claimed(), False)
+        self.assertEqual(entry.is_claimed(), False)
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -243,7 +243,7 @@ class FileUploadTest(ZulipTestCase):
         body = "Second message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
 
-        self.assertEquals(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
     def test_check_attachment_reference_update(self):
         # type: () -> None
@@ -415,12 +415,12 @@ class AvatarTest(ZulipTestCase):
             self.assertIn("avatar_url", json)
             url = json["avatar_url"]
             base = '/user_avatars/'
-            self.assertEquals(base, url[:len(base)])
+            self.assertEqual(base, url[:len(base)])
 
             if rfname is not None:
                 response = self.client_get(url)
                 data = b"".join(response.streaming_content)
-                self.assertEquals(Image.open(io.BytesIO(data)).size, (100, 100))
+                self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
             # Verify that the medium-size avatar was created
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
@@ -462,7 +462,7 @@ class LocalStorageTest(ZulipTestCase):
         uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
         self.assertTrue(os.path.isfile(file_path))
@@ -511,9 +511,9 @@ class S3Test(ZulipTestCase):
         uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEquals(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -552,12 +552,12 @@ class S3Test(ZulipTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
 
         response = self.client_get(uri)
         redirect_url = response['Location']
 
-        self.assertEquals(b"zulip!", urllib.request.urlopen(redirect_url).read().strip()) # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
+        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip()) # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -576,13 +576,13 @@ class UploadTitleTests(TestCase):
 class SanitizeNameTests(TestCase):
     def test_file_name(self):
         # type: () -> None
-        self.assertEquals(sanitize_name(u'test.txt'), u'test.txt')
-        self.assertEquals(sanitize_name(u'.hidden'), u'.hidden')
-        self.assertEquals(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
-        self.assertEquals(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
-        self.assertEquals(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
-        self.assertEquals(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
-        self.assertEquals(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
-        self.assertEquals(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
-        self.assertEquals(sanitize_name(u'테스트.txt'), u'테스트.txt')
-        self.assertEquals(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+        self.assertEqual(sanitize_name(u'test.txt'), u'test.txt')
+        self.assertEqual(sanitize_name(u'.hidden'), u'.hidden')
+        self.assertEqual(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
+        self.assertEqual(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
+        self.assertEqual(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
+        self.assertEqual(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
+        self.assertEqual(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
+        self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
+        self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
+        self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')

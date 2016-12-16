@@ -18,7 +18,7 @@ class ReactionEmojiTest(ZulipTestCase):
         sender = 'hamlet@zulip.com'
         result = self.client_put('/api/v1/messages/1/emoji_reactions',
                                  **self.api_auth(sender))
-        self.assertEquals(result.status_code, 404)
+        self.assertEqual(result.status_code, 404)
 
     def test_add_invalid_emoji(self):
         # type: () -> None
@@ -82,7 +82,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         sender = 'hamlet@zulip.com'
         result = self.client_put('/api/v1/messages//emoji_reactions/smile',
                                  **self.api_auth(sender))
-        self.assertEquals(result.status_code, 404)
+        self.assertEqual(result.status_code, 404)
 
     def test_invalid_message_id(self):
         # type: () -> None
@@ -92,7 +92,7 @@ class ReactionMessageIDTest(ZulipTestCase):
         sender = 'hamlet@zulip.com'
         result = self.client_put('/api/v1/messages/-1/emoji_reactions/smile',
                                  **self.api_auth(sender))
-        self.assertEquals(result.status_code, 404)
+        self.assertEqual(result.status_code, 404)
 
     def test_inaccessible_message_id(self):
         # type: () -> None

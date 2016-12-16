@@ -2091,19 +2091,19 @@ class HomeTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         result = self.client_get("/desktop_home")
-        self.assertEquals(result.status_code, 301)
+        self.assertEqual(result.status_code, 301)
         self.assertTrue(result["Location"].endswith("/desktop_home/"))
         result = self.client_get("/desktop_home/")
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         path = urllib.parse.urlparse(result['Location']).path
-        self.assertEquals(path, "/")
+        self.assertEqual(path, "/")
 
     def test_generate_204(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
         result = self.client_get("/api/v1/generate_204")
-        self.assertEquals(result.status_code, 204)
+        self.assertEqual(result.status_code, 204)
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
@@ -2172,7 +2172,7 @@ class TestMissedMessages(ZulipTestCase):
         reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
         from_email = sender
-        self.assertEquals(len(mail.outbox), 1)
+        self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = '"%s" <%s>' % (othello.full_name, othello.email)
             self.assertEqual(msg.extra_headers['Sender'], sender)
@@ -2254,13 +2254,13 @@ class TestOpenRealms(ZulipTestCase):
     def test_open_realm_logic(self):
         # type: () -> None
         mit_realm = get_realm_by_string_id("mit")
-        self.assertEquals(get_unique_open_realm(), None)
+        self.assertEqual(get_unique_open_realm(), None)
         mit_realm.restricted_to_domain = False
         mit_realm.save()
         self.assertTrue(completely_open(mit_realm.domain))
-        self.assertEquals(get_unique_open_realm(), None)
+        self.assertEqual(get_unique_open_realm(), None)
         with self.settings(SYSTEM_ONLY_REALMS={"zulip.com"}):
-            self.assertEquals(get_unique_open_realm(), mit_realm)
+            self.assertEqual(get_unique_open_realm(), mit_realm)
         mit_realm.restricted_to_domain = True
         mit_realm.save()
 

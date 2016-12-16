@@ -437,8 +437,8 @@ class GetOldMessagesTest(ZulipTestCase):
                 message_to_assert = message
                 break
 
-        self.assertEquals(len(message_to_assert['reactions']), 1)
-        self.assertEquals(message_to_assert['reactions'][0]['emoji_name'],
+        self.assertEqual(len(message_to_assert['reactions']), 1)
+        self.assertEqual(message_to_assert['reactions'][0]['emoji_name'],
                           reaction_name)
 
     def test_successful_get_old_messages(self):

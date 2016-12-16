@@ -1781,7 +1781,7 @@ class SubscriptionAPITest(ZulipTestCase):
         if exists:
             self.assert_json_success(result)
         else:
-            self.assertEquals(result.status_code, 404)
+            self.assertEqual(result.status_code, 404)
         if subscribed:
             self.assertIn("subscribed", json)
             self.assertEqual(json["subscribed"], subscribed)

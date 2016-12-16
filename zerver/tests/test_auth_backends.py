@@ -530,7 +530,7 @@ class GoogleOAuthTest(ZulipTestCase):
             url += "?subdomain=" + subdomain
 
         result = self.client_get(url)
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         if 'google' not in result.url:
             return result
 
@@ -565,7 +565,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         # type: () -> None
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/google/')
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             parsed_url = urllib.parse.urlparse(result.url)
             subdomain = urllib.parse.parse_qs(parsed_url.query)['subdomain']
             self.assertEqual(subdomain, ['zulip'])
@@ -584,11 +584,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(data['email'], 'hamlet@zulip.com')
         self.assertEqual(data['name'], 'Full Name')
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
-        self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+        self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
     def test_log_into_subdomain(self):
         # type: () -> None
@@ -599,7 +599,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -611,7 +611,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                          value="hamlet@zulip.com")])
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response, 'acme')
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         self.assertIn('subdomain=1', result.url)
 
     def test_user_cannot_log_into_wrong_subdomain(self):
@@ -623,20 +623,20 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 400)
+            self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_signature_is_bad(self):
         # type: () -> None
         self.client.cookies = SimpleCookie({'subdomain.signature': 'invlaid'})
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 400)
+            self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_state_is_not_passed(self):
         # type: () -> None
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 400)
+            self.assertEqual(result.status_code, 400)
 
     def test_google_oauth2_registration(self):
         # type: () -> None
@@ -657,11 +657,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assertEqual(data['email'], email)
             self.assertEqual(data['name'], 'Full Name')
             self.assertEqual(data['subdomain'], 'zulip')
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             parsed_url = urllib.parse.urlparse(result.url)
             uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                      parsed_url.path)
-            self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+            self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
             result = self.client_get(result.url)
             result = self.client_get(result.url)  # Call the confirmation url.
@@ -673,14 +673,14 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                       {'full_name': name_match.group("name"),
                                        'key': key_match.group("key"),
                                        'from_confirmation': "1"})
-            self.assertEquals(result.status_code, 200)
+            self.assertEqual(result.status_code, 200)
             result = self.client_post('/accounts/register/',
                                       {'full_name': "New User",
                                        'password': 'test_password',
                                        'key': key_match.group("key"),
                                        'terms': True})
-            self.assertEquals(result.status_code, 302)
-            self.assertEquals(result.url, "http://zulip.testserver/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "http://zulip.testserver/")
             user_profile = get_user_profile_by_email(email)
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -718,14 +718,14 @@ class GoogleLoginTest(GoogleOAuthTest):
                                   {'full_name': name_match.group("name"),
                                    'key': key_match.group("key"),
                                    'from_confirmation': "1"})
-        self.assertEquals(result.status_code, 200)
+        self.assertEqual(result.status_code, 200)
         result = self.client_post('/accounts/register/',
                                   {'full_name': "New User",
                                    'password': 'test_password',
                                    'key': key_match.group("key"),
                                    'terms': True})
-        self.assertEquals(result.status_code, 302)
-        self.assertEquals(result.url, "http://testserver/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://testserver/")
 
     def test_google_oauth2_wrong_subdomain(self):
         # type: () -> None
@@ -743,8 +743,8 @@ class GoogleLoginTest(GoogleOAuthTest):
         token_response = ResponseMock(400, {})
         with mock.patch("logging.warning") as m:
             result = self.google_oauth2_test(token_response, None)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           "User error converting Google oauth2 login to token: Response text")
 
     def test_google_oauth2_500_token_response(self):
@@ -752,8 +752,8 @@ class GoogleLoginTest(GoogleOAuthTest):
         token_response = ResponseMock(500, {})
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, None)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           "Could not convert google oauth2 code to access_token: Response text")
 
     def test_google_oauth2_400_account_response(self):
@@ -762,8 +762,8 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(400, {})
         with mock.patch("logging.warning") as m:
             result = self.google_oauth2_test(token_response, account_response)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           "Google login failed making info API call: Response text")
 
     def test_google_oauth2_500_account_response(self):
@@ -772,8 +772,8 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(500, {})
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, account_response)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           "Google login failed making API call: Response text")
 
     def test_google_oauth2_no_fullname(self):
@@ -796,46 +796,46 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, account_response)
-        self.assertEquals(result.status_code, 400)
+        self.assertEqual(result.status_code, 400)
         self.assertIn("Google oauth2 account email not found:", m.call_args_list[0][0][0])
 
     def test_google_oauth2_error_access_denied(self):
         # type: () -> None
         result = self.client_get("/accounts/login/google/done/?error=access_denied")
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         path = urllib.parse.urlparse(result.url).path
-        self.assertEquals(path, "/")
+        self.assertEqual(path, "/")
 
     def test_google_oauth2_error_other(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/?error=some_other_error")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           "Error from google oauth2 login: some_other_error")
 
     def test_google_oauth2_missing_csrf(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           'Missing Google oauth2 CSRF state')
 
     def test_google_oauth2_csrf_malformed(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/?state=badstate")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           'Missing Google oauth2 CSRF state')
 
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
                           'Google oauth2 CSRF error')
 
 class FetchAPIKeyTest(ZulipTestCase):

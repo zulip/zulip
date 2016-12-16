@@ -37,13 +37,13 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
 class ConvertMarkdownTest(TestCase):
     def test_convert_bold(self):
         # type: () -> None
-        self.assertEquals(convert_markdown("*test message*"), "**test message**")
+        self.assertEqual(convert_markdown("*test message*"), "**test message**")
 
     def test_convert_italics(self):
         # type: () -> None
-        self.assertEquals(convert_markdown("_test message_"), "*test message*")
-        self.assertEquals(convert_markdown("_  spaced message _"), "  *spaced message* ")
+        self.assertEqual(convert_markdown("_test message_"), "*test message*")
+        self.assertEqual(convert_markdown("_  spaced message _"), "  *spaced message* ")
 
     def test_convert_strikethrough(self):
         # type: () -> None
-        self.assertEquals(convert_markdown("~test message~"), "~~test message~~")
+        self.assertEqual(convert_markdown("~test message~"), "~~test message~~")

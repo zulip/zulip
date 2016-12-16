@@ -32,16 +32,16 @@ class MITNameTest(TestCase):
     def test_valid_hesiod(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.assertEquals(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
+            self.assertEqual(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
         with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
-            self.assertEquals(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
+            self.assertEqual(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
 
     def test_invalid_hesiod(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
-            self.assertEquals(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
+            self.assertEqual(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
-            self.assertEquals(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
+            self.assertEqual(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
 
     def test_mailinglist(self):
         # type: () -> None
