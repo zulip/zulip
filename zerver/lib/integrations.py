@@ -163,6 +163,7 @@ INTEGRATIONS = {
     'codebase': Integration('codebase', 'codebase'),
     'email': Integration('email', 'email'),
     'git': Integration('git', 'git'),
+    'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
     'hubot': Integration('hubot', 'hubot'),
     'jenkins': Integration('jenkins', 'jenkins', secondary_line_text='(or Hudson)'),
     'jira-plugin': Integration(
