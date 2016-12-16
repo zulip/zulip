@@ -64,6 +64,9 @@ def json_change_settings(request, user_profile,
             return json_error(_("New password must match confirmation password!"))
         if not authenticate(username=user_profile.email, password=old_password):
             return json_error(_("Wrong password!"))
+        # Lock user profile auth.
+        request.session['password_change_in_progress'] = True
+        request.session.save()
         do_change_password(user_profile, new_password)
         # In Django 1.10, password changes invalidates sessions, see
         # https://docs.djangoproject.com/en/1.10/topics/auth/default/#session-invalidation-on-password-change
@@ -71,14 +74,9 @@ def json_change_settings(request, user_profile,
         # session (which would provide a confusing UX at best), we
         # update the session hash here.
         update_session_auth_hash(request, user_profile)
-        # We also save the session to the DB immediately to mitigate
-        # race conditions. In theory, there is still a race condition
-        # and to completely avoid it we will have to use some kind of
-        # mutex lock in `django.contrib.auth.get_user` where session
-        # is verified. To make that lock work we will have to control
-        # the AuthenticationMiddleware which is currently controlled
-        # by Django,
         request.session.save()
+        # Unlock; Will take affect when middlewares are processed.
+        del request.session['password_change_in_progress']
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":

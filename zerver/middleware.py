@@ -17,11 +17,13 @@ from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
 from zerver.models import flush_per_request_caches, get_realm_by_string_id
 from zerver.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.contrib.auth import middleware as django_middleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
 from zproject.jinja2 import render_to_response
 from django.shortcuts import redirect
+from six.moves import range
 
 import logging
 import time
@@ -401,3 +403,15 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                                         secure=settings.SESSION_COOKIE_SECURE or None,
                                         httponly=settings.SESSION_COOKIE_HTTPONLY or None)
         return response
+
+class AuthenticationMiddleware(django_middleware.AuthenticationMiddleware):
+    def process_request(self, request):
+        # type: (HttpRequest) -> None
+        # In theory, we should use a FIFO to manage waiting processes.
+        for i in range(20):  # wait for ~2 seconds
+            if 'password_change_in_progress' in request.session:
+                time.sleep(0.1)
+            else:
+                break
+
+        return super(AuthenticationMiddleware, self).process_request(request)
