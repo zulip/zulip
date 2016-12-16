@@ -28,10 +28,10 @@ class CommuteHandler(object):
         # ups for own follow ups!
         if message['display_recipient'] == 'commute':
             return False
-        is_follow_up = (original_content.startswith('@commute') or
+        is_commute = (original_content.startswith('@commute') or
                         original_content.startswith('@commute'))
 
-        return is_follow_up
+        return is_commute
 
     # allows bot to send info via private message or same stream depending on
     # user input
@@ -79,8 +79,6 @@ class CommuteHandler(object):
         To add more than 1 input for a category,
         eg. more than 1 destinations, use |, eg. destinations=Trump+Tower|The+White+House
         No spaces within addresses.
-
-
                             '''
             self.send_info(message, help_info, client)
         else:
@@ -105,53 +103,48 @@ class CommuteHandler(object):
             r = requests.get('https://maps.googleapis.com/maps/api/distancematrix/json', params=para)
             rjson = r.json()
 
-            # determines if commute information will be outputted
-            again_message = True
-
             # determines if user has valid inputs
             try:
-                test1 = (rjson["rows"][0]["elements"][0]["status"] == "NOT_FOUND")
-                test2 = (rjson["status"] == "INVALID_REQUEST")
+                not_found = (rjson["rows"][0]["elements"][0]["status"] == "NOT_FOUND")
+                invalid_request = (rjson["status"] == "INVALID_REQUEST")
+                no_result = (rjson["rows"][0]["elements"][0]["status"] == "ZERO_RESULTS")
 
-                yes_results = (rjson["rows"][0]["elements"][0]["status"] == "ZERO_RESULTS")
-
-                if yes_results:
+                if no_results:
                     self.send_info(message, "Zero results\nIf stuck, try '@commute help'", client)
-                    again_message = False
+                    return None
 
-                elif test1 or test2:
+                elif not_found or invalid_request:
                     raise IndexError
             except IndexError:
                 self.send_info(message,
                                "Invalid input, please input as per instructions.\nIf stuck, try '@commute help'", client)
-                again_message = False
+                return None
 
-            if again_message:
-                # origin and destination strings
-                begin = 'From: ' + rjson["destination_addresses"][0]
-                end = 'To: ' + rjson["origin_addresses"][0]
-                distance = 'Distance: ' + rjson["rows"][0]["elements"][0]["distance"]["text"]
-                duration = 'Duration: ' + rjson["rows"][0]["elements"][0]["duration"]["text"]
-                output = begin + '\n' + end + '\n' + distance
+            # origin and destination strings
+            begin = 'From: ' + rjson["destination_addresses"][0]
+            end = 'To: ' + rjson["origin_addresses"][0]
+            distance = 'Distance: ' + rjson["rows"][0]["elements"][0]["distance"]["text"]
+            duration = 'Duration: ' + rjson["rows"][0]["elements"][0]["duration"]["text"]
+            output = begin + '\n' + end + '\n' + distance
 
-                # determines if fare information is available
-                try:
-                    fare = (
-                            'Fare: '
-                            + rjson["rows"][0]["elements"][0]["fare"]["currency"]
-                            + rjson["rows"][0]["elements"][0]["fare"]["text"])
-                    output += '\n' + fare
-                except (KeyError, IndexError):
-                    print('')
+            # determines if fare information is available
+            try:
+                fare = (
+                        'Fare: '
+                        + rjson["rows"][0]["elements"][0]["fare"]["currency"]
+                        + rjson["rows"][0]["elements"][0]["fare"]["text"])
+                output += '\n' + fare
+            except (KeyError, IndexError):
+                print('')
 
-                # determines if traffic duration information is available
-                try:
-                    traf_dur = ('Duration in traffic: ' +
-                                rjson["rows"][0]["elements"][0]["duration_in_traffic"]["text"])
-                    output += '\n' + traf_dur
-                except (KeyError, IndexError):
-                    output += '\n' + duration
+            # determines if traffic duration information is available
+            try:
+                traf_dur = ('Duration in traffic: ' +
+                            rjson["rows"][0]["elements"][0]["duration_in_traffic"]["text"])
+                output += '\n' + traf_dur
+            except (KeyError, IndexError):
+                output += '\n' + duration
 
-                # bot sends commute information to user
-                self.send_info(message, output, client)
+            # bot sends commute information to user
+            self.send_info(message, output, client)
 handler_class = CommuteHandler
