@@ -71,6 +71,14 @@ def json_change_settings(request, user_profile,
         # session (which would provide a confusing UX at best), we
         # update the session hash here.
         update_session_auth_hash(request, user_profile)
+        # We also save the session to the DB immediately to mitigate
+        # race conditions. In theory, there is still a race condition
+        # and to completely avoid it we will have to use some kind of
+        # mutex lock in `django.contrib.auth.get_user` where session
+        # is verified. To make that lock work we will have to control
+        # the AuthenticationMiddleware which is currently controlled
+        # by Django,
+        request.session.save()
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
