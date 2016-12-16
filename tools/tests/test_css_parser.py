@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import cast
+from typing import cast, Any
 
 import sys
 import unittest
@@ -17,6 +17,14 @@ except ImportError:
     sys.exit(1)
 
 class ParserTestHappyPath(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        # This method should be remove when we quit from python2
+        import six
+        if six.PY2:
+            self.assertRaisesRegex = self.assertRaisesRegexp  # type: ignore
+        super(ParserTestHappyPath, self).__init__(*args, **kwargs)
+
     def test_basic_parse(self):
         # type: () -> None
         my_selector = 'li.foo'
@@ -126,6 +134,13 @@ class ParserTestSadPath(unittest.TestCase):
     of selectors.  Some of this is just for expediency;
     some of this is to enforce consistent formatting.
     '''
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        # This method should be remove when we quit from python2
+        import six
+        if six.PY2:
+            self.assertRaisesRegex = self.assertRaisesRegexp  # type: ignore
+        super(ParserTestSadPath, self).__init__(*args, **kwargs)
 
     def _assert_error(self, my_css, error):
         # type: (str, str) -> None
