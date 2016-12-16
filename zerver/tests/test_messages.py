@@ -186,7 +186,7 @@ class TestCrossRealmPMs(ZulipTestCase):
 
         def assert_disallowed():
             # type: () -> Any
-            return self.assertRaisesRegexp(
+            return self.assertRaisesRegex(
                 JsonableError,
                 'You can\'t send private messages outside of your organization.')
 

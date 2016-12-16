@@ -998,7 +998,7 @@ class TestDevAuthBackend(ZulipTestCase):
         email = 'hamlet@zulip.com'
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
-            with self.assertRaisesRegexp(Exception, 'Direct login not supported.'):
+            with self.assertRaisesRegex(Exception, 'Direct login not supported.'):
                 try:
                     with mock.patch('django.core.handlers.exception.logger'):
                         self.client_post('/accounts/login/local/', data)
@@ -1010,7 +1010,7 @@ class TestDevAuthBackend(ZulipTestCase):
         # type: () -> None
         email = 'nonexisting@zulip.com'
         data = {'direct_email': email}
-        with self.assertRaisesRegexp(Exception, 'User cannot login'):
+        with self.assertRaisesRegex(Exception, 'User cannot login'):
             try:
                 with mock.patch('django.core.handlers.exception.logger'):
                     self.client_post('/accounts/login/local/', data)
@@ -1262,7 +1262,7 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            with self.assertRaisesRegexp(self.mock_ldap.INVALID_CREDENTIALS,
+            with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
                                          'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
                 self.backend.authenticate('hamlet@zulip.com', 'wrong')
 
@@ -1278,7 +1278,7 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            with self.assertRaisesRegexp(self.mock_ldap.INVALID_CREDENTIALS,
+            with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
                                          'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
                 self.backend.authenticate('nonexistent@zulip.com', 'testing')
 
@@ -1348,7 +1348,7 @@ class TestLDAP(ZulipTestCase):
             email = 'nonexisting@zulip.com'
             realm = get_realm_by_string_id('zulip')
             do_deactivate_realm(realm)
-            with self.assertRaisesRegexp(Exception, 'Realm has been deactivated'):
+            with self.assertRaisesRegex(Exception, 'Realm has been deactivated'):
                 backend.get_or_create_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1356,7 +1356,7 @@ class TestLDAP(ZulipTestCase):
         # type: () -> None
         backend = self.backend
         email = 'hamlet@zulip.com'
-        with self.assertRaisesRegexp(Exception, 'Username does not match LDAP domain.'):
+        with self.assertRaisesRegex(Exception, 'Username does not match LDAP domain.'):
             with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
                 backend.django_to_ldap_username(email)
 

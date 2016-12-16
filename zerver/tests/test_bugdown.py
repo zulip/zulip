@@ -875,7 +875,7 @@ class BugdownErrorTests(ZulipTestCase):
 
         message = 'whatever'
         with self.simulated_markdown_failure():
-            # We don't use assertRaisesRegexp because it seems to not
+            # We don't use assertRaisesRegex because it seems to not
             # handle i18n properly here on some systems.
             with self.assertRaises(JsonableError):
                 self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, message)

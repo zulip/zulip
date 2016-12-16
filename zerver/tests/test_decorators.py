@@ -192,7 +192,7 @@ class DecoratorTestCase(TestCase):
         request.host = settings.EXTERNAL_HOST
 
         request.POST['api_key'] = 'not_existing_api_key'
-        with self.assertRaisesRegexp(JsonableError, "Invalid API key"):
+        with self.assertRaisesRegex(JsonableError, "Invalid API key"):
             my_webhook(request)
 
         # Start a valid request here
@@ -200,7 +200,7 @@ class DecoratorTestCase(TestCase):
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not associated "
+                with self.assertRaisesRegex(JsonableError, "Account is not associated "
                                                             "with this subdomain"):
                     api_result = my_webhook(request)
 
@@ -209,7 +209,7 @@ class DecoratorTestCase(TestCase):
                     "subdomain {}".format(webhook_bot_email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not associated "
+                with self.assertRaisesRegex(JsonableError, "Account is not associated "
                                                             "with this subdomain"):
                     request.host = "acme." + settings.EXTERNAL_HOST
                     api_result = my_webhook(request)
@@ -236,7 +236,7 @@ class DecoratorTestCase(TestCase):
         # Now deactivate the user
         webhook_bot.is_active = False
         webhook_bot.save()
-        with self.assertRaisesRegexp(JsonableError, "Account not active"):
+        with self.assertRaisesRegex(JsonableError, "Account not active"):
             my_webhook(request)
 
         # Reactive the user, but deactivate their realm.
@@ -244,7 +244,7 @@ class DecoratorTestCase(TestCase):
         webhook_bot.save()
         webhook_bot.realm.deactivated = True
         webhook_bot.realm.save()
-        with self.assertRaisesRegexp(JsonableError, "Realm for account has been deactivated"):
+        with self.assertRaisesRegex(JsonableError, "Realm for account has been deactivated"):
             my_webhook(request)
 
 
@@ -681,7 +681,7 @@ class TestValidateApiKey(ZulipTestCase):
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not "
+                with self.assertRaisesRegex(JsonableError, "Account is not "
                                              "associated with this subdomain"):
                     validate_api_key(HostRequestMock(host=settings.EXTERNAL_HOST),
                                      self.default_bot.email,
@@ -692,7 +692,7 @@ class TestValidateApiKey(ZulipTestCase):
                     "subdomain {}".format(self.default_bot.email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not "
+                with self.assertRaisesRegex(JsonableError, "Account is not "
                                              "associated with this subdomain"):
                     validate_api_key(HostRequestMock(host='acme.' + settings.EXTERNAL_HOST),
                                      self.default_bot.email,
