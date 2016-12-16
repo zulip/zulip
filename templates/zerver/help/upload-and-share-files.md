@@ -3,7 +3,7 @@
 Zulip allows you to easily attach files, including images, sound, and video by:
 
 - *Clicking the Paperclip Icon* Use the paperclip icon (![paperclip](/static/images/help/paperclip.png)) located under the message field.
-- *Dragging* You may also drag and drop files on the message field. The files are uploaded to a server and a link is supplied, but a thumbnail is displayed if possible. The link to the file will be in Markdown format: [link_text](link_URL)
+- *Dragging* You may also drag and drop files on the message field. The files are uploaded to a server and a link is supplied, but a thumbnail is displayed if possible. The link to the file will be in Markdown format: `[link_text](link_URL)`
 
 ![before](/static/images/help/file_upload_before.png)
 

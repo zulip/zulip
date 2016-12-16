@@ -72,7 +72,7 @@ While the file is uploading, a blue box labeled **Uploading...** will appear, an
 
 ![Message formatting modal](/static/images/help/message-formatting-summary.png)
 
-Clicking the **A**  (![A](/static/images/help/formatting.png)) icon will reveal a modal window with a summary of message formatting in Zulip. For more information on message formatting, see our [message formatting guide](/help/message-formatting.md).
+Clicking the **A**  (![A](/static/images/help/formatting.png)) icon will reveal a modal window with a summary of message formatting in Zulip. For more information on message formatting, see our [message formatting guide](/help/message-formatting).
 
 ### Restore draft
 

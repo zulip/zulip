@@ -129,7 +129,7 @@ as a “**realm**”.
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
-- **[Zulip glossary](/help/glossary.md)**
+- **[Zulip glossary](/help/glossary)**
 
 ---
 
@@ -161,9 +161,9 @@ There are three panes in your browser window.
 ## Posting and replying
 
 **[… To a stream](#posting-and-replying-to-a-stream)** |
-**[… To individual users](#posting-and-replying-to-individual-users)** |
+**[… To individual users](#posting-and-replying-to-individual-users-pm-private-message)** |
 **[Some facts about messages](#some-facts-about-messages)** |
-**[Editing past messages](editing-past-messages.md)**
+**[Editing past messages](editing-past-messages)**
 
 At the bottom of your screen, choose whether to post to a stream or to
 individual users. ![New message](/static/images/help/new_message.png)
@@ -254,8 +254,8 @@ individual users. ![New message](/static/images/help/new_message.png)
 ## Other common questions
 
 **[Keyboard shortcuts](#keyboard-shortcuts)** |
-**[Searching](search-messages.md)** |
-**[Filtering](search-messages.md#filtering-messages)** |
+**[Searching](search-messages)** |
+**[Filtering](search-messages#filtering-messages)** |
 **[Date of a message](#date-of-a-message)** |
 **[Change topic title or stream name](#changing-the-title-of-a-topic-or-stream)** |
 **[Edit topic titles](#editing-a-topic-title)** |
@@ -348,7 +348,7 @@ organization. But here are some thoughts:
 
 As long you have contributed a message to some topic, you can edit the
 topic title. Go to one of your own messages in that topic and follow
-**[the instructions for editing it](#editing-past-messages)**. Notice
+**[the instructions for editing it](editing-past-messages)**. Notice
 that the topic title is now editable, too. You will be offered the
 chance to change the topic in one of three ways:
 
