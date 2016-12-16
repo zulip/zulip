@@ -74,5 +74,5 @@ def render_markdown_path(markdown_file_path):
         md_engine.reset()
 
     markdown_string = force_text(open(markdown_file_path).read())
-    html = markdown.markdown(md_engine.convert(markdown_string))
+    html = md_engine.convert(markdown_string)
     return mark_safe(html)
