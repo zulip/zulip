@@ -60,7 +60,8 @@ class PublicURLTest(ZulipTestCase):
     def fetch(self, method, urls, expected_status):
         # type: (str, List[str], int) -> None
         for url in urls:
-            response = getattr(self.client, method)(url) # e.g. self.client_post(url) if method is "post"
+            # e.g. self.client_post(url) if method is "post"
+            response = getattr(self, method)(url)
             self.assertEqual(response.status_code, expected_status,
                              msg="Expected %d, received %d for %s to %s" % (
                                  expected_status, response.status_code, method, url))
@@ -113,11 +114,11 @@ class PublicURLTest(ZulipTestCase):
         put_urls = {401: ["/json/users/me/pointer"],
                     }
         for status_code, url_set in six.iteritems(get_urls):
-            self.fetch("get", url_set, status_code)
+            self.fetch("client_get", url_set, status_code)
         for status_code, url_set in six.iteritems(post_urls):
-            self.fetch("post", url_set, status_code)
+            self.fetch("client_post", url_set, status_code)
         for status_code, url_set in six.iteritems(put_urls):
-            self.fetch("put", url_set, status_code)
+            self.fetch("client_put", url_set, status_code)
 
     def test_get_gcid_when_not_configured(self):
         # type: () -> None
