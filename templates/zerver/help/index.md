@@ -34,8 +34,8 @@ as a “**realm**”.
 * [Change your language](/help/change-your-language)
 * Change the date and time format
 * Join a Zulip organization
-* Sign in to Zulip
-* [Sign out of Zulip
+* Signing in
+* [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
 * Set up two-factor authentication (not implemented)
 * Deactivate your account
