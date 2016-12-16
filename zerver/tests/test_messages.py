@@ -855,7 +855,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content,
-                          "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
+                         "A" * (MAX_MESSAGE_LENGTH - 3) + "...")
 
     def test_long_topic(self):
         # type: () -> None
@@ -872,7 +872,7 @@ class MessagePOSTTest(ZulipTestCase):
 
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.topic_name(),
-                          "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
+                         "A" * (MAX_SUBJECT_LENGTH - 3) + "...")
 
     def test_send_forged_message_as_not_superuser(self):
         # type: () -> None

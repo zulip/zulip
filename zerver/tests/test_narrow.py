@@ -439,7 +439,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.assertEqual(len(message_to_assert['reactions']), 1)
         self.assertEqual(message_to_assert['reactions'][0]['emoji_name'],
-                          reaction_name)
+                         reaction_name)
 
     def test_successful_get_old_messages(self):
         # type: () -> None

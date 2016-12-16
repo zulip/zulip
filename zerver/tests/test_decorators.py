@@ -200,8 +200,8 @@ class DecoratorTestCase(TestCase):
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegex(JsonableError, "Account is not associated "
-                                                            "with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     api_result = my_webhook(request)
 
                 mock_warning.assert_called_with(
@@ -209,8 +209,8 @@ class DecoratorTestCase(TestCase):
                     "subdomain {}".format(webhook_bot_email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegex(JsonableError, "Account is not associated "
-                                                            "with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     request.host = "acme." + settings.EXTERNAL_HOST
                     api_result = my_webhook(request)
 
@@ -681,8 +681,8 @@ class TestValidateApiKey(ZulipTestCase):
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegex(JsonableError, "Account is not "
-                                             "associated with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host=settings.EXTERNAL_HOST),
                                      self.default_bot.email,
                                      self.default_bot.api_key)
@@ -692,8 +692,8 @@ class TestValidateApiKey(ZulipTestCase):
                     "subdomain {}".format(self.default_bot.email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegex(JsonableError, "Account is not "
-                                             "associated with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host='acme.' + settings.EXTERNAL_HOST),
                                      self.default_bot.email,
                                      self.default_bot.api_key)

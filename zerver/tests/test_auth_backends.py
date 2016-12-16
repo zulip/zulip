@@ -745,7 +745,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.google_oauth2_test(token_response, None)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          "User error converting Google oauth2 login to token: Response text")
+                         "User error converting Google oauth2 login to token: Response text")
 
     def test_google_oauth2_500_token_response(self):
         # type: () -> None
@@ -754,7 +754,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.google_oauth2_test(token_response, None)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          "Could not convert google oauth2 code to access_token: Response text")
+                         "Could not convert google oauth2 code to access_token: Response text")
 
     def test_google_oauth2_400_account_response(self):
         # type: () -> None
@@ -764,7 +764,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.google_oauth2_test(token_response, account_response)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          "Google login failed making info API call: Response text")
+                         "Google login failed making info API call: Response text")
 
     def test_google_oauth2_500_account_response(self):
         # type: () -> None
@@ -774,7 +774,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.google_oauth2_test(token_response, account_response)
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          "Google login failed making API call: Response text")
+                         "Google login failed making API call: Response text")
 
     def test_google_oauth2_no_fullname(self):
         # type: () -> None
@@ -812,7 +812,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.client_get("/accounts/login/google/done/?error=some_other_error")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          "Error from google oauth2 login: some_other_error")
+                         "Error from google oauth2 login: some_other_error")
 
     def test_google_oauth2_missing_csrf(self):
         # type: () -> None
@@ -820,7 +820,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.client_get("/accounts/login/google/done/")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          'Missing Google oauth2 CSRF state')
+                         'Missing Google oauth2 CSRF state')
 
     def test_google_oauth2_csrf_malformed(self):
         # type: () -> None
@@ -828,7 +828,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.client_get("/accounts/login/google/done/?state=badstate")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          'Missing Google oauth2 CSRF state')
+                         'Missing Google oauth2 CSRF state')
 
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
@@ -836,7 +836,7 @@ class GoogleLoginTest(GoogleOAuthTest):
             result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
-                          'Google oauth2 CSRF error')
+                         'Google oauth2 CSRF error')
 
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
@@ -1263,7 +1263,7 @@ class TestLDAP(ZulipTestCase):
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
-                                         'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
+                                        'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
                 self.backend.authenticate('hamlet@zulip.com', 'wrong')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1279,7 +1279,7 @@ class TestLDAP(ZulipTestCase):
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
-                                         'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
+                                        'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
                 self.backend.authenticate('nonexistent@zulip.com', 'testing')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
