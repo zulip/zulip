@@ -44,25 +44,6 @@ EOF
 
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 
-# TODO: Ideally this would test actually logging in, but this is a start.
-echo; echo "Now testing that the newly installed server's homepage loads"; echo
-
-wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output || true # || true so we see errors.log if this 500s
-grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
-if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
-    set +x
-    echo
-    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/travis/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
-    echo "Displaying the contents of the server's error log:"
-    echo
-    cat /var/log/zulip/errors.log
-    echo
-    echo "Displaying the contents of the main server log:"
-    echo
-    cat /var/log/zulip/server.log
-    exit 1
-fi
-
 echo; echo "Now testing that the supervisord jobs are running properly"; echo
 sleep 10 # Guaranteed to have a working supervisord process get an extra digit
 if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
@@ -80,6 +61,25 @@ if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*u
     echo
     echo "DEBUG: printing Zulip server's tornado log:"
     cat /var/log/zulip/tornado.log
+    exit 1
+fi
+
+# TODO: Ideally this would test actually logging in, but this is a start.
+echo; echo "Now testing that the newly installed server's homepage loads"; echo
+
+wget https://localhost -O /tmp/index.html --no-check-certificate -S 2> /tmp/wget-output || true # || true so we see errors.log if this 500s
+grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output > /tmp/http-headers-processed
+if ! diff -ur /tmp/http-headers-processed ~/success-http-headers.txt; then
+    set +x
+    echo
+    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/travis/success-http-headers.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+    echo "Displaying the contents of the server's error log:"
+    echo
+    cat /var/log/zulip/errors.log
+    echo
+    echo "Displaying the contents of the main server log:"
+    echo
+    cat /var/log/zulip/server.log
     exit 1
 fi
 
