@@ -217,11 +217,6 @@ exports.populate_auth_methods = function (auth_methods) {
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
-exports.set_up_deactivate_user_modal = function (row) {
-    meta.current_deactivate_user_modal_row = row;
-};
-
-
 function _setup_page() {
     var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
     var atdomains = page_params.domains.slice();
@@ -316,7 +311,7 @@ function _setup_page() {
         $("#deactivation_user_modal .user_name").text(user_name);
         $("#deactivation_user_modal").modal("show");
 
-        exports.set_up_deactivate_user_modal(row);
+        meta.current_deactivate_user_modal_row = row;
     });
 
     $(".admin_stream_table").on("click", ".deactivate", function (e) {
