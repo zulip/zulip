@@ -78,6 +78,13 @@ class ZulipTestCase(TestCase):
     functions have to fake out the linter by using a local variable called
     django_client to fool the regext.
     '''
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        # This method should be remove when we quit from python2
+        import six
+        if six.PY2:
+            self.assertRaisesRegex = self.assertRaisesRegexp
+        super(ZulipTestCase, self).__init__(*args, **kwargs)
 
     DEFAULT_REALM = Realm.objects.get(string_id='zulip')
 
