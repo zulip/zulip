@@ -266,6 +266,9 @@ class Command(BaseCommand):
                     "sales": {"description": "For sales discussion", "invite_only": False}
                 }  # type: Dict[Text, Dict[Text, Any]]
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
+                # Now that we've created the notifications stream, configure it properly.
+                zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
+                zulip_realm.save(update_fields=['notifications_stream'])
 
                 # Add a few default streams
                 for default_stream_name in ["design", "devel", "social", "support"]:
