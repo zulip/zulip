@@ -47,7 +47,16 @@ def color_font(name, code_point, code_point_to_fname_map):
     out_name = 'out/unicode/{}.png'.format(code_point)
     out_sprite_name = 'out/sprite/{}.png'.format(name)
 
+    # These emojis are colored white and need to be recolored
+    white_emojis = ['eight', 'five', 'four', 'hash', 'nine', 'one',
+                    'seven', 'six', 'three', 'two', 'zero']
+
     try:
+        if name in white_emojis:
+            white_emoji_image = Image.open(in_name).convert('RGBA')
+            # Paste blue onto the image using the number as a mask
+            white_emoji_image.paste('#40C0E7', white_emoji_image)
+            white_emoji_image.save(in_name)
         shutil.copyfile(in_name, out_name)
         image = Image.new('RGBA', SIZE)
         image.paste(Image.open(out_name), (0, 2))
