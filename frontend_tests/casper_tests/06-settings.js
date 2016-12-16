@@ -4,7 +4,7 @@ var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 
 common.start_and_log_in();
 
-var form_sel = 'form[action^="/json/settings/change"]';
+// var form_sel = 'form[action^="/json/settings/change"]';
 var regex_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 casper.then(function () {
@@ -32,6 +32,7 @@ casper.then(function () {
     });
 });
 
+/*
 casper.then(function () {
     casper.waitUntilVisible("#pw_change_controls", function () {
         casper.waitForResource("zxcvbn.js", function () {
@@ -59,10 +60,18 @@ casper.then(function () {
         casper.click('#api_key_button');
     });
 });
+*/
+
+casper.then(function () {
+    casper.waitUntilVisible('#api_key_button_box', function () {
+        casper.click('#api_key_button');
+    });
+});
 
 casper.then(function () {
     casper.waitUntilVisible('#get_api_key_password', function () {
-        casper.fill('form[action^="/json/fetch_api_key"]', {password:'qwertyuiop'});
+        casper.fill('form[action^="/json/fetch_api_key"]',
+                    {password: test_credentials.default_user.password});
         casper.click('input[name="view_api_key"]');
     });
 });
@@ -72,6 +81,7 @@ casper.then(function () {
         casper.test.assertMatch(casper.fetchText('#api_key_value'), /[a-zA-Z0-9]{32}/, "Looks like an API key");
 
         // Change it all back so the next test can still log in
+        /*
         casper.fill(form_sel, {
             full_name: "Iago",
             old_password: "qwertyuiop",
@@ -79,8 +89,17 @@ casper.then(function () {
             confirm_password: test_credentials.default_user.password
         });
         casper.click('input[name="change_settings"]');
+        */
     });
 });
+
+/*
+casper.then(function () {
+    casper.waitUntilVisible('#settings-status', function () {
+        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
+    });
+});
+*/
 
 casper.then(function () {
     casper.waitUntilVisible('#show_api_key_box', function () {
@@ -96,12 +115,6 @@ casper.then(function () {
             regex_zuliprc,
             'Looks like a zuliprc file'
         );
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#settings-status', function () {
-        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
     });
 });
 
