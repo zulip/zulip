@@ -66,19 +66,17 @@ class AnalyticsTestCase(TestCase):
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
 
-    # Note that this doesn't work for InstallationCount, since InstallationCount has no realm_id
     # kwargs should only ever be a UserProfile or Stream.
     def assertCountEquals(self, table, property, value, end_time = TIME_ZERO, interval = CountStat.HOUR,
                           realm = None, **kwargs):
         # type: (Type[BaseCount], Text, int, datetime, str, Optional[Realm], **models.Model) -> None
-        if realm is None:
-            realm = self.default_realm
-        self.assertEqual(table.objects.filter(realm=realm,
-                                              property=property,
-                                              interval=interval,
-                                              end_time=end_time)
-                         .filter(**kwargs).values_list('value', flat=True)[0],
-                         value)
+        queryset = table.objects.filter(property=property, interval=interval, end_time=end_time) \
+                                .filter(**kwargs)
+        if table is not InstallationCount:
+            if realm is None:
+                realm = self.default_realm
+            queryset = queryset.filter(realm=realm)
+        self.assertEqual(queryset.values_list('value', flat=True)[0], value)
 
 # Tests manangement commands, backfilling, adding new stats, etc
 class TestUpdateAnalyticsCounts(AnalyticsTestCase):
