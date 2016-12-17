@@ -87,7 +87,7 @@ class InstallationCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<InstallationCount: %s %s>" % (self.property, self.value)
+        return u"<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
@@ -107,7 +107,7 @@ class RealmCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmCount: %s %s %s>" % (self.realm, self.property, self.value)
+        return u"<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
@@ -128,7 +128,7 @@ class UserCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<UserCount: %s %s %s>" % (self.user, self.property, self.value)
+        return u"<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
@@ -149,4 +149,4 @@ class StreamCount(BaseCount):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<StreamCount: %s %s %s %s>" % (self.stream, self.property, self.value, self.id)
+        return u"<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)
