@@ -38,7 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
-from typing import Any, Callable, Dict, Mapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Mapping, Optional, Tuple, Union, Iterable
 
 __version__ = "0.2.5"
 
@@ -290,7 +290,7 @@ class Client(object):
                 vendor_version=vendor_version,
                 )
 
-    def do_api_query(self, orig_request, url, method="POST", longpolling = False):
+    def do_api_query(self, orig_request, url, method="POST", longpolling=False):
         # type: (Mapping[str, Any], str, str, bool) -> Dict[str, Any]
         request = {}
 
@@ -402,26 +402,11 @@ class Client(object):
             return {'msg': "Unexpected error from the server", "result": "http-error",
                     "status_code": res.status_code}
 
-    @classmethod
-    def _register(cls, name, url=None, make_request=None,
-                  method="POST", computed_url=None, **query_kwargs):
-        # type: (Any, str, Optional[Callable], str, Optional[Callable], **Any) -> Any
-        if url is None:
-            url = name
-        if make_request is None:
-            def make_request(**kwargs):
-                # type: (**Any) -> Any
-                return kwargs.get("request", {})
-        def call(self, *args, **kwargs):
-            # type: (*Any, **Any) -> str
-            request = make_request(*args, **kwargs)
-            if computed_url is not None:
-                req_url = computed_url(request)
-            else:
-                req_url = url
-            return self.do_api_query(request, API_VERSTRING + req_url, method=method, **query_kwargs)
-        call.__name__ = name
-        setattr(cls, name, call)
+    def call_endpoint(self, url=None, method="POST", request=None, longpolling=False):
+        # type: (str, str, Dict[str, Any], bool) -> Dict[str, Any]
+        if request is None:
+            request = dict()
+        return self.do_api_query(request, API_VERSTRING + url, method=method)
 
     def call_on_each_event(self, callback, event_types=None, narrow=None):
         # type: (Callable, Optional[List[str]], Any) -> None
@@ -485,31 +470,193 @@ class Client(object):
                 callback(event['message'])
         self.call_on_each_event(event_callback, ['message'])
 
-def _mk_subs(streams, **kwargs):
-    # type: (str, **Any ) -> Dict[str, str]
-    result = kwargs
-    result['subscriptions'] = streams
-    return result
+    def send_message(self, message_data):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            See api/examples/send-message for example usage.
+        '''
+        return self.call_endpoint(
+            url='messages',
+            request=message_data,
+        )
 
-def _mk_rm_subs(streams):
-    # type: (str) -> Dict[str, str]
-    return {'delete': streams}
+    def update_message(self, message_data):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            See api/examples/edit-message for example usage.
+        '''
+        return self.call_endpoint(
+            url='messages',
+            method='PATCH',
+            request=message_data,
+        )
 
-def _mk_deregister(queue_id):
-    # type: (str) -> Dict[str, str]
-    return {'queue_id': queue_id}
+    def get_events(self, **request):
+        # type: (**Any) -> Dict[str, Any]
+        '''
+            See the register() method for example usage.
+        '''
+        return self.call_endpoint(
+            url='events',
+            method='GET',
+            longpolling=True,
+            request=request,
+        )
 
-def _mk_events(event_types=None, narrow=None):
-    # type: (Any, List[None]) -> Dict[Any, List[None]]
-    if event_types is None:
-        return dict()
-    if narrow is None:
-        narrow = []
-    return dict(event_types=event_types, narrow=narrow)
+    def register(self, event_types=None, narrow=None, **kwargs):
+        # type: (Iterable[str], Any, **Any) -> Dict[str, Any]
+        '''
+            Example usage:
 
-def _kwargs_to_dict(**kwargs):
-    # type: (**Any) -> Any
-    return kwargs
+            >>> client.register(['message'])
+            {u'msg': u'', u'max_message_id': 112, u'last_event_id': -1, u'result': u'success', u'queue_id': u'1482093786:2'}
+            >>> client.get_events(queue_id='1482093786:2', last_event_id=0)
+            {...}
+        '''
+
+        if narrow is None:
+            narrow = []
+
+        request = dict(
+            event_types=event_types,
+            narrow=narrow,
+            **kwargs
+        )
+
+        return self.call_endpoint(
+            url='register',
+            request=request,
+        )
+
+    def deregister(self, queue_id):
+        # type: (str) -> Dict[str, Any]
+        '''
+            Example usage:
+
+            >>> client.register(['message'])
+            {u'msg': u'', u'max_message_id': 113, u'last_event_id': -1, u'result': u'success', u'queue_id': u'1482093786:3'}
+            >>> client.deregister('1482093786:3')
+            {u'msg': u'', u'result': u'success'}
+        '''
+        request = dict(queue_id=queue_id)
+
+        return self.call_endpoint(
+            url="events",
+            method="DELETE",
+            request=request,
+        )
+
+    def get_profile(self, request=None):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            Example usage:
+
+            >>> client.get_profile()
+            {u'user_id': 5, u'full_name': u'Iago', u'short_name': u'iago', ...}
+        '''
+        return self.call_endpoint(
+            url='users/me',
+            method='GET',
+            request=request,
+        )
+
+    def get_streams(self, **request):
+        # type: (**Any) -> Dict[str, Any]
+        '''
+            See api/examples/get-public-streams for example usage.
+        '''
+        return self.call_endpoint(
+            url='streams',
+            method='GET',
+            request=request,
+        )
+
+    def get_members(self, request=None):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            See api/examples/list-members for example usage.
+        '''
+        return self.call_endpoint(
+            url='users',
+            method='GET',
+            request=request,
+        )
+
+    def list_subscriptions(self, request=None):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            See api/examples/list-subscriptions for example usage.
+        '''
+        return self.call_endpoint(
+            url='users/me/subscriptions',
+            method='GET',
+            request=request,
+        )
+
+    def add_subscriptions(self, streams, **kwargs):
+        # type: (Iterable[Dict[str, Any]], **Any) -> Dict[str, Any]
+        '''
+            See api/examples/subscribe for example usage.
+        '''
+        request = dict(
+            subscriptions=streams,
+            **kwargs
+        )
+
+        return self.call_endpoint(
+            url='users/me/subscriptions',
+            request=request,
+        )
+
+    def remove_subscriptions(self, streams):
+        # type: (Iterable[str]) -> Dict[str, Any]
+        '''
+            See api/examples/unsubscribe for example usage.
+        '''
+        request = dict(delete=streams)
+        return self.call_endpoint(
+            url='users/me/subscriptions',
+            method='PATCH',
+            request=request,
+        )
+
+    def get_subscribers(self, **request):
+        # type: (**Any) -> Dict[str, Any]
+        '''
+            Example usage: client.get_subscribers(stream='devel')
+        '''
+        stream = urllib.parse.quote(request['stream'], safe='')
+        url = 'streams/%s/members' % (stream,)
+        return self.call_endpoint(
+            url=url,
+            method='GET',
+            request=request,
+        )
+
+    def render_message(self, request=None):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            Example usage:
+
+            >>> client.render_message(request=dict(content='foo **bar**'))
+            {u'msg': u'', u'rendered': u'<p>foo <strong>bar</strong></p>', u'result': u'success'}
+        '''
+        return self.call_endpoint(
+            url='messages/render',
+            method='GET',
+            request=request,
+        )
+
+    def create_user(self, request=None):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            See api/examples/create-user for example usage.
+        '''
+        return self.call_endpoint(
+            method='PUT',
+            url='users',
+            request=request,
+        )
 
 class ZulipStream(object):
     """
@@ -534,21 +681,3 @@ class ZulipStream(object):
     def flush(self):
         # type: () -> None
         pass
-
-Client._register('send_message', url='messages', make_request=(lambda request: request))
-Client._register('update_message', method='PATCH', url='messages', make_request=(lambda request: request))
-Client._register('get_events', url='events', method='GET', longpolling=True, make_request=(lambda **kwargs: kwargs))
-Client._register('register', make_request=_mk_events)
-Client._register('export', method='GET', url='export')
-Client._register('deregister', url="events", method="DELETE", make_request=_mk_deregister)
-Client._register('get_profile', method='GET', url='users/me')
-Client._register('get_streams', method='GET', url='streams', make_request=_kwargs_to_dict)
-Client._register('get_members', method='GET', url='users')
-Client._register('list_subscriptions', method='GET', url='users/me/subscriptions')
-Client._register('add_subscriptions', url='users/me/subscriptions', make_request=_mk_subs)
-Client._register('remove_subscriptions', method='PATCH', url='users/me/subscriptions', make_request=_mk_rm_subs)
-Client._register('get_subscribers', method='GET',
-                 computed_url=lambda request: 'streams/%s/members' % (urllib.parse.quote(request['stream'], safe=''),),
-                 make_request=_kwargs_to_dict)
-Client._register('render_message', method='GET', url='messages/render')
-Client._register('create_user', method='POST', url='users')

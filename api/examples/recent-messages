@@ -35,7 +35,7 @@ Example: recent-messages --count=101 --user=username@example.com --api-key=a0b1c
 
 You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 """
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import zulip
 
 parser = optparse.OptionParser(usage=usage)
@@ -45,7 +45,7 @@ parser.add_option_group(zulip.generate_option_group(parser))
 
 client = zulip.init_from_options(options)
 
-req = {
+request = {
     'narrow': [["stream", "Denmark"]],
     'num_before': options.count,
     'num_after': 0,
@@ -53,7 +53,12 @@ req = {
     'apply_markdown': False
 }
 
-old_messages = client.do_api_query(req, zulip.API_VERSTRING + 'messages', method='GET')
+old_messages = client.call_endpoint(
+    url='messages',
+    method='GET',
+    request=request,
+)
+
 if 'messages' in old_messages:
     for message in old_messages['messages']:
         print(json.dumps(message, indent=4))
