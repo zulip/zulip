@@ -423,9 +423,8 @@ $(function () {
 
     (function () {
         var map = {
-            ".stream-description-editable": function (e) {
-                subs.change_stream_description(e);
-            },
+            ".stream-description-editable": subs.change_stream_description,
+            ".stream-name-editable": subs.change_stream_name
         };
 
         $(document).on("keydown", ".editable-section", function (e) {
@@ -461,9 +460,13 @@ $(function () {
                 edit_area.text(edit_area.attr("data-prev-text"));
                 $(this).html("");
             } else {
-                $(edit_area).attr("data-prev-text", edit_area.text().trim());
                 $("[data-finish-editing='" + selector + "']").show();
-                edit_area.attr("contenteditable", true).focus().select();
+
+                edit_area.attr("data-prev-text", edit_area.text().trim())
+                    .attr("contenteditable", true);
+
+                place_caret_at_end(edit_area[0]);
+
                 $(this).html("&times;");
             }
         });
