@@ -93,7 +93,7 @@ as a “**realm**”.
 * Change the stream description
 * Rename a stream
 * Preview a stream (not implemented)
-* Unsubscribe from a stream
+* [Unsubscribe from a stream](/help/unsubscribe-stream)
 * Change who can join a stream
 * Pin a stream
 * [Change the color of a stream](/help/change-stream-color)
