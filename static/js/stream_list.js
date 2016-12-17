@@ -205,8 +205,6 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
     } else {
         topic_list.remove_expanded_topics();
     }
-
-    pm_list.reset_to_unnarrowed();
 }
 
 exports.set_in_home_view = function (stream, in_home) {
@@ -415,6 +413,8 @@ $(function () {
         var op_pm = event.filter.operands('pm-with');
         if ((op_is.length !== 0 && _.contains(op_is, "private")) || op_pm.length !== 0) {
             pm_list.expand(op_pm);
+        } else {
+            pm_list.close();
         }
 
         var op_stream = event.filter.operands('stream');
@@ -431,6 +431,7 @@ $(function () {
 
     $(document).on('narrow_deactivated.zulip', function (event) {
         reset_to_unnarrowed();
+        pm_list.close();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 

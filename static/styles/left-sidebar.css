@@ -427,7 +427,11 @@ li.show-more-private-messages a {
     display: none;
 }
 
-.zoom-in .show-more-private-messages {
+.zoomed-in .show-more-private-messages {
+    display: none;
+}
+
+.zoomed-out .zoom-out-hide {
     display: none;
 }
 
