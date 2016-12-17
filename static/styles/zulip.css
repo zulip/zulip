@@ -2113,6 +2113,24 @@ div.floating_recipient {
     float: none;
 }
 
+#stream-checkboxes {
+    margin-top: 10px;
+    display: none;
+}
+
+#stream-checkboxes .checkbox {
+    display: block;
+}
+
+#stream-checkboxes .checkbox input[type=checkbox] {
+    margin: 5px 0px;
+    float: none;
+}
+
+#copy-from-stream-expand-collapse {
+    cursor: pointer;
+}
+
 .streams_popover .sp-container {
     background: white;
     cursor: pointer;
