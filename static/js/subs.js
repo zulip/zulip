@@ -218,7 +218,7 @@ function update_stream_description(sub, description) {
     // Update stream settings
     var settings = settings_for_sub(sub);
     settings.find('input.description').val(description);
-    settings.find('.stream-description').text(description);
+    settings.find('.stream-description-editable').text(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
@@ -690,7 +690,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
         update_stream_name(sub.stream_id, value);
         break;
     case 'description':
-        update_stream_description(sub, value);
+        exports.update_stream_description(sub, value);
         break;
     case 'email_address':
         sub.email_address = value;
@@ -844,6 +844,34 @@ exports.remove_user_from_stream = function (user_email, stream_name, success, fa
                principals: JSON.stringify([user_email])},
         success: success,
         error: failure,
+    });
+};
+
+exports.change_stream_description = function (e) {
+    e.preventDefault();
+
+    var sub_settings = $(e.target).closest('.subscription_settings');
+    var stream_name = get_stream_name(sub_settings);
+    var stream_id = stream_data.get_sub(stream_name).stream_id;
+    var description = sub_settings.find('.stream-description-editable').text().trim();
+
+    $('#subscriptions-status').hide();
+
+    channel.patch({
+        // Stream names might contain unsafe characters so we must encode it first.
+        url: '/json/streams/' + stream_id,
+        data: {
+            description: JSON.stringify(description)
+        },
+        success: function () {
+            // The event from the server will update the rest of the UI
+            ui.report_success(i18n.t("The stream description has been updated!"),
+                             $("#subscriptions-status"), 'subscriptions-status');
+        },
+        error: function (xhr) {
+            ui.report_error(i18n.t("Error updating the stream description"), xhr,
+                            $("#subscriptions-status"), 'subscriptions-status');
+        }
     });
 };
 
@@ -1244,32 +1272,6 @@ $(function () {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error renaming stream"), xhr,
-                                $("#subscriptions-status"), 'subscriptions-status');
-            },
-        });
-    });
-
-    $('#subscriptions_table').on('submit', '.change-stream-description form', function (e) {
-        e.preventDefault();
-        var sub_settings = $(e.target).closest('.subscription_settings');
-        var stream_name = get_stream_name(sub_settings);
-        var stream_id = stream_data.get_sub(stream_name).stream_id;
-        var description = sub_settings.find('input[name="description"]').val();
-
-        $('#subscriptions-status').hide();
-
-        channel.patch({
-            url: '/json/streams/' + stream_id,
-            data: {
-                description: JSON.stringify(description),
-            },
-            success: function () {
-                // The event from the server will update the rest of the UI
-                ui.report_success(i18n.t("The stream description has been updated!"),
-                                 $("#subscriptions-status"), 'subscriptions-status');
-            },
-            error: function (xhr) {
-                ui.report_error(i18n.t("Error updating the stream description"), xhr,
                                 $("#subscriptions-status"), 'subscriptions-status');
             },
         });

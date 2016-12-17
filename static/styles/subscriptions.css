@@ -707,6 +707,63 @@ form#add_new_subscription {
     margin-bottom: 5px;
 }
 
+.editable-section {
+    position: relative;
+    display: inline;
+    min-width: 10px;
+    max-width: 100%;
+}
+
+.editable-section[contenteditable=true] {
+    display: inline-block;
+    color: #52c2af;
+}
+
+.editable-section[contenteditable=true]:focus {
+    outline: none;
+}
+
+#subscription_overlay .editable {
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 300;
+
+    transition: all 0.3s ease;
+}
+
+#subscription_overlay .editable:empty:before {
+    content: "\f040";
+    font-family: "FontAwesome";
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+#subscription_overlay .editable:not(:empty) {
+    position: relative;
+    top: 2px;
+}
+
+#subscription_overlay .editable:hover {
+    color: #444;
+}
+
+#subscription_overlay .checkmark {
+    display: none;
+    margin-left: 5px;
+    font-size: 0.9rem;
+    color: #aaa;
+
+    cursor: pointer;
+}
+
+#subscription_overlay .checkmark.show {
+    display: block;
+}
+
 #subscription_overlay .subscription-type {
     margin-bottom: 10px;
     font-size: 0.9em;

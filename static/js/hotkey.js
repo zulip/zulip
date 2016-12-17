@@ -118,6 +118,10 @@ function process_hotkey(e) {
         return false;
     }
 
+    if ($(e.target).is(".editable-section")) {
+        return false;
+    }
+
     var tab_list = tab_up_down(e);
     if (tab_list.flag) {
         if (hotkey.name === "up_arrow") {
