@@ -87,10 +87,4 @@ If you accidentally delete your message by clicking the **x** (![x](/static/imag
 Clicking the **eye** (![eye](/static/images/help/eye.png)) icon will allow you to preview your message. To resume editing your message, click the **pencil and paper** (![pencil and paper](/static/images/help/pencil-paper.png)) icon that has replaced the eye icon.
 
 ### Press Enter to send
-![Press enter to send](/static/images/help/press-enter.png)
-
-The **Press Enter to send** checkbox allows you to automatically send your message when you press the enter (or return) key on your keyboard.
-
-![Send button](/static/images/help/send.png)
-
-If the box is unchecked, a green **Send** button will appear. You will have to click on the **Send** button to send your message.
+Read about pressing enter to send [here](/help/press-enter-send).

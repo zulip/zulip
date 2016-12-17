@@ -52,7 +52,7 @@ as a “**realm**”.
 * Restore the last unsent message
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
-* Enable or disable pressing enter to send
+* [Enable or disable pressing enter to send](/help/press-enter-send)
 * Verify that your message has been successfully sent
 * What to do if the server returns an error
 * Send a status message
