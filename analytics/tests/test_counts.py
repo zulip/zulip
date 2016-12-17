@@ -27,7 +27,7 @@ class AnalyticsTestCase(TestCase):
         # type: () -> None
         self.default_realm = Realm.objects.create(
             string_id='realmtest', name='Realm Test',
-            domain='analytics.test', date_created=self.TIME_ZERO - 2*self.DAY)
+            domain='test.analytics', date_created=self.TIME_ZERO - 2*self.DAY)
 
     # Lightweight creation of users, streams, and messages
     def create_user(self, email, **kwargs):
@@ -242,20 +242,42 @@ class TestXByYQueries(AnalyticsTestCase):
         self.assertCountEquals(StreamCount, 'test_messages_to_stream', 1)
 
 class TestCountStats(AnalyticsTestCase):
-    def test_human_and_bot_count_by_realm(self):
+    def setUp(self):
         # type: () -> None
-        stats = [
-            CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True}, None,
-                      CountStat.HOUR, False),
-            CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True}, None,
-                      CountStat.HOUR, False)]
+        super(TestCountStats, self).setUp()
+        self.second_realm = Realm.objects.create(
+            string_id='second-realm', name='Second Realm',
+            domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
+        user = self.create_user('user@second.analytics', realm=self.second_realm)
+        stream = self.create_stream(realm=self.second_realm)
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        self.create_message(user, recipient)
 
+        future_user = self.create_user('future_user@second.analytics', realm=self.second_realm,
+                                       date_joined=self.TIME_ZERO)
+        future_stream = self.create_stream(name='future stream', realm=self.second_realm,
+                                           date_created=self.TIME_ZERO)
+        future_recipient = Recipient.objects.create(type_id=future_stream.id, type=Recipient.STREAM)
+        self.create_message(future_user, future_recipient, pub_date=self.TIME_ZERO)
+
+    def test_active_users_by_is_bot(self):
+        # type: () -> None
+        property = 'active_users:is_bot'
+        stat = COUNT_STATS[property]
+
+        # To be included
         self.create_user('email1-bot', is_bot=True)
-        self.create_user('email2-bot', is_bot=True)
+        self.create_user('email2-bot', is_bot=True, date_joined=self.TIME_ZERO-25*self.HOUR)
         self.create_user('email3-human', is_bot=False)
 
-        for stat in stats:
-            do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+        # To be excluded
+        self.create_user('email4', is_active=False)
 
-        self.assertCountEquals(RealmCount, 'test_active_humans', 1)
-        self.assertCountEquals(RealmCount, 'test_active_bots', 2)
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(RealmCount, property, 2, subgroup='true', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval, realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 3)
+        self.assertFalse(UserCount.objects.exists())
+        self.assertFalse(StreamCount.objects.exists())
