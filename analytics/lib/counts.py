@@ -237,6 +237,7 @@ count_message_by_user_query = """
 """
 zerver_count_message_by_user = ZerverCountQuery(Message, UserCount, count_message_by_user_query)
 
+# Currently unused and untested
 count_message_by_stream_query = """
     INSERT INTO analytics_streamcount
         (stream_id, realm_id, value, property, subgroup, end_time, interval)
@@ -262,6 +263,7 @@ count_message_by_stream_query = """
 """
 zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
 
+# Currently unused and untested
 count_stream_by_realm_query = """
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time, interval)
