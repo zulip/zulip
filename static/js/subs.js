@@ -762,7 +762,8 @@ function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
     $('#people_to_add').html(templates.render('new_stream_users', {
-        users: people.get_rest_of_realm()
+        users: people.get_rest_of_realm(),
+        streams: stream_data.get_streams_for_settings_page()
     }));
 
     // Make the options default to the same each time:
@@ -864,10 +865,17 @@ $(function () {
         e.preventDefault();
         update_announce_stream_state();
     });
+    $(document).on('click', '#copy-from-stream-expand-collapse', function (e) {
+        $('#stream-checkboxes').toggle();
+        $("#copy-from-stream-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
+        e.preventDefault();
+        update_announce_stream_state();
+    });
 
-    // Search People
+    // Search People or Streams
     $(document).on('input', '.add-user-list-filter', function (e) {
         var users = people.get_rest_of_realm();
+        var streams = stream_data.get_streams_for_settings_page();
 
         var user_list = $(".add-user-list-filter");
         if (user_list === 0) {
@@ -876,6 +884,23 @@ $(function () {
         var search_term = user_list.expectOne().val().trim();
         var search_terms = search_term.toLowerCase().split(",");
         var filtered_users = people.filter_people_by_search_terms(users, search_terms);
+
+        _.each(streams, function (stream) {
+            var flag = true;
+
+            flag = flag && (function () {
+                var sub_name = stream.name.toLowerCase();
+                var matches_list = search_terms.indexOf(sub_name) > -1;
+                var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
+                return matches_list || matches_last_val;
+            }());
+
+            if (flag) {
+                $("label[data-name='" + stream.name + "']").css("display", "block");
+            } else {
+                $("label[data-name='" + stream.name + "']").css("display", "none");
+            }
+        });
 
         // Hide users which aren't in filtered users
         _.each(users, function (user) {
@@ -929,6 +954,33 @@ $(function () {
                     return $(elem).val();
                 }
             );
+
+            var checked_streams = _.map(
+                $("#stream_creation_form input:checkbox[name=stream]:checked"),
+                function (elem) {
+                    return $(elem).val();
+                }
+            );
+
+            var checked_stream_emails = [];
+            var stream_emails = [];
+
+            _.each(checked_streams, function (checked_stream) {
+                stream_emails = [];
+                var subscriber_ids = stream_data.get_sub(checked_stream).subscribers.keys();
+                _.each(subscriber_ids, function (subscriber_id) {
+                    stream_emails.push(people.get_person_from_user_id(subscriber_id).email);
+                });
+                checked_stream_emails = _.union(checked_stream_emails, stream_emails);
+            });
+
+            // If a stream was checked and the checkboxes are not visible,
+            // don't add checked streams
+            if ($('#stream-checkboxes').css('display') !== 'none') {
+                principals = _.union(principals, checked_stream_emails);
+            }
+
+
             // You are always subscribed to streams you create.
             principals.push(page_params.email);
 

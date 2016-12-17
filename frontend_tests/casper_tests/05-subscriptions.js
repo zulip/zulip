@@ -28,20 +28,38 @@ casper.waitForSelector('.sub_unsub_button.checked', function () {
 
 casper.then(function () {
     casper.test.assertExists('#user-checkboxes [data-name="cordelia@zulip.com"]', 'Original user list contains Cordelia');
-    casper.test.assertExists('#user-checkboxes [data-name="hamlet@zulip.com"]', 'Original user list contains King Hamlet');
+    casper.test.assertExists('#user-checkboxes [data-name="othello@zulip.com"]', 'Original user list contains Othello');
 });
+
+casper.waitForSelector("#copy-from-stream-expand-collapse", function () {
+    casper.click('#copy-from-stream-expand-collapse');
+});
+
+casper.waitUntilVisible("#stream-checkboxes", function () {
+    casper.test.assertExists('#stream-checkboxes [data-name="Scotland"]', 'Original stream list contains Scotland');
+    casper.test.assertExists('#stream-checkboxes [data-name="Rome"]', 'Original stream list contains Rome');
+});
+
 casper.waitForSelector("form#stream_creation_form", function () {
-    casper.test.info("Filtering user list with keyword 'cor'");
-    casper.fill('form#stream_creation_form', {user_list_filter: 'cor'});
+    casper.test.info("Filtering with keyword 'ot'");
+    casper.fill('form#stream_creation_form', {user_list_filter: 'ot'});
 });
 casper.waitForSelector(".subscriber-list", function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="cordelia@zulip.com"]'),
-                             true,
-                             "Cordelia is visible"
-    );
-    casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="hamlet@zulip.com"]'),
                              false,
-                             "King Hamlet is not visible"
+                             "Cordelia is not visible"
+    );
+    casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="othello@zulip.com"]'),
+                             true,
+                             "Othello is visible"
+    );
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Scotland"]'),
+                             true,
+                             "Scotland is visible"
+    );
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Rome"]'),
+                             false,
+                             "Rome is not visible"
     );
 });
 casper.then(function () {
@@ -53,15 +71,26 @@ casper.then(function () {
                              true,
                              "Cordelia is visible again"
     );
-    casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="hamlet@zulip.com"]'),
+    casper.test.assertEquals(casper.visible('#user-checkboxes [data-name="othello@zulip.com"]'),
                              true,
-                             "King Hamlet is visible again"
+                             "Othello is visible again"
+    );
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Scotland"]'),
+                             true,
+                             "Scotland is visible again"
+    );
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Rome"]'),
+                             true,
+                             "Rome is visible again"
     );
 });
 casper.waitForSelector('#stream_creation_form', function () {
-     casper.test.assertTextExists('Add New Stream', 'New stream creation panel');
-     casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
-     casper.click('form#stream_creation_form button.btn.btn-primary');
+    casper.test.assertTextExists('Add New Stream', 'New stream creation panel');
+    casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
+    casper.click('input[value="Scotland"] ~ span');
+    casper.click('input[value="cordelia@zulip.com"] ~ span');
+    casper.click('input[value="othello@zulip.com"] ~ span');
+    casper.click('form#stream_creation_form button.btn.btn-primary');
 });
 
 casper.waitFor(function () {
@@ -73,6 +102,10 @@ casper.then(function () {
     casper.test.info("User should be subscribed to stream Waseemio");
     casper.test.assertSelectorHasText('.stream-name', 'Waseemio');
     casper.test.assertSelectorHasText('.description', 'Oimeesaw');
+    // Based on the selected checkboxes while creating stream,
+    // 4 users from Scotland are added.
+    // 1 user, Cordelia, is added. Othello (subscribed to Scotland) is not added twice.
+    casper.test.assertSelectorHasText('.subscriber-count-text', '5');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
     casper.click('#create_stream_button');
 });
