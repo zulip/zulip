@@ -2362,15 +2362,68 @@ button.topic_edit_cancel {
 }
 
 /* embed */
-.message_embed {
-    border-left: 4px solid #ccc;
-    padding-left: 5px;
+.message_content .message_embed {
     display: block;
-    margin-bottom: 10px;
+    margin: 5px 0px;
+    border: none;
+    border-left: 3px solid #eee;
+    padding: 5px;
 }
-.message_embed_title {
-    font-weight: bold;
+
+.message_content .message_embed > * {
+    display: inherit;
+    padding: 5px;
+    border: none;
 }
-.message_embed_image {
-    max-width: 80px;
+
+.message_embed .message_embed_title {
+    padding-top: 0px;
+    /* to remove the spacing that the font has from the top of the container. */
+    margin-top: -5px;
+
+    font-size: 1.5em;
+    font-weight: 300;
+    line-height: normal;
+}
+
+.message_embed .message_embed_title a:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #005580;
+}
+
+.message_embed .message_embed_description {
+    margin-top: 5px;
+    max-width: 500px;
+}
+
+.message_embed .message_embed_image {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    background-size: cover;
+}
+
+.message_embed .data-container {
+    padding: 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+    max-width: calc(100% - 100px);
+}
+
+.message_embed .data-container div {
+    display: block;
+    border: none;
+}
+
+@media (max-width: 600px) {
+    .message_embed .message_embed_image {
+        width: 100%;
+        height: 100px;
+    }
+
+    .message_embed .data-container {
+        display: block;
+        max-width: 100%;
+        margin-top: 10px;
+    }
 }
