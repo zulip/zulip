@@ -13,7 +13,7 @@ var is_composing_message = false;
 
 var user_acknowledged_all_everyone;
 
-var all_everyone_warn_threshold = 15;
+exports.all_everyone_warn_threshold = 15;
 
 var message_snapshot;
 
@@ -793,7 +793,7 @@ function validate_stream_message() {
 
     // check if @all or @everyone is in the message
     if (util.is_all_or_everyone_mentioned(exports.message_content()) &&
-        stream_count > all_everyone_warn_threshold) {
+        stream_count > compose.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
@@ -1201,8 +1201,6 @@ $(function () {
         }
     });
 });
-
-exports.all_everyone_warn_threshold = all_everyone_warn_threshold;
 
 return exports;
 

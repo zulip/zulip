@@ -54,13 +54,15 @@ casper.then(function () {
             casper.test.assertNotVisible('.compose-all-everyone-msg');
             casper.test.assertNotVisible('#send-status');
         });
-
-        casper.then( function () {
-            casper.test.info('Click Send Button');
-            casper.click('#compose-send-button');
-        });
     } else {
         casper.test.info('No warning');
+    }
+});
+
+casper.then(function () {
+    if (is_warning) {
+        casper.test.info('Click Send Button');
+        casper.click('#compose-send-button');
     }
 });
 
