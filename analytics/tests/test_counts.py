@@ -82,24 +82,6 @@ class AnalyticsTestCase(TestCase):
 
 # Tests manangement commands, backfilling, adding new stats, etc
 class TestUpdateAnalyticsCounts(AnalyticsTestCase):
-    def test_analytics_stat_write(self):
-        # type: () -> None
-        # might change if we refactor count_query
-
-        stat = CountStat('test_stat_write', zerver_count_stream_by_realm,
-                         {'invite_only': False}, None, CountStat.HOUR, False)
-
-        # add some stuff to zerver_*
-        self.create_stream(name='stream1')
-        self.create_stream(name='stream2')
-        self.create_stream(name='stream3')
-
-        # run do_pull_from_zerver
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-
-        # check analytics_* values are correct
-        self.assertCountEquals(RealmCount, 'test_stat_write', 3)
-
     def test_update_analytics_tables(self):
         # type: () -> None
         stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, None, CountStat.HOUR, False)
@@ -171,14 +153,6 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
                                                           interval = CountStat.HOUR).count(), 2)
-
-    def test_empty_message_aggregates(self):
-        # type: () -> None
-        # test that we write empty rows to realmcount in the event that we
-        # have no messages and no users
-        stat = COUNT_STATS['messages_sent']
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        self.assertFalse(RealmCount.objects.filter(realm=self.default_realm).exists())
 
 class TestAggregates(AnalyticsTestCase):
     pass
