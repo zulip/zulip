@@ -95,7 +95,7 @@ as a “**realm**”.
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-stream)
 * Change who can join a stream
-* Pin a stream
+* [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-stream-color)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
