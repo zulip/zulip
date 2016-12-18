@@ -76,6 +76,7 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
+   bots-guide
    new-feature-tutorial
    writing-views
    life-of-a-request
