@@ -68,11 +68,8 @@ Clicking the **A**  (![A](/static/images/help/formatting.png)) icon will reveal 
 
 If you accidentally delete your message by clicking the **x** (![x](/static/images/help/x.png)) icon in the upper right corner of your messaging box, you can restore your previous message by clicking a blue link labeled **Restore draft**, which appears between the **A** (![A](/static/images/help/formatting.png)) and **eye** (![eye](/static/images/help/eye.png)) icons.
 
-### Preview
-
-![Message preview](/static/images/help/preview.png)
-
-Clicking the **eye** (![eye](/static/images/help/eye.png)) icon will allow you to preview your message. To resume editing your message, click the **pencil and paper** (![pencil and paper](/static/images/help/pencil-paper.png)) icon that has replaced the eye icon.
+### Previewing your message
+Read about message previewing [here](/help/previewing-message).
 
 ### Press Enter to send
 Read about pressing enter to send [here](/help/press-enter-send).
