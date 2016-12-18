@@ -32,14 +32,12 @@ class GoogleSearchHandler(object):
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
         original_sender = message['sender_email']
-        original_content = original_content.split(' ',1)[1]
+        original_content = original_content.split(' ', 1)[1]
         for url in search(original_content, stop=20):
-            new_content = url
-                                               
+            new_content = url                                              
         client.send_message(dict(
             type='private',
             to=original_sender,
             content=new_content,
         ))
-
 handler_class = GoogleSearchHandler
