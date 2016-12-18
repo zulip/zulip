@@ -20,7 +20,7 @@ class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
-    TIME_ZERO = datetime(2042, 3, 14).replace(tzinfo=timezone.utc)
+    TIME_ZERO = datetime(1988, 3, 14).replace(tzinfo=timezone.utc)
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
     def setUp(self):
