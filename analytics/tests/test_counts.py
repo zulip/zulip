@@ -80,31 +80,6 @@ class AnalyticsTestCase(TestCase):
             queryset = queryset.filter(subgroup=subgroup)
         self.assertEqual(queryset.values_list('value', flat=True)[0], value)
 
-# Tests manangement commands, backfilling, adding new stats, etc
-class TestUpdateAnalyticsCounts(AnalyticsTestCase):
-    def test_update_analytics_tables(self):
-        # type: () -> None
-        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, None, CountStat.HOUR, False)
-
-        user1 = self.create_user('email1')
-        user2 = self.create_user('email2')
-        recipient = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
-        self.create_message(user1, recipient)
-
-        # run command
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        usercount_row = UserCount.objects.filter(realm=self.default_realm, interval=CountStat.HOUR,
-                                                 property='test_messages_sent').values_list(
-            'value', flat=True)[0]
-        assert (usercount_row == 1)
-
-        # run command with date before message creation
-        do_fill_count_stat_at_hour(stat, self.TIME_LAST_HOUR)
-
-        # check no earlier rows created, old ones still there
-        self.assertFalse(UserCount.objects.filter(end_time__lt = self.TIME_LAST_HOUR).exists())
-        self.assertCountEquals(UserCount, 'test_messages_sent', 1, user = user1)
-
 class TestProcessCountStat(AnalyticsTestCase):
     def make_dummy_count_stat(self, current_time):
         # type: (datetime) -> CountStat
