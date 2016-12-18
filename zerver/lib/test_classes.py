@@ -80,7 +80,7 @@ class ZulipTestCase(TestCase):
     '''
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        # This method should be remove when we quit from python2
+        # This method should be removed when we migrate to version 3 of Python
         import six
         if six.PY2:
             self.assertRaisesRegex = self.assertRaisesRegexp

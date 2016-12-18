@@ -312,7 +312,7 @@ def user_profile_by_id_cache_key(user_profile_id):
     return u"user_profile_by_id:%s" % (user_profile_id,)
 
 # TODO: Refactor these cache helpers into another file that can import
-# models.py so that python3-style type annotations can also work.
+# models.py so that python v3 style type annotations can also work.
 
 def cache_save_user_profile(user_profile):
     # type: (UserProfile) -> None
