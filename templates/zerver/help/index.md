@@ -66,7 +66,7 @@ as a “**realm**”.
 * View information about the message sender
 * View an image at full size
 * Collapse a message
-* Star a message
+* [Star a message](/help/starring-messages)
 * Share a message or conversation (permanent link)
 ### Editing
 * [Edit or delete a message](/help/editing-past-messages)
