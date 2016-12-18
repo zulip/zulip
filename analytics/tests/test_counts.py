@@ -172,45 +172,6 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
                                                           interval = CountStat.HOUR).count(), 2)
 
-    # test users added in last hour
-    def test_add_new_users(self):
-        # type: () -> None
-        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, None, CountStat.HOUR, False)
-
-        # add new users to realm in last hour
-        self.create_user('email1')
-        self.create_user('email2')
-
-        # add a new user before an hour
-        self.create_user('email3', date_joined=self.TIME_ZERO - 2*self.HOUR)
-
-        # check if user added before the hour is not included
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        # do_update is writing the stat.property to all zerver tables
-
-        self.assertCountEquals(RealmCount, 'add_new_user_test', 2)
-
-    def test_count_before_realm_creation(self):
-        # type: () -> None
-        stat = CountStat('test_active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, None, CountStat.HOUR, False)
-
-        realm = Realm.objects.create(string_id='string_id', name='name', domain='domain',
-                                     date_created=self.TIME_ZERO)
-        self.create_user('email', realm=realm)
-
-        # run count prior to realm creation
-        do_fill_count_stat_at_hour(stat, self.TIME_LAST_HOUR)
-        self.assertFalse(RealmCount.objects.filter(realm=realm).exists())
-
-    def test_empty_counts_in_realm(self):
-        # type: () -> None
-        # test that rows with empty counts are returned if realm exists
-        stat = CountStat('test_active_humans', zerver_count_user_by_realm,
-                         {'is_bot': False, 'is_active': True}, None, CountStat.HOUR, False)
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-        self.assertFalse(RealmCount.objects.filter(realm=self.default_realm).exists())
-
     def test_empty_message_aggregates(self):
         # type: () -> None
         # test that we write empty rows to realmcount in the event that we
