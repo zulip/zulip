@@ -64,7 +64,7 @@ as a “**realm**”.
 * View the Markdown source of a message
 * View the exact time a message was sent
 * View information about the message sender
-* View an image at full size
+* [View an image at full size](/help/image-full-size)
 * Collapse a message
 * Star a message
 * Share a message or conversation (permanent link)
