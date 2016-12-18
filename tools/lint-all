@@ -334,7 +334,14 @@ def build_custom_checkers(by_lang):
          '''Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
     '''},
-
+        # This rule might give false positives in virtualenv setup files which should be excluded,
+        # and comments which should be rewritten to avoid use of "python2", "python3", etc.
+        {'pattern': 'python[23]',
+         'exclude': set(['tools/provision.py',
+                         'tools/setup/setup_venvs.py',
+                         'scripts/lib/setup_venv.py',
+                         'tools/lint-all']),
+         'description': 'Explicit python invocations should not include a version'}
         ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
