@@ -222,25 +222,6 @@ class TestProcessCountStat(AnalyticsTestCase):
 class TestAggregates(AnalyticsTestCase):
     pass
 
-class TestXByYQueries(AnalyticsTestCase):
-    def test_message_to_stream_aggregation(self):
-        # type: () -> None
-        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, None, CountStat.HOUR, False)
-
-        # write some messages
-        user = self.create_user('email')
-        stream = self.create_stream(date_created=self.TIME_ZERO - 2*self.HOUR)
-
-        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
-        recipient.save()
-
-        self.create_message(user, recipient = recipient)
-
-        # run command
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-
-        self.assertCountEquals(StreamCount, 'test_messages_to_stream', 1)
-
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
         # type: () -> None
