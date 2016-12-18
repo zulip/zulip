@@ -114,6 +114,10 @@ as a “**realm**”.
 * Use Zulip in a terminal
 * Connect to Zulip over IRC/etc (not implemented?)
 
+# Include Zulip
+
+* [Chat with zulip button](/help/chat-button-for-zulip)
+
 ---
 
 # Old table of contents:
