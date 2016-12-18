@@ -41,5 +41,4 @@ class GoogleSearchHandler(object):
             to=original_sender,
             content=new_content,
         ))
-
 handler_class = GoogleSearchHandler
