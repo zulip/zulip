@@ -46,7 +46,7 @@ as a “**realm**”.
 * Send a stream message
 * [Send a private message](/help/send-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
-* Preview your message before sending
+* [Preview your message before sending](/help/previewing-message)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
 * Restore the last unsent message
