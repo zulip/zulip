@@ -69,7 +69,7 @@ as a “**realm**”.
 * Star a message
 * Share a message or conversation (permanent link)
 ### Editing
-* Edit or delete a message
+* [Edit or delete a message](/help/editing-past-messages)
 * Change the topic of a message
 * Change the topic of a group of messages
 ### Searching
