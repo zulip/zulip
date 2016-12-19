@@ -7,7 +7,7 @@ if [ "$(uname)" = "OpenBSD" ]; then
   DEFAULT_USER="_postgresql"
 fi
 
-ROOT_POSTGRES="sudo -u "$DEFAULT_USER" psql"
+ROOT_POSTGRES="sudo -i -u "$DEFAULT_USER" psql"
 DEFAULT_DB=""
 if [ "$(uname)" = "Darwin" ]; then
    ROOT_POSTGRES="psql"
@@ -39,6 +39,12 @@ fi
 
 DBNAME_BASE=${DBNAME}_base
 
+CHECK_DBRUN=$(pg_isready -U "$DEFAULT_USER" -q | cat; echo "${PIPESTATUS[0]}")
+if [[ $CHECK_DBRUN != 0 ]]; then
+  echo "PostgreSQL Server not running! Ensure the service is enabled."
+  exit
+fi
+
 $ROOT_POSTGRES "$DEFAULT_DB" << EOF
 CREATE USER $USERNAME;
 ALTER USER $USERNAME PASSWORD '$PASSWORD';
@@ -49,6 +55,7 @@ CREATE USER $VAGRANTUSERNAME;
 GRANT $USERNAME TO $VAGRANTUSERNAME;
 ALTER ROLE $VAGRANTUSERNAME SET search_path TO $SEARCH_PATH;
 EOF
+
 
 umask go-rw
 PGPASS_PREFIX="*:*:*:$USERNAME:"
@@ -61,7 +68,6 @@ fi
 chmod go-rw ~/.pgpass
 
 "$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" "$USERNAME" "$DBNAME" "$DBNAME_BASE"
-
 psql -h localhost postgres "$USERNAME" <<EOF
 DROP DATABASE IF EXISTS $DBNAME;
 DROP DATABASE IF EXISTS $DBNAME_BASE;
