@@ -43,7 +43,7 @@ as a “**realm**”.
 
 ## Messages
 ### Sending
-* Send a stream message
+* [Send a stream message](/help/send-stream-message)
 * [Send a private message](/help/send-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
 * [Preview your message before sending](/help/previewing-message)
