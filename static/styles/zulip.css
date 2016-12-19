@@ -1145,12 +1145,7 @@ a.message_label_clickable:hover {
     opacity: .1;
 }
 
-.always_visible_topic_mute {
-    opacity: .7;
-}
-
-.on_hover_topic_mute:hover,
-.always_visible_topic_mute:hover {
+.on_hover_topic_mute:hover {
     cursor: pointer;
     opacity: 1.0;
 }

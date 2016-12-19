@@ -150,10 +150,12 @@ $(function () {
 
     // MUTING
 
-    $('body').on('click','.always_visible_topic_mute,.on_hover_topic_mute', function (e) {
-        var stream = $(e.currentTarget).attr('data-stream-name');
+    $('body').on('click', '.on_hover_topic_mute', function (e) {
+        var stream = stream_data.get_sub_by_id($(e.currentTarget).attr('data-stream-id')).name;
         var topic = $(e.currentTarget).attr('data-topic-name');
-        popovers.topic_ops.mute(stream,topic);
+        popovers.topic_ops.mute(stream, topic);
+        e.stopPropagation();
+        popovers.hide_all();
     });
 
     // RECIPIENT BARS
