@@ -44,7 +44,7 @@ as a “**realm**”.
 
 ## Messages
 ### Sending
-* Send a stream message
+* [Send a stream message](/help/send-stream-message)
 * [Send a private message](/help/send-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
 * [Preview your message before sending](/help/previewing-message)
@@ -62,8 +62,13 @@ as a “**realm**”.
 * Send a message in a different language
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
-* View the Markdown source of a message
+<<<<<<< 75340c93b087a894839584bf5d056e6bcba7c055
+* [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View information about a message](/help/message-info)
+=======
+* View the exact time a message was sent
+* View information about the message sender
+>>>>>>> docs: Add user guide for View the markdown source of a message.
 * [View an image at full size](/help/image-full-size)
 * Collapse a message
 * Star a message
