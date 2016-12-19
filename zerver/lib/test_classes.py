@@ -273,6 +273,12 @@ class ZulipTestCase(TestCase):
 
         return [subscription.user_profile for subscription in subscriptions]
 
+    def assert_url_serves_contents_of_file(self, url, result):
+        # type: (str, bytes) -> None
+        response = self.client_get(url)
+        data = b"".join(response.streaming_content)
+        self.assertEquals(result, data)
+
     def assert_json_success(self, result):
         # type: (HttpResponse) -> Dict[str, Any]
         """

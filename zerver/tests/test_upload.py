@@ -74,9 +74,7 @@ class FileUploadTest(ZulipTestCase):
 
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
-        response = self.client_get(uri)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
     def test_file_too_big_failure(self):
         # type: () -> None
@@ -171,9 +169,7 @@ class FileUploadTest(ZulipTestCase):
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
-        response = self.client_get(uri)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
