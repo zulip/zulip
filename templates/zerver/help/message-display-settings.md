@@ -15,7 +15,7 @@ You can easily change your Zulip message display  settings by following a few st
 Listed below are the current message display settings that Zulip supports. After editing your message display settings, you will need to reload your screen for any changes you make to take effect.
 
 ### Select default language
-For more information on this feature, please see [here](/help/changing-the-default-language.md).
+For more information on this feature, please see [here](/help/change-your-language).
 
 ### Display user list on left side in narrow windows
 ![Display user list on left side in narrow windows](/static/images/help/users-left.png)
