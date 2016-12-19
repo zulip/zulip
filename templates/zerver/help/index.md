@@ -31,7 +31,7 @@ as a “**realm**”.
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
 * Change your email address (not implemented)
-* Change your avatar
+* [Change your avatar](/help/edit-profile#updating-your-avatar)
 * [Change your language](/help/change-your-language)
 * Change the date and time format
 * Join a Zulip organization
