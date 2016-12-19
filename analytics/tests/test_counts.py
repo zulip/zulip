@@ -129,9 +129,6 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
                                                           interval = CountStat.HOUR).count(), 2)
 
-class TestAggregates(AnalyticsTestCase):
-    pass
-
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
         # type: () -> None
@@ -170,5 +167,8 @@ class TestCountStats(AnalyticsTestCase):
         self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval)
         self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval, realm=self.second_realm)
         self.assertEqual(RealmCount.objects.count(), 3)
+        self.assertCountEquals(InstallationCount, property, 2, subgroup='true', interval=stat.interval)
+        self.assertCountEquals(InstallationCount, property, 2, subgroup='false', interval=stat.interval)
+        self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
