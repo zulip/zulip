@@ -154,7 +154,7 @@ There are three panes in your browser window.
    sidebar.
 
 **[Go back to “The Zulip browser window”](#the-zulip-browser-window)**
-  | **[Go back to “Table of contents”](#table-of-contents)**
+  | **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -187,7 +187,7 @@ individual users. ![New message](/static/images/help/new_message.png)
  1. Enter your message.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Posting and replying to individual users (“PM”: private message)
 
@@ -209,7 +209,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    use a massively freighted word like “I”.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Some facts about messages
 
@@ -247,7 +247,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    between other paragraphs.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -274,7 +274,7 @@ corner of the right sidebar and choose “Keyboard shortcuts” from the
 drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Find starred messages
 
@@ -284,7 +284,7 @@ the "Starred messages" view (in the filters at the top of the left
 sidebar).
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Show only particular messages
 
@@ -311,7 +311,7 @@ sidebar).
    user.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Date of a message
 
@@ -319,7 +319,7 @@ If you “mouse over” the time stamp of a message (upper right corner of
 the message), you’ll see a fuller date-time stamp and time zone.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Changing the title of a topic or stream
 
@@ -342,7 +342,7 @@ organization. But here are some thoughts:
    issue for administrators to watch for.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Editing a topic title
 
@@ -360,7 +360,7 @@ Your edits will be applied if you “save” the message, even if the body
 of the message is unchanged.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Message formatting
 
@@ -371,7 +371,7 @@ Zulip uses a subset of
 right sidebar and choose “Message formatting” from the drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### User status
 
@@ -398,7 +398,7 @@ right sidebar and choose “Message formatting” from the drop-down menu.
  are all at least recently active.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Interacting with Zulip by email
 
@@ -410,7 +410,7 @@ there. You can also post to a stream by email — the Manage Streams
 pane shows you the email address to use for any particular stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Emoji
 
@@ -440,7 +440,7 @@ pane shows you the email address to use for any particular stream.
    messages?**. Sorry, this isn't yet supported.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Customization
 
@@ -482,7 +482,7 @@ pane shows you the email address to use for any particular stream.
    experiment with them.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Muting a stream vs. unsubscribing from it
 
@@ -499,7 +499,7 @@ unmuted streams, saving space.
 You can't do any of that with a unsubscribed stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -549,4 +549,4 @@ You can't do any of that with a unsubscribed stream.
    "filter".
 
 **[Go back to “Terminology”](#special-terms-used-with-zulip)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
