@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-                    Optional, Sized, Tuple, Union)
+                    Optional, Sized, Tuple, Union, IO)
 
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 
+from zerver.lib.avatar import avatar_url
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
@@ -141,6 +142,17 @@ def queries_captured(include_savepoints=False):
     TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
+def get_test_image_file(filename):
+    # type: (str) -> IO[Any]
+    test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
+    return open(os.path.join(test_avatar_dir, filename), 'rb')
+
+def avatar_disk_path(user_profile, medium=False):
+    # type: (UserProfile, bool) -> str
+    avatar_url_path = avatar_url(user_profile, medium)
+    avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                    avatar_url_path.split("/")[-1].split("?")[0])
+    return avatar_disk_path
 
 def make_client(name):
     # type: (str) -> Client

@@ -11,7 +11,8 @@ from django.test import TestCase, override_settings
 from zerver.lib.test_helpers import (
     queries_captured, simulated_empty_cache,
     simulated_queue_client, tornado_redirected_to_list,
-    most_recent_message, make_client
+    most_recent_message, make_client, avatar_disk_path,
+    get_test_image_file
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -36,6 +37,7 @@ from zerver.lib.actions import \
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
+from zerver.lib.avatar import avatar_url
 
 from zerver.worker import queue_processors
 
@@ -48,6 +50,7 @@ import sys
 import time
 import ujson
 import random
+import filecmp
 
 def bail(msg):
     # type: (str) -> None
@@ -74,9 +77,6 @@ def find_dict(lst, k, v):
         if dct[k] == v:
             return dct
     raise Exception('Cannot find element in list where key %s == %s' % (k, v))
-
-# same as in test_uploads.py
-TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
 class SlowQueryTest(TestCase):
     def test_is_slow_query(self):
@@ -850,20 +850,24 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
-        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp:
+        with get_test_image_file('img.png') as fp:
             self.create_bot(file=fp)
+            profile = get_user_profile_by_email('hambot-bot@zulip.com')
+            # Make sure that avatar image that we've uploaded is same with avatar image in the server
+            self.assertTrue(filecmp.cmp(fp.name,
+                                        os.path.splitext(avatar_disk_path(profile))[0] +
+                                        ".original"))
         self.assert_num_bots_equal(1)
 
-        profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
-        # TODO: check img.png was uploaded properly
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
     def test_add_bot_with_too_many_files(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
-        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+        with get_test_image_file('img.png') as fp1, \
+                get_test_image_file('img.gif') as fp2:
             bot_info = dict(
                 full_name='whatever',
                 short_name='whatever',
@@ -1197,23 +1201,27 @@ class BotTest(ZulipTestCase):
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         # Try error case first (too many files):
-        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp1, \
-                open(os.path.join(TEST_AVATAR_DIR, 'img.gif'), 'rb') as fp2:
+        with get_test_image_file('img.png') as fp1, \
+                get_test_image_file('img.gif') as fp2:
             result = self.client_patch_multipart(
                 '/json/bots/hambot-bot@zulip.com',
                 dict(file1=fp1, file2=fp2))
         self.assert_json_error(result, 'You may only upload one file at a time')
 
         # HAPPY PATH
-        with open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb') as fp:
+        with get_test_image_file('img.png') as fp:
             result = self.client_patch_multipart(
                 '/json/bots/hambot-bot@zulip.com',
                 dict(file=fp))
+            profile = get_user_profile_by_email('hambot-bot@zulip.com')
+            # Make sure that avatar image that we've uploaded is same with avatar image in the server
+            self.assertTrue(filecmp.cmp(fp.name,
+                                        os.path.splitext(avatar_disk_path(profile))[0] +
+                                        ".original"))
         self.assert_json_success(result)
 
-        profile = get_user_profile_by_email('hambot-bot@zulip.com')
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
-        # TODO: check img.png was uploaded properly
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
 
     def test_patch_bot_to_stream(self):
         # type: () -> None
