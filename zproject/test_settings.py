@@ -99,6 +99,7 @@ ENABLE_FILE_LINKS = True
 
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
 
 LOCAL_UPLOADS_DIR = 'var/test_uploads'
 
