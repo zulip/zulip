@@ -38,7 +38,7 @@ You can always delete your message by clicking the **x** (![x](/static/images/he
 See **["Send a private message"](/help/send-private-message)** to learn more about sending a private message.
 
 ## Other features
-While sending either a stream or private message, several features located below the messaging bn the bottom-left corner can aid you in composing your message.
+While sending either a stream or private message, several features located below the messaging on the bottom-left corner can aid you in composing your message.
 
 ### Emoji
 
@@ -63,10 +63,7 @@ While the file is uploading, a blue box labeled **Uploading...** will appear, an
 Clicking the **A**  (![A](/static/images/help/formatting.png)) icon will reveal a modal window with a summary of message formatting in Zulip. For more information on message formatting, see our [message formatting guide](/help/format-your-message-using-markdown).
 
 ### Restore draft
-
-![Restore draft](/static/images/help/restore-draft.png)
-
-If you accidentally delete your message by clicking the **x** (![x](/static/images/help/x.png)) icon in the upper right corner of your messaging box, you can restore your previous message by clicking a blue link labeled **Restore draft**, which appears between the **A** (![A](/static/images/help/formatting.png)) and **eye** (![eye](/static/images/help/eye.png)) icons.
+Read about restoring the draft of a message [here](/help/restore-unsent-message).
 
 ### Previewing your message
 Read about message previewing [here](/help/previewing-message).
