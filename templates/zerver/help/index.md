@@ -86,7 +86,7 @@ as a “**realm**”.
 * About streams and topics
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
-* View your current stream subscriptions
+* [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
 * View messages from a stream
 * The #announce stream
 * [Add or invite someone to a stream](/help/add-invite-stream)
