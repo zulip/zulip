@@ -70,8 +70,7 @@ as a “**realm**”.
 * Share a message or conversation (permanent link)
 ### Editing
 * [Edit or delete a message](/help/editing-past-messages)
-* Change the topic of a message
-* Change the topic of a group of messages
+* [Change the topic of a message](/help/change-topic)
 ### Searching
 * [Search messages](/help/search-messages)
 * [Advanced search for messages](/help/advanced-search)
