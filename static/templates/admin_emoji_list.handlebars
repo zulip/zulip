@@ -7,6 +7,13 @@
     <span class="emoji_image"><a href="{{source_url}}"><img src="{{display_url}}" alt="{{name}}" /></a></span>
   </td>
   <td>
+    {{#if author}}
+      <span class="emoji_author">{{author.full_name}}</span>
+    {{else}}
+      <span class="emoji_author">Unknown Author</span>
+    {{/if}}
+  </td>
+  <td>
     <button class="button delete btn-danger" data-emoji-name="{{name}}">
       {{t "Delete" }}
     </button>

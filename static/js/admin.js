@@ -173,7 +173,8 @@ exports.populate_emoji = function (emoji_data) {
         emoji_table.append(templates.render('admin_emoji_list', {
             emoji: {
                 name: name, source_url: data.source_url,
-                display_url: data.display_url
+                display_url: data.display_url,
+                author: data.author
             }
         }));
     });
