@@ -60,6 +60,7 @@ def add_settings(request):
         'github_auth_enabled':       github_auth_enabled(realm),
         'development_environment':   settings.DEVELOPMENT,
         'support_email':             settings.ZULIP_ADMINISTRATOR,
+        'find_team_link_disabled':   settings.FIND_TEAM_LINK_DISABLED,
     }
 
 

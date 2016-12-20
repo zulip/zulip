@@ -1,0 +1,48 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+<div class="app find-team-page">
+  <div class="app-main find-team-page-container">
+    <p class="lead">
+      <h3 class="find-team-page-header">{{ _("Find your team") }}…</h3>
+    </p>
+    {% if emails %}
+    <div id="results">
+      <p>
+      We have checked the following email address(es). Any email address
+      not associated with Zulip was not sent the sign-in information.
+      </p>
+
+      <ul>
+        {% for email in emails %}
+        <li>{{ email }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+    <div class="find-team-form">
+      <p>
+      We will send you an email with the sign-in information against
+      any email address associated with Zulip.
+      </p>
+      <form class="form-inline" id="find_my_team" name="email_form"
+            action="{{ current_url() }}" method="post">
+        {{ csrf_input }}
+        <input type="text" class="form-control required"
+               placeholder="{{ _("Enter email addresses") }}"
+               id="emails" name="emails"/>
+        <button type="submit" class="btn btn-primary">{{ _('Find team') }}</button>
+        <div><i>{{ form.emails.help_text }}</i></div>
+      </form>
+      <div id="errors"></div>
+      {% if form.emails.errors %}
+        {% for error in form.emails.errors %}
+          <div class="alert alert-error">{{ error }}</div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="footer-padder"></div>
+</div>
+{% endblock %}

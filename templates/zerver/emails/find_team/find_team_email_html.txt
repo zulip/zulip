@@ -1,0 +1,9 @@
+<p>Hello {{ user_profile.full_name }},<p>
+
+<p>You can log into Zulip using {{ user_profile.email }} on following organization:</p>
+
+<p><a href="{{ user_profile.realm.uri }}">{{ user_profile.realm.name }}</a></p>
+
+<p>Cheers,
+<br>
+The Zulip Team</p>

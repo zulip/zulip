@@ -84,6 +84,11 @@
       <li><span class="little-bullet">·</span></li>
       <li><a href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a></li>
       {% endif %}
+      {% if find_team_link_disabled %}
+      {% else %}
+      <li><span class="little-bullet">·</span></li>
+      <li><a href="{{ server_uri }}/find-my-team">{{ _('Find my team') }}</a></li>
+      {% endif %}
     </ul>
   </div>
 </div>

@@ -12,12 +12,17 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
-from typing import Text
+from django.template import loader
+from django.core.validators import validate_email
+from django import forms
+from django.core.mail import send_mail
 from six.moves import urllib
 from typing import Any, Dict, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
-from zerver.forms import HomepageForm, OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, OurAuthenticationForm, \
+    WRONG_SUBDOMAIN_ERROR, FindMyTeamForm
+
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain
@@ -26,6 +31,7 @@ from zerver.views import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 from zproject.jinja2 import render_to_response
+from zerver.lib.notifications import send_future_email
 
 import hashlib
 import hmac
@@ -34,6 +40,61 @@ import logging
 import requests
 import time
 import ujson
+import datetime
+from typing import Text
+
+try:
+    import mailer
+    send_mail = mailer.send_mail
+except ImportError:
+    # no mailer app present, stick with default
+    pass
+
+def send_find_my_team_emails(user_profile):
+    # type: (UserProfile) -> None
+    text_template = 'zerver/emails/find_team/find_team_email.txt'
+    html_template = 'zerver/emails/find_team/find_team_email_html.txt'
+    context = {'user_profile': user_profile}
+    text_content = loader.render_to_string(text_template, context)
+    html_content = loader.render_to_string(html_template, context)
+    sender = settings.NOREPLY_EMAIL_ADDRESS
+    recipients = [user_profile.email]
+    subject = "Your Zulip Team"
+
+    send_mail(subject, text_content, sender, recipients, html_message=html_content)
+
+def find_my_team(request):
+    # type: (HttpRequest) -> HttpResponse
+    url = reverse('find-my-team')
+
+    emails = []  # type: List[Text]
+    if request.method == 'POST':
+        form = FindMyTeamForm(request.POST)
+        if form.is_valid():
+            emails = form.cleaned_data['emails']
+            for user_profile in UserProfile.objects.filter(email__in=emails):
+                send_find_my_team_emails(user_profile)
+
+            # Note: Show all the emails in the result otherwise this
+            # feature can be used to ascertain which email addresses
+            # are associated with Zulip.
+            data = urllib.parse.urlencode({'emails': ','.join(emails)})
+            return redirect(url + "?" + data)
+    else:
+        form = FindMyTeamForm()
+        result = request.GET.get('emails')
+        if result:
+            for email in result.split(','):
+                try:
+                    validate_email(email)
+                    emails.append(email)
+                except forms.ValidationError:
+                    pass
+
+    return render_to_response('zerver/find_my_team.html',
+                              {'form': form, 'current_url': lambda: url,
+                               'emails': emails},
+                              request=request)
 
 def maybe_send_to_registration(request, email, full_name=''):
     # type: (HttpRequest, Text, Text) -> HttpResponse

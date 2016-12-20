@@ -6,6 +6,7 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.core.validators import validate_email
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
@@ -201,3 +202,31 @@ Please contact %s to reactivate this group.""" % (
                             (user_profile.email, get_subdomain(self.request)))
             raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
         return email
+
+class MultiEmailField(forms.Field):
+    def to_python(self, emails):
+        # type: (Text) -> List[Text]
+        """Normalize data to a list of strings."""
+        if not emails:
+            return []
+
+        return [email.strip() for email in emails.split(',')]
+
+    def validate(self, emails):
+        # type: (List[Text]) -> None
+        """Check if value consists only of valid emails."""
+        super(MultiEmailField, self).validate(emails)
+        for email in emails:
+            validate_email(email)
+
+class FindMyTeamForm(forms.Form):
+    emails = MultiEmailField(
+        help_text="Add up to 10 comma-separated email addresses.")
+
+    def clean_emails(self):
+        # type: () -> List[Text]
+        emails = self.cleaned_data['emails']
+        if len(emails) > 10:
+            raise forms.ValidationError("Please enter at most 10 emails.")
+
+        return emails
