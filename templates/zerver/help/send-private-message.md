@@ -17,4 +17,4 @@ Once you have selected the user you want to message, enter your message in the b
 
 You can always delete your message by clicking the **x** (![x](/static/images/help/x.png)) icon located at the top-right corner of your messaging box.
 
-**[Go back to “Streams and private messages”](/help/streams-and-private-messages)**
+**[Go to "Table of contents"](/help/#using-zulip)**

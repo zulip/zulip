@@ -49,7 +49,7 @@ as a “**realm**”.
 * [Preview your message before sending](/help/previewing-message)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
-* Restore the last unsent message
+* [Restore the last unsent message](/help/restore-unsent-message)
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
 * [Enable or disable pressing enter to send](/help/press-enter-send)
