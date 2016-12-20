@@ -372,9 +372,17 @@ class RealmEmoji(ModelReprMixin, models.Model):
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[Text, Dict[str, Text]]
     d = {}
-    for row in RealmEmoji.objects.filter(realm=realm):
+    for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
+        if row.author:
+            author = {
+                'id': row.author.id,
+                'email': row.author.email,
+                'full_name': row.author.full_name}
+        else:
+            author = None
         d[row.name] = dict(source_url=row.img_url,
-                           display_url=get_camo_url(row.img_url))
+                           display_url=get_camo_url(row.img_url),
+                           author=author)
     return d
 
 def flush_realm_emoji(sender, **kwargs):
