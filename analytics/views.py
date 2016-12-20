@@ -1,31 +1,28 @@
-from __future__ import absolute_import
-from __future__ import division
-from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union, Text
+from __future__ import absolute_import, division
 
+from django.core import urlresolvers
 from django.db import connection
 from django.db.models.query import QuerySet
-from django.template import RequestContext, loader
-from django.core import urlresolvers
 from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
+from django.template import RequestContext, loader
 from jinja2 import Markup as mark_safe
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
-from zerver.models import UserActivity, UserActivityInterval, Realm
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.models import UserActivity, UserActivityInterval, Realm
+from zproject.jinja2 import render_to_response
 
 from collections import defaultdict
 from datetime import datetime, timedelta
 import itertools
-import time
-import re
 import pytz
-from six.moves import filter
-from six.moves import map
-from six.moves import range
-from six.moves import zip
-eastern_tz = pytz.timezone('US/Eastern')
+import re
+import time
 
-from zproject.jinja2 import render_to_response
+from six.moves import filter, map, range, zip
+from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union, Text
+
+eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):
     # type: (str, List[str], List[Any], bool) -> str
