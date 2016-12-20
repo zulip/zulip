@@ -189,6 +189,13 @@ class RealmTest(ZulipTestCase):
         realm = update_with_api(create_stream_by_admins_only=False)
         self.assertEqual(realm.create_stream_by_admins_only, False)
 
+        # add_emoji_by_admins_only
+        set_up_db('add_emoji_by_admins_only', False)
+        realm = update_with_api(add_emoji_by_admins_only=True)
+        self.assertEqual(realm.add_emoji_by_admins_only, True)
+        realm = update_with_api(add_emoji_by_admins_only=False)
+        self.assertEqual(realm.add_emoji_by_admins_only, False)
+
         # allow_message_editing
         set_up_db('allow_message_editing', False)
         set_up_db('message_content_edit_limit_seconds', 0)
@@ -1899,6 +1906,7 @@ class HomeTest(ZulipTestCase):
             "presence_disabled",
             "product_name",
             "prompt_for_invites",
+            "realm_add_emoji_by_admins_only",
             "realm_allow_message_editing",
             "realm_authentication_methods",
             "realm_create_stream_by_admins_only",
