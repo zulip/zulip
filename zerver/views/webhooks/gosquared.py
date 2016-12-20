@@ -7,23 +7,31 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any
+from six import text_type
+from typing import Dict, Any, Optional
 
-BODY_TEMPLATE = '{website_name} has {user_num} visitors online.'
+BODY_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.'
 
 @api_key_only_webhook_view('GoSquared')
 @has_request_variables
 def api_gosquared_webhook(request, user_profile, client,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='gosquared'),
-                          topic=REQ(default='GoSquared')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Dict[str, Any]]) -> HttpResponse
+                          topic=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
     try:
         domain_name = payload['siteDetails']['domain']
         user_num = payload['concurrents']
-        body = BODY_TEMPLATE.format(website_name=domain_name, user_num=user_num)
+        user_acc = payload['siteDetails']['acct']
+        acc_url = 'https://www.gosquared.com/now/' + user_acc
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
 
-    check_send_message(user_profile, client, 'stream', [stream], topic, body)
+    body = BODY_TEMPLATE.format(website_name=domain_name, website_url=acc_url, user_num=user_num)
+    # allows for customisable topics
+    if topic is None:
+        topic = 'GoSquared - {website_name}'.format(website_name=domain_name)
+
+    check_send_message(user_profile, client, 'stream', [stream],
+                       topic, body)
     return json_success()
