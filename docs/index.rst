@@ -76,7 +76,6 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
-   bots-guide
    new-feature-tutorial
    writing-views
    life-of-a-request
@@ -114,6 +113,7 @@ Contents:
 
    settings
    queuing
+   bots-guide
    custom-apps
    pointer
    markdown

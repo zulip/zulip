@@ -1,4 +1,4 @@
-# Developing bots
+# Writing bots
 **This feature is still experimental.**
 
 The contrib_bots system is a new part of Zulip that allows
