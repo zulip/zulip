@@ -354,6 +354,7 @@ def list_of_domains_for_realm(realm):
     return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
 
 class RealmEmoji(ModelReprMixin, models.Model):
+    author = models.ForeignKey('UserProfile', blank=True, null=True)
     realm = models.ForeignKey(Realm) # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
