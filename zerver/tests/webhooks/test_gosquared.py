@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class GoSquaredHookTests(WebhookTestCase):
@@ -9,9 +10,12 @@ class GoSquaredHookTests(WebhookTestCase):
     # Note: Include a test function per each distinct message condition your integration supports
     def test_traffic_message(self):
         # type: () -> None
-        expected_subject = u"GoSquared"
-        expected_message = u"requestb.in has 0 visitors online."
+        expected_subject = "GoSquared - requestb.in"
+        expected_message = u"[requestb.in](https://www.gosquared.com/now/GSN-595854-T) has 33 visitors online."
 
-        # use fixture named helloworld_hello
         self.send_and_test_stream_message('traffic_spike', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
+
+    def get_body(self, fixture_name):
+        # type: (Text) -> Text
+        return self.fixture_data("gosquared", fixture_name, file_type="json")
