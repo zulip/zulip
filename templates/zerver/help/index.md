@@ -33,7 +33,8 @@ as a “**realm**”.
 * Change your email address (not implemented)
 * [Change your avatar](/help/edit-profile#updating-your-avatar)
 * [Change your language](/help/change-your-language)
-* Change the date and time format
+* [Change the date and time format](/help/change-date-time)
+* [Move the users list to the left sidebar](/help/user-list-left)
 * Join a Zulip organization
 * Signing in
 * [Signing out](/help/signing-out)
