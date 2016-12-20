@@ -1,11 +1,12 @@
 # Zulip User Documentation (draft)
 
+<span class="warn">
 **Caveat**: This file is intended to collect all proposed user
 documentation into one place. Ultimately, a single file is probably
 not the best format for documentation when it is published to the
 world, but for purposes of discussion it seems easiest to put
 everything into a solitary and linear page.
-
+</span>
 ---
 
 Zulip is a chat app. Its most distinctive characteristic is that
@@ -22,30 +23,130 @@ cross-platform version and a version for Platform 9. See
 One Zulip account, associated with a particular organization, is known
 as a “**realm**”.
 
-# Table of contents:
+---
 
-**[The Zulip browser window](#the-zulip-browser-window)** |
-**[Posting and replying](#posting-and-replying)** |
-**[Other common questions](#other-common-questions)** |
-**[Terminology](#special-terms-used-with-zulip)**
+# Using Zulip
+
+## Account Basics
+* [Change your name](/help/change-your-name)
+* [Change your password](/help/change-your-password)
+* Change your email address (not implemented)
+* [Change your avatar](/help/edit-profile#updating-your-avatar)
+* [Change your language](/help/change-your-language)
+* Change the date and time format
+* Join a Zulip organization
+* Signing in
+* [Signing out](/help/signing-out)
+* Find your Zulip organization (not implemented)
+* Set up two-factor authentication (not implemented)
+* Deactivate your account
+
+## Messages
+### Sending
+* Send a stream message
+* [Send a private message](/help/send-private-message)
+* [Format your message using Markdown](/help/format-your-message-using-markdown)
+* [Preview your message before sending](/help/previewing-message)
+* [Add emoji](/help/add-emoji)
+* [Upload and share files](/help/upload-and-share-files)
+* Restore the last unsent message
+* Automatically link to an external issue tracker (improve wording)
+* Add a link preview
+* [Enable or disable pressing enter to send](/help/press-enter-send)
+* Verify that your message has been successfully sent
+* What to do if the server returns an error
+* Send a status message
+* [@-mention a team member](/help/at-mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
+* Make an announcement
+* Send a message in a different language
+* Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
+### Reading
+* View the Markdown source of a message
+* View the exact time a message was sent
+* View information about the message sender
+* [View an image at full size](/help/image-full-size)
+* Collapse a message
+* Star a message
+* Share a message or conversation (permanent link)
+### Editing
+* [Edit or delete a message](/help/editing-past-messages)
+* Change the topic of a message
+* Change the topic of a group of messages
+### Searching
+* [Search messages](/help/search-messages)
+* [Advanced search for messages](/help/advanced-search)
+
+## People
+* See whether someone is here or away
+* Invite a friend to Zulip
+* Send someone a private message
+* Send a group of people a private message
+
+## Streams & Topics
+* About streams and topics
+* [Browse and join streams](/help/browse-and-join-streams)
+* [Create a stream](/help/create-a-stream)
+* View your current stream subscriptions
+* View messages from a stream
+* The #announce stream
+* [Add or invite someone to a stream](/help/add-invite-stream)
+* Change the stream description
+* Rename a stream
+* Preview a stream (not implemented)
+* [Unsubscribe from a stream](/help/unsubscribe-stream)
+* Change who can join a stream
+* [Pin a stream](/help/pin-a-stream)
+* [Change the color of a stream](/help/change-stream-color)
+* Message a stream by email
+* Convert a group PM to a private stream (not implemented)
+* Remove someone from a stream
+* [Delete a stream (admin only)](/help/delete-a-stream)
+
+## Notifications
+
+## Integrations & Bots
+
+## Apps
+* Use Zulip on Mac OS
+* Use Zulip on Linux
+* Use Zulip on Windows
+* Use Zulip on Android
+* Use Zulip on iOS
+* Use Zulip in a terminal
+* Connect to Zulip over IRC/etc (not implemented?)
+
+---
+
+# Old table of contents:
+
+- **[The Zulip browser window](#the-zulip-browser-window)**
+- **[Editing your profile](/help/edit-profile)**
+- **[Posting and replying](#posting-and-replying)**
+- **[Searching](search-messages)**
+- **[Keyboard shortcuts](/help/keyboard-shortcuts)**
+- **[Message display settings](/help/message-display-settings)**
+- **[Streams and private messages](/help/streams-and-private-messages)**
+- **[Other common questions](#other-common-questions)**
+- **[Signing out](signing-out)**
+- **[Terminology](#special-terms-used-with-zulip)**
+- **[Zulip glossary](/help/glossary)**
 
 ---
 
 ## The Zulip browser window
 
- * There are three panes in your browser window.
+There are three panes in your browser window.
 
-   The middle one, the “**message table**”, is the stream of messages.
+ * The middle one, the “**message table**”, is the stream of messages.
 
-   To its left is the “**left sidebar**”, showing “filters” or “views”
+ * To its left is the “**left sidebar**”, showing “filters” or “views”
    for different kinds of messages, and below it a menu of streams you
-   are subscribed to:
+   are subscribed to.
 
-   ![Left sidebar](/static/images/help/left_sidebar.png)
-
-   On the right side of the browser window is the “**right sidebar**”,
+ * On the right side of the browser window is the “**right sidebar**”,
    showing users and some configuration settings:
 
+   ![Left sidebar](/static/images/help/left_sidebar.png)
    ![Right sidebar](/static/images/help/right_sidebar.png)
 
  * If your browser window is narrow, you’ll see only the message
@@ -53,16 +154,16 @@ as a “**realm**”.
    sidebar.
 
 **[Go back to “The Zulip browser window”](#the-zulip-browser-window)**
-  | **[Go back to “Table of contents”](#table-of-contents)**
+  | **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
 ## Posting and replying
 
 **[… To a stream](#posting-and-replying-to-a-stream)** |
-**[… To individual users](#posting-and-replying-to-individual-users)** |
+**[… To individual users](#posting-and-replying-to-individual-users-pm-private-message)** |
 **[Some facts about messages](#some-facts-about-messages)** |
-**[Editing past messages](#editing-past-messages)**
+**[Editing past messages](editing-past-messages)**
 
 At the bottom of your screen, choose whether to post to a stream or to
 individual users. ![New message](/static/images/help/new_message.png)
@@ -86,10 +187,11 @@ individual users. ![New message](/static/images/help/new_message.png)
  1. Enter your message.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Posting and replying to individual users (“PM”: private message)
-    ![Post to user](/static/images/help/post_to_user.png)
+
+![Post to user](/static/images/help/post_to_user.png)
 
  * Enter the name or email address of a user, or the first letters of
    one. There is no topic when you PM someone.
@@ -99,13 +201,6 @@ individual users. ![New message](/static/images/help/new_message.png)
    other recipients. For several days, the list of recipients will
    appear under “GROUP PMs” at the lower right corner of your screen.
 
- * You can ping ("**@mention**") other users with a particular
-   stream-message from within the body of the message itself. Type `@`
-   and the beginning of their email address or one of their names, and
-   the system will offer you tab-completions. The completed @mention
-   will look something like this: `@**name@email.address**`, and it
-   will appear as **@name** in your posted message.
-
  * If you’re bashful about using the pronoun “I”, you can get your own
    registered name to appear boldfaced in a message by entering
    `/me`. At present it has to be the first thing on a line, and
@@ -114,7 +209,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    use a massively freighted word like “I”.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Some facts about messages
 
@@ -129,7 +224,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
    (GFM), and the **A** icon under the message field brings up a
    cheat-sheet for what we support. You can also see that cheat-sheat
-   by going to the cog (![cog](/static/images/help/cog.png)) in the
+   by going to the cog (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the
    upper right corner of the right sidebar and choosing “Message
    formatting” from the drop-down menu.
 
@@ -152,42 +247,15 @@ individual users. ![New message](/static/images/help/new_message.png)
    between other paragraphs.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-### Editing past messages
-
- * If you want to edit a past message of your own after it has been
-   posted, make sure the mouse is over that message. You should see a
-   little pencil ![pencil](/static/images/help/pencil.png) at the end
-   of the message and a “down-chevron”
-   ![down chevron](/static/images/help/down_chevron.png) near the
-   upper right corner of the message. Clicking either one of these
-   will give you editing options.
-
- * If you completely delete the text of a message, you won’t be able
-   to save it — so try putting a dash or “(deleted)” in as the message
-   text. The fact that there was once a message there will still be
-   evident, and the time stamp of the original posting date and time
-   will still be shown.
-
- * After you have edited a message, `(EDITED)` appears over the
-   message and to the right of your name. It is visible to everyone.
-
- * Editing topic titles is discussed in a separate answer,
-   **[below](#editing-a-topic-title)**.
-
-**[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
 ## Other common questions
 
 **[Keyboard shortcuts](#keyboard-shortcuts)** |
-**[Searching](#searching)** |
-**[Search for past messages](#searching-for-past-messages)** |
-**[Find starred messages](#find-starred-messages)** |
-**[Show only particular messages](#show-only-particular-messages)** |
+**[Searching](search-messages)** |
+**[Filtering](search-messages#filtering-messages)** |
 **[Date of a message](#date-of-a-message)** |
 **[Change topic title or stream name](#changing-the-title-of-a-topic-or-stream)** |
 **[Edit topic titles](#editing-a-topic-title)** |
@@ -201,50 +269,12 @@ individual users. ![New message](/static/images/help/new_message.png)
 
 ### Keyboard shortcuts
 
-Go to the cog (![cog](/static/images/help/cog.png)) in the upper right
+Go to the cog (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right
 corner of the right sidebar and choose “Keyboard shortcuts” from the
 drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-### Searching
-
-Zulip searches incrementally (and case-independent) as you type, but
-will only match your typing at the beginning of a stream name. So
-typing _el_ won’t bring up “Help”, but _he_ will.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-### Searching for past messages
-
-It is possible to do limited searches on past messages. Some special
-features and limitations:
-
- * If there are many hits, only the most recent ones are returned.
-
- * Searching by date isn’t currently possible.
-
- * Search hits include morphological variants by default (if you
-   search for _walking_ you’ll also get _walk_, _walks_, _walked_, and
-   so on). Sometimes putting a search term in quotes seems to
-   eliminate the variants, but that behavior isn’t consistent right
-   now.
-
- * It’s possible to combine search terms within parentheses using
-   logical operators — searching for `(“arrays” and “queues”)` will
-   return only those messages containing both _arrays_ and _queues_.
-
- * Many common words are “stop words” — the search tool will ignore
-   them, because they appear in too many messages to be useful.
-
- * To see a list of search operators, go to the cog
-   (![cog](/static/images/help/cog.png)) in the upper right corner of
-   the right sidebar and choose “Search help” from the drop-down menu.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Find starred messages
 
@@ -254,7 +284,7 @@ the "Starred messages" view (in the filters at the top of the left
 sidebar).
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Show only particular messages
 
@@ -281,7 +311,7 @@ sidebar).
    user.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Date of a message
 
@@ -289,7 +319,7 @@ If you “mouse over” the time stamp of a message (upper right corner of
 the message), you’ll see a fuller date-time stamp and time zone.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Changing the title of a topic or stream
 
@@ -312,13 +342,13 @@ organization. But here are some thoughts:
    issue for administrators to watch for.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Editing a topic title
 
 As long you have contributed a message to some topic, you can edit the
 topic title. Go to one of your own messages in that topic and follow
-**[the instructions for editing it](#editing-past-messages)**. Notice
+**[the instructions for editing it](editing-past-messages)**. Notice
 that the topic title is now editable, too. You will be offered the
 chance to change the topic in one of three ways:
 
@@ -330,61 +360,57 @@ Your edits will be applied if you “save” the message, even if the body
 of the message is unchanged.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Message formatting
 
 Zulip uses a subset of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
 (GFM), To see the current subset, go to the cog
-(![cog](/static/images/help/cog.png)) in the upper right corner of the
+(<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right corner of the
 right sidebar and choose “Message formatting” from the drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### User status
 
 … is marked by little circles to the left of a user’s name:
 
  * A green circle
-   (![green circle](/static/images/help/green_circle.png)) means the
+   (<span class="indicator green solid"></span>) means the
    user is “active” — the browser has determined that the Zulip page
    has “focus” at the moment on the user’s computer.
 
- * A white, circle
-   (![white empty circle](/static/images/help/white_empty_circle.png))
-   means the user is not active and was not recently so.
+ * A white, circle (<span class="indicator grey"></span>) means the user is
+   not active and was not recently so.
 
  * A orange half-filled circle
-   (![orange half circle](/static/images/help/orange_half_circle.png))
+   (<span class="indicator orange"></span>)
    means the user is “not active” but was recently so.
 
  The same information is available by mousing over a given user’s name.
 
  If you have messaged multiple individual users, their names will
  appear at the bottom of the right sidebar. In that case, a pale green
- circle
- (![pale green circle](/static/images/help/pale_green_circle.png))
- means that some are recently but not currently active, while others
- are state unknown. A regular green circle
- (![green circle](/static/images/help/green_circle.png)) means they
+ circle (<span class="indicator green"></span>) means that some are recently but not currently active, while others are state unknown. A regular green circle
+ (<span class="indicator green solid"></span>) means they
  are all at least recently active.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Interacting with Zulip by email
 
 You can receive all activity from all streams, or just some streams,
 or just messages in which you were mentioned, by playing with the
-Settings — go to the cog (![cog](/static/images/help/cog.png)) in the
+Settings — go to the cog (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the
 upper right corner of the right sidebar and choose “Settings”
 there. You can also post to a stream by email — the Manage Streams
 pane shows you the email address to use for any particular stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Emoji
 
@@ -399,9 +425,9 @@ pane shows you the email address to use for any particular stream.
    * Zulip also lets you enter emoji by name, using the format
      `:name:`. So sending `:octopus: :film_projector:
      :revolving_hearts:` will produce
-     ![octopus](/static/third/gemoji/images/emoji/octopus.png)
-     ![film_projector](/static/third/gemoji/images/emoji/film_projector.png)
-     ![revolving_hearts](/static/third/gemoji/images/emoji/revolving_hearts.png). You
+     <img alt="octopus" class="inline" src="/static/third/gemoji/images/emoji/octopus.png"/>
+     <img alt="film_projector" class="inline" src="/static/third/gemoji/images/emoji/film_projector.png"/>
+     <img alt="revolving_hearts" class="inline" src="/static/third/gemoji/images/emoji/revolving_hearts.png"/>
      can find emoji that are accessible this way by typing a colon and
      two or more letters of the alphabet — a pop-up menu will appear
      showing the first five emoji-names containing the letters you
@@ -414,12 +440,12 @@ pane shows you the email address to use for any particular stream.
    messages?**. Sorry, this isn't yet supported.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Customization
 
  * **Zulip**. For customizing Zulip itself, there is a cog
-   (![cog](/static/images/help/cog.png)) in the upper right corner of
+   (<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right corner of
    the right sidebar, and it brings up a menu of options.
 
  * **Streams**. For customizing your stream subscriptions and
@@ -456,7 +482,7 @@ pane shows you the email address to use for any particular stream.
    experiment with them.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Muting a stream vs. unsubscribing from it
 
@@ -473,7 +499,7 @@ unmuted streams, saving space.
 You can't do any of that with a unsubscribed stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -523,6 +549,4 @@ You can't do any of that with a unsubscribed stream.
    "filter".
 
 **[Go back to “Terminology”](#special-terms-used-with-zulip)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
-
-[end]
+  **[Go back to “Table of contents”](#using-zulip)**
