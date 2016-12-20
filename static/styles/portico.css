@@ -1415,3 +1415,12 @@ label.label-title {
 .float-right {
     float: right;
 }
+
+#find_my_team .form-control {
+    height: 30px;
+}
+
+#find_my_team .btn {
+    height: 40px;
+    border-radius: 5px;
+}

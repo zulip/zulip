@@ -154,6 +154,7 @@ class TemplateTestCase(ZulipTestCase):
                 full_name=get_form_value('John Doe'),
                 terms=get_form_value(True),
                 email=get_form_value(email),
+                emails=get_form_value(email),
             ),
             current_url=lambda: 'www.zulip.com',
             hubot_lozenges_dict={},
