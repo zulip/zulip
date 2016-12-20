@@ -34,6 +34,9 @@ class RealmEmojiTest(ZulipTestCase):
         content = ujson.loads(result.content)
         self.assert_json_success(result)
         self.assertEqual(len(content["emoji"]), 1)
+        self.assertIn('author', content["emoji"]['my_emoji'])
+        self.assertEqual(
+            content["emoji"]['my_emoji']['author']['email'], email)
 
         realm_emoji = RealmEmoji.objects.get(realm=get_realm_by_string_id('zulip'))
         self.assertEqual(
