@@ -91,7 +91,7 @@ as a “**realm**”.
 * The #announce stream
 * [Add or invite someone to a stream](/help/add-invite-stream)
 * Change the stream description
-* Rename a stream
+* [Rename a stream](/help/rename-stream)
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-stream)
 * Change who can join a stream
