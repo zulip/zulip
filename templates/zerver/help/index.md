@@ -98,7 +98,7 @@ as a “**realm**”.
 * [Change the color of a stream](/help/change-stream-color)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
-* Remove someone from a stream
+* [Remove someone from a stream (admin only)](/help/remove-from-stream)
 * [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
