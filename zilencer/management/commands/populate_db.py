@@ -17,7 +17,6 @@ from zerver.lib.bulk_create import bulk_create_realms, \
     bulk_create_clients
 from zerver.models import DefaultStream, get_stream, get_realm_by_string_id
 from zilencer.models import Deployment
-import datetime
 
 import random
 import os
@@ -183,7 +182,7 @@ class Command(BaseCommand):
             # Populate users with some bar data
             for user in user_profiles:
                 status = 1 # type: int
-                date = datetime.datetime.now() # type: datetime.datetime
+                date = now()
                 client = get_client("website")
                 for i in range(3):
                     client = get_client("API")
