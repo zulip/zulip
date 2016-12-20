@@ -100,7 +100,7 @@ as a “**realm**”.
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
 * Remove someone from a stream
-* Delete a stream (admin only)
+* [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
 
