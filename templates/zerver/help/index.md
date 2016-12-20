@@ -77,7 +77,7 @@ as a “**realm**”.
 
 ## People
 * See whether someone is here or away
-* Invite a friend to Zulip
+* [Invite a friend to Zulip](/help/invite-friend)
 * Send someone a private message
 * Send a group of people a private message
 
