@@ -7,6 +7,7 @@
     <div class="alert" id="admin-realm-invite-required-status"></div>
     <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
     <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
+    <div class="alert" id="admin-realm-add-emoji-by-admins-only-status"></div>
     <div class="alert" id="admin-realm-message-editing-status"></div>
     <div class="alert" id="admin-realm-default-language-status"></div>
     <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
@@ -52,6 +53,17 @@
         id="id_realm_create_stream_by_admins_only_label"
         title="{{t 'If checked, only administrators may create new streams.'}}">
         {{t "Only admins may create streams" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_add_emoji_by_admins_only"
+             name="realm_add_emoji_by_admins_only"
+        {{#if realm_add_emoji_by_admins_only}}checked="checked"{{/if}} />
+
+      <label for="id_realm_add_emoji_by_admins_only" class="inline-block"
+        id="id_realm_add_emoji_by_admins_only_label"
+        title="{{t 'If checked, only administrators may add new emoji.'}}">
+        {{t "Only admins may add emoji" }}
       </label>
     </div>
     <div class="input-group">
