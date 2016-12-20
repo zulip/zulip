@@ -34,44 +34,37 @@ It presumes that you already have a fully implemented `<my-bot>.py` bot and now 
 
 1. Copy your bot `<my-bot>.py` to `~/zulip/contrib_bots/lib/`.
 
- * This is the place where all Zulip bots are stored.
+    * This is the place where all Zulip bots are stored.
 
- * You can also test out bots that already exist in this directory.
+    * You can also test out bots that already exist in this directory.
 
 2. Run your Zulip server. Bots can only be deployed on running systems.
 
 3. Register a new bot on your Zulip server's web interface.
 
- * Navigate to *Settings* -> *Your Bots* -> *Add a New Bot*, fill out the form and click on *Create Bot*.
-
- * A new bot should appear in the *Your Bots* panel.
+    * Navigate to *Settings* -> *Your Bots* -> *Add a New Bot*, fill out the form and click on *Create Bot*.
+    * A new bot should appear in the *Your Bots* panel.
 
 4. Add the bot's configuration file on your Zulip server.
 
- * In the *Your Bots* panel, click on the green icon to download its configuration file *.zuliprc*
- (the structure of this file is explained [here](#configuration-file).
-
- * Copy the file to a destination of your choice on your Zulip server, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
+    * In the *Your Bots* panel, click on the green icon to download its configuration file *.zuliprc* (the structure of this file is explained [here](#configuration-file).
+    * Copy the file to a destination of your choice on your Zulip server, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
 
 5. Subscribe the bot to the streams that the bot needs to read messages from or write messages to.
- * To subscribe your bot to streams, navigate to *Manage Streams*. Select a stream and
- add your bot by its email address (the address you assigned in step 3).
 
- * Now, the bot will do its job on the streams you subscribed it to.
+    * To subscribe your bot to streams, navigate to *Manage Streams*. Select a stream and add your bot by its email address (the address you assigned in step 3).
+    * Now, the bot will do its job on the streams you subscribed it to.
 
 6. Run the bot.
- * On your Zulip server (and outside the Vagrant environment), navigate to `~/zulip/contrib_bots/`
 
- * Run `python run.py ~/zulip/contrib_bots/<my-bot>.py --config-file ~/.zuliprc`. The `~/` before `.zuliprc`
- should point to the directory containing the file (in this case, it is the home directory).
-
- * Check the output of the command. It should start with the text the `usage` function returns,
- followed by logging output similar to this:
- ```
- INFO:root:starting message handling...
- INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
- ```
-* Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
+    * On your Zulip server (and outside the Vagrant environment), navigate to `~/zulip/contrib_bots/`
+    * Run `python run.py ~/zulip/contrib_bots/<my-bot>.py --config-file ~/.zuliprc`. The `~/` before `.zuliprc` should point to the directory containing the file (in this case, it is the home directory).
+    * Check the output of the command. It should start with the text the `usage` function returns, followed by logging output similar to this:
+    ```
+    INFO:root:starting message handling...
+    INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
+    ```
+    * Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
 
 ### Test the `followup.py` bot
 1. Do the previous steps for the `followup.py` bot.
@@ -104,9 +97,9 @@ handler_class = MyBotHandler
 * The class name (in this case *MyBotHandler*) can be defined by you and should match the name of your bot. To register your bot's class, adjust the last line `handler_class = MyBotHandler` to match your class name.
 
 * Every bot needs to implement the functions
- * `usage(self)`
- * `triage_message(self, message)`
- * `handle_message(self, message, client)`
+    * `usage(self)`
+    * `triage_message(self, message)`
+    * `handle_message(self, message, client)`
 
 * These functions are documented in the [next section](#bot-api).
 
@@ -145,14 +138,14 @@ is called when a message was sent.
 * self - the instance the method is called on
 
 * message - a dictionary containing information about the message, e.g.
- * content - the content of the message
- * content_type - the type of the content, e.g. *'text/x-markdown'* for normal messages
- * display_recipient - the name of the stream the message is sent to (string)
- * is_mentioned - is the bot pinged with an '@' in the message? (boolean)
- * sender_email - email of the sender (string)
- * sender_full_name - full name of the sender (string)
- * subject - topic of the message (string)
- * timestamp - when was the message sent (integer)
+    * content - the content of the message
+    * content_type - the type of the content, e.g. *'text/x-markdown'* for normal messages
+    * display_recipient - the name of the stream the message is sent to (string)
+    * is_mentioned - is the bot pinged with an '@' in the message? (boolean)
+    * sender_email - email of the sender (string)
+    * sender_full_name - full name of the sender (string)
+    * subject - topic of the message (string)
+    * timestamp - when was the message sent (integer)
 
 #### Return values
  * True if the bot should react to this message
@@ -180,11 +173,11 @@ is called when `triage_message` returns true, handles user message.
 * message - a dictionary describing a Zulip message
 
 * client - used to interact with the server, e.g. to send a message
- * use client.send_message(message) to send a message
+    * use client.send_message(message) to send a message
 
 * state_handler - used to save states/information of the bot **beta**
- * use `state_handler.set_state(state)` to set a state (any object)
- * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
+    * use `state_handler.set_state(state)` to set a state (any object)
+    * use `state_handler.get_state()` to retrieve the state set; returns a `NoneType` object if no state is set
 
 #### Return values
 None.
@@ -223,10 +216,10 @@ None.
 
 ## Common problems
 * I modified my bot's code, yet the changes don't seem to have an effect.
- * Ensure that you restarted the `run.py` script.
+    * Ensure that you restarted the `run.py` script.
 
 * My bot won't start
- * Ensure that your API config file is correct (download the config file from the server).
+    * Ensure that your API config file is correct (download the config file from the server).
 
 * My bot works only on some streams.
- * Subscribe your bot to other streams, as described [here](#how-to-deploy-a-bot).
+    * Subscribe your bot to other streams, as described [here](#how-to-deploy-a-bot).
