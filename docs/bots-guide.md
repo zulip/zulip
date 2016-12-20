@@ -25,7 +25,7 @@ On this page you'll find:
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
-that help with writing bots, please visit the [Zulip chat](chat.zulip.org), open an issue, or submit a pull request
+that help with writing bots, please visit the [Zulip chat](https://chat.zulip.org), open an issue, or submit a pull request
 to share your ideas!
 
 ## How to deploy a bot
@@ -177,7 +177,7 @@ is called when `triage_message` returns true, handles user message.
 #### Arguments
 * self - the instance the method is called on.
 
-* message - a dictionary describing a Zulip message (click [here](#triage_message) to see more about the message fields)
+* message - a dictionary describing a Zulip message
 
 * client - used to interact with the server, e.g. to send a message
  * use client.send_message(message) to send a message
