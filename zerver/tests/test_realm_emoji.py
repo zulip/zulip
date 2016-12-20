@@ -21,11 +21,14 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_upload(self):
         # type: () -> None
-        self.login("iago@zulip.com")
+        email = "iago@zulip.com"
+        self.login(email)
         data = {"name": "my_emoji", "url": "https://example.com/my_emoji"}
         result = self.client_put("/json/realm/emoji", info=data)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
+        emoji = RealmEmoji.objects.get(name=data['name'])
+        self.assertEqual(emoji.author.email, email)
 
         result = self.client_get("/json/realm/emoji")
         content = ujson.loads(result.content)
