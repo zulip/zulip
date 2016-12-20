@@ -35,7 +35,7 @@ You can always delete your message by clicking the **x** (![x](/static/images/he
 
 ![New private message](/static/images/help/private-box.png)
 
-See **["Send a private message"](/help/send-private-message.md)** to learn more about sending a private message.
+See **["Send a private message"](/help/send-private-message)** to learn more about sending a private message.
 
 ## Other features
 While sending either a stream or private message, several features located below the messaging bn the bottom-left corner can aid you in composing your message.
