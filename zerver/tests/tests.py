@@ -1876,6 +1876,7 @@ class HomeTest(ZulipTestCase):
             "presence_disabled",
             "product_name",
             "prompt_for_invites",
+            "realm_add_emoji_by_admins_only",
             "realm_allow_message_editing",
             "realm_authentication_methods",
             "realm_create_stream_by_admins_only",

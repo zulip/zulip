@@ -531,6 +531,18 @@ def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_onl
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_add_emoji_by_admins_only(realm, add_emoji_by_admins_only):
+    # type: (Realm, bool) -> None
+    realm.add_emoji_by_admins_only = add_emoji_by_admins_only
+    realm.save(update_fields=['add_emoji_by_admins_only'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='add_emoji_by_admins_only',
+        value=add_emoji_by_admins_only,
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds):
     # type: (Realm, bool, int) -> None
     realm.allow_message_editing = allow_message_editing
@@ -3055,6 +3067,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
+        state['realm_add_emoji_by_admins_only'] = user_profile.realm.add_emoji_by_admins_only
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
         state['realm_default_language'] = user_profile.realm.default_language
