@@ -87,7 +87,8 @@
         "current_msg_list": true,
         "home_msg_list": false,
         "pm_list": false,
-        "unread_ui": false
+        "unread_ui": false,
+        "Plotly": false
     },
     "rules": {
         "no-restricted-syntax": 1,
