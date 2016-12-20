@@ -18,7 +18,7 @@ def upload_emoji(request, user_profile):
     emoji_name = request.POST.get('name', None)
     emoji_url = request.POST.get('url', None)
     try:
-        check_add_realm_emoji(user_profile.realm, emoji_name, emoji_url)
+        check_add_realm_emoji(user_profile.realm, emoji_name, emoji_url, author=user_profile)
     except ValidationError as e:
         return json_error(e.messages[0])
     return json_success()

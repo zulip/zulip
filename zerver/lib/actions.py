@@ -3556,9 +3556,9 @@ def notify_realm_emoji(realm):
     user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
     send_event(event, user_ids)
 
-def check_add_realm_emoji(realm, name, img_url):
-    # type: (Realm, Text, Text) -> None
-    emoji = RealmEmoji(realm=realm, name=name, img_url=img_url)
+def check_add_realm_emoji(realm, name, img_url, author=None):
+    # type: (Realm, Text, Text, Optional[UserProfile]) -> None
+    emoji = RealmEmoji(realm=realm, name=name, img_url=img_url, author=author)
     emoji.full_clean()
     emoji.save()
     notify_realm_emoji(realm)
