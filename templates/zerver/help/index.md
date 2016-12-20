@@ -65,7 +65,7 @@ as a “**realm**”.
 * [View information about a message](/help/message-info)
 * [View the exact time a message was sent](/help/message-exact-time)
 * [View an image at full size](/help/image-full-size)
-* Collapse a message
+* [Collapse a message](/help/collapse-a-message)
 * Star a message
 * Share a message or conversation (permanent link)
 ### Editing
