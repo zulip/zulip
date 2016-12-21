@@ -761,7 +761,8 @@ function _setup_page() {
         });
     });
 
-    $("#ui-settings").on("click", "input[name='change_settings']", function () {
+    $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
+        e.preventDefault();
         var labs_updates = {};
         _.each(["autoscroll_forever", "default_desktop_notifications"],
             function (setting) {
@@ -772,7 +773,7 @@ function _setup_page() {
             url: '/json/ui_settings/change',
             data: labs_updates,
             success: function (resp, statusText, xhr) {
-                var message = i18n.t("Updated __product_name__ Labs settings!", page_params);
+                var message = i18n.t("Updated __product_name__ Labs settings!  You will need to reload for these changes to take effect.", page_params);
                 var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
