@@ -432,7 +432,7 @@ function _setup_page() {
         }
 
         channel.patch({
-            url: '/json/time_setting',
+            url: '/json/settings/display',
             data: data,
             success: function () {
                 ui.report_success(i18n.t("Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", context),

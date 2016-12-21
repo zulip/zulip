@@ -1530,6 +1530,8 @@ class ChangeSettingsTest(ZulipTestCase):
         # type: (Dict[str, Any]) -> None
         self.assertIn("full_name", result)
 
+    # DEPRECATED, to be deleted after all uses of check_for_toggle_param
+    # are converted into check_for_toggle_param_patch.
     def check_for_toggle_param(self, pattern, param):
         # type: (str, str) -> None
         self.login("hamlet@zulip.com")
@@ -1547,6 +1549,26 @@ class ChangeSettingsTest(ZulipTestCase):
         # refetch user_profile object to correctly handle caching
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.assertEqual(getattr(user_profile, param), False)
+
+    # TODO: requires method consolidation, right now, there's no alternative
+    # for check_for_toggle_param for PATCH.
+    def check_for_toggle_param_patch(self, pattern, url):
+        # type: (str, str) -> None
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        json_result = self.client_patch(pattern,
+                                        {url: ujson.dumps(True)})
+        self.assert_json_success(json_result)
+        # refetch user_profile object to correctly handle caching
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.assertEqual(getattr(user_profile, url), True)
+
+        json_result = self.client_patch(pattern,
+                                        {url: ujson.dumps(False)})
+        self.assert_json_success(json_result)
+        # refetch user_profile object to correctly handle caching
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.assertEqual(getattr(user_profile, url), False)
 
     def test_successful_change_settings(self):
         # type: () -> None
@@ -1620,7 +1642,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_time_setting(self):
         # type: () -> None
-        self.check_for_toggle_param("/json/time_setting", "twenty_four_hour_time")
+        self.check_for_toggle_param_patch("/json/settings/display", "twenty_four_hour_time")
 
     def test_enter_sends_setting(self):
         # type: () -> None

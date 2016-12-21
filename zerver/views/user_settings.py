@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Optional
+from typing import Optional, Any
 from six import text_type
 
 from django.utils.translation import ugettext as _
@@ -97,19 +97,6 @@ def json_change_settings(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
-    result = {}
-    if twenty_four_hour_time is not None and \
-            user_profile.twenty_four_hour_time != twenty_four_hour_time:
-        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
-
-    result['twenty_four_hour_time'] = twenty_four_hour_time
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
 def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
     result = {}
@@ -122,21 +109,27 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
 
     return json_success(result)
 
-# TODO: Merge json_left_side_userlist and json_time_setting endpoints
+# TODO: Merge json_left_side_userlist endpoint
 # into this one; it should be straightforward
 @has_request_variables
 def update_display_settings_backend(request, user_profile,
+                                    twenty_four_hour_time=REQ(validator=check_bool, default=None),
                                     default_language=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
 
-    result = {}
+    result = {} # type: Dict[str, Any]
     if (default_language is not None and
             user_profile.default_language != default_language):
         do_change_default_language(user_profile, default_language)
         result['default_language'] = default_language
+
+    elif (twenty_four_hour_time is not None and
+            user_profile.twenty_four_hour_time != twenty_four_hour_time):
+        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
+        result['twenty_four_hour_time'] = twenty_four_hour_time
 
     return json_success(result)
 
