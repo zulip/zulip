@@ -828,7 +828,7 @@ function _setup_page() {
             emoji[obj.name] = obj.value;
         });
 
-        channel.put({
+        channel.post({
             url: "/json/realm/emoji",
             data: $(this).serialize(),
             success: function () {
