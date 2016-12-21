@@ -507,6 +507,7 @@ function _setup_page() {
         create_stream_by_admins_only_status.hide();
         message_editing_status.hide();
         default_language_status.hide();
+        waiting_period_threshold_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
