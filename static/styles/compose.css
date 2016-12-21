@@ -195,11 +195,10 @@ table.compose_table {
 .compose-all-everyone-controls,
 .compose_invite_user_controls {
     float: right;
-}
-
-.compose_invite_link {
-    height: 20px;
-    margin-bottom: 3px;
+    -webkit-transform: translateY(-13%);
+    -ms-transform: translateY(-13%);
+    -o-transform: translateY(-13%);
+    transform: translateY(-13%);
 }
 
 .compose_invite_user_error {
