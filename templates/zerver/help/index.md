@@ -64,6 +64,7 @@ as a “**realm**”.
 ### Reading
 * View the Markdown source of a message
 * [View information about a message](/help/message-info)
+* [View the exact time a message was sent](/help/message-exact-time)
 * [View an image at full size](/help/image-full-size)
 * Collapse a message
 * [Star a message](/help/starring-messages)
