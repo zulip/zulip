@@ -1,10 +1,11 @@
 # **Chat button for zulip**
-* This button can be used by users to get redirected to [Zulip Chat Portal for Developers](https://chat.zulip.org).
-* This is found in the zulip's page in [GitHub](https://github.com/zulip/zulip) as it is inside of README file.
-* To add `chat with zulip button` embed the following code:
+* This button redirects user to zulip chat [Zulip Chat Portal for Developers](https://chat.zulip.org).
+* This is displayed in Zulip's [GitHub](https://github.com/zulip/zulip) README.md page.
+* To embed this badge, simply copy and paste the following markdown:
 
 ~~~
-[![Untitled.png](https://chat.zulip.org/static/images/help/chat-with-zulip-button.png)](https://chat.zulip.org)
+[![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 ~~~
 
-* You can find the button icon in the `zulip/static/images/help` directory named as chat-with-zulip-button.
+* This badge is dynamically generated, visit shields.io for detail information about customizing it.
+* A static version is available in `/static/images/help/chat_on_zulip.[png|svg]`.
