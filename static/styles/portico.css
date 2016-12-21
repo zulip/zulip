@@ -1080,12 +1080,36 @@ a.bottom-signup-button {
     box-shadow: none;
 }
 
-.markdown .warn {
+.markdown .warn,
+.markdown .tip {
+    position: relative;
     display: block;
     background-color: #f5f7f9;
     border: 1px solid #eee;
     border-radius: 4px;
     padding: 10px;
+    margin-bottom: 10px;
+}
+
+.markdown .tip {
+    background-color: #fbf7ea;
+    border: 1px solid #e0ddd0;
+}
+
+.markdown .warn p,
+.markdown .tip p {
+    margin-bottom: 0;
+}
+
+.markdown .tip::before {
+    display: inline;
+    content: "\f0eb   Tip:  ";
+    font-family: FontAwesome, "Yantramanav";
+    font-weight: 600;
+}
+
+.markdown .tip p:first-of-type {
+    display: inline;
 }
 
 .markdown .indicator {
