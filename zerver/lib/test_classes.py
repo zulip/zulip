@@ -125,6 +125,21 @@ class ZulipTestCase(TestCase):
         return django_client.put(url, encoded, **kwargs)
 
     @instrument_url
+    def client_put_multipart(self, url, info={}, **kwargs):
+        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        """
+        Use this for put requests that have file uploads or
+        that need some sort of multi-part content.  In the future
+        Django's test client may become a bit more flexible,
+        so we can hopefully eliminate this.  (When you post
+        with the Django test client, it deals with MULTIPART_CONTENT
+        automatically, but not put.)
+        """
+        encoded = encode_multipart(BOUNDARY, info)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.put(url, encoded, content_type=MULTIPART_CONTENT, **kwargs)
+
+    @instrument_url
     def client_delete(self, url, info={}, **kwargs):
         # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
