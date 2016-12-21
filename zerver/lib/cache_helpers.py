@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from six import text_type, binary_type
-from typing import Any, Dict, Callable, Tuple
+from six import binary_type
+from typing import Any, Dict, Callable, Tuple, Text
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import
@@ -31,33 +31,33 @@ def message_fetch_objects():
                                                    id__gt=max_id - MESSAGE_CACHE_SIZE)
 
 def message_cache_items(items_for_remote_cache, message):
-    # type: (Dict[text_type, Tuple[binary_type]], Message) -> None
+    # type: (Dict[Text, Tuple[binary_type]], Message) -> None
     items_for_remote_cache[to_dict_cache_key_id(message.id, True)] = (message.to_dict_uncached(True),)
 
 def user_cache_items(items_for_remote_cache, user_profile):
-    # type: (Dict[text_type, Tuple[UserProfile]], UserProfile) -> None
+    # type: (Dict[Text, Tuple[UserProfile]], UserProfile) -> None
     items_for_remote_cache[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
     items_for_remote_cache[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
 
 def stream_cache_items(items_for_remote_cache, stream):
-    # type: (Dict[text_type, Tuple[Stream]], Stream) -> None
+    # type: (Dict[Text, Tuple[Stream]], Stream) -> None
     items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
 
 def client_cache_items(items_for_remote_cache, client):
-    # type: (Dict[text_type, Tuple[Client]], Client) -> None
+    # type: (Dict[Text, Tuple[Client]], Client) -> None
     items_for_remote_cache[get_client_cache_key(client.name)] = (client,)
 
 def huddle_cache_items(items_for_remote_cache, huddle):
-    # type: (Dict[text_type, Tuple[Huddle]], Huddle) -> None
+    # type: (Dict[Text, Tuple[Huddle]], Huddle) -> None
     items_for_remote_cache[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
 def recipient_cache_items(items_for_remote_cache, recipient):
-    # type: (Dict[text_type, Tuple[Recipient]], Recipient) -> None
+    # type: (Dict[Text, Tuple[Recipient]], Recipient) -> None
     items_for_remote_cache[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
 
 session_engine = import_module(settings.SESSION_ENGINE)
 def session_cache_items(items_for_remote_cache, session):
-    # type: (Dict[text_type, text_type], Session) -> None
+    # type: (Dict[Text, Text], Session) -> None
     store = session_engine.SessionStore(session_key=session.session_key) # type: ignore # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
@@ -78,13 +78,13 @@ cache_fillers = {
     #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
-    } # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[text_type, Any], Any], None], int, int]]
+    } # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[Text, Any], Any], None], int, int]]
 
 def fill_remote_cache(cache):
     # type: (str) -> None
     remote_cache_time_start = get_remote_cache_time()
     remote_cache_requests_start = get_remote_cache_requests()
-    items_for_remote_cache = {} # type: Dict[text_type, Any]
+    items_for_remote_cache = {} # type: Dict[Text, Any]
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
     for obj in objects():

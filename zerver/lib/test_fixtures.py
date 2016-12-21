@@ -4,7 +4,7 @@ import re
 import hashlib
 from typing import Any, Optional
 from importlib import import_module
-from six import text_type
+from typing import Text
 from six.moves import cStringIO as StringIO
 
 from django.db import connections, DEFAULT_DB_ALIAS
@@ -17,7 +17,7 @@ FILENAME_SPLITTER = re.compile('[\W\-_]')
 TEST_DB_STATUS_DIR = 'var/test_db_status'
 
 def database_exists(database_name, **options):
-    # type: (text_type, **Any) -> bool
+    # type: (Text, **Any) -> bool
     db = options.get('database', DEFAULT_DB_ALIAS)
     try:
         connection = connections[db]
@@ -58,7 +58,7 @@ def get_migration_status(**options):
     return re.sub('\x1b\[(1|0)m', '', output)
 
 def are_migrations_the_same(migration_file, **options):
-    # type: (text_type, **Any) -> bool
+    # type: (Text, **Any) -> bool
     if not os.path.exists(migration_file):
         return False
 
@@ -99,7 +99,7 @@ def is_template_database_current(
         migration_status='var/migration-status',
         settings='zproject.test_settings',
         check_files=None):
-    # type: (Optional[text_type], Optional[text_type], Optional[text_type], Optional[List[str]]) -> bool
+    # type: (Optional[Text], Optional[Text], Optional[Text], Optional[List[str]]) -> bool
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
         check_files = [

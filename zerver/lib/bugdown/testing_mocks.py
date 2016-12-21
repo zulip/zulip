@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from six import text_type
 from typing import Any, Dict, Optional, Text
 import ujson
 
