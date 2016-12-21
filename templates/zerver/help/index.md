@@ -31,9 +31,10 @@ as a “**realm**”.
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
 * Change your email address (not implemented)
-* Change your avatar
+* [Change your avatar](/help/edit-profile#updating-your-avatar)
 * [Change your language](/help/change-your-language)
-* Change the date and time format
+* [Change the date and time format](/help/change-date-time)
+* [Move the users list to the left sidebar](/help/user-list-left)
 * Join a Zulip organization
 * Signing in
 * [Signing out](/help/signing-out)
@@ -43,13 +44,13 @@ as a “**realm**”.
 
 ## Messages
 ### Sending
-* Send a stream message
-* Send a private message
+* [Send a stream message](/help/send-stream-message)
+* [Send a private message](/help/send-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
-* Preview your message before sending
+* [Preview your message before sending](/help/previewing-message)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
-* Restore the last unsent message
+* [Restore the last unsent message](/help/restore-unsent-message)
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
 * [Enable or disable pressing enter to send](/help/press-enter-send)
@@ -62,16 +63,15 @@ as a “**realm**”.
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
 * View the Markdown source of a message
-* View the exact time a message was sent
-* View information about the message sender
-* View an image at full size
+* [View information about a message](/help/message-info)
+* [View the exact time a message was sent](/help/message-exact-time)
+* [View an image at full size](/help/image-full-size)
 * Collapse a message
 * [Star a message](/help/starring-messages)
 * Share a message or conversation (permanent link)
 ### Editing
 * [Edit or delete a message](/help/editing-past-messages)
-* Change the topic of a message
-* Change the topic of a group of messages
+* [Change the topic of a message](/help/change-topic)
 ### Searching
 * [Search messages](/help/search-messages)
 * [Advanced search for messages](/help/advanced-search)
@@ -86,16 +86,16 @@ as a “**realm**”.
 * About streams and topics
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
-* View your current stream subscriptions
+* [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
 * View messages from a stream
 * The #announce stream
-* Add or invite someone to a stream
+* [Add or invite someone to a stream](/help/add-invite-stream)
 * Change the stream description
-* Rename a stream
+* [Rename a stream](/help/rename-stream)
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-stream)
 * Change who can join a stream
-* Pin a stream
+* [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-stream-color)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
@@ -114,6 +114,10 @@ as a “**realm**”.
 * Use Zulip on iOS
 * Use Zulip in a terminal
 * Connect to Zulip over IRC/etc (not implemented?)
+
+# Include Zulip
+
+* [Chat with zulip button](/help/chat-button-for-zulip)
 
 ---
 
@@ -154,7 +158,7 @@ There are three panes in your browser window.
    sidebar.
 
 **[Go back to “The Zulip browser window”](#the-zulip-browser-window)**
-  | **[Go back to “Table of contents”](#table-of-contents)**
+  | **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -187,7 +191,7 @@ individual users. ![New message](/static/images/help/new_message.png)
  1. Enter your message.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Posting and replying to individual users (“PM”: private message)
 
@@ -209,7 +213,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    use a massively freighted word like “I”.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Some facts about messages
 
@@ -247,7 +251,7 @@ individual users. ![New message](/static/images/help/new_message.png)
    between other paragraphs.
 
 **[Go back to “Posting and replying”](#posting-and-replying)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -274,7 +278,7 @@ corner of the right sidebar and choose “Keyboard shortcuts” from the
 drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Find starred messages
 
@@ -284,7 +288,7 @@ the "Starred messages" view (in the filters at the top of the left
 sidebar).
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Show only particular messages
 
@@ -311,7 +315,7 @@ sidebar).
    user.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Date of a message
 
@@ -319,7 +323,7 @@ If you “mouse over” the time stamp of a message (upper right corner of
 the message), you’ll see a fuller date-time stamp and time zone.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Changing the title of a topic or stream
 
@@ -342,7 +346,7 @@ organization. But here are some thoughts:
    issue for administrators to watch for.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Editing a topic title
 
@@ -360,7 +364,7 @@ Your edits will be applied if you “save” the message, even if the body
 of the message is unchanged.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Message formatting
 
@@ -371,7 +375,7 @@ Zulip uses a subset of
 right sidebar and choose “Message formatting” from the drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### User status
 
@@ -398,7 +402,7 @@ right sidebar and choose “Message formatting” from the drop-down menu.
  are all at least recently active.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Interacting with Zulip by email
 
@@ -410,7 +414,7 @@ there. You can also post to a stream by email — the Manage Streams
 pane shows you the email address to use for any particular stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Emoji
 
@@ -440,7 +444,7 @@ pane shows you the email address to use for any particular stream.
    messages?**. Sorry, this isn't yet supported.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Customization
 
@@ -482,7 +486,7 @@ pane shows you the email address to use for any particular stream.
    experiment with them.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ### Muting a stream vs. unsubscribing from it
 
@@ -499,7 +503,7 @@ unmuted streams, saving space.
 You can't do any of that with a unsubscribed stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -549,4 +553,4 @@ You can't do any of that with a unsubscribed stream.
    "filter".
 
 **[Go back to “Terminology”](#special-terms-used-with-zulip)** |
-  **[Go back to “Table of contents”](#table-of-contents)**
+  **[Go back to “Table of contents”](#using-zulip)**

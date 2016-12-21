@@ -80,7 +80,7 @@ class ZulipTestCase(TestCase):
     '''
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        # This method should be remove when we quit from python2
+        # This method should be removed when we migrate to version 3 of Python
         import six
         if six.PY2:
             self.assertRaisesRegex = self.assertRaisesRegexp
@@ -272,6 +272,12 @@ class ZulipTestCase(TestCase):
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
 
         return [subscription.user_profile for subscription in subscriptions]
+
+    def assert_url_serves_contents_of_file(self, url, result):
+        # type: (str, bytes) -> None
+        response = self.client_get(url)
+        data = b"".join(response.streaming_content)
+        self.assertEquals(result, data)
 
     def assert_json_success(self, result):
         # type: (HttpResponse) -> Dict[str, Any]

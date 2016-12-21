@@ -113,6 +113,7 @@ Contents:
 
    settings
    queuing
+   bots-guide
    custom-apps
    pointer
    markdown

@@ -82,7 +82,7 @@ Typing `@**all**` will alert all users in the stream, and a confirmation message
 
 ![Mention All](/static/images/help/all-confirm.png)
 
-For more information on mentions, visit [here](/help/mention-a-team-member) for more information.
+For more information on mentions, visit [here](/help/at-mention-a-team-member) for more information.
 
 ## Code
 

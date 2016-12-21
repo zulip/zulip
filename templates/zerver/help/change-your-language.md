@@ -24,3 +24,5 @@ Zulip is written primarily in English, but it includes feature support for a var
 ## Want to help out Zulip?
 
 You can help translate parts of Zulip by going to **[https://www.transifex.com/zulip/zulip/](https://www.transifex.com/zulip/zulip/)** and signing up for an account.
+
+**[Go to "Table of contents"](/help/#using-zulip)**

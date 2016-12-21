@@ -7,6 +7,7 @@ from unittest import skip
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -34,8 +35,6 @@ from datetime import timedelta
 from django.utils import timezone
 
 from moto import mock_s3
-
-TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
 
 from typing import Any, Callable, TypeVar, Text
 
@@ -75,9 +74,7 @@ class FileUploadTest(ZulipTestCase):
 
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
-        response = self.client_get(uri)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
     def test_file_too_big_failure(self):
         # type: () -> None
@@ -172,9 +169,7 @@ class FileUploadTest(ZulipTestCase):
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
-        response = self.client_get(uri)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(b"zulip!", data)
+        self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
@@ -334,10 +329,9 @@ class AvatarTest(ZulipTestCase):
         Attempting to upload two files should fail.
         """
         self.login("hamlet@zulip.com")
-        fp1 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
-        fp2 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
-
-        result = self.client_post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
+        with get_test_image_file('img.png') as fp1, \
+                get_test_image_file('img.png') as fp2:
+            result = self.client_post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     def test_no_file_upload_failure(self):
@@ -407,9 +401,9 @@ class AvatarTest(ZulipTestCase):
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
             self.login("hamlet@zulip.com")
-            fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
+            with get_test_image_file(fname) as fp:
+                result = self.client_post("/json/set_avatar", {'file': fp})
 
-            result = self.client_post("/json/set_avatar", {'file': fp})
             self.assert_json_success(result)
             json = ujson.loads(result.content)
             self.assertIn("avatar_url", json)
@@ -424,9 +418,7 @@ class AvatarTest(ZulipTestCase):
 
             # Verify that the medium-size avatar was created
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
-            medium_avatar_url = avatar_url(user_profile, medium=True)
-            medium_avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
-                                                   medium_avatar_url.split("/")[-1].split("?")[0])
+            medium_avatar_disk_path = avatar_disk_path(user_profile, medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
             # Confirm that ensure_medium_avatar_url works to recreate
@@ -444,9 +436,9 @@ class AvatarTest(ZulipTestCase):
         for fname in self.corrupt_files:
             # with self.subTest(fname=fname):
             self.login("hamlet@zulip.com")
-            fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
+            with get_test_image_file(fname) as fp:
+                result = self.client_post("/json/set_avatar", {'file': fp})
 
-            result = self.client_post("/json/set_avatar", {'file': fp})
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
 
     def tearDown(self):
