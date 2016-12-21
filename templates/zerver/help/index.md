@@ -62,7 +62,7 @@ as a “**realm**”.
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
 * View the Markdown source of a message
-* View the exact time a message was sent
+* [View the exact time a message was sent](/help/view-the-exact-time-message-sent)
 * View information about the message sender
 * [View an image at full size](/help/image-full-size)
 * Collapse a message
