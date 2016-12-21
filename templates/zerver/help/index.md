@@ -89,7 +89,7 @@ as a “**realm**”.
 * View messages from a stream
 * [The #announce stream](/help/announce-stream)
 * [Add or invite someone to a stream](/help/add-invite-stream)
-* Change the stream description
+* [Change the stream description](/help/change-stream-description)
 * [Rename a stream](/help/rename-stream)
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-stream)
