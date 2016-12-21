@@ -12,7 +12,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.test.info('Administration page');
-    casper.click('a[href^="#administration/organization-settings"]');
+    casper.click('a[href^="#administration"]');
 });
 
 casper.waitForSelector('#settings_overlay_container.show', function () {
@@ -146,24 +146,21 @@ casper.then(function () {
 
 casper.then(function () {
     // Test custom realm emoji
+    casper.click("li[data-section='emoji-settings']");
     casper.waitForSelector('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
             name: 'MouseFace',
             url: 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png'
-        }, true);
+        });
+        casper.click('form.admin-emoji-form input.button');
     });
 });
-
-/*
-// THIS TEST RUNS ODDLY WITH CASPER. It fails about half the time and exhibits
-// behavior that is not found in the real browser example.
 
 casper.then(function () {
     casper.waitUntilVisible('div#admin-emoji-status', function () {
         casper.test.assertSelectorHasText('div#admin-emoji-status', 'Custom emoji added!');
     });
 });
-*/
 
 casper.then(function () {
     casper.waitForSelector('.emoji_row', function () {
