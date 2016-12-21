@@ -2,8 +2,7 @@ from __future__ import absolute_import
 import re
 import logging
 import traceback
-from six import text_type
-from typing import Any, Optional
+from typing import Any, Optional, Text
 from typing.re import Match
 import requests
 from zerver.lib.cache import cache_with_key, get_cache_with_key
@@ -22,18 +21,18 @@ link_regex = re.compile(
 
 
 def is_link(url):
-    # type: (text_type) -> Match[text_type]
+    # type: (Text) -> Match[Text]
     return link_regex.match(str(url))
 
 
 def cache_key_func(url):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return url
 
 
 @cache_with_key(cache_key_func, cache_name=CACHE_NAME, with_statsd_key="urlpreview_data")
 def get_link_embed_data(url, maxwidth=640, maxheight=480):
-    # type: (text_type, Optional[int], Optional[int]) -> Any
+    # type: (Text, Optional[int], Optional[int]) -> Any
     if not is_link(url):
         return None
     # Fetch information from URL.
@@ -62,5 +61,5 @@ def get_link_embed_data(url, maxwidth=640, maxheight=480):
 
 @get_cache_with_key(cache_key_func, cache_name=CACHE_NAME)
 def link_embed_data_from_cache(url, maxwidth=640, maxheight=480):
-    # type: (text_type, Optional[int], Optional[int]) -> Any
+    # type: (Text, Optional[int], Optional[int]) -> Any
     return

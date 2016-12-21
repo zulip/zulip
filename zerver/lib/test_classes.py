@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
-                    Sized, Tuple, Union)
+                    Sized, Tuple, Union, Text)
 
 from django.core.urlresolvers import resolve
 from django.conf import settings
@@ -63,7 +63,7 @@ from zerver.lib.str_utils import NonBinaryStr
 from contextlib import contextmanager
 import six
 
-API_KEYS = {} # type: Dict[text_type, text_type]
+API_KEYS = {} # type: Dict[Text, Text]
 
 class ZulipTestCase(TestCase):
     '''
@@ -90,7 +90,7 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_patch(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         """
         We need to urlencode, since Django's function won't do it for us.
         """
@@ -100,7 +100,7 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_patch_multipart(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         """
         Use this for patch requests that have file uploads or
         that need some sort of multi-part content.  In the future
@@ -119,14 +119,14 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_put(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.put(url, encoded, **kwargs)
 
     @instrument_url
     def client_put_multipart(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         """
         Use this for put requests that have file uploads or
         that need some sort of multi-part content.  In the future
@@ -141,20 +141,20 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_delete(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         encoded = urllib.parse.urlencode(info)
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.delete(url, encoded, **kwargs)
 
     @instrument_url
     def client_post(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.post(url, info, **kwargs)
 
     @instrument_url
     def client_post_request(self, url, req):
-        # type: (text_type, Any) -> HttpResponse
+        # type: (Text, Any) -> HttpResponse
         """
         We simulate hitting an endpoint here, although we
         actually resolve the URL manually and hit the view
@@ -169,19 +169,19 @@ class ZulipTestCase(TestCase):
 
     @instrument_url
     def client_get(self, url, info={}, **kwargs):
-        # type: (text_type, Dict[str, Any], **Any) -> HttpResponse
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.get(url, info, **kwargs)
 
     def login_with_return(self, email, password=None):
-        # type: (text_type, Optional[text_type]) -> HttpResponse
+        # type: (Text, Optional[Text]) -> HttpResponse
         if password is None:
             password = initial_password(email)
         return self.client_post('/accounts/login/',
                                 {'username': email, 'password': password})
 
     def login(self, email, password=None, fails=False):
-        # type: (text_type, Optional[text_type], bool) -> HttpResponse
+        # type: (Text, Optional[Text], bool) -> HttpResponse
         if password is None:
             password = initial_password(email)
         if not fails:
@@ -190,7 +190,7 @@ class ZulipTestCase(TestCase):
             self.assertFalse(self.client.login(username=email, password=password))
 
     def register(self, username, password, domain="zulip.com"):
-        # type: (text_type, text_type, text_type) -> HttpResponse
+        # type: (Text, Text, Text) -> HttpResponse
         self.client_post('/accounts/home/',
                          {'email': username + "@" + domain})
         return self.submit_reg_form_for_user(username, password, domain=domain)
@@ -199,7 +199,7 @@ class ZulipTestCase(TestCase):
                                  realm_name="Zulip Test", realm_subdomain="zuliptest",
                                  realm_org_type=Realm.COMMUNITY,
                                  from_confirmation='', **kwargs):
-        # type: (text_type, text_type, text_type, Optional[text_type], Optional[text_type], int, Optional[text_type], **Any) -> HttpResponse
+        # type: (Text, Text, Text, Optional[Text], Optional[Text], int, Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -219,7 +219,7 @@ class ZulipTestCase(TestCase):
                                 **kwargs)
 
     def get_confirmation_url_from_outbox(self, email_address, path_pattern="(\S+)>"):
-        # type: (text_type, text_type) -> text_type
+        # type: (Text, Text) -> Text
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email_address in message.to:
@@ -229,20 +229,20 @@ class ZulipTestCase(TestCase):
             raise ValueError("Couldn't find a confirmation email.")
 
     def get_api_key(self, email):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         if email not in API_KEYS:
             API_KEYS[email] = get_user_profile_by_email(email).api_key
         return API_KEYS[email]
 
     def api_auth(self, email):
-        # type: (text_type) -> Dict[str, text_type]
+        # type: (Text) -> Dict[str, Text]
         credentials = u"%s:%s" % (email, self.get_api_key(email))
         return {
             'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
 
     def get_streams(self, email):
-        # type: (text_type) -> List[text_type]
+        # type: (Text) -> List[Text]
         """
         Helper function to get the stream names for a user
         """
@@ -255,7 +255,7 @@ class ZulipTestCase(TestCase):
 
     def send_message(self, sender_name, raw_recipients, message_type,
                      content=u"test content", subject=u"test", **kwargs):
-        # type: (text_type, Union[text_type, List[text_type]], int, text_type, text_type, **Any) -> int
+        # type: (Text, Union[Text, List[Text]], int, Text, Text, **Any) -> int
         sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
             message_type_name = "private"
@@ -281,7 +281,7 @@ class ZulipTestCase(TestCase):
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name, realm):
-        # type: (text_type, Realm) -> List[UserProfile]
+        # type: (Text, Realm) -> List[UserProfile]
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient, active=True)
@@ -316,7 +316,7 @@ class ZulipTestCase(TestCase):
         return json['msg']
 
     def assert_json_error(self, result, msg, status_code=400):
-        # type: (HttpResponse, text_type, int) -> None
+        # type: (HttpResponse, Text, int) -> None
         """
         Invalid POSTs return an error status code and JSON of the form
         {"result": "error", "msg": "reason"}.
@@ -336,31 +336,31 @@ class ZulipTestCase(TestCase):
                                "len(%s) == %s, > %s" % (queries, actual_count, count))
 
     def assert_json_error_contains(self, result, msg_substring, status_code=400):
-        # type: (HttpResponse, text_type, int) -> None
+        # type: (HttpResponse, Text, int) -> None
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
     def assert_equals_response(self, string, response):
-        # type: (text_type, HttpResponse) -> None
+        # type: (Text, HttpResponse) -> None
         self.assertEqual(string, response.content.decode('utf-8'))
 
     def assert_in_response(self, substring, response):
-        # type: (text_type, HttpResponse) -> None
+        # type: (Text, HttpResponse) -> None
         self.assertIn(substring, response.content.decode('utf-8'))
 
     def assert_in_success_response(self, substrings, response):
-        # type: (Iterable[text_type], HttpResponse) -> None
+        # type: (Iterable[Text], HttpResponse) -> None
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode('utf-8')
         for substring in substrings:
             self.assertIn(substring, decoded)
 
     def fixture_data(self, type, action, file_type='json'):
-        # type: (text_type, text_type, text_type) -> text_type
+        # type: (Text, Text, Text) -> Text
         return force_text(open(os.path.join(os.path.dirname(__file__),
                                             "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read())
 
     def make_stream(self, stream_name, realm=None, invite_only=False):
-        # type: (text_type, Optional[Realm], Optional[bool]) -> Stream
+        # type: (Text, Optional[Realm], Optional[bool]) -> Stream
         if realm is None:
             realm = self.DEFAULT_REALM
 
@@ -382,7 +382,7 @@ class ZulipTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
-        # type: (text_type, text_type, Optional[Realm]) -> None
+        # type: (Text, Text, Optional[Realm]) -> None
         if realm is None:
             realm = get_realm_by_email_domain(email)
         stream = get_stream(stream_name, realm)
@@ -392,14 +392,14 @@ class ZulipTestCase(TestCase):
         bulk_add_subscriptions([stream], [user_profile])
 
     def unsubscribe_from_stream(self, email, stream_name):
-        # type: (text_type, text_type) -> None
+        # type: (Text, Text) -> None
         user_profile = get_user_profile_by_email(email)
         stream = get_stream(stream_name, user_profile.realm)
         bulk_remove_subscriptions([user_profile], [stream])
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(self, email, streams, extra_post_data={}, invite_only=False):
-        # type: (text_type, Iterable[text_type], Dict[str, Any], bool) -> HttpResponse
+        # type: (Text, Iterable[Text], Dict[str, Any], bool) -> HttpResponse
         post_data = {'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
@@ -407,7 +407,7 @@ class ZulipTestCase(TestCase):
         return result
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
-        # type: (text_type, text_type, Union[text_type, Dict[str, Any]], Optional[text_type], **Any) -> Message
+        # type: (Text, Text, Union[Text, Dict[str, Any]], Optional[Text], **Any) -> Message
         if stream_name is not None:
             self.subscribe_to_stream(email, stream_name)
 
@@ -452,10 +452,10 @@ class WebhookTestCase(ZulipTestCase):
     If you create your url in uncommon way you can override build_webhook_url method
     In case that you need modify body or create it without using fixture you can also override get_body method
     """
-    STREAM_NAME = None # type: Optional[text_type]
+    STREAM_NAME = None # type: Optional[Text]
     TEST_USER_EMAIL = 'webhook-bot@zulip.com'
-    URL_TEMPLATE = None # type: Optional[text_type]
-    FIXTURE_DIR_NAME = None # type: Optional[text_type]
+    URL_TEMPLATE = None # type: Optional[Text]
+    FIXTURE_DIR_NAME = None # type: Optional[Text]
 
     def setUp(self):
         # type: () -> None
@@ -463,7 +463,7 @@ class WebhookTestCase(ZulipTestCase):
 
     def send_and_test_stream_message(self, fixture_name, expected_subject=None,
                                      expected_message=None, content_type="application/json", **kwargs):
-        # type: (text_type, Optional[text_type], Optional[text_type], Optional[text_type], **Any) -> Message
+        # type: (Text, Optional[Text], Optional[Text], Optional[Text], **Any) -> Message
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
@@ -476,7 +476,7 @@ class WebhookTestCase(ZulipTestCase):
 
     def send_and_test_private_message(self, fixture_name, expected_subject=None,
                                       expected_message=None, content_type="application/json", **kwargs):
-        # type: (text_type, text_type, text_type, str, **Any) -> Message
+        # type: (Text, Text, Text, str, **Any) -> Message
         payload = self.get_body(fixture_name)
         if content_type is not None:
             kwargs['content_type'] = content_type
@@ -488,22 +488,22 @@ class WebhookTestCase(ZulipTestCase):
         return msg
 
     def build_webhook_url(self):
-        # type: () -> text_type
+        # type: () -> Text
         api_key = self.get_api_key(self.TEST_USER_EMAIL)
         return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> Union[text_type, Dict[str, text_type]]
+        # type: (Text) -> Union[Text, Dict[str, Text]]
         """Can be implemented either as returning a dictionary containing the
         post parameters or as string containing the body of the request."""
         return ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
 
     def do_test_subject(self, msg, expected_subject):
-        # type: (Message, Optional[text_type]) -> None
+        # type: (Message, Optional[Text]) -> None
         if expected_subject is not None:
             self.assertEqual(msg.topic_name(), expected_subject)
 
     def do_test_message(self, msg, expected_message):
-        # type: (Message, Optional[text_type]) -> None
+        # type: (Message, Optional[Text]) -> None
         if expected_message is not None:
             self.assertEqual(msg.content, expected_message)

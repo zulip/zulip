@@ -1,6 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Iterable, Mapping, Optional, Set, Tuple
-from six import text_type
+from typing import Any, Iterable, Mapping, Optional, Set, Tuple, Text
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, Huddle, \
@@ -8,7 +7,7 @@ from zerver.models import Realm, Stream, UserProfile, Huddle, \
 from zerver.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):
-    # type: (Iterable[text_type]) -> None
+    # type: (Iterable[Text]) -> None
     existing_realms = set(r.domain for r in Realm.objects.select_related().all())
 
     realms_to_create = [] # type: List[Realm]
@@ -19,7 +18,7 @@ def bulk_create_realms(realm_list):
     Realm.objects.bulk_create(realms_to_create)
 
 def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
-    # type: (Realm, Set[Tuple[text_type, text_type, text_type, bool]], Optional[int], Optional[text_type]) -> None
+    # type: (Realm, Set[Tuple[Text, Text, Text, bool]], Optional[int], Optional[Text]) -> None
     """
     Creates and saves a UserProfile with the given email.
     Has some code based off of UserManage.create_user, but doesn't .save()
@@ -36,7 +35,7 @@ def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
         profiles_to_create.append(profile)
     UserProfile.objects.bulk_create(profiles_to_create)
 
-    profiles_by_email = {} # type: Dict[text_type, UserProfile]
+    profiles_by_email = {} # type: Dict[Text, UserProfile]
     profiles_by_id = {} # type: Dict[int, UserProfile]
     for profile in UserProfile.objects.select_related().all():
         profiles_by_email[profile.email] = profile
@@ -48,7 +47,7 @@ def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
                                               type=Recipient.PERSONAL))
     Recipient.objects.bulk_create(recipients_to_create)
 
-    recipients_by_email = {} # type: Dict[text_type, Recipient]
+    recipients_by_email = {} # type: Dict[Text, Recipient]
     for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
         recipients_by_email[profiles_by_id[recipient.type_id].email] = recipient
 
@@ -60,7 +59,7 @@ def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
     Subscription.objects.bulk_create(subscriptions_to_create)
 
 def bulk_create_streams(realm, stream_dict):
-    # type: (Realm, Dict[text_type, Dict[text_type, Any]]) -> None
+    # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
     existing_streams = frozenset([name.lower() for name in
                                   Stream.objects.filter(realm=realm)
                                   .values_list('name', flat=True)])
@@ -83,8 +82,8 @@ def bulk_create_streams(realm, stream_dict):
     Recipient.objects.bulk_create(recipients_to_create)
 
 def bulk_create_clients(client_list):
-    # type: (Iterable[text_type]) -> None
-    existing_clients = set(client.name for client in Client.objects.select_related().all()) # type: Set[text_type]
+    # type: (Iterable[Text]) -> None
+    existing_clients = set(client.name for client in Client.objects.select_related().all()) # type: Set[Text]
 
     clients_to_create = [] # type: List[Client]
     for name in client_list:
@@ -94,11 +93,11 @@ def bulk_create_clients(client_list):
     Client.objects.bulk_create(clients_to_create)
 
 def bulk_create_huddles(users, huddle_user_list):
-    # type: (Dict[text_type, UserProfile], Iterable[Iterable[text_type]]) -> None
-    huddles = {} # type: Dict[text_type, Huddle]
+    # type: (Dict[Text, UserProfile], Iterable[Iterable[Text]]) -> None
+    huddles = {} # type: Dict[Text, Huddle]
     huddles_by_id = {} # type: Dict[int, Huddle]
-    huddle_set = set() # type: Set[Tuple[text_type, Tuple[int, ...]]]
-    existing_huddles = set() # type: Set[text_type]
+    huddle_set = set() # type: Set[Tuple[Text, Tuple[int, ...]]]
+    existing_huddles = set() # type: Set[Text]
     for huddle in Huddle.objects.all():
         existing_huddles.add(huddle.huddle_hash)
     for huddle_users in huddle_user_list:
@@ -122,7 +121,7 @@ def bulk_create_huddles(users, huddle_user_list):
         recipients_to_create.append(Recipient(type_id=huddles[huddle_hash].id, type=Recipient.HUDDLE))
     Recipient.objects.bulk_create(recipients_to_create)
 
-    huddle_recipients = {} # type: Dict[text_type, Recipient]
+    huddle_recipients = {} # type: Dict[Text, Recipient]
     for recipient in Recipient.objects.filter(type=Recipient.HUDDLE):
         huddle_recipients[huddles_by_id[recipient.type_id].huddle_hash] = recipient
 

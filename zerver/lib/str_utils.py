@@ -34,7 +34,7 @@ import six
 from six import text_type, binary_type
 from typing import Any, Mapping, Union, TypeVar, Text
 
-NonBinaryStr = TypeVar('NonBinaryStr', str, text_type)
+NonBinaryStr = TypeVar('NonBinaryStr', str, Text)
 # This is used to represent text or native strings
 
 def force_text(s, encoding='utf-8'):

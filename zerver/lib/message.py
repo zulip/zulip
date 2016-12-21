@@ -7,6 +7,8 @@ import zlib
 from django.utils.translation import ugettext as _
 from six import binary_type, text_type
 
+from typing import Text
+
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.avatar_hash import gravatar_hash
 import zerver.lib.bugdown as bugdown
@@ -25,9 +27,9 @@ from zerver.models import (
     Reaction
 )
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Text
 
-RealmAlertWords = Dict[int, List[text_type]]
+RealmAlertWords = Dict[int, List[Text]]
 
 def extract_message_dict(message_bytes):
     # type: (binary_type) -> Dict[str, Any]
@@ -139,7 +141,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, text_type, text_type, text_type, datetime.datetime, text_type, Optional[int], int, text_type, text_type, text_type, text_type, text_type, bool, text_type, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
@@ -292,7 +294,7 @@ def access_message(user_profile, message_id):
     return (message, user_message)
 
 def render_markdown(message, content, domain=None, realm_alert_words=None, message_users=None):
-    # type: (Message, text_type, Optional[text_type], Optional[RealmAlertWords], Set[UserProfile]) -> text_type
+    # type: (Message, Text, Optional[Text], Optional[RealmAlertWords], Set[UserProfile]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
@@ -317,7 +319,7 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
         # delivered via zephyr_mirror
         domain = u"zephyr_mirror"
 
-    possible_words = set() # type: Set[text_type]
+    possible_words = set() # type: Set[Text]
     if realm_alert_words is not None:
         for user_id, words in realm_alert_words.items():
             if user_id in message_user_ids:

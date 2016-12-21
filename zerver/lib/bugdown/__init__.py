@@ -42,7 +42,7 @@ import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
 import six
 from six.moves import range, html_parser
-from six import text_type
+from typing import Text
 
 if six.PY3:
     import html
@@ -57,7 +57,7 @@ _T = TypeVar('_T')
 # which means that at runtime Union causes this to blow up.
 if False:
     # mypy requires the Optional to be inside Union
-    ElementStringNone = Union[Element, Optional[text_type]]
+    ElementStringNone = Union[Element, Optional[Text]]
 
 class BugdownRenderingException(Exception):
     pass
@@ -128,7 +128,7 @@ def add_a(root, url, link, height="", title=None, desc=None,
 
 
 def add_embed(root, link, extracted_data):
-    # type: (Element, text_type, Dict[text_type, Any]) -> None
+    # type: (Element, Text, Dict[Text, Any]) -> None
     container = markdown.util.etree.SubElement(root, "div")
     container.set("class", "message_embed")
 
