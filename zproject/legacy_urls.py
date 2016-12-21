@@ -42,7 +42,6 @@ legacy_urls = [
     url(r'^json/upload_file$',               zerver.views.upload.json_upload_file),
     url(r'^json/messages_in_narrow$',        zerver.views.messages.json_messages_in_narrow),
     url(r'^json/update_message$',            zerver.views.messages.json_update_message),
-    url(r'^json/fetch_raw_message$',         zerver.views.messages.json_fetch_raw_message),
     url(r'^json/set_muted_topics$',          zerver.views.json_set_muted_topics),
     url(r'^json/set_avatar$',                zerver.views.user_settings.json_set_avatar),
     url(r'^json/time_setting$',              zerver.views.user_settings.json_time_setting),
