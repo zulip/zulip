@@ -61,6 +61,8 @@ def rest_dispatch(request, **kwargs):
     if method_to_use == "SOCKET" and "zulip.emulated_method" in request.META:
         method_to_use = request.META["zulip.emulated_method"]
 
+    import logging
+    logging.error("%s %s %s" % (request.path, method_to_use, str(request.POST)))
     if method_to_use in supported_methods:
         entry = supported_methods[method_to_use]
         if isinstance(entry, tuple):
