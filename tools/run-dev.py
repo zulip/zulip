@@ -288,6 +288,8 @@ class CombineHandler(BaseWebsocketHandler):
     @web.asynchronous
     def prepare(self):
         # type: () -> None
+        if 'X-REAL-IP' not in self.request.headers:
+            self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super(CombineHandler, self).prepare()
         url = transform_url(
