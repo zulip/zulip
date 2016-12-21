@@ -329,7 +329,7 @@ function render(template_name, args) {
     var html = render('compose_all_everyone', args);
     global.write_handlebars_output("compose_all_everyone", html);
     var button = $(html).find("button:first");
-    assert.equal(button.text(), "YES, Send");
+    assert.equal(button.text(), "Yes, send");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
     assert.equal(error_msg, "Are you sure you want to mention all 101 people in this stream?");
 }());
