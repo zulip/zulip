@@ -62,8 +62,7 @@ as a “**realm**”.
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
 * View the Markdown source of a message
-* View the exact time a message was sent
-* View information about the message sender
+* [View information about a message](/help/message-info)
 * [View an image at full size](/help/image-full-size)
 * Collapse a message
 * Star a message
