@@ -938,7 +938,6 @@ def update_message_backend(request, user_profile,
         queue_json_publish('embed_links', event_data, lambda x: None)
     return json_success()
 
-@authenticated_json_post_view
 @has_request_variables
 def json_fetch_raw_message(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int)):
