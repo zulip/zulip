@@ -222,6 +222,16 @@ def set_avatar_backend(request, user_profile):
     )
     return json_success(json_result)
 
+def delete_avatar_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+    gravatar_url = avatar_url(user_profile)
+
+    json_result = dict(
+        avatar_url = gravatar_url
+    )
+    return json_success(json_result)
+
 @has_request_variables
 def regenerate_api_key(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse

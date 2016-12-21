@@ -540,6 +540,7 @@ function _setup_page() {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
                 $("#user-settings-avatar").expectOne().attr("src", url);
+                $("#user_avatar_delete_button").show();
                 exports.avatar_stamp += 1;
             }
         });

@@ -147,6 +147,25 @@ exports.build_user_avatar_widget = function (upload_function) {
         return $('#user_avatar_file_input').expectOne();
     };
 
+    if (page_params.avatar_source === 'G') {
+        $("#user_avatar_delete_button").hide();
+    }
+    $("#user_avatar_delete_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        channel.del({
+            url: '/json/users/me/avatar',
+            success: function (data) {
+              $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
+              $("#user_avatar_delete_button").hide();
+              // Need to clear input because of a small edge case
+              // where you try to upload the same image you just deleted.
+              var file_input = $("#user_avatar_file_input");
+              file_input.replaceWith(file_input.clone(true));
+            }
+        });
+    });
+
     return exports.build_direct_upload_widget(
             get_file_input,
             $("#user_avatar_file_input_error").expectOne(),
