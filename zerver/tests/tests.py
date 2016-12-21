@@ -1825,6 +1825,7 @@ class HomeTest(ZulipTestCase):
         expected_keys = [
             "alert_words",
             "autoscroll_forever",
+            "avatar_source",
             "avatar_url",
             "avatar_url_medium",
             "bot_list",

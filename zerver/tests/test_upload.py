@@ -395,7 +395,7 @@ class AvatarTest(ZulipTestCase):
     def test_valid_avatars(self):
         # type: () -> None
         """
-        A call to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
+        A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
         """
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
@@ -431,7 +431,7 @@ class AvatarTest(ZulipTestCase):
     def test_invalid_avatars(self):
         # type: () -> None
         """
-        A call to /json/users/me/avatar with an invalid file should fail.
+        A PUT request to /json/users/me/avatar with an invalid file should fail.
         """
         for fname in self.corrupt_files:
             # with self.subTest(fname=fname):
@@ -440,6 +440,26 @@ class AvatarTest(ZulipTestCase):
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+
+    def test_delete_avatar(self):
+        # type: () -> None
+        """
+        A DELETE request to /json/users/me/avatar should delete the user avatar and return gravatar URL
+        """
+        self.login("hamlet@zulip.com")
+        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
+        hamlet.save()
+
+        result = self.client_delete("/json/users/me/avatar")
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("avatar_url", json)
+        self.assertEqual(json["avatar_url"], avatar_url(user_profile))
+
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     def tearDown(self):
         # type: () -> None
