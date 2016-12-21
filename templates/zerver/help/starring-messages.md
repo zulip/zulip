@@ -21,3 +21,4 @@ You can view all messages you've starred by filtering with the term `is:starred`
 You can also click the "Starred Messages" option on the sidebar to filter to only starred messages.
 
 ![Message example](/static/images/help/star3.png)
+
