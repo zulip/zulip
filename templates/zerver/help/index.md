@@ -1,13 +1,12 @@
 # Zulip User Documentation (draft)
 
-<span class="warn">
-**Caveat**: This file is intended to collect all proposed user
-documentation into one place. Ultimately, a single file is probably
-not the best format for documentation when it is published to the
-world, but for purposes of discussion it seems easiest to put
-everything into a solitary and linear page.
-</span>
----
+!!! warn ""
+    **Caveat**: This file is intended to collect all proposed user
+    documentation into one place. Ultimately, a single file is probably
+    not the best format for documentation when it is published to the
+    world, but for purposes of discussion it seems easiest to put
+    everything into a solitary and linear page.
+
 
 Zulip is a chat app. Its most distinctive characteristic is that
 conversation among a group of people can be divided according to
