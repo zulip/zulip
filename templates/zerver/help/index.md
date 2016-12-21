@@ -35,7 +35,7 @@ as a “**realm**”.
 * [Change the date and time format](/help/change-date-time)
 * [Move the users list to the left sidebar](/help/user-list-left)
 * Join a Zulip organization
-* Signing in
+* [Signing in](/help/sign-in)
 * [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
 * Set up two-factor authentication (not implemented)
