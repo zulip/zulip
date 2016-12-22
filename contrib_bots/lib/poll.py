@@ -12,6 +12,9 @@ class PollHandler(object):
         # question for each stream.
         self.streams = dict()
 
+        # closed is a list of closed polls.
+        self.closed = list()
+
     def usage(self):
         return '''
         This plugin facilitates polling.
@@ -25,7 +28,10 @@ class PollHandler(object):
         Question will be infered by scanning channel for last poll with
         valid answer.
 
-        @poll result poll title
+        @poll close
+        Closes voting for current poll.
+
+        @poll result <question or "current" for current poll>
         Returns a formatted version of the poll.
 
         @poll help
@@ -66,13 +72,20 @@ class PollHandler(object):
                 else:
                     self.polls[question] = dict((elem, 0) for elem in answers)
                     self.streams[message['subject']] = question
-                    new_content = "Question successfully created! Answer away"
+                    new_content = new_content = ("@**" + message['sender_full_name'] + "** Created a poll!" + '\n' +
+                                                "Question: " + question + "\n" +
+                                                ''.join(
+                                                    (("Option " + str(answers.index(answer) + 1) + ": " + answer + "\n")
+                                                    for answer in answers)
+                                                ) + "\n" + "You can answer this poll by writing `@answer <option>` in this stream.")
             else:
                 new_content = "Question was incorrectly formatted. See @poll help for usage"
         elif original_content.startswith('@poll result'):
             split = original_content.split(' ', 2)
             if len(split) == 3:
                 question = split[-1]
+                if question == "current":
+                    question = self.streams[message['subject']]
                 if question in self.polls:
                     new_content = question + ': \n' + ''.join(
                         ((str(key) + ': ' + str(value) + '\n')
@@ -82,11 +95,24 @@ class PollHandler(object):
                     new_content = "No such poll exists. Possibly check spelling."
         elif original_content.startswith('@poll help'):
             new_content = self.usage()
+        elif original_content.startswith('@poll close'):
+            split = original_content.split(' ', 2)
+            if len(split) == 2:
+                if not message['subject'] in self.streams:
+                    new_content = "There doesn't appear to be a poll in this stream."
+                if self.streams[message['subject']] in self.closed:
+                    new_content = "This poll has already been closed."
+                else:
+                    question = self.streams[message['subject']]
+                    self.closed += question
+                    new_content = "Poll - " + question + " - is not closed."
         elif original_content.startswith('@poll'):
             if not message['subject'] in self.streams:
                 new_content = "There doesn't appear to be a poll in this stream."
             elif not original_content.split(' ', 2)[-1] in self.polls[self.streams[message['subject']]]:
                 new_content = "The current question doesn't appear to have that option. Possibly check spelling."
+            elif self.streams[message['subject']] in self.closed:
+                new_content = "This poll has already been closed."
             else:
                 question = self.streams[message['subject']]
                 answer = original_content.split(' ', 2)[-1]
@@ -97,7 +123,7 @@ class PollHandler(object):
             type='stream',
             to=message['display_recipient'],
             subject=message['subject'],
-            content=new_content,
+            content=new_content or "internal error",
         ))
 
 handler_class = PollHandler
