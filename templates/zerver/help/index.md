@@ -79,7 +79,7 @@ as a “**realm**”.
 * Check whether someone is here or away
 * [Invite a friend to Zulip](/help/invite-friend)
 * Send someone a private message
-* Send a group of people a private message
+* [Send a group of people a private message](/help/send-group-pm)
 
 ## Streams & Topics
 * [About streams and topics](/help/about-stream-topic)
