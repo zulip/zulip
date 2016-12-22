@@ -96,4 +96,4 @@ messages, @-mentions, etc.
 
 ### Learning more
 
-* See the article on [Advanced search for messages](/help/advanced-search).
+* See the article on [Advanced search for messages](/help/advanced-search-for-messages).
