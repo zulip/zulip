@@ -128,15 +128,15 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
 def update_display_settings_backend(request, user_profile,
                                     default_language=REQ(validator=check_string, default=None)):
     # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
+    if (default_language is not None and
+            default_language not in get_available_language_codes()):
+        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+
     result = {}
     if (default_language is not None and
             user_profile.default_language != default_language):
-        if default_language in get_available_language_codes():
-            do_change_default_language(user_profile, default_language)
-        else:
-            raise JsonableError(_("Invalid language '%s'" % (default_language,)))
-
-    result['default_language'] = default_language
+        do_change_default_language(user_profile, default_language)
+        result['default_language'] = default_language
 
     return json_success(result)
 
