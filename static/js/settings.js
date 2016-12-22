@@ -461,7 +461,7 @@ function _setup_page() {
         context.lang = new_language;
 
         channel.patch({
-            url: '/json/language_setting',
+            url: '/json/settings/display',
             data: data,
             success: function () {
                 ui.report_success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),

@@ -45,5 +45,4 @@ legacy_urls = [
     url(r'^json/set_muted_topics$',          zerver.views.json_set_muted_topics),
     url(r'^json/time_setting$',              zerver.views.user_settings.json_time_setting),
     url(r'^json/left_side_userlist$',        zerver.views.user_settings.json_left_side_userlist),
-    url(r'^json/language_setting$',          zerver.views.user_settings.json_language_setting),
-]
+    ]
