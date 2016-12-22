@@ -149,7 +149,7 @@ as a “**realm**”.
 ## Streams
 * [Delete a stream](/help/delete-a-stream)
 * Set default streams for new users
-* Rename a stream
+* [Rename a stream](/help/rename-stream)
 * Change a stream's description
 * Make a public stream private
 * Add or remove users from a stream
