@@ -240,10 +240,8 @@ $(function () {
         }
 
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
-            $("#subscription_overlay").fadeOut(500);
-            subs.remove_miscategorized_streams();
-
             hashchange.exit_settings();
+            subs.remove_miscategorized_streams();
         }
     });
     // HOME
@@ -513,7 +511,6 @@ $(function () {
         $("#settings_overlay_container").on("click", function (e) {
             var $target = $(e.target);
             if ($target.is(".exit")) {
-                settings.hide_settings_page();
                 hashchange.exit_settings();
             }
         });

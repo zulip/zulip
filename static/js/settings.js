@@ -834,10 +834,6 @@ exports.update_page = function () {
     i18n.ensure_i18n(_update_page);
 };
 
-exports.hide_settings_page = function () {
-    $("#settings_overlay_container").removeClass("show");
-};
-
 exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
