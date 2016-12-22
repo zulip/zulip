@@ -147,7 +147,7 @@ as a “**realm**”.
 * View the list of installed bots
 
 ## Streams
-* Delete a stream
+* [Delete a stream](/help/delete-a-stream)
 * Set default streams for new users
 * Rename a stream
 * Change a stream's description
