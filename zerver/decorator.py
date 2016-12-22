@@ -13,7 +13,7 @@ from django.utils.decorators import available_attrs
 from django.utils.timezone import now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, get_subdomain, check_subdomain
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
@@ -23,6 +23,7 @@ from django.core.handlers import base
 
 from functools import wraps
 import base64
+import datetime
 import logging
 import cProfile
 from io import BytesIO
@@ -531,6 +532,10 @@ def flexible_boolean(boolean):
         return True
     else:
         return False
+
+def to_utc_datetime(timestamp):
+    # type: (text_type) -> datetime.datetime
+    return timestamp_to_datetime(float(timestamp))
 
 def statsd_increment(counter, val=1):
     # type: (text_type, int) -> Callable[[Callable[..., Any]], Callable[..., Any]]
