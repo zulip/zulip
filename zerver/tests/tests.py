@@ -1677,7 +1677,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login(email)
         german = "de"
         data = dict(default_language=ujson.dumps(german))
-        result = self.client_post("/json/language_setting", data)
+        result = self.client_patch("/json/settings/display", data)
         self.assert_json_success(result)
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.default_language, german)
@@ -1686,7 +1686,7 @@ class ChangeSettingsTest(ZulipTestCase):
         # and saved in the db.
         invalid_lang = "invalid_lang"
         data = dict(default_language=ujson.dumps(invalid_lang))
-        result = self.client_post("/json/language_setting", data)
+        result = self.client_patch("/json/settings/display", data)
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
         user_profile = get_user_profile_by_email(email)
         self.assertNotEqual(user_profile.default_language, invalid_lang)
