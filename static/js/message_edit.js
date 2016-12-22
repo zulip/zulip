@@ -102,8 +102,8 @@ exports.save = function (row, from_topic_edited_only) {
         message_edit.end(row);
         return;
     }
-    channel.post({
-        url: '/json/update_message',
+    channel.patch({
+        url: '/json/messages/' + message.id,
         data: request,
         success: function () {
             if (msg_list === current_msg_list) {
