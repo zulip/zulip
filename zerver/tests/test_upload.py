@@ -272,7 +272,7 @@ class FileUploadTest(ZulipTestCase):
 
         new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
                     "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
-        result = self.client_post("/json/update_message", {
+        result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': new_body
         })
@@ -289,7 +289,7 @@ class FileUploadTest(ZulipTestCase):
 
         # Delete all the attachments from the message
         new_body = "(deleted)"
-        result = self.client_post("/json/update_message", {
+        result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': new_body
         })

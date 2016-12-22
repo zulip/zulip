@@ -222,7 +222,7 @@ class AlertWordTests(ZulipTestCase):
         user_message = most_recent_usermessage(user_profile)
         self.assertIn('has_alert_word', user_message.flags_list())
 
-        result = self.client_post("/json/update_message", {
+        result = self.client_patch("/json/messages/" + str(original_message.id), {
             'message_id': original_message.id,
             'content': 'new ALERT for you',
         })
@@ -232,7 +232,7 @@ class AlertWordTests(ZulipTestCase):
         self.assertEqual(user_message.message.content, 'new ALERT for you')
         self.assertIn('has_alert_word', user_message.flags_list())
 
-        result = self.client_post("/json/update_message", {
+        result = self.client_patch("/json/messages/" + str(original_message.id), {
             'message_id': original_message.id,
             'content': 'sorry false alarm',
         })
