@@ -61,7 +61,7 @@ as a “**realm**”.
 * Send a message in a different language
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
-* View the Markdown source of a message
+* [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View information about a message](/help/message-info)
 * [View the exact time a message was sent](/help/message-exact-time)
 * [View an image at full size](/help/image-full-size)
