@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import Callable, Optional
+from typing import Any, Callable, Dict, Optional, Union
 from six.moves import range
 import re
 
@@ -236,6 +236,26 @@ def is_django_block_tag(tag):
         'raw',
     ]
 
+def extract_line(text, offset):
+    # type: (str, int) -> Dict[str, Any]
+    def line_number_of_offset(offset, lookup):
+        # type: (int, str) -> int
+        line_count = 1
+        for line in text.split('\n'):
+            if lookup in line:
+                break
+            line_count += 1
+        return line_count
+
+    details = {} # type: Dict[str, Any]
+    end_of_line = offset
+    while text[end_of_line] != '\n':
+        end_of_line += 1
+
+    details['lookup'] = text[offset:end_of_line]
+    details['line_num'] = line_number_of_offset(offset, details['lookup'])
+    return details
+
 def get_handlebars_tag(text, i):
     # type: (str, int) -> str
     end = i + 2
@@ -265,6 +285,8 @@ def get_html_tag(text, i):
             quote_count += 1
         end += 1
     if end == len(text) or text[end] != '>':
-        raise TemplateParserException('Tag missing >')
+        error_details = extract_line(text, i)
+        ERROR_MESSAGE = "Tag missing >\nError in Line {line_num}: {lookup}"
+        raise TemplateParserException(ERROR_MESSAGE.format(**error_details))
     s = text[i:end+1]
     return s

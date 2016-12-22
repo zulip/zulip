@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -12,6 +13,7 @@ try:
         is_django_block_tag,
         tokenize,
         validate,
+        extract_line,
     )
 except ImportError:
     print('ERROR!!! You need to run this via tools/test-tools.')
@@ -234,3 +236,16 @@ class ParserTest(unittest.TestCase):
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, 'django_end')
         self.assertEqual(token.tag, 'if')
+
+    def test_extract_line(self):
+        # type: () -> None
+        my_html = (
+            '''<div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal aria-hidden="true">×</button>
+        <h3 id="keyboard-shortcuts-label">{% trans %}Keyboard shortcuts{% endtrans %}</h3>
+        </div>''')
+
+        error_line_details = extract_line(my_html, 35)
+        self.assertEqual(error_line_details['lookup'],
+                         '<button type="button" class="close" data-dismiss="modal aria-hidden="true">×</button>')
+        self.assertEqual(error_line_details['line_num'], 2)
