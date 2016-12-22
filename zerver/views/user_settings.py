@@ -133,7 +133,6 @@ def update_display_settings_backend(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
 @has_request_variables
 def json_change_notify_settings(request, user_profile,
                                 enable_stream_desktop_notifications=REQ(validator=check_bool,

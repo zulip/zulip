@@ -246,8 +246,12 @@ v1_api_and_json_patterns = [
     url(r'^users/me/avatar$', rest_dispatch,
         {'PUT': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
+
+    # settings -> zerver.views.user_settings
     url(r'^settings/display$', rest_dispatch,
         {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
+    url(r'^settings/notifications$', rest_dispatch,
+        {'PATCH': 'zerver.views.user_settings.json_change_notify_settings'}),
 
     # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', rest_dispatch,
