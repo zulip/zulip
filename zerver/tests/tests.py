@@ -1622,14 +1622,14 @@ class ChangeSettingsTest(ZulipTestCase):
     # This is basically a don't-explode test.
     def test_notify_settings(self):
         # type: () -> None
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_desktop_notifications")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_stream_desktop_notifications")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_stream_sounds")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_sounds")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_offline_email_notifications")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_offline_push_notifications")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_online_push_notifications")
-        self.check_for_toggle_param("/json/notify_settings/change", "enable_digest_emails")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_desktop_notifications")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_stream_desktop_notifications")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_stream_sounds")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_sounds")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_offline_email_notifications")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_offline_push_notifications")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_online_push_notifications")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "enable_digest_emails")
 
     def test_ui_settings(self):
         # type: () -> None

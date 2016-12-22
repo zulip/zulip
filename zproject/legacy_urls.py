@@ -17,7 +17,6 @@ legacy_urls = [
     url(r'^json/bulk_invite_users$',         zerver.views.invite.json_bulk_invite_users),
     url(r'^json/refer_friend$',              zerver.views.invite.json_refer_friend),
     url(r'^json/settings/change$',           zerver.views.user_settings.json_change_settings),
-    url(r'^json/notify_settings/change$',    zerver.views.user_settings.json_change_notify_settings),
     url(r'^json/ui_settings/change$',        zerver.views.user_settings.json_change_ui_settings),
     url(r'^json/subscriptions/remove$',      zerver.views.streams.json_remove_subscriptions),
 

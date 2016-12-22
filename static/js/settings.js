@@ -323,8 +323,8 @@ function _setup_page() {
 
     function post_notify_settings_changes(notification_changes, success_func,
                                           error_func) {
-        return channel.post({
-            url: "/json/notify_settings/change",
+        return channel.patch({
+            url: "/json/settings/notifications",
             data: notification_changes,
             success: success_func,
             error: error_func
@@ -351,8 +351,8 @@ function _setup_page() {
     function update_global_stream_setting(notification_type, new_setting) {
         var data = {};
         data[notification_type] = new_setting;
-        channel.post({
-            url: "/json/notify_settings/change",
+        channel.patch({
+            url: "/json/settings/notifications",
             data: data,
             success: update_notification_settings_success,
             error: update_notification_settings_error
