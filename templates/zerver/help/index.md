@@ -39,7 +39,7 @@ as a “**realm**”.
 * [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
 * Set up two-factor authentication (not implemented)
-* Deactivate your account
+* [Deactivate your account](/help/deactivate-account)
 
 ## Messages
 ### Sending
