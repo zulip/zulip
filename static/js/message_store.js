@@ -304,12 +304,10 @@ exports.update_messages = function update_messages(events) {
 
     // If a topic was edited, we re-render the whole view to get any propagated edits
     // to be updated
-    if (topic_edited) {
-        if (!changed_narrow) {
-            home_msg_list.rerender();
-            if (current_msg_list === message_list.narrowed) {
-                message_list.narrowed.rerender();
-            }
+    if (topic_edited && !changed_narrow) {
+        home_msg_list.rerender();
+        if (current_msg_list === message_list.narrowed) {
+            message_list.narrowed.rerender();
         }
     } else {
         home_msg_list.view.rerender_messages(msgs_to_rerender);
