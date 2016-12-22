@@ -769,8 +769,8 @@ function _setup_page() {
                 labs_updates[setting] = $("#" + setting).is(":checked");
         });
 
-        channel.post({
-            url: '/json/ui_settings/change',
+        channel.patch({
+            url: '/json/settings/ui',
             data: labs_updates,
             success: function (resp, statusText, xhr) {
                 var message = i18n.t("Updated __product_name__ Labs settings!  You will need to reload for these changes to take effect.", page_params);

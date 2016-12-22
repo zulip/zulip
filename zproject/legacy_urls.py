@@ -17,7 +17,6 @@ legacy_urls = [
     url(r'^json/bulk_invite_users$',         zerver.views.invite.json_bulk_invite_users),
     url(r'^json/refer_friend$',              zerver.views.invite.json_refer_friend),
     url(r'^json/settings/change$',           zerver.views.user_settings.json_change_settings),
-    url(r'^json/ui_settings/change$',        zerver.views.user_settings.json_change_ui_settings),
 
     # We should remove this endpoint and all code related to it.
     # It returns a 404 if the stream doesn't exist, which is confusing
