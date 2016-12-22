@@ -82,7 +82,7 @@ as a “**realm**”.
 * Send a group of people a private message
 
 ## Streams & Topics
-* About streams and topics
+* [About streams and topics](/help/about-stream-topic)
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
