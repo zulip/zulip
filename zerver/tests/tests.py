@@ -1633,8 +1633,8 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_ui_settings(self):
         # type: () -> None
-        self.check_for_toggle_param("/json/ui_settings/change", "autoscroll_forever")
-        self.check_for_toggle_param("/json/ui_settings/change", "default_desktop_notifications")
+        self.check_for_toggle_param_patch("/json/settings/ui", "autoscroll_forever")
+        self.check_for_toggle_param_patch("/json/settings/ui", "default_desktop_notifications")
 
     def test_toggling_left_side_userlist(self):
         # type: () -> None

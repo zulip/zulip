@@ -25,7 +25,6 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Realm, name_changes_disabled
 
-@authenticated_json_post_view
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
                             autoscroll_forever=REQ(validator=check_bool,
