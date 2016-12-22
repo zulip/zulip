@@ -2196,7 +2196,7 @@ class GetSubscribersTest(ZulipTestCase):
         json_get_subscribers also returns the list of subscribers for a stream.
         """
         stream_name = "unknown_stream"
-        result = self.client_post("/json/get_subscribers", {"stream": stream_name})
+        result = self.client_get("/json/streams/%s/members" % (stream_name,))
         self.assert_json_error(result, "Stream does not exist: %s" % (stream_name,))
 
     def test_json_get_subscribers(self):
@@ -2207,7 +2207,7 @@ class GetSubscribersTest(ZulipTestCase):
         """
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         expected_subscribers = gather_subscriptions(self.user_profile)[0][0]['subscribers']
-        result = self.client_post("/json/get_subscribers", {"stream": stream_name})
+        result = self.client_get("/json/streams/%s/members" % (stream_name,))
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertIn('subscribers', result_dict)
