@@ -122,7 +122,6 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
 
     return json_success(result)
 
-@authenticated_json_post_view
 @has_request_variables
 def json_language_setting(request, user_profile, default_language=REQ(validator=check_string, default=None)):
     # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
