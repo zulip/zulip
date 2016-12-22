@@ -32,27 +32,27 @@ as a “**realm**”.
 * Change your email address (not implemented)
 * [Change your avatar](/help/edit-profile#updating-your-avatar)
 * [Change your language](/help/change-your-language)
-* [Change the date and time format](/help/change-date-time)
-* [Move the users list to the left sidebar](/help/user-list-left)
+* [Change the date and time format](/help/change-the-date-and-time-format)
+* [Move the users list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)
 * Join a Zulip organization
-* [Signing in](/help/sign-in)
+* [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
 * Set up two-factor authentication (not implemented)
-* [Deactivate your account](/help/deactivate-account)
+* [Deactivate your account](/help/deactivate-your-account)
 
 ## Messages
 ### Sending
-* [Send a stream message](/help/send-stream-message)
-* [Send a private message](/help/send-private-message)
+* [Send a stream message](/help/send-a-stream-message)
+* [Send a private message](/help/send-a-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
-* [Preview your message before sending](/help/previewing-message)
+* [Preview your message before sending](/help/preview-your-message-before-sending)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
-* [Restore the last unsent message](/help/restore-unsent-message)
+* [Restore the last unsent message](/help/restore-the-last-unsent-message)
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
-* [Enable or disable pressing enter to send](/help/press-enter-send)
+* [Enable or disable pressing enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * Verify that your message has been successfully sent
 * What to do if the server returns an error
 * Send a status message
@@ -62,48 +62,48 @@ as a “**realm**”.
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
-* [View information about a message](/help/message-info)
-* [View the exact time a message was sent](/help/message-exact-time)
-* [View an image at full size](/help/image-full-size)
+* [View information about a message](/help/view-information-about-a-message)
+* [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
+* [View an image at full size](/help/view-an-image-at-full-size)
 * [Collapse a message](/help/collapse-a-message)
-* [Star a message](/help/starring-messages)
+* [Star a message](/help/star-a-message)
 * Share a message or conversation (permanent link)
 ### Editing
-* [Edit or delete a message](/help/editing-past-messages)
-* [Change the topic of a message](/help/change-topic)
+* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Change the topic of a message](/help/change-the-topic-of-a-message)
 ### Searching
 * [Search messages](/help/search-messages)
-* [Advanced search for messages](/help/advanced-search)
+* [Advanced search for messages](/help/advanced-search-for-messages)
 
 ## People
 * Check whether someone is here or away
-* [Invite a friend to Zulip](/help/invite-friend)
+* [Invite a friend to Zulip](/help/invite-a-friend-to-zulip)
 * Send someone a private message
-* [Send a group of people a private message](/help/send-group-pm)
+* [Send a group of people a private message](/help/send-a-group-of-people-a-private-message)
 
 ## Streams & Topics
-* [About streams and topics](/help/about-stream-topic)
+* [About streams and topics](/help/about-streams-and-topics)
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
-* [View messages from a stream](/help/viewing-messages-from-stream)
-* [The #announce stream](/help/announce-stream)
-* [Add or invite someone to a stream](/help/add-invite-stream)
-* [Change the stream description](/help/change-stream-description)
-* [Rename a stream](/help/rename-stream)
+* [View messages from a stream](/help/view-messages-from-a-stream)
+* [The #announce stream](/help/the-announce-stream)
+* [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
+* [Change the stream description](/help/change-the-stream-description)
+* [Rename a stream](/help/rename-a-stream)
 * Preview a stream (not implemented)
-* [Unsubscribe from a stream](/help/unsubscribe-stream)
-* [Change who can join a stream](/help/change-stream-accessibility)
+* [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
+* [Change who can join a stream](/help/change-who-can-join-a-stream)
 * [Pin a stream](/help/pin-a-stream)
-* [Change the color of a stream](/help/change-stream-color)
+* [Change the color of a stream](/help/change-the-color-of-a-stream)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
-* [Remove someone from a stream (admin only)](/help/remove-from-stream)
+* [Remove someone from a stream (admin only)](/help/remove-someone-from-a-stream)
 * [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
 * [Mute a stream](/help/mute-a-stream)
-* [Mute a topic](/help/mute-topic)
+* [Mute a topic](/help/mute-a-topic)
 * Set notifications for a single stream
 * Configure desktop notifications
 * Configure audible notifications
@@ -140,8 +140,8 @@ as a “**realm**”.
 * Delete your organization (not implemented)
 
 ## Users & Bots
-* [Deactivate or reactivate a user](/help/deactivate-reactivate)
-* [Deactivate or reactivate a bot](/help/deactivate-reactivate-bot)
+* [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Make a user an administrator](/help/make-a-user-an-administrator)
 * [Change a user's name](/help/change-a-users-name)
 * View the list of installed bots
@@ -149,16 +149,16 @@ as a “**realm**”.
 ## Streams
 * [Delete a stream](/help/delete-a-stream)
 * Set default streams for new users
-* [Rename a stream](/help/rename-stream)
+* [Rename a stream](/help/rename-a-stream)
 * Change a stream's description
-* [Make a public stream private](/help/change-stream-accessibility#make-a-public-stream-private)
+* [Make a public stream private](/help/change-who-can-join-a-stream#make-a-public-stream-private)
 * Add or remove users from a stream
 
 ---
 
 # Include Zulip
 
-* [Chat with zulip button](/help/chat-button-for-zulip)
+* [Chat with zulip button](/help/chat-with-zulip-button)
 
 # Old table of contents:
 
@@ -172,7 +172,7 @@ as a “**realm**”.
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out)**
 - **[Terminology](#special-terms-used-with-zulip)**
-- **[Zulip glossary](/help/glossary)**
+- **[Zulip glossary](/help/zulip-glossary)**
 
 ---
 
@@ -206,7 +206,7 @@ There are three panes in your browser window.
 **[… To a stream](#posting-and-replying-to-a-stream)** |
 **[… To individual users](#posting-and-replying-to-individual-users-pm-private-message)** |
 **[Some facts about messages](#some-facts-about-messages)** |
-**[Editing past messages](editing-past-messages)**
+**[Editing past messages](/help/edit-or-delete-a-message)**
 
 At the bottom of your screen, choose whether to post to a stream or to
 individual users. ![New message](/static/images/help/new_message.png)
@@ -391,7 +391,7 @@ organization. But here are some thoughts:
 
 As long you have contributed a message to some topic, you can edit the
 topic title. Go to one of your own messages in that topic and follow
-**[the instructions for editing it](editing-past-messages)**. Notice
+**[the instructions for editing it](/help/edit-or-delete-a-message)**. Notice
 that the topic title is now editable, too. You will be offered the
 chance to change the topic in one of three ways:
 
