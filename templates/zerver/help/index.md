@@ -32,52 +32,52 @@ as a “**realm**”.
 * Change your email address (not implemented)
 * [Change your avatar](/help/edit-profile#updating-your-avatar)
 * [Change your language](/help/change-your-language)
-* [Change the date and time format](/help/change-date-time)
-* [Move the users list to the left sidebar](/help/user-list-left)
+* [Change the date and time format](/help/change-the-date-and-time-format)
+* [Move the users list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)
 * Join a Zulip organization
-* [Signing in](/help/sign-in)
+* [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
 * Set up two-factor authentication (not implemented)
-* [Deactivate your account](/help/deactivate-account)
+* [Deactivate your account](/help/deactivate-your-account)
 
 ## Messages
 ### Sending
-* [Send a stream message](/help/send-stream-message)
-* [Send a private message](/help/send-private-message)
+* [Send a stream message](/help/send-a-stream-message)
+* [Send a private message](/help/send-a-private-message)
 * [Format your message using Markdown](/help/format-your-message-using-markdown)
-* [Preview your message before sending](/help/previewing-message)
+* [Preview your message before sending](/help/preview-your-message-before-sending)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
-* [Restore the last unsent message](/help/restore-unsent-message)
+* [Restore the last unsent message](/help/restore-the-last-unsent-message)
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
-* [Enable or disable pressing enter to send](/help/press-enter-send)
+* [Enable or disable pressing enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * Verify that your message has been successfully sent
 * What to do if the server returns an error
 * Send a status message
-* [@-mention a team member](/help/at-mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
+* [@-mention a team member](/help/@-mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
 * Make an announcement
 * Send a message in a different language
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
-* [View information about a message](/help/message-info)
-* [View the exact time a message was sent](/help/message-exact-time)
-* [View an image at full size](/help/image-full-size)
+* [View information about a message](/help/view-information-about-a-message)
+* [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
+* [View an image at full size](/help/view-an-image-at-full-size)
 * [Collapse a message](/help/collapse-a-message)
 * Star a message
 * Share a message or conversation (permanent link)
 ### Editing
-* [Edit or delete a message](/help/editing-past-messages)
-* [Change the topic of a message](/help/change-topic)
+* [Edit or delete a message](/help/edit-or-delete-a-message)
+* [Change the topic of a message](/help/change-the-topic-of-a-message)
 ### Searching
 * [Search messages](/help/search-messages)
-* [Advanced search for messages](/help/advanced-search)
+* [Advanced search for messages](/help/advanced-search-for-messages)
 
 ## People
 * See whether someone is here or away
-* [Invite a friend to Zulip](/help/invite-friend)
+* [Invite a friend to Zulip](/help/invite-a-friend-to-zulip)
 * Send someone a private message
 * Send a group of people a private message
 
@@ -86,19 +86,19 @@ as a “**realm**”.
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
-* [View messages from a stream](/help/viewing-messages-from-stream)
+* [View messages from a stream](/help/view-messages-from-a-stream)
 * [The #announce stream](/help/announce-stream)
-* [Add or invite someone to a stream](/help/add-invite-stream)
+* [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * Change the stream description
-* [Rename a stream](/help/rename-stream)
+* [Rename a stream](/help/rename-a-stream)
 * Preview a stream (not implemented)
-* [Unsubscribe from a stream](/help/unsubscribe-stream)
+* [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * Change who can join a stream
 * [Pin a stream](/help/pin-a-stream)
-* [Change the color of a stream](/help/change-stream-color)
+* [Change the color of a stream](/help/change-the-color-of-a-stream)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
-* [Remove someone from a stream (admin only)](/help/remove-from-stream)
+* [Remove someone from a stream (admin only)](/help/remove-someone-from-a-stream)
 * [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
@@ -116,7 +116,7 @@ as a “**realm**”.
 
 # Include Zulip
 
-* [Chat with zulip button](/help/chat-button-for-zulip)
+* [Chat with zulip button](/help/chat-with-zulip-button)
 
 ---
 
@@ -125,14 +125,14 @@ as a “**realm**”.
 - **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Editing your profile](/help/edit-profile)**
 - **[Posting and replying](#posting-and-replying)**
-- **[Searching](search-messages)**
+- **[Searching](/help/search-messages)**
 - **[Keyboard shortcuts](/help/keyboard-shortcuts)**
 - **[Message display settings](/help/message-display-settings)**
 - **[Streams and private messages](/help/streams-and-private-messages)**
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out)**
-- **[Terminology](#special-terms-used-with-zulip)**
-- **[Zulip glossary](/help/glossary)**
+- **[Terminology](#terminology)**
+- **[Zulip glossary](/help/zulip-glossary)**
 
 ---
 
@@ -506,7 +506,7 @@ You can't do any of that with a unsubscribed stream.
 
 ---
 
-## Special terms used with Zulip
+## Terminology
 
  * **@mention**: see **mention**.
  * **/me**: see **me**.
