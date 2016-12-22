@@ -10,13 +10,13 @@ Zulip supports both **private messaging** and group chats via conversation **str
 **Private messaging** can either be **one-on-one** or **group** conversations. They can only be seen by users participating in the message.
 
 ## Sending a new stream message
-Read about sending a new stream message [here](/help/send-stream-message).
+Read about sending a new stream message [here](/help/send-a-stream-message).
 ## Private messaging
 ![New private message](/static/images/help/private-message.png)
 
 ![New private message](/static/images/help/private-box.png)
 
-See **["Send a private message"](/help/send-private-message)** to learn more about sending a private message.
+See **["Send a private message"](/help/send-a-private-message)** to learn more about sending a private message.
 
 ## Other features
 While sending either a stream or private message, several features located below the messaging box in the bottom-left corner can aid you in composing your message.
@@ -44,10 +44,10 @@ While the file is uploading, a blue box labeled **Uploading...** will appear, an
 Clicking the **A**  (![A](/static/images/help/formatting.png)) icon will reveal a modal window with a summary of message formatting in Zulip. For more information on message formatting, see our [message formatting guide](/help/format-your-message-using-markdown).
 
 ### Restore draft
-Read about restoring the draft of a message [here](/help/restore-unsent-message).
+Read about restoring the draft of a message [here](/help/restore-the-last-unsent-message).
 
 ### Previewing your message
-Read about message previewing [here](/help/previewing-message).
+Read about message previewing [here](/help/preview-your-message-before-sending).
 
 ### Press Enter to send
-Read about pressing enter to send [here](/help/press-enter-send).
+Read about pressing enter to send [here](/help/enable-or-disable-pressing-enter-to-send).
