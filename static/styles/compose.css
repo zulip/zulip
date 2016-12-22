@@ -359,10 +359,11 @@ input.recipient_box {
 }
 
 #restore-draft {
-    float: left;
     display: none;
+    position: relative;
     margin-right: 1em;
-    padding-top: 2px;
+    margin-left: 5px;
+    top: 2px;
 }
 
 #sending-indicator {
