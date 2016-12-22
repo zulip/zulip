@@ -247,7 +247,7 @@ v1_api_and_json_patterns = [
         {'PUT': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
     url(r'^settings/display$', rest_dispatch,
-        {'PATCH': 'zerver.views.user_settings.json_language_setting'}),
+        {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
 
     # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', rest_dispatch,

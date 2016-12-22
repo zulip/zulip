@@ -122,8 +122,11 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
 
     return json_success(result)
 
+# TODO: Merge json_left_side_userlist and json_time_setting endpoints
+# into this one; it should be straightforward
 @has_request_variables
-def json_language_setting(request, user_profile, default_language=REQ(validator=check_string, default=None)):
+def update_display_settings_backend(request, user_profile,
+                                    default_language=REQ(validator=check_string, default=None)):
     # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
     result = {}
     if (default_language is not None and
