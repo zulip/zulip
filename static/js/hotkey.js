@@ -50,6 +50,7 @@ var hotkeys_shift_insensitive = {
     75: {name: 'page_up', message_view_only: true}, // 'K'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    98: {name: 'restore_message_draft', message_view_only: true}, //'b'
     99: {name: 'compose', message_view_only: true}, // 'c'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
@@ -316,6 +317,9 @@ function process_hotkey(e) {
             return true;
         case 'stream_cycle_forward':
             navigate.cycle_stream('forward');
+            return true;
+        case 'restore_message_draft':
+            compose.restore_message();
             return true;
     }
 
