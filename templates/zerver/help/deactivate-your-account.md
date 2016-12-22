@@ -26,4 +26,4 @@ In addition, if you're the only administrator in the realm, you cannot deactivat
 
 ## Reactivating an account
 
-If you regret deactivating your account, you can ask a Zulip realm administrator to [reactivate](/help/deactivate-reactivate#reactivate-a-user) your account.
+If you regret deactivating your account, you can ask a Zulip realm administrator to [reactivate](/help/deactivate-or-reactivate-a-user#reactivate-a-user) your account.
