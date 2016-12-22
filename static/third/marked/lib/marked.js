@@ -537,7 +537,7 @@ inline.breaks = merge({}, inline.gfm, {
 inline.zulip = merge({}, inline.breaks, {
   emoji: /^:([A-Za-z0-9_\-\+]+?):/,
   unicodeemoji: /^(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])/,
-  usermention: /^(@(?:\*\*([^\*]+)?\*\*|(\w+)?))/m, // Match multi-word string between @** ** or match any one-word
+  usermention: /^(@(?:\*\*([^\*]+)\*\*|(\w+)))/m, // Match multi-word string between @** ** or match any one-word
   stream: /^#\*\*([^\*]+)\*\*/m,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,

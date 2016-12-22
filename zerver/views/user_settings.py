@@ -122,19 +122,21 @@ def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(valida
 
     return json_success(result)
 
-@authenticated_json_post_view
+# TODO: Merge json_left_side_userlist and json_time_setting endpoints
+# into this one; it should be straightforward
 @has_request_variables
-def json_language_setting(request, user_profile, default_language=REQ(validator=check_string, default=None)):
+def update_display_settings_backend(request, user_profile,
+                                    default_language=REQ(validator=check_string, default=None)):
     # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
+    if (default_language is not None and
+            default_language not in get_available_language_codes()):
+        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+
     result = {}
     if (default_language is not None and
             user_profile.default_language != default_language):
-        if default_language in get_available_language_codes():
-            do_change_default_language(user_profile, default_language)
-        else:
-            raise JsonableError(_("Invalid language '%s'" % (default_language,)))
-
-    result['default_language'] = default_language
+        do_change_default_language(user_profile, default_language)
+        result['default_language'] = default_language
 
     return json_success(result)
 
@@ -207,8 +209,7 @@ def json_change_notify_settings(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
-def json_set_avatar(request, user_profile):
+def set_avatar_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one avatar."))
@@ -220,6 +221,16 @@ def json_set_avatar(request, user_profile):
 
     json_result = dict(
         avatar_url = user_avatar_url
+    )
+    return json_success(json_result)
+
+def delete_avatar_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+    gravatar_url = avatar_url(user_profile)
+
+    json_result = dict(
+        avatar_url = gravatar_url
     )
     return json_success(json_result)
 

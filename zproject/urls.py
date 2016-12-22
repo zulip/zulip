@@ -196,6 +196,8 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.messages.get_old_messages_backend',
          'PATCH': 'zerver.views.messages.update_message_backend',
          'POST': 'zerver.views.messages.send_message_backend'}),
+    url(r'^messages/(?P<message_id>[0-9]+)$', rest_dispatch,
+        {'GET': 'zerver.views.messages.json_fetch_raw_message'}),
     url(r'^messages/render$', rest_dispatch,
         {'GET': 'zerver.views.messages.render_message_backend'}),
     url(r'^messages/flags$', rest_dispatch,
@@ -241,6 +243,11 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.user_settings.regenerate_api_key'}),
     url(r'^users/me/enter-sends$', rest_dispatch,
         {'POST': 'zerver.views.user_settings.change_enter_sends'}),
+    url(r'^users/me/avatar$', rest_dispatch,
+        {'PUT': 'zerver.views.user_settings.set_avatar_backend',
+         'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
+    url(r'^settings/display$', rest_dispatch,
+        {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
 
     # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', rest_dispatch,

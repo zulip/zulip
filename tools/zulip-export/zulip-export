@@ -53,16 +53,24 @@ if options.stream == "":
 
 client.add_subscriptions([{"name": options.stream}])
 queue = client.register(event_types=['message'])
-client._register('get_old_messages', method='GET', url='messages')
 max_id = queue['max_message_id']
 messages = []
+request = {
+    'anchor': 0,
+    'num_before': 0,
+    'num_after': max_id,
+    'narrow': [{'operator': 'stream',
+                'operand': options.stream}],
+    'apply_markdown': False,
+}
+
 print("Fetching messages...")
-result = client.get_old_messages({'anchor': 0,
-                                  'num_before': 0,
-                                  'num_after': max_id,
-                                  'narrow': [{'operator': 'stream',
-                                             'operand': options.stream}],
-                                  'apply_markdown': False})
+result = client.call_endpoint(
+    url='messages',
+    method='GET',
+    request=request,
+)
+
 if result['result'] != 'success':
     print("Unfortunately, there was an error fetching some old messages.")
     print(result)

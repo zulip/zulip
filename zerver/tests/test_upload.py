@@ -331,7 +331,7 @@ class AvatarTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         with get_test_image_file('img.png') as fp1, \
                 get_test_image_file('img.png') as fp2:
-            result = self.client_post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
+            result = self.client_put_multipart("/json/users/me/avatar", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     def test_no_file_upload_failure(self):
@@ -341,7 +341,7 @@ class AvatarTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
 
-        result = self.client_post("/json/set_avatar")
+        result = self.client_put_multipart("/json/users/me/avatar")
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     correct_files = [
@@ -395,14 +395,14 @@ class AvatarTest(ZulipTestCase):
     def test_valid_avatars(self):
         # type: () -> None
         """
-        A call to /json/set_avatar with a valid file should return a url and actually create an avatar.
+        A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
         """
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
             self.login("hamlet@zulip.com")
             with get_test_image_file(fname) as fp:
-                result = self.client_post("/json/set_avatar", {'file': fp})
+                result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_success(result)
             json = ujson.loads(result.content)
@@ -431,15 +431,35 @@ class AvatarTest(ZulipTestCase):
     def test_invalid_avatars(self):
         # type: () -> None
         """
-        A call to /json/set_avatar with an invalid file should fail.
+        A PUT request to /json/users/me/avatar with an invalid file should fail.
         """
         for fname in self.corrupt_files:
             # with self.subTest(fname=fname):
             self.login("hamlet@zulip.com")
             with get_test_image_file(fname) as fp:
-                result = self.client_post("/json/set_avatar", {'file': fp})
+                result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+
+    def test_delete_avatar(self):
+        # type: () -> None
+        """
+        A DELETE request to /json/users/me/avatar should delete the user avatar and return gravatar URL
+        """
+        self.login("hamlet@zulip.com")
+        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
+        hamlet.save()
+
+        result = self.client_delete("/json/users/me/avatar")
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("avatar_url", json)
+        self.assertEqual(json["avatar_url"], avatar_url(user_profile))
+
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     def tearDown(self):
         # type: () -> None

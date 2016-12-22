@@ -40,6 +40,7 @@ from datetime import timedelta
 import pylibmc
 import re
 import logging
+import sre_constants
 import time
 import datetime
 
@@ -396,7 +397,7 @@ def filter_pattern_validator(value):
 
     try:
         re.compile(value)
-    except:
+    except sre_constants.error:
         # Regex is invalid
         raise ValidationError(error_msg)
 

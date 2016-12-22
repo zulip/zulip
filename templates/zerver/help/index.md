@@ -1,13 +1,12 @@
 # Zulip User Documentation (draft)
 
-<span class="warn">
-**Caveat**: This file is intended to collect all proposed user
-documentation into one place. Ultimately, a single file is probably
-not the best format for documentation when it is published to the
-world, but for purposes of discussion it seems easiest to put
-everything into a solitary and linear page.
-</span>
----
+!!! warn ""
+    **Caveat**: This file is intended to collect all proposed user
+    documentation into one place. Ultimately, a single file is probably
+    not the best format for documentation when it is published to the
+    world, but for purposes of discussion it seems easiest to put
+    everything into a solitary and linear page.
+
 
 Zulip is a chat app. Its most distinctive characteristic is that
 conversation among a group of people can be divided according to
@@ -36,7 +35,7 @@ as a “**realm**”.
 * [Change the date and time format](/help/change-date-time)
 * [Move the users list to the left sidebar](/help/user-list-left)
 * Join a Zulip organization
-* Signing in
+* [Signing in](/help/sign-in)
 * [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
 * Set up two-factor authentication (not implemented)
@@ -62,12 +61,12 @@ as a “**realm**”.
 * Send a message in a different language
 * Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
 ### Reading
-* View the Markdown source of a message
+* [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View information about a message](/help/message-info)
 * [View the exact time a message was sent](/help/message-exact-time)
 * [View an image at full size](/help/image-full-size)
-* Collapse a message
-* [Star a message](/help/starring-messages)
+* [Collapse a message](/help/collapse-a-message)
+* Star a message
 * Share a message or conversation (permanent link)
 ### Editing
 * [Edit or delete a message](/help/editing-past-messages)
@@ -78,7 +77,7 @@ as a “**realm**”.
 
 ## People
 * See whether someone is here or away
-* Invite a friend to Zulip
+* [Invite a friend to Zulip](/help/invite-friend)
 * Send someone a private message
 * Send a group of people a private message
 
@@ -87,8 +86,8 @@ as a “**realm**”.
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
-* View messages from a stream
-* The #announce stream
+* [View messages from a stream](/help/viewing-messages-from-stream)
+* [The #announce stream](/help/announce-stream)
 * [Add or invite someone to a stream](/help/add-invite-stream)
 * Change the stream description
 * [Rename a stream](/help/rename-stream)
@@ -99,8 +98,8 @@ as a “**realm**”.
 * [Change the color of a stream](/help/change-stream-color)
 * Message a stream by email
 * Convert a group PM to a private stream (not implemented)
-* Remove someone from a stream
-* Delete a stream (admin only)
+* [Remove someone from a stream (admin only)](/help/remove-from-stream)
+* [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
 

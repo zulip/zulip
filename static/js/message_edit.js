@@ -205,7 +205,7 @@ function edit_message(row, raw_content) {
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
-        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
+        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
     }
 
     // Add tooltip
@@ -301,10 +301,9 @@ function start_edit_maintaining_scroll(row, content) {
 exports.start = function (row) {
     var message = current_msg_list.get(rows.id(row));
     var msg_list = current_msg_list;
-    channel.post({
-        url: '/json/fetch_raw_message',
+    channel.get({
+        url: '/json/messages/' + message.id,
         idempotent: true,
-        data: {message_id: message.id},
         success: function (data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;

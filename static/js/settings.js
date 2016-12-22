@@ -461,7 +461,7 @@ function _setup_page() {
         context.lang = new_language;
 
         channel.patch({
-            url: '/json/language_setting',
+            url: '/json/settings/display',
             data: data,
             success: function () {
                 ui.report_success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
@@ -530,8 +530,8 @@ function _setup_page() {
         var spinner = $("#upload_avatar_spinner").expectOne();
         loading.make_indicator(spinner, {text: 'Uploading avatar.'});
 
-        channel.post({
-            url: '/json/set_avatar',
+        channel.put({
+            url: '/json/users/me/avatar',
             data: form_data,
             cache: false,
             processData: false,
@@ -540,6 +540,7 @@ function _setup_page() {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
                 $("#user-settings-avatar").expectOne().attr("src", url);
+                $("#user_avatar_delete_button").show();
                 exports.avatar_stamp += 1;
             }
         });
@@ -760,7 +761,8 @@ function _setup_page() {
         });
     });
 
-    $("#ui-settings").on("click", "input[name='change_settings']", function () {
+    $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
+        e.preventDefault();
         var labs_updates = {};
         _.each(["autoscroll_forever", "default_desktop_notifications"],
             function (setting) {
@@ -771,7 +773,7 @@ function _setup_page() {
             url: '/json/ui_settings/change',
             data: labs_updates,
             success: function (resp, statusText, xhr) {
-                var message = i18n.t("Updated __product_name__ Labs settings!", page_params);
+                var message = i18n.t("Updated __product_name__ Labs settings!  You will need to reload for these changes to take effect.", page_params);
                 var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
