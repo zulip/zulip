@@ -1303,7 +1303,7 @@ $(function () {
     $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
         change_stream_privacy(
             e,
-            "/json/make_stream_public",
+            "/json/streams/" + encodeURIComponent(stream_name),
             "The stream has been made public!",
             "Error making stream public",
             false
@@ -1313,7 +1313,7 @@ $(function () {
     $("#subscriptions_table").on("click", ".make-stream-private-button", function (e) {
         change_stream_privacy(
             e,
-            "/json/make_stream_private",
+            "/json/streams/" + encodeURIComponent(stream_name),
             "The stream has been made private!",
             "Error making stream private",
             true
