@@ -4,6 +4,8 @@ var exports = {};
 
 var private_messages_open = false;
 
+var private_more_messages_open = false;
+
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
@@ -62,8 +64,14 @@ function remove_expanded_private_messages() {
     resize.resize_stream_filters_container();
 }
 
+function open_private_more_messages() {
+    $(".expanded_private_messages").expectOne().removeClass("zoom-out").addClass("zoom-in");
+    $(".expanded_private_messages li.expanded_private_message").removeClass("zoom-out-hide");
+}
+
 exports.reset_to_unnarrowed = function () {
     private_messages_open = false;
+    private_more_messages_open = false;
     $("ul.filters li").removeClass('active-filter active-sub-filter');
     remove_expanded_private_messages();
 };
@@ -117,7 +125,13 @@ exports.rebuild_recent = function (active_conversation) {
         var private_li = get_filter_li();
         var private_messages_dom = exports._build_private_messages_list(active_conversation,
             max_private_messages);
+
         private_li.append(private_messages_dom);
+
+        if (private_more_messages_open) {
+            // Open again if it was opened before new message arrived
+            open_private_more_messages();
+        }
     }
     if (active_conversation) {
         exports.get_conversation_li(active_conversation).addClass('active-sub-filter');
@@ -148,11 +162,8 @@ exports.update_private_messages = function () {
 exports.set_click_handlers = function () {
     $('#global_filters').on('click', '.show-more-private-messages', function (e) {
         popovers.hide_all();
-        $(".expanded_private_messages").expectOne().removeClass("zoom-out").addClass("zoom-in");
-        $(".expanded_private_messages li.expanded_private_message").each(function () {
-            $(this).show();
-        });
-
+        open_private_more_messages();
+        private_more_messages_open = true;
         e.preventDefault();
         e.stopPropagation();
     });
