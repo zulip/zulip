@@ -703,8 +703,8 @@ function ajaxSubscribe(stream) {
 }
 
 function ajaxUnsubscribe(stream) {
-    return channel.post({
-        url: "/json/subscriptions/remove",
+    return channel.del({
+        url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([stream]) },
         success: function () {
             $("#subscriptions-status").hide();
@@ -786,8 +786,8 @@ exports.invite_user_to_stream = function (user_email, stream_name, success, fail
 };
 
 exports.remove_user_from_stream = function (user_email, stream_name, success, failure) {
-    return channel.post({
-        url: "/json/subscriptions/remove",
+    return channel.del({
+        url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([stream_name]),
                principals: JSON.stringify([user_email])},
         success: success,

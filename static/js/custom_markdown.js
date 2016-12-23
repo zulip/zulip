@@ -30,8 +30,8 @@ var exports = {};
     }
 
     function remove_sub(stream_name, $status_message) {
-        channel.post({
-            url: '/json/subscriptions/remove',
+        channel.del({
+            url: '/json/users/me/subscriptions',
             data: {
                 subscriptions: JSON.stringify([stream_name])
             }

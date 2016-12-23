@@ -493,8 +493,8 @@ class StreamAdminTest(ZulipTestCase):
         if other_user_subbed:
             self.subscribe_to_stream(other_user_profile.email, stream_name)
 
-        result = self.client_post(
-            "/json/subscriptions/remove",
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
             {"subscriptions": ujson.dumps([stream_name]),
              "principals": ujson.dumps([other_email])})
 
@@ -627,9 +627,9 @@ class StreamAdminTest(ZulipTestCase):
         stream_name = u"hümbüǵ"
         self.make_stream(stream_name)
 
-        result = self.client_post("/json/subscriptions/remove",
-                                  {"subscriptions": ujson.dumps([stream_name]),
-                                   "principals": ujson.dumps(["baduser@zulip.com"])})
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps([stream_name]),
+                                     "principals": ujson.dumps(["baduser@zulip.com"])})
         self.assert_json_error(
             result,
             "User not authorized to execute queries on behalf of 'baduser@zulip.com'",
@@ -1711,8 +1711,8 @@ class SubscriptionAPITest(ZulipTestCase):
          "removed": ["Denmark", "Scotland", "Verona"],
          "not_subscribed": ["Rome"], "result": "success"}
         """
-        result = self.client_post("/json/subscriptions/remove",
-                                  {"subscriptions": ujson.dumps(subscriptions)})
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps(subscriptions)})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         for key, val in six.iteritems(json_dict):
@@ -1723,7 +1723,7 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_successful_subscriptions_remove(self):
         # type: () -> None
         """
-        Calling /json/subscriptions/remove should successfully remove streams,
+        Calling DELETE /json/users/me/subscriptions should successfully remove streams,
         and should determine which were removed vs which weren't subscribed to.
         We cannot randomly generate stream names because the remove code
         verifies whether streams exist.
@@ -1746,14 +1746,14 @@ class SubscriptionAPITest(ZulipTestCase):
     def test_subscriptions_remove_fake_stream(self):
         # type: () -> None
         """
-        Calling /json/subscriptions/remove on a stream that doesn't exist
+        Calling DELETE /json/users/me/subscriptions on a stream that doesn't exist
         should return a JSON error.
         """
         random_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
         streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
-        result = self.client_post("/json/subscriptions/remove",
-                                  {"subscriptions": ujson.dumps(streams_to_remove)})
+        result = self.client_delete("/json/users/me/subscriptions",
+                                    {"subscriptions": ujson.dumps(streams_to_remove)})
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
     def helper_subscriptions_exists(self, stream, exists, subscribed):

@@ -278,7 +278,8 @@ v1_api_and_json_patterns = [
     url(r'^users/me/subscriptions$', rest_dispatch,
         {'GET': 'zerver.views.streams.list_subscriptions_backend',
          'POST': 'zerver.views.streams.add_subscriptions_backend',
-         'PATCH': 'zerver.views.streams.update_subscriptions_backend'}),
+         'PATCH': 'zerver.views.streams.update_subscriptions_backend',
+         'DELETE': 'zerver.views.streams.remove_subscriptions_backend'}),
 
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
