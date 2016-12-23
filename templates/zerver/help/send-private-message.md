@@ -20,4 +20,3 @@ and write the message in the compose box.
 You can always discard your message by clicking the **x** (![x](/static/images/help/x.png)) icon located at the top-right corner of your compose box.
 
 **[Go back to “Streams and private messages”](/help/streams-and-private-messages)**
-
