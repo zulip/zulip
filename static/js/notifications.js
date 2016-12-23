@@ -217,7 +217,7 @@ exports.window_has_focus = function () {
     return window_has_focus;
 };
 
-function in_browser_notify(message, title, content) {
+function in_browser_notify(message, title, content, raw_operators, opts) {
     var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
                                                                 title: title,
                                                                 content: content}));
@@ -225,6 +225,11 @@ function in_browser_notify(message, title, content) {
         message: {html: notification_html},
         fadeOut: {enabled: true, delay: 4000}
     }).show();
+    $('.top-right').on('click', function () {
+        ui.change_tab_to('#home');
+        narrow.activate(raw_operators, opts);
+    });
+    setTimeout(function () {$('.top-right').unbind("click");}, 5000);
 }
 
 exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
@@ -247,7 +252,8 @@ function process_notification(notification) {
     var title = message.sender_full_name;
     var msg_count = 1;
     var notification_source;
-
+    var raw_operators = [];
+    var opts = {select_first_unread: true, trigger: "notification click"};
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
     ui.replace_emoji_with_text(content);
@@ -303,9 +309,12 @@ function process_notification(notification) {
                                " other people";
         }
         title += " (to you and " + other_recipients + ")";
+        raw_operators = [{operand: message.reply_to, operator: "pm-with"}];
     }
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + message.subject + ")";
+        raw_operators = [{operand: message.stream, operator: "stream"}];
+        if (message.subject !== "(no topic)") {raw_operators[1] = {operand: message.subject, operator: "topic"};}
     }
 
     if (window.bridge === undefined && notification.webkit_notify === true) {
@@ -336,11 +345,11 @@ function process_notification(notification) {
                     iconUrl: ui.small_avatar_url(message)
                 });
             } else {
-                in_browser_notify(message, title, content);
+                in_browser_notify(message, title, content, raw_operators, opts);
             }
         });
     } else if (notification.webkit_notify === false) {
-        in_browser_notify(message, title, content);
+        in_browser_notify(message, title, content, raw_operators, opts);
     } else {
         // Shunt the message along to the desktop client
         window.bridge.desktopNotification(title, content, notification_source);
