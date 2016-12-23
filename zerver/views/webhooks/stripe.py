@@ -20,30 +20,41 @@ def api_stripe_webhook(request, user_profile, client,
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
     body = ""
     event_type = ""
+    body_template = ""
     try:
         event_type = payload["type"]
-        if event_type == "charge.dispute.closed":
+        if event_type.startswith('charge'):
+
+            charge_url = "https://dashboard.stripe.com/payments/{}"
             amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["charge"]
-            body_template = "A charge dispute for **" + amount_string + "** has been closed as **{object[status]}**.\n"\
-                            + "The charge in dispute was **[{object[charge]}](" + link + ")**."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "charge.dispute.created":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["charge"]
-            body_template = "A charge dispute for **" + amount_string + "** has been created.\n"\
-                            + "The charge in dispute is **[{object[charge]}](" + link + ")**."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "charge.failed":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["id"]
-            body_template = "A charge with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has failed."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "charge.succeeded":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["id"]
-            body_template = "A charge with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has succeeded."
-            body = body_template.format(**(payload["data"]))
+
+            if event_type.startswith('charge.dispute'):
+                data_object = payload["data"]["object"]
+                charge_id = data_object["charge"]
+                link = charge_url.format(charge_id)
+                body_template = "A charge dispute for **{amount}** has been {rest}.\n"\
+                                "The charge in dispute {verb} **[{charge}]({link})**."
+
+                if event_type == "charge.dispute.closed":
+                    rest = "closed as **{}**".format(data_object['status'])
+                    verb = 'was'
+                else:
+                    rest = "created"
+                    verb = 'is'
+
+                body = body_template.format(amount=amount_string, rest=rest, verb=verb, charge=charge_id, link=link)
+
+            else:
+                charge_id = payload["data"]["object"]["id"]
+                link = charge_url.format(charge_id)
+                body_template = "A charge with id **[{charge_id}]({link})** for **{amount}** has {verb}."
+
+                if event_type == "charge.failed":
+                    verb = "failed"
+                else:
+                    verb = "succeeded"
+                body = body_template.format(charge_id=charge_id, link=link, amount=amount_string, verb=verb)
+
         elif event_type == "customer.created":
             link = "https://dashboard.stripe.com/customers/"+payload["data"]["object"]["id"]
             if payload["data"]["object"]["email"] is None:
