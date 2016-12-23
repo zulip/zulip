@@ -2,11 +2,13 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from typing import List
 import glob
 import optparse
 import os
 import sys
 import subprocess
+import ujson
 
 # check for the venv
 from lib import sanity_check
@@ -90,6 +92,23 @@ not_yet_fully_covered = {
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
 
+FAILED_TEST_PATH = 'var/last_test_failure.json'
+
+def get_failed_tests():
+    # type: () -> List[str]
+    try:
+        with open(FAILED_TEST_PATH, 'r') as f:
+            return ujson.load(f)
+    except IOError:
+        print("var/last_test_failure.json doesn't exist; running all tests.")
+        return []
+
+def write_failed_tests(failed_tests):
+    # type: (List[str]) -> None
+    if failed_tests:
+        with open(FAILED_TEST_PATH, 'w') as f:
+            ujson.dump(failed_tests, f)
+
 if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
@@ -165,10 +184,26 @@ if __name__ == "__main__":
                       action="store_true",
                       default=False,
                       help="Run tests in reverse order.")
+    parser.add_option('--rerun', dest="rerun",
+                      action = "store_true",
+                      default=False,
+                      help=("Run the tests which failed the last time "
+                            "test-backend was run.  Implies --nonfatal-errors."))
 
     (options, args) = parser.parse_args()
 
     zerver_test_dir = 'zerver/tests/'
+
+    # While running --rerun, we read var/last_test_failure.json to get
+    # the list of tests that failed on the last run, and then pretend
+    # those tests were passed explicitly.  --rerun implies
+    # --nonfatal-errors, so that we don't end up removing tests from
+    # the list that weren't run.
+    if options.rerun:
+        options.fatal_errors = False
+        failed_tests = get_failed_tests()
+        if failed_tests:
+            args = failed_tests
 
     # to transform forward slashes '/' present in the argument into dots '.'
     for suite in args:
@@ -267,7 +302,8 @@ if __name__ == "__main__":
     test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
                              parallel=parallel, reverse=options.reverse,
                              keepdb=True)
-    failures = test_runner.run_tests(suites, full_suite=full_suite)
+    failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite)
+    write_failed_tests(failed_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
     # We only check the templates if all the tests ran and passed

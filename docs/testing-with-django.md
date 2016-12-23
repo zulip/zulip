@@ -46,7 +46,9 @@ tests.
 Another thing to note is that our tests generally "fail fast," i.e. they
 stop at the first sign of trouble.  This is generally a good thing for
 iterative development, but you can override this behavior with the
-`--nonfatal-errors` option.
+`--nonfatal-errors` option.  A useful option to combine with that is
+the `--rerun` option, which will rerun just the tests that failed in
+the last test run.
 
 ## How to write tests.
 

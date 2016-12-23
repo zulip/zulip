@@ -167,6 +167,11 @@ class TextTestResult(runner.TextTestResult):
     This class has unpythonic function names because base class follows
     this style.
     """
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        super(TextTestResult, self).__init__(*args, **kwargs)
+        self.failed_tests = []  # type: List[str]
+
     def addInfo(self, test, msg):
         # type: (TestCase, Text) -> None
         self.stream.write(msg)
@@ -193,6 +198,8 @@ class TextTestResult(runner.TextTestResult):
     def addFailure(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         TestResult.addFailure(self, *args, **kwargs)
+        test_name = full_test_name(args[0])
+        self.failed_tests.append(test_name)
 
     def addSkip(self, test, reason):
         # type: (TestCase, Text) -> None
@@ -364,7 +371,7 @@ class Runner(DiscoverRunner):
 
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
-        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> bool
+        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> Tuple[bool, List[str]]
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -387,7 +394,7 @@ class Runner(DiscoverRunner):
         failed = self.suite_result(suite, result)
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
-        return failed
+        return failed, result.failed_tests
 
 def get_test_names(suite):
     # type: (TestSuite) -> List[str]
