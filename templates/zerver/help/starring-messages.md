@@ -1,8 +1,7 @@
 # Starring a message
-**Starring messages is a good way to keep track of important messages, such as tasks you need to go back to,
- or documents you reference often.**
+Starring messages is a good way to keep track of important messages, such as tasks you need to go back to, or documents you reference often.
 ### Star a message
-You can star a message on desktop clients by hovering over any message. The timestamp of the message should be replaced with three context buttons while hovering, one of which is a star. Click on this to star the message.
+You can star a message by hovering over any message. The timestamp of the message should be replaced with three context buttons while hovering, one of which is a star. Click on this to star the message.
 
 ![Message example](/static/images/help/star1.png)
 
