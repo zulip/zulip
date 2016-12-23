@@ -5,7 +5,7 @@ import ujson
 import zlib
 
 from django.utils.translation import ugettext as _
-from six import binary_type, text_type
+from six import binary_type
 
 from typing import Text
 
@@ -154,7 +154,7 @@ class MessageDict(object):
         if recipient_type == Recipient.STREAM:
             display_type = "stream"
         elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
-            assert not isinstance(display_recipient, text_type)
+            assert not isinstance(display_recipient, Text)
             display_type = "private"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
