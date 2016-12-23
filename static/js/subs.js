@@ -318,10 +318,9 @@ function show_subscription_settings(sub_row) {
 
     loading.make_indicator(indicator_elem);
 
-    channel.post({
-        url: "/json/get_subscribers",
+    channel.get({
+        url: "/json/streams/" + sub.name + "/members",
         idempotent: true,
-        data: {stream: sub.name},
         success: function (data) {
             loading.destroy_indicator(indicator_elem);
             var subscribers = _.map(data.subscribers, function (elem) {

@@ -76,13 +76,13 @@ as a “**realm**”.
 * [Advanced search for messages](/help/advanced-search)
 
 ## People
-* See whether someone is here or away
+* Check whether someone is here or away
 * [Invite a friend to Zulip](/help/invite-friend)
 * Send someone a private message
 * Send a group of people a private message
 
 ## Streams & Topics
-* About streams and topics
+* [About streams and topics](/help/about-stream-topic)
 * [Browse and join streams](/help/browse-and-join-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
@@ -102,23 +102,63 @@ as a “**realm**”.
 * [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
+* Mute a stream
+* Mute a topic
+* Set notifications for a single stream
+* Configure desktop notifications
+* Configure audible notifications
+* Configure email notifications
+* Configure mobile push notifications
+* Add an alert word
 
-## Integrations & Bots
+## Tools & Customization
+* Keyboard shortcuts
+* Add a bot or integration
 
 ## Apps
-* Use Zulip on Mac OS
-* Use Zulip on Linux
-* Use Zulip on Windows
-* Use Zulip on Android
-* Use Zulip on iOS
-* Use Zulip in a terminal
+* Zulip on Mac OS
+* Zulip on Linux
+* Zulip on Windows
+* Zulip on Android
+* Zulip on iOS
+* Zulip in a terminal
 * Connect to Zulip over IRC/etc (not implemented?)
+
+# Administering a Zulip organization
+
+## Organization Settings
+* Change your organization's name
+* Restrict user email addresses to certain domains
+* Allow anyone to join without an invitation
+* Only allow admins to invite new users
+* Only allow admins to create new streams
+* Restrict editing of old messages and topics
+* Change the default language
+* Add custom emoji
+* Configure authentication methods
+* Add a custom linkification filter
+* Delete your organization (not implemented)
+
+## Users & Bots
+* Deactivate or reactivate a user
+* Deactivate or reactivate a bot
+* Make a user an administrator
+* Change a user's name
+* View the list of installed bots
+
+## Streams
+* [Delete a stream](/help/delete-a-stream)
+* Set default streams for new users
+* Rename a stream
+* Change a stream's description
+* Make a public stream private
+* Add or remove users from a stream
+
+---
 
 # Include Zulip
 
 * [Chat with zulip button](/help/chat-button-for-zulip)
-
----
 
 # Old table of contents:
 
