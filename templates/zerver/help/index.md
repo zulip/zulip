@@ -102,7 +102,7 @@ as a “**realm**”.
 * [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
-* Mute a stream
+* [Mute a stream](/help/mute-a-stream)
 * Mute a topic
 * Set notifications for a single stream
 * Configure desktop notifications
