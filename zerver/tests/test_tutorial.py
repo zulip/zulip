@@ -79,7 +79,8 @@ class TutorialTests(ZulipTestCase):
         for incoming_status, expected_db_status in cases:
             raw_params = dict(status=incoming_status)
             params = fix_params(raw_params)
-            result = self.client_post('/json/tutorial_status', params)
+            result = self.client_patch('/json/tutorial_status', params)
             self.assert_json_success(result)
             user = get_user_profile_by_email(email)
             self.assertEqual(user.tutorial_status, expected_db_status)
+
