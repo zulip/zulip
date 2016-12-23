@@ -98,11 +98,13 @@ def api_stripe_webhook(request, user_profile, client,
                 body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
 
         elif event_type == "invoice.payment_failed":
-            link = "https://dashboard.stripe.com/invoices/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount_due"], payload["data"]["object"]["currency"])
-            body_template = "An invoice payment on invoice with id **[{object[id]}](" + link + ")** and with **"\
-                            + amount_string + "** due has failed."
-            body = body_template.format(**(payload["data"]))
+            object_id = data_object['id']
+            link = "https://dashboard.stripe.com/invoices/{}".format(object_id)
+            amount_string = amount(data_object["amount_due"], data_object["currency"])
+            body_template = "An invoice payment on invoice with id **[{id}]({link})** and "\
+                            "with **{amount}** due has failed."
+            body = body_template.format(id=object_id, amount=amount_string, link=link)
+
         elif event_type == "order.payment_failed":
             link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
             amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
