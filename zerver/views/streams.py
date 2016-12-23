@@ -158,32 +158,22 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
     do_remove_default_stream(user_profile.realm, stream_name)
     return json_success()
 
-@authenticated_json_post_view
-@require_realm_admin
-@has_request_variables
-def json_make_stream_public(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
-    do_make_stream_public(user_profile, user_profile.realm, stream_name)
-    return json_success()
-
-@authenticated_json_post_view
-@require_realm_admin
-@has_request_variables
-def json_make_stream_private(request, user_profile, stream_name=REQ()):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
-    do_make_stream_private(user_profile.realm, stream_name)
-    return json_success()
-
 @require_realm_admin
 @has_request_variables
 def update_stream_backend(request, user_profile, stream_name,
                           description=REQ(validator=check_string, default=None),
+                          is_private=REQ(validator=check_bool, default=None),
                           new_name=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, Optional[text_type], Optional[bool], Optional[text_type]) -> HttpResponse
     if description is not None:
         do_change_stream_description(user_profile.realm, stream_name, description)
     if stream_name is not None and new_name is not None:
         do_rename_stream(user_profile.realm, stream_name, new_name)
+    if is_private is not None:
+        if is_private:
+            do_make_stream_private(user_profile.realm, stream_name)
+        else:
+            do_make_stream_public(user_profile, user_profile.realm, stream_name)
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
