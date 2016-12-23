@@ -1270,17 +1270,17 @@ $(function () {
         stream_list.redraw_stream_privacy(sub.name);
     }
 
-    function change_stream_privacy(e, url, success_message, error_message, invite_only) {
+    function change_stream_privacy(e, is_private, success_message, error_message, invite_only) {
         e.preventDefault();
 
         var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
         var sub = stream_data.get_sub_by_id(stream_id);
 
         $("#subscriptions-status").hide();
-        var data = {stream_name: sub.name};
+        var data = {stream_name: sub.name, is_private: is_private};
 
-        channel.post({
-            url: url,
+        channel.patch({
+            url: "/json/streams/" + sub.name,
             data: data,
             success: function () {
                 sub = stream_data.get_sub_by_id(stream_id);
@@ -1302,7 +1302,7 @@ $(function () {
     $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
         change_stream_privacy(
             e,
-            "/json/make_stream_public",
+            false,
             "The stream has been made public!",
             "Error making stream public",
             false
@@ -1312,7 +1312,7 @@ $(function () {
     $("#subscriptions_table").on("click", ".make-stream-private-button", function (e) {
         change_stream_privacy(
             e,
-            "/json/make_stream_private",
+            true,
             "The stream has been made private!",
             "Error making stream private",
             true
