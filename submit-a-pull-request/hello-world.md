@@ -1,2 +1,2 @@
 Hello world
-I am muhammadbn. :tada:
+I am muhammadbn :tada:
