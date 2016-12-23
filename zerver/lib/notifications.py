@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from six import text_type
 from typing import cast, Any, Iterable, Mapping, Optional, Sequence, Tuple, Text
 
 import mandrill
@@ -152,7 +151,7 @@ def build_message_list(user_profile, messages):
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
-            assert not isinstance(disp_recipient, text_type)
+            assert not isinstance(disp_recipient, Text)
             other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['email'] != user_profile.email]
             header = u"You and %s" % (", ".join(other_recipients),)
@@ -160,7 +159,7 @@ def build_message_list(user_profile, messages):
                                       if r["email"] != user_profile.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
-            assert isinstance(disp_recipient, text_type)
+            assert isinstance(disp_recipient, Text)
             header = u"%s > %s" % (disp_recipient, message.topic_name())
             stream_link = stream_narrow_url(user_profile.realm, disp_recipient)
             topic_link = topic_narrow_url(user_profile.realm, disp_recipient, message.subject)
