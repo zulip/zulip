@@ -9,7 +9,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_charge_dispute_closed(self):
          # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Charge ch_00000000000000"
         expected_message = u"A charge dispute for **10.01aud** has been closed as **won**.\nThe charge in dispute was **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)**."
 
         # use fixture named stripe_charge_dispute_closed
@@ -18,7 +18,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_charge_dispute_created(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Charge ch_00000000000000"
         expected_message = u"A charge dispute for **1000jpy** has been created.\nThe charge in dispute is **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)**."
 
         # use fixture named stripe_charge_dispute_created
@@ -27,7 +27,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_charge_failed(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Charge ch_00000000000000"
         expected_message = u"A charge with id **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)** for **1.00aud** has failed."
 
         # use fixture named stripe_charge_failed
@@ -36,7 +36,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_charge_succeeded(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Charge ch_00000000000000"
         expected_message = u"A charge with id **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)** for **1.00aud** has succeeded."
 
         # use fixture named stripe_charge_succeeded
@@ -45,7 +45,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_created_email(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Customer cus_00000000000000"
         expected_message = u"A new customer with id **[cus_00000000000000](https://dashboard.stripe.com/customers/cus_00000000000000)** and email **example@abc.com** has been created."
 
         # use fixture named stripe_customer_created_email
@@ -54,7 +54,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_created(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Customer cus_00000000000000"
         expected_message = u"A new customer with id **[cus_00000000000000](https://dashboard.stripe.com/customers/cus_00000000000000)** has been created."
 
         # use fixture named stripe_customer_created
@@ -63,7 +63,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_deleted(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Customer cus_00000000000000"
         expected_message = u"A customer with id **[cus_00000000000000](https://dashboard.stripe.com/customers/cus_00000000000000)** has been deleted."
 
         # use fixture named stripe_customer_deleted
@@ -72,7 +72,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_subscription_created(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Customer sub_00000000000000"
         expected_message = u"A new customer subscription for **20.00aud** every **month** has been created.\nThe subscription has id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)**."
 
         # use fixture named stripe_customer_subscription_created
@@ -81,7 +81,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_subscription_deleted(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Customer sub_00000000000000"
         expected_message = u"The customer subscription with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** was deleted."
 
         # use fixture named stripe_customer_subscription_deleted
@@ -90,7 +90,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_customer_subscription_trial_will_end(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Customer sub_00000000000000"
         expected_message = u"The customer subscription trial with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** will end on Dec 04 2016 at 06:07PM"
 
         # use fixture named stripe_customer_subscription_trial_will_end
@@ -99,7 +99,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_invoice_payment_failed(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Invoice in_00000000000000"
         expected_message = u"An invoice payment on invoice with id **[in_00000000000000](https://dashboard.stripe.com/invoices/in_00000000000000)** and with **0.00aud** due has failed."
 
         # use fixture named stripe_invoice_payment_failed
@@ -108,7 +108,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_order_payment_failed(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Order or_00000000000000"
         expected_message = u"An order payment on order with id **[or_00000000000000](https://dashboard.stripe.com/orders/or_00000000000000)** for **15.00aud** has failed."
 
         # use fixture named stripe_order_payment_failed
@@ -117,7 +117,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_order_payment_succeeded(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Order or_00000000000000"
         expected_message = u"An order payment on order with id **[or_00000000000000](https://dashboard.stripe.com/orders/or_00000000000000)** for **15.00aud** has succeeded."
 
         # use fixture named stripe_order_payment_succeeded
@@ -126,7 +126,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_order_updated(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Order or_00000000000000"
         expected_message = u"The order with id **[or_00000000000000](https://dashboard.stripe.com/orders/or_00000000000000)** for **15.00aud** has been updated."
 
         # use fixture named stripe_order_updated
@@ -135,7 +135,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_transfer_failed(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Transfer tr_00000000000000"
         expected_message = u"The transfer with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/transfers/tr_00000000000000)** for amount **11.00aud** has failed."
 
         # use fixture named stripe_transfer_failed
@@ -144,7 +144,7 @@ class StripeHookTests(WebhookTestCase):
 
     def test_transfer_paid(self):
         # type: () -> None
-        expected_subject = u"stripe"
+        expected_subject = u"Transfer tr_00000000000000"
         expected_message = u"The transfer with description **Transfer to test@example.com** and id **[tr_00000000000000](https://dashboard.stripe.com/transfers/tr_00000000000000)** for amount **11.00aud** has been paid."
 
         # use fixture named stripe_transfer_paid

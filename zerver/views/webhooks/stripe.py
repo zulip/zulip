@@ -15,7 +15,7 @@ from datetime import datetime
 @has_request_variables
 def api_stripe_webhook(request, user_profile, client,
                        payload=REQ(argument_type='body'), stream=REQ(default='test'),
-                       topic=REQ(default='stripe')):
+                       topic=REQ(default=None)):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
     body = None
     event_type = payload["type"]
@@ -51,6 +51,9 @@ def api_stripe_webhook(request, user_profile, client,
                 else:
                     verb = "succeeded"
                 body = body_template.format(charge_id=charge_id, link=link, amount=amount_string, verb=verb)
+
+            if topic is None:
+                topic = "Charge {}".format(charge_id)
 
         elif event_type.startswith('customer'):
             object_id = data_object["id"]
@@ -94,6 +97,9 @@ def api_stripe_webhook(request, user_profile, client,
                     rest = "has been deleted"
                 body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
 
+            if topic is None:
+                topic = "Customer {}".format(object_id)
+
         elif event_type == "invoice.payment_failed":
             object_id = data_object['id']
             link = "https://dashboard.stripe.com/invoices/{}".format(object_id)
@@ -101,6 +107,9 @@ def api_stripe_webhook(request, user_profile, client,
             body_template = "An invoice payment on invoice with id **[{id}]({link})** and "\
                             "with **{amount}** due has failed."
             body = body_template.format(id=object_id, amount=amount_string, link=link)
+
+            if topic is None:
+                topic = "Invoice {}".format(object_id)
 
         elif event_type.startswith('order'):
             object_id = data_object['id']
@@ -120,6 +129,9 @@ def api_stripe_webhook(request, user_profile, client,
 
             body = body_template.format(beginning=beginning, id=object_id, link=link, amount=amount_string, end=end)
 
+            if topic is None:
+                topic = "Order {}".format(object_id)
+
         elif event_type.startswith('transfer'):
             object_id = data_object['id']
             link = "https://dashboard.stripe.com/transfers/{}".format(object_id)
@@ -137,6 +149,9 @@ def api_stripe_webhook(request, user_profile, client,
                 amount=amount_string,
                 end=end
             )
+
+            if topic is None:
+                topic = "Transfer {}".format(object_id)
     except KeyError as e:
         return json_error(_("Missing key {} in JSON".format(str(e))))
 
