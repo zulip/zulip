@@ -105,22 +105,24 @@ def api_stripe_webhook(request, user_profile, client,
                             "with **{amount}** due has failed."
             body = body_template.format(id=object_id, amount=amount_string, link=link)
 
-        elif event_type == "order.payment_failed":
-            link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "An order payment on order with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has failed."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "order.payment_succeeded":
-            link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "An order payment on order with id **[{object[id]}](" + link + ")** for **"\
-                            + amount_string + "** has succeeded."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "order.updated":
-            link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "The order with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has been updated."
-            body = body_template.format(**(payload["data"]))
+        elif event_type.startswith('order'):
+            object_id = data_object['id']
+            link = "https://dashboard.stripe.com/orders/{}".format(object_id)
+            amount_string = amount(data_object["amount"], data_object["currency"])
+            body_template = "{beginning} order with id **[{id}]({link})** for **{amount}** has {end}."
+
+            if event_type == "order.payment_failed":
+                beginning = "An order payment on"
+                end = "failed"
+            elif event_type == "order.payment_succeeded":
+                beginning = "An order payment on"
+                end = "succeeded"
+            else:
+                beginning = "The"
+                end = "been updated"
+
+            body = body_template.format(beginning=beginning, id=object_id, link=link, amount=amount_string, end=end)
+
         elif event_type == "transfer.failed":
             link = "https://dashboard.stripe.com/transfers/"+payload["data"]["object"]["id"]
             amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
