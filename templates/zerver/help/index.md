@@ -142,7 +142,7 @@ as a “**realm**”.
 ## Users & Bots
 * Deactivate or reactivate a user
 * Deactivate or reactivate a bot
-* Make a user an administrator
+* [Make a user an administrator](/help/make-a-user-an-administrator)
 * Change a user's name
 * View the list of installed bots
 

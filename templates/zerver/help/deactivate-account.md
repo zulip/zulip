@@ -34,7 +34,7 @@ Zulip realm administrators can choose to reactivate a user's deactivated account
 
 3. Upon clicking **Administration**, your view will be replaced with the **Administration** page. Click the **Deactivated Users** tab at the top of the panel; it turns gray upon hover.
 
-    ![Administration](/static/images/help/admin-panel.png)
+    ![Administration](/static/images/help/admin-panel-deactivated-users.png)
 
 4. In the **Deactivated users** section, click the orange **Reactivate** button to the right of the user account that you want to reactivate.
 
