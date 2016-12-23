@@ -2,11 +2,13 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from typing import List
 import glob
 import optparse
 import os
 import sys
 import subprocess
+import ujson
 
 # check for the venv
 from lib import sanity_check
@@ -90,6 +92,23 @@ not_yet_fully_covered = {
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
 
+FAILED_TEST_PATH = 'var/last_test_failure.json'
+
+def get_failed_tests():
+    # type: () -> List[str]
+    try:
+        with open(FAILED_TEST_PATH, 'r') as f:
+            return ujson.load(f)
+    except IOError:
+        print("var/last_test_failure.json doesn't exist")
+        return []
+
+def write_failed_tests(failed_tests):
+    # type: (List[str]) -> None
+    if failed_tests:
+        with open(FAILED_TEST_PATH, 'w') as f:
+            ujson.dump(failed_tests, f)
+
 if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
@@ -165,10 +184,29 @@ if __name__ == "__main__":
                       action="store_true",
                       default=False,
                       help="Run tests in reverse order.")
+    parser.add_option('--re-run', dest="re_run",
+                      action = "store_true",
+                      default=False,
+                      help=("Run the tests which failed the last time "
+                            "test-backend was run. --re-run doesn't run along "
+                            "with --force and --nonfatal-error"))
 
     (options, args) = parser.parse_args()
 
+    if options.re_run and (not options.fatal_errors or options.force):
+        print("--re-run doesn't run along with --force or --nonfatal-error, please try again.")
+        sys.exit(0)
+
     zerver_test_dir = 'zerver/tests/'
+
+    # While running --re-run, we access the file containing the
+    # details of the tests which failed in the last run of test-backend
+    # which is stored at zulip/var/last_test_failure.json and runs them
+    if options.re_run:
+        options.fatal_errors  = False
+        failed_tests = get_failed_tests()
+        if failed_tests:
+            args = failed_tests
 
     # to transform forward slashes '/' present in the argument into dots '.'
     for suite in args:
@@ -267,7 +305,8 @@ if __name__ == "__main__":
     test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
                              parallel=parallel, reverse=options.reverse,
                              keepdb=True)
-    failures = test_runner.run_tests(suites, full_suite=full_suite)
+    failures, failed_tests = test_runner.run_tests(suites, full_suite=full_suite)
+    write_failed_tests(failed_tests)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
     # We only check the templates if all the tests ran and passed
