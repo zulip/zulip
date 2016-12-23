@@ -21,6 +21,7 @@ def api_stripe_webhook(request, user_profile, client,
     body = ""
     event_type = ""
     body_template = ""
+    data_object = payload["data"]["object"]
     try:
         event_type = payload["type"]
         if event_type.startswith('charge'):
@@ -29,7 +30,6 @@ def api_stripe_webhook(request, user_profile, client,
             amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
 
             if event_type.startswith('charge.dispute'):
-                data_object = payload["data"]["object"]
                 charge_id = data_object["charge"]
                 link = charge_url.format(charge_id)
                 body_template = "A charge dispute for **{amount}** has been {rest}.\n"\
@@ -45,7 +45,7 @@ def api_stripe_webhook(request, user_profile, client,
                 body = body_template.format(amount=amount_string, rest=rest, verb=verb, charge=charge_id, link=link)
 
             else:
-                charge_id = payload["data"]["object"]["id"]
+                charge_id = data_object["id"]
                 link = charge_url.format(charge_id)
                 body_template = "A charge with id **[{charge_id}]({link})** for **{amount}** has {verb}."
 
@@ -55,33 +55,48 @@ def api_stripe_webhook(request, user_profile, client,
                     verb = "succeeded"
                 body = body_template.format(charge_id=charge_id, link=link, amount=amount_string, verb=verb)
 
-        elif event_type == "customer.created":
-            link = "https://dashboard.stripe.com/customers/"+payload["data"]["object"]["id"]
-            if payload["data"]["object"]["email"] is None:
-                body_template = "A new customer with id **[{object[id]}](" + link + ")** has been created."
-                body = body_template.format(**(payload["data"]))
+        elif event_type.startswith('customer'):
+            object_id = data_object["id"]
+            if event_type.startswith('customer.subscription'):
+                link = "https://dashboard.stripe.com/subscriptions/{}".format(object_id)
+
+                if event_type == "customer.subscription.created":
+                    amount_string = amount(data_object["plan"]["amount"], data_object["plan"]["currency"])
+
+                    body_template = "A new customer subscription for **{amount}** " \
+                                    "every **{interval}** has been created.\n" \
+                                    "The subscription has id **[{id}]({link})**."
+                    body = body_template.format(
+                        amount=amount_string,
+                        interval=data_object['plan']['interval'],
+                        id=object_id,
+                        link=link
+                    )
+
+                elif event_type == "customer.subscription.deleted":
+                    body_template = "The customer subscription with id **[{id}]({link})** was deleted."
+                    body = body_template.format(id=object_id, link=link)
+
+                else:
+                    end_time = datetime.fromtimestamp(data_object["trial_end"]).strftime('%b %d %Y at %I:%M%p')
+                    body_template = "The customer subscription trial with id **[{id}]({link})** will end on {time}"
+                    body = body_template.format(id=object_id, link=link, time=end_time)
+
             else:
-                body_template = "A new customer with id **[{object[id]}](" + link + ")** and email **{object[email]}** has been created."
-                body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.deleted":
-            link = "https://dashboard.stripe.com/customers/"+payload["data"]["object"]["id"]
-            body_template = "A customer with id **[{object[id]}](" + link + ")** has been deleted."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.subscription.created":
-            amount_string = amount(payload["data"]["object"]["plan"]["amount"], payload["data"]["object"]["plan"]["currency"])
-            link = "https://dashboard.stripe.com/subscriptions/"+payload["data"]["object"]["id"]
-            body_template = "A new customer subscription for **" + amount_string + "** every **{plan[interval]}** has been created.\n"
-            body_template += "The subscription has id **[{id}](" + link + ")**."
-            body = body_template.format(**(payload["data"]["object"]))
-        elif event_type == "customer.subscription.deleted":
-            link = "https://dashboard.stripe.com/subscriptions/"+payload["data"]["object"]["id"]
-            body_template = "The customer subscription with id **[{object[id]}](" + link + ")** was deleted."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.subscription.trial_will_end":
-            link = "https://dashboard.stripe.com/subscriptions/"+payload["data"]["object"]["id"]
-            body_template = "The customer subscription trial with id **[{object[id]}](" + link + ")** will end on "
-            body_template += datetime.fromtimestamp(payload["data"]["object"]["trial_end"]).strftime('%b %d %Y at %I:%M%p')
-            body = body_template.format(**(payload["data"]))
+                link = "https://dashboard.stripe.com/customers/{}".format(object_id)
+                body_template = "{beginning} customer with id **[{id}]({link})** {rest}."
+
+                if event_type == "customer.created":
+                    beginning = "A new"
+                    if data_object["email"] is None:
+                        rest = "has been created"
+                    else:
+                        rest = "and email **{}** has been created".format(data_object['email'])
+                else:
+                    beginning = "A"
+                    rest = "has been deleted"
+                body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
+
         elif event_type == "invoice.payment_failed":
             link = "https://dashboard.stripe.com/invoices/"+payload["data"]["object"]["id"]
             amount_string = amount(payload["data"]["object"]["amount_due"], payload["data"]["object"]["currency"])
