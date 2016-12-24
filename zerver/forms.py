@@ -108,7 +108,7 @@ class HomepageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.string_id = kwargs.pop("string_id", None)
+        self.realm = kwargs.pop('realm', None)
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -121,10 +121,8 @@ class HomepageForm(forms.Form):
             return email
 
         # Otherwise, the user is trying to join a specific realm.
-        realm = None
-        if self.string_id:
-            realm = get_realm_by_string_id(self.string_id)
-        elif not settings.REALMS_HAVE_SUBDOMAINS:
+        realm = self.realm
+        if realm is None and not settings.REALMS_HAVE_SUBDOMAINS:
             realm = get_realm_by_email_domain(email)
 
         if realm is None:
