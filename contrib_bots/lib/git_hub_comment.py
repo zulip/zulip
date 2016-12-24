@@ -1,9 +1,11 @@
 # See readme-github-comment-bot.md for instructions on running this code.
+from __future__ import absolute_import
 from __future__ import print_function
-import requests
+from . import github
 import json
-import os
 import logging
+import os
+import requests
 
 
 class InputError(IndexError):
@@ -25,10 +27,16 @@ class GitHubHandler(object):
             Before running this, make sure to get a GitHub OAuth token.
             The token will need to be authorized for the following scopes:
             'gist, public_repo, user'.
-            Store it in the 'github_token.txt' file.
-            The 'github_token.txt' file should be located at '~/github_token.txt'.
-            Please input info like this:
-            '/<username>/<repository_owner>/<repository>/<issue_number>/<your_comment>'.
+            Store it in the '~/.github_auth.conf' file, along with your username, in the format:
+            github_repo = <repo_name>  (The name of the repo to post to)
+            github_repo_owner = <repo_owner>  (The owner of the repo to post to)
+            github_username = <username>  (The username of the GitHub bot)
+            github_token = <oauth_token>   (The personal access token for the GitHub bot)
+
+            Leave the first two options blank.
+
+            Please use this format in your message to the bot:
+            '<repository_owner>/<repository>/<issue_number>/<your_comment>'.
             '''
 
     def triage_message(self, message):
@@ -56,11 +64,8 @@ class GitHubHandler(object):
 handler_class = GitHubHandler
 
 
-def send_to_github(user, repo_owner, repo, issue, comment_body):
-    session = requests.session()
-
-    oauth_token = get_github_token()
-    session.auth = (user, oauth_token)
+def send_to_github(repo_owner, repo, issue, comment_body):
+    session = github.auth()
     comment = {
         'body': comment_body
     }
@@ -77,7 +82,7 @@ def get_values_message(original_content):
     message_content = message_content.split('/')
     try:
         # this will work if the information was entered correctly
-        user = message_content[1]
+        user = github.get_username()
         repo_owner = message_content[2]
         repo = message_content[3]
         issue = message_content[4]
@@ -92,7 +97,7 @@ def handle_input(client, original_content, original_sender):
     try:
         params = get_values_message(original_content)
 
-        status_code = send_to_github(params['user'], params['repo_owner'], params['repo'],
+        status_code = send_to_github(params['repo_owner'], params['repo'],
                                      params['issue'], params['comment_body'])
 
         if status_code == 201:
@@ -126,12 +131,6 @@ def handle_input(client, original_content, original_sender):
                       "'/<username>/<repository_owner>/<repository>/<issue_number>/<your_comment>'."
             send_message(client, message, original_sender)
             logging.error('there was an error with the information you entered')
-
-
-def get_github_token():
-    home = os.path.expanduser('~')
-    oauth_token = open(home + '/github_token.txt').read().strip()
-    return oauth_token
 
 
 def send_message(client, message, original_sender):
