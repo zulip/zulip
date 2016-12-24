@@ -298,16 +298,13 @@ def accounts_accept_terms(request):
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (Text, HttpRequest, bool) -> HttpResponse
-    domain = request.session.get("domain")
-    realm = get_realm(domain)
-    if completely_open(realm):
-        # Clear the "domain" from the session object; it's no longer needed
-        request.session["domain"] = None
-
+    domain = request.session.pop('domain', None)
+    if domain is not None:
+        # domain was set in accounts_home_with_domain.
         # The user is trying to sign up for a completely open realm,
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
-                                                  realm=realm,
+                                                  realm=get_realm(domain),
                                                   realm_creation=realm_creation)
 
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
