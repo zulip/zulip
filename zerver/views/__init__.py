@@ -358,11 +358,6 @@ def redirect_to_email_login_url(email):
     redirect_url = login_url + '?email=' + urllib.parse.quote_plus(email)
     return HttpResponseRedirect(redirect_url)
 
-"""
-When settings.OPEN_REALM_CREATION is enabled public users can create new realm. For creating the realm the user should
-not be the member of any current realm. The realm is created with domain same as the that of the user's email.
-When there is no unique_open_realm user registrations are made by visiting /register/domain_of_the_realm.
-"""
 def create_realm(request, creation_key=None):
     # type: (HttpRequest, Optional[text_type]) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
@@ -374,6 +369,8 @@ def create_realm(request, creation_key=None):
                                       {'message': _('The organization creation link has been expired'
                                                     ' or is not valid.')})
 
+    # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
+    # subject to a few restrictions on their email address.
     if request.method == 'POST':
         form = RealmCreationForm(request.POST)
         if form.is_valid():
@@ -388,8 +385,7 @@ def create_realm(request, creation_key=None):
             email = request.POST['email']
             user_email_is_unique(email)
         except ValidationError:
-            # if the user user is already registered he can't create a new realm as a realm
-            # with the same domain as user's email already exists
+            # Maybe the user is trying to log in
             return redirect_to_email_login_url(email)
     else:
         form = RealmCreationForm()

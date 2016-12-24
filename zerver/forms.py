@@ -101,9 +101,6 @@ class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
-    # This form is important because it determines whether users can
-    # register for our product. Be careful when modifying the
-    # validators.
     email = forms.EmailField(validators=[is_inactive])
 
     def __init__(self, *args, **kwargs):
@@ -151,9 +148,7 @@ def email_is_not_disposable(email):
         raise ValidationError(_("Please use your real email address."))
 
 class RealmCreationForm(forms.Form):
-    # This form determines whether users can
-    # create a new realm. Be careful when modifying the
-    # validators.
+    # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[user_email_is_unique, email_is_not_disposable])
 
 class LoggingSetPasswordForm(SetPasswordForm):
