@@ -374,7 +374,7 @@ def create_realm(request, creation_key=None):
                                                     ' or is not valid.')})
 
     if request.method == 'POST':
-        form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
+        form = RealmCreationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
@@ -391,7 +391,7 @@ def create_realm(request, creation_key=None):
             # with the same domain as user's email already exists
             return redirect_to_email_login_url(email)
     else:
-        form = RealmCreationForm(domain=request.session.get("domain"))
+        form = RealmCreationForm()
     return render_to_response('zerver/create_realm.html',
                               {'form': form, 'current_url': request.get_full_path},
                               request=request)
