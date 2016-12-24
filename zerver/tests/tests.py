@@ -1638,7 +1638,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_toggling_left_side_userlist(self):
         # type: () -> None
-        self.check_for_toggle_param("/json/left_side_userlist", "left_side_userlist")
+        self.check_for_toggle_param_patch("/json/settings/display", "left_side_userlist")
 
     def test_time_setting(self):
         # type: () -> None
