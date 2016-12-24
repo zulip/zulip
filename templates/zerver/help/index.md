@@ -112,7 +112,7 @@ as a “**realm**”.
 * Add an alert word
 
 ## Tools & Customization
-* Keyboard shortcuts
+* [Keyboard shortcuts](/help/keyboard-shortcuts)
 * Add a bot or integration
 
 ## Apps
