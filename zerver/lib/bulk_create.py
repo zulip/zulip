@@ -4,7 +4,7 @@ from six import text_type
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, Huddle, \
-    Subscription, Recipient, Client, get_huddle_hash, email_to_domain
+    Subscription, Recipient, Client, get_huddle_hash
 from zerver.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):

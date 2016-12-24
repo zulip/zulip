@@ -32,7 +32,6 @@ from zerver.lib.test_helpers import (
 )
 
 from zerver.models import (
-    get_realm,
     get_stream,
     get_user_profile_by_email,
     get_realm_by_email_domain,
