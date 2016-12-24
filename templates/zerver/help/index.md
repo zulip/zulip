@@ -93,7 +93,7 @@ as a “**realm**”.
 * [Rename a stream](/help/rename-stream)
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-stream)
-* Change who can join a stream
+* [Change who can join a stream](/help/change-stream-accessibility)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-stream-color)
 * Message a stream by email
@@ -151,7 +151,7 @@ as a “**realm**”.
 * Set default streams for new users
 * [Rename a stream](/help/rename-stream)
 * Change a stream's description
-* Make a public stream private
+* [Make a public stream private](/help/change-stream-accessibility#make-a-public-stream-private)
 * Add or remove users from a stream
 
 ---
