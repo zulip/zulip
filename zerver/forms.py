@@ -108,9 +108,7 @@ class HomepageForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.string_id = kwargs.get("string_id")
-        if "string_id" in kwargs:
-            del kwargs["string_id"]
+        self.string_id = kwargs.pop("string_id", None)
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
