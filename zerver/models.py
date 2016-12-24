@@ -241,6 +241,8 @@ class Realm(ModelReprMixin, models.Model):
 
 post_save.connect(flush_realm, sender=Realm)
 
+# This function is about to be deprecated. Consider using
+# get_realm_by_string_id instead.
 def get_realm(domain):
     # type: (Text) -> Optional[Realm]
     if not domain:

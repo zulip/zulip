@@ -10,7 +10,7 @@ from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from jinja2 import Markup as mark_safe
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
-from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
+from zerver.models import UserActivity, UserActivityInterval, Realm
 from zerver.lib.timestamp import timestamp_to_datetime
 
 from collections import defaultdict
