@@ -156,13 +156,6 @@ class RealmCreationForm(forms.Form):
     # validators.
     email = forms.EmailField(validators=[user_email_is_unique, email_is_not_disposable])
 
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        self.domain = kwargs.get("domain")
-        if "domain" in kwargs:
-            del kwargs["domain"]
-        super(RealmCreationForm, self).__init__(*args, **kwargs)
-
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
         # type: (bool) -> UserProfile
