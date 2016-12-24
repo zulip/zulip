@@ -950,7 +950,7 @@ class UserSignUpTest(ZulipTestCase):
         realm.invite_required = False
         realm.save()
 
-        result = self.client_post('/register/zulip.com/', {'email': email})
+        result = self.client_post('/register/zulip/', {'email': email})
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
