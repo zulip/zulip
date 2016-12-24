@@ -299,11 +299,7 @@ def accounts_accept_terms(request):
 
 def create_homepage_form(request, user_info=None):
     # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        realm = get_realm_by_string_id(get_subdomain(request))
-    else:
-        realm = get_realm(request.session.get("domain"))
-
+    realm = get_realm_from_request(request)
     if user_info:
         return HomepageForm(user_info, realm=realm)
     # An empty fields dict is not treated the same way as not
@@ -396,6 +392,12 @@ def create_realm(request, creation_key=None):
 def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
+
+def get_realm_from_request(request):
+    # type: (HttpRequest) -> Realm
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        return get_realm_by_string_id(get_subdomain(request))
+    return get_realm(request.session.get("domain"))
 
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
