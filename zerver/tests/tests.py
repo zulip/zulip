@@ -1552,23 +1552,23 @@ class ChangeSettingsTest(ZulipTestCase):
 
     # TODO: requires method consolidation, right now, there's no alternative
     # for check_for_toggle_param for PATCH.
-    def check_for_toggle_param_patch(self, pattern, url):
+    def check_for_toggle_param_patch(self, pattern, param):
         # type: (str, str) -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         json_result = self.client_patch(pattern,
-                                        {url: ujson.dumps(True)})
+                                        {param: ujson.dumps(True)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.assertEqual(getattr(user_profile, url), True)
+        self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client_patch(pattern,
-                                        {url: ujson.dumps(False)})
+                                        {param: ujson.dumps(False)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.assertEqual(getattr(user_profile, url), False)
+        self.assertEqual(getattr(user_profile, param), False)
 
     def test_successful_change_settings(self):
         # type: () -> None
