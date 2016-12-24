@@ -299,26 +299,26 @@ def accounts_accept_terms(request):
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
-    domain = request.session.pop('domain', None)
-    if domain is not None:
-        # domain was set in accounts_home_with_domain.
+    realm_str = request.session.pop('realm_str', None)
+    if realm_str is not None:
+        # realm_str was set in accounts_home_with_realm_str.
         # The user is trying to sign up for a completely open realm,
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
-                                                  realm=get_realm(domain),
+                                                  realm=get_realm_by_string_id(realm_str),
                                                   realm_creation=realm_creation)
 
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
-def accounts_home_with_domain(request, domain):
+def accounts_home_with_realm_str(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
-    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm(domain)):
+    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm_by_string_id(realm_str)):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
         # URL. We store this information in the session rather than
         # elsewhere because we don't have control over URL or form
         # data for folks registering through OpenID.
-        request.session["domain"] = domain
+        request.session["realm_str"] = realm_str
         return accounts_home(request)
     else:
         return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
@@ -384,8 +384,10 @@ def confirmation_key(request):
 def get_realm_from_request(request):
     # type: (HttpRequest) -> Realm
     if settings.REALMS_HAVE_SUBDOMAINS:
-        return get_realm_by_string_id(get_subdomain(request))
-    return get_realm(request.session.get("domain"))
+        realm_str = get_subdomain(request)
+    else:
+        realm_str = request.session.get("realm_str")
+    return get_realm_by_string_id(realm_str)
 
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
