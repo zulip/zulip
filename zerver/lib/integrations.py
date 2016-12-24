@@ -109,6 +109,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
+    WebhookIntegration('delighted', display_name='Delighted'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
     GithubIntegration(
