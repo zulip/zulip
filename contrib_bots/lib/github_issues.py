@@ -19,18 +19,11 @@ class IssueHandler(object):
 
     URL = 'https://api.github.com/repos/{}/{}/issues'
     CHARACTER_LIMIT = 70
-    CONFIG_FILE = '~/.github-issue-bot/github-issue-bot.conf'
-    REPO_NAME = ''
-    REPO_OWNER = ''
+    CONFIG_FILE = '~/.github-auth.conf'
 
     def __init__(self):
-        # gets token from config file
-        # Token at CONFIG_FILE address
-        config = six.moves.configparser.ConfigParser()
-        config.read([os.path.expanduser(self.CONFIG_FILE)])
-
-        self.REPO_NAME = config.get('github', 'github_repo')
-        self.REPO_OWNER = config.get('github', 'github_repo_owner')
+        self.repo_name = github.get_repo()
+        self.repo_owner = github.get_repo_owner()
 
     def usage(self):
         return '''
@@ -45,11 +38,11 @@ class IssueHandler(object):
             with access to public repositories ONLY,
             and that the repository name is entered correctly.
 
-            Check ~/.github-issue-bot/github-issue-bot.conf, and make sure there are
-            github_repo   (The name of the repo to post to)
-            github_repo_owner   (The owner of the repo to post to)
-            github_username   (The username of the github bot)
-            github_token    (The personal access token for the github bot)
+            Check ~/.github-auth.conf, and make sure there are
+            github_repo = <repo_name>  (The name of the repo to post to)
+            github_repo_owner = <repo_owner>  (The owner of the repo to post to)
+            github_username = <username>  (The username of the GitHub bot)
+            github_token = <oauth_token>   (The personal access token for the GitHub bot)
             '''
 
     def triage_message(self, message, client):
