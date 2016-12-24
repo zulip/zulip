@@ -14,6 +14,7 @@ import jwt
 import mock
 import re
 
+from zerver.forms import HomepageForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
@@ -1467,7 +1468,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 return True
 
         with self.settings(ONLY_SSO=True):
-            with mock.patch('zerver.views.auth.create_homepage_form', return_value=Form()):
+            with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 0)
                 result = maybe_send_to_registration(request, 'hamlet@zulip.com')
                 self.assertEqual(result.status_code, 302)
@@ -1501,7 +1502,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         user.save()
 
         with self.settings(ONLY_SSO=True):
-            with mock.patch('zerver.views.auth.create_homepage_form', return_value=Form()):
+            with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
                 result = maybe_send_to_registration(request, email)
                 self.assertEqual(result.status_code, 302)
