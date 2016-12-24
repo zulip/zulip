@@ -14,10 +14,12 @@ Before running this bot, make sure to get a GitHub OAuth token.
 You can look at this tutorial if you need help:
 <https://help.github.com/articles/creating-an-access-token-for-command-line-use/>
 The token will need to be authorized for the following scopes: `gist, public_repo, user`.
-Store it in the `github_token.txt` file.
-The `github_token.txt` file should be located at `~/github_token.txt`.
-Please input info like this:
-`/<username>/<repository_owner>/<repository>/<issue_number>/<your_comment`.
+Store it in the `~/github-auth.conf` file, along with your username, in the format:
+github_repo = <repo_name>  (The name of the repo to post to)
+github_repo_owner = <repo_owner>  (The owner of the repo to post to)
+github_username = <username>  (The username of the GitHub bot)
+github_token = <oauth_token>   (The personal access token for the GitHub bot)
+`<repository_owner>/<repository>/<issue_number>/<your_comment`.
 
 ## Running the bot
 
