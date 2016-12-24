@@ -12,7 +12,7 @@ from zerver.lib.validator import check_list, check_string
 from zerver.lib.actions import do_add_alert_words, do_remove_alert_words, do_set_alert_words
 from zerver.lib.alert_words import user_alert_words
 
-from six import text_type
+from typing import Text
 
 def list_alert_words(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -21,7 +21,7 @@ def list_alert_words(request, user_profile):
 @has_request_variables
 def set_alert_words(request, user_profile,
                     alert_words=REQ(validator=check_list(check_string), default=[])):
-    # type: (HttpRequest, UserProfile, List[text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
     do_set_alert_words(user_profile, alert_words)
     return json_success()
 

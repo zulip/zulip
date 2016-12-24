@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from six import text_type
+from typing import Text
 
 from zerver.decorator import to_non_negative_int
 from zerver.lib.actions import do_update_pointer
