@@ -316,21 +316,22 @@ def create_homepage_form(request, user_info=None):
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (Text, HttpRequest, bool) -> HttpResponse
     domain = request.session.get("domain")
-    if completely_open(domain):
+    realm = get_realm(domain)
+    if completely_open(realm):
         # Clear the "domain" from the session object; it's no longer needed
         request.session["domain"] = None
 
         # The user is trying to sign up for a completely open realm,
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
-                                                  realm=get_realm(domain),
+                                                  realm=realm,
                                                   realm_creation=realm_creation)
 
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
 def accounts_home_with_domain(request, domain):
     # type: (HttpRequest, str) -> HttpResponse
-    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(domain):
+    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm(domain)):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
         # URL. We store this information in the session rather than

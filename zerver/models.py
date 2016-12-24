@@ -261,12 +261,11 @@ def get_realm_by_string_id(string_id):
     except Realm.DoesNotExist:
         return None
 
-def completely_open(domain):
-    # type: (Text) -> bool
-    # This domain is completely open to everyone on the internet to
-    # join. E-mail addresses do not need to match the domain and
+def completely_open(realm):
+    # type: (Realm) -> bool
+    # This realm is completely open to everyone on the internet to
+    # join. E-mail addresses do not need to match a realmalias and
     # an invite from an existing user is not required.
-    realm = get_realm(domain)
     if not realm:
         return False
     return not realm.invite_required and not realm.restricted_to_domain
