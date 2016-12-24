@@ -297,15 +297,6 @@ def accounts_accept_terms(request):
          'special_message_template': special_message_template},
         request=request)
 
-def create_homepage_form(request, user_info=None):
-    # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
-    realm = get_realm_from_request(request)
-    if user_info:
-        return HomepageForm(user_info, realm=realm)
-    # An empty fields dict is not treated the same way as not
-    # providing it.
-    return HomepageForm(realm=realm)
-
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (text_type, HttpRequest, bool) -> HttpResponse
     domain = request.session.get("domain")
@@ -401,8 +392,9 @@ def get_realm_from_request(request):
 
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
+    realm = get_realm_from_request(request)
     if request.method == 'POST':
-        form = create_homepage_form(request, user_info=request.POST)
+        form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
             email = form.cleaned_data['email']
             send_registration_completion_email(email, request)
@@ -414,7 +406,7 @@ def accounts_home(request):
         except ValidationError:
             return redirect_to_email_login_url(email)
     else:
-        form = create_homepage_form(request)
+        form = HomepageForm(realm=realm)
     return render_to_response('zerver/accounts_home.html',
                               {'form': form, 'current_url': request.get_full_path},
                               request=request)

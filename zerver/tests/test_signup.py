@@ -12,7 +12,8 @@ from confirmation.models import Confirmation
 
 from zilencer.models import Deployment
 
-from zerver.views import do_change_password, create_homepage_form
+from zerver.forms import HomepageForm
+from zerver.views import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
@@ -986,7 +987,7 @@ class UserSignUpTest(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = realm.host)
             request.session = {} # type: ignore
-            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            form = HomepageForm({'email': 'user@acme.com'}, realm=realm)
             self.assertIn("trying to join, zulip, only allows users with e-mail", form.errors['email'][0])
 
     def test_failed_signup_due_to_invite_required(self):
@@ -996,7 +997,7 @@ class UserSignUpTest(ZulipTestCase):
         realm.save()
         request = HostRequestMock(host = realm.host)
         request.session = {} # type: ignore
-        form = create_homepage_form(request, {'email': 'user@zulip.com'})
+        form = HomepageForm({'email': 'user@zulip.com'}, realm=realm)
         self.assertIn("Please request an invite from", form.errors['email'][0])
 
     def test_failed_signup_due_to_nonexistent_realm(self):
@@ -1004,7 +1005,7 @@ class UserSignUpTest(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
             request.session = {} # type: ignore
-            form = create_homepage_form(request, {'email': 'user@acme.com'})
+            form = HomepageForm({'email': 'user@acme.com'}, realm=None)
             self.assertIn("organization you are trying to join does not exist", form.errors['email'][0])
 
     def test_registration_through_ldap(self):
