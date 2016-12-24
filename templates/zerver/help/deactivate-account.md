@@ -20,26 +20,10 @@ We'd be sorry to see you go, but you can follow the following steps to deactivat
 
 6. After clicking the **Deactivate now** button, you will be logged out and returned to the Zulip login page.
 
-Please note that you cannot register a Zulip account using the email address of a deactivated account. However, you can ask a Zulip realm administrator to reactivate your account.
+Please note that you cannot register a Zulip account using the email address of a deactivated account.
+
+In addition, if you're the only administrator in the realm, you cannot deactivate your account; you need to make another user an administrator first before you can deactivate your account.
 
 ## Reactivating an account
 
-Zulip realm administrators can choose to reactivate a user's deactivated account by following the following steps.
-
-1. Click the cog (![cog](/static/images/help/cog.png)) in the upper right corner of the right sidebar.
-
-2. Select **Administration** from the dropdown menu that appears.
-
-    ![Administration dropdown](/static/images/help/administration.png)
-
-3. Upon clicking **Administration**, your view will be replaced with the **Administration** page. Click the **Deactivated Users** tab at the top of the panel; it turns gray upon hover.
-
-    ![Administration](/static/images/help/admin-panel-deactivated-users.png)
-
-4. In the **Deactivated users** section, click the orange **Reactivate** button to the right of the user account that you want to reactivate.
-
-    ![Deactivated Users](/static/images/help/deactivate-panel.png)
-
-5. After clicking the **Reactivate** button, the button will transform into a red **Deactivate** button, confirming the success of the account's reactivation.
-
-    ![Reactivate success](/static/images/help/reactivate-success.png)
+If you regret deactivating your account, you can ask a Zulip realm administrator to [reactivate](/help/deactivate-reactivate#reactivate-a-user) your account.
