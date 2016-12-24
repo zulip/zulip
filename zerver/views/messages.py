@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
-from six import text_type
+from typing import Text
 from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
 from zerver.lib.str_utils import force_bytes, force_text
 
@@ -138,7 +138,7 @@ class NarrowBuilder(object):
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
 
     def _pg_re_escape(self, pattern):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         """
         Escape user input to place in a regex
 
@@ -312,7 +312,7 @@ class NarrowBuilder(object):
 # unicode characters, not in bytes, so we do our processing with text,
 # not bytes.
 def highlight_string_text_offsets(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
+    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
     string = force_text(text)
     highlight_start = u'<span class="highlight">'
     highlight_stop = u'</span>'
@@ -329,7 +329,7 @@ def highlight_string_text_offsets(text, locs):
     return result
 
 def highlight_string_bytes_offsets(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
+    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
     string = force_bytes(text)
     highlight_start = b'<span class="highlight">'
     highlight_stop = b'</span>'
@@ -346,14 +346,14 @@ def highlight_string_bytes_offsets(text, locs):
     return force_text(result)
 
 def highlight_string(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> text_type
+    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
     if settings.USING_PGROONGA:
         return highlight_string_bytes_offsets(text, locs)
     else:
         return highlight_string_text_offsets(text, locs)
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
-    # type: (text_type, text_type, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, text_type]
+    # type: (Text, Text, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, Text]
     return dict(match_content=highlight_string(rendered_content, content_matches),
                 match_subject=highlight_string(escape_html(subject), subject_matches))
 
@@ -374,7 +374,7 @@ def narrow_parameter(json):
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
             if (len(elem) != 2
-                or any(not isinstance(x, str) and not isinstance(x, six.text_type)
+                or any(not isinstance(x, str) and not isinstance(x, Text)
                        for x in elem)):
                 raise ValueError("element is not a string pair")
             return dict(operator=elem[0], operand=elem[1])
@@ -401,7 +401,7 @@ def narrow_parameter(json):
     return list(map(convert_term, data))
 
 def is_public_stream(stream_name, realm):
-    # type: (text_type, Realm) -> bool
+    # type: (Text, Realm) -> bool
     """
     Determine whether a stream is public, so that
     our caller can decide whether we can get
@@ -447,7 +447,7 @@ def ok_to_include_history(narrow, realm):
     return include_history
 
 def get_stream_name_from_narrow(narrow):
-    # type: (Iterable[Dict[str, Any]]) -> Optional[text_type]
+    # type: (Iterable[Dict[str, Any]]) -> Optional[Text]
     for term in narrow:
         if term['operator'] == 'stream':
             return term['operand'].lower()
@@ -612,7 +612,7 @@ def get_old_messages_backend(request, user_profile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from remote cache using the
     # 'messages' list.
-    search_fields = dict() # type: Dict[int, Dict[str, text_type]]
+    search_fields = dict() # type: Dict[int, Dict[str, Text]]
     message_ids = [] # type: List[int]
     user_message_flags = {} # type: Dict[int, List[str]]
     if include_history:
@@ -674,7 +674,7 @@ def update_message_flags(request, user_profile,
                          all=REQ(validator=check_bool, default=False),
                          stream_name=REQ(default=None),
                          topic_name=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, List[int], text_type, text_type, bool, Optional[text_type], Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[int], Text, Text, bool, Optional[Text], Optional[Text]) -> HttpResponse
     if all:
         target_count_str = "all"
     else:
@@ -707,7 +707,7 @@ def update_message_flags(request, user_profile,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):
-    # type: (HttpResponse, UserProfile, Iterable[text_type]) -> Tuple[bool, UserProfile]
+    # type: (HttpResponse, UserProfile, Iterable[Text]) -> Tuple[bool, UserProfile]
     if "sender" not in request.POST:
         return (False, None)
 
@@ -743,7 +743,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     return (True, sender)
 
 def same_realm_zephyr_user(user_profile, email):
-    # type: (UserProfile, text_type) -> bool
+    # type: (UserProfile, Text) -> bool
     #
     # Are the sender and recipient both addresses in the same Zephyr
     # mirroring realm?  We have to handle this specially, inferring
@@ -761,7 +761,7 @@ def same_realm_zephyr_user(user_profile, email):
         RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_irc_user(user_profile, email):
-    # type: (UserProfile, text_type) -> bool
+    # type: (UserProfile, Text) -> bool
     # Check whether the target email address is an IRC user in the
     # same realm as user_profile, i.e. if the domain were example.com,
     # the IRC user would need to be username@irc.example.com
@@ -775,7 +775,7 @@ def same_realm_irc_user(user_profile, email):
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_jabber_user(user_profile, email):
-    # type: (UserProfile, text_type) -> bool
+    # type: (UserProfile, Text) -> bool
     try:
         validators.validate_email(email)
     except ValidationError:
@@ -801,7 +801,7 @@ def send_message_backend(request, user_profile,
                          domain = REQ('domain', default=None),
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
-    # type: (HttpRequest, UserProfile, text_type, List[text_type], bool, Optional[text_type], text_type, Optional[text_type], Optional[text_type], Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, List[Text], bool, Optional[Text], Text, Optional[Text], Optional[Text], Optional[Text]) -> HttpResponse
     client = request.client
     is_super_user = request.user.is_api_super_user
     if forged and not is_super_user:
@@ -868,7 +868,7 @@ def update_message_backend(request, user_profile,
                            subject=REQ(default=None),
                            propagate_mode=REQ(default="change_one"),
                            content=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, int, Optional[text_type], Optional[str], Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[str], Optional[Text]) -> HttpResponse
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing."))
 
@@ -907,7 +907,7 @@ def update_message_backend(request, user_profile,
         if subject == "":
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
-    links_for_embed = set()  # type: Set[text_type]
+    links_for_embed = set()  # type: Set[Text]
     if content is not None:
         content = content.strip()
         if content == "":
@@ -946,7 +946,7 @@ def json_fetch_raw_message(request, user_profile,
 
 @has_request_variables
 def render_message_backend(request, user_profile, content=REQ()):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     message = Message()
     message.sender = user_profile
     message.content = content

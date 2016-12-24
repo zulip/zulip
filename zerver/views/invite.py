@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from six import text_type
+from typing import Text
 from typing import Set
 
 from zerver.decorator import authenticated_json_post_view

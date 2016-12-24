@@ -8,7 +8,7 @@ from zerver.lib.validator import check_dict, check_string
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
+from typing import Text
 from typing import Dict, Any, Iterable, Optional
 
 @api_key_only_webhook_view('Papertrail')
@@ -17,7 +17,7 @@ def api_papertrail_webhook(request, user_profile, client,
                            payload=REQ(argument_type='body'),
                            stream=REQ(default='papertrail'),
                            topic=REQ(default='logs')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Text) -> HttpResponse
 
     # construct the message of the message
     try:

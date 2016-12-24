@@ -1,12 +1,13 @@
+from __future__ import absolute_import
 from django.http import HttpRequest, HttpResponse
 from django.core.exceptions import ValidationError
+from typing import Text
 
 from zerver.models import UserProfile
 
 from zerver.lib.response import json_success, json_error
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 
-from six import text_type
 
 def list_emoji(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
@@ -23,6 +24,6 @@ def upload_emoji(request, user_profile):
     return json_success()
 
 def delete_emoji(request, user_profile, emoji_name):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     do_remove_realm_emoji(user_profile.realm, emoji_name)
     return json_success()

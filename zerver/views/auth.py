@@ -12,7 +12,7 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
-from six import text_type
+from typing import Text
 from six.moves import urllib
 from typing import Any, Dict, Optional, Tuple, Text
 
@@ -36,7 +36,7 @@ import time
 import ujson
 
 def maybe_send_to_registration(request, email, full_name=''):
-    # type: (HttpRequest, text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, Text, Text) -> HttpResponse
     form = create_homepage_form(request, user_info={'email': email})
     request.verified_email = None
     if form.is_valid():
@@ -75,7 +75,7 @@ def redirect_to_subdomain_login_url():
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
                                   invalid_subdomain=False):
-    # type: (HttpRequest, text_type, UserProfile, text_type, Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, Text, UserProfile, Text, Optional[bool]) -> HttpResponse
     if invalid_subdomain:
         # Show login page with an error message
         return redirect_to_subdomain_login_url()

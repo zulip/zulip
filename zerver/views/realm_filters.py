@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from six import text_type
+from typing import Text
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -25,7 +25,7 @@ def list_filters(request, user_profile):
 @has_request_variables
 def create_filter(request, user_profile, pattern=REQ(),
                   url_format_string=REQ()):
-    # type: (HttpRequest, UserProfile, text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text) -> HttpResponse
     try:
         filter_id = do_add_realm_filter(
             realm=user_profile.realm,
