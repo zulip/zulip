@@ -119,7 +119,7 @@ class StreamAdminTest(ZulipTestCase):
         params = {
             'stream_name': 'private_stream'
         }
-        result = self.client_post("/json/make_stream_public", params)
+        result = self.client_post("/json/streams/private_stream", params)
         self.assert_json_error(result, 'You are not invited to this stream.')
 
         self.subscribe_to_stream(email, 'private_stream')
@@ -128,7 +128,7 @@ class StreamAdminTest(ZulipTestCase):
         params = {
             'stream_name': 'private_stream'
         }
-        result = self.client_post("/json/make_stream_public", params)
+        result = self.client_post("/json/streams/private_stream", params)
         self.assert_json_success(result)
 
         realm = user_profile.realm
@@ -147,7 +147,7 @@ class StreamAdminTest(ZulipTestCase):
         params = {
             'stream_name': 'public_stream'
         }
-        result = self.client_post("/json/make_stream_private", params)
+        result = self.client_post("/json/streams/public_stream", params)
         self.assert_json_success(result)
         stream = Stream.objects.get(name='public_stream', realm=realm)
         self.assertTrue(stream.invite_only)
