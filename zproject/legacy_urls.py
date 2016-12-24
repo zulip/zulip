@@ -42,5 +42,4 @@ legacy_urls = [
     url(r'^json/messages_in_narrow$',        zerver.views.messages.json_messages_in_narrow),
     url(r'^json/update_message$',            zerver.views.messages.json_update_message),
     url(r'^json/set_muted_topics$',          zerver.views.json_set_muted_topics),
-    url(r'^json/left_side_userlist$',        zerver.views.user_settings.json_left_side_userlist),
     ]

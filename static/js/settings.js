@@ -408,7 +408,7 @@ function _setup_page() {
         }
 
         channel.patch({
-            url: '/json/left_side_userlist',
+            url: '/json/settings/display',
             data: data,
             success: function () {
                 ui.report_success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),

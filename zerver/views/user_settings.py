@@ -95,27 +95,12 @@ def json_change_settings(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
-@has_request_variables
-def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
-    result = {}
-    if (left_side_userlist is not None and
-            user_profile.left_side_userlist != left_side_userlist):
-
-        do_change_left_side_userlist(user_profile, left_side_userlist)
-
-    result['left_side_userlist'] = left_side_userlist
-
-    return json_success(result)
-
-# TODO: Merge json_left_side_userlist endpoint
-# into this one; it should be straightforward
 @has_request_variables
 def update_display_settings_backend(request, user_profile,
                                     twenty_four_hour_time=REQ(validator=check_bool, default=None),
-                                    default_language=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str]) -> HttpResponse
+                                    default_language=REQ(validator=check_string, default=None),
+                                    left_side_userlist=REQ(validator=check_bool, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
@@ -130,6 +115,11 @@ def update_display_settings_backend(request, user_profile,
             user_profile.twenty_four_hour_time != twenty_four_hour_time):
         do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
         result['twenty_four_hour_time'] = twenty_four_hour_time
+
+    elif (left_side_userlist is not None and
+            user_profile.left_side_userlist != left_side_userlist):
+        do_change_left_side_userlist(user_profile, left_side_userlist)
+        result['left_side_userlist'] = left_side_userlist
 
     return json_success(result)
 
