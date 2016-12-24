@@ -1,0 +1,15 @@
+Metadata-Version: 1.1
+Name: zulip
+Version: 0.2.5
+Summary: Bindings for the Zulip message API
+Home-page: https://www.zulip.com/dist/api/
+Author: Zulip, Inc.
+Author-email: zulip-devel@googlegroups.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Communications :: Chat
