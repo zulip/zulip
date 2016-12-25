@@ -133,7 +133,7 @@ as a “**realm**”.
 * Only allow admins to invite new users
 * Only allow admins to create new streams
 * Restrict editing of old messages and topics
-* Change the default language
+* [Change the default language for realm](/help/change-the-default-language-for-realm)
 * Add custom emoji
 * Configure authentication methods
 * Add a custom linkification filter
