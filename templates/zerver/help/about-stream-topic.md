@@ -41,7 +41,7 @@ If enabled by the realm administrators, users can
 other users to a stream.
 
 Only realm administrators can make edits to a stream, such as
-[renaming](/help/rename-stream), [deleting](help/delete-a-stream), changing the
+[renaming](/help/rename-stream), [deleting](/help/delete-a-stream), changing the
 description of a stream, [removing users](/help/remove-from-stream) from a
 stream, or changing the accessibility of a stream.
 
