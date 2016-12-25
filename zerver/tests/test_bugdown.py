@@ -41,6 +41,7 @@ import mock
 import os
 import ujson
 import six
+import re
 
 from six.moves import urllib
 from zerver.lib.str_utils import NonBinaryStr
@@ -834,6 +835,35 @@ class BugdownTest(TestCase):
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
             )
+
+    def test_thumbor_external_link(self):
+        # type: () -> None
+        thumbor_host = '127.0.0.1:9995'
+        src_pattern = re.compile(r'src=\"([\S]+)\"')
+        with self.settings(THUMBOR_HOST=thumbor_host, CAMO_URI=''):
+            msg = '[external.jpg](http://i.imgur.com/Jvh1OQm.jpg)'
+            converted = bugdown_convert(msg)
+            image_links = re.findall(src_pattern, converted)
+            self.assertEqual(len(image_links), 2)
+            image_links = [urllib.parse.unquote(l) for l in image_links]
+            for url in image_links:
+                url_query_params = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+                self.assertEqual(url_query_params['expired'], ['0'])
+                self.assertEqual(url_query_params['source_type'], ['external'])
+
+    def test_thumbor_uploads(self):
+        # type: () -> None
+        thumbor_host = '127.0.0.1:9995'
+        src_pattern = re.compile(r'src=\"([\S]+)\"')
+        with self.settings(THUMBOR_HOST=thumbor_host, CAMO_URI=''):
+            image_link = '/user_uploads/1/qwerty/user_upload.jpg'
+            msg = '[user_upload.jpg]({0})'.format(image_link)
+            converted = bugdown_convert(msg)
+            image_links = re.findall(src_pattern, converted)
+            self.assertEqual(len(image_links), 2)
+            image_links = [urllib.parse.unquote(l) for l in image_links]
+            self.assertIn('{0}?size=0x100'.format(image_link), image_links)
+            self.assertIn('{0}?size=0x0'.format(image_link), image_links)
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):

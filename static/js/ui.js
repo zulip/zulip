@@ -294,6 +294,10 @@ exports.lightbox_photo = function (image, user) {
     $("#overlay .image-actions, .image-description, .download").show();
 
     var img = new Image();
+    var originalSrc = $(image).attr('original-src');
+    if (originalSrc) {
+        url = originalSrc;
+    }
     img.src = url;
     $("#overlay .image-preview").html("").show()
         .append(img);

@@ -24,3 +24,4 @@ npm-debug.log
 *.mo
 var/*
 .vscode/
+/zthumbor/thumbor_local_settings.py

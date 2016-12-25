@@ -109,8 +109,12 @@ proxy_port = base_port
 django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
+thumbor_port = base_port + 4
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+
+# Thumbor server address
+os.environ['THUMBOR_HOST'] = '127.0.0.1:{0}'.format(thumbor_port)
 
 # Clean up stale .pyc files etc.
 subprocess.check_call('./tools/clean-repo')
@@ -138,7 +142,9 @@ cmds = [['./tools/compile-handlebars-templates', 'forever'],
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
         ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
-         './puppet/zulip/files/postgresql/process_fts_updates']]
+         './puppet/zulip/files/postgresql/process_fts_updates'],
+        ['/srv/thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
+         '-p', '%s' % (thumbor_port,)]]
 if options.test:
     # Webpack doesn't support 2 copies running on the same system, so
     # in order to support running the Casper tests while a Zulip

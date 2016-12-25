@@ -174,6 +174,8 @@ def main(options):
             DEV_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "py3_dev.txt")
             setup_virtualenv(VENV_PATH, DEV_REQS_FILE, patch_activate_script=True,
                              virtualenv_args=['-p', 'python3'])
+        THUMBOR_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "thumbor.txt")
+        setup_virtualenv("/srv/thumbor-venv", THUMBOR_REQS_FILE, patch_activate_script=True)
     else:
         # Import tools/setup_venv.py instead of running it so that we get an
         # activated virtualenv for the rest of the provisioning process.

@@ -13,7 +13,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
 import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
-    get_old_unclaimed_attachments, Message, UserProfile
+    get_old_unclaimed_attachments, Message, UserProfile, get_realm_by_string_id
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
@@ -316,6 +316,36 @@ class FileUploadTest(ZulipTestCase):
             result = self.client_post("/json/upload_file", {'f1': fp})
             content = ujson.loads(result.content)
             assert sanitize_name(expected) in content['uri']
+
+    def test_thumbnail_local_image(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        thumbor_host = '127.0.0.1:9995'
+        with self.settings(THUMBOR_HOST=thumbor_host):
+            with mock.patch('zerver.views.upload.get_local_file_path') as mock_func:
+                mock_func.return_value = os.path.join(settings.LOCAL_UPLOADS_DIR, 'sdsd/test.jpg')
+                response = self.client_get('/user_uploads/1/sdsd/test.jpg?size=0x100')
+        self.assertEqual(response.status_code, 302)
+        url_split_result = urllib.parse.urlsplit(urllib.parse.unquote(response.url))
+        self.assertEqual(url_split_result.netloc, thumbor_host)
+        self.assertEqual(url_split_result.path, '/unsafe/0x100/smart/sdsd/test.jpg')
+        url_params = urllib.parse.parse_qs(url_split_result.query)
+        self.assertEqual(url_params['source_type'], ['local_file'])
+
+    def test_thumbnail_s3_image(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        thumbor_host = '127.0.0.1:9995'
+        realm = get_realm_by_string_id("zulip")
+        with self.settings(THUMBOR_HOST=thumbor_host, LOCAL_UPLOADS_DIR=None):
+            original_url = '/user_uploads/{0}/test/test.jpg?size=0x100'.format(realm.id)
+            response = self.client_get(original_url)
+        self.assertEqual(response.status_code, 302)
+        url_split_result = urllib.parse.urlsplit(urllib.parse.unquote(response.url))
+        self.assertEqual(url_split_result.netloc, thumbor_host)
+        self.assertEqual(url_split_result.path, '/unsafe/0x100/smart/1/test/test.jpg')
+        url_params = urllib.parse.parse_qs(url_split_result.query)
+        self.assertEqual(url_params['source_type'], ['s3'])
 
     def tearDown(self):
         # type: () -> None

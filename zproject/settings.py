@@ -190,6 +190,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'POST_MIGRATION_CACHE_FLUSHING': False,
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
+                    'THUMBOR_HOST': None,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -1087,3 +1088,6 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
+
+THUMBOR_HOST = os.getenv('THUMBOR_HOST', None)
+THUMBOR_SIGN_KEY = get_secret('thumbor_sign_key')
