@@ -2,7 +2,14 @@ This plugin responds on the same stream and topic with the link of to the anime'
 myanimelist page and some details along with it.
 It looks for messages starting with '@mal'.
 
-Before using this contrib_bot please change the USERNAME and PASSWORD field in contrib_bots/lib/myanimelist.py
+## Setup
+* Make a myanimelist account [here](https://myanimelist.net/register.php?from=%2F) if you don't already have one.
+* Make a file at `~/.myanimelist-credentials` with the following content (inserting your mal username and password at their respective fields.)
+```
+[myanimelist]
+username=
+password=
+```
 
 ### Example Input
 ```

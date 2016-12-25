@@ -1,18 +1,27 @@
-import requests, logging
+import logging
+import os
+import six.moves.configparser
+
+import requests
 from xml.etree import ElementTree
 
 # Signup for a MAL account here https://myanimelist.net/register.php?from=%2F
-USERNAME = '[PLEASE CHANGE]'
-PASSWORD = '[PLEASE CHANGE]'
+CONFIG_FILE = '~/.myanimelist-credentials'
+
+config = six.moves.configparser.ConfigParser()
+
+try:
+    config.read(os.path.expanduser(CONFIG_FILE))
+    USERNAME = config.get('myanimelist', 'username')
+    PASSWORD = config.get('myanimelist', 'password')
+except six.moves.configparser.NoSectionError:
+    logging.error('Please update ~/.myanimelist-credentials file')
+    logging.info('Read myanimelist/docs.md for more details')
+    exit()
 
 # See myanimelist/docs.md for instructions on running this code.
 MAL_SEARCH_URL = "https://myanimelist.net/api/anime/search.xml"
 MAL_PAGE_URL = "https://myanimelist.net/anime/"
-
-# Checks if the username and password has been changed
-if USERNAME == "[PLEASE CHANGE]" or PASSWORD == "[PLEASE CHANGE]":
-    logging.error("Please update the USERNAME and PASSWORD on contrib_bots/lib/mal.py")
-    exit()
 
 class MyanimelistHandler(object):
     '''
@@ -33,7 +42,7 @@ class MyanimelistHandler(object):
         except:
             logging.warning("An unknown error has occured when trying to get data.")
         try:
-            xml = ElementTree.fromstring(response.content).find('entry')
+            first_result = ElementTree.fromstring(response.content).find('entry')
             content_dict = {
                 'id': '',
                 'score': '',
@@ -43,14 +52,14 @@ class MyanimelistHandler(object):
                 'title': '',
             }
             for key in content_dict:
-                content_dict[key] = xml.find(key).text
-                # Makes sure that the key has a value
-                if not content_dict[key]:
-                    logging.error("Can't find value for %s when quering for %s" % (content_dict[key], query))
-                    return None, False
+                current_value = first_result.find(key)
+                if not current_value:
+                    content_dict[key] = current_value.text
+                else:
+                    logging.error("Can't find value for %s when quering for %s" % (key, query))
             return content_dict, True
-        except:
-            logging.error("An unknown error has occured when parsing XML data.")
+        except Exception:
+            logging.exception("An error has occured when parsing XML data.")
             return None, False
 
     def usage(self):
