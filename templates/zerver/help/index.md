@@ -103,7 +103,7 @@ as a “**realm**”.
 
 ## Notifications
 * [Mute a stream](/help/mute-a-stream)
-* Mute a topic
+* [Mute a topic](/help/mute-topic)
 * Set notifications for a single stream
 * Configure desktop notifications
 * Configure audible notifications
