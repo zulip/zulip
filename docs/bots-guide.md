@@ -58,7 +58,7 @@ It presumes that you already have a fully implemented `<my-bot>.py` bot and now 
 6. Run the bot.
 
     * On your Zulip server (and outside the Vagrant environment), navigate to `~/zulip/contrib_bots/`
-    * Run `python run.py ~/zulip/contrib_bots/<my-bot>.py --config-file ~/.zuliprc`. The `~/` before `.zuliprc` should point to the directory containing the file (in this case, it is the home directory).
+    * Run `python run.py ~/zulip/contrib_bots/lib/<my-bot>.py --config-file ~/.zuliprc`. The `~/` before `.zuliprc` should point to the directory containing the file (in this case, it is the home directory).
     * Check the output of the command. It should start with the text the `usage` function returns, followed by logging output similar to this:
     ```
     INFO:root:starting message handling...
@@ -220,6 +220,7 @@ None.
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
+    * Ensure that you bot script is located in zulip/contrib_bots/lib/
 
 * My bot works only on some streams.
     * Subscribe your bot to other streams, as described [here](#how-to-deploy-a-bot).
