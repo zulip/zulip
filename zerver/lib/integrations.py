@@ -199,7 +199,7 @@ HUBOT_LOZENGES = {
     'darksky': HubotLozenge('darksky', display_name='Dark Sky', logo_alt='Dark Sky logo'),
     'hangouts': HubotLozenge('google-hangouts', display_name="Hangouts"),
     'instagram': HubotLozenge('instagram'),
-    'mailchump': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
+    'mailchimp': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
     'translate': HubotLozenge('google-translate', display_name="Translate", logo_alt='Google Translate logo'),
     'youtube': HubotLozenge('youtube', display_name='YouTube', logo_alt='YouTube logo')
 }
