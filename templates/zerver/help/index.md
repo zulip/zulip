@@ -133,7 +133,7 @@ as a “**realm**”.
 * Restrict user email addresses to certain domains
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
-* Only allow admins to create new streams
+* [Only allow admins to create new streams](/help/only-allow-admins-to-create-new-streams-feature)
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Change the default language for your organization](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
