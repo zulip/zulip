@@ -5,7 +5,6 @@ var message_edit = require('./message_edit');
 var narrow = require('./narrow');
 var navigate = require('./navigate');
 var notifications = require('./notifications');
-var rows = require('./rows');
 var stream_color = require('./stream_color');
 var stream_data = require('./stream_data');
 var templates = require('./templates');
@@ -950,3 +949,4 @@ MessageListView.prototype = {
 if (typeof module !== 'undefined') {
     module.exports = MessageListView;
 }
+var rows = require('./rows');
