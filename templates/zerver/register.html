@@ -8,12 +8,12 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 {% block customhead %}
 {{ super() }}
-<script type="text/javascript" src="/static/third/zxcvbn/zxcvbn.js"></script>
+<script type="text/javascript" src="/static/node_modules/zxcvbn/dist/zxcvbn.js"></script>
 {% endblock %}
 
 {% block portico_content %}
 <div class="center-container">
-  <div class="center-block">
+  <div class="center-block" style="padding: 20px 0px">
     <div class="pitch">
         {% trans %}
         <h1>You're almost there.</h1>
@@ -96,14 +96,19 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {{ _('Short Name') }}
                 {% endif %}
             </label>
-            <input id="id_team_subdomain" class="required" type="text"
-                placeholder="{{ _("acme") }}"
-                name="realm_subdomain" maxlength="40" /><b> .{{ external_host }}</b>
-                {% if form.realm_subdomain.errors %}
-                    {% for error in form.realm_subdomain.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
+            <div class="breakpoint">
+                <input id="id_team_subdomain" class="required" type="text"
+                    placeholder="{{ _("acme") }}"
+                       name="realm_subdomain" maxlength="40" />
+                {% if realms_have_subdomains %}
+                <b> .{{ external_host }}</b>
                 {% endif %}
+                    {% if form.realm_subdomain.errors %}
+                        {% for error in form.realm_subdomain.errors %}
+                            <div class="alert alert-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+            </div>
             <div class="help-box">
                 {% if realms_have_subdomains %}
                     {{ _("The address you'll use to sign in to your organization.") }}

@@ -16,7 +16,7 @@ var editability_types = {
 };
 exports.editability_types = editability_types;
 
-function get_editability (message, edit_limit_seconds_buffer) {
+function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
     if (!(message && message.sent_by_me)) {
         return editability_types.NO;
@@ -102,15 +102,15 @@ exports.save = function (row, from_topic_edited_only) {
         message_edit.end(row);
         return;
     }
-    channel.post({
-        url: '/json/update_message',
+    channel.patch({
+        url: '/json/messages/' + message.id,
         data: request,
-        success: function (data) {
+        success: function () {
             if (msg_list === current_msg_list) {
                 row.find(".edit_error").text("Message successfully edited!").removeClass("alert-error").addClass("alert-success").show();
             }
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             if (msg_list === current_msg_list) {
                 var message = channel.xhr_error_message("Error saving edit", xhr);
                 row.find(".edit_error").text(message).show();
@@ -150,7 +150,7 @@ function timer_text(seconds_left) {
     return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
 }
 
-function edit_message (row, raw_content) {
+function edit_message(row, raw_content) {
     var content_top = row.find('.message_content')[0]
         .getBoundingClientRect().top;
 
@@ -205,7 +205,7 @@ function edit_message (row, raw_content) {
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
-        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true});
+        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
     }
 
     // Add tooltip
@@ -301,10 +301,9 @@ function start_edit_maintaining_scroll(row, content) {
 exports.start = function (row) {
     var message = current_msg_list.get(rows.id(row));
     var msg_list = current_msg_list;
-    channel.post({
-        url: '/json/fetch_raw_message',
+    channel.get({
+        url: '/json/messages/' + message.id,
         idempotent: true,
-        data: {message_id: message.id},
         success: function (data) {
             if (current_msg_list === msg_list) {
                 message.raw_content = data.raw_content;
@@ -355,7 +354,7 @@ exports.maybe_show_edit = function (row, id) {
     }
 };
 
-$(document).on('narrow_deactivated.zulip', function (event) {
+$(document).on('narrow_deactivated.zulip', function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = current_msg_list.get_row(idx);

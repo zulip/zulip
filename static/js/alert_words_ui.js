@@ -79,3 +79,7 @@ exports.set_up_alert_words = function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = alert_words_ui;
+}

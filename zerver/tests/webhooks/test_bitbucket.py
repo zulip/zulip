@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
-from typing import Union
+from typing import Union, Text
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -213,17 +212,17 @@ class BitbucketHookTests(WebhookTestCase):
         self.send_and_test_stream_message(fixture_name, self.EXPECTED_SUBJECT, expected_message, **self.api_auth(self.TEST_USER_EMAIL))
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> Union[text_type, Dict[str, text_type]]
+        # type: (Text) -> Union[Text, Dict[str, Text]]
         return {}
 
     def get_payload(self, fixture_name):
-        # type: (text_type) -> Union[text_type, Dict[str, text_type]]
+        # type: (Text) -> Union[Text, Dict[str, Text]]
         return self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
 
     def build_webhook_url(self):
-        # type: () -> text_type
+        # type: () -> Text
         return ''
 
     def build_url(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.URL_TEMPLATE.format(payload=self.get_payload(fixture_name), stream=self.STREAM_NAME)

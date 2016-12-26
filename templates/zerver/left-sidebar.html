@@ -4,14 +4,16 @@
                           {# Special-case this link so we don't actually go to page top. #}
                           <li data-name="home"
                           class="global-filter active-filter"><span class="filter-icon"><i class="icon-vector-home"></i></span><a href="#">{{ _('Home') }} <span class="count"><span class="value"></span></span></a></li>
-                          <li data-name="private" class="global-filter"><span class="filter-icon"><i class="icon-vector-user"></i></span><a href="#narrow/is/private">{{ _('Private messages') }} <span class="count"><span class="value"></span></span></a></li>
+                          <li data-name="private" class="global-filter"><span class="filter-icon"><i class="icon-vector-envelope"></i></span><a href="#narrow/is/private">{{ _('Private messages') }} <span class="count"><span class="value"></span></span></a></li>
                           <li data-name="starred" class="global-filter"><span class="filter-icon"><i class="icon-vector-star"></i></span><a href="#narrow/is/starred">{{ _('Starred messages') }}</a></li>
                           <li data-name="mentioned" class="global-filter"><span class="filter-icon"><i class="icon-vector-tag"></i></span><a href="#narrow/is/mentioned">{{ _('@-mentions') }}<span class="count"><span class="value"></span></span></a></li>
                       </ul>
                       <div id="streams_list" class="zoom-out">
-                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="Subscribed streams"><a href="">{{ _('STREAMS') }}</a></h4>
-                          <a href=""><i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="Subscribe, add, or configure streams"></i></a>
-                          <a href=""><i id='streams_filter_icon' class='icon-vector-search' data-toggle="tooltip" title="Filter streams list"></i></a>
+                        <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Subscribed streams') }}"><a href="">{{ _('STREAMS') }}</a></h4>
+                          <a href="#subscriptions">
+                            <i id="streams_inline_cog" class='icon-vector-cog' data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
+                          </a>
+                          <a href=""><i id='streams_filter_icon' class='icon-vector-search' data-toggle="tooltip" title="{{ _('Filter streams list') }}"></i></a>
                         </div>
                         <div id="topics_header">
                           <div class="all-streams-padding">

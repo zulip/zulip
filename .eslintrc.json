@@ -90,6 +90,48 @@
         "unread_ui": false
     },
     "rules": {
+        "no-restricted-syntax": 1,
+        "no-nested-ternary": 1,
+        "spaced-comment": 1,
+        "space-infix-ops": 1,
+        "newline-per-chained-call": 1,
+        "no-whitespace-before-property": 1,
+        "padded-blocks": 1,
+        "space-in-parens": 1,
+        "eol-last": ["error", "always"],
+        "no-unneeded-ternary": ["error", { "defaultAssignment": false }],
+        "no-case-declarations": "error",
+        "eqeqeq": ["error", "allow-null"],
+        "no-duplicate-imports": "error",
+        "no-undef": "error",
+        "dot-notation": ["error", { "allowKeywords": true }],
+        "no-iterator": "error",
+        "no-dupe-class-members": "error",
+        "no-useless-constructor": "error",
+        "prefer-const": ["error", {
+            "destructuring": "any",
+            "ignoreReadBeforeAssign": true
+        }],
+        "no-const-assign": "error",
+        "no-new-object": 2,
+        "quote-props": ["error", "as-needed", {
+            "keywords": false,
+            "unnecessary": true,
+            "numbers": false
+        }],
+        "no-array-constructor": "error",
+        "array-callback-return": "error",
+        "template-curly-spacing": "error",
+        //The Zulip codebase complies partially with the "no-useless-escape" rule; only regex expressions haven't been updated yet.
+        //Updated regex expressions are currently being tested in casper files and will decide about a potential future enforcement of this rule.
+        "no-useless-escape": 1,
+        "func-style": ["off", "expression"],
+        "wrap-iife": ["error", "outside", { "functionPrototypeMethods": false }],
+        "no-new-func": "error",
+        "space-before-function-paren": ["error", { "anonymous": "always", "named": "never", "asyncArrow": "always" }],
+        "no-param-reassign": 1,
+        "prefer-spread": "error",
+        "arrow-spacing": ["error", { "before": true, "after": true }],
         "no-alert": 2,
         "no-array-constructor": 2,
         "no-caller": 2,
@@ -102,7 +144,7 @@
         "no-div-regex": 2,
         "no-dupe-keys": 2,
         "no-else-return": 2,
-        "no-empty": 1,
+        "no-empty": 2,
         "no-empty-character-class": 2,
         "no-eq-null": 2,
         "no-eval": 2,
@@ -136,7 +178,9 @@
         "no-underscore-dangle": 1,
         "no-loop-func": 2,
         "no-labels": 2,
-        "no-unused-vars": 1,
+        "no-unused-vars": ["error", { "vars": "local", "args": "after-used",
+                                      "varsIgnorePattern": "print_elapsed_time"
+                                    }],
         "no-script-url": 2,
         "no-proto": 2,
         "no-iterator": 2,
@@ -152,7 +196,6 @@
         "complexity": [0, 4],
         "curly": 2,
         "dot-notation": 2,
-        "eqeqeq": 2,
         "guard-for-in": 2,
         "max-depth": [0, 4],
         "max-len": ["error", 100, 2, {
@@ -164,7 +207,7 @@
         }],
         "max-params": [0, 3],
         "max-statements": [0, 10],
-        "new-cap": 1,
+        "new-cap": ["error", { "newIsCap": true, "capIsNew": false }],
         "new-parens": 2,
         "one-var": ["error", "never"],
         "quotes": [1, "single"],
@@ -187,6 +230,6 @@
         "valid-typeof": ["error", { "requireStringLiterals": true }],
         "wrap-iife": 2,
         "wrap-regex": 0,
-        "yoda": 1
+        "yoda": 2
     }
 }

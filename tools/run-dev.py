@@ -62,6 +62,10 @@ parser.add_option('--force', dest='force',
                   action="store_true",
                   default=False, help='Run tests despite possible problems.')
 
+parser.add_option('--enable-tornado-logging', dest='enable_tornado_logging',
+                  action="store_true",
+                  default=False, help='Enable access logs from tornado proxy server.')
+
 (options, arguments) = parser.parse_args()
 
 if not options.force:
@@ -284,6 +288,8 @@ class CombineHandler(BaseWebsocketHandler):
     @web.asynchronous
     def prepare(self):
         # type: () -> None
+        if 'X-REAL-IP' not in self.request.headers:
+            self.request.headers['X-REAL-IP'] = self.request.remote_ip
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super(CombineHandler, self).prepare()
         url = transform_url(
@@ -325,8 +331,8 @@ class TornadoHandler(CombineHandler):
 
 
 class Application(web.Application):
-    def __init__(self):
-        # type: () -> None
+    def __init__(self, enable_logging=False):
+        # type: (bool) -> None
         handlers = [
             (r"/json/events.*", TornadoHandler),
             (r"/api/v1/events.*", TornadoHandler),
@@ -335,7 +341,12 @@ class Application(web.Application):
             (r"/socket.io.*", WebPackHandler),
             (r"/.*", DjangoHandler)
         ]
-        super(Application, self).__init__(handlers)
+        super(Application, self).__init__(handlers, enable_logging=enable_logging)
+
+    def log_request(self, handler):
+        # type: (BaseWebsocketHandler) -> None
+        if self.settings['enable_logging']:
+            super(Application, self).log_request(handler)
 
 
 def on_shutdown():
@@ -364,7 +375,7 @@ print("".join((WARNING,
                    proxy_port), ENDC)))
 
 try:
-    app = Application()
+    app = Application(enable_logging=options.enable_tornado_logging)
     app.listen(proxy_port, address=options.interface)
     ioloop = IOLoop.instance()
     for s in (signal.SIGINT, signal.SIGTERM):

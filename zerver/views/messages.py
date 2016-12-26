@@ -21,6 +21,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import (
     generic_bulk_cached_fetch,
     to_dict_cache_key_id,
@@ -857,9 +858,8 @@ def send_message_backend(request, user_profile,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
-@authenticated_json_post_view
-def json_update_message(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
+def json_update_message(request, user_profile, message_id):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
     return update_message_backend(request, user_profile)
 
 @has_request_variables
@@ -907,6 +907,7 @@ def update_message_backend(request, user_profile,
         if subject == "":
             raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
+    links_for_embed = set()  # type: Set[text_type]
     if content is not None:
         content = content.strip()
         if content == "":
@@ -925,11 +926,17 @@ def update_message_backend(request, user_profile,
         rendered_content = render_incoming_message(message,
                                                    content=content,
                                                    message_users=message_users)
+        links_for_embed |= message.links_for_preview
 
     do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
+    if links_for_embed and getattr(settings, 'INLINE_URL_EMBED_PREVIEW', None):
+        event_data = {
+            'message_id': message.id,
+            'message_content': message.content,
+            'urls': links_for_embed}
+        queue_json_publish('embed_links', event_data, lambda x: None)
     return json_success()
 
-@authenticated_json_post_view
 @has_request_variables
 def json_fetch_raw_message(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int)):

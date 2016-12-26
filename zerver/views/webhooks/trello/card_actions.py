@@ -1,5 +1,4 @@
-from six import text_type
-from typing import Dict, Tuple, Any, Optional, MutableMapping, Mapping
+from typing import Dict, Tuple, Any, Optional, MutableMapping, Mapping, Text
 from datetime import datetime
 from .exceptions import UnknownUpdateCardAction
 from .templates import TRELLO_SUBJECT_TEMPLATE, TRELLO_MESSAGE_TEMPLATE
@@ -53,12 +52,12 @@ ACTIONS_TO_MESSAGE_MAPPER = {
 }
 
 def process_card_action(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> Tuple[text_type, text_type]
+    # type: (Mapping[str, Any], Text) -> Tuple[Text, Text]
     action_type = get_proper_action(payload, action_type)
     return get_subject(payload), get_body(payload, action_type)
 
 def get_proper_action(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     if action_type == 'updateCard':
         data = get_action_data(payload)
         if data.get('listBefore'):
@@ -81,27 +80,27 @@ def get_proper_action(payload, action_type):
     return action_type
 
 def get_subject(payload):
-    # type: (Mapping[str, Any]) -> text_type
+    # type: (Mapping[str, Any]) -> Text
     data = {
         'board_name': get_action_data(payload).get('board').get('name')
     }
     return TRELLO_SUBJECT_TEMPLATE.format(**data)
 
 def get_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     message_body = ACTIONS_TO_FILL_BODY_MAPPER.get(action_type)(payload, action_type)
     creator = payload.get('action').get('memberCreator').get('fullName')
     return TRELLO_MESSAGE_TEMPLATE.format(full_name=creator, rest=message_body)
 
 def get_added_checklist_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'checklist_name': get_action_data(payload).get('checklist').get('name'),
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_added_attachment_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'attachment_url': get_action_data(payload).get('attachment').get('url'),
         'attachment_name': get_action_data(payload).get('attachment').get('name'),
@@ -109,7 +108,7 @@ def get_added_attachment_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_updated_card_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'card_name': get_card_name(payload),
         'old_list': get_action_data(payload).get('listBefore').get('name'),
@@ -118,7 +117,7 @@ def get_updated_card_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_renamed_card_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'old_name': get_action_data(payload).get('old').get('name'),
         'new_name': get_action_data(payload).get('card').get('name'),
@@ -126,7 +125,7 @@ def get_renamed_card_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_added_label_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'color': get_action_data(payload).get('value'),
         'text': get_action_data(payload).get('text'),
@@ -134,14 +133,14 @@ def get_added_label_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_managed_member_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     data = {
         'member_name': payload.get('action').get('member').get('fullName')
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_managed_due_date_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     date_format = "%Y-%m-%dT%H:%M:%S.000Z"
     display_date_format = '%m/%d/%Y %I:%M%p'
     new_date = datetime.strptime(get_action_data(payload).get('card').get('due'), date_format)
@@ -151,7 +150,7 @@ def get_managed_due_date_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_changed_due_date_body(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     date_format = "%Y-%m-%dT%H:%M:%S.000Z"
     display_date_format = '%m/%d/%Y %I:%M%p'
     new_date = datetime.strptime(get_action_data(payload).get('card').get('due'), date_format)
@@ -163,30 +162,30 @@ def get_changed_due_date_body(payload, action_type):
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_body_by_action_type_without_data(payload, action_type):
-    # type: (Mapping[str, Any], text_type) -> text_type
+    # type: (Mapping[str, Any], Text) -> Text
     return fill_appropriate_message_content(payload, action_type)
 
 def fill_appropriate_message_content(payload, action_type, data=None):
-    # type: (Mapping[str, Any], text_type, Optional[Dict[str, Any]]) -> text_type
+    # type: (Mapping[str, Any], Text, Optional[Dict[str, Any]]) -> Text
     data = {} if data is None else data
     data['card_url_template'] = data.get('card_url_template', get_filled_card_url_template(payload))
     message_body = get_message_body(action_type)
     return message_body.format(**data)
 
 def get_filled_card_url_template(payload):
-    # type: (Mapping[str, Any]) -> text_type
+    # type: (Mapping[str, Any]) -> Text
     return TRELLO_CARD_URL_TEMPLATE.format(card_name=get_card_name(payload), card_url=get_card_url(payload))
 
 def get_card_url(payload):
-    # type: (Mapping[str, Any]) -> text_type
+    # type: (Mapping[str, Any]) -> Text
     return u'https://trello.com/c/{}'.format(get_action_data(payload).get('card').get('shortLink'))
 
 def get_message_body(action_type):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return ACTIONS_TO_MESSAGE_MAPPER.get(action_type)
 
 def get_card_name(payload):
-    # type: (Mapping[str, Any]) -> text_type
+    # type: (Mapping[str, Any]) -> Text
     return get_action_data(payload).get('card').get('name')
 
 def get_action_data(payload):

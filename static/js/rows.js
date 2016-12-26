@@ -101,3 +101,7 @@ exports.id_for_recipient_row = function (recipient_row) {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = rows;
+}

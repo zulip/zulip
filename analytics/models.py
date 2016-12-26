@@ -7,11 +7,10 @@ from zerver.lib.timestamp import datetime_to_UTC, floor_to_day
 
 import datetime
 
-from six import text_type
-from typing import Optional, Tuple, Union, Dict, Any
+from typing import Optional, Tuple, Union, Dict, Any, Text
 
 class FillState(ModelReprMixin, models.Model):
-    property = models.CharField(max_length=40, unique=True) # type: text_type
+    property = models.CharField(max_length=40, unique=True) # type: Text
     end_time = models.DateTimeField() # type: datetime.datetime
 
     # Valid states are {DONE, STARTED}
@@ -22,11 +21,11 @@ class FillState(ModelReprMixin, models.Model):
     last_modified = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
     def __unicode__(self):
-        # type: () -> text_type
+        # type: () -> Text
         return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
 def get_fill_state(property):
-    # type: (text_type) -> Optional[Dict[str, Any]]
+    # type: (Text) -> Optional[Dict[str, Any]]
     try:
         return FillState.objects.filter(property = property).values('end_time', 'state')[0]
     except IndexError:
@@ -41,20 +40,20 @@ def installation_epoch():
 
 # would only ever make entries here by hand
 class Anomaly(ModelReprMixin, models.Model):
-    info = models.CharField(max_length=1000) # type: text_type
+    info = models.CharField(max_length=1000) # type: Text
 
     def __unicode__(self):
-        # type: () -> text_type
+        # type: () -> Text
         return u"<Anomaly: %s... %s>" % (self.info, self.id)
 
 class BaseCount(ModelReprMixin, models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
-    property = models.CharField(max_length=32) # type: text_type
-    subgroup = models.CharField(max_length=16, null=True) # type: text_type
+    property = models.CharField(max_length=32) # type: Text
+    subgroup = models.CharField(max_length=16, null=True) # type: Text
     end_time = models.DateTimeField() # type: datetime.datetime
-    interval = models.CharField(max_length=8) # type: text_type
+    interval = models.CharField(max_length=8) # type: Text
     value = models.BigIntegerField() # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
@@ -87,8 +86,8 @@ class InstallationCount(BaseCount):
         return None
 
     def __unicode__(self):
-        # type: () -> text_type
-        return u"<InstallationCount: %s %s>" % (self.property, self.value)
+        # type: () -> Text
+        return u"<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
@@ -107,8 +106,8 @@ class RealmCount(BaseCount):
         return Realm
 
     def __unicode__(self):
-        # type: () -> text_type
-        return u"<RealmCount: %s %s %s>" % (self.realm, self.property, self.value)
+        # type: () -> Text
+        return u"<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
 
 class UserCount(BaseCount):
     user = models.ForeignKey(UserProfile)
@@ -128,8 +127,8 @@ class UserCount(BaseCount):
         return UserProfile
 
     def __unicode__(self):
-        # type: () -> text_type
-        return u"<UserCount: %s %s %s>" % (self.user, self.property, self.value)
+        # type: () -> Text
+        return u"<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
 
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
@@ -149,5 +148,5 @@ class StreamCount(BaseCount):
         return Stream
 
     def __unicode__(self):
-        # type: () -> text_type
-        return u"<StreamCount: %s %s %s %s>" % (self.stream, self.property, self.value, self.id)
+        # type: () -> Text
+        return u"<StreamCount: %s %s %s %s %s>" % (self.stream, self.property, self.subgroup, self.value, self.id)

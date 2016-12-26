@@ -1,0 +1,12 @@
+[uwsgi]
+socket=/home/zulip/deployments/uwsgi-socket
+module=zproject.wsgi:application
+chdir=/home/zulip/deployments/current/
+chmod-socket=700
+chown-socket=zulip:zulip
+processes=<%= @uwsgi_processes %>
+harakiri=20
+post-buffering=4096
+env= LANG=en_US.UTF-8
+uid=zulip
+gid=zulip

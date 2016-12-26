@@ -60,7 +60,7 @@ exports.initialize = function () {
             var obj = search_object[item];
             return obj.description;
         },
-        matcher: function (item) {
+        matcher: function () {
             return true;
         },
         updater: narrow_or_search_for_term,

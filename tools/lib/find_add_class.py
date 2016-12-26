@@ -23,6 +23,8 @@ GENERIC_KEYWORDS = [
     'warning',
     'zoom-in',  # TODO: clean these up, they are confusing
     'zoom-out',
+    'first',
+    'second',
 ]
 
 def raise_error(fn, i, line):

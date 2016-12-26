@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-                    Optional, Sized, Tuple, Union)
+                    Optional, Sized, Tuple, Union, IO)
 
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 
+from zerver.lib.avatar import avatar_url
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
@@ -54,7 +55,8 @@ import time
 import ujson
 import unittest
 from six.moves import urllib
-from six import text_type, binary_type
+from six import binary_type
+from typing import Text
 from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
@@ -78,16 +80,16 @@ def tornado_redirected_to_list(lst):
 
 @contextmanager
 def simulated_empty_cache():
-    # type: () -> Generator[List[Tuple[str, Union[text_type, List[text_type]], text_type]], None, None]
-    cache_queries = [] # type: List[Tuple[str, Union[text_type, List[text_type]], text_type]]
+    # type: () -> Generator[List[Tuple[str, Union[Text, List[Text]], Text]], None, None]
+    cache_queries = [] # type: List[Tuple[str, Union[Text, List[Text]], Text]]
 
     def my_cache_get(key, cache_name=None):
-        # type: (text_type, Optional[str]) -> Any
+        # type: (Text, Optional[str]) -> Any
         cache_queries.append(('get', key, cache_name))
         return None
 
     def my_cache_get_many(keys, cache_name=None):
-        # type: (List[text_type], Optional[str]) -> Dict[text_type, Any]
+        # type: (List[Text], Optional[str]) -> Dict[Text, Any]
         cache_queries.append(('getmany', keys, cache_name))
         return None
 
@@ -141,6 +143,17 @@ def queries_captured(include_savepoints=False):
     TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
+def get_test_image_file(filename):
+    # type: (str) -> IO[Any]
+    test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
+    return open(os.path.join(test_avatar_dir, filename), 'rb')
+
+def avatar_disk_path(user_profile, medium=False):
+    # type: (UserProfile, bool) -> str
+    avatar_url_path = avatar_url(user_profile, medium)
+    avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                    avatar_url_path.split("/")[-1].split("?")[0])
+    return avatar_disk_path
 
 def make_client(name):
     # type: (str) -> Client
@@ -148,7 +161,7 @@ def make_client(name):
     return client
 
 def find_key_by_email(address):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-f0-9]{40})>")
     for message in reversed(outbox):
@@ -209,12 +222,23 @@ class HostRequestMock(object):
     routes that use Zulip's subdomains feature"""
 
     def __init__(self, host=settings.EXTERNAL_HOST):
-        # type: (text_type) -> None
+        # type: (Text) -> None
         self.host = host
 
     def get_host(self):
-        # type: () -> text_type
+        # type: () -> Text
         return self.host
+
+class MockPythonResponse(object):
+    def __init__(self, text, status_code):
+        # type: (Text, int) -> None
+        self.text = text
+        self.status_code = status_code
+
+    @property
+    def ok(self):
+        # type: () -> bool
+        return self.status_code == 200
 
 INSTRUMENTING = os.environ.get('TEST_INSTRUMENT_URL_COVERAGE', '') == 'TRUE'
 INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
@@ -227,7 +251,7 @@ def instrument_url(f):
         return f
     else:
         def wrapper(self, url, info={}, **kwargs):
-            # type: (Any, text_type, Dict[str, Any], **Any) -> HttpResponse
+            # type: (Any, Text, Dict[str, Any], **Any) -> HttpResponse
             start = time.time()
             result = f(self, url, info, **kwargs)
             delay = time.time() - start
@@ -356,7 +380,7 @@ def get_all_templates():
     path_exists = os.path.exists
 
     def is_valid_template(p, n):
-        # type: (text_type, text_type) -> bool
+        # type: (Text, Text) -> bool
         return (not n.startswith('.') and
                 not n.startswith('__init__') and
                 not n.endswith(".md") and

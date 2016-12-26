@@ -16,28 +16,28 @@ class ReactionEmojiTest(ZulipTestCase):
         Sending reaction without emoji fails
         """
         sender = 'hamlet@zulip.com'
-        result = self.client_post('/api/v1/reactions', {'message_id': 1},
-                                  **self.api_auth(sender))
-        self.assert_json_error(result, "Missing 'emoji' argument")
+        result = self.client_put('/api/v1/messages/1/emoji_reactions',
+                                 **self.api_auth(sender))
+        self.assertEqual(result.status_code, 404)
 
-    def test_empty_emoji(self):
-        # type: () -> None
-        """
-        Sending empty emoji fails
-        """
-        sender = 'hamlet@zulip.com'
-        result = self.client_post('/api/v1/reactions', {'message_id': 1, 'emoji': ''},
-                                  **self.api_auth(sender))
-        self.assert_json_error(result, "Emoji '' does not exist")
-
-    def test_invalid_emoji(self):
+    def test_add_invalid_emoji(self):
         # type: () -> None
         """
         Sending invalid emoji fails
         """
         sender = 'hamlet@zulip.com'
-        result = self.client_post('/api/v1/reactions', {'message_id': 1, 'emoji': 'foo'},
-                                  **self.api_auth(sender))
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/foo',
+                                 **self.api_auth(sender))
+        self.assert_json_error(result, "Emoji 'foo' does not exist")
+
+    def test_remove_invalid_emoji(self):
+        # type: () -> None
+        """
+        Removing invalid emoji fails
+        """
+        sender = 'hamlet@zulip.com'
+        result = self.client_delete('/api/v1/messages/1/emoji_reactions/foo',
+                                    **self.api_auth(sender))
         self.assert_json_error(result, "Emoji 'foo' does not exist")
 
     def test_valid_emoji(self):
@@ -46,8 +46,8 @@ class ReactionEmojiTest(ZulipTestCase):
         Reacting with valid emoji succeeds
         """
         sender = 'hamlet@zulip.com'
-        result = self.client_post('/api/v1/reactions', {'message_id': 1, 'emoji': 'smile'},
-                                  **self.api_auth(sender))
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/smile',
+                                 **self.api_auth(sender))
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 
@@ -69,8 +69,8 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertTrue(emoji_name in content["emoji"])
 
-        result = self.client_post('/api/v1/reactions', {'message_id': 1, 'emoji': emoji_name},
-                                  **self.api_auth(sender))
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/%s' % (emoji_name,),
+                                 **self.api_auth(sender))
         self.assert_json_success(result)
 
 class ReactionMessageIDTest(ZulipTestCase):
@@ -80,9 +80,9 @@ class ReactionMessageIDTest(ZulipTestCase):
         Reacting without a message_id fails
         """
         sender = 'hamlet@zulip.com'
-        result = self.client_post('/api/v1/reactions', {'emoji': 'smile'},
-                                  **self.api_auth(sender))
-        self.assert_json_error(result, "Missing 'message_id' argument")
+        result = self.client_put('/api/v1/messages//emoji_reactions/smile',
+                                 **self.api_auth(sender))
+        self.assertEqual(result.status_code, 404)
 
     def test_invalid_message_id(self):
         # type: () -> None
@@ -90,10 +90,9 @@ class ReactionMessageIDTest(ZulipTestCase):
         Reacting to an invalid message id fails
         """
         sender = 'hamlet@zulip.com'
-        message_id = -1
-        result = self.client_post('/api/v1/reactions', {'message_id': message_id, 'emoji': 'smile'},
-                                  **self.api_auth(sender))
-        self.assert_json_error(result, "Bad value for 'message_id': " + str(message_id))
+        result = self.client_put('/api/v1/messages/-1/emoji_reactions/smile',
+                                 **self.api_auth(sender))
+        self.assertEqual(result.status_code, 404)
 
     def test_inaccessible_message_id(self):
         # type: () -> None
@@ -111,8 +110,8 @@ class ReactionMessageIDTest(ZulipTestCase):
         self.assert_json_success(result)
         content = ujson.loads(result.content)
         pm_id = content['id']
-        result = self.client_post('/api/v1/reactions', {'message_id': pm_id, 'emoji': 'smile'},
-                                  **self.api_auth(reaction_sender))
+        result = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
+                                 **self.api_auth(reaction_sender))
         self.assert_json_error(result, "Invalid message(s)")
 
 class ReactionTest(ZulipTestCase):
@@ -131,14 +130,13 @@ class ReactionTest(ZulipTestCase):
                               **self.api_auth(pm_sender))
         self.assert_json_success(pm)
         content = ujson.loads(pm.content)
+
         pm_id = content['id']
-        first = self.client_post('/api/v1/reactions', {'message_id': pm_id,
-                                                       'emoji': 'smile'},
-                                 **self.api_auth(reaction_sender))
+        first = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
+                                **self.api_auth(reaction_sender))
         self.assert_json_success(first)
-        second = self.client_post('/api/v1/reactions', {'message_id': pm_id,
-                                                        'emoji': 'smile'},
-                                  **self.api_auth(reaction_sender))
+        second = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
+                                 **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction already exists")
 
     def test_remove_nonexisting_reaction(self):
@@ -157,18 +155,15 @@ class ReactionTest(ZulipTestCase):
         self.assert_json_success(pm)
         content = ujson.loads(pm.content)
         pm_id = content['id']
-        add = self.client_post('/api/v1/reactions', {'message_id': pm_id,
-                                                     'emoji': 'smile'},
-                               **self.api_auth(reaction_sender))
+        add = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
+                              **self.api_auth(reaction_sender))
         self.assert_json_success(add)
 
-        first = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
-                                                         'emoji': 'smile'},
+        first = self.client_delete('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                                    **self.api_auth(reaction_sender))
         self.assert_json_success(first)
 
-        second = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
-                                                         'emoji': 'smile'},
+        second = self.client_delete('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                                     **self.api_auth(reaction_sender))
         self.assert_json_error(second, "Reaction does not exist")
 
@@ -197,9 +192,8 @@ class ReactionEventTest(ZulipTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_post('/api/v1/reactions', {'message_id': pm_id,
-                                                            'emoji': 'smile'},
-                                      **self.api_auth(reaction_sender))
+            result = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
+                                     **self.api_auth(reaction_sender))
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)
 
@@ -234,15 +228,13 @@ class ReactionEventTest(ZulipTestCase):
         expected_recipient_emails = set([pm_sender, pm_recipient])
         expected_recipient_ids = set([get_user_profile_by_email(email).id for email in expected_recipient_emails])
 
-        add = self.client_post('/api/v1/reactions', {'message_id': pm_id,
-                                                     'emoji': 'smile'},
-                               **self.api_auth(reaction_sender))
+        add = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
+                              **self.api_auth(reaction_sender))
         self.assert_json_success(add)
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_delete('/api/v1/reactions', {'message_id': pm_id,
-                                                              'emoji': 'smile'},
+            result = self.client_delete('/api/v1/messages/%s/emoji_reactions/smile' % (pm_id,),
                                         **self.api_auth(reaction_sender))
         self.assert_json_success(result)
         self.assertEqual(len(events), 1)

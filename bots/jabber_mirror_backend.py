@@ -44,26 +44,32 @@ import threading
 import optparse
 
 from sleekxmpp import ClientXMPP, InvalidJID, JID
+from sleekxmpp.stanza import Message as JabberMessage
 from sleekxmpp.exceptions import IqError, IqTimeout
 from six.moves.configparser import SafeConfigParser
 import os, sys, zulip, getpass
 import re
+from typing import Any, Callable
 
 __version__ = "1.1"
 
 def room_to_stream(room):
+    # type: (str) -> str
     return room + "/xmpp"
 
 def stream_to_room(stream):
+    # type: (str) -> str
     return stream.lower().rpartition("/xmpp")[0]
 
 def jid_to_zulip(jid):
+    # type: (JID) -> str
     suffix = ''
     if not jid.username.endswith("-bot"):
         suffix = options.zulip_email_suffix
     return "%s%s@%s" % (jid.username, suffix, options.zulip_domain)
 
 def zulip_to_jid(email, jabber_domain):
+    # type: (str, str) -> JID
     jid = JID(email, domain=jabber_domain)
     if (options.zulip_email_suffix
         and options.zulip_email_suffix in jid.username
@@ -73,6 +79,7 @@ def zulip_to_jid(email, jabber_domain):
 
 class JabberToZulipBot(ClientXMPP):
     def __init__(self, jid, password, rooms):
+        # type: (JID, str, List[str]) -> None
         if jid.resource:
             self.nick = jid.resource
         else:
@@ -90,15 +97,18 @@ class JabberToZulipBot(ClientXMPP):
         self.register_plugin('xep_0199') # XMPP Ping
 
     def set_zulip_client(self, client):
+        # type: (zulip.Client) -> None
         self.zulip = client
 
     def session_start(self, event):
+        # type: (Dict[str, Any]) -> None
         self.get_roster()
         self.send_presence()
         for room in self.rooms_to_join:
             self.join_muc(room)
 
     def join_muc(self, room):
+        # type: (str) -> None
         if room in self.rooms:
             return
         logging.debug("Joining " + room)
@@ -124,6 +134,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.error("Could not configure room: " + str(muc_jid))
 
     def leave_muc(self, room):
+        # type: (str) -> None
         if room not in self.rooms:
             return
         logging.debug("Leaving " + room)
@@ -132,6 +143,7 @@ class JabberToZulipBot(ClientXMPP):
         self.plugin['xep_0045'].leaveMUC(muc_jid, self.nick)
 
     def message(self, msg):
+        # type: (JabberMessage) -> Any
         try:
             if msg["type"] == "groupchat":
                 return self.group(msg)
@@ -144,6 +156,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.exception("Error forwarding Jabber => Zulip")
 
     def private(self, msg):
+        # type: (JabberMessage) -> None
         if options.mode == 'public' or msg['thread'] == u'\u1FFFE':
             return
         sender = jid_to_zulip(msg["from"])
@@ -160,6 +173,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.error(ret)
 
     def group(self, msg):
+        # type: (JabberMessage) -> None
         if options.mode == 'personal' or msg["thread"] == u'\u1FFFE':
             return
 
@@ -187,6 +201,7 @@ class JabberToZulipBot(ClientXMPP):
             logging.error(ret)
 
     def nickname_to_jid(self, room, nick):
+        # type: (str, str) -> JID
         jid = self.plugin['xep_0045'].getJidProperty(room, nick, "jid")
         if (jid is None or jid == ''):
             return JID(local=nick.replace(' ', ''), domain=self.boundjid.domain)
@@ -195,13 +210,16 @@ class JabberToZulipBot(ClientXMPP):
 
 class ZulipToJabberBot(object):
     def __init__(self, zulip_client):
+        # type: (zulip.Client) -> None
         self.client = zulip_client
         self.jabber = None # type: JabberToZulipBot
 
     def set_jabber_client(self, client):
+        # type: (JabberToZulipBot) -> None
         self.jabber = client
 
     def process_event(self, event):
+        # type: (Dict[str, Any]) -> None
         if event['type'] == 'message':
             message = event["message"]
             if message['sender_email'] != self.client.email:
@@ -220,6 +238,7 @@ class ZulipToJabberBot(object):
             self.process_stream(event)
 
     def stream_message(self, msg):
+        # type: (Dict[str, str]) -> None
         stream = msg['display_recipient']
         if not stream.endswith("/xmpp"):
             return
@@ -234,6 +253,7 @@ class ZulipToJabberBot(object):
         outgoing.send()
 
     def private_message(self, msg):
+        # type: (Dict[str, Any]) -> None
         for recipient in msg['display_recipient']:
             if recipient["email"] == self.client.email:
                 continue
@@ -249,6 +269,7 @@ class ZulipToJabberBot(object):
             outgoing.send()
 
     def process_subscription(self, event):
+        # type: (Dict[str, Any]) -> None
         if event['op'] == 'add':
             streams = [s['name'].lower() for s in event['subscriptions']]
             streams = [s for s in streams if s.endswith("/xmpp")]
@@ -261,6 +282,7 @@ class ZulipToJabberBot(object):
                 self.jabber.leave_muc(stream_to_room(stream))
 
     def process_stream(self, event):
+        # type: (Dict[str, Any]) -> None
         if event['op'] == 'occupy':
             streams = [s['name'].lower() for s in event['streams']]
             streams = [s for s in streams if s.endswith("/xmpp")]
@@ -273,7 +295,9 @@ class ZulipToJabberBot(object):
                 self.jabber.leave_muc(stream_to_room(stream))
 
 def get_rooms(zulip):
+    # type: (zulip) -> List[str]
     def get_stream_infos(key, method):
+        # type: (str, Callable) -> Any
         ret = method()
         if ret.get("result") != "success":
             logging.error(ret)
@@ -285,7 +309,7 @@ def get_rooms(zulip):
     else:
         stream_infos = get_stream_infos("subscriptions", zulip.client.list_subscriptions)
 
-    rooms = []
+    rooms = [] # type: List[str]
     for stream_info in stream_infos:
             stream = stream_info['name']
             if stream.endswith("/xmpp"):
@@ -293,32 +317,33 @@ def get_rooms(zulip):
     return rooms
 
 def config_error(msg):
+    # type: (str) -> None
     sys.stderr.write("%s\n" % (msg,))
     sys.exit(2)
 
 if __name__ == '__main__':
-    parser = optparse.OptionParser(epilog=
-'''Most general and Jabber configuration options may also be specified in the
+    parser = optparse.OptionParser(
+        epilog='''Most general and Jabber configuration options may also be specified in the
 zulip configuration file under the jabber_mirror section (exceptions are noted
 in their help sections).  Keys have the same name as options with hyphens
 replaced with underscores.  Zulip configuration options go in the api section,
 as normal.'''.replace("\n", " ")
                                     )
-    parser.add_option('--mode',
-                      default=None,
-                      action='store',
-                      help=
-'''Which mode to run in.  Valid options are "personal" and "public".  In
+    parser.add_option(
+        '--mode',
+        default=None,
+        action='store',
+        help='''Which mode to run in.  Valid options are "personal" and "public".  In
 "personal" mode, the mirror uses an individual users' credentials and mirrors
 all messages they send on Zulip to Jabber and all private Jabber messages to
 Zulip.  In "public" mode, the mirror uses the credentials for a dedicated mirror
 user and mirrors messages sent to Jabber rooms to Zulip.  Defaults to
 "personal"'''.replace("\n", " "))
-    parser.add_option('--zulip-email-suffix',
-                      default=None,
-                      action='store',
-                      help=
-'''Add the specified suffix to the local part of email addresses constructed
+    parser.add_option(
+        '--zulip-email-suffix',
+        default=None,
+        action='store',
+        help='''Add the specified suffix to the local part of email addresses constructed
 from JIDs and nicks before sending requests to the Zulip server, and remove the
 suffix before sending requests to the Jabber server.  For example, specifying
 "+foo" will cause messages that are sent to the "bar" room by nickname "qux" to
@@ -332,14 +357,15 @@ option does not affect login credentials.'''.replace("\n", " "))
                       default=logging.INFO)
 
     jabber_group = optparse.OptionGroup(parser, "Jabber configuration")
-    jabber_group.add_option('--jid',
-                            default=None,
-                            action='store',
-                            help="Your Jabber JID.  If a resource is specified, "
-                            + "it will be used as the nickname when joining MUCs.  "
-                            + "Specifying the nickname is mostly useful if you want "
-                            + "to run the public mirror from a regular user instead of "
-                            + "from a dedicated account.")
+    jabber_group.add_option(
+        '--jid',
+        default=None,
+        action='store',
+        help="Your Jabber JID.  If a resource is specified, "
+        + "it will be used as the nickname when joining MUCs.  "
+        + "Specifying the nickname is mostly useful if you want "
+        + "to run the public mirror from a regular user instead of "
+        + "from a dedicated account.")
     jabber_group.add_option('--jabber-password',
                             default=None,
                             action='store',
@@ -355,12 +381,12 @@ option does not affect login credentials.'''.replace("\n", " "))
     jabber_group.add_option('--jabber-server-address',
                             default=None,
                             action='store',
-               help="The hostname of your Jabber server. This is only needed if "
+                            help="The hostname of your Jabber server. This is only needed if "
                             "your server is missing SRV records")
     jabber_group.add_option('--jabber-server-port',
                             default='5222',
                             action='store',
-               help="The port of your Jabber server. This is only needed if "
+                            help="The port of your Jabber server. This is only needed if "
                             "your server is missing SRV records")
 
     parser.add_option_group(jabber_group)

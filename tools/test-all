@@ -16,7 +16,7 @@ function run {
 
 run ./tools/clean-repo
 run ./tools/test-tools
-run ./tools/lint-all
+run ./tools/lint-all --pep8
 run ./tools/test-migrations
 run ./tools/test-js-with-node
 run ./tools/run-mypy
@@ -28,5 +28,6 @@ run ./tools/test-js-with-casper
 # run ./tools/test-queue-worker-reload
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
+run ./tools/test-help-documentation.py
 
 printf '\n\e[32mAll OK!\e[0m\n'

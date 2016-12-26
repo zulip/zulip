@@ -21,7 +21,7 @@
             {{/unless}}
             {{#if_and last_edit_timestr include_sender}}
               {{#if status_message}}
-                <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+                <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
               {{/if}}
             {{/if_and}}
           </span>
@@ -30,7 +30,7 @@
           <span class="message_time{{#if msg.local_id}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
           {{#if_and last_edit_timestr include_sender}}
             {{#unless status_message}}
-                <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+                <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
             {{/unless}}
           {{/if_and}}
           <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}}">
@@ -43,16 +43,16 @@
               <i class="icon-vector-chevron-down"></i>
             </div>
             <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-              <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="Not Delivered: Resend"></i>
-              <i class="icon-vector-pencil edit-failed-message" data-toggle="tooltip" title="Not Delivered: Edit"></i>
-              <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="Not Delivered: Delete"></i>
+              <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Not Delivered: Resend' }}"></i>
+              <i class="icon-vector-pencil edit-failed-message" data-toggle="tooltip" title="{{t 'Not Delivered: Edit' }}"></i>
+              <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Not Delivered: Delete' }}"></i>
             </div>
           </div>
         </div>
         <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
         {{#if last_edit_timestr}}
           {{#unless include_sender}}
-            <div class="message_edit_notice" title="Edited ({{last_edit_timestr}})">{{t "EDITED" }}</div>
+            <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
           {{/unless}}
         {{/if}}
         <div class="message_edit">

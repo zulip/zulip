@@ -22,7 +22,7 @@ class RestrictedClient(object):
 
 def get_lib_module(lib_fn):
     lib_fn = os.path.abspath(lib_fn)
-    if os.path.dirname(lib_fn) != os.path.join(our_dir, 'lib'):
+    if not os.path.dirname(lib_fn).startswith(os.path.join(our_dir, 'lib')):
         print('Sorry, we will only import code from contrib_bots/lib.')
         sys.exit(1)
 
@@ -89,11 +89,11 @@ def run():
 
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--quiet', '-q',
-        action='store_true',
-        help='Turn off logging output.')
+                      action='store_true',
+                      help='Turn off logging output.')
     parser.add_option('--config-file',
-        action='store',
-        help='(alternate config file to ~/.zuliprc)')
+                      action='store',
+                      help='(alternate config file to ~/.zuliprc)')
     (options, args) = parser.parse_args()
 
     if len(args) == 0:

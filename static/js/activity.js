@@ -329,11 +329,11 @@ function actually_update_users_for_search() {
 
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
-function show_huddles () {
+function show_huddles() {
     $('#group-pm-list').expectOne().show();
 }
 
-function hide_huddles () {
+function hide_huddles() {
     $('#group-pm-list').expectOne().hide();
 }
 
@@ -519,7 +519,7 @@ exports.blur_search = function () {
     $('.user-list-filter').blur();
 };
 
-function maybe_select_person (e) {
+function maybe_select_person(e) {
     if (e.keyCode === 13) {
         // Enter key was pressed
 
@@ -527,7 +527,9 @@ function maybe_select_person (e) {
         e.preventDefault();
 
         var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
-        if (topPerson !== undefined) {
+        var user_list = $(".user-list-filter");
+        var search_term = user_list.expectOne().val().trim();
+        if ((topPerson !== undefined) && (search_term !== '')) {
             // undefined if there are no results
             var email = people.get_person_from_user_id(topPerson).email;
             compose.start('private',
@@ -538,7 +540,7 @@ function maybe_select_person (e) {
     }
 }
 
-function focus_user_filter (e) {
+function focus_user_filter(e) {
     e.stopPropagation();
 }
 

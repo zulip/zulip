@@ -14,7 +14,7 @@ from django.utils.translation import ugettext as _
 from django.core import signing
 from six import text_type
 from six.moves import urllib
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
 from zerver.forms import OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
@@ -160,13 +160,23 @@ def google_oauth2_csrf(request, value):
 
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
+    url = reverse('zerver.views.auth.send_oauth_request_to_google')
+    return redirect_to_main_site(request, url)
+
+def redirect_to_main_site(request, url):
+    # type: (HttpRequest, Text) -> HttpResponse
     main_site_uri = ''.join((
         settings.EXTERNAL_URI_SCHEME,
         settings.EXTERNAL_HOST,
-        reverse('zerver.views.auth.send_oauth_request_to_google'),
+        url,
     ))
     params = {'subdomain': get_subdomain(request)}
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
+
+def start_social_login(request, backend):
+    # type: (HttpRequest, Text) -> HttpResponse
+    backend_url = reverse('social:begin', args=[backend])
+    return redirect_to_main_site(request, backend_url)
 
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse

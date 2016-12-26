@@ -169,10 +169,10 @@ if __name__ == "__main__":
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
     failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors,
-        full_suite=full_suite)
+                                     full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
-    if templates_not_rendered:
+    if templates_not_rendered and full_suite:
         missed_count = len(templates_not_rendered)
         print("\nError: %s templates have no tests!" % (missed_count,))
         for template in templates_not_rendered:

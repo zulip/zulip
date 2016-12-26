@@ -1,14 +1,14 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from six import text_type
+from typing import Text
 
 from zerver.lib.utils import make_safe_digest
 
 import hashlib
 
 def gravatar_hash(email):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     """Compute the Gravatar hash for an email address."""
     # Non-ASCII characters aren't permitted by the currently active e-mail
     # RFCs. However, the IETF has published https://tools.ietf.org/html/rfc4952,
@@ -18,7 +18,7 @@ def gravatar_hash(email):
     return make_safe_digest(email.lower(), hashlib.md5)
 
 def user_avatar_hash(email):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     # Salting the user_key may be overkill, but it prevents us from
     # basically mimicking Gravatar's hashing scheme, which could lead
     # to some abuse scenarios like folks using us as a free Gravatar

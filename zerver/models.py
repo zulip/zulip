@@ -40,6 +40,7 @@ from datetime import timedelta
 import pylibmc
 import re
 import logging
+import sre_constants
 import time
 import datetime
 
@@ -136,6 +137,7 @@ class Realm(ModelReprMixin, models.Model):
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: Text
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1) # type: BitHandler
+    waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
@@ -395,7 +397,7 @@ def filter_pattern_validator(value):
 
     try:
         re.compile(value)
-    except:
+    except sre_constants.error:
         # Regex is invalid
         raise ValidationError(error_msg)
 
@@ -605,10 +607,14 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     def can_create_streams(self):
         # type: () -> bool
-        if self.is_realm_admin or not self.realm.create_stream_by_admins_only:
+        diff = (timezone.now() - self.date_joined).days
+        if self.is_realm_admin:
             return True
-        else:
+        elif self.realm.create_stream_by_admins_only:
             return False
+        if diff >= self.realm.waiting_period_threshold:
+            return True
+        return False
 
     def major_tos_version(self):
         # type: () -> int
@@ -862,6 +868,26 @@ def bulk_get_recipients(type, type_ids):
     return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
                                      id_fetcher=lambda recipient: recipient.type_id)
 
+
+def sew_messages_and_reactions(messages, reactions):
+    # type: (List[Dict[str, Any]], List[Dict[str, Any]]) -> List[Dict[str, Any]]
+    """Given a iterable of messages and reactions stitch reactions
+    into messages.
+    """
+    # Add all messages with empty reaction item
+    for message in messages:
+        message['reactions'] = []
+
+    # Convert list of messages into dictionary to make reaction stitching easy
+    converted_messages = {message['id']: message for message in messages}
+
+    for reaction in reactions:
+        converted_messages[reaction['message_id']]['reactions'].append(
+            reaction)
+
+    return list(converted_messages.values())
+
+
 class Message(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
@@ -946,7 +972,14 @@ class Message(ModelReprMixin, models.Model):
             'sender__avatar_source',
             'sender__is_mirror_dummy',
         ]
-        return Message.objects.filter(id__in=needed_ids).values(*fields)
+        messages = Message.objects.filter(id__in=needed_ids).values(*fields)
+        """Adding one-many or Many-Many relationship in values results in N X
+        results.
+
+        Link: https://docs.djangoproject.com/en/1.8/ref/models/querysets/#values
+        """
+        reactions = Reaction.get_raw_db_rows(needed_ids)
+        return sew_messages_and_reactions(messages, reactions)
 
     def sent_by_human(self):
         # type: () -> bool
@@ -1019,6 +1052,13 @@ class Reaction(ModelReprMixin, models.Model):
 
     class Meta(object):
         unique_together = ("user_profile", "message", "emoji_name")
+
+    @staticmethod
+    def get_raw_db_rows(needed_ids):
+        # type: (List[int]) -> List[Dict[str, Any]]
+        fields = ['message_id', 'emoji_name', 'user_profile__email',
+                  'user_profile__id', 'user_profile__full_name']
+        return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
 
 # Whenever a message is sent, for each user current subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage

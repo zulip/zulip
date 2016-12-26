@@ -41,7 +41,7 @@ var _ = global._;
 
     arr = [{x: 10}, {x: 20}, {x:30}];
 
-    function compare (a, b) {
+    function compare(a, b) {
         return a.x < b;
     }
 

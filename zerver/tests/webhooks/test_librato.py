@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-from six import text_type
 from six.moves import urllib
-from typing import Optional
+from typing import Optional, Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class LibratoHookTests(WebhookTestCase):
@@ -11,13 +10,13 @@ class LibratoHookTests(WebhookTestCase):
     IS_ATTACHMENT = False
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         if self.IS_ATTACHMENT:
             return self.fixture_data("librato", fixture_name, file_type='json')
         return urllib.parse.urlencode({'payload': self.fixture_data("librato", fixture_name, file_type='json')})
 
     def build_webhook_url(self, topic=None):
-        # type: (Optional[text_type]) -> text_type
+        # type: (Optional[Text]) -> Text
         api_key = self.get_api_key(self.TEST_USER_EMAIL)
         url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
         if topic:

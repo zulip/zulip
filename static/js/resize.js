@@ -15,8 +15,6 @@ function confine_to_range(lo, val, hi) {
 }
 
 function size_blocks(blocks, usable_height) {
-    var n = blocks.length;
-
     var sum_height = 0;
     _.each(blocks, function (block) {
         sum_height += block.real_height;
@@ -183,15 +181,6 @@ exports.resize_stream_filters_container = function (h) {
 };
 
 exports.resize_page_components = function () {
-    var composebox = $("#compose");
-    var floating_recipient_bar = $("#floating_recipient_bar");
-    var desired_width;
-    if (ui.home_tab_obscured() === 'other_tab') {
-        desired_width = $("div.tab-pane.active").outerWidth();
-    } else {
-        desired_width = $("#main_div").outerWidth();
-    }
-
     var h;
     var sidebar;
 
@@ -238,7 +227,7 @@ exports.resize_page_components = function () {
 
 var _old_width = $(window).width();
 
-exports.handler = function (e) {
+exports.handler = function () {
     var new_width = $(window).width();
 
     if (new_width !== _old_width) {
@@ -259,3 +248,7 @@ exports.handler = function (e) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = resize;
+}

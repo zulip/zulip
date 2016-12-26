@@ -27,6 +27,7 @@ We are building a collection of translation style guides for Zulip,
 giving guidance on how Zulip should be translated into specific
 languages (e.g. what word to translate words like "home" to):
 
+* [Chinese](chinese.html)
 * [Polish](polish.html)
 * [Spanish](spanish.html)
 
@@ -204,12 +205,12 @@ registers two Handlebar [helpers][]. The syntax for simple strings is:
 The syntax for block strings or strings containing variables is:
 
 ```
-{{tr context}}
+{{#tr context}}
     Block of English text.
 {{/tr}}
 
 var context = {'variable': 'variable value'};
-{{tr context}}
+{{#tr context}}
     Block of English text with a __variable__.
 {{/tr}}
 ```

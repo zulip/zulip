@@ -63,6 +63,9 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
 };
 
 exports.is_current_user = function (email) {
+    if (email === null || email === undefined) {
+        return false;
+    }
     return email.toLowerCase() === page_params.email.toLowerCase();
 };
 
@@ -161,9 +164,10 @@ exports.strcmp = (function () {
         var collator = new Intl.Collator();
         return collator.compare;
     } catch (e) {
+        // continue regardless of error
     }
 
-    return function util_strcmp (a, b) {
+    return function util_strcmp(a, b) {
         return (a < b ? -1 : (a > b ? 1 : 0));
     };
 }());

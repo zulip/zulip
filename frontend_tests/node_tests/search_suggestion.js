@@ -192,10 +192,9 @@ global.stream_data.populate_stream_topics_for_tests({});
         "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
-
-    people.remove(ted);
-    people.remove(alice);
 }());
+
+people.init();
 
 (function test_empty_query_suggestions() {
     var query = '';
@@ -420,7 +419,4 @@ global.stream_data.populate_stream_topics_for_tests({});
 
     assert.deepEqual(suggestions.strings, expected);
 
-    people.remove(ted);
-    people.remove(bob);
-    people.remove(alice);
 }());

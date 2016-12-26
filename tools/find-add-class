@@ -33,8 +33,8 @@ def process_files():
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-v', '--verbose',
-        action='store_true', default=False,
-        help='show where calls are')
+                        action='store_true', default=False,
+                        help='show where calls are')
     args = parser.parse_args()
 
     fns = glob.glob('static/js/*.js')

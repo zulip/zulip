@@ -85,6 +85,15 @@ function populate_group_from_message_container(group, message_container) {
     group.always_visible_topic_edit = message_container.msg.always_visible_topic_edit;
     group.on_hover_topic_edit = message_container.msg.on_hover_topic_edit;
     group.subject_links = message_container.msg.subject_links;
+
+    var time = new XDate(message_container.msg.timestamp * 1000);
+    var date_element = timerender.render_date(time)[0];
+
+    if (!message_container.show_date) {
+        date_element.className = "hide-date";
+    }
+
+    group.date = date_element.outerHTML;
 }
 
 MessageListView.prototype = {
@@ -121,8 +130,7 @@ MessageListView.prototype = {
         }
     },
 
-    build_message_groups: function MessageListView__build_message_groups(message_containers,
-                                                                         message_id_prefix) {
+    build_message_groups: function MessageListView__build_message_groups(message_containers) {
         function start_group() {
             return {
                 message_containers: [],
@@ -157,8 +165,7 @@ MessageListView.prototype = {
             message_container.include_recipient = false;
             message_container.include_footer    = false;
 
-            if (same_recipient(prev, message_container) &&
-                self.collapse_messages &&
+            if (same_recipient(prev, message_container) && self.collapse_messages &&
                 prev.msg.historical === message_container.msg.historical &&
                 same_day(prev, message_container)) {
                 add_message_container_to_group(message_container);
@@ -391,10 +398,7 @@ MessageListView.prototype = {
         // we we record if last_message_was_selected before updating the table
         var last_message_was_selected = rows.id(rows.last_visible()) === list.selected_id();
         var orig_scrolltop_offset;
-        var last_message_id;
         var message_containers;
-        var first_msg;
-        var last_msg;
 
         var self = this;
 
@@ -574,7 +578,6 @@ MessageListView.prototype = {
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message.
         var new_messages_height = 0;
-        var distance_to_last_message_sent_by_me = 0;
         var id_of_last_message_sent_by_us = -1;
 
         // C++ iterators would have made this less painful
@@ -585,14 +588,12 @@ MessageListView.prototype = {
                 new_messages_height += elem.height();
                 // starting from the last message, ignore message heights that weren't sent by me.
                 if (id_of_last_message_sent_by_us > -1) {
-                    distance_to_last_message_sent_by_me += elem.height();
                     return;
                 }
                 var row_id = rows.id(elem);
                 // check for `row_id` NaN in case we're looking at a date row or bookend row
                 if (row_id > -1 &&
                     util.is_current_user(this.get_message(row_id).sender_email)) {
-                    distance_to_last_message_sent_by_me += elem.height();
                     id_of_last_message_sent_by_us = rows.id(elem);
                 }
             }
@@ -795,13 +796,6 @@ MessageListView.prototype = {
     rerender_messages: function MessageListView__rerender_messages(messages) {
         var self = this;
 
-        // Only re-render the messages that are in this narrow
-        var own_messages = _.map(messages, function (message) {
-            return self.list.get(message.id);
-        });
-        own_messages = _.reject(own_messages, function (message) {
-            return message === undefined;
-        });
         // Convert messages to list messages
         var message_containers = _.map(messages, function (message) {
             return self.message_containers[message.id];
@@ -860,13 +854,10 @@ MessageListView.prototype = {
         }
     },
 
-    rerender_the_whole_thing: function MessageListView__rerender_the_whole_thing(messages) {
+    rerender_the_whole_thing: function MessageListView__rerender_the_whole_thing() {
         // TODO: Figure out if we can unify this with this.list.rerender().
-
         this.clear_rendering_state(true);
-
         this.update_render_window(this.list.selected_idx(), false);
-
         this.render(this.list.all_messages().slice(this._render_win_start, this._render_win_end), 'bottom');
     },
 

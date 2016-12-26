@@ -32,6 +32,14 @@
     background-color: #FFF;
 }
 
+.clear-float {
+    clear: both;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
 /* -- base button styling -- */
 .new-style .button {
     padding: 8px 15px;
@@ -186,19 +194,19 @@
     display: inline-block;
     vertical-align: middle;
     position: relative;
-    top: -2px;
+    top: 0px;
 
     padding: 1px;
-    margin: 0px 10px 0px 0px;
-    height: 16px;
-    width: 16px;
+    margin: 0px 5px 0px 0px;
+    height: 12px;
+    width: 12px;
 
     font-weight: 300;
     line-height: 0.8;
     font-size: 1.3rem;
     text-align: center;
-    border: 2px solid #24cac2;
-    color: #fff;
+    border: 2px solid #ccc;
+    color: #ccc;
 
     border-radius: 4px;
 
@@ -212,6 +220,11 @@
     background-size: 85%;
     background-position: 50% 50%;
     background-repeat: no-repeat;
+    -webkit-filter: grayscale(1);
+}
+
+.new-style label.checkbox input[type=checkbox]:disabled ~ span {
+    opacity: 0.3;
 }
 
 .new-style a.no-style {

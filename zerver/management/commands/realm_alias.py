@@ -5,7 +5,7 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
-from zerver.models import Realm, RealmAlias, get_realm, can_add_alias
+from zerver.models import Realm, RealmAlias, get_realm_by_string_id, can_add_alias
 from zerver.lib.actions import realm_aliases
 import sys
 
@@ -15,10 +15,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('-r', '--realm',
-                            dest='domain',
+                            dest='string_id',
                             type=str,
                             required=True,
-                            help='The name of the realm.')
+                            help='The subdomain or string_id of the realm.')
         parser.add_argument('--op',
                             dest='op',
                             type=str,
@@ -29,7 +29,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["domain"])
+        realm = get_realm_by_string_id(options["string_id"])
         if options["op"] == "show":
             print("Aliases for %s:" % (realm.domain,))
             for alias in realm_aliases(realm):

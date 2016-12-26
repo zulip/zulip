@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 import random
-from six import text_type
-from typing import Any, Dict, Optional, SupportsInt
+from typing import Any, Dict, Optional, SupportsInt, Text
 
 from zerver.models import PushDeviceToken, UserProfile
 from zerver.models import get_user_profile_by_id
@@ -12,7 +11,7 @@ from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
 
 from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
-import gcmclient
+from gcm import GCM
 
 from django.conf import settings
 
@@ -53,7 +52,7 @@ def get_apns_key(identifer):
 class APNsMessage(object):
     def __init__(self, user, tokens, alert=None, badge=None, sound=None,
                  category=None, **kwargs):
-        # type: (UserProfile, List[text_type], text_type, int, text_type, text_type, **Any) -> None
+        # type: (UserProfile, List[Text], Text, int, Text, Text, **Any) -> None
         self.frame = Frame()
         self.tokens = tokens
         expiry = int(time.time() + 24 * 3600)
@@ -124,11 +123,11 @@ def num_push_devices_for_user(user_profile, kind = None):
 
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data):
-    # type: (bytes) -> text_type
+    # type: (bytes) -> Text
     return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
 
 def hex_to_b64(data):
-    # type: (text_type) -> bytes
+    # type: (Text) -> bytes
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
 def _do_push_to_apns_service(user, message, apns_connection):
@@ -145,7 +144,7 @@ def _do_push_to_apns_service(user, message, apns_connection):
 # mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user, alert, **extra_data):
-    # type: (UserProfile, text_type, **Any) -> None
+    # type: (UserProfile, Text, **Any) -> None
     if not connection and not dbx_connection:
         logging.error("Attempting to send push notification, but no connection was found. "
                       "This may be because we could not find the APNS Certificate file.")
@@ -189,7 +188,7 @@ def check_apns_feedback():
 
 
 if settings.ANDROID_GCM_API_KEY:
-    gcm = gcmclient.GCM(settings.ANDROID_GCM_API_KEY)
+    gcm = GCM(settings.ANDROID_GCM_API_KEY)
 else:
     gcm = None
 
@@ -203,44 +202,47 @@ def send_android_push_notification(user, data):
     reg_ids = [device.token for device in
                PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.GCM)]
 
-    msg = gcmclient.JSONMessage(reg_ids, data)
-    res = gcm.send(msg)
+    res = gcm.json_request(registration_ids=reg_ids, data=data)
 
-    for reg_id, msg_id in res.success.items():
-        logging.info("GCM: Sent %s as %s" % (reg_id, msg_id))
+    if res and 'success' in res:
+        for reg_id, msg_id in res['success'].items():
+            logging.info("GCM: Sent %s as %s" % (reg_id, msg_id))
 
     # res.canonical will contain results when there are duplicate registrations for the same
     # device. The "canonical" registration is the latest registration made by the device.
     # Ref: http://developer.android.com/google/gcm/adv.html#canonical
-    for reg_id, new_reg_id in res.canonical.items():
-        if reg_id == new_reg_id:
-            # I'm not sure if this should happen. In any case, not really actionable.
-            logging.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
-        elif not PushDeviceToken.objects.filter(token=new_reg_id, kind=PushDeviceToken.GCM).count():
-            # This case shouldn't happen; any time we get a canonical ref it should have been
-            # previously registered in our system.
-            #
-            # That said, recovery is easy: just update the current PDT object to use the new ID.
-            logging.warning(
-                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
-                    (new_reg_id, reg_id))
-            PushDeviceToken.objects.filter(
-                    token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
-        else:
-            # Since we know the new ID is registered in our system we can just drop the old one.
-            logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
+    if 'canonical' in res:
+        for reg_id, new_reg_id in res['canonical'].items():
+            if reg_id == new_reg_id:
+                # I'm not sure if this should happen. In any case, not really actionable.
+                logging.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
+            elif not PushDeviceToken.objects.filter(token=new_reg_id, kind=PushDeviceToken.GCM).count():
+                # This case shouldn't happen; any time we get a canonical ref it should have been
+                # previously registered in our system.
+                #
+                # That said, recovery is easy: just update the current PDT object to use the new ID.
+                logging.warning(
+                        "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
+                        (new_reg_id, reg_id))
+                PushDeviceToken.objects.filter(
+                        token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
+            else:
+                # Since we know the new ID is registered in our system we can just drop the old one.
+                logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
 
-            PushDeviceToken.objects.filter(token=reg_id, kind=PushDeviceToken.GCM).delete()
+                PushDeviceToken.objects.filter(token=reg_id, kind=PushDeviceToken.GCM).delete()
 
-    for reg_id in res.not_registered:
-        logging.info("GCM: Removing %s" % (reg_id,))
+    if 'errors' in res:
+        for error, reg_ids in res['errors'].items():
+            if error in ['NotRegistered', 'InvalidRegistration']:
+                for reg_id in reg_ids:
+                    logging.info("GCM: Removing %s" % (reg_id,))
 
-        device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
-        device.delete()
+                    device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
+                    device.delete()
+            else:
+                for reg_id in reg_ids:
+                    logging.warning("GCM: Delivery to %s failed: %s" % (reg_id, error))
 
-    for reg_id, err_code in res.failed.items():
-        logging.warning("GCM: Delivery to %s failed: %s" % (reg_id, err_code))
-
-    if res.needs_retry():
-        # TODO
-        logging.warning("GCM: delivery needs a retry but ignoring")
+    # python-gcm handles retrying of the unsent messages.
+    # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497

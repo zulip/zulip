@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Optional
+from typing import Optional, Any
 
 import sys
 import unittest
@@ -18,9 +18,17 @@ except ImportError:
     sys.exit(1)
 
 class ParserTest(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        # This method should be removed when we migrate to version 3 of Python
+        import six
+        if six.PY2:
+            self.assertRaisesRegex = self.assertRaisesRegexp  # type: ignore
+        super(ParserTest, self).__init__(*args, **kwargs)
+
     def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
         # type: (str, Optional[str], Optional[str], bool) -> None
-        with self.assertRaisesRegexp(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
             validate(fn=fn, text=text, check_indent=check_indent)
 
     def test_is_django_block_tag(self):
