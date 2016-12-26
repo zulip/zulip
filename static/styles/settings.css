@@ -430,3 +430,13 @@ input[type=checkbox].inline-block {
 #administration #deactivation_stream_modal h3 {
     overflow-wrap: break-word;
 }
+
+#administration .centered-footer {
+    text-align: center;
+    padding: 10px 15px;
+}
+
+#administration #new_alias {
+    margin-right: 20px;
+    margin-bottom: auto;
+}
