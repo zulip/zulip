@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Text
 
 from django.utils import translation
 from django.utils.translation import ugettext as _
@@ -58,7 +58,6 @@ import calendar
 import datetime
 import simplejson
 import re
-from six import text_type
 from six.moves import urllib, zip_longest, zip, range
 import time
 import logging
@@ -66,7 +65,7 @@ import logging
 from zproject.jinja2 import render_to_response
 
 def redirect_and_log_into_subdomain(realm, full_name, email_address):
-    # type: (Realm, text_type, text_type) -> HttpResponse
+    # type: (Realm, Text, Text) -> HttpResponse
     subdomain_login_uri = ''.join([
         realm.uri,
         reverse('zerver.views.auth.log_into_subdomain')
@@ -315,7 +314,7 @@ def create_homepage_form(request, user_info=None):
     return HomepageForm(string_id = string_id)
 
 def create_preregistration_user(email, request, realm_creation=False):
-    # type: (text_type, HttpRequest, bool) -> HttpResponse
+    # type: (Text, HttpRequest, bool) -> HttpResponse
     domain = request.session.get("domain")
     if completely_open(domain):
         # Clear the "domain" from the session object; it's no longer needed
@@ -367,7 +366,7 @@ not be the member of any current realm. The realm is created with domain same as
 When there is no unique_open_realm user registrations are made by visiting /register/domain_of_the_realm.
 """
 def create_realm(request, creation_key=None):
-    # type: (HttpRequest, Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, Optional[Text]) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
         if creation_key is None:
             return render_to_response("zerver/realm_creation_failed.html",
@@ -481,7 +480,7 @@ def home_real(request):
        int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version():
         return accounts_accept_terms(request)
 
-    narrow = [] # type: List[List[text_type]]
+    narrow = [] # type: List[List[Text]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
@@ -709,7 +708,7 @@ def is_buggy_ua(agent):
 @has_request_variables
 def json_set_muted_topics(request, user_profile,
                           muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
-    # type: (HttpRequest, UserProfile, List[List[text_type]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[List[Text]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
 

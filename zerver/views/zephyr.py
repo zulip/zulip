@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
+from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence, Text
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest
@@ -16,13 +16,12 @@ import logging
 import subprocess
 import ujson
 
-from six import text_type
 
 @authenticated_json_view
 @has_request_variables
 def webathena_kerberos_login(request, user_profile,
                              cred=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))
     if not user_profile.realm.webathena_enabled:
