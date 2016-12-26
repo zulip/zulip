@@ -17,12 +17,12 @@ from six.moves import urllib
 from typing import Any, Dict, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
-from zerver.forms import OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
-from zerver.views import create_homepage_form, create_preregistration_user, \
+from zerver.views import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 from zproject.jinja2 import render_to_response
@@ -37,7 +37,7 @@ import ujson
 
 def maybe_send_to_registration(request, email, full_name=''):
     # type: (HttpRequest, text_type, text_type) -> HttpResponse
-    form = create_homepage_form(request, user_info={'email': email})
+    form = HomepageForm({'email': email}, realm=get_realm_from_request(request))
     request.verified_email = None
     if form.is_valid():
         # Construct a PreregistrationUser object and send the user over to
