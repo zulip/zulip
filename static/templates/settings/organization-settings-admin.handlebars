@@ -20,10 +20,10 @@
     <div class="input-group">
       <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
          {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
-      <label for="id_realm_restricted_to_domain" class="inline-block"
-        title="{{#tr this}}If checked, only users with an e-mail address ending in __atdomains_string__ will be able to join the organization.{{/tr}}">
-        {{#tr this}}Users restricted to __domains_string__{{/tr}}
+      <label for="id_realm_restricted_to_domain" class="inline-block" id="realm_restricted_to_domains_label"
+        title="{{#tr this}}If checked, only users with an e-mail address ending in these domains will be able to join the organization.{{/tr}}">
       </label>
+      <a data-toggle="modal" href="#realm_aliases_modal">{{t "Change domains" }}</a>
     </div>
     <div class="input-group">
       <input type="checkbox" class="inline-block" id="id_realm_invite_required" name="realm_invite_required"

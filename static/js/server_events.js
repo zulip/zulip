@@ -107,6 +107,20 @@ function dispatch_normal_event(event) {
         admin.populate_filters(page_params.realm_filters);
         break;
 
+    case 'realm_domains':
+        if (event.op === 'add') {
+            page_params.domains.push(event.alias);
+        } else if (event.op === 'remove') {
+            var i;
+            for (i = 0;i < page_params.domains.length;i += 1) {
+                if (page_params.domains[i].id === event.alias_id) {
+                    page_params.domains.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        admin.populate_realm_aliases(page_params.domains);
+        break;
     case 'realm_user':
         if (event.op === 'add') {
             people.add_in_realm(event.person);

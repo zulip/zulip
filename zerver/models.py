@@ -339,7 +339,7 @@ def email_allowed_for_realm(email, realm):
 
 def list_of_domains_for_realm(realm):
     # type: (Realm) -> List[Text]
-    return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
+    return list(RealmAlias.objects.filter(realm = realm).values('domain', 'id'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)
