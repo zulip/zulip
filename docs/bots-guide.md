@@ -86,7 +86,7 @@ class MyBotHandler(object):
     def usage(self):
         return '''Your description of the bot'''
 
-    def triage_message(self, message):
+    def triage_message(self, message, client):
         #add your code here
 
     def handle_message(self, message, client, state_handler):
@@ -98,7 +98,7 @@ handler_class = MyBotHandler
 
 * Every bot needs to implement the functions
     * `usage(self)`
-    * `triage_message(self, message)`
+    * `triage_message(self, message, client)`
     * `handle_message(self, message, client)`
 
 * These functions are documented in the [next section](#bot-api).
@@ -130,7 +130,7 @@ def usage(self):
 ```
 
 ### triage_message
-*triage_message(self, message)*
+*triage_message(self, message, client)*
 
 is called when a message was sent.
 
@@ -147,13 +147,17 @@ is called when a message was sent.
     * subject - topic of the message (string)
     * timestamp - when was the message sent (integer)
 
+* client - contains information about this bot
+    * client.full_name - name of the bot account
+    * client.email - email of the bot account
+
 #### Return values
  * True if the bot should react to this message
  * False otherwise
 
 #### Example implementation
 ```
-def triage_message(self, message):
+def triage_message(self, message, client):
 original_content = message['content']
     if message['display_recipient'] == 'followup':
         return False
