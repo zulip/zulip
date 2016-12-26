@@ -6,7 +6,7 @@ exports.toggle = (function () {
     var keys = {};
 
     var __toggle = function (opts) {
-        var component = (function render_component (opts) {
+        var component = (function render_component(opts) {
             var _component = $("<div class='tab-switcher'></div>");
             opts.values.forEach(function (value, i) {
                 var tab = $("<div class='ind-tab' data-tab-id='" + i + "'>" + value.label + "</div>");
@@ -79,3 +79,7 @@ exports.toggle = (function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = components;
+}

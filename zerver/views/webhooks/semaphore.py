@@ -11,7 +11,6 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import UserProfile, Client
 import ujson
 
-from six import text_type
 from typing import Any, Dict
 
 

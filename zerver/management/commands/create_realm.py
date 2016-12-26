@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from optparse import make_option
 
-from typing import Any
+from typing import Any, Text
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
@@ -113,8 +113,11 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
                 deployment.realms.add(realm)
                 deployment.save()
             # In the else case, we are not using the Deployments feature.
-
-            set_default_streams(realm, ["social", "engineering"])
+            stream_dict = {
+                "social": {"description": "For socializing", "invite_only": False},
+                "engineering": {"description": "For engineering", "invite_only": False}
+            } # type: Dict[Text, Dict[Text, Any]]
+            set_default_streams(realm, stream_dict)
 
             print("\033[1;36mDefault streams set to social,engineering,zulip!\033[0m")
         else:

@@ -106,6 +106,50 @@
     <img class="screenshot" src="/static/images/integrations/airbrake/002.png" />
 </div>
 
+<div id="appfollow" class="integration-instructions">
+  <p>
+    Receive user reviews from your tracked apps on AppFolllow in Zulip
+    using the Zulip AppFollow plugin!
+  </p>
+
+  <p>
+    First, create the stream you'd like to use for AppFollow notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>appfollow</code>.
+  </p>
+
+  <p>Next, on your {{ settings_html|safe }}, create an AppFollow bot.</p>
+
+  <p>Then, log into your account on <a href="http://appfollow.io">appfollow.io</a>, and:</p>
+
+  <ol>
+    <li>
+      <p>
+        Click on the app for which you'd like to receive reviews.
+        Click on <b>Integrations</b> and then go to the <b>Others</b> tab.
+      </p>
+
+      <img class="screenshot" src="/static/images/integrations/appfollow/001.png" />
+    </li>
+    <li>
+      <p>
+        In the Webhook URL field, enter the following URL, replacing the bot API key
+        and Zulip stream with the appropriate information.
+      </p>
+
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/appfollow?api_key=<font color="#00A26F">test_api_key</font>&amp;stream=<font color="#00A26F">appfollow</font></code></p>
+    </li>
+  </ol>
+
+  <p>
+    <b>Save Changes</b> –  all done!<br />
+    New reviews for your app will be delivered to your Zulip stream.
+  </p>
+
+  <img class="screenshot" src="/static/images/integrations/appfollow/002.png" />
+</div>
+
+
 <div id="asana" class="integration-instructions">
 
     <p>Get Zulip notifications for your Asana tasks!</p>
@@ -885,7 +929,7 @@
 
       <p>In the <b>"Payload URL"</b> field, enter a URL constructed like this:</p>
 
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/webhook_github?api_key=abcdefgh&amp;stream=github</code></p>
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/github?api_key=abcdefgh&amp;stream=github</code></p>
 
       <p>where <code>api_key</code> is the API key of your Zulip
         bot. Select the actions that you want to result in a
@@ -925,6 +969,46 @@
 
     </div>
 
+    <div id="gosquared" class="integration-instructions">
+
+      <p>
+        First, create a stream for GoSquared for where you would like to receive GoSquared notifications
+        and subscribe all interested parties to the stream. The integration will automatically
+        use the default stream <code>gosquared</code> if no stream is supplied, though you will
+        still need to create the stream manually even though it's the default.
+      </p>
+
+      <p>
+        Next, go to the Zulip settings page and create a bot named GoSquared. Go to the account settings page of
+        your GoSquared account and under Project Settings > Services > Webhook > Add New.
+        Add the below URL under the section 'Enter a URL to receive requests:' and name the integration, Zulip.
+      </p>
+
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/gosquared?api_key=abcdefgh&amp;stream=gosquared</code></p>
+
+      <p><img class="screenshot" src="/static/images/integrations/gosquared/001.png" /></p>
+
+      <p>
+        Note: <code>api_key</code> must be reconfigured to be the API key of your Zulip bot.<br />
+        If you want to change the stream default that receives notifications, change <code>stream=</code> in the URL. <br />
+        To change the topic displayed by the bot, simply append <code>&amp;topic=name</code> to the end of the above URL.
+        Where <code>name</code> is your topic.
+      </p>
+
+      <p>
+        Under notifications of your GoSquared account page, press <code>Add New Notification</code> and select when and why you
+        want to be notified through Zulip. After you're done, remember to check the box of the webhook corresponding to Zulip.
+      </p>
+
+      <p>
+        <b>Congratulations! You're all set</b><br />
+        Your messages should look like this:
+      </p>
+
+      <p><img class="screenshot" src="/static/images/integrations/gosquared/000.png" /></p>
+
+    </div>
+
     <div id="helloworld" class="integration-instructions">
 
         <p>Learn how Zulip integrations work with this simple Hello World example!</p>
@@ -956,6 +1040,58 @@
         <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
     </div>
 
+    <div id="heroku" class="integration-instructions">
+      <p>
+        Receive notifications in Zulip whenever a new version of an app is pushed to Heroku
+        using the Zulip Heroku plugin!
+      </p>
+
+      <p>
+        First, create the stream you'd like to use for Heroku notifications, and
+        subscribe all interested parties to this stream. We recommend the
+        name <code>heroku</code>.
+      </p>
+
+      <p>Next, on your {{ settings_html|safe }}, create a Heroku bot.</p>
+
+      <p>Then, log into your account on <a href="http://heroku.com">heroku.com</a>, and:</p>
+
+      <ol>
+        <li>
+          <p>
+            Visit the page for the project for which you'd like to generate
+            Zulip notifications. Click the "Resources" tab, and add the "Deploy Hooks" addon.
+            Choose the "HTTP Post Hook" plan, and click "Provision".
+          </p>
+
+          <img class="screenshot" src="/static/images/integrations/heroku/001.png" />
+        </li>
+        <li>
+          <p>
+            Click on the "Deploy Hooks" add-on that you just added.
+            You should be redirected to a page that looks like this:
+          </p>
+
+          <p><img class="screenshot" style="border:1px solid #000000" src="/static/images/integrations/heroku/002.png" /></p>
+
+          <p>
+            Enter the following webhook URI, replacing the bot API key
+            and Zulip stream with the appropriate information.
+          </p>
+
+          <p><code>{{ external_uri_scheme }}{{ external_api_path_subdomain }}/v1/external/heroku?api_key=<font color="#00A26F">test_api_key</font>&amp;stream=<font color="#00A26F">heroku</font></code></p>
+        </li>
+      </ol>
+
+      <p>
+        <b>Congratulations! You're done!</b><br />
+        When you deploy to Heroku, the team can see these updates in real time in Zulip:
+      </p>
+
+      <img class="screenshot" src="/static/images/integrations/heroku/003.png" />
+    </div>
+
+
     <div id="hubot" class="integration-instructions">
 
 
@@ -969,7 +1105,7 @@
         <li><p>On your {{ settings_html|safe }}, create a bot account. Note its username, API key and full name; you will use them on the next step.</p></li>
 
         <li>To run Hubot locally, use:
-          <pre><code>HUBOT_ZULIP_BOT=hubot-bot@example.com HUBOT_ZULIP_API_KEY=your_key bin/hubot --adapter zulip --name "myhubot"</code></pre>
+          <pre><code>HUBOT_ZULIP_SITE={{ external_api_path_subdomain }} HUBOT_ZULIP_BOT=hubot-bot@example.com HUBOT_ZULIP_API_KEY=your_key bin/hubot --adapter zulip --name "myhubot"</code></pre>
 
         </li>
       </ol>
@@ -1241,6 +1377,49 @@
       </p>
 
       <p><img class="screenshot" src="/static/images/integrations/librato/009.png" /></p>
+
+    </div>
+
+    <div id="mention" class="integration-instructions">
+
+      <p>First, create the stream you'd like to use for Mention Webhook notifications,
+      and subscribe all interested parties to this stream. The integration will
+      use the default stream <code>mention</code> if no stream is supplied in
+      the hook; you still need to create the stream even if you are using this
+      default.</p>
+
+      <p>Next, go to your Mention feed and click on your profile in the top right corner,
+      click on <b>Settings</b> in the drop down menu:</p>
+      <p><img src="/static/images/integrations/mention/001.png" /></p>
+
+      <p>From there, select <b>Integrations</b>:</p>
+      <p><img src="/static/images/integrations/mention/002.png" /></p>
+
+      <p>Select the <b>Zapier</b> integration, and click <b>Explore Mention on Zapier!</b>:</p>
+      <p><img src="/static/images/integrations/mention/003.png" /></p>
+
+      <p>Search for "webhooks" in the search bar, and click on <b>Webhooks by Zapier</b>.<br />
+      Scroll down and look for <b>Add Webhooks posts for new Mentions</b> and click on
+      <b>Use this Zap</b>:</p>
+      <p><img src="/static/images/integrations/mention/004.png" /></p>
+
+      <p>Select your Mention account Id and the alert that should trigger mentions
+      from the respective drop down menus, and click <b>Continue</b></p>
+
+      <p>Select <b>POST</b> on the page that says <b>Webhooks by Zapier Action</b>, and click
+       <b>Continue</b>.</p>
+
+      <p>In the <b>URL</b> field, enter a URL constructed like this:</p>
+
+      <p><code>{{ external_api_uri_subdomain }}/v1/external/mention?api_key=abcdefgh&amp;stream=mention</code></p>
+
+      <p>where <code>abcdefgh</code> should be replaced with the API key of your Zulip
+        bot. Select JSON for <b>Payload Type</b> and click <b>Continue</b>:</p>
+
+      <p><b>Congratulations! You're done!</b><br />
+      Your messages will look like this:</p>
+
+      <p><img src="/static/images/integrations/mention/005.png" /></p>
 
     </div>
 
@@ -1653,7 +1832,8 @@ key = NAGIOS_BOT_API_KEY
           <p>To configure Zulip notifications for a particular Redmine project,
             visit the project's Settings page.</p>
           <p>
-            In either case, fill out the bot email address and API key, and the
+            In either case, fill out zulip server by <code>{{ external_api_path_subdomain }}</code>,
+            the bot email address, and API key, and the
             Zulip stream that should receive notifications. Apply your changes.
           </p>
         </li>
@@ -1830,6 +2010,77 @@ key = NAGIOS_BOT_API_KEY
       <img class="screenshot" src="/static/images/integrations/stash/005.png" />
     </div>
 
+    <div id="stripe" class = "integration-instructions">
+
+      <p>
+        You can choose to be notified whenever certain events are triggered on Stripe
+        by adding a webhook to your Stripe account. First, create a stream where the events
+        are to be sent.
+      </p>
+
+      <p>Next, on your {{ settings_html|safe }}, create a Stripe bot.</p>
+
+      <p>
+        Add a webhook to your Stripe account by going to "Your account"->"Account
+        settings"->"Webhooks"->"Add Endpoint" and adding the following URL,
+        replacing the bot email address (with the <code>@</code>sign escaped to <code>%40</code>),
+        bot API key, Zulip stream, and Zulip topic with the appropriate values:
+      </p>
+
+      <p>e.g.</p>
+
+      <ul>
+        <li>sales-bot%40example.com instead of stripe-bot%40example.com</li>
+        <li>abcdef0123 instead of api_key</li>
+        <li>finance instead of sales</li>
+        <li>transactions instead of Stripe</li>
+      </ul>
+      <code>{{ external_uri_scheme }}stripe-bot%40example.com:api_key@{{ external_api_path_subdomain }}/v1/external/stripe?stream=sales%26topic=Stripe</code>
+
+      <p>
+        {%if 'http:' in external_uri_scheme %}
+        <b><font color="#FF0000">Note that Stripe will only accept https webhooks!</font></b>
+        {%endif%}
+      </p>
+
+      <img class="screenshot" src="/static/images/integrations/stripe/001.png"/>
+
+      <p>
+        To set up different topics for different events, create separate webhooks
+        for those events, customizing the URL stream and topic for each.
+      </p>
+
+      <img class="screenshot" src="/static/images/integrations/stripe/003.png"/>
+
+      <p>
+        <b>Congratulations!</b>
+      </p>
+
+      <p>
+        You will now recieve notifications for the events you have chosen.
+        Zulip currently supports the following events:
+      </p>
+
+      <ul>
+        <li>Charge Dispute Closed</li>
+        <li>Charge Dispute Created</li>
+        <li>Charge Failed</li>
+        <li>Charge Succeeded</li>
+        <li>Customer Created</li>
+        <li>Customer Deleted</li>
+        <li>Customer Subscription Created</li>
+        <li>Customer Subsciption Deleted</li>
+        <li>Customer Subscription Trial Will End</li>
+        <li>Invoice Payment Failed</li>
+        <li>Order Payment Failed</li>
+        <li>Order Payment Succeeded</li>
+        <li>Order Updated</li>
+        <li>Transfer Failed</li>
+        <li>Transfer Paid</li>
+      </ul>
+
+      <img class="screenshot" src="/static/images/integrations/stripe/002.png"/>
+    </div>
 
     <div id="subversion" class="integration-instructions">
 

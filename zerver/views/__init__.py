@@ -591,6 +591,7 @@ def home_real(request):
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         realm_default_language = register_ret['realm_default_language'],
+        realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
@@ -605,6 +606,7 @@ def home_real(request):
         prompt_for_invites    = prompt_for_invites,
         notifications_stream  = notifications_stream,
         cross_realm_bots      = list(get_cross_realm_dicts()),
+        use_websockets        = settings.USE_WEBSOCKETS,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -637,6 +639,7 @@ def home_real(request):
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
         avatar_url_medium     = avatar_url(user_profile, medium=True),
+        avatar_source         = user_profile.avatar_source,
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
         presence_disabled     = user_profile.realm.presence_disabled,

@@ -115,6 +115,20 @@ below.
 ### Supported features
 
 * All the usual features of Markdown with raw HTML enabled so you can
-  do custom things as needed.
-* Code blocks with syntax highlighting.
+  do custom things with HTML/CSS as needed.  The goal is to make
+  reusable markdown syntax for things we need often, though.
+* Code blocks with syntax highlighting, similar to Zulip's own markdown.
 * Anchor tags for linking to headers in other documents.
+* You can create special highlight warning blocks using e.g.:
+```
+!!! warn "title of warning"
+    Body of warning
+```
+
+  to create a special warning block with title "title of warning" to
+  highlight something important.  The whitespace is important.  Often,
+  we just use "" as the title.  `!!! tip "title"` is useful for less
+  scary tips.  See
+  [the python-markdown docs on this extension](https://pythonhosted.org/Markdown/extensions/admonition.html)
+  for details on how this extension works; essentially the value
+  `warn` or `tip` is an extra CSS class added to the admonition.

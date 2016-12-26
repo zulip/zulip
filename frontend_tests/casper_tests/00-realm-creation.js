@@ -1,7 +1,6 @@
 var common = require('../casper_lib/common.js').common;
 
 var email = 'alice@test.example.com';
-var domain = 'test.example.com';
 var subdomain = 'testsubdomain';
 var organization_name = 'Awesome Organization';
 var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
@@ -26,7 +25,7 @@ casper.then(function () {
     });
     // Make sure confirmation email is send
     this.waitWhileSelector('form[action^="/create_realm/"]', function () {
-         var regex = new RegExp('^http:\/\/[^\/]+\/accounts\/send_confirm\/' + email);
+         var regex = new RegExp('^http://[^/]+/accounts/send_confirm/' + email);
          this.test.assertUrlMatch(regex, 'Confirmation mail send');
     });
 });

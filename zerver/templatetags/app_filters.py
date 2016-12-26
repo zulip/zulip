@@ -7,6 +7,7 @@ from zerver.lib.utils import force_text
 import zerver.lib.bugdown.fenced_code
 
 import markdown
+import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.toc
 
@@ -50,7 +51,7 @@ def display_list(values, display_limit):
 
     return display_string
 
-md_engine = None
+md_extensions = None
 
 @lru_cache(512 if settings.PRODUCTION else 0)
 @register.filter(name='render_markdown_path', is_safe=True)
@@ -61,18 +62,20 @@ def render_markdown_path(markdown_file_path):
     Note that this assumes that any HTML in the markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
-    global md_engine
-    if md_engine is None:
-        md_engine = markdown.Markdown(extensions=[
+    global md_extensions
+    if md_extensions is None:
+        md_extensions = [
             markdown.extensions.toc.makeExtension(),
+            markdown.extensions.admonition.makeExtension(),
             markdown.extensions.codehilite.makeExtension(
                 linenums=False,
                 guess_lang=False
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(),
-        ])
-        md_engine.reset()
+        ]
+    md_engine = markdown.Markdown(extensions=md_extensions)
+    md_engine.reset()
 
     markdown_string = force_text(open(markdown_file_path).read())
-    html = markdown.markdown(md_engine.convert(markdown_string))
+    html = md_engine.convert(markdown_string)
     return mark_safe(html)

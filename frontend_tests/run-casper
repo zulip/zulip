@@ -27,6 +27,7 @@ except ImportError as e:
 #
 
 os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
+os.environ["CASPER_TESTS"] = "1"
 os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "../node_modules/.bin/phantomjs")
 
 usage = """%prog [options]

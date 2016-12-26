@@ -55,9 +55,9 @@ def check_pyflakes(options, by_lang):
         return False
     failed = False
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE,
-        universal_newlines = True)
+                                stdout = subprocess.PIPE,
+                                stderr = subprocess.PIPE,
+                                universal_newlines = True)
 
     # pyflakes writes some output (like syntax errors) to stderr. :/
     for pipe in (pyflakes.stdout, pyflakes.stderr):
@@ -82,7 +82,7 @@ def check_pep8(files):
     # type: (List[str]) -> bool
     failed = False
     ignored_rules = [
-        'E402', 'E501', 'W503', 'E711', 'E128', 'E226',
+        'E402', 'E501', 'W503', 'E711', 'E226',
         'E126', 'E121', 'E123', 'E266', 'E265', 'E261', 'E221',
         'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E731', 'E302',
         'E741', 'E714', 'W391', 'E713', 'E305', 'E251', 'E306',
@@ -179,12 +179,15 @@ def build_custom_checkers(by_lang):
          'description': 'Fix tab-based whitespace'},
         ] # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
-       # Two spaces trailing a line with other content is okay--it's a markdown line break.
-       # This rule finds one space trailing a non-space, three or more trailing spaces, and
-       # spaces on an empty line.
-       {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
-        'strip': '\n',
-        'description': 'Fix trailing whitespace'},
+        # Two spaces trailing a line with other content is okay--it's a markdown line break.
+        # This rule finds one space trailing a non-space, three or more trailing spaces, and
+        # spaces on an empty line.
+        {'pattern': '((?<!\s)\s$)|(\s\s\s+$)|(^\s+$)',
+         'strip': '\n',
+         'description': 'Fix trailing whitespace'},
+        {'pattern': '^#+[A-Za-z0-9]',
+         'strip': '\n',
+         'description': 'Missing space after # in heading'},
        ] # type: RuleList
     js_rules = cast(RuleList, [
         {'pattern': '[^_]function\(',
@@ -328,10 +331,17 @@ def build_custom_checkers(by_lang):
         {'pattern': 'self\.client\.(get|post|patch|put|delete)',
          'exclude': set(['zilencer/tests.py']),
          'description': \
-    '''Do not call self.client directly for put/patch/post/get.
+         '''Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
     '''},
-
+        # This rule might give false positives in virtualenv setup files which should be excluded,
+        # and comments which should be rewritten to avoid use of "python2", "python3", etc.
+        {'pattern': 'python[23]',
+         'exclude': set(['tools/provision.py',
+                         'tools/setup/setup_venvs.py',
+                         'scripts/lib/setup_venv.py',
+                         'tools/lint-all']),
+         'description': 'Explicit python invocations should not include a version'}
         ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
@@ -343,6 +353,8 @@ def build_custom_checkers(by_lang):
          'description': "Missing whitespace after : in CSS"},
         {'pattern': '[a-z]{',
          'description': "Missing whitespace before '{' in CSS."},
+        {'pattern': 'https://',
+         'description': "Zulip CSS should have no dependencies on external resources"},
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
          'exclude': set(['static/styles/thirdparty-fonts.css']),
@@ -363,6 +375,14 @@ def build_custom_checkers(by_lang):
                          "static/templates/settings/realm-filter-settings-admin.handlebars"])},
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
+        {'pattern': "title='[^{]",
+         'description': "`title` value should be translatable."},
+        {'pattern': 'title="[^{]',
+         'exclude_line': set([
+             ('templates/zerver/markdown_help.html',
+              '<td><img alt=":heart:" class="emoji" src="/static/third/gemoji/images/emoji/heart.png" title=":heart:" /></td>')
+         ]),
+         'description': "`title` value should be translatable."},
         ] # type: RuleList
     handlebars_rules = html_rules
     json_rules = [] # type: RuleList # fix newlines at ends of files
@@ -424,20 +444,20 @@ def run():
     # type: () -> None
     parser = optparse.OptionParser()
     parser.add_option('--force', default=False,
-        action="store_true",
-        help='Run tests despite possible problems.')
+                      action="store_true",
+                      help='Run tests despite possible problems.')
     parser.add_option('--full',
-        action='store_true',
-        help='Check some things we typically ignore')
+                      action='store_true',
+                      help='Check some things we typically ignore')
     parser.add_option('--pep8',
-        action='store_true',
-        help='Run the pep8 checker')
+                      action='store_true',
+                      help='Run the pep8 checker')
     parser.add_option('--modified', '-m',
-        action='store_true',
-        help='Only check modified files')
+                      action='store_true',
+                      help='Only check modified files')
     parser.add_option('--verbose', '-v',
-        action='store_true',
-        help='Print verbose timing output')
+                      action='store_true',
+                      help='Print verbose timing output')
     (options, args) = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
@@ -457,9 +477,11 @@ def run():
             print('If you really know what you are doing, use --force to run anyway.')
             sys.exit(1)
 
-    by_lang = cast(Dict[str, List[str]], lister.list_files(args, modified_only=options.modified,
-        ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars', 'html', 'json', 'md', 'txt', 'text'],
-        use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
+    by_lang = cast(Dict[str, List[str]],
+                   lister.list_files(args, modified_only=options.modified,
+                                     ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars',
+                                             'html', 'json', 'md', 'txt', 'text'],
+                                     use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     # Invoke the appropriate lint checker for each language,
     # and also check files for extra whitespace.

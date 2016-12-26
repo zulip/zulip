@@ -40,7 +40,7 @@ to suppress these messages.
 The bot code will run continuously until you kill them with
 control-C (or otherwise).
 
-### Configuration
+### Zulip Configuration
 
 For this document we assume you have some prior experience
 with using the Zulip API, but here is a quick review of
@@ -52,6 +52,31 @@ page to create a user-owned bot.
     email=someuser@example.com
     key=<your api key>
     site=https://zulip.somewhere.com
+
+
+### Third Party Configuration
+
+If your bot interacts with a non-Zulip service, you may
+have to configure keys or usernames or URLs or similar
+information to hit the other service.
+
+Do **not** put third party configuration information in your
+`.zuliprc` file.  Do not put third party configuration
+information anywhere in your Zulip directory.  Instead,
+create a separate configuration file for the third party's
+configuration in your home directory.
+
+### Python dependencies
+
+If your module requires Python modules that are not either
+part of the standard Python library or the Zulip API
+distribution, we ask that you put a comment at the top
+of your bot explaining how to install the dependencies.
+
+Right now we don't support any kind of automatic build
+environment for bots, so it's currently up to the users
+of the bots to manage their dependencies.  This may change
+in the future.
 
 ## Architecture
 

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, Text
 from typing.re import Match
 
 import markdown
@@ -33,14 +33,16 @@ from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
 from zerver.lib.timeout import timeout, TimeoutExpired
-from zerver.lib.cache import cache_with_key, cache_get_many, cache_set_many
+from zerver.lib.cache import (
+    cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
+from zerver.lib.url_preview import preview as link_preview
 from zerver.models import Message
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
 import six
 from six.moves import range, html_parser
-from six import text_type
+from typing import Text
 
 if six.PY3:
     import html
@@ -55,20 +57,20 @@ _T = TypeVar('_T')
 # which means that at runtime Union causes this to blow up.
 if False:
     # mypy requires the Optional to be inside Union
-    ElementStringNone = Union[Element, Optional[text_type]]
+    ElementStringNone = Union[Element, Optional[Text]]
 
 class BugdownRenderingException(Exception):
     pass
 
 def unescape(s):
-    # type: (text_type) -> (text_type)
+    # type: (Text) -> (Text)
     if six.PY2:
         return html_parser.HTMLParser().unescape(s)
     else:
         return html.unescape(s)
 
 def list_of_tlds():
-    # type: () -> List[text_type]
+    # type: () -> List[Text]
     # HACK we manually blacklist .py
     blacklist = [u'PY\n', ]
 
@@ -101,7 +103,7 @@ def walk_tree(root, processor, stop_after_first=False):
 # height is not actually used
 def add_a(root, url, link, height="", title=None, desc=None,
           class_attr="message_inline_image", data_id=None):
-    # type: (Element, text_type, text_type, text_type, Optional[text_type], Optional[text_type], text_type, Optional[text_type]) -> None
+    # type: (Element, Text, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -124,9 +126,38 @@ def add_a(root, url, link, height="", title=None, desc=None,
         desc_div = markdown.util.etree.SubElement(summary_div, "desc")
         desc_div.set("class", "message_inline_image_desc")
 
+
+def add_embed(root, link, extracted_data):
+    # type: (Element, Text, Dict[Text, Any]) -> None
+    container = markdown.util.etree.SubElement(root, "div")
+    container.set("class", "message_embed")
+
+    title = extracted_data.get('title')
+    if title:
+        title_elm = markdown.util.etree.SubElement(container, "div")
+        title_elm.set("class", "message_embed_title")
+        a = markdown.util.etree.SubElement(title_elm, "a")
+        a.set("href", link)
+        a.set("target", "_blank")
+        a.set("title", title)
+        a.text = title
+
+    description = extracted_data.get('description')
+    if description:
+        description_elm = markdown.util.etree.SubElement(container, "div")
+        description_elm.set("class", "message_embed_description")
+        description_elm.text = description
+
+    img_link = extracted_data.get('image')
+    if img_link:
+        img = markdown.util.etree.SubElement(container, "img")
+        img.set("src", img_link)
+        img.set("class", "message_embed_image")
+
+
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
-    # type: (text_type) -> Optional[Dict[text_type, Any]]
+    # type: (Text) -> Optional[Dict[Text, Any]]
     if settings.TEST_SUITE:
         from . import testing_mocks
         res = testing_mocks.twitter(tweet_id)
@@ -186,7 +217,7 @@ META_START_RE = re.compile(u'^meta[ >]')
 META_END_RE = re.compile(u'^/meta[ >]')
 
 def fetch_open_graph_image(url):
-    # type: (text_type) -> Optional[Dict[str, Any]]
+    # type: (Text) -> Optional[Dict[str, Any]]
     in_head = False
     # HTML will auto close meta tags, when we start the next tag add a closing tag if it has not been closed yet.
     last_closed = True
@@ -252,7 +283,7 @@ def fetch_open_graph_image(url):
     return {'image': image, 'title': title, 'desc': desc}
 
 def get_tweet_id(url):
-    # type: (text_type) -> Optional[text_type]
+    # type: (Text) -> Optional[Text]
     parsed_url = urllib.parse.urlparse(url)
     if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
         return None
@@ -289,7 +320,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         markdown.treeprocessors.Treeprocessor.__init__(self, md)
 
     def is_image(self, url):
-        # type: (text_type) -> bool
+        # type: (Text) -> bool
         if not settings.INLINE_IMAGE_PREVIEW:
             return False
         parsed_url = urllib.parse.urlparse(url)
@@ -300,7 +331,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return False
 
     def dropbox_image(self, url):
-        # type: (text_type) -> Optional[Dict]
+        # type: (Text) -> Optional[Dict]
         # TODO: specify details of returned Dict
         parsed_url = urllib.parse.urlparse(url)
         if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')):
@@ -346,7 +377,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return None
 
     def youtube_id(self, url):
-        # type: (text_type) -> Optional[text_type]
+        # type: (Text) -> Optional[Text]
         if not settings.INLINE_IMAGE_PREVIEW:
             return None
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
@@ -360,14 +391,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return match.group(2)
 
     def youtube_image(self, url):
-        # type: (text_type) -> Optional[text_type]
+        # type: (Text) -> Optional[Text]
         yt_id = self.youtube_id(url)
 
         if yt_id is not None:
             return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
 
     def twitter_text(self, text, urls, user_mentions, media):
-        # type: (text_type, List[Dict[text_type, text_type]], List[Dict[text_type, Any]], List[Dict[text_type, Any]]) -> Element
+        # type: (Text, List[Dict[Text, Text]], List[Dict[Text, Any]], List[Dict[Text, Any]]) -> Element
         """
         Use data from the twitter API to turn links, mentions and media into A
         tags.
@@ -388,7 +419,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         Finally we add any remaining text to the last node.
         """
 
-        to_linkify = [] # type: List[Dict[text_type, Any]]
+        to_linkify = [] # type: List[Dict[Text, Any]]
         # Build dicts for URLs
         for url_data in urls:
             short_url = url_data["url"]
@@ -427,7 +458,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         p = current_node = markdown.util.etree.Element('p')
 
         def set_text(text):
-            # type: (text_type) -> None
+            # type: (Text) -> None
             """
             Helper to set the text or the tail of the current_node
             """
@@ -453,7 +484,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         return p
 
     def twitter_link(self, url):
-        # type: (text_type) -> Optional[Element]
+        # type: (Text) -> Optional[Element]
         tweet_id = get_tweet_id(url)
 
         if tweet_id is None:
@@ -463,7 +494,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             res = fetch_tweet_data(tweet_id)
             if res is None:
                 return None
-            user = res['user'] # type: Dict[text_type, Any]
+            user = res['user'] # type: Dict[Text, Any]
             tweet = markdown.util.etree.Element("div")
             tweet.set("class", "twitter-tweet")
             img_a = markdown.util.etree.SubElement(tweet, 'a')
@@ -482,7 +513,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             text = unescape(res['text'])
             urls = res.get('urls', [])
             user_mentions = res.get('user_mentions', [])
-            media = res.get('media', []) # type: List[Dict[text_type, Any]]
+            media = res.get('media', []) # type: List[Dict[Text, Any]]
             p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
 
@@ -523,7 +554,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
 
     def get_url_data(self, e):
-        # type: (Element) -> Optional[Tuple[text_type, text_type]]
+        # type: (Element) -> Optional[Tuple[Text, Text]]
         if e.tag == "a":
             if e.text is not None:
                 return (e.get("href"), force_text(e.text))
@@ -577,9 +608,20 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
+            if current_message is None or not settings.INLINE_URL_EMBED_PREVIEW:
+                continue
+            try:
+                extracted_data = link_preview.link_embed_data_from_cache(url)
+            except NotFoundInCache:
+                current_message.links_for_preview.add(url)
+                continue
+            if extracted_data:
+                add_embed(root, url, extracted_data)
+
+
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         img = markdown.util.etree.Element('img')
         email_address = match.group('email')
         img.set('class', 'message_body_gravatar')
@@ -597,7 +639,7 @@ unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.g
 
 
 def make_emoji(emoji_name, src, display_string):
-    # type: (text_type, text_type, text_type) -> Element
+    # type: (Text, Text, Text) -> Element
     elt = markdown.util.etree.Element('img')
     elt.set('src', src)
     elt.set('class', 'emoji')
@@ -607,7 +649,7 @@ def make_emoji(emoji_name, src, display_string):
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         orig_syntax = match.group('syntax')
         name = hex(ord(orig_syntax))[2:]
         if name in unicode_emoji_list:
@@ -618,11 +660,11 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
 
 class Emoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        realm_emoji = {} # type: Dict[text_type, Dict[str, text_type]]
+        realm_emoji = {} # type: Dict[Text, Dict[str, Text]]
         if db_data is not None:
             realm_emoji = db_data['emoji']
 
@@ -638,7 +680,7 @@ class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
     # This markdown extension has required javascript in
     # static/js/custom_markdown.js
     def handleMatch(self, match):
-        # type: (Match[text_type]) -> Element
+        # type: (Match[Text]) -> Element
         stream_name = match.group('stream_name')
         stream_name = stream_name.replace('\\)', ')').replace('\\\\', '\\')
 
@@ -661,7 +703,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
     """
 
     def handleMatch(self, match):
-        # type: (Match[text_type]) -> Element
+        # type: (Match[Text]) -> Element
         relative_url = match.group('relative_url')
         text = match.group('text')
 
@@ -675,7 +717,7 @@ class ModalLink(markdown.inlinepatterns.Pattern):
 
 upload_title_re = re.compile(u"^(https?://[^/]*)?(/user_uploads/\\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
 def url_filename(url):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     """Extract the filename if a URL is an uploaded file, or return the original URL"""
     match = upload_title_re.match(url)
     if match:
@@ -692,7 +734,7 @@ def fixup_link(link, target_blank=True):
 
 
 def sanitize_url(url):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     """
     Sanitize a url against xss attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
@@ -747,7 +789,7 @@ def sanitize_url(url):
     return urllib.parse.urlunparse((scheme, netloc, path, params, query, fragment))
 
 def url_to_a(url, text = None):
-    # type: (text_type, Optional[text_type]) -> Union[Element, text_type]
+    # type: (Text, Optional[Text]) -> Union[Element, Text]
     a = markdown.util.etree.Element('a')
 
     href = sanitize_url(url)
@@ -764,7 +806,7 @@ def url_to_a(url, text = None):
 
 class VerbosePattern(markdown.inlinepatterns.Pattern):
     def __init__(self, pattern):
-        # type: (text_type) -> None
+        # type: (Text) -> None
         markdown.inlinepatterns.Pattern.__init__(self, ' ')
 
         # HACK: we just had python-markdown compile an empty regex.
@@ -776,7 +818,7 @@ class VerbosePattern(markdown.inlinepatterns.Pattern):
 
 class AutoLink(VerbosePattern):
     def handleMatch(self, match):
-        # type: (Match[text_type]) -> ElementStringNone
+        # type: (Match[Text]) -> ElementStringNone
         url = match.group('url')
         return url_to_a(url)
 
@@ -801,7 +843,7 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     HANGING_ULIST_RE = re.compile(u'^.+\\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
 
     def run(self, lines):
-        # type: (List[text_type]) -> List[text_type]
+        # type: (List[Text]) -> List[Text]
         """ Insert a newline between a paragraph and ulist if missing """
         inserts = 0
         fence = None
@@ -829,7 +871,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
 
     def handleMatch(self, m):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         href = m.group(9)
         if not href:
             return None
@@ -847,7 +889,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         return el
 
 def prepare_realm_pattern(source):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     """ Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as "name". """
@@ -859,19 +901,19 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
 
     def __init__(self, source_pattern, format_string, markdown_instance=None):
-        # type: (text_type, text_type, Optional[markdown.Markdown]) -> None
+        # type: (Text, Text, Optional[markdown.Markdown]) -> None
         self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
     def handleMatch(self, m):
-        # type: (Match[text_type]) -> Union[Element, text_type]
+        # type: (Match[Text]) -> Union[Element, Text]
         return url_to_a(self.format_string % m.groupdict(),
                         m.group("name"))
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def find_user_for_mention(self, name):
-        # type: (text_type) -> Tuple[bool, Dict[str, Any]]
+        # type: (Text) -> Tuple[bool, Dict[str, Any]]
         if db_data is None:
             return (False, None)
 
@@ -885,7 +927,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
         return (False, user)
 
     def handleMatch(self, m):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         name = m.group(2) or m.group(3)
 
         if current_message:
@@ -911,14 +953,14 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class StreamPattern(VerbosePattern):
     def find_stream_by_name(self, name):
-        # type: (Match[text_type]) -> Dict[str, Any]
+        # type: (Match[Text]) -> Dict[str, Any]
         if db_data is None:
             return None
         stream = db_data['stream_names'].get(name)
         return stream
 
     def handleMatch(self, m):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         name = m.group('stream_name')
 
         if current_message:
@@ -940,7 +982,7 @@ class StreamPattern(VerbosePattern):
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
-        # type: (Iterable[text_type]) -> Iterable[text_type]
+        # type: (Iterable[Text]) -> Iterable[Text]
         if current_message and db_data is not None:
             # We check for custom alert words here, the set of which are
             # dependent on which users may see this message.
@@ -972,7 +1014,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 # might be worth sending a version of this change upstream.
 class AtomicLinkPattern(LinkPattern):
     def handleMatch(self, m):
-        # type: (Match[text_type]) -> Optional[Element]
+        # type: (Match[Text]) -> Optional[Element]
         ret = LinkPattern.handleMatch(self, m)
         if ret is None:
             return None
@@ -982,7 +1024,7 @@ class AtomicLinkPattern(LinkPattern):
 
 class Bugdown(markdown.Extension):
     def __init__(self, *args, **kwargs):
-        # type: (*Any, **Union[bool, None, text_type]) -> None
+        # type: (*Any, **Union[bool, None, Text]) -> None
         # define default configs
         self.config = {
             "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
@@ -1011,13 +1053,13 @@ class Bugdown(markdown.Extension):
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
-            markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
-            '>not_strong')
+                              markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
+                              '>not_strong')
 
         # Custom strikethrough syntax: ~~foo~~
         md.inlinePatterns.add('del',
-            markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
-            '>strong')
+                              markdown.inlinepatterns.SimpleTagPattern(r'(?<!~)(\~\~)([^~{0}\n]+?)\2(?!~)', 'del'),
+                              '>strong')
 
         # Text inside ** must start and end with a word character
         # it need for things like "const char *x = (char *)y"
@@ -1036,7 +1078,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Avatar(r'!gravatar\((?P<email>[^)]*)\)'), '>backtick')
 
         md.inlinePatterns.add('stream_subscribe_button',
-            StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
+                              StreamSubscribeButton(r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'), '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
@@ -1140,7 +1182,7 @@ class Bugdown(markdown.Extension):
                     del md.parser.blockprocessors[k]
 
 md_engines = {}
-realm_filter_data = {} # type: Dict[text_type, List[Tuple[text_type, text_type, int]]]
+realm_filter_data = {} # type: Dict[Text, List[Tuple[Text, Text, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
@@ -1149,7 +1191,7 @@ class EscapeHtml(markdown.Extension):
         del md.inlinePatterns['html']
 
 def make_md_engine(key, opts):
-    # type: (text_type, Dict[str, Any]) -> None
+    # type: (Text, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         output_format = 'html',
         extensions    = [
@@ -1165,9 +1207,9 @@ def make_md_engine(key, opts):
                                  realm=opts["realm"][0])])
 
 def subject_links(domain, subject):
-    # type: (text_type, text_type) -> List[text_type]
+    # type: (Text, Text) -> List[Text]
     from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
-    matches = [] # type: List[text_type]
+    matches = [] # type: List[Text]
 
     realm_filters = realm_filters_for_domain(domain)
 
@@ -1178,7 +1220,7 @@ def subject_links(domain, subject):
     return matches
 
 def make_realm_filters(domain, filters):
-    # type: (text_type, List[Tuple[text_type, text_type, int]]) -> None
+    # type: (Text, List[Tuple[Text, Text, int]]) -> None
     global md_engines, realm_filter_data
     if domain in md_engines:
         del md_engines[domain]
@@ -1187,10 +1229,10 @@ def make_realm_filters(domain, filters):
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
     make_md_engine(domain, {"realm_filters": [filters, "Realm-specific filters for %s" % (domain,)],
-                           "realm": [domain, "Realm name"]})
+                            "realm": [domain, "Realm name"]})
 
 def maybe_update_realm_filters(domain):
-    # type: (Optional[text_type]) -> None
+    # type: (Optional[Text]) -> None
     from zerver.models import realm_filters_for_domain, all_realm_filters
 
     # If domain is None, load all filters
@@ -1215,7 +1257,7 @@ def maybe_update_realm_filters(domain):
 # codes, which can do surprisingly nasty things.
 _privacy_re = re.compile(u'\\w', flags=re.UNICODE)
 def _sanitize_for_log(content):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return repr(_privacy_re.sub('x', content))
 
 
@@ -1226,7 +1268,7 @@ current_message = None # type: Optional[Message]
 # We avoid doing DB queries in our markdown thread to avoid the overhead of
 # opening a new DB connection. These connections tend to live longer than the
 # threads themselves, as well.
-db_data = None # type: Dict[text_type, Any]
+db_data = None # type: Dict[Text, Any]
 
 def log_bugdown_error(msg):
     # type: (str) -> None
@@ -1237,7 +1279,7 @@ def log_bugdown_error(msg):
     logging.getLogger('').error(msg)
 
 def do_convert(content, realm_domain=None, message=None, possible_words=None):
-    # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
+    # type: (Text, Optional[Text], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
@@ -1264,7 +1306,7 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
         realm_streams = get_active_streams(message.get_realm()).values('id', 'name')
 
         if possible_words is None:
-            possible_words = set() # Set[text_type]
+            possible_words = set() # Set[Text]
 
         db_data = {'possible_words':    possible_words,
                    'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
@@ -1284,11 +1326,11 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
 
         # Output error to log as well as sending a zulip and email
         log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
-            % (traceback.format_exc(), cleaned))
+                          % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
             internal_send_message(settings.ERROR_BOT, "stream",
-                    "errors", subject, "Markdown parser failed, email sent with details.")
+                                  "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
@@ -1323,7 +1365,7 @@ def bugdown_stats_finish():
     bugdown_total_time += (time.time() - bugdown_time_start)
 
 def convert(content, realm_domain=None, message=None, possible_words=None):
-    # type: (text_type, Optional[text_type], Optional[Message], Optional[Set[text_type]]) -> Optional[text_type]
+    # type: (Text, Optional[Text], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
     bugdown_stats_start()
     ret = do_convert(content, realm_domain, message, possible_words)
     bugdown_stats_finish()

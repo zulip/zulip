@@ -18,7 +18,6 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import get_user_profile_by_email
-from zerver.lib.test_runner import slow
 
 import DNS
 import mock
@@ -27,22 +26,22 @@ import ujson
 
 from six.moves import urllib
 from six.moves import range
-from six import text_type
+from typing import Text
 
 class MITNameTest(TestCase):
     def test_valid_hesiod(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', return_value=[['starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash']]):
-            self.assertEquals(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
+            self.assertEqual(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
         with mock.patch('DNS.dnslookup', return_value=[['sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash']]):
-            self.assertEquals(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
+            self.assertEqual(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
 
     def test_invalid_hesiod(self):
         # type: () -> None
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
-            self.assertEquals(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
+            self.assertEqual(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
         with mock.patch('DNS.dnslookup', side_effect=DNS.Base.ServerError('DNS query status: NXDOMAIN', 3)):
-            self.assertEquals(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
+            self.assertEqual(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
 
     def test_mailinglist(self):
         # type: () -> None
@@ -69,7 +68,7 @@ class RateLimitTests(ZulipTestCase):
         remove_ratelimit_rule(1, 5)
 
     def send_api_message(self, email, content):
-        # type: (text_type, text_type) -> HttpResponse
+        # type: (Text, Text) -> HttpResponse
         return self.client_post("/api/v1/messages", {"type": "stream",
                                                      "to": "Verona",
                                                      "client": "test suite",
@@ -100,7 +99,6 @@ class RateLimitTests(ZulipTestCase):
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
-    @slow('has to sleep to work')
     def test_hit_ratelimits(self):
         # type: () -> None
         email = "cordelia@zulip.com"
@@ -120,8 +118,7 @@ class RateLimitTests(ZulipTestCase):
         # We actually wait a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
-        time.sleep(1)
+        with mock.patch('time.time', return_value=(time.time() + 1)):
+            result = self.send_api_message(email, "Good message")
 
-        result = self.send_api_message(email, "Good message")
-
-        self.assert_json_success(result)
+            self.assert_json_success(result)

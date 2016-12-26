@@ -28,6 +28,7 @@ Contents:
 * :ref:`dev-install-docs`
 * :ref:`tutorial-docs`
 * :ref:`code-docs`
+* :ref:`code-testing`
 * :ref:`system-docs`
 
 .. _user-docs:
@@ -49,7 +50,7 @@ Contents:
    :caption: Zulip in production
 
    prod-requirements
-   prod-install
+   Installing a production server <prod-install>
    prod-troubleshooting
    prod-customize
    prod-maintain-secure-upgrade
@@ -60,9 +61,9 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Installation for developers
+   :caption: Development environment
 
-   Overview <dev-overview>
+   Development environment installation <dev-overview>
    Recommended setup (Vagrant) <dev-env-first-time-contributors>
    Advanced setup (non-Vagrant) <dev-setup-non-vagrant>
    Using the development environment <using-dev-environment>
@@ -88,9 +89,21 @@ Contents:
    git-guide
    version-control
    code-style
-   testing
    mypy
    code-reviewing
+
+.. _code-testing:
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Code testing
+
+   testing
+   linters
+   testing-with-node
+   testing-with-django
+   testing-with-casper
+   manual-testing
 
 .. _system-docs:
 
@@ -100,6 +113,7 @@ Contents:
 
    settings
    queuing
+   bots-guide
    custom-apps
    pointer
    markdown

@@ -1,7 +1,7 @@
-from six import text_type
+from typing import Text
 
 def is_reserved_subdomain(subdomain):
-    # type: (text_type) -> bool
+    # type: (Text) -> bool
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True
     if subdomain[-1] == 's' and subdomain[:-1] in ZULIP_RESERVED_SUBDOMAINS:
@@ -13,7 +13,7 @@ def is_reserved_subdomain(subdomain):
     return False
 
 def is_disposable_domain(domain):
-    # type: (text_type) -> bool
+    # type: (Text) -> bool
     return domain.lower() in DISPOSABLE_DOMAINS
 
 ZULIP_RESERVED_SUBDOMAINS = frozenset([

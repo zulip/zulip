@@ -5,41 +5,36 @@ from __future__ import print_function
 from django.core.management.base import BaseCommand, CommandParser
 from django.utils.timezone import now
 
-from zerver.models import Message, UserProfile, Stream, Recipient, \
+from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_message, \
     do_change_is_admin
 from django.conf import settings
-from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
-from zerver.models import DefaultStream, get_stream, get_realm
+from zerver.lib.bulk_create import bulk_create_realms, \
+    bulk_create_streams, bulk_create_users, bulk_create_huddles, \
+    bulk_create_clients
+from zerver.models import DefaultStream, get_stream, get_realm_by_string_id
 from zilencer.models import Deployment
 
 import random
 import os
 from optparse import make_option
-from six import text_type
 from six.moves import range
-from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple
+from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None
 
-def create_users(realms, name_list, bot_type=None):
-    # type: (Mapping[text_type, Realm], Iterable[Tuple[text_type, text_type]], int) -> None
-    user_set = set() # type: Set[Tuple[text_type, text_type, text_type, bool]]
+def create_users(realm, name_list, bot_type=None):
+    # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
+    user_set = set() # type: Set[Tuple[Text, Text, Text, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
-    bulk_create_users(realms, user_set, bot_type=bot_type, tos_version=tos_version)
+    bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
 
-def create_streams(realms, realm, stream_list):
-    # type: (Mapping[text_type, Realm], Realm, Iterable[text_type]) -> None
-    stream_set = set() # type: Set[Tuple[text_type, text_type]]
-    for stream_name in stream_list:
-        stream_set.add((realm.domain, stream_name))
-    bulk_create_streams(realms, stream_set)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -127,9 +122,6 @@ class Command(BaseCommand):
                     string_id="mit", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
-            realms = {} # type: Dict[text_type, Realm]
-            for realm in Realm.objects.all():
-                realms[realm.domain] = realm
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -144,13 +136,20 @@ class Command(BaseCommand):
             ]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
-            create_users(realms, names)
+            create_users(zulip_realm, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+            stream_dict = {
+                "Verona": {"description": "A city in Italy", "invite_only": False},
+                "Denmark": {"description": "A Scandinavian country", "invite_only": False},
+                "Scotland": {"description": "Located in the United Kingdom", "invite_only": False},
+                "Venice": {"description": "A northeastern Italian city", "invite_only": False},
+                "Rome": {"description": "Yet another Italian city", "invite_only": False}
+            } # type: Dict[Text, Dict[Text, Any]]
 
-            create_streams(realms, zulip_realm, stream_list)
+            bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
                                  for name in stream_list] # type: List[int]
             # Create subscriptions to streams.  The following
@@ -172,19 +171,31 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
-            zulip_realm = get_realm("zulip.com")
+            zulip_realm = get_realm_by_string_id("zulip")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        user_profiles = [user_profile.id for user_profile in UserProfile.objects.all()] # type: List[int]
+        user_profiles = list(UserProfile.objects.all()) # type: List[UserProfile]
+
+        if not options["test_suite"]:
+            # Populate users with some bar data
+            for user in user_profiles:
+                status = 1 # type: int
+                date = now()
+                client = get_client("website")
+                for i in range(3):
+                    client = get_client("API")
+                UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
+
+        user_profiles_ids = [user_profile.id for user_profile in user_profiles]
 
         # Create several initial huddles
         for i in range(options["num_huddles"]):
-            get_huddle(random.sample(user_profiles, random.randint(3, 4)))
+            get_huddle(random.sample(user_profiles_ids, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = [random.sample(user_profiles, 2)
+        personals_pairs = [random.sample(user_profiles_ids, 2)
                            for i in range(options["num_personals"])]
 
         threads = options["threads"]
@@ -213,7 +224,7 @@ class Command(BaseCommand):
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
                     ]
-                create_users(realms, testsuite_mit_users)
+                create_users(mit_realm, testsuite_mit_users)
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
@@ -225,12 +236,12 @@ class Command(BaseCommand):
                 ("Zulip Default Bot", "default-bot@zulip.com"),
                 ]
             zulip_realm_bots.extend(all_realm_bots)
-            create_users(realms, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
-            create_users(realms, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+            create_users(zulip_realm, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
@@ -242,18 +253,31 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
-                zulip_stream_list = ["devel", "all", "announce", "design", "support", "social", "test",
-                                     "errors", "sales"]
-                create_streams(realms, zulip_realm, zulip_stream_list)
+                zulip_stream_dict = {
+                    "devel": {"description": "For developing", "invite_only": False},
+                    "all": {"description": "For everything", "invite_only": False},
+                    "announce": {"description": "For announcements", "invite_only": False},
+                    "design": {"description": "For design", "invite_only": False},
+                    "support": {"description": "For support", "invite_only": False},
+                    "social": {"description": "For socializing", "invite_only": False},
+                    "test": {"description": "For testing", "invite_only": False},
+                    "errors": {"description": "For errors", "invite_only": False},
+                    "sales": {"description": "For sales discussion", "invite_only": False}
+                }  # type: Dict[Text, Dict[Text, Any]]
+                bulk_create_streams(zulip_realm, zulip_stream_dict)
+                # Now that we've created the notifications stream, configure it properly.
+                zulip_realm.notifications_stream = get_stream("announce", zulip_realm)
+                zulip_realm.save(update_fields=['notifications_stream'])
 
                 # Add a few default streams
-                for stream_name in ["design", "devel", "social", "support"]:
-                    DefaultStream.objects.create(realm=zulip_realm, stream=get_stream(stream_name, zulip_realm))
+                for default_stream_name in ["design", "devel", "social", "support"]:
+                    DefaultStream.objects.create(realm=zulip_realm,
+                                                 stream=get_stream(default_stream_name, zulip_realm))
 
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
                 profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
-                for i, stream_name in enumerate(zulip_stream_list):
+                for i, stream_name in enumerate(zulip_stream_dict):
                     stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
                     recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                     for profile in profiles:
@@ -271,12 +295,12 @@ class Command(BaseCommand):
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ]
-                create_users(realms, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
+                create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_cross_realm_bots = [
                 ("Zulip Feedback Bot", "feedback@zulip.com"),
                 ]
-            create_users(realms, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            create_users(zulip_realm, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
             UserMessage.objects.all().update(flags=UserMessage.flags.read)
@@ -363,7 +387,7 @@ def send_messages(data):
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).user_profile
-            message.subject = stream.name + text_type(random.randint(1, 3))
+            message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
         message.pub_date = now()

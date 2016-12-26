@@ -93,7 +93,7 @@ $(function () {
         }
     });
 
-    $("#referral-form input").on('blur', function (e) {
+    $("#referral-form input").on('blur', function () {
         if ($("#referral-form input").val() === '') {
             validator.resetForm();
             resize.resize_page_components();
@@ -116,3 +116,7 @@ $(function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = referral;
+}

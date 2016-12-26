@@ -19,7 +19,7 @@ missed-message emails, desktop apps, and much more.
 Further information on the Zulip project and its features can be found
 at https://www.zulip.org.
 
-[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/pip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/)
+[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/pip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/) [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 
 ## Community
 
@@ -32,13 +32,22 @@ help in real time, you will have the best luck finding core developers
 roughly between 16:00 UTC and 23:59 UTC.  Most questions get a reply
 within minutes to a few hours, depending on time of day.
 
-We have a
-[Google mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
-that is currently pretty low traffic because a lot of discussions
-happen in our public Zulip instance.  We use it to announce Zulip
-developer community gatherings and ask for feedback on technical or
-design decisions.  You can use it to ask questions about features or
-possible bugs.  Zulip also has a [blog](https://blog.zulip.org/).
+For Google Summer of Code students and applicants, we have [a mailing
+list](https://groups.google.com/forum/#!forum/zulip-gsoc) for help,
+questions, and announcements.
+
+We have
+[a public mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
+that is currently pretty low traffic because most discussions happen
+in our public Zulip instance.  We use it to announce Zulip developer
+community gatherings and ask for feedback on major technical or design
+decisions.  It has several hundred subscribers, so you can use it to
+ask questions about features or possible bugs, but please don't use it
+ask for generic help getting started as a contributor (e.g. because
+you want to do Google Summer of Code).  The rest of this page covers
+how to get involved in the Zulip project in detail.
+
+Zulip also has a [blog](https://blog.zulip.org/).
 
 Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
 track Zulip-related issues (and store our code, of course).
@@ -85,7 +94,7 @@ and [new feature tutorial][doc-newfeat]. You can also improve
 [Zulip.org][z-org].
 
 * **Mailing lists and bug tracker**. Zulip has a [development
-discussion mailing list][gg-devel] and uses [GitHub issues
+discussion mailing list](#community) and uses [GitHub issues
 ][gh-issues].  There are also lists for the [Android][email-android]
 and [iOS][email-ios] apps.  Feel free to send any questions or
 suggestions of areas where you'd love to see more documentation to the
@@ -118,7 +127,6 @@ contributing!
 [doc-newfeat]: http://zulip.readthedocs.io/en/latest/new-feature-tutorial.html
 [doc-test]: http://zulip.readthedocs.io/en/latest/testing.html
 [electron]: https://github.com/zulip/zulip-electron
-[gg-devel]: https://groups.google.com/forum/#!forum/zulip-devel
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
@@ -150,7 +158,7 @@ and feel free to email
 ## How to get involved with contributing to Zulip
 
 First, subscribe to the Zulip [development discussion mailing
-list][gg-devel].
+list](#community).
 
 The Zulip project uses a system of labels in our [issue
 tracker][gh-issues] to make it easy to find a project if you don't

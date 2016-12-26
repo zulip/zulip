@@ -51,6 +51,9 @@ else:
     CAMO_URI = 'https://external-content.zulipcdn.net/'
     CAMO_KEY = 'dummy'
 
+if "CASPER_TESTS" in os.environ:
+    CASPER_TESTS = True
+
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000
@@ -96,6 +99,7 @@ ENABLE_FILE_LINKS = True
 
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
 
 LOCAL_UPLOADS_DIR = 'var/test_uploads'
 
@@ -106,3 +110,5 @@ REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
+
+INLINE_URL_EMBED_PREVIEW = False

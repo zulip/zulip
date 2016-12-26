@@ -1382,7 +1382,7 @@ Current branch review-1913 is up to date.
 [github-help-create-pr-fork]: https://help.github.com/articles/creating-a-pull-request-from-a-fork/
 [github-help-co-pr-locally]: https://help.github.com/articles/checking-out-pull-requests-locally/
 [github-help-add-ssh-key]: https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/
-[github-help-resolve-merge-conflict]: https://help.github.com/articles/resolving-a-merge-conflict-from-the-command-line/
+[github-help-resolve-merge-conflict]: https://help.github.com/articles/resolving-a-merge-conflict-using-the-command-line/
 [github-help-closing-issues]: https://help.github.com/articles/closing-issues-via-commit-messages/
 [zulip-rtd-version-control]: version-control.html
 [zulip-rtd-commit-messages]: version-control.html#commit-messages

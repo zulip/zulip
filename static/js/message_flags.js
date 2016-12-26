@@ -41,7 +41,7 @@ function batched_updater(flag, op, immediate) {
         start = _.debounce(server_request, 1000);
     }
 
-    on_success = function on_success(data, status, jqXHR) {
+    on_success = function on_success(data) {
         if (data ===  undefined || data.messages === undefined) {
             return;
         }
@@ -108,3 +108,7 @@ exports.send_force_collapse = function send_force_collapse(messages, value) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = message_flags;
+}

@@ -9,7 +9,7 @@ sudo chmod a+rX /home/travis
 # Uninstall the unnecessary extra versions of postgres that Travis CI
 # installs since if we don't do this, doing apt upgrades can fail due
 # to conflicts over which version of postgres should be running.
-sudo apt-get remove postgresql-9.1 postgresql-client-9.1 postgresql-9.1-postgis-2.2 postgresql-contrib-9.1 postgresql-9.1-postgis-2.2-scripts postgresql-9.2 postgresql-client-9.2 postgresql-9.2-postgis-2.2 postgresql-9.2-postgis-2.2-scripts postgresql-contrib-9.2 postgresql-9.4 postgresql-9.4-postgis-2.2-scripts postgresql-client-9.4 postgresql-9.5 postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-2.2-scripts postgresql-contrib-9.5 postgresql-client-9.5 -y
+sudo apt-get remove postgresql-9.1 postgresql-client-9.1 postgresql-9.1-postgis-2.2 postgresql-contrib-9.1 postgresql-9.1-postgis-2.2-scripts postgresql-9.2 postgresql-client-9.2 postgresql-9.2-postgis-2.2 postgresql-9.2-postgis-2.2-scripts postgresql-contrib-9.2 postgresql-9.4 postgresql-9.4-postgis-2.2-scripts postgresql-client-9.4 postgresql-9.5 postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-2.2-scripts postgresql-contrib-9.5 postgresql-client-9.5 postgresql-9.6 postgresql-9.6-postgis-2.2 postgresql-9.6-postgis-2.2-scripts postgresql-contrib-9.6 postgresql-client-9.6 -y
 
 tools/provision.py --travis --production-travis
 cp -a tools/travis/success-http-headers.txt ~/
@@ -32,6 +32,9 @@ if ! ./tools/build-release-tarball "${build_options[@]}" travis; then
     exit 1
 fi
 mv /tmp/tmp.*/zulip-server-travis.tar.gz ./
+
+# Remove zulip-npm-cache to ensure we install node_modules correctly
+rm -rf /home/travis/zulip-npm-cache
 
 # Shut down all services so that restarting postgres and rebuilding
 # the postgres database to match the prod installation setup will work.

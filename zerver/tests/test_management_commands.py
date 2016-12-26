@@ -81,7 +81,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             # Create Realm with generated link
             self.assertIsNone(get_realm_by_string_id('test'))
             result = self.client_post(generated_link, {'email': email})
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
                     "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])

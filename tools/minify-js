@@ -15,7 +15,7 @@ from typing import Optional, Set
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
-                  help='a previous deploy from which to reuse files if possible')
+                    help='a previous deploy from which to reuse files if possible')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 

@@ -1,11 +1,12 @@
 #### Dependencies
 
-The [Zulip API](https://zulip.com/api) Python bindings require the
+The [Zulip API](https://zulipchat.com/api) Python bindings require the
 following Python libraries:
 
-* simplejson
 * requests (version >= 0.12.1)
-
+* simplejson
+* six
+* typing (version >= 3.5.2.2)
 
 #### Installing
 
@@ -36,22 +37,23 @@ file is as follows:
 
 If omitted, these settings have the following defaults:
 
-    site=https://api.zulip.com
     insecure=false
     cert_bundle=<the default CA bundle trusted by Python>
 
-Alternatively, you may explicitly use "--user" and "--api-key" in our
-examples, which is especially useful if you are running several bots
-which share a home directory.
+Alternatively, you may explicitly use "--user", "--api-key", and
+`--site` in our examples, which is especially useful when testing.  If
+you are running several bots which share a home directory, we
+recommend using `--config` to specify the path to the `zuliprc` file
+for a specific bot.
 
 The command line equivalents for other configuration options are:
 
-    --site=<your Zulip server's URI>
     --insecure
     --cert-bundle=<file>
 
 You can obtain your Zulip API key, create bots, and manage bots all
-from your Zulip [settings page](https://zulip.com/#settings).
+from your Zulip settings page; with current Zulip there's also a
+button to download a `zuliprc` file for your account/server pair.
 
 A typical simple bot sending API messages will look as follows:
 
@@ -71,6 +73,9 @@ When you want to send a message:
     }
     zulip_client.send_message(message)
 
+If you are parsing arguments, you may find it useful to use Zulip's
+option group; see any of our API examples for details on how to do this.
+
 Additional examples:
 
     client.send_message({'type': 'stream', 'content': 'Zulip rules!',
@@ -83,7 +88,14 @@ keys: msg, result.  For successful calls, result will be "success" and
 msg will be the empty string.  On error, result will be "error" and
 msg will describe what went wrong.
 
+#### Examples
+
+The API bindings package comes with several nice example scripts that
+show how to use the APIs; they are installed as part of the API
+bindings bundle.
+
 #### Logging
+
 The Zulip API comes with a ZulipStream class which can be used with the
 logging module:
 
@@ -112,6 +124,7 @@ Alternatively, if you don't want to use your ~/.zuliprc file:
 
     zulip-send --user shakespeare-bot@example.com \
         --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+        --site https://zulip.example.com \
         hamlet@example.com cordelia@example.com -m \
         "Conscience doth make cowards of us all."
 

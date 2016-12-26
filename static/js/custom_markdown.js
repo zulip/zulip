@@ -30,13 +30,13 @@ var exports = {};
     }
 
     function remove_sub(stream_name, $status_message) {
-        channel.post({
-            url: '/json/subscriptions/remove',
+        channel.del({
+            url: '/json/users/me/subscriptions',
             data: {
                 subscriptions: JSON.stringify([stream_name])
             }
         }).then(
-            function (data) {
+            function () {
                 $status_message.hide();
             }, function (xhr) {
                 ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);

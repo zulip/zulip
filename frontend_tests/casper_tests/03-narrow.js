@@ -205,7 +205,7 @@ function search_non_existing_user(str, item) {
 casper.then(function () {
     common.wait_for_receive(function () {
         casper.test.info('Narrowing by clicking stream');
-        casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
+        casper.click('*[title="Narrow to stream \\"Verona\\""]');
     });
 });
 
@@ -219,7 +219,7 @@ expect_home();
 
 casper.then(function () {
     casper.test.info('Narrowing by clicking subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
+    casper.click('*[title="Narrow to stream \\"Verona\\", topic \\"frontend test\\""]');
 });
 
 expect_stream_subject();

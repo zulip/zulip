@@ -160,7 +160,7 @@ autofocus('#id_username');
 
     {% if github_auth_enabled %}
     <div class="login-github">
-        or <a href="{{ url('social:begin', args=('github',)) }}" class="login-github-button zocial github">
+        or <a href="{{ url('login-social', args=('github',)) }}" class="login-github-button zocial github">
             <span>{{ _('Sign in with GitHub') }}</span>
         </a>
     </div>

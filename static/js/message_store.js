@@ -41,7 +41,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
 };
 
 exports.process_message_for_recent_private_messages =
-    function process_message_for_recent_private_messages(message, remove_message) {
+    function process_message_for_recent_private_messages(message) {
     var current_timestamp = 0;
 
     var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
@@ -96,8 +96,6 @@ function add_message_metadata(message) {
         return cached_msg;
     }
 
-    var involved_people;
-
     message.sent_by_me = util.is_current_user(message.sender_email);
 
     message.flags = message.flags || [];
@@ -111,6 +109,8 @@ function add_message_metadata(message) {
     message.alerted = message.flags.indexOf("has_alert_word") !== -1;
     message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
 
+    people.extract_people_from_message(message);
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
@@ -119,10 +119,6 @@ function add_message_metadata(message) {
         message.reply_to = message.sender_email;
 
         stream_data.process_message_for_recent_topics(message);
-
-        involved_people = [{full_name: message.sender_full_name,
-                            user_id: message.sender_id,
-                            email: message.sender_email}];
         set_topic_edit_properties(message);
         break;
 
@@ -133,29 +129,8 @@ function add_message_metadata(message) {
         message.display_reply_to = exports.get_private_message_recipient(message, 'full_name', 'email');
 
         exports.process_message_for_recent_private_messages(message);
-        involved_people = message.display_recipient;
         break;
     }
-
-    // Add new people involved in this message to the people list
-    _.each(involved_people, function (person) {
-        if (!person.unknown_local_echo_user) {
-            if (! people.get_by_email(person.email)) {
-                people.add({
-                    email: person.email,
-                    user_id: person.user_id || person.id,
-                    full_name: person.full_name,
-                    is_admin: person.is_realm_admin || false,
-                    is_bot: person.is_bot || false
-                });
-            }
-
-            if (message.type === 'private' && message.sent_by_me) {
-                // Track the number of PMs we've sent to this person to improve autocomplete
-                people.incr_recipient_count(person.email);
-            }
-        }
-    });
 
     alert_words.process_message(message);
     stored_messages[message.id] = message;
@@ -219,7 +194,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             notifications.possibly_notify_new_messages_outside_viewport(new_messages);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
-        error: function (xhr) {
+        error: function () {
             // We might want to be more clever here
             setTimeout(function () {
                 if (msg_list === current_msg_list) {
@@ -496,7 +471,7 @@ exports.load_old_messages = function load_old_messages(opts) {
         success: function (data) {
             get_old_messages_success(data, opts);
         },
-        error: function (xhr, error_type, exn) {
+        error: function (xhr) {
             if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
                 // We unnarrowed before getting an error so don't
                 // bother trying again or doing further processing.

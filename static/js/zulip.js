@@ -6,3 +6,7 @@ var home_msg_list = new message_list.MessageList('zhome',
     new Filter([{operator: "in", operand: "home"}]), {muting_enabled: true}
 );
 var current_msg_list = home_msg_list;
+
+if (typeof module !== 'undefined') {
+    module.exports.current_msg_list = current_msg_list;
+}

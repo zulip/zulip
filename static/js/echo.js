@@ -415,7 +415,7 @@ exports.set_realm_filters = function set_realm_filters(realm_filters) {
 
 $(function () {
     function disable_markdown_regex(rules, name) {
-        rules[name] = {exec: function (_) {
+        rules[name] = {exec: function () {
                 return false;
             }
         };
@@ -533,7 +533,7 @@ $(document).on('socket_loaded_requests.zulip', function (event, data) {
     var msgs_to_insert = [];
 
     var next_local_id = get_next_local_id();
-    _.each(data.requests, function (socket_msg, key) {
+    _.each(data.requests, function (socket_msg) {
         var msg = socket_msg.msg;
         // Check for any message objects, then insert them locally
         if (msg.stream === undefined || msg.local_id === undefined) {

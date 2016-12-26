@@ -36,7 +36,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
 }
 
 
-function copy_handler(e) {
+function copy_handler() {
     var selection = window.getSelection();
     var i;
     var range;
@@ -147,3 +147,7 @@ $(function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = copy_and_paste;
+}

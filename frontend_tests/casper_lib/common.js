@@ -29,7 +29,7 @@ exports.init_viewport = function () {
     casper.options.viewportSize = {width: 1280, height: 1024};
 };
 
-exports.initialize_casper = function (viewport) {
+exports.initialize_casper = function () {
     if (casper.zulip_initialized !== undefined) {
         return;
     }
@@ -237,7 +237,10 @@ exports.get_rendered_messages = function (table) {
         var tbl = $('#'+table);
         return {
             headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
-                return elem.innerText;
+                var $clone = $(elem).clone(true);
+                $clone.find(".recipient_row_date").remove();
+
+                return $clone.text();
             }),
 
             bodies: $.map(tbl.find('.message_content'), function (elem) {
@@ -337,4 +340,5 @@ return exports;
 try {
     exports.common = common;
 } catch (e) {
+    // continue regardless of error
 }

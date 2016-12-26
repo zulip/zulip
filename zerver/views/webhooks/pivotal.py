@@ -14,12 +14,11 @@ from defusedxml.ElementTree import fromstring as xml_fromstring
 import logging
 import re
 import ujson
-from six import text_type
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Text
 
 
 def api_pivotal_webhook_v3(request, user_profile, stream):
-    # type: (HttpRequest, UserProfile, text_type) -> Tuple[text_type, text_type]
+    # type: (HttpRequest, UserProfile, Text) -> Tuple[Text, Text]
     payload = xml_fromstring(request.body)
 
     def get_text(attrs):
@@ -64,16 +63,17 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
         if estimate != '':
             estimate = " worth %s story points" % (estimate,)
         subject = name
-        content = "%s (%s %s%s):\n\n~~~ quote\n%s\n~~~\n\n%s" % (description,
-                                                   issue_status,
-                                                   issue_type,
-                                                   estimate,
-                                                   issue_desc,
-                                                   more_info)
+        content = "%s (%s %s%s):\n\n~~~ quote\n%s\n~~~\n\n%s" % (
+            description,
+            issue_status,
+            issue_type,
+            estimate,
+            issue_desc,
+            more_info)
     return subject, content
 
 def api_pivotal_webhook_v5(request, user_profile, stream):
-    # type: (HttpRequest, UserProfile, text_type) -> Tuple[text_type, text_type]
+    # type: (HttpRequest, UserProfile, Text) -> Tuple[Text, Text]
     payload = ujson.loads(request.body)
 
     event_type = payload["kind"]
@@ -98,7 +98,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
     subject = "#%s: %s" % (story_id, story_name)
 
     def extract_comment(change):
-        # type: (Dict[str, Dict]) -> Optional[text_type]
+        # type: (Dict[str, Dict]) -> Optional[Text]
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None
@@ -163,7 +163,7 @@ def api_pivotal_webhook_v5(request, user_profile, stream):
 @api_key_only_webhook_view("Pivotal")
 @has_request_variables
 def api_pivotal_webhook(request, user_profile, client, stream=REQ()):
-    # type: (HttpRequest, UserProfile, Client, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Text) -> HttpResponse
     subject = content = None
     try:
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)

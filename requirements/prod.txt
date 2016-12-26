@@ -1,3 +1,4 @@
 -r common.txt
 netifaces==0.10.5
 python-dateutil==2.5.3
+uWSGI==2.0.14

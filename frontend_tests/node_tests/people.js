@@ -77,10 +77,14 @@ var _ = global._;
     people.update({email: email, full_name: 'The Godfather of Calculus'});
     assert.equal(global.page_params.fullname, 'The Godfather of Calculus');
 
-    // Now remove isaac
-    people.remove(isaac);
-    person = people.get_by_email(email);
+    // Now deactivate isaac
+    people.deactivate(isaac);
+    person = people.realm_get(email);
     assert(!person);
+
+    // We can still get their info for non-realm needs.
+    person = people.get_by_email(email);
+    assert.equal(person.email, email);
 
     // The original person should still be there
     person = people.get_by_email('orig@example.com');
@@ -113,13 +117,14 @@ var _ = global._;
     person = people.get_person_from_user_id(42);
     assert.equal(person.full_name, 'Mary New');
 
-    // remove() should eventually just take a user_id, but
-    // now it takes a full person object
-    people.remove(person);
-    person = people.get_by_email('mary@example.com');
+    // deactivate() should eventually just take a user_id, but
+    // now it takes a full person object.  Note that deactivate()
+    // won't actually make the user disappear completely.
+    people.deactivate(person);
+    person = people.realm_get('mary@example.com');
     assert.equal(person, undefined);
     person = people.get_person_from_user_id(42);
-    assert.equal(person, undefined);
+    assert.equal(person.user_id, 42);
 }());
 
 (function test_get_rest_of_realm() {
@@ -156,10 +161,9 @@ var _ = global._;
     ];
     assert.deepEqual(others, expected);
 
-    people.remove(alice1);
-    people.remove(alice2);
-    people.remove(bob);
 }());
+
+people.init();
 
 (function test_recipient_counts() {
     var email = 'anybody@example.com';
@@ -201,10 +205,6 @@ var _ = global._;
     var search_term = 'a';
     var users = people.get_rest_of_realm();
     var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
-    var expected = [
-        { email: 'athens@example.com', full_name: 'Maria Athens' },
-        { email: 'ashton@example.com', full_name: 'Ashton Smith' },
-    ];
     assert.equal(filtered_people["ashton@example.com"], true);
     assert.equal(filtered_people["athens@example.com"], true);
     assert.equal(_.keys(filtered_people).length, 2);
@@ -222,14 +222,12 @@ var _ = global._;
     assert(_.has(filtered_people, 'charles@example.com'));
     assert(_.has(filtered_people, 'athens@example.com'));
 
-    people.remove(charles);
-    people.remove(maria);
-    people.remove(ashton);
-    people.remove(linus);
 }());
 
+people.init();
+
 (function test_multi_user_methods() {
-     var emp401 = {
+    var emp401 = {
         email: 'emp401@example.com',
         user_id: 401,
         full_name: 'whatever 401',

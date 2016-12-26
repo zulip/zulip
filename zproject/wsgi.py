@@ -22,6 +22,8 @@ sys.path.append(BASE_DIR)
 import scripts.lib.setup_path_on_import
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
+import django
+django.setup() # We need to call setup to load applications.
 
 # Because import_module does not correctly handle safe circular imports we
 # need to import zerver.models first before the middleware tries to import it.

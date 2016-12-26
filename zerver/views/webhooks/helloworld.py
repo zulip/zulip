@@ -8,15 +8,14 @@ from zerver.lib.validator import check_dict, check_string
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
-from typing import Dict, Any, Iterable, Optional
+from typing import Dict, Any, Iterable, Optional, Text
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
 def api_helloworld_webhook(request, user_profile, client,
                            payload=REQ(argument_type='body'), stream=REQ(default='test'),
                            topic=REQ(default='Hello World')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], text_type, Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
 
     # construct the body of the message
     body = 'Hello! I am happy to be here! :smile:'

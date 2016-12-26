@@ -36,14 +36,12 @@ api/integrations/rss/rss-bot
 api/integrations/svn/post-commit
 api/integrations/twitter/twitter-bot
 api/integrations/twitter/twitter-search-bot
-api/zulip/__init__.py
 bots/jabber_mirror_backend.py
-bots/zephyr_mirror_backend.py
+tools/deprecated/iframe-bot/show-last-messages
 tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
 zproject/test_settings.py
 zerver/tests/test_decorators.py
-zerver/tests/test_narrow.py
 """.split()
 
 # We don't run mypy on contrib_bots, since the code there will

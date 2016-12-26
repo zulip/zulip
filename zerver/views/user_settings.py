@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Optional
+from typing import Optional, Any
 from six import text_type
 
 from django.utils.translation import ugettext as _
@@ -26,7 +26,6 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Realm, name_changes_disabled
 
-@authenticated_json_post_view
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
                             autoscroll_forever=REQ(validator=check_bool,
@@ -72,6 +71,14 @@ def json_change_settings(request, user_profile,
         # session (which would provide a confusing UX at best), we
         # update the session hash here.
         update_session_auth_hash(request, user_profile)
+        # We also save the session to the DB immediately to mitigate
+        # race conditions. In theory, there is still a race condition
+        # and to completely avoid it we will have to use some kind of
+        # mutex lock in `django.contrib.auth.get_user` where session
+        # is verified. To make that lock work we will have to control
+        # the AuthenticationMiddleware which is currently controlled
+        # by Django,
+        request.session.save()
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
@@ -88,50 +95,34 @@ def json_change_settings(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
 @has_request_variables
-def json_time_setting(request, user_profile, twenty_four_hour_time=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
-    result = {}
-    if twenty_four_hour_time is not None and \
-            user_profile.twenty_four_hour_time != twenty_four_hour_time:
-        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
+def update_display_settings_backend(request, user_profile,
+                                    twenty_four_hour_time=REQ(validator=check_bool, default=None),
+                                    default_language=REQ(validator=check_string, default=None),
+                                    left_side_userlist=REQ(validator=check_bool, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool]) -> HttpResponse
+    if (default_language is not None and
+            default_language not in get_available_language_codes()):
+        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
 
-    result['twenty_four_hour_time'] = twenty_four_hour_time
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_left_side_userlist(request, user_profile, left_side_userlist=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool]) -> HttpResponse
-    result = {}
-    if (left_side_userlist is not None and
-            user_profile.left_side_userlist != left_side_userlist):
-
-        do_change_left_side_userlist(user_profile, left_side_userlist)
-
-    result['left_side_userlist'] = left_side_userlist
-
-    return json_success(result)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_language_setting(request, user_profile, default_language=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str]) -> HttpResponse
-    result = {}
+    result = {} # type: Dict[str, Any]
     if (default_language is not None and
             user_profile.default_language != default_language):
-        if default_language in get_available_language_codes():
-            do_change_default_language(user_profile, default_language)
-        else:
-            raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+        do_change_default_language(user_profile, default_language)
+        result['default_language'] = default_language
 
-    result['default_language'] = default_language
+    elif (twenty_four_hour_time is not None and
+            user_profile.twenty_four_hour_time != twenty_four_hour_time):
+        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
+        result['twenty_four_hour_time'] = twenty_four_hour_time
+
+    elif (left_side_userlist is not None and
+            user_profile.left_side_userlist != left_side_userlist):
+        do_change_left_side_userlist(user_profile, left_side_userlist)
+        result['left_side_userlist'] = left_side_userlist
 
     return json_success(result)
 
-@authenticated_json_post_view
 @has_request_variables
 def json_change_notify_settings(request, user_profile,
                                 enable_stream_desktop_notifications=REQ(validator=check_bool,
@@ -151,7 +142,7 @@ def json_change_notify_settings(request, user_profile,
                                 enable_digest_emails=REQ(validator=check_bool,
                                                          default=None),
                                 pm_content_in_desktop_notifications=REQ(validator=check_bool,
-                                                                               default=None)
+                                                                        default=None)
                                 ):
     # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     result = {}
@@ -208,8 +199,7 @@ def json_change_notify_settings(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_post_view
-def json_set_avatar(request, user_profile):
+def set_avatar_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one avatar."))
@@ -221,6 +211,16 @@ def json_set_avatar(request, user_profile):
 
     json_result = dict(
         avatar_url = user_avatar_url
+    )
+    return json_success(json_result)
+
+def delete_avatar_backend(request, user_profile):
+    # type: (HttpRequest, UserProfile) -> HttpResponse
+    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+    gravatar_url = avatar_url(user_profile)
+
+    json_result = dict(
+        avatar_url = gravatar_url
     )
     return json_success(json_result)
 

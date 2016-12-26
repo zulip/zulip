@@ -1,6 +1,6 @@
 -r ipython.txt
 # Django itself; we use a slightly patched version
-git+https://github.com/zulip/truncated-django-1.8.15.git@cbf4fa3aef1b17f37d75a70e57f9b69a0f99ed5c#egg=Django==1.8.15
+Django==1.10.4
 
 # Needed for rendering backend templates
 Jinja2==2.8
@@ -40,7 +40,7 @@ diff-match-patch==20121119
 django-auth-ldap==1.2.8
 
 # Django extension providing bitfield support
-git+https://github.com/lutris/django-bitfield.git@c866ea31e6e33ed3f5913e362e84e295eb44ab05#egg=django-bitfield==1.9.0
+git+https://github.com/disqus/django-bitfield.git#egg=django-bitfield==1.9.1
 
 # Django-guardian is actually no longer used; just needed for the
 # migration that removes it.
@@ -56,7 +56,7 @@ fonttools==3.2.1
 funcsigs==1.0.2
 
 # Needed for Android push notifications
-gcm-client==0.1.4
+python-gcm==0.4
 
 gitdb==0.6.4
 
@@ -171,3 +171,7 @@ ijson==2.3
 
 #for pep8 linter
 pycodestyle==2.1.0
+
+# Needed for link preview
+beautifulsoup4==4.5.1
+git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed

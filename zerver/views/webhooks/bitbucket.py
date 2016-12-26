@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
-from six import text_type
-from typing import Any, Mapping
+from typing import Any, Mapping, Text
 
 from django.http import HttpRequest, HttpResponse
 
@@ -17,7 +16,7 @@ from zerver.lib.webhooks.git import get_push_commits_event_message, SUBJECT_WITH
 @has_request_variables
 def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dict([])),
                           stream=REQ(default='commits')):
-    # type: (HttpRequest, UserProfile, Mapping[text_type, Any], text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Mapping[Text, Any], Text) -> HttpResponse
     repository = payload['repository']
 
     commits = [

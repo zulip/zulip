@@ -95,6 +95,29 @@ function prefix_sort(query, objs, get_item) {
 
 }
 
+function split_by_subscribers(people) {
+    var subscribers = [];
+    var non_subscribers = [];
+    var current_stream = compose.stream_name();
+
+    if (current_stream === "") {
+        // If there is no stream specified, everyone is considered as a subscriber.
+        return {subs: people, non_subs: []};
+    }
+
+    _.each(people, function (person) {
+        if (person.email === "all" || person.email === "everyone") {
+            subscribers.push(person);
+        } else if (stream_data.user_is_subscribed(current_stream, person.email)) {
+            subscribers.push(person);
+        } else {
+            non_subscribers.push(person);
+        }
+    });
+
+    return {subs: subscribers, non_subs: non_subscribers};
+}
+
 exports.sorter = function (query, objs, get_item) {
    var results = prefix_sort(query, objs, get_item);
    return results.matches.concat(results.rest);
@@ -126,22 +149,22 @@ exports.compare_by_pms = function (user_a, user_b) {
     return 1;
 };
 
-exports.sort_by_pms = function (objs) {
-    objs.sort(exports.compare_by_pms);
-    return objs;
-};
+exports.sort_for_at_mentioning = function (objs) {
+    var objs_split = split_by_subscribers(objs);
 
-function identity(item) {
-    return item;
-}
+    var subs_sorted = objs_split.subs.sort(exports.compare_by_pms);
+    var non_subs_sorted = objs_split.non_subs.sort(exports.compare_by_pms);
+    return subs_sorted.concat(non_subs_sorted);
+};
 
 exports.sort_recipients = function (matches, query) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
-    var matches_sorted_by_pms =
-        exports.sort_by_pms(name_results.matches.concat(email_results.matches));
-    var rest_sorted_by_pms = exports.sort_by_pms(email_results.rest);
-    return matches_sorted_by_pms.concat(rest_sorted_by_pms);
+
+    var matches_sorted =
+        exports.sort_for_at_mentioning(name_results.matches.concat(email_results.matches));
+    var rest_sorted = exports.sort_for_at_mentioning(email_results.rest);
+    return matches_sorted.concat(rest_sorted);
 };
 
 exports.sort_emojis = function (matches, query) {

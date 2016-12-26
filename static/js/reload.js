@@ -228,7 +228,7 @@ exports.initiate = function (options) {
     var compose_done_handler;
     var compose_started_handler;
 
-    function reload_from_idle () {
+    function reload_from_idle() {
         do_reload_app(false,
                       options.save_pointer,
                       options.save_narrow,
@@ -280,3 +280,7 @@ window.addEventListener('beforeunload', function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = reload;
+}
