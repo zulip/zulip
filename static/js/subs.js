@@ -486,28 +486,32 @@ function remove_temporarily_miscategorized_streams() {
 
 exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
-// query is now an object rather than a string.
-// Query { input: String, subscribed_only: Boolean }
-exports.filter_table = function (query) {
+function stream_matches_query(query, sub) {
     var search_terms = query.input.toLowerCase().split(",").map(function (s) {
         return s.trim();
     });
 
+    var flag = true;
+    flag = flag && (function () {
+        var sub_name = sub.name.toLowerCase();
+        var matches_list = search_terms.indexOf(sub_name) > -1;
+        var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
+
+        return matches_list || matches_last_val;
+    }());
+    flag = flag && ((sub.subscribed || !query.subscribed_only) ||
+                    sub.data_temp_view === "true");
+    return flag;
+}
+
+// query is now an object rather than a string.
+// Query { input: String, subscribed_only: Boolean }
+exports.filter_table = function (query) {
     _.each($("#subscriptions_table .stream-row"), function (row) {
         var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
-        var flag = true;
+        sub.data_temp_view = $(row).attr("data-temp-view");
 
-        flag = flag && (function () {
-            var sub_name = sub.name.toLowerCase();
-            var matches_list = search_terms.indexOf(sub_name) > -1;
-            var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
-
-            return matches_list || matches_last_val;
-        }());
-        flag = flag && ((sub.subscribed || !query.subscribed_only) ||
-                        $(row).attr("data-temp-view") === "true");
-
-        if (flag) {
+        if (stream_matches_query(query, sub)) {
             $(row).removeClass("notdisplayed");
         } else {
             $(row).addClass("notdisplayed");
