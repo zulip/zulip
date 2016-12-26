@@ -58,6 +58,8 @@ function dispatch_normal_event(event) {
             if (!page_params.is_admin) {
                 page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
             }
+        } else if (event.op === 'update' && event.property === 'add_emoji_by_admins_only') {
+            page_params.add_emoji_by_admins_only = event.value;
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
             page_params.realm_restricted_to_domain = event.value;
         } else if (event.op === 'update_dict' && event.property === 'default') {

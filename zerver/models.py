@@ -117,6 +117,7 @@ class Realm(ModelReprMixin, models.Model):
     invite_required = models.BooleanField(default=True) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
+    add_emoji_by_admins_only = models.BooleanField(default=False) # type: bool
     mandatory_topics = models.BooleanField(default=False) # type: bool
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
@@ -353,6 +354,7 @@ def list_of_domains_for_realm(realm):
     return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
 
 class RealmEmoji(ModelReprMixin, models.Model):
+    author = models.ForeignKey('UserProfile', blank=True, null=True)
     realm = models.ForeignKey(Realm) # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
@@ -372,9 +374,17 @@ class RealmEmoji(ModelReprMixin, models.Model):
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[Text, Dict[str, Text]]
     d = {}
-    for row in RealmEmoji.objects.filter(realm=realm):
+    for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
+        if row.author:
+            author = {
+                'id': row.author.id,
+                'email': row.author.email,
+                'full_name': row.author.full_name}
+        else:
+            author = None
         d[row.name] = dict(source_url=row.img_url,
-                           display_url=get_camo_url(row.img_url))
+                           display_url=get_camo_url(row.img_url),
+                           author=author)
     return d
 
 def flush_realm_emoji(sender, **kwargs):

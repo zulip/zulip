@@ -587,6 +587,7 @@ def home_real(request):
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_authentication_methods = register_ret['realm_authentication_methods'],
         realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
+        realm_add_emoji_by_admins_only=register_ret['realm_add_emoji_by_admins_only'],
         realm_allow_message_editing = register_ret['realm_allow_message_editing'],
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
