@@ -29,7 +29,7 @@ will appear upon hovering above the cog.
 
 If you want to quickly unsubscribe from a single stream, you can do so through the stream sidebar.
 
-1. In the left sidebar, located the **Streams** section. It shows all streams that you are currently subscribed to.
+1. In the left sidebar, locate the **Streams** section. It shows all streams that you are currently subscribed to.
 
     ![Left sidebar](/static/images/help/left-sidebar.png)
 2. Hover over the stream that you want to unsubscribe from in the left sidebar. The stream will be highlighted and a chevron (![chevron](/static/images/help/chevron.png)) will appear to the right of the stream.
