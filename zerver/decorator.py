@@ -29,8 +29,7 @@ from io import BytesIO
 from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
-from six import text_type
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text
 from zerver.lib.str_utils import force_bytes
 
 if settings.ZILENCER_ENABLED:
@@ -44,7 +43,7 @@ FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 def get_deployment_or_userprofile(role):
-    # type: (text_type) -> Union[UserProfile, Deployment]
+    # type: (Text) -> Union[UserProfile, Deployment]
     return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
 
 class _RespondAsynchronously(object):
@@ -120,7 +119,7 @@ def require_realm_admin(func):
 from zerver.lib.user_agent import parse_user_agent
 
 def get_client_name(request, is_json_view):
-    # type: (HttpRequest, bool) -> text_type
+    # type: (HttpRequest, bool) -> Text
     # If the API request specified a client in the request content,
     # that has priority.  Otherwise, extract the client from the
     # User-Agent.
@@ -150,7 +149,7 @@ def get_client_name(request, is_json_view):
             return "Unspecified"
 
 def process_client(request, user_profile, is_json_view=False, client_name=None):
-    # type: (HttpRequest, UserProfile, bool, Optional[text_type]) -> None
+    # type: (HttpRequest, UserProfile, bool, Optional[Text]) -> None
     if client_name is None:
         client_name = get_client_name(request, is_json_view)
 
@@ -163,7 +162,7 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
     update_user_activity(request, user_profile)
 
 def validate_api_key(request, role, api_key, is_webhook=False):
-    # type: (HttpRequest, text_type, text_type, bool) -> Union[UserProfile, Deployment]
+    # type: (HttpRequest, Text, Text, bool) -> Union[UserProfile, Deployment]
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
@@ -204,7 +203,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
 
 # Use this for webhook views that don't get an email passed in.
 def api_key_only_webhook_view(client_name):
-    # type: (text_type) ->  Callable[..., HttpResponse]
+    # type: (Text) ->  Callable[..., HttpResponse]
     # This function can't be typed perfectly because returning a generic function
     # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
     def _wrapped_view_func(view_func):
@@ -214,7 +213,7 @@ def api_key_only_webhook_view(client_name):
         @wraps(view_func)
         def _wrapped_func_arguments(request, api_key=REQ(),
                                     *args, **kwargs):
-            # type: (HttpRequest, text_type, *Any, **Any) -> HttpResponse
+            # type: (HttpRequest, Text, *Any, **Any) -> HttpResponse
             try:
                 user_profile = UserProfile.objects.get(api_key=api_key)
             except UserProfile.DoesNotExist:
@@ -241,7 +240,7 @@ def api_key_only_webhook_view(client_name):
 # From Django 1.8, modified to leave off ?next=/
 def redirect_to_login(next, login_url=None,
                       redirect_field_name=REDIRECT_FIELD_NAME):
-    # type: (text_type, Optional[text_type], text_type) -> HttpResponseRedirect
+    # type: (Text, Optional[Text], Text) -> HttpResponseRedirect
     """
     Redirects the user to the login page, passing the given 'next' page
     """
@@ -259,7 +258,7 @@ def redirect_to_login(next, login_url=None,
 
 # From Django 1.8
 def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIELD_NAME):
-    # type: (Callable[[UserProfile], bool], Optional[text_type], text_type) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # type: (Callable[[UserProfile], bool], Optional[Text], Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
     """
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if necessary. The test should be a callable
@@ -300,7 +299,7 @@ def logged_in_and_active(request):
 def zulip_login_required(function=None,
                          redirect_field_name=REDIRECT_FIELD_NAME,
                          login_url=settings.HOME_NOT_LOGGED_IN):
-    # type: (Optional[Callable[..., HttpResponse]], text_type, text_type) -> Union[Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # type: (Optional[Callable[..., HttpResponse]], Text, Text) -> Union[Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]], Callable[..., HttpResponse]]
     actual_decorator = user_passes_test(
         logged_in_and_active,
         login_url=login_url,
@@ -340,7 +339,7 @@ def authenticated_api_view(is_webhook=False):
         def _wrapped_func_arguments(request, email=REQ(), api_key=REQ(default=None),
                                     api_key_legacy=REQ('api-key', default=None),
                                     *args, **kwargs):
-            # type: (HttpRequest, text_type, Optional[text_type], Optional[text_type], *Any, **Any) -> HttpResponse
+            # type: (HttpRequest, Text, Optional[Text], Optional[Text], *Any, **Any) -> HttpResponse
             if not api_key and not api_key_legacy:
                 raise RequestVariableMissingError("api_key")
             elif not api_key:
@@ -478,7 +477,7 @@ def authenticated_json_view(view_func):
     return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 def is_local_addr(addr):
-    # type: (text_type) -> bool
+    # type: (Text) -> bool
     return addr in ('127.0.0.1', '::1')
 
 # These views are used by the main Django server to notify the Tornado server
@@ -518,14 +517,14 @@ def internal_notify_view(view_func):
 
 # Converter functions for use with has_request_variables
 def to_non_negative_int(s):
-    # type: (text_type) -> int
+    # type: (Text) -> int
     x = int(s)
     if x < 0:
         raise ValueError("argument is negative")
     return x
 
 def flexible_boolean(boolean):
-    # type: (text_type) -> bool
+    # type: (Text) -> bool
     """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
     if boolean in ("1", "true", "True"):
         return True
@@ -533,7 +532,7 @@ def flexible_boolean(boolean):
         return False
 
 def statsd_increment(counter, val=1):
-    # type: (text_type, int) -> Callable[[Callable[..., Any]], Callable[..., Any]]
+    # type: (Text, int) -> Callable[[Callable[..., Any]], Callable[..., Any]]
     """Increments a statsd counter on completion of the
     decorated function.
 
@@ -550,7 +549,7 @@ def statsd_increment(counter, val=1):
     return wrapper
 
 def rate_limit_user(request, user, domain):
-    # type: (HttpRequest, UserProfile, text_type) -> None
+    # type: (HttpRequest, UserProfile, Text) -> None
     """Returns whether or not a user was rate limited. Will raise a RateLimited exception
     if the user has been rate limited, otherwise returns and modifies request to contain
     the rate limit information"""
@@ -571,7 +570,7 @@ def rate_limit_user(request, user, domain):
     request._ratelimit_secs_to_freedom = time_reset
 
 def rate_limit(domain='all'):
-    # type: (text_type) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
+    # type: (Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
     """Rate-limits a view. Takes an optional 'domain' param if you wish to rate limit different
     types of API calls independently.
 

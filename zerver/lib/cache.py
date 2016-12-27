@@ -21,7 +21,6 @@ import os
 import os.path
 import hashlib
 import six
-from six import text_type
 
 if False:
     from zerver.models import UserProfile, Realm, Message
@@ -79,7 +78,7 @@ def get_or_create_key_prefix():
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
-        random_hash = hashlib.sha256(text_type(random.getrandbits(256)).encode('utf-8')).digest()
+        random_hash = hashlib.sha256(Text(random.getrandbits(256)).encode('utf-8')).digest()
         prefix = base64.b16encode(random_hash)[:32].decode('utf-8').lower() + ':'
         # This does close the underlying file
         with os.fdopen(fd, 'w') as f:
@@ -107,7 +106,7 @@ KEY_PREFIX = get_or_create_key_prefix() # type: Text
 def bounce_key_prefix_for_testing(test_name):
     # type: (Text) -> None
     global KEY_PREFIX
-    KEY_PREFIX = test_name + u':' + text_type(os.getpid()) + u':'
+    KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
 
 def get_cache_backend(cache_name):
     # type: (Optional[str]) -> BaseCache
