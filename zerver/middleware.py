@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-from six import text_type, binary_type
-from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional
+from six import binary_type
+from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional, Text
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -85,7 +85,7 @@ def format_timedelta(timedelta):
     return "%.0fms" % (timedelta_ms(timedelta),)
 
 def is_slow_query(time_delta, path):
-    # type: (float, text_type) -> bool
+    # type: (float, Text) -> bool
     if time_delta < 1.2:
         return False
     is_exempt = \
@@ -101,7 +101,7 @@ def is_slow_query(time_delta, path):
 
 def write_log_line(log_data, path, method, remote_ip, email, client_name,
                    status_code=200, error_content=None, error_content_iter=None):
-    # type: (MutableMapping[str, Any], text_type, str, str, text_type, text_type, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
+    # type: (MutableMapping[str, Any], Text, str, str, Text, Text, int, Optional[AnyStr], Optional[Iterable[AnyStr]]) -> None
     assert error_content is None or error_content_iter is None
     if error_content is not None:
         error_content_iter = (error_content,)
@@ -219,7 +219,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
         error_content_list = list(error_content_iter)
         if error_content_list:
             error_data = u''
-        elif isinstance(error_content_list[0], text_type):
+        elif isinstance(error_content_list[0], Text):
             error_data = u''.join(error_content_list)
         elif isinstance(error_content_list[0], binary_type):
             error_data = repr(b''.join(error_content_list))
@@ -308,7 +308,7 @@ class TagRequests(object):
             request.error_format = "HTML"
 
 def csrf_failure(request, reason=""):
-    # type: (HttpRequest, Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, Optional[Text]) -> HttpResponse
     if request.error_format == "JSON":
         return json_error(_("CSRF Error: %s") % (reason,), status=403)
     else:
