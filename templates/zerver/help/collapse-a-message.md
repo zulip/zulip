@@ -17,6 +17,6 @@ near the upper right corner and selecting **Collapse**.
 
 To uncollapse a message, simply press the **[More...]** hyperlink or
 press the down chevron button near the
-upper right corner and selecting **Uncollapse**.
+upper right corner and select **Uncollapse**.
 
 ![uncollapse message](/static/images/help/uncollapse_a_message.png)
