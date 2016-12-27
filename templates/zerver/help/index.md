@@ -59,7 +59,7 @@ as a “**realm**”.
 * [@-mention a team member](/help/at-mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
 * Make an announcement
 * Send a message in a different language
-* Reply to a message (explain relevant markdown syntax + explain that stream and topic is pre-populated)
+* [Reply to a message](/help/reply-to-a-message)
 ### Reading
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View information about a message](/help/view-information-about-a-message)
