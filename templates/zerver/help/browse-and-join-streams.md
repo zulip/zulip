@@ -58,7 +58,7 @@ to subscribe to (highlighted in red).
 ![Subscribe before](/static/images/help/subscribe-before.png)
 
 A green checkmark will appear next to the stream that you've just
-subscribed to, and you will now be able to read and send messages to
-the stream.
+subscribed to, and you will now be able to read and send messages in
+that stream.
 
 ![Subscribe after](/static/images/help/subscribe-after.png)
