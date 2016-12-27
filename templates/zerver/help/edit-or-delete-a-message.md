@@ -1,6 +1,6 @@
 ## Editing past messages
 
-Note: Editing topic titles is discussed in a [separate answer](/help/change-the-topic-of-a-message). Additionally, Zulip messages cannot be deleted, but they can be edited so that their contents are blank.
+Note: Editing topic titles is discussed in a [separate guide](/help/change-the-topic-of-a-message). Additionally, Zulip messages cannot be deleted, but they can be edited so that their contents are blank.
 
 Zulip allows you to easily edit the content of your messages after they have been posted.
 You can do this by hovering your mouse over the message and:
