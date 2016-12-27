@@ -396,7 +396,7 @@ function _setup_page() {
         $("#deactivation_user_modal").modal("hide");
         meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text("Working…");
         channel.del({
-            url: '/json/users/' + email,
+            url: '/json/users/' + encodeURIComponent(email),
             error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     meta.current_deactivate_user_modal_row.find("button").closest("td").html(
@@ -426,7 +426,7 @@ function _setup_page() {
         var email = get_email_for_user_row(row);
 
         channel.del({
-            url: '/json/bots/' + email,
+            url: '/json/bots/' + encodeURIComponent(email),
             error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
@@ -457,7 +457,7 @@ function _setup_page() {
         var email = get_email_for_user_row(row);
 
         channel.post({
-            url: '/json/users/' + email + "/reactivate",
+            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
             error: function (xhr) {
                 var button = row.find("button");
                 if (xhr.status.toString().charAt(0) === "4") {
@@ -677,7 +677,7 @@ function _setup_page() {
         var row = $(e.target).closest(".user_row");
         var email = get_email_for_user_row(row);
 
-        var url = "/json/users/" + email;
+        var url = "/json/users/" + encodeURIComponent(email);
         var data = {
             is_admin: JSON.stringify(true)
         };
@@ -708,7 +708,7 @@ function _setup_page() {
         var row = $(e.target).closest(".user_row");
         var email = get_email_for_user_row(row);
 
-        var url = "/json/users/" + email;
+        var url = "/json/users/" + encodeURIComponent(email);
         var data = {
             is_admin: JSON.stringify(false)
         };
@@ -754,7 +754,7 @@ function _setup_page() {
             e.preventDefault();
             e.stopPropagation();
 
-            var url = "/json/users/" + email;
+            var url = "/json/users/" + encodeURIComponent(email);
             var data = {
                 full_name: JSON.stringify(full_name.val())
             };
