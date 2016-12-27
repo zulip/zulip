@@ -1,6 +1,8 @@
 // commonjs code goes here
-function requireAll (r) { r.keys().forEach(r) }
-requireAll(require.context('../', true, /\.js$/))
+function requireAll(r) {
+    r.keys().forEach(r);
+}
+requireAll(require.context('..', false));
 
 (function () {
     var i18n = window.i18n = require('i18next');
