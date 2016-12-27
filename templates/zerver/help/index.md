@@ -110,7 +110,7 @@ as a “**realm**”.
 * Configure audible notifications
 * Configure email notifications
 * Configure mobile push notifications
-* Add an alert word
+* [Add an alert word](/help/alert-words)
 
 ## Tools & Customization
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
