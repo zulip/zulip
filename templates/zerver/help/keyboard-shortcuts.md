@@ -8,7 +8,7 @@ Zulip keyboard shortcuts are divided into four categories:
 * [Menus](#menus)
 
 ## Navigation
-* **Initiate a search** `/` - This shortcut moves the user's cursor to the message search bar at the top of the window to allow them to begin searching for a messages belonging to a specific topic, stream, view, etc. in the realm.
+* **Initiate a search** `/` - This shortcut moves the user's cursor to the message search bar at the top of the window to allow them to begin searching for messages belonging to a specific topic, stream, view, etc. in the realm.
 * **Search people** `q` - This shortcut moves the user's cursor to the user search bar in the right sidebar to to allow them to begin searching for a particular user in the realm.
 * **Search streams** `w` - This shortcut moves the user's cursor to the stream search bar in the left sidebar to to allow them to begin searching for a particular stream in the realm.
 * **Previous message** `k` `Up arrow` - This shortcut allows the user to scroll up to the previous message in their view.
@@ -21,7 +21,7 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Reply to message** `Enter` `r` - This shortcut allows the user to begin replying to the selected message (outlined in blue).
 * **Reply to author** `R` - This shortcut allows the user to begin writing a private message to the author of the selected message (outlined in blue).
 * **New stream message** `c` - This shortcut allows the user to begin composing a new stream message.
-* **New private message** `C` - This shortcut allows the user to begin composing a new stream message.
+* **New private message** `C` - This shortcut allows the user to begin composing a new private message.
 * **Send message** `Tab key` then `Enter` - This shortcut allows the user to send the message that they've written.
 * **Cancel compose** `Esc` - This shortcut allows the user to cancel and discard their unsent message.
 
