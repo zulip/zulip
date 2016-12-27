@@ -127,7 +127,7 @@ as a “**realm**”.
 # Administering a Zulip organization
 
 ## Organization Settings
-* Change your organization's name
+* [Change your organization's name](/help/change-your-organizations-name)
 * Restrict user email addresses to certain domains
 * Allow anyone to join without an invitation
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
