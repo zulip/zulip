@@ -645,6 +645,10 @@ util.execute_early(function () {
     });
 });
 
+exports.recipient_from_group = function (message_group) {
+    return exports.get(exports.id($(message_group).children('.message_row').first().expectOne()));
+};
+
 // This is for testing.
 exports._add_message_metadata = add_message_metadata;
 

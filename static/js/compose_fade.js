@@ -1,6 +1,7 @@
 var compose = require('./compose');
 var feature_flags = require('./feature_flags');
 var floating_recipient_bar = require('./floating_recipient_bar');
+var message_store = require('./message_store');
 var people = require('./people');
 var rows = require('./rows');
 var stream_data = require('./stream_data');
@@ -97,7 +98,7 @@ function _fade_messages() {
         for (i = 0; i < all_groups.length; i += 1) {
             var group_elt = $(all_groups[i]);
             should_fade_group = !fade_heuristic(focused_recipient,
-                                                rows.recipient_from_group(group_elt));
+                                                message_store.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_group);
         }
 

@@ -1,5 +1,3 @@
-var message_store = require('./message_store');
-
 var rows = (function () {
 
 var exports = {};
@@ -81,10 +79,6 @@ exports.get_message_recipient_row = function (message_row) {
 
 exports.get_message_recipient_header = function (message_row) {
     return $(message_row).parent('.recipient_row').find('.message_header').expectOne();
-};
-
-exports.recipient_from_group = function (message_group) {
-    return message_store.get(exports.id($(message_group).children('.message_row').first().expectOne()));
 };
 
 exports.id_for_recipient_row = function (recipient_row) {
