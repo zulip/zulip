@@ -7,7 +7,7 @@ To submit a new stream message, first click the **New stream message** button lo
 
 A box similar to the one shown in the above image will appear.
 
-In the **Stream** field, input the stream name of the message you want your message to be located in. When you begin typing a stream name, autocomplete suggestions will appear.
+In the **Stream** field, input the name of the stream you want your message to be located in. When you begin typing a stream name, autocomplete suggestions will appear.
 
 ![Stream does not exist](/static/images/help/stream-none.png)
 
