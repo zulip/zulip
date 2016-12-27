@@ -130,7 +130,7 @@ as a “**realm**”.
 * Change your organization's name
 * Restrict user email addresses to certain domains
 * Allow anyone to join without an invitation
-* Only allow admins to invite new users
+* [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * Only allow admins to create new streams
 * Restrict editing of old messages and topics
 * Change the default language
