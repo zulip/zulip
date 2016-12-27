@@ -225,11 +225,8 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
         message: {html: notification_html},
         fadeOut: {enabled: true, delay: 4000}
     }).show();
-    $('.top-right').on('click', function () {
-        ui.change_tab_to('#home');
-        narrow.activate(raw_operators, opts);
-    });
-    setTimeout(function () {$('.top-right').unbind("click");}, 5000);
+    $('.top-right')['0'].raw_operators_notif = raw_operators;
+    $('.top-right')['0'].opts_notif = opts;
 }
 
 exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
@@ -313,8 +310,7 @@ function process_notification(notification) {
     }
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + message.subject + ")";
-        raw_operators = [{operand: message.stream, operator: "stream"}];
-        if (message.subject !== "(no topic)") {raw_operators[1] = {operand: message.subject, operator: "topic"};}
+        raw_operators = [{operand: message.stream, operator: "stream"}, {operand: message.subject, operator: "topic"}];
     }
 
     if (window.bridge === undefined && notification.webkit_notify === true) {
