@@ -28,8 +28,8 @@ function then_navigate_to_settings() {
         var menu_selector = '#settings-dropdown';
         casper.waitUntilVisible(menu_selector, function () {
             casper.click(menu_selector);
-            casper.waitUntilVisible('a[data-popup="settings"]', function () {
-                casper.click('a[data-popup="settings"]');
+            casper.waitUntilVisible('a[href^="#settings"]', function () {
+                casper.click('a[href^="#settings"]');
                 casper.waitForSelector('#settings_page', function () {
                     casper.test.assertExists('#settings_page', "Settings page is active");
                     casper.click("#settings_page .exit");

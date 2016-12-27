@@ -277,9 +277,6 @@ casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
 casper.then(function () {
     casper.click('.settings-header .exit');
 });
-casper.then(function () {
-    casper.waitWhileVisible('#settings_overlay_container');
-});
 
 // For clarity these should be different than what 08-edit uses, until
 // we find a more robust way to manage DB state between tests.
