@@ -56,6 +56,6 @@ The best stream topics are short and specific. For example, for a bug tracker
 integration, a good topic would be the bug number; for an integration like
 Nagios, the service would serve as a good topic.
 
-Users can easily [change the topics](/help/change-the-topic-of-a-message) of the sent messages if
-they sent the message to the wrong topic or if some messages in a topic have
-gone off-topic.
+Users can easily [change the topics](/help/change-the-topic-of-a-message) of the messages
+that they sent if they sent the message to the wrong topic or if some
+messages in a topic have gone off-topic.
