@@ -317,7 +317,7 @@ function show_subscription_settings(sub_row) {
     loading.make_indicator(indicator_elem);
 
     channel.get({
-        url: "/json/streams/" + sub.name + "/members",
+        url: "/json/streams/" + encodeURIComponent(sub.name) + "/members",
         idempotent: true,
         success: function (data) {
             loading.destroy_indicator(indicator_elem);
@@ -1290,7 +1290,7 @@ $(function () {
         var data = {stream_name: sub.name, is_private: is_private};
 
         channel.patch({
-            url: "/json/streams/" + sub.name,
+            url: "/json/streams/" + encodeURIComponent(sub.name),
             data: data,
             success: function () {
                 sub = stream_data.get_sub_by_id(stream_id);
