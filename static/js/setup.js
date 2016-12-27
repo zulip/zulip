@@ -34,13 +34,4 @@ $(function () {
         }
     });
 
-    if (typeof $ !== 'undefined') {
-        $.fn.expectOne = function () {
-            if (blueslip && this.length !== 1) {
-                blueslip.error("Expected one element in jQuery set, " + this.length + " found");
-            }
-            return this;
-        };
-    }
-
 });
