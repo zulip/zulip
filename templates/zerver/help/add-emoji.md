@@ -1,5 +1,5 @@
 # Emoji
-Emoji allow you to add a little character and some fun to your messages! This guide shows you how to send emoji by pasting Unicode, using Zulip’s built-in emoji menu, or typing the emoji code.
+Emoji allow you to add a little character and some fun to your messages! This guide shows you how to send emoji by using Zulip’s built-in emoji menu, pasting Unicode, or typing the emoji code.
 
 ### Using the emoji menu
 1. Start by composing a [new message](/help/#posting-and-replying)
