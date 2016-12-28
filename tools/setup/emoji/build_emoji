@@ -27,7 +27,7 @@ EMOJI_DUMP_DIR_PATH = os.path.join(ZULIP_PATH, 'var', 'emoji_dump')
 EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'third', 'gemoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
-EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji_dump')
+EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
 
 # change directory
 os.chdir(EMOJI_SCRIPT_DIR_PATH)
