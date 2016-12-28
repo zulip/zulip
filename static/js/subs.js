@@ -494,10 +494,10 @@ function stream_matches_query(query, sub) {
     var flag = true;
     flag = flag && (function () {
         var sub_name = sub.name.toLowerCase();
-        var matches_list = search_terms.indexOf(sub_name) > -1;
-        var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
 
-        return matches_list || matches_last_val;
+        return _.any(search_terms, function (o) {
+            return new RegExp(o).test(sub_name);
+        });
     }());
     flag = flag && ((sub.subscribed || !query.subscribed_only) ||
                     sub.data_temp_view === "true");
