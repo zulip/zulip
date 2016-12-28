@@ -766,6 +766,7 @@ JS_SPECS = {
             'third/winchan/winchan.js',
             'third/handlebars/handlebars.runtime.js',
             'third/marked/lib/marked.js',
+            'third/lockablestorage/lockablestorage.js',
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',

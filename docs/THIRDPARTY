@@ -204,6 +204,10 @@ Files: static/third/xdate/*
 Copyright: 2010 C. F., Wong
 License: Expat
 
+Files: static/third/lockablestorage/*
+Copyright: 2012 Benjamin Dumke-von der Ehe
+License: MIT
+
 Files: static/third/zocial/*
 Copyright: Sam Collins
 License: Expat
