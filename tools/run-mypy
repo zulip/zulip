@@ -34,7 +34,6 @@ tools/deprecated/iframe-bot/show-last-messages
 tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
 zproject/test_settings.py
-zerver/tests/test_decorators.py
 """.split()
 
 # We don't run mypy on contrib_bots, since the code there will
