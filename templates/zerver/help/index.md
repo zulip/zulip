@@ -132,7 +132,7 @@ as a “**realm**”.
 * Allow anyone to join without an invitation
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * Only allow admins to create new streams
-* Restrict editing of old messages and topics
+* [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Change the default language for realm](/help/change-the-default-language-for-realm)
 * Add custom emoji
 * Configure authentication methods
