@@ -402,6 +402,23 @@ function message_is_notifiable(message) {
         return false;
     }
 
+    // The notification should only be displayed once. To prevent multiple
+    // tabs from opening a notification each for their own, we store the
+    // notification ID in localStorage and check if a notification was
+    // already opened.
+    if (localstorage.supported()) {
+        var random_tab_id = Math.floor(Math.random() * 1000000);
+        var notification_key = "notification:" + message.id;
+        var lock_success = LockableStorage.trySyncLock(notification_key, function () {
+                               if (!localStorage.getItem(notification_key)) {
+                                  localStorage.setItem(notification_key, random_tab_id);
+                               }
+                           }, 5000);
+        if (!lock_success || localStorage.getItem(notification_key) !== random_tab_id.toString()) {
+            return false;
+        }
+    }
+
     // Everything else is on the table; next filter based on notification
     // settings.
     return true;
