@@ -76,10 +76,12 @@ var stream_color_palette = [
     ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
 ];
 
-function picker_do_change_color(color) {
-    var stream_id = $(this).attr('stream_id');
-    var hex_color = color.toHexString();
-    subs.set_color(stream_id, hex_color);
+function picker_do_change_color() {
+    return function (color) {
+        var stream_id = $(this).attr('stream_id');
+        var hex_color = color.toHexString();
+        subs.set_color(stream_id, hex_color);
+    };
 }
 
 exports.set_colorpicker_color = function (colorpicker, color) {
@@ -90,7 +92,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
         palette: stream_color_palette,
         color: color,
         container: "#subscription_overlay .subscription_settings.show",
-        change: picker_do_change_color,
+        change: picker_do_change_color(),
     };
 
     colorpicker.spectrum(options);
@@ -121,7 +123,7 @@ exports.sidebar_options = function () {
         showInput: true,
         flat: true,
         palette: stream_color_palette,
-        change: picker_do_change_color
+        change: picker_do_change_color(),
     };
 };
 
@@ -134,7 +136,7 @@ exports.sidebar_options_full = function () {
         cancelText: "",
         chooseText: "choose",
         palette: stream_color_palette,
-        change: picker_do_change_color
+        change: picker_do_change_color(),
     };
 };
 
