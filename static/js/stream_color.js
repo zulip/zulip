@@ -83,6 +83,12 @@ var subscriptions_table_colorpicker_options = {
     palette: stream_color_palette
 };
 
+function picker_do_change_color(color) {
+    var stream_id = $(this).attr('stream_id');
+    var hex_color = color.toHexString();
+    subs.set_color(stream_id, hex_color);
+}
+
 exports.set_colorpicker_color = function (colorpicker, color) {
     colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
                          {color: color, container: "#subscription_overlay .subscription_settings.show"}));
@@ -105,11 +111,6 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     tab_bar.colorize_tab_bar();
 };
 
-function picker_do_change_color(color) {
-    var stream_id = $(this).attr('stream_id');
-    var hex_color = color.toHexString();
-    subs.set_color(stream_id, hex_color);
-}
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
 exports.sidebar_popover_colorpicker_options = {
