@@ -243,12 +243,6 @@ class FeedbackBot(QueueProcessingWorker):
         # type: () -> None
         if settings.ENABLE_FEEDBACK and settings.FEEDBACK_EMAIL is None:
             self.staging_client = make_feedback_client()
-            self.staging_client._register(
-                'forward_feedback',
-                method='POST',
-                url='deployments/feedback',
-                make_request=(lambda request: {'message': simplejson.dumps(request)}),
-            )
         QueueProcessingWorker.start(self)
 
     def consume(self, event):
@@ -264,7 +258,14 @@ class FeedbackBot(QueueProcessingWorker):
             msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
             msg.send()
         else:
-            self.staging_client.forward_feedback(event)
+            # This code has been untested with the new API, and
+            # the endpoint it hits also uses a home-grown ticketing
+            # system that was from early days of Zulip, pre-open-source.
+            self.staging_client.call_endpoint(
+                method='POST',
+                url='deployments/feedback',
+                request=dict(message=simplejson.dumps(event))
+            )
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
