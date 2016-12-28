@@ -206,7 +206,7 @@ var get_hash_group = (function () {
     return function (value) {
         var idx = null;
 
-        groups.find(function (o, i) {
+        _.find(groups, function (o, i) {
             if (o.indexOf(value) > -1) {
                 idx = i;
                 return true;
