@@ -95,9 +95,13 @@ $(function () {
 
     // NOTIFICATION CLICK
 
-    $('body').on('click', '.top-right', function () {
-        ui.change_tab_to('#home');
-        narrow.activate($(this)['0'].raw_operators_notif, $(this)['0'].opts_notif);
+    $('body').on('click', '.notification', function () {
+        var payload = $(this).data("narrow");
+
+        if (payload) {
+            ui.change_tab_to('#home');
+            narrow.activate(payload.raw_operators, payload.opts_notif);
+        }
     });
 
 
