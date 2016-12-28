@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
+from typing import Text
 from typing import Iterable, Optional, Sequence
 
 from zerver.lib.actions import do_events_register
@@ -18,7 +18,7 @@ def _default_all_public_streams(user_profile, all_public_streams):
         return user_profile.default_all_public_streams
 
 def _default_narrow(user_profile, narrow):
-    # type: (UserProfile, Iterable[Sequence[text_type]]) -> Iterable[Sequence[text_type]]
+    # type: (UserProfile, Iterable[Sequence[Text]]) -> Iterable[Sequence[Text]]
     default_stream = user_profile.default_events_register_stream
     if not narrow and user_profile.default_events_register_stream is not None:
         narrow = [['stream', default_stream.name]]
@@ -40,7 +40,7 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=REQ(validator=check_list(check_string), default=None),
                             narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[Iterable[str]], Iterable[Sequence[text_type]], int) -> HttpResponse
+    # type: (HttpRequest, UserProfile, bool, Optional[bool], Optional[Iterable[str]], Iterable[Sequence[Text]], int) -> HttpResponse
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)
 

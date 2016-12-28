@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from typing import Any, Callable, Optional, Sequence, TypeVar, Iterable, Tuple
-from six import text_type, binary_type
+from typing import Any, Callable, Optional, Sequence, TypeVar, Iterable, Tuple, Text
+from six import binary_type
 import base64
 import errno
 import hashlib
@@ -90,7 +90,7 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
             sleep(sleep_time)
 
 def make_safe_digest(string, hash_func=hashlib.sha1):
-    # type: (text_type, Callable[[binary_type], Any]) -> text_type
+    # type: (Text, Callable[[binary_type], Any]) -> Text
     """
     return a hex digest of `string`.
     """
@@ -115,7 +115,7 @@ def log_statsd_event(name):
     statsd.incr(event_name)
 
 def generate_random_token(length):
-    # type: (int) -> text_type
+    # type: (int) -> Text
     return base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower()
 
 def mkdir_p(path):
@@ -186,7 +186,7 @@ def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=Non
         yield [row for row_id, i, row in tup_chunk]
 
 def get_subdomain(request):
-    # type: (HttpRequest) -> text_type
+    # type: (HttpRequest) -> Text
     domain = request.get_host().lower()
     index = domain.find("." + settings.EXTERNAL_HOST)
     if index == -1:
@@ -197,7 +197,7 @@ def get_subdomain(request):
     return subdomain
 
 def check_subdomain(realm_subdomain, user_subdomain):
-    # type: (text_type, text_type) -> bool
+    # type: (Text, Text) -> bool
     if settings.REALMS_HAVE_SUBDOMAINS and realm_subdomain is not None:
         if (realm_subdomain == "" and user_subdomain is None):
             return True

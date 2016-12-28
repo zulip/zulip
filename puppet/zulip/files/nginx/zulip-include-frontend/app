@@ -50,15 +50,10 @@ location /sockjs {
     include /etc/nginx/zulip-include/location-sockjs;
 }
 
-# Send everything else to Django via FastCGI
+# Send everything else to Django via uWSGI
 location / {
-    include fastcgi_params;
-    fastcgi_pass django;
-    fastcgi_split_path_info ^()(.*)$;
-    # Second number set to `getconf PAGESIZE`
-    fastcgi_buffers 1024 4k;
-    fastcgi_max_temp_file_size 0;
-    fastcgi_next_upstream off;
+    include uwsgi_params;
+    uwsgi_pass django;
 }
 
 location /api/ {
@@ -66,13 +61,8 @@ location /api/ {
     add_header Access-Control-Allow-Headers Authorization;
     add_header Access-Control-Allow-Methods 'GET, POST';
 
-    include fastcgi_params;
-    fastcgi_pass django;
-    fastcgi_split_path_info ^()(.*)$;
-    # Second number set to `getconf PAGESIZE`
-    fastcgi_buffers 1024 4k;
-    fastcgi_max_temp_file_size 0;
-    fastcgi_next_upstream off;
+    include uwsgi_params;
+    uwsgi_pass  django;
 
 }
 

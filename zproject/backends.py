@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any, Set, Tuple, Optional
-from six import text_type
+from typing import Any, Set, Tuple, Optional, Text
 
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
@@ -14,7 +13,7 @@ from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm, get_realm_by_email_domain
+    get_realm_by_email_domain
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -25,7 +24,7 @@ from django.contrib.auth import authenticate
 from zerver.lib.utils import check_subdomain, get_subdomain
 
 def pad_method_dict(method_dict):
-    # type: (Dict[text_type, bool]) -> Dict[text_type, bool]
+    # type: (Dict[Text, bool]) -> Dict[Text, bool]
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
     configured on this server"""
@@ -35,7 +34,7 @@ def pad_method_dict(method_dict):
     return method_dict
 
 def auth_enabled_helper(backends_to_check, realm):
-    # type: (List[text_type], Optional[Realm]) -> bool
+    # type: (List[Text], Optional[Realm]) -> bool
     if realm is not None:
         enabled_method_dict = realm.authentication_methods_dict()
         pad_method_dict(enabled_method_dict)
@@ -74,7 +73,7 @@ def github_auth_enabled(realm=None):
     return auth_enabled_helper([u'GitHub'], realm)
 
 def common_get_active_user_by_email(email, return_data=None):
-    # type: (text_type, Optional[Dict[str, Any]]) -> Optional[UserProfile]
+    # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
     try:
         user_profile = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
@@ -99,14 +98,14 @@ class ZulipAuthMixin(object):
             return None
 
 class SocialAuthMixin(ZulipAuthMixin):
-    auth_backend_name = None # type: text_type
+    auth_backend_name = None # type: Text
 
     def get_email_address(self, *args, **kwargs):
-        # type: (*Any, **Any) -> text_type
+        # type: (*Any, **Any) -> Text
         raise NotImplementedError
 
     def get_full_name(self, *args, **kwargs):
-        # type: (*Any, **Any) -> text_type
+        # type: (*Any, **Any) -> Text
         raise NotImplementedError
 
     def authenticate(self, *args, **kwargs):
@@ -146,7 +145,9 @@ class SocialAuthMixin(ZulipAuthMixin):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
         # This function needs to be imported from here due to the cyclic
         # dependency.
-        from zerver.views.auth import login_or_register_remote_user
+        from zerver.views.auth import (login_or_register_remote_user,
+                                       redirect_to_subdomain_login_url)
+        from zerver.views import redirect_and_log_into_subdomain
 
         return_data = kwargs.get('return_data', {})
 
@@ -157,13 +158,23 @@ class SocialAuthMixin(ZulipAuthMixin):
         if inactive_user or inactive_realm:
             return None
 
-        request = self.strategy.request  # type: ignore # This comes from Python Social Auth.
+        strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
+        request = strategy.request
         email_address = self.get_email_address(*args, **kwargs)
         full_name = self.get_full_name(*args, **kwargs)
 
-        return login_or_register_remote_user(request, email_address,
-                                             user_profile, full_name,
-                                             bool(invalid_subdomain))
+        subdomain = strategy.session_get('subdomain')
+
+        if not subdomain:
+            return login_or_register_remote_user(request, email_address,
+                                                 user_profile, full_name,
+                                                 bool(invalid_subdomain))
+        try:
+            realm = Realm.objects.get(string_id=subdomain)
+        except Realm.DoesNotExist:
+            return redirect_to_subdomain_login_url()
+
+        return redirect_and_log_into_subdomain(realm, full_name, email_address)
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
@@ -172,7 +183,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
 
     def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
                      return_data=None):
-        # type: (Optional[text_type], Optional[text_type], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        # type: (Optional[Text], Optional[Text], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
         if use_dummy_backend:
             user_profile = common_get_active_user_by_email(username)
             if user_profile is None:
@@ -192,7 +203,7 @@ class EmailAuthBackend(ZulipAuthMixin):
     """
 
     def authenticate(self, username=None, password=None, realm_subdomain=None, return_data=None):
-        # type: (Optional[text_type], Optional[str], Optional[text_type], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        # type: (Optional[Text], Optional[str], Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         """ Authenticate a user based on email address as the user name. """
         if username is None or password is None:
             # Return immediately.  Otherwise we will look for a SQL row with
@@ -231,7 +242,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
     """
 
     def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data={}):
-        # type: (Optional[str], Optional[text_type], Dict[str, Any]) -> Optional[UserProfile]
+        # type: (Optional[str], Optional[Text], Dict[str, Any]) -> Optional[UserProfile]
         try:
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
@@ -262,7 +273,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
 
     def authenticate(self, remote_user, realm_subdomain=None):
-        # type: (str, Optional[text_type]) -> Optional[UserProfile]
+        # type: (str, Optional[Text]) -> Optional[UserProfile]
         if not remote_user:
             return None
 
@@ -304,7 +315,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return set()
 
     def django_to_ldap_username(self, username):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
                 raise ZulipLDAPException("Username does not match LDAP domain.")
@@ -319,7 +330,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
-        # type: (text_type, str, Optional[text_type], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
@@ -360,14 +371,14 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
 class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None):
-        # type: (text_type, str, Optional[text_type]) -> None
+        # type: (Text, str, Optional[Text]) -> None
         return None
 
 class DevAuthBackend(ZulipAuthMixin):
     # Allow logging in as any user without a password.
     # This is used for convenience when developing Zulip.
     def authenticate(self, username, realm_subdomain=None, return_data=None):
-        # type: (text_type, Optional[text_type], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        # type: (Text, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         user_profile = common_get_active_user_by_email(username, return_data=return_data)
         if user_profile is None:
             return None
@@ -379,21 +390,21 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = u"GitHub"
 
     def get_email_address(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[text_type]
+        # type: (*Any, **Any) -> Optional[Text]
         try:
             return kwargs['response']['email']
         except KeyError:
             return None
 
     def get_full_name(self, *args, **kwargs):
-        # type: (*Any, **Any) -> text_type
+        # type: (*Any, **Any) -> Text
         try:
             return kwargs['response']['name']
         except KeyError:
             return ''
 
     def do_auth(self, *args, **kwargs):
-        # type: (*Any, **Any) -> Optional[UserProfile]
+        # type: (*Any, **Any) -> Optional[HttpResponse]
         kwargs['return_data'] = {}
 
         request = self.strategy.request
@@ -432,4 +443,4 @@ AUTH_BACKEND_NAME_MAP = {
     u'Google': GoogleMobileOauth2Backend,
     u'LDAP': ZulipLDAPAuthBackend,
     u'RemoteUser': ZulipRemoteUserBackend,
-    } # type: Dict[text_type, Any]
+    } # type: Dict[Text, Any]

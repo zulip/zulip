@@ -17,7 +17,7 @@ casper.then(function () {
 
 casper.waitForSelector('#administration.tab-pane.active', function () {
     casper.test.info('Administration page is active');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#administration/, 'URL suggests we are on administration page');
+    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#administration/, 'URL suggests we are on administration page');
 });
 
 // Test only admins may create streams Setting
@@ -101,7 +101,7 @@ casper.then(function () {
 casper.then(function () {
     // Leave the page and return
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#subscriptions"]');
+    casper.click('a[href^="#"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 
@@ -208,7 +208,7 @@ casper.waitForSelector('.admin-filter-form', function () {
 });
 
 casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
-    casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format PREFIX-(?P<id>.+)');
+    casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)');
 });
 
 function get_suggestions(str) {
@@ -462,7 +462,7 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editin
 casper.then(function () {
     casper.test.info('Administration page');
     casper.click('a[href^="#administration"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#administration/, 'URL suggests we are on administration page');
+    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#administration/, 'URL suggests we are on administration page');
     casper.test.assertExists('#administration.tab-pane.active', 'Administration page is active');
 });
 

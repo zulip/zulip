@@ -4,6 +4,11 @@ var exports = {};
 
 var private_messages_open = false;
 
+// You can click on "more conversations" to zoom in.  There's no
+// way to zoom back out other than re-narrowing out and in of the
+// PM list.
+var zoomed_in = false;
+
 // This module manages the "Private Messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
@@ -43,7 +48,7 @@ exports.get_li_for_user_ids_string = function (user_ids_string) {
     return convo_li;
 };
 
-function set_pm_conversation_count (conversation, count) {
+function set_pm_conversation_count(conversation, count) {
     var pm_li = pm_list.get_conversation_li(conversation);
     var count_span = pm_li.find('.private_message_count');
     var value_span = count_span.find('.value');
@@ -62,8 +67,15 @@ function remove_expanded_private_messages() {
     resize.resize_stream_filters_container();
 }
 
-exports.reset_to_unnarrowed = function () {
+function zoom_in() {
+    zoomed_in = true;
+    var list_widget = $("ul.expanded_private_messages").expectOne();
+    list_widget.removeClass("zoomed-out").addClass("zoomed-in");
+}
+
+exports.close = function () {
     private_messages_open = false;
+    zoomed_in = false;
     $("ul.filters li").removeClass('active-filter active-sub-filter');
     remove_expanded_private_messages();
 };
@@ -90,7 +102,9 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             || (user_ids_string === active_conversation);
 
         if (!always_visible) {
-            hiding_messages = true;
+            if (!zoomed_in) {
+                hiding_messages = true;
+            }
         }
 
         var display_message = {
@@ -104,8 +118,17 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         display_messages.push(display_message);
     });
 
+    var zoom_class;
+
+    if (zoomed_in) {
+        zoom_class = "zoomed-in";
+    } else {
+        zoom_class = "zoomed-out";
+    }
+
     var recipients_dom = templates.render('sidebar_private_message_list',
                                   {messages: display_messages,
+                                   zoom_class: zoom_class,
                                    want_show_more_messages_links: hiding_messages});
     return recipients_dom;
 };
@@ -117,6 +140,7 @@ exports.rebuild_recent = function (active_conversation) {
         var private_li = get_filter_li();
         var private_messages_dom = exports._build_private_messages_list(active_conversation,
             max_private_messages);
+
         private_li.append(private_messages_dom);
     }
     if (active_conversation) {
@@ -148,11 +172,7 @@ exports.update_private_messages = function () {
 exports.set_click_handlers = function () {
     $('#global_filters').on('click', '.show-more-private-messages', function (e) {
         popovers.hide_all();
-        $(".expanded_private_messages").expectOne().removeClass("zoom-out").addClass("zoom-in");
-        $(".expanded_private_messages li.expanded_private_message").each(function () {
-            $(this).show();
-        });
-
+        zoom_in();
         e.preventDefault();
         e.stopPropagation();
     });
@@ -161,13 +181,11 @@ exports.set_click_handlers = function () {
 exports.expand = function (op_pm) {
     private_messages_open = true;
     if (op_pm.length === 1) {
-        $("#user_presences li[data-email='" + op_pm[0] + "']").addClass('active-filter');
         exports.rebuild_recent(op_pm[0]);
     } else if (op_pm.length !== 0) {
         // TODO: Should pass the reply-to of the thread
         exports.rebuild_recent("");
     } else {
-        $("#global_filters li[data-name='private']").addClass('active-filter zoom-out');
         exports.rebuild_recent("");
     }
 };

@@ -2,15 +2,29 @@ var people = (function () {
 
 var exports = {};
 
-// The following three Dicts point to the same objects
-// All people we've seen
-var people_dict = new Dict({fold_case: true});
-var people_by_name_dict = new Dict({fold_case: true});
-var people_by_user_id_dict = new Dict();
-// People in this realm
-var realm_people_dict = new Dict({fold_case: true});
-var cross_realm_dict = new Dict({fold_case: true});
-var pm_recipient_count_dict = new Dict({fold_case: true});
+var people_dict;
+var people_by_name_dict;
+var people_by_user_id_dict;
+var realm_people_dict;
+var cross_realm_dict;
+var pm_recipient_count_dict;
+
+// We have an init() function so that our automated tests
+// can easily clear data.
+exports.init = function () {
+    // The following three Dicts point to the same objects
+    // All people we've seen
+    people_dict = new Dict({fold_case: true});
+    people_by_name_dict = new Dict({fold_case: true});
+    people_by_user_id_dict = new Dict();
+    // People in this realm
+    realm_people_dict = new Dict({fold_case: true});
+    cross_realm_dict = new Dict({fold_case: true});
+    pm_recipient_count_dict = new Dict({fold_case: true});
+};
+
+// WE INITIALIZE DATA STRUCTURES HERE!
+exports.init();
 
 exports.get_person_from_user_id = function (user_id) {
     return people_by_user_id_dict.get(user_id);
@@ -212,11 +226,47 @@ exports.add_in_realm = function add_in_realm(person) {
     exports.add(person);
 };
 
-exports.remove = function remove(person) {
-    people_dict.del(person.email);
-    people_by_user_id_dict.del(person.user_id);
-    people_by_name_dict.del(person.full_name);
+exports.deactivate = function (person) {
+    // We don't fully remove a person from all of our data
+    // structures, because deactivated users can be part
+    // of somebody's PM list.
     realm_people_dict.del(person.email);
+};
+
+exports.extract_people_from_message = function (message) {
+    var involved_people;
+
+    switch (message.type) {
+    case 'stream':
+        involved_people = [{full_name: message.sender_full_name,
+                            user_id: message.sender_id,
+                            email: message.sender_email}];
+        break;
+
+    case 'private':
+        involved_people = message.display_recipient;
+        break;
+    }
+
+    // Add new people involved in this message to the people list
+    _.each(involved_people, function (person) {
+        if (!person.unknown_local_echo_user) {
+            if (! exports.get_by_email(person.email)) {
+                exports.add({
+                    email: person.email,
+                    user_id: person.user_id || person.id,
+                    full_name: person.full_name,
+                    is_admin: person.is_realm_admin || false,
+                    is_bot: person.is_bot || false
+                });
+            }
+
+            if (message.type === 'private' && message.sent_by_me) {
+                // Track the number of PMs we've sent to this person to improve autocomplete
+                exports.incr_recipient_count(person.email);
+            }
+        }
+    });
 };
 
 exports.update = function update(person) {

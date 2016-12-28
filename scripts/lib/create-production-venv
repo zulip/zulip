@@ -21,8 +21,12 @@ run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
 
 python_version = sys.version_info[0]
 
+venv_name = "zulip-venv" if sys.version_info[0] == 2 else "zulip-py3-venv"
 cached_venv_path = setup_virtualenv(
-    os.path.join(args.deploy_path, "zulip-venv" if sys.version_info[0] == 2 else "zulip-py3-venv"),
+    os.path.join(args.deploy_path, venv_name),
     os.path.join(ZULIP_PATH, "requirements", "py{}_prod.txt".format(python_version)),
     virtualenv_args=['-p', 'python{}'.format(python_version)])
+
+current_venv_path = os.path.join(args.deploy_path, 'zulip-current-venv')
+run(['ln', '-s', venv_name, current_venv_path])
 # Now the virtualenv has been activated

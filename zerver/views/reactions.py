@@ -1,6 +1,8 @@
+from __future__ import absolute_import
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from six import text_type
+from typing import Text
 
 from zerver.decorator import authenticated_json_post_view,\
     has_request_variables, REQ, to_non_negative_int
@@ -12,9 +14,8 @@ from zerver.lib.response import json_success
 from zerver.models import Reaction, UserProfile
 
 @has_request_variables
-def add_reaction_backend(request, user_profile, emoji_name=REQ('emoji'),
-                         message_id = REQ('message_id', converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, text_type, int) -> HttpResponse
+def add_reaction_backend(request, user_profile, message_id, emoji_name):
+    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
 
     # access_message will throw a JsonableError exception if the user
     # cannot see the message (e.g. for messages to private streams).
@@ -36,9 +37,8 @@ def add_reaction_backend(request, user_profile, emoji_name=REQ('emoji'),
     return json_success()
 
 @has_request_variables
-def remove_reaction_backend(request, user_profile, emoji_name=REQ('emoji'),
-                            message_id = REQ('message_id', converter=to_non_negative_int)):
-    # type: (HttpRequest, UserProfile, text_type, int) -> HttpResponse
+def remove_reaction_backend(request, user_profile, message_id, emoji_name):
+    # type: (HttpRequest, UserProfile, int, Text) -> HttpResponse
 
     # access_message will throw a JsonableError exception if the user
     # cannot see the message (e.g. for messages to private streams).

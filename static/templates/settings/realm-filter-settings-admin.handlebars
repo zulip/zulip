@@ -1,7 +1,29 @@
 <div id="filter-settings" class="settings-section" data-name="filter-settings">
   <div class="settings-section-title"><i class="icon-vector-filter settings-section-icon"></i>{{t "Custom linkification filters" }}</div>
   <div class="admin-table-wrapper">
-    <p>{{#tr this}}Configure patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example, you could make typing "#123" automatically become a link to issue #123 in an issue tracker.{{/tr}}</p>
+
+    <p>
+      {{#tr this}}
+      Configure regular expression patterns that will be
+      automatically linkified when used in Zulip message bodies or
+      topics.  For example to automatically linkify commit IDs and
+      issue numbers (e.g. #123) to the corresponding items in a GitHub
+      project, you could use the following:
+      {{/tr}}
+    </p>
+    <ul>
+        <li>
+          <code>#(?P&lt;id&gt;[0-9]+)</code>
+          {{t "and" }}
+          <code>https://github.com/zulip/zulip/issues/%(id)s</code>
+        </li>
+        <li>
+          <code>(?P&lt;id&gt;[0-9a-f]{40})</code>
+          {{t "and" }}
+          <code>https://github.com/zulip/zulip/commit/%(id)s</code>
+        </li>
+    </ul>
+
     <table class="table table-condensed table-striped admin_filters_table">
       <tbody id="admin_filters_table">
         <th>{{t "Pattern" }}</th>

@@ -117,12 +117,28 @@ function render_bots() {
             email: elem.email,
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
+            zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
             default_sending_stream: elem.default_sending_stream,
             default_events_register_stream: elem.default_events_register_stream,
             default_all_public_streams: elem.default_all_public_streams
         });
     });
 }
+
+exports.generate_zuliprc_uri = function (email, api_key) {
+    var data = settings.generate_zuliprc_content(email, api_key);
+
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(data);
+};
+
+exports.generate_zuliprc_content = function (email, api_key) {
+    return "[api]" +
+           "\nemail=" + email +
+           "\nkey=" + api_key +
+           "\nsite=" + page_params.realm_uri +
+           // Some tools would not work in files without a trailing new line.
+           "\n";
+};
 
 // Choose avatar stamp fairly randomly, to help get old avatars out of cache.
 exports.avatar_stamp = Math.floor(Math.random()*100);
@@ -148,7 +164,8 @@ function _setup_page() {
         });
     }
 
-    var settings_tab = templates.render('settings_tab', {page_params: page_params});
+    // Most browsers do not allow filenames to start with `.` without the user manually changing it.
+    var settings_tab = templates.render('settings_tab', {page_params: page_params, zuliprc: 'zuliprc'});
     $("#settings").html(settings_tab);
     $("#settings-status").hide();
     $("#notify-settings-status").hide();
@@ -170,7 +187,7 @@ function _setup_page() {
 
     clear_password_change();
 
-    $('#api_key_button').click(function (e) {
+    $('#api_key_button').click(function () {
         if (page_params.password_auth_enabled !== false) {
             $("#get_api_key_box").show();
         } else {
@@ -187,7 +204,7 @@ function _setup_page() {
         if (page_params.password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            $.getScript('/static/third/zxcvbn/zxcvbn.js', function () {
+            $.getScript('/static/node_modules/zxcvbn/dist/zxcvbn.js', function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
@@ -220,7 +237,7 @@ function _setup_page() {
 
     $("form.your-account-settings").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function (arr, form, options) {
+        beforeSubmit: function () {
             if (page_params.password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
@@ -241,21 +258,20 @@ function _setup_page() {
             }
             return true;
         },
-        success: function (resp, statusText, xhr, form) {
+        success: function () {
             settings_change_success("Updated settings!");
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             settings_change_error("Error changing settings", xhr);
         },
-        complete: function (xhr, statusText) {
+        complete: function () {
             // Whether successful or not, clear the password boxes.
             // TODO: Clear these earlier, while the request is still pending.
             clear_password_change();
         }
     });
 
-    function update_notification_settings_success(resp, statusText, xhr, form) {
-        var message = "Updated notification settings!";
+    function update_notification_settings_success(resp, statusText, xhr) {
         var result = JSON.parse(xhr.responseText);
         var notify_settings_status = $('#notify-settings-status').expectOne();
 
@@ -301,14 +317,14 @@ function _setup_page() {
         ui.report_success(i18n.t("Updated notification settings!"), notify_settings_status);
     }
 
-    function update_notification_settings_error(xhr, error_type, xhn) {
+    function update_notification_settings_error(xhr) {
         ui.report_error(i18n.t("Error changing settings"), xhr, $('#notify-settings-status').expectOne());
     }
 
     function post_notify_settings_changes(notification_changes, success_func,
                                           error_func) {
-        return channel.post({
-            url: "/json/notify_settings/change",
+        return channel.patch({
+            url: "/json/settings/notifications",
             data: notification_changes,
             success: success_func,
             error: error_func
@@ -316,6 +332,8 @@ function _setup_page() {
     }
 
     $("#change_notification_settings").on("click", function (e) {
+        e.preventDefault();
+
         var updated_settings = {};
         _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
                 "enable_desktop_notifications", "enable_sounds",
@@ -333,8 +351,8 @@ function _setup_page() {
     function update_global_stream_setting(notification_type, new_setting) {
         var data = {};
         data[notification_type] = new_setting;
-        channel.post({
-            url: "/json/notify_settings/change",
+        channel.patch({
+            url: "/json/settings/notifications",
             data: data,
             success: update_notification_settings_success,
             error: update_notification_settings_error
@@ -357,22 +375,22 @@ function _setup_page() {
         var control_group = notification_checkbox.closest(".control-group");
         var checkbox_status = notification_checkbox.is(":checked");
         control_group.find(".propagate_stream_notifications_change").html(html);
-        control_group.find(".yes_propagate_notifications").on("click", function (e) {
+        control_group.find(".yes_propagate_notifications").on("click", function () {
             propagate_setting_function(checkbox_status);
             control_group.find(".propagate_stream_notifications_change").empty();
         });
-        control_group.find(".no_propagate_notifications").on("click", function (e) {
+        control_group.find(".no_propagate_notifications").on("click", function () {
             control_group.find(".propagate_stream_notifications_change").empty();
         });
     }
 
-    $("#enable_stream_desktop_notifications").on("click", function (e) {
+    $("#enable_stream_desktop_notifications").on("click", function () {
         var notification_checkbox = $("#enable_stream_desktop_notifications");
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_desktop_notification_setting);
     });
 
-    $("#enable_stream_sounds").on("click", function (e) {
+    $("#enable_stream_sounds").on("click", function () {
         var notification_checkbox = $("#enable_stream_sounds");
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_audible_notification_setting);
@@ -390,13 +408,13 @@ function _setup_page() {
         }
 
         channel.patch({
-            url: '/json/left_side_userlist',
+            url: '/json/settings/display',
             data: data,
-            success: function (resp, statusText, xhr, form) {
+            success: function () {
                 ui.report_success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
                                   $('#display-settings-status').expectOne());
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
@@ -414,13 +432,13 @@ function _setup_page() {
         }
 
         channel.patch({
-            url: '/json/time_setting',
+            url: '/json/settings/display',
             data: data,
-            success: function (resp, statusText, xhr, form) {
+            success: function () {
                 ui.report_success(i18n.t("Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
@@ -443,13 +461,13 @@ function _setup_page() {
         context.lang = new_language;
 
         channel.patch({
-            url: '/json/language_setting',
+            url: '/json/settings/display',
             data: data,
-            success: function (resp, statusText, xhr, form) {
+            success: function () {
                 ui.report_success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
             }
         });
@@ -467,14 +485,14 @@ function _setup_page() {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $("#do_deactivate_self_button").on('click',function (e) {
+    $("#do_deactivate_self_button").on('click',function () {
         $("#deactivate_self_modal").modal("hide");
         channel.del({
             url: '/json/users/me',
             success: function () {
                 window.location.href = "/login";
             },
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
             }
         });
@@ -484,8 +502,7 @@ function _setup_page() {
     $("#show_api_key_box").hide();
     $("#get_api_key_box form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr, form) {
-            var message = "Updated settings!";
+        success: function (resp, statusText, xhr) {
             var result = JSON.parse(xhr.responseText);
             var settings_status = $('#settings-status').expectOne();
 
@@ -495,7 +512,7 @@ function _setup_page() {
             $("#get_api_key_box").hide();
             settings_status.hide();
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
@@ -513,8 +530,8 @@ function _setup_page() {
         var spinner = $("#upload_avatar_spinner").expectOne();
         loading.make_indicator(spinner, {text: 'Uploading avatar.'});
 
-        channel.post({
-            url: '/json/set_avatar',
+        channel.put({
+            url: '/json/users/me/avatar',
             data: form_data,
             cache: false,
             processData: false,
@@ -523,6 +540,7 @@ function _setup_page() {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
                 $("#user-settings-avatar").expectOne().attr("src", url);
+                $("#user_avatar_delete_button").show();
                 exports.avatar_stamp += 1;
             }
         });
@@ -576,17 +594,17 @@ function _setup_page() {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success: function (data) {
+                success: function () {
                     $('#bot_table_error').hide();
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
                     $('#create_bot_button').show();
                     create_avatar_widget.clear();
                 },
-                error: function (xhr, error_type, exn) {
+                error: function (xhr) {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
                 },
-                complete: function (xhr, status) {
+                complete: function () {
                     $('#create_bot_button').val('Create bot').prop('disabled', false);
                 }
             });
@@ -659,7 +677,7 @@ function _setup_page() {
 
         form.validate({
             errorClass: 'text-error',
-            success: function (label) {
+            success: function () {
                 errors.hide();
             },
             submitHandler: function () {
@@ -701,7 +719,7 @@ function _setup_page() {
                             image.find('img').attr('src', data.avatar_url+'&v='+image_version.toString());
                         }
                     },
-                    error: function (xhr, error_type, exn) {
+                    error: function (xhr) {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
@@ -713,7 +731,24 @@ function _setup_page() {
 
     });
 
-    $("#show_api_key_box").on("click", "button.regenerate_api_key", function (e) {
+    $("#bots_list").on("click", "a.download_bot_zuliprc", function () {
+        var bot_info = $(this).parent().parent();
+        var email = bot_info.find(".email .value").text();
+        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+
+        $(this).attr("href", settings.generate_zuliprc_uri(
+            $.trim(email), $.trim(api_key)
+        ));
+    });
+
+    $("#download_zuliprc").on("click", function () {
+        $(this).attr("href", settings.generate_zuliprc_uri(
+            page_params.email,
+            $("#api_key_value").text()
+        ));
+    });
+
+    $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
         channel.post({
             url: '/json/users/me/api_key/regenerate',
             idempotent: true,
@@ -727,17 +762,18 @@ function _setup_page() {
     });
 
     $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
+        e.preventDefault();
         var labs_updates = {};
         _.each(["autoscroll_forever", "default_desktop_notifications"],
             function (setting) {
                 labs_updates[setting] = $("#" + setting).is(":checked");
         });
 
-        channel.post({
-            url: '/json/ui_settings/change',
+        channel.patch({
+            url: '/json/settings/ui',
             data: labs_updates,
-            success: function (resp, statusText, xhr, form) {
-                var message = i18n.t("Updated __product_name__ Labs settings!", page_params);
+            success: function (resp, statusText, xhr) {
+                var message = i18n.t("Updated __product_name__ Labs settings!  You will need to reload for these changes to take effect.", page_params);
                 var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
@@ -748,16 +784,39 @@ function _setup_page() {
 
                 ui.report_success(message, ui_settings_status);
             },
-            error: function (xhr, error_type, xhn) {
+            error: function (xhr) {
                 ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
             }
         });
     });
 }
 
+function _update_page() {
+    $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
+    $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
+    $("#default_language_name").text(page_params.default_language_name);
+
+    $("#enable_stream_desktop_notifications").prop('checked', page_params.stream_desktop_notifications_enabled);
+    $("#enable_stream_sounds").prop('checked', page_params.stream_sounds_enabled);
+    $("#enable_desktop_notifications").prop('checked', page_params.desktop_notifications_enabled);
+    $("#enable_sounds").prop('checked', page_params.sounds_enabled);
+    $("#enable_offline_email_notifications").prop('checked', page_params.enable_offline_email_notifications);
+    $("#enable_offline_push_notifications").prop('checked', page_params.enable_offline_push_notifications);
+    $("#enable_online_push_notifications").prop('checked', page_params.enable_online_push_notifications);
+    $("#enable_digest_emails").prop('checked', page_params.enable_digest_emails);
+}
+
 exports.setup_page = function () {
     i18n.ensure_i18n(_setup_page);
 };
 
+exports.update_page = function () {
+    i18n.ensure_i18n(_update_page);
+};
+
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = settings;
+}

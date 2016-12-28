@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
-from six import text_type
-from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union
+from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union, Text
 
 from django.db import connection
 from django.db.models.query import QuerySet
@@ -11,7 +10,7 @@ from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from jinja2 import Markup as mark_safe
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal
-from zerver.models import get_realm, UserActivity, UserActivityInterval, Realm
+from zerver.models import UserActivity, UserActivityInterval, Realm
 from zerver.lib.timestamp import timestamp_to_datetime
 
 from collections import defaultdict
@@ -789,7 +788,7 @@ def user_activity_summary_table(user_summary):
     return make_table(title, cols, rows)
 
 def realm_user_summary_table(all_records, admin_emails):
-    # type: (List[QuerySet], Set[text_type]) -> Tuple[Dict[str, Dict[str, Any]], str]
+    # type: (List[QuerySet], Set[Text]) -> Tuple[Dict[str, Dict[str, Any]], str]
     user_records = {}
 
     def by_email(record):

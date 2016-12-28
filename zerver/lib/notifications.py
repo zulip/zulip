@@ -1,7 +1,6 @@
 from __future__ import print_function
 
-from six import text_type
-from typing import cast, Any, Iterable, Mapping, Optional, Sequence, Tuple
+from typing import cast, Any, Iterable, Mapping, Optional, Sequence, Tuple, Text
 
 import mandrill
 from confirmation.models import Confirmation
@@ -33,13 +32,13 @@ from six.moves import urllib
 from collections import defaultdict
 
 def unsubscribe_token(user_profile):
-    # type: (UserProfile) -> text_type
+    # type: (UserProfile) -> Text
     # Leverage the Django confirmations framework to generate and track unique
     # unsubscription tokens.
     return Confirmation.objects.get_link_for_object(user_profile).split("/")[-1]
 
 def one_click_unsubscribe_link(user_profile, endpoint):
-    # type: (UserProfile, text_type) -> text_type
+    # type: (UserProfile, Text) -> Text
     """
     Generate a unique link that a logged-out user can visit to unsubscribe from
     Zulip e-mails without having to first log in.
@@ -49,7 +48,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     return "%s/%s" % (user_profile.realm.uri.rstrip("/"), resource_path)
 
 def hashchange_encode(string):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     # Do the same encoding operation as hashchange.encodeHashComponent on the
     # frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
@@ -57,18 +56,18 @@ def hashchange_encode(string):
         string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
 
 def pm_narrow_url(realm, participants):
-    # type: (Realm, List[text_type]) -> text_type
+    # type: (Realm, List[Text]) -> Text
     participants.sort()
     base_url = u"%s/#narrow/pm-with/" % (realm.uri,)
     return base_url + hashchange_encode(",".join(participants))
 
 def stream_narrow_url(realm, stream):
-    # type: (Realm, text_type) -> text_type
+    # type: (Realm, Text) -> Text
     base_url = u"%s/#narrow/stream/" % (realm.uri,)
     return base_url + hashchange_encode(stream)
 
 def topic_narrow_url(realm, stream, topic):
-    # type: (Realm, text_type, text_type) -> text_type
+    # type: (Realm, Text, Text) -> Text
     base_url = u"%s/#narrow/stream/" % (realm.uri,)
     return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                                hashchange_encode(topic))
@@ -83,14 +82,14 @@ def build_message_list(user_profile, messages):
     messages_to_render = [] # type: List[Dict[str, Any]]
 
     def sender_string(message):
-        # type: (Message) -> text_type
+        # type: (Message) -> Text
         if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
             return message.sender.full_name
         else:
             return ''
 
     def relative_to_full_url(content):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         # URLs for uploaded content are of the form
         # "/user_uploads/abc.png". Make them full paths.
         #
@@ -107,27 +106,27 @@ def build_message_list(user_profile, messages):
             r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
 
         # URLs for emoji are of the form
-        # "static/third/gemoji/images/emoji/snowflake.png".
+        # "static/generated/emoji/images/emoji/snowflake.png".
         content = re.sub(
-            r"static/third/gemoji/images/emoji/",
-            settings.EXTERNAL_HOST + r"/static/third/gemoji/images/emoji/",
+            r"static/generated/emoji/images/emoji/",
+            settings.EXTERNAL_HOST + r"/static/generated/emoji/images/emoji/",
             content)
 
         return content
 
     def fix_plaintext_image_urls(content):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         # Replace image URLs in plaintext content of the form
         #     [image name](image url)
         # with a simple hyperlink.
         return re.sub(r"\[(\S*)\]\((\S*)\)", r"\2", content)
 
     def fix_emoji_sizes(html):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return html.replace(' class="emoji"', ' height="20px"')
 
     def build_message_payload(message):
-        # type: (Message) -> Dict[str, text_type]
+        # type: (Message) -> Dict[str, Text]
         plain = message.content
         plain = fix_plaintext_image_urls(plain)
         plain = relative_to_full_url(plain)
@@ -152,7 +151,7 @@ def build_message_list(user_profile, messages):
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
-            assert not isinstance(disp_recipient, text_type)
+            assert not isinstance(disp_recipient, Text)
             other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['email'] != user_profile.email]
             header = u"You and %s" % (", ".join(other_recipients),)
@@ -160,7 +159,7 @@ def build_message_list(user_profile, messages):
                                       if r["email"] != user_profile.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
-            assert isinstance(disp_recipient, text_type)
+            assert isinstance(disp_recipient, Text)
             header = u"%s > %s" % (disp_recipient, message.topic_name())
             stream_link = stream_narrow_url(user_profile.realm, disp_recipient)
             topic_link = topic_narrow_url(user_profile.realm, disp_recipient, message.subject)
@@ -305,7 +304,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if not messages:
         return
 
-    messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, text_type], List[Message]]
+    messages_by_recipient_subject = defaultdict(list) # type: Dict[Tuple[int, Text], List[Message]]
     for msg in messages:
         messages_by_recipient_subject[(msg.recipient_id, msg.topic_name())].append(msg)
 
@@ -330,7 +329,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):
-    # type: (text_type, Optional[mandrill.Mandrill]) -> None
+    # type: (Text, Optional[mandrill.Mandrill]) -> None
     """
     Clear out queued emails (from Mandrill's queue) that would otherwise
     be sent to a specific email address. Optionally specify which sender
@@ -355,7 +354,7 @@ def clear_followup_emails_queue(email, mail_client=None):
     return
 
 def log_digest_event(msg):
-    # type: (text_type) -> None
+    # type: (Text) -> None
     import logging
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
@@ -364,7 +363,7 @@ def log_digest_event(msg):
 def send_future_email(recipients, email_html, email_text, subject,
                       delay=datetime.timedelta(0), sender=None,
                       tags=[], mail_client=None):
-    # type: (List[Dict[str, Any]], text_type, text_type, text_type, datetime.timedelta, Optional[Dict[str, text_type]], Iterable[text_type], Optional[mandrill.Mandrill]) -> None
+    # type: (List[Dict[str, Any]], Text, Text, Text, datetime.timedelta, Optional[Dict[str, Text]], Iterable[Text], Optional[mandrill.Mandrill]) -> None
     """
     Sends email via Mandrill, with optional delay
 
@@ -452,7 +451,7 @@ def send_future_email(recipients, email_html, email_text, subject,
 def send_local_email_template_with_delay(recipients, template_prefix,
                                          template_payload, delay,
                                          tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
-    # type: (List[Dict[str, Any]], text_type, Dict[str, text_type], datetime.timedelta, Iterable[text_type], Dict[str, text_type]) -> None
+    # type: (List[Dict[str, Any]], Text, Dict[str, Text], datetime.timedelta, Iterable[Text], Dict[str, Text]) -> None
     html_content = loader.render_to_string(template_prefix + ".html", template_payload)
     text_content = loader.render_to_string(template_prefix + ".text", template_payload)
     subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
@@ -466,10 +465,10 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                       tags=tags)
 
 def enqueue_welcome_emails(email, name):
-    # type: (text_type, text_type) -> None
+    # type: (Text, Text) -> None
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
-        sender = settings.WELCOME_EMAIL_SENDER # type: Dict[str, text_type]
+        sender = settings.WELCOME_EMAIL_SENDER # type: Dict[str, Text]
     else:
         sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
 
@@ -497,7 +496,7 @@ def enqueue_welcome_emails(email, name):
                                          sender=sender)
 
 def convert_html_to_markdown(html):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     # On Linux, the tool installs as html2markdown, and there's a command called
     # html2text that does something totally different. On OSX, the tool installs
     # as html2text.

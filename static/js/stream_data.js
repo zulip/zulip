@@ -329,7 +329,7 @@ exports.get_streams_for_settings_page = function () {
     }
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
-    var all_subs = subscribed_rows.concat(unsubscribed_rows);
+    var all_subs = unsubscribed_rows.concat(subscribed_rows);
 
     // Add in admin options and stream counts.
     var sub_rows = [];
@@ -368,7 +368,7 @@ exports.get_recent_topics = function (stream_name) {
 
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
-    recent_topics = new Dict.from(stream_map, {fold_case: true});
+    recent_topics = Dict.from(stream_map, {fold_case: true});
 };
 
 return exports;

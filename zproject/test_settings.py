@@ -19,14 +19,16 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
-DATABASES["default"] = {"NAME": "zulip_test",
-                        "USER": "zulip_test",
-                        "PASSWORD": LOCAL_DATABASE_PASSWORD,
-                        "HOST": "localhost",
-                        "SCHEMA": "zulip",
-                        "ENGINE": "django.db.backends.postgresql_psycopg2",
-                        "TEST_NAME": "django_zulip_tests",
-                        "OPTIONS": {"connection_factory": TimeTrackingConnection },}
+DATABASES["default"] = {
+    "NAME": "zulip_test",
+    "USER": "zulip_test",
+    "PASSWORD": LOCAL_DATABASE_PASSWORD,
+    "HOST": "localhost",
+    "SCHEMA": "zulip",
+    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "TEST_NAME": "django_zulip_tests",
+    "OPTIONS": {"connection_factory": TimeTrackingConnection},
+}
 if USING_PGROONGA:
     # We need to have "pgroonga" schema before "pg_catalog" schema in
     # the PostgreSQL search path, because "pgroonga" schema overrides
@@ -50,6 +52,9 @@ else:
     TORNADO_SERVER = None
     CAMO_URI = 'https://external-content.zulipcdn.net/'
     CAMO_KEY = 'dummy'
+
+if "CASPER_TESTS" in os.environ:
+    CASPER_TESTS = True
 
 # Decrease the get_updates timeout to 1 second.
 # This allows CasperJS to proceed quickly to the next test step.
@@ -96,6 +101,7 @@ ENABLE_FILE_LINKS = True
 
 LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
 LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
 
 LOCAL_UPLOADS_DIR = 'var/test_uploads'
 
@@ -106,3 +112,5 @@ REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 
 # Test Custom TOS template rendering
 TERMS_OF_SERVICE = 'corporate/terms.md'
+
+INLINE_URL_EMBED_PREVIEW = False

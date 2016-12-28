@@ -24,14 +24,14 @@ class zulip::nginx {
     source => "puppet:///modules/zulip/nginx/nginx.conf",
   }
 
-  file { "/etc/nginx/fastcgi_params":
+  file { "/etc/nginx/uwsgi_params":
     require => Package["nginx-full"],
     ensure => file,
     owner  => "root",
     group  => "root",
     mode => 644,
     notify => Service["nginx"],
-    source => "puppet:///modules/zulip/nginx/fastcgi_params",
+    source => "puppet:///modules/zulip/nginx/uwsgi_params",
   }
 
   file { "/etc/nginx/sites-enabled/default":

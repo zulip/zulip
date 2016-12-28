@@ -58,6 +58,8 @@ function dispatch_normal_event(event) {
             if (!page_params.is_admin) {
                 page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
             }
+        } else if (event.op === 'update' && event.property === 'add_emoji_by_admins_only') {
+            page_params.add_emoji_by_admins_only = event.value;
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
             page_params.realm_restricted_to_domain = event.value;
         } else if (event.op === 'update_dict' && event.property === 'default') {
@@ -70,6 +72,8 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'update' && event.property === 'default_language') {
             page_params.realm_default_language = event.value;
             admin.reset_realm_default_language();
+        } else if (event.op === 'update' && event.property === 'waiting_period_threshold') {
+            page_params.realm_waiting_period_threshold = event.value;
         }
         break;
 
@@ -99,7 +103,7 @@ function dispatch_normal_event(event) {
         if (event.op === 'add') {
             people.add_in_realm(event.person);
         } else if (event.op === 'remove') {
-            people.remove(event.person);
+            people.deactivate(event.person);
         } else if (event.op === 'update') {
             people.update(event.person);
             admin.update_user_full_name(event.person.email, event.person.full_name);
@@ -160,24 +164,30 @@ function dispatch_normal_event(event) {
 
     case 'update_display_settings':
         if (event.setting_name === 'twenty_four_hour_time') {
-            page_params.twenty_four_hour_time = event.twenty_four_hour_time;
+            page_params.twenty_four_hour_time = event.setting;
             // TODO: Make this rerender the existing elements to not require a reload.
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.
-            page_params.left_side_userlist = event.left_side_userlist;
+            page_params.left_side_userlist = event.setting;
         }
         if (event.setting_name === 'default_language') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.
-            page_params.default_language = event.default_language;
+            page_params.default_language = event.setting;
+        }
+        if ($("#settings.tab-pane.active").length) {
+            settings.update_page();
         }
         break;
 
     case 'update_global_notifications':
         notifications.handle_global_notification_updates(event.notification_name,
                                                          event.setting);
+        if ($("#settings.tab-pane.active").length) {
+            settings.update_page();
+        }
         break;
 
     case 'update_message_flags':
@@ -204,7 +214,7 @@ function get_events_success(events) {
     var messages_to_update = [];
     var new_pointer;
 
-    var clean_event = function clean_event (event) {
+    var clean_event = function clean_event(event) {
         // Only log a whitelist of the event to remove private data
         return _.pick(event, 'id', 'type', 'op');
     };
@@ -350,7 +360,7 @@ function get_events(options) {
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
-        error: function (xhr, error_type, exn) {
+        error: function (xhr, error_type) {
             try {
                 get_events_xhr = undefined;
                 // If we are old enough to have messages outside of the
@@ -452,7 +462,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     });
 };
 
-window.addEventListener("beforeunload", function (event) {
+window.addEventListener("beforeunload", function () {
     exports.cleanup_event_queue();
 });
 

@@ -205,8 +205,6 @@ function reset_to_unnarrowed(narrowed_within_same_stream) {
     } else {
         topic_list.remove_expanded_topics();
     }
-
-    pm_list.reset_to_unnarrowed();
 }
 
 exports.set_in_home_view = function (stream, in_home) {
@@ -370,9 +368,8 @@ exports.update_dom_with_unread_counts = function (counts) {
                                       counts.mentioned_message_count);
 };
 
-exports.rename_stream = function (sub, new_name) {
-    // TODO: we don't actually need new_name, since the sub
-    //       will have been updated
+exports.rename_stream = function (sub) {
+    // The sub object is expected to already have the updated name
     build_stream_sidebar_row(sub);
     exports.build_stream_list(); // big hammer
 };
@@ -415,6 +412,8 @@ $(function () {
         var op_pm = event.filter.operands('pm-with');
         if ((op_is.length !== 0 && _.contains(op_is, "private")) || op_pm.length !== 0) {
             pm_list.expand(op_pm);
+        } else {
+            pm_list.close();
         }
 
         var op_stream = event.filter.operands('stream');
@@ -429,8 +428,9 @@ $(function () {
         }
     });
 
-    $(document).on('narrow_deactivated.zulip', function (event) {
+    $(document).on('narrow_deactivated.zulip', function () {
         reset_to_unnarrowed();
+        pm_list.close();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 
@@ -454,7 +454,7 @@ $(function () {
             ui.change_tab_to('#home');
         }
         var stream = $(e.target).parents('li').attr('data-name');
-
+        popovers.hide_all();
         narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();
@@ -500,11 +500,11 @@ exports.clear_and_hide_search = function () {
     filter.addClass('notdisplayed');
 };
 
-function focus_stream_filter (e) {
+function focus_stream_filter(e) {
     e.stopPropagation();
 }
 
-function maybe_select_stream (e) {
+function maybe_select_stream(e) {
     if (e.keyCode === 13) {
         // Enter key was pressed
 
@@ -526,7 +526,7 @@ function toggle_filter_displayed(e) {
     if (e.target.id === 'streams_inline_cog') {
         return;
     }
-    if (0 === $('.stream-list-filter.notdisplayed').length) {
+    if ($('.stream-list-filter.notdisplayed').length === 0) {
         exports.clear_and_hide_search();
     } else {
         exports.initiate_search();

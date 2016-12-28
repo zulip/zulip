@@ -17,8 +17,7 @@ coverage/
 .vagrant
 /zproject/dev-secrets.conf
 static/js/bundle.js
-static/third/gemoji
-static/third/zxcvbn/
+static/generated/emoji
 static/locale/language_options.json
 /node_modules
 npm-debug.log

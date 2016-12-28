@@ -7,7 +7,7 @@ class VirtualFsHandler(object):
     def usage(self):
         return get_help()
 
-    def triage_message(self, message):
+    def triage_message(self, message, client):
         # return True iff we want to (possibly) response to this message
         if message['type'] != 'stream':
             return False
@@ -16,7 +16,7 @@ class VirtualFsHandler(object):
         return original_content.startswith('fs ')
 
     def handle_message(self, message, client, state_handler):
-        assert self.triage_message(message)
+        assert self.triage_message(message, client)
 
         original_content = message['content']
         command = original_content[len('fs '):]

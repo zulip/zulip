@@ -1,6 +1,5 @@
 import ujson
-from six import text_type
-from typing import Dict, Optional
+from typing import Dict, Optional, Text
 
 from zerver.models import Message
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -8,7 +7,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class GithubWebhookTest(WebhookTestCase):
     STREAM_NAME = 'github'
-    URL_TEMPLATE = "/api/v1/external/webhook_github?stream={stream}&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/github?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'github_webhook'
     EXPECTED_SUBJECT_REPO_EVENTS = u"public-repo"
     EXPECTED_SUBJECT_ISSUE_EVENTS = u"public-repo / Issue #2 Spelling error in the README file"

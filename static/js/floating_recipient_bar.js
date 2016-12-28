@@ -98,3 +98,7 @@ exports.update = function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = floating_recipient_bar;
+}

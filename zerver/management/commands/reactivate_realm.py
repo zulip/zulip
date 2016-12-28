@@ -9,22 +9,22 @@ from django.core.management.base import BaseCommand
 import sys
 
 from zerver.lib.actions import do_reactivate_realm
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 
 class Command(BaseCommand):
     help = """Script to reactivate a deactivated realm."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
-        parser.add_argument('domain', metavar='<domain>', type=str,
+        parser.add_argument('string_id', metavar='<string_id>', type=str,
                             help='domain of realm to reactivate')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm(options["domain"])
+        realm = get_realm_by_string_id(options["string_id"])
         if realm is None:
-            print("Could not find realm %s" % (options["domain"],))
+            print("Could not find realm %s" % (options["string_id"],))
             sys.exit(1)
-        print("Reactivating", options["domain"])
+        print("Reactivating", options["string_id"])
         do_reactivate_realm(realm)
         print("Done!")

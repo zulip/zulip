@@ -1,8 +1,8 @@
 var admin = (function () {
 
+var meta = {};
 var exports = {};
 var all_streams = [];
-var user_row_to_deactivate;
 
 exports.show_or_hide_menu_item = function () {
     var item = $('.admin-menu-item').expectOne();
@@ -41,24 +41,20 @@ exports.update_user_full_name = function (email, new_full_name) {
     user_row.show();
 };
 
-function failed_listing_users(xhr, error) {
+function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
     ui.report_error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
 }
 
-function failed_listing_streams(xhr, error) {
+function failed_listing_streams(xhr) {
     ui.report_error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
 }
 
-function failed_listing_emoji(xhr, error) {
-    ui.report_error(i18n.t("Error listing emoji"), xhr, $("#administration-status"));
-}
-
-function failed_changing_name(xhr, error) {
+function failed_changing_name(xhr) {
     ui.report_error(i18n.t("Error changing name"), xhr, $("#administration-status"));
 }
 
-function populate_users (realm_people_data) {
+function populate_users(realm_people_data) {
     var users_table = $("#admin_users_table");
     var deactivated_users_table = $("#admin_deactivated_users_table");
     var bots_table = $("#admin_bots_table");
@@ -144,12 +140,11 @@ function make_stream_default(stream_name) {
     var data = {
         stream_name: stream_name
     };
-    var default_streams_table = $("#admin_default_streams_table").expectOne();
 
     channel.put({
         url: '/json/default_streams',
         data: data,
-        error: function (xhr, error_type) {
+        error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
                 $(".active_stream_row button").closest("td").html(
                     $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
@@ -178,7 +173,8 @@ exports.populate_emoji = function (emoji_data) {
         emoji_table.append(templates.render('admin_emoji_list', {
             emoji: {
                 name: name, source_url: data.source_url,
-                display_url: data.display_url
+                display_url: data.display_url,
+                author: data.author
             }
         }));
     });
@@ -222,43 +218,6 @@ exports.populate_auth_methods = function (auth_methods) {
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
-exports.set_up_deactivate_user_modal = function (row) {
-    $("#do_deactivate_user_button").expectOne().click(function (e) {
-        var email = row.find(".email").text();
-        if ($("#deactivation_user_modal .email").html() !== email) {
-            blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui.report_message("Deactivation encountered an error. Please reload and try again.",
-               $("#home-error"), 'alert-error');
-        }
-        $("#deactivation_user_modal").modal("hide");
-        row.find("button").prop("disabled", true).text("Working…");
-        channel.del({
-            url: '/json/users/' + email,
-            error: function (xhr, error_type) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                     row.find("button").text("Failed!");
-                }
-            },
-            success: function () {
-                var button = row.find("button.deactivate");
-                button.prop("disabled", false);
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("reactivate");
-                button.removeClass("deactivate");
-                button.text(i18n.t("Reactivate"));
-                row.addClass("deactivated_user");
-                row.find(".user-admin-settings").hide();
-            }
-        });
-    });
-};
-
-
 function _setup_page() {
     var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
     var atdomains = page_params.domains.slice();
@@ -276,11 +235,13 @@ function _setup_page() {
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
+        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         language_list: page_params.language_list,
-        realm_default_language: page_params.realm_default_language
+        realm_default_language: page_params.realm_default_language,
+        realm_waiting_period_threshold: page_params.realm_waiting_period_threshold
     };
     var admin_tab = templates.render('admin_tab', options);
     $("#administration").html(admin_tab);
@@ -291,8 +252,10 @@ function _setup_page() {
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
     $("#admin-realm-authentication-methods-status").expectOne().hide();
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-add-emoji-by-admins-only-status").expectOne().hide();
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
+    $('#admin-realm-waiting_period_threshold_status').expectOne().hide();
     $("#admin-emoji-status").expectOne().hide();
     $('#admin-filter-status').expectOne().hide();
     $('#admin-filter-pattern-status').expectOne().hide();
@@ -351,7 +314,7 @@ function _setup_page() {
         $("#deactivation_user_modal .user_name").text(user_name);
         $("#deactivation_user_modal").modal("show");
 
-        exports.set_up_deactivate_user_modal(row);
+        meta.current_deactivate_user_modal_row = row;
     });
 
     $(".admin_stream_table").on("click", ".deactivate", function (e) {
@@ -379,7 +342,7 @@ function _setup_page() {
 
         channel.del({
             url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_default_stream_row button").closest("td").html(
                     $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
@@ -404,7 +367,7 @@ function _setup_page() {
     $('.create_default_stream').typeahead({
         items: 5,
         fixed: true,
-        source: function (query) {
+        source: function () {
             return get_non_default_streams_names(all_streams);
         },
         highlight: true,
@@ -413,18 +376,49 @@ function _setup_page() {
         }
     });
 
+    $("#do_deactivate_user_button").expectOne().click(function () {
+        var email = meta.current_deactivate_user_modal_row.find(".email").text();
+
+        if ($("#deactivation_user_modal .email").html() !== email) {
+            blueslip.error("User deactivation canceled due to non-matching fields.");
+            ui.report_message("Deactivation encountered an error. Please reload and try again.",
+               $("#home-error"), 'alert-error');
+        }
+        $("#deactivation_user_modal").modal("hide");
+        meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text("Working…");
+        channel.del({
+            url: '/json/users/' + email,
+            error: function (xhr) {
+                if (xhr.status.toString().charAt(0) === "4") {
+                    meta.current_deactivate_user_modal_row.find("button").closest("td").html(
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                    );
+                } else {
+                     meta.current_deactivate_user_modal_row.find("button").text("Failed!");
+                }
+            },
+            success: function () {
+                var button = meta.current_deactivate_user_modal_row.find("button.deactivate");
+                button.prop("disabled", false);
+                button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
+                button.text(i18n.t("Reactivate"));
+                meta.current_deactivate_user_modal_row.addClass("deactivated_user");
+                meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
+            }
+        });
+    });
+
     $(".admin_bot_table").on("click", ".deactivate", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         var row = $(e.target).closest(".user_row");
 
-        var user_name = row.find('.user_name').text();
         var email = get_email_for_user_row(row);
 
         channel.del({
             url: '/json/bots/' + email,
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     row.find("button").closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -455,7 +449,7 @@ function _setup_page() {
 
         channel.post({
             url: '/json/users/' + email + "/reactivate",
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 var button = row.find("button");
                 if (xhr.status.toString().charAt(0) === "4") {
                     button.closest("td").html(
@@ -466,6 +460,7 @@ function _setup_page() {
                 }
             },
             success: function () {
+                row.find(".user-admin-settings").show();
                 var button = row.find("button.reactivate");
                 button.addClass("btn-danger");
                 button.removeClass("btn-warning");
@@ -504,17 +499,20 @@ function _setup_page() {
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
+        var add_emoji_by_admins_only_status = $("#admin-realm-add-emoji-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
-        var auth_methods_table = $('.admin_auth_methods_table');
+        var waiting_period_threshold_status = $("#admin-realm-waiting_period_threshold_status").expectOne();
         name_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
         authentication_methods_status.hide();
         create_stream_by_admins_only_status.hide();
+        add_emoji_by_admins_only_status.hide();
         message_editing_status.hide();
         default_language_status.hide();
+        waiting_period_threshold_status.hide();
 
         e.preventDefault();
         e.stopPropagation();
@@ -524,9 +522,11 @@ function _setup_page() {
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
+        var new_add_emoji_by_admins_only = $("#id_realm_add_emoji_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_default_language = $("#id_realm_default_language").val();
+        var new_waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
         var new_auth_methods = {};
         _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
             new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
@@ -552,10 +552,12 @@ function _setup_page() {
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
             authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
+            add_emoji_by_admins_only: JSON.stringify(new_add_emoji_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
-            default_language: JSON.stringify(new_default_language)
+            default_language: JSON.stringify(new_default_language),
+            waiting_period_threshold: JSON.stringify(parseInt(new_waiting_period_threshold, 10))
         };
 
         channel.patch({
@@ -593,6 +595,13 @@ function _setup_page() {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
                     }
                 }
+                if (response_data.add_emoji_by_admins_only !== undefined) {
+                    if (response_data.add_emoji_by_admins_only) {
+                        ui.report_success(i18n.t("Only Admins may now add new emoji!"), add_emoji_by_admins_only_status);
+                    } else {
+                        ui.report_success(i18n.t("Any user may now add new emoji!"), add_emoji_by_admins_only_status);
+                    }
+                }
                 if (response_data.authentication_methods !== undefined) {
                     if (response_data.authentication_methods) {
                         ui.report_success(i18n.t("Authentication methods saved!"), authentication_methods_status);
@@ -625,8 +634,13 @@ function _setup_page() {
                         ui.report_success(i18n.t("Default language changed!"), default_language_status);
                     }
                 }
+                if (response_data.waiting_period_threshold !== undefined) {
+                    if (response_data.waiting_period_threshold > 0) {
+                        ui.report_success(i18n.t("waiting period threshold changed!"), waiting_period_threshold_status);
+                    }
+                }
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var reason = $.parseJSON(xhr.responseText).reason;
                 if (reason === "no authentication") {
                     ui.report_error(i18n.t("Failed!"), xhr, authentication_methods_status);
@@ -661,7 +675,7 @@ function _setup_page() {
                 button.removeClass("make-admin");
                 button.text(i18n.t("Remove admin"));
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var status = row.find(".admin-user-status");
                 ui.report_error(i18n.t("Failed!"), xhr, status);
             }
@@ -692,7 +706,7 @@ function _setup_page() {
                 button.removeClass("remove-admin");
                 button.text(i18n.t("Make admin"));
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var status = row.find(".admin-user-status");
                 ui.report_error(i18n.t("Failed!"), xhr, status);
             }
@@ -713,7 +727,7 @@ function _setup_page() {
         user_row.hide();
         form_row.show();
 
-        reset_button.on("click", function (e) {
+        reset_button.on("click", function () {
             form_row.hide();
             user_row.show();
         });
@@ -738,7 +752,7 @@ function _setup_page() {
         });
     });
 
-    $("#do_deactivate_stream_button").click(function (e) {
+    $("#do_deactivate_stream_button").click(function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
             ui.report_message("Deactivation encountered an error. Please reload and try again.",
@@ -748,7 +762,7 @@ function _setup_page() {
         $(".active_stream_row button").prop("disabled", true).text("Working…");
         channel.del({
             url: '/json/streams/' + encodeURIComponent($(".active_stream_row").find('.stream_name').text()),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_stream_row button").closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -771,7 +785,7 @@ function _setup_page() {
 
         channel.del({
             url: '/json/realm/emoji/' + encodeURIComponent(btn.attr('data-emoji-name')),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
@@ -792,7 +806,9 @@ function _setup_page() {
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');
         var emoji = {};
-        $(this).serializeArray().map(function (x) {emoji[x.name] = x.value;});
+        _.each($(this).serializeArray(), function (obj) {
+            emoji[obj.name] = obj.value;
+        });
 
         channel.put({
             url: "/json/realm/emoji",
@@ -802,7 +818,7 @@ function _setup_page() {
                 ui.report_success(i18n.t("Custom emoji added!"), emoji_status);
                 $("form.admin-emoji-form input[type='text']").val("");
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 $('#admin-emoji-status').hide();
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
@@ -818,7 +834,7 @@ function _setup_page() {
 
         channel.del({
             url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
-            error: function (xhr, error_type) {
+            error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     btn.closest("td").html(
                         $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
@@ -844,7 +860,9 @@ function _setup_page() {
         pattern_status.hide();
         format_status.hide();
         var filter = {};
-        $(this).serializeArray().map(function (x) {filter[x.name] = x.value;});
+        _.each($(this).serializeArray(), function (obj) {
+            filter[obj.name] = obj.value;
+        });
 
         channel.post({
             url: "/json/realm/filters",
@@ -853,7 +871,7 @@ function _setup_page() {
                 filter.id = data.id;
                 ui.report_success(i18n.t("Custom filter added!"), filter_status);
             },
-            error: function (xhr, error) {
+            error: function (xhr) {
                 var errors = $.parseJSON(xhr.responseText).errors;
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});
@@ -880,3 +898,7 @@ exports.setup_page = function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = admin;
+}

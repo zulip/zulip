@@ -27,6 +27,22 @@ label {
     margin: 0px;
 }
 
+.wrapped-table {
+    table-layout: fixed;
+    word-break: break-all;
+    word-wrap: break-word;
+    white-space: -moz-pre-wrap !important;
+    white-space: -webkit-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    white-space: pre-wrap;
+    white-space: normal;
+}
+
+.wrapped-cell {
+    width: 20%;
+}
+
 .table tbody {
     border-bottom: 1px solid #ddd;
 }
@@ -409,4 +425,8 @@ input[type=checkbox].inline-block {
 
 #show_api_key_box {
     padding-bottom: 20px;
+}
+
+#administration #deactivation_stream_modal h3 {
+    overflow-wrap: break-word;
 }

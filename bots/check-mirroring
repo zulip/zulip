@@ -117,7 +117,7 @@ def send_zulip(message):
     if result["result"] != "success":
         logger.error("Error sending zulip, args were:")
         logger.error(str(message))
-        logger.error(result)
+        logger.error(str(result))
         print_status_and_exit(1)
 
 # Returns True if and only if we "Detected server failure" sending the zephyr.
@@ -329,11 +329,11 @@ for key in all_keys:
     if key in zhkeys:
         (stream, test) = zhkeys[key]
         logger.warning("%10s: z got %s, h got %s.  Sent via Zephyr(%s): class %s" %
-            (key, z_key_counts[key], h_key_counts[key], test, stream))
+                       (key, z_key_counts[key], h_key_counts[key], test, stream))
     if key in hzkeys:
         (stream, test) = hzkeys[key]
         logger.warning("%10s: z got %s. h got %s.  Sent via Zulip(%s): class %s" %
-            (key, z_key_counts[key], h_key_counts[key], test, stream))
+                       (key, z_key_counts[key], h_key_counts[key], test, stream))
 logger.error("")
 logger.error("Summary of specific problems:")
 

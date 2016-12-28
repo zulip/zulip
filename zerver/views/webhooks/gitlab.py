@@ -10,8 +10,7 @@ from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
-from typing import Dict, Any, Iterable, Optional
+from typing import Dict, Any, Iterable, Optional, Text
 
 
 class UnknownEventType(Exception):
@@ -19,13 +18,13 @@ class UnknownEventType(Exception):
 
 
 def get_push_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     if payload.get('after') == EMPTY_SHA:
         return get_remove_branch_event_body(payload)
     return get_normal_push_event_body(payload)
 
 def get_normal_push_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     compare_url = u'{}/compare/{}...{}'.format(
         get_repository_homepage(payload),
         payload['before'],
@@ -49,14 +48,14 @@ def get_normal_push_event_body(payload):
     )
 
 def get_remove_branch_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return get_remove_branch_event_message(
         get_user_name(payload),
         get_branch_name(payload)
     )
 
 def get_tag_push_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return get_push_tag_event_message(
         get_user_name(payload),
         get_tag_name(payload),
@@ -64,7 +63,7 @@ def get_tag_push_event_body(payload):
     )
 
 def get_issue_created_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return get_issue_event_message(
         get_issue_user_name(payload),
         'created',
@@ -75,7 +74,7 @@ def get_issue_created_event_body(payload):
     )
 
 def get_issue_event_body(payload, action):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     return get_issue_event_message(
         get_issue_user_name(payload),
         action,
@@ -84,13 +83,13 @@ def get_issue_event_body(payload, action):
     )
 
 def get_merge_request_updated_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     if payload.get('object_attributes').get('oldrev'):
         return get_merge_request_event_body(payload, "added commit(s) to")
     return get_merge_request_open_or_updated_body(payload, "updated")
 
 def get_merge_request_event_body(payload, action):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     pull_request = payload.get('object_attributes')
     return get_pull_request_event_message(
         get_issue_user_name(payload),
@@ -101,7 +100,7 @@ def get_merge_request_event_body(payload, action):
     )
 
 def get_merge_request_open_or_updated_body(payload, action):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     pull_request = payload.get('object_attributes')
     return get_pull_request_event_message(
         get_issue_user_name(payload),
@@ -116,13 +115,13 @@ def get_merge_request_open_or_updated_body(payload, action):
     )
 
 def get_objects_assignee(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     assignee_object = payload.get('assignee')
     if assignee_object:
         return assignee_object.get('name')
 
 def get_commented_commit_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     comment = payload.get('object_attributes')
     action = u'[commented]({})'.format(comment['url'])
     return get_commits_comment_action_message(
@@ -134,7 +133,7 @@ def get_commented_commit_event_body(payload):
     )
 
 def get_commented_merge_request_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     comment = payload.get('object_attributes')
     action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/merge_requests/{}'.format(
@@ -151,7 +150,7 @@ def get_commented_merge_request_event_body(payload):
     )
 
 def get_commented_issue_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     comment = payload.get('object_attributes')
     action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/issues/{}'.format(
@@ -168,7 +167,7 @@ def get_commented_issue_event_body(payload):
     )
 
 def get_commented_snippet_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     comment = payload.get('object_attributes')
     action = u'[commented]({}) on'.format(comment['url'])
     url = u'{}/snippets/{}'.format(
@@ -185,7 +184,7 @@ def get_commented_snippet_event_body(payload):
     )
 
 def get_wiki_page_event_body(payload, action):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     return u"{} {} [Wiki Page \"{}\"]({}).".format(
         get_issue_user_name(payload),
         action,
@@ -194,7 +193,7 @@ def get_wiki_page_event_body(payload, action):
     )
 
 def get_build_hook_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     build_status = payload.get('build_status')
     if build_status == 'created':
         action = 'was created'
@@ -209,7 +208,7 @@ def get_build_hook_event_body(payload):
     )
 
 def get_pipeline_event_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     pipeline_status = payload.get('object_attributes').get('status')
     if pipeline_status == 'pending':
         action = 'was created'
@@ -224,35 +223,35 @@ def get_pipeline_event_body(payload):
     return u"Pipeline {} with build(s):\n{}.".format(action, builds_status[:-1])
 
 def get_repo_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['project']['name']
 
 def get_user_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['user_name']
 
 def get_issue_user_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['user']['name']
 
 def get_repository_homepage(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['repository']['homepage']
 
 def get_branch_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['ref'].replace('refs/heads/', '')
 
 def get_tag_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['ref'].replace('refs/tags/', '')
 
 def get_object_iid(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['object_attributes']['iid']
 
 def get_object_url(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['object_attributes']['url']
 
 EVENT_FUNCTION_MAPPER = {
@@ -281,7 +280,7 @@ EVENT_FUNCTION_MAPPER = {
 def api_gitlab_webhook(request, user_profile, client,
                        stream=REQ(default='gitlab'),
                        payload=REQ(argument_type='body')):
-    # type: (HttpRequest, UserProfile, Client, text_type, Dict[str, Any]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Text, Dict[str, Any]) -> HttpResponse
     event = get_event(request, payload)
     body = get_body_based_on_event(event)(payload)
     subject = get_subject_based_on_event(event, payload)
@@ -293,7 +292,7 @@ def get_body_based_on_event(event):
     return EVENT_FUNCTION_MAPPER[event]
 
 def get_subject_based_on_event(event, payload):
-    # type: (str, Dict[str, Any]) -> text_type
+    # type: (str, Dict[str, Any]) -> Text
     if event == 'Push Hook':
         return u"{} / {}".format(get_repo_name(payload), get_branch_name(payload))
     elif event == 'Build Hook':

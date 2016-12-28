@@ -63,6 +63,9 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
 };
 
 exports.is_current_user = function (email) {
+    if (email === null || email === undefined) {
+        return false;
+    }
     return email.toLowerCase() === page_params.email.toLowerCase();
 };
 
@@ -161,9 +164,10 @@ exports.strcmp = (function () {
         var collator = new Intl.Collator();
         return collator.compare;
     } catch (e) {
+        // continue regardless of error
     }
 
-    return function util_strcmp (a, b) {
+    return function util_strcmp(a, b) {
         return (a < b ? -1 : (a > b ? 1 : 0));
     };
 }());
@@ -224,6 +228,25 @@ exports.execute_early = function (func) {
 exports.is_all_or_everyone_mentioned = function (message_content) {
     var all_everyone_re = /(^|\s)(@\*{2}(all|everyone)\*{2})|(@(all|everyone))($|\s)/;
     return all_everyone_re.test(message_content);
+};
+
+exports.move_array_elements_to_front = function util_move_array_elements_to_front(array, selected) {
+    var i;
+    var selected_hash = {};
+    for (i = 0; i < selected.length; i += 1) {
+        selected_hash[selected[i]] = true;
+    }
+    var selected_elements = [];
+    var unselected_elements = [];
+    for (i = 0; i < array.length; i += 1) {
+        if (selected_hash[array[i]]) {
+            selected_elements.push(array[i]);
+        } else {
+            unselected_elements.push(array[i]);
+        }
+    }
+    // Add the unselected elements after the selected ones
+    return selected_elements.concat(unselected_elements);
 };
 
 return exports;

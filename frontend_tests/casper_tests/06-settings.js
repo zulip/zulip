@@ -5,6 +5,7 @@ var REALMS_HAVE_SUBDOMAINS = casper.cli.get('subdomains');
 common.start_and_log_in();
 
 var form_sel = 'form[action^="/json/settings/change"]';
+var regex_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 casper.then(function () {
     var menu_selector = '#settings-dropdown';
@@ -22,7 +23,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible("#settings-change-box", function () {
-        casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
+        casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, 'URL suggests we are on settings page');
         casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
 
         casper.test.assertNotVisible("#pw_change_controls");
@@ -82,6 +83,23 @@ casper.then(function () {
 });
 
 casper.then(function () {
+    casper.waitUntilVisible('#show_api_key_box', function () {
+        casper.test.assertExists('#download_zuliprc', '~/.zuliprc button exists');
+        casper.click('#download_zuliprc');
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#download_zuliprc[href^="data:application"]', function () {
+        casper.test.assertMatch(
+            decodeURIComponent(casper.getElementsAttribute('#download_zuliprc', 'href')),
+            regex_zuliprc,
+            'Looks like a zuliprc file'
+        );
+    });
+});
+
+casper.then(function () {
     casper.waitUntilVisible('#settings-status', function () {
         casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
     });
@@ -99,6 +117,22 @@ casper.then(function create_bot() {
 
     casper.test.info('Submiting the create bot form');
     casper.click('#create_bot_button');
+});
+
+casper.then(function () {
+    var button_sel = '.download_bot_zuliprc[data-email="1-bot@zulip.com"]';
+
+    casper.waitUntilVisible(button_sel, function () {
+        casper.click(button_sel);
+
+        casper.waitUntilVisible(button_sel + '[href^="data:application"]', function () {
+            casper.test.assertMatch(
+                decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
+                regex_zuliprc,
+                'Looks like a bot ~/.zuliprc file'
+            );
+        });
+    });
 });
 
 casper.then(function () {
@@ -222,6 +256,14 @@ casper.thenClick('a[data-code="en"]');
 casper.waitUntilVisible('#display-settings-status', function () {
     casper.test.assertSelectorHasText('#display-settings-status', 'English is now the default language');
 });
+
+if (REALMS_HAVE_SUBDOMAINS) {
+    settings_url = 'http://zulip.zulipdev.com:9981/';
+} else {
+    settings_url = 'http://zulipdev.com:9981/';
+}
+
+casper.thenOpen(settings_url);
 
 // TODO: test the "Declare Zulip Bankruptcy option"
 

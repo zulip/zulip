@@ -202,11 +202,10 @@ def main(options):
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
-    run(["tools/setup/download-zxcvbn"])
     if not os.path.isdir(EMOJI_CACHE_PATH):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
-    run(["tools/setup/emoji_dump/build_emoji"])
+    run(["tools/setup/emoji/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     if options.is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])

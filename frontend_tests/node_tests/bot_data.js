@@ -102,10 +102,16 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
         var can_admin;
 
         bot_data.add(_.extend({}, test_bot, {owner: 'owner@zulip.com'}));
-        bot_data.add(_.extend({}, test_bot, {email: 'bot2@zulip.com'}));
+        bot_data.add(_.extend({}, test_bot, {email: 'bot2@zulip.com', owner: 'owner@zulip.com'}));
+        bot_data.add(_.extend({}, test_bot, {email: 'bot3@zulip.com', owner: 'not_owner@zulip.com'}));
 
         can_admin = _.pluck(bot_data.get_editable(), 'email');
-        assert.deepEqual(['bot1@zulip.com'], can_admin);
+        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
+
+        page_params.is_admin = true;
+
+        can_admin = _.pluck(bot_data.get_editable(), 'email');
+        assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
     }());
 
 

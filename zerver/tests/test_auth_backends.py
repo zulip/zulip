@@ -4,15 +4,17 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Text
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
+from django.core.urlresolvers import reverse
 
 import jwt
 import mock
 import re
 
+from zerver.forms import HomepageForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
@@ -40,7 +42,6 @@ from social.storage.django_orm import BaseDjangoStorage
 from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
 
-from six import text_type
 from six.moves import urllib
 from six.moves.http_cookies import SimpleCookie
 import ujson
@@ -50,7 +51,7 @@ class AuthBackendTest(TestCase):
     def verify_backend(self, backend, good_args=None,
                        good_kwargs=None, bad_kwargs=None,
                        email_to_username=None):
-        # type: (Any, List[Any], Dict[str, Any], Dict[str, Any], Callable[[text_type], text_type]) -> None
+        # type: (Any, List[Any], Dict[str, Any], Dict[str, Any], Callable[[Text], Text]) -> None
         if good_args is None:
             good_args = []
         if good_kwargs is None:
@@ -365,14 +366,25 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.backend.do_auth(response=response)
             self.assertNotIn('subdomain=1', result.url)
 
+    def test_github_backend_do_auth_with_non_existing_subdomain(self):
+        # type: () -> None
+        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                        side_effect=self.do_auth):
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                self.backend.strategy.session_set('subdomain', 'test')
+                response = dict(email=self.email, name=self.name)
+                result = self.backend.do_auth(response=response)
+                self.assertIn('subdomain=1', result.url)
+
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
         with mock.patch('social.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+                self.backend.strategy.session_set('subdomain', 'zulip')
                 response = dict(email=self.email, name=self.name)
                 result = self.backend.do_auth(response=response)
-                self.assertIn('subdomain=1', result.url)
+                self.assertEqual('http://zulip.testserver/accounts/login/subdomain/', result.url)
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
@@ -491,6 +503,11 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('Your email address does not correspond to any '
                                     'existing organization.', result)
 
+    def test_login_url(self):
+        # type: () -> None
+        result = self.client_get('/accounts/login/social/github')
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+
 class ResponseMock(object):
     def __init__(self, status_code, data):
         # type: (int, Any) -> None
@@ -514,7 +531,7 @@ class GoogleOAuthTest(ZulipTestCase):
             url += "?subdomain=" + subdomain
 
         result = self.client_get(url)
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         if 'google' not in result.url:
             return result
 
@@ -549,7 +566,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         # type: () -> None
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/google/')
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             parsed_url = urllib.parse.urlparse(result.url)
             subdomain = urllib.parse.parse_qs(parsed_url.query)['subdomain']
             self.assertEqual(subdomain, ['zulip'])
@@ -568,11 +585,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(data['email'], 'hamlet@zulip.com')
         self.assertEqual(data['name'], 'Full Name')
         self.assertEqual(data['subdomain'], 'zulip')
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
-        self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+        self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
     def test_log_into_subdomain(self):
         # type: () -> None
@@ -583,7 +600,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -595,7 +612,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                          value="hamlet@zulip.com")])
         account_response = ResponseMock(200, account_data)
         result = self.google_oauth2_test(token_response, account_response, 'acme')
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         self.assertIn('subdomain=1', result.url)
 
     def test_user_cannot_log_into_wrong_subdomain(self):
@@ -607,20 +624,20 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 400)
+            self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_signature_is_bad(self):
         # type: () -> None
         self.client.cookies = SimpleCookie({'subdomain.signature': 'invlaid'})
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 400)
+            self.assertEqual(result.status_code, 400)
 
     def test_log_into_subdomain_when_state_is_not_passed(self):
         # type: () -> None
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
-            self.assertEquals(result.status_code, 400)
+            self.assertEqual(result.status_code, 400)
 
     def test_google_oauth2_registration(self):
         # type: () -> None
@@ -641,11 +658,11 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             self.assertEqual(data['email'], email)
             self.assertEqual(data['name'], 'Full Name')
             self.assertEqual(data['subdomain'], 'zulip')
-            self.assertEquals(result.status_code, 302)
+            self.assertEqual(result.status_code, 302)
             parsed_url = urllib.parse.urlparse(result.url)
             uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                      parsed_url.path)
-            self.assertEquals(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+            self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
 
             result = self.client_get(result.url)
             result = self.client_get(result.url)  # Call the confirmation url.
@@ -657,14 +674,14 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                                       {'full_name': name_match.group("name"),
                                        'key': key_match.group("key"),
                                        'from_confirmation': "1"})
-            self.assertEquals(result.status_code, 200)
+            self.assertEqual(result.status_code, 200)
             result = self.client_post('/accounts/register/',
                                       {'full_name': "New User",
                                        'password': 'test_password',
                                        'key': key_match.group("key"),
                                        'terms': True})
-            self.assertEquals(result.status_code, 302)
-            self.assertEquals(result.url, "http://zulip.testserver/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "http://zulip.testserver/")
             user_profile = get_user_profile_by_email(email)
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
@@ -702,14 +719,14 @@ class GoogleLoginTest(GoogleOAuthTest):
                                   {'full_name': name_match.group("name"),
                                    'key': key_match.group("key"),
                                    'from_confirmation': "1"})
-        self.assertEquals(result.status_code, 200)
+        self.assertEqual(result.status_code, 200)
         result = self.client_post('/accounts/register/',
                                   {'full_name': "New User",
                                    'password': 'test_password',
                                    'key': key_match.group("key"),
                                    'terms': True})
-        self.assertEquals(result.status_code, 302)
-        self.assertEquals(result.url, "http://testserver/")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "http://testserver/")
 
     def test_google_oauth2_wrong_subdomain(self):
         # type: () -> None
@@ -727,18 +744,18 @@ class GoogleLoginTest(GoogleOAuthTest):
         token_response = ResponseMock(400, {})
         with mock.patch("logging.warning") as m:
             result = self.google_oauth2_test(token_response, None)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          "User error converting Google oauth2 login to token: Response text")
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         "User error converting Google oauth2 login to token: Response text")
 
     def test_google_oauth2_500_token_response(self):
         # type: () -> None
         token_response = ResponseMock(500, {})
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, None)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          "Could not convert google oauth2 code to access_token: Response text")
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         "Could not convert google oauth2 code to access_token: Response text")
 
     def test_google_oauth2_400_account_response(self):
         # type: () -> None
@@ -746,9 +763,9 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(400, {})
         with mock.patch("logging.warning") as m:
             result = self.google_oauth2_test(token_response, account_response)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          "Google login failed making info API call: Response text")
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         "Google login failed making info API call: Response text")
 
     def test_google_oauth2_500_account_response(self):
         # type: () -> None
@@ -756,9 +773,9 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(500, {})
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, account_response)
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          "Google login failed making API call: Response text")
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         "Google login failed making API call: Response text")
 
     def test_google_oauth2_no_fullname(self):
         # type: () -> None
@@ -780,47 +797,47 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         with mock.patch("logging.error") as m:
             result = self.google_oauth2_test(token_response, account_response)
-        self.assertEquals(result.status_code, 400)
+        self.assertEqual(result.status_code, 400)
         self.assertIn("Google oauth2 account email not found:", m.call_args_list[0][0][0])
 
     def test_google_oauth2_error_access_denied(self):
         # type: () -> None
         result = self.client_get("/accounts/login/google/done/?error=access_denied")
-        self.assertEquals(result.status_code, 302)
+        self.assertEqual(result.status_code, 302)
         path = urllib.parse.urlparse(result.url).path
-        self.assertEquals(path, "/")
+        self.assertEqual(path, "/")
 
     def test_google_oauth2_error_other(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/?error=some_other_error")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          "Error from google oauth2 login: some_other_error")
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         "Error from google oauth2 login: some_other_error")
 
     def test_google_oauth2_missing_csrf(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          'Missing Google oauth2 CSRF state')
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         'Missing Google oauth2 CSRF state')
 
     def test_google_oauth2_csrf_malformed(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/?state=badstate")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          'Missing Google oauth2 CSRF state')
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         'Missing Google oauth2 CSRF state')
 
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
             result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:")
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(m.call_args_list[0][0][0],
-                          'Google oauth2 CSRF error')
+        self.assertEqual(result.status_code, 400)
+        self.assertEqual(m.call_args_list[0][0][0],
+                         'Google oauth2 CSRF error')
 
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
@@ -982,7 +999,7 @@ class TestDevAuthBackend(ZulipTestCase):
         email = 'hamlet@zulip.com'
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
-            with self.assertRaisesRegexp(Exception, 'Direct login not supported.'):
+            with self.assertRaisesRegex(Exception, 'Direct login not supported.'):
                 try:
                     with mock.patch('django.core.handlers.exception.logger'):
                         self.client_post('/accounts/login/local/', data)
@@ -994,7 +1011,7 @@ class TestDevAuthBackend(ZulipTestCase):
         # type: () -> None
         email = 'nonexisting@zulip.com'
         data = {'direct_email': email}
-        with self.assertRaisesRegexp(Exception, 'User cannot login'):
+        with self.assertRaisesRegex(Exception, 'User cannot login'):
             try:
                 with mock.patch('django.core.handlers.exception.logger'):
                     self.client_post('/accounts/login/local/', data)
@@ -1246,8 +1263,8 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            with self.assertRaisesRegexp(self.mock_ldap.INVALID_CREDENTIALS,
-                                         'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
+            with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
+                                        'uid=hamlet,ou=users,dc=zulip,dc=com:wrong'):
                 self.backend.authenticate('hamlet@zulip.com', 'wrong')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1262,8 +1279,8 @@ class TestLDAP(ZulipTestCase):
                 LDAP_APPEND_DOMAIN='zulip.com',
                 AUTH_LDAP_BIND_PASSWORD='',
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
-            with self.assertRaisesRegexp(self.mock_ldap.INVALID_CREDENTIALS,
-                                         'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
+            with self.assertRaisesRegex(self.mock_ldap.INVALID_CREDENTIALS,
+                                        'uid=nonexistent,ou=users,dc=zulip,dc=com:testing'):
                 self.backend.authenticate('nonexistent@zulip.com', 'testing')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1332,7 +1349,7 @@ class TestLDAP(ZulipTestCase):
             email = 'nonexisting@zulip.com'
             realm = get_realm_by_string_id('zulip')
             do_deactivate_realm(realm)
-            with self.assertRaisesRegexp(Exception, 'Realm has been deactivated'):
+            with self.assertRaisesRegex(Exception, 'Realm has been deactivated'):
                 backend.get_or_create_user(email, _LDAPUser())
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
@@ -1340,7 +1357,7 @@ class TestLDAP(ZulipTestCase):
         # type: () -> None
         backend = self.backend
         email = 'hamlet@zulip.com'
-        with self.assertRaisesRegexp(Exception, 'Username does not match LDAP domain.'):
+        with self.assertRaisesRegex(Exception, 'Username does not match LDAP domain.'):
             with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
                 backend.django_to_ldap_username(email)
 
@@ -1451,7 +1468,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 return True
 
         with self.settings(ONLY_SSO=True):
-            with mock.patch('zerver.views.auth.create_homepage_form', return_value=Form()):
+            with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 0)
                 result = maybe_send_to_registration(request, 'hamlet@zulip.com')
                 self.assertEqual(result.status_code, 302)
@@ -1459,6 +1476,10 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 confirmation_key = confirmation.confirmation_key
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
+
+        result = self.client_get(result.url)
+        self.assert_in_response('action="/accounts/register/"', result)
+        self.assert_in_response('value="{0}" name="key"'.format(confirmation_key), result)
 
     def test_sso_only_when_preregistration_user_exists(self):
         # type: () -> None
@@ -1481,7 +1502,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         user.save()
 
         with self.settings(ONLY_SSO=True):
-            with mock.patch('zerver.views.auth.create_homepage_form', return_value=Form()):
+            with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
                 result = maybe_send_to_registration(request, email)
                 self.assertEqual(result.status_code, 302)

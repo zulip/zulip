@@ -7,7 +7,7 @@
 <body>
 <table width="80%" style="align:center; max-width:800px" align="center">
 <tr><td>
-<a href="{{ realm_uri }}/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="Zulip" src="{{ realm_uri }}/static/images/landing-page/zulip-header.png" /></a>
+<a href="{{ realm_uri }}/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="{{ _('Zulip') }}" src="{{ realm_uri }}/static/images/landing-page/zulip-header.png" /></a>
 
 <h3 style="font-family:Arial; font-size:30px; margin: 5px 0px; color:#555">we love our users</h3>
 </td></tr>
@@ -30,7 +30,7 @@
 
     <li>Are you a keyboard power user? Learn about <b>keyboard shortcuts</b> in the Keyboard Shortcuts tab under the gear icon. (Or press '?')</li>
 
-    <li><b>Emoji</b>. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="{{ realm_uri }}/static/third/gemoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
+    <li><b>Emoji</b>. Because <pre style="display:inline; color:#D14; padding:2px 4px; background-color:#f5f5f5; border-radius:4px; border:1px solid rgba(0,0,0,0.15); font-family:Monaco,Menlo,Consolas,'Courier New',monospace">:ramen:</pre> means <img src="{{ realm_uri }}/static/generated/emoji/images/emoji/ramen.png" style="max-height:20px; height:20px;" height="20px" />.</li>
 </ol>
 
 {% if verbose_support_offers %}

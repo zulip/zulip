@@ -1,10 +1,9 @@
 from __future__ import absolute_import
-from typing import Any, Callable, Iterable, Tuple
+from typing import Any, Callable, Iterable, Tuple, Text
 
 from collections import defaultdict
 import datetime
 import six
-from six import text_type
 
 from django.db.models import Q, QuerySet
 from django.template import loader
@@ -45,8 +44,8 @@ def gather_hot_conversations(user_profile, stream_messages):
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
-    conversation_length = defaultdict(int) # type: Dict[Tuple[int, text_type], int]
-    conversation_diversity = defaultdict(set) # type: Dict[Tuple[int, text_type], Set[text_type]]
+    conversation_length = defaultdict(int) # type: Dict[Tuple[int, Text], int]
+    conversation_diversity = defaultdict(set) # type: Dict[Tuple[int, Text], Set[Text]]
     for user_message in stream_messages:
         if not user_message.message.sent_by_human():
             # Don't include automated messages in the count.
@@ -88,7 +87,7 @@ def gather_hot_conversations(user_profile, stream_messages):
 
         # We'll display up to 2 messages from the conversation.
         first_few_messages = [user_message.message for user_message in
-                            stream_messages.filter(
+                              stream_messages.filter(
                                 message__recipient__type_id=stream_id,
                                 message__subject=subject)[:2]]
 
@@ -101,7 +100,7 @@ def gather_hot_conversations(user_profile, stream_messages):
     return hot_conversation_render_payloads
 
 def gather_new_users(user_profile, threshold):
-    # type: (UserProfile, datetime.datetime) -> Tuple[int, List[text_type]]
+    # type: (UserProfile, datetime.datetime) -> Tuple[int, List[Text]]
     # Gather information on users in the realm who have recently
     # joined.
     if user_profile.realm.is_zephyr_mirror_realm:
@@ -115,7 +114,7 @@ def gather_new_users(user_profile, threshold):
     return len(user_names), user_names
 
 def gather_new_streams(user_profile, threshold):
-    # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[text_type]]]
+    # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[Text]]]
     if user_profile.realm.is_zephyr_mirror_realm:
         new_streams = [] # type: List[Stream]
     else:
@@ -136,7 +135,7 @@ def gather_new_streams(user_profile, threshold):
     return len(new_streams), {"html": streams_html, "plain": streams_plain}
 
 def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
-    # type: (text_type, text_type, int, int) -> bool
+    # type: (Text, Text, int, int) -> bool
     if unread_pms or hot_conversations:
         # If you have any unread traffic, good enough.
         return True
@@ -147,7 +146,7 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
     return False
 
 def send_digest_email(user_profile, html_content, text_content):
-    # type: (UserProfile, text_type, text_type) -> None
+    # type: (UserProfile, Text, Text) -> None
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
     subject = "While you've been gone - Zulip"
     sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}

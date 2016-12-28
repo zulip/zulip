@@ -812,6 +812,27 @@ td.pointer {
     line-height: 17px;
 }
 
+.recipient_row_date {
+    position: absolute;
+    right: 0;
+    top: 0;
+
+    color: #888;
+    font-size: 0.8em;
+    font-weight: 600;
+    padding: 3px 10px 2px 10px;
+    height: 17px;
+    line-height: 17px;
+}
+
+.recipient_row_date .hide-date {
+    display: none;
+}
+
+.floating_recipient .recipient_row_date .hide-date {
+    display: block;
+}
+
 .summary_row .message_header {
     padding: 5px 0px 4px 5px;
 }
@@ -940,6 +961,7 @@ just a temporary hack.
     font-size: 14px;
     height: 17px;
     line-height: 17px;
+    border-left-color: #444;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -955,7 +977,7 @@ just a temporary hack.
     background-color: #feffe0;
 }
 
-.message_header_private_message .message-header-contents {
+.floating_recipient .message-header-contents {
     border-right: 1px solid #e2e2e2;
 }
 
@@ -2091,6 +2113,24 @@ div.floating_recipient {
     float: none;
 }
 
+#stream-checkboxes {
+    margin-top: 10px;
+    display: none;
+}
+
+#stream-checkboxes .checkbox {
+    display: block;
+}
+
+#stream-checkboxes .checkbox input[type=checkbox] {
+    margin: 5px 0px;
+    float: none;
+}
+
+#copy-from-stream-expand-collapse {
+    cursor: pointer;
+}
+
 .streams_popover .sp-container {
     background: white;
     cursor: pointer;
@@ -2368,6 +2408,7 @@ button.topic_edit_cancel {
 #message_edit_form .edit-controls {
     margin-left: 35px; /* Match .message_content padding less 7px textarea padding and border */
     margin-right: -7px;
+    margin-top: 10px;
 }
 #message_edit_form textarea {
     width: 100%;
@@ -2378,6 +2419,19 @@ button.topic_edit_cancel {
 }
 #message_edit_form .control-group.no-margin {
     margin-bottom: 0px;
+}
+
+#message_edit_form a.message-control-button {
+    display: inline;
+    color: #777;
+    text-decoration: none;
+    font-size: 12px;
+    width: 12px;
+    height: 14px;
+    text-align: center;
+    float: right;
+    padding-left: 5px;
+    padding-top: 3px;
 }
 
 #topic_edit_form {
@@ -2471,7 +2525,8 @@ button.topic_edit_cancel {
     margin-right: 25px;
 }
 
-.deactivated_user {
+.deactivated_user .user_name,
+.deactivated_user .email {
     text-decoration: line-through;
 }
 
@@ -2482,4 +2537,18 @@ button.topic_edit_cancel {
 .user-list-filter ,
 .add-user-list-filter {
     width: 80%;
+}
+
+/* embed */
+.message_embed {
+    border-left: 4px solid #ccc;
+    padding-left: 5px;
+    display: block;
+    margin-bottom: 10px;
+}
+.message_embed_title {
+    font-weight: bold;
+}
+.message_embed_image {
+    max-width: 80px;
 }

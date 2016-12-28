@@ -7,6 +7,7 @@ from unittest import skip
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -17,7 +18,6 @@ from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
 from six.moves import urllib
-from six import text_type
 from PIL import Image
 
 from boto.s3.connection import S3Connection
@@ -36,9 +36,7 @@ from django.utils import timezone
 
 from moto import mock_s3
 
-TEST_AVATAR_DIR = os.path.join(os.path.dirname(__file__), 'images')
-
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, TypeVar, Text
 
 def destroy_uploads():
     # type: () -> None
@@ -66,19 +64,17 @@ class FileUploadTest(ZulipTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
 
         # Download file via API
         self.client_post('/accounts/logout/')
         response = self.client_get(uri, **auth_headers)
         data = b"".join(response.streaming_content)
-        self.assertEquals(b"zulip!", data)
+        self.assertEqual(b"zulip!", data)
 
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
-        response = self.client_get(uri)
-        data = b"".join(response.streaming_content)
-        self.assertEquals(b"zulip!", data)
+        self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
     def test_file_too_big_failure(self):
         # type: () -> None
@@ -123,7 +119,7 @@ class FileUploadTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         response = self.client_get('/user_uploads/unk/nonexistent_file')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
         self.assertIn('File not found', str(response.content))
 
     def test_serve_s3_error_handling(self):
@@ -138,7 +134,7 @@ class FileUploadTest(ZulipTestCase):
         # nonexistent_file
         with use_s3(), getting_realm_id(None):
             response = self.client_get('/user_uploads/unk/nonexistent_file')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
         self.assertIn('File not found', str(response.content))
 
         # invalid realm of 999999 (for non-zulip.com)
@@ -148,7 +144,7 @@ class FileUploadTest(ZulipTestCase):
 
         with use_s3(), getting_realm_id(999999):
             response = self.client_get('/user_uploads/unk/whatever')
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
@@ -169,17 +165,15 @@ class FileUploadTest(ZulipTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
 
         # In the future, local file requests will follow the same style as S3
         # requests; they will be first authenthicated and redirected
-        response = self.client_get(uri)
-        data = b"".join(response.streaming_content)
-        self.assertEquals(b"zulip!", data)
+        self.assert_url_serves_contents_of_file(uri, b"zulip!")
 
         # check if DB has attachment marked as unclaimed
         entry = Attachment.objects.get(file_name='zulip.txt')
-        self.assertEquals(entry.is_claimed(), False)
+        self.assertEqual(entry.is_claimed(), False)
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -244,7 +238,7 @@ class FileUploadTest(ZulipTestCase):
         body = "Second message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
 
-        self.assertEquals(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
     def test_check_attachment_reference_update(self):
         # type: () -> None
@@ -278,7 +272,7 @@ class FileUploadTest(ZulipTestCase):
 
         new_body = ("[f3.txt](http://localhost:9991/user_uploads/" + f3_path_id + ")"
                     "[f2.txt](http://localhost:9991/user_uploads/" + f2_path_id + ")")
-        result = self.client_post("/json/update_message", {
+        result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': new_body
         })
@@ -295,7 +289,7 @@ class FileUploadTest(ZulipTestCase):
 
         # Delete all the attachments from the message
         new_body = "(deleted)"
-        result = self.client_post("/json/update_message", {
+        result = self.client_patch("/json/messages/" + str(msg_id), {
             'message_id': msg_id,
             'content': new_body
         })
@@ -335,10 +329,9 @@ class AvatarTest(ZulipTestCase):
         Attempting to upload two files should fail.
         """
         self.login("hamlet@zulip.com")
-        fp1 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
-        fp2 = open(os.path.join(TEST_AVATAR_DIR, 'img.png'), 'rb')
-
-        result = self.client_post("/json/set_avatar", {'f1': fp1, 'f2': fp2})
+        with get_test_image_file('img.png') as fp1, \
+                get_test_image_file('img.png') as fp2:
+            result = self.client_put_multipart("/json/users/me/avatar", {'f1': fp1, 'f2': fp2})
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     def test_no_file_upload_failure(self):
@@ -348,7 +341,7 @@ class AvatarTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
 
-        result = self.client_post("/json/set_avatar")
+        result = self.client_put_multipart("/json/users/me/avatar")
         self.assert_json_error(result, "You must upload exactly one avatar.")
 
     correct_files = [
@@ -402,32 +395,30 @@ class AvatarTest(ZulipTestCase):
     def test_valid_avatars(self):
         # type: () -> None
         """
-        A call to /json/set_avatar with a valid file should return a url and actually create an avatar.
+        A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
         """
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
             self.login("hamlet@zulip.com")
-            fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
+            with get_test_image_file(fname) as fp:
+                result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
-            result = self.client_post("/json/set_avatar", {'file': fp})
             self.assert_json_success(result)
             json = ujson.loads(result.content)
             self.assertIn("avatar_url", json)
             url = json["avatar_url"]
             base = '/user_avatars/'
-            self.assertEquals(base, url[:len(base)])
+            self.assertEqual(base, url[:len(base)])
 
             if rfname is not None:
                 response = self.client_get(url)
                 data = b"".join(response.streaming_content)
-                self.assertEquals(Image.open(io.BytesIO(data)).size, (100, 100))
+                self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
             # Verify that the medium-size avatar was created
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
-            medium_avatar_url = avatar_url(user_profile, medium=True)
-            medium_avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
-                                                   medium_avatar_url.split("/")[-1].split("?")[0])
+            medium_avatar_disk_path = avatar_disk_path(user_profile, medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
             # Confirm that ensure_medium_avatar_url works to recreate
@@ -440,15 +431,35 @@ class AvatarTest(ZulipTestCase):
     def test_invalid_avatars(self):
         # type: () -> None
         """
-        A call to /json/set_avatar with an invalid file should fail.
+        A PUT request to /json/users/me/avatar with an invalid file should fail.
         """
         for fname in self.corrupt_files:
             # with self.subTest(fname=fname):
             self.login("hamlet@zulip.com")
-            fp = open(os.path.join(TEST_AVATAR_DIR, fname), 'rb')
+            with get_test_image_file(fname) as fp:
+                result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
-            result = self.client_post("/json/set_avatar", {'file': fp})
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+
+    def test_delete_avatar(self):
+        # type: () -> None
+        """
+        A DELETE request to /json/users/me/avatar should delete the user avatar and return gravatar URL
+        """
+        self.login("hamlet@zulip.com")
+        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
+        hamlet.save()
+
+        result = self.client_delete("/json/users/me/avatar")
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("avatar_url", json)
+        self.assertEqual(json["avatar_url"], avatar_url(user_profile))
+
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     def tearDown(self):
         # type: () -> None
@@ -463,7 +474,7 @@ class LocalStorageTest(ZulipTestCase):
         uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
         self.assertTrue(os.path.isfile(file_path))
@@ -512,9 +523,9 @@ class S3Test(ZulipTestCase):
         uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEquals(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -553,12 +564,12 @@ class S3Test(ZulipTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         base = '/user_uploads/'
-        self.assertEquals(base, uri[:len(base)])
+        self.assertEqual(base, uri[:len(base)])
 
         response = self.client_get(uri)
         redirect_url = response['Location']
 
-        self.assertEquals(b"zulip!", urllib.request.urlopen(redirect_url).read().strip()) # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
+        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip()) # type: ignore # six.moves.urllib.request.urlopen is not defined in typeshed
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -577,13 +588,13 @@ class UploadTitleTests(TestCase):
 class SanitizeNameTests(TestCase):
     def test_file_name(self):
         # type: () -> None
-        self.assertEquals(sanitize_name(u'test.txt'), u'test.txt')
-        self.assertEquals(sanitize_name(u'.hidden'), u'.hidden')
-        self.assertEquals(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
-        self.assertEquals(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
-        self.assertEquals(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
-        self.assertEquals(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
-        self.assertEquals(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
-        self.assertEquals(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
-        self.assertEquals(sanitize_name(u'테스트.txt'), u'테스트.txt')
-        self.assertEquals(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+        self.assertEqual(sanitize_name(u'test.txt'), u'test.txt')
+        self.assertEqual(sanitize_name(u'.hidden'), u'.hidden')
+        self.assertEqual(sanitize_name(u'.hidden.txt'), u'.hidden.txt')
+        self.assertEqual(sanitize_name(u'tarball.tar.gz'), u'tarball.tar.gz')
+        self.assertEqual(sanitize_name(u'.hidden_tarball.tar.gz'), u'.hidden_tarball.tar.gz')
+        self.assertEqual(sanitize_name(u'Testing{}*&*#().ta&&%$##&&r.gz'), u'Testing.tar.gz')
+        self.assertEqual(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
+        self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
+        self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
+        self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')

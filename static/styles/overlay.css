@@ -81,7 +81,7 @@
     transition: all 0.2s ease;
 }
 
-#overlay .exit {
+#overlay.show .exit {
     pointer-events: auto;
     opacity: 1;
 }

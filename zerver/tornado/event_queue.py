@@ -573,10 +573,19 @@ def request_event_queue(user_profile, user_client, apply_markdown,
                'lifespan_secs': queue_lifespan_secs}
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
-        resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
-                                   auth=requests.auth.HTTPBasicAuth(
-                                       user_profile.email, user_profile.api_key),
-                                   params=req)
+
+        try:
+            resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
+                                       auth=requests.auth.HTTPBasicAuth(
+                                           user_profile.email, user_profile.api_key),
+                                       params=req)
+        except requests.adapters.ConnectionError:
+            logging.error('Tornado server does not seem to be running, check %s '
+                          'and %s for more information.' %
+                          (settings.ERROR_FILE_LOG_PATH, "tornado.log"))
+            raise requests.adapters.ConnectionError(
+                "Django cannot connect to Tornado server (%s); try restarting" %
+                (settings.TORNADO_SERVER))
 
         resp.raise_for_status()
 
@@ -746,6 +755,8 @@ def process_message_event(event_template, users):
             message_dict = message_dict.copy()
             message_dict["invite_only_stream"] = True
 
+        if flags is not None:
+            message_dict['is_mentioned'] = 'mentioned' in flags
         user_event = dict(type='message', message=message_dict, flags=flags) # type: Dict[str, Any]
         if extra_data is not None:
             user_event.update(extra_data)

@@ -41,7 +41,7 @@ var _ = global._;
 
     arr = [{x: 10}, {x: 20}, {x:30}];
 
-    function compare (a, b) {
+    function compare(a, b) {
         return a.x < b;
     }
 
@@ -167,5 +167,61 @@ var _ = global._;
 
     for (i=0; i<messages_without_everyone_mentions.length; i += 1) {
         assert(!util.is_all_or_everyone_mentioned(messages_without_everyone_mentions[i]));
+    }
+}());
+
+(function test_move_array_elements_to_front() {
+    var strings = [
+        'string1',
+        'string3',
+        'string2',
+        'string4',
+    ];
+    var strings_selection = [
+        'string4',
+        'string1',
+    ];
+    var strings_expected = [
+        'string1',
+        'string4',
+        'string3',
+        'string2',
+    ];
+    var strings_no_selection = util.move_array_elements_to_front(strings, []);
+    var strings_no_array = util.move_array_elements_to_front([], strings_selection);
+    var strings_actual = util.move_array_elements_to_front(strings, strings_selection);
+    var emails = [
+        'test@zulip.com',
+        'test@test.com',
+        'test@localhost',
+        'test@invalid@email',
+        'something@zulip.com',
+    ];
+    var emails_selection = [
+        'test@test.com',
+        'test@localhost',
+        'test@invalid@email',
+    ];
+    var emails_expected = [
+        'test@test.com',
+        'test@localhost',
+        'test@invalid@email',
+        'test@zulip.com',
+        'something@zulip.com',
+    ];
+    var emails_actual = util.move_array_elements_to_front(emails, emails_selection);
+    var i;
+    assert(strings_no_selection.length === strings.length);
+    for (i = 0; i < strings_no_selection.length; i += 1) {
+        assert(strings_no_selection[i] === strings[i]);
+    }
+    assert(strings_no_array.length === 0);
+    assert(strings_actual.length === strings_expected.length);
+    for (i = 0; i < strings_actual.length; i += 1) {
+        assert(strings_actual[i] === strings_expected[i]);
+    }
+    assert(emails_actual.length === emails_expected.length);
+    for (i = 0; i < emails_actual.length; i += 1) {
+        assert(emails_actual[i] === emails_expected[i]);
     }
 }());

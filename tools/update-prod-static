@@ -18,7 +18,7 @@ from scripts.lib.node_cache import setup_node_modules
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
-                  help='a previous deploy from which to reuse files if possible')
+                    help='a previous deploy from which to reuse files if possible')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 
@@ -37,11 +37,7 @@ subprocess.check_call(['./tools/minify-js']
                       stdout=fp, stderr=fp)
 
 # Build emoji
-subprocess.check_call(['./tools/setup/emoji_dump/build_emoji'],
-                      stdout=fp, stderr=fp)
-
-# Download and include zxcvbn.js
-subprocess.check_call(['bash', '-ex', 'tools/setup/download-zxcvbn'],
+subprocess.check_call(['./tools/setup/emoji/build_emoji'],
                       stdout=fp, stderr=fp)
 
 # Collect the files that we're going to serve.

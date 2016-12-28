@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from zerver.forms import PasswordResetForm
-from zerver.models import UserProfile, get_user_profile_by_email, get_realm
+from zerver.models import UserProfile, get_user_profile_by_email, get_realm_by_string_id
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives
 
@@ -35,7 +35,7 @@ class Command(BaseCommand):
         if options["to"]:
             users = [get_user_profile_by_email(options["to"])]
         elif options["realm"]:
-            realm = get_realm(options["realm"])
+            realm = get_realm_by_string_id(options["realm"])
             users = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
         elif options["server"] == "YES":

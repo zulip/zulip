@@ -238,10 +238,10 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
 };
 
 $(function () {
-    $(document).on('peer_subscribe.zulip', function (e) {
+    $(document).on('peer_subscribe.zulip', function () {
         exports.update_faded_users();
     });
-    $(document).on('peer_unsubscribe.zulip', function (e) {
+    $(document).on('peer_unsubscribe.zulip', function () {
         exports.update_faded_users();
     });
 });
@@ -250,3 +250,7 @@ $(function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = compose_fade;
+}

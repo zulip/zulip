@@ -123,3 +123,7 @@ exports.maybe_scroll_to_selected = function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = navigate;
+}

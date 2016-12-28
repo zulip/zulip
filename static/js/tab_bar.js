@@ -37,7 +37,6 @@ function make_tab_data() {
     if (narrow.active() && narrow.operators().length > 0) {
         var stream;
         var ops = narrow.operators();
-        var hash = hashchange.operators_to_hash(ops);
         // Second breadcrumb item
         var hashed = hashchange.operators_to_hash(ops.slice(0, 1));
         if (filter.has_operator("stream")) {
@@ -150,10 +149,10 @@ function build_tab_bar() {
 }
 
 $(function () {
-    $(document).on('narrow_activated.zulip', function (event) {
+    $(document).on('narrow_activated.zulip', function () {
         build_tab_bar();
     });
-    $(document).on('narrow_deactivated.zulip', function (event) {
+    $(document).on('narrow_deactivated.zulip', function () {
         build_tab_bar();
     });
 
@@ -163,3 +162,7 @@ $(function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = tab_bar;
+}

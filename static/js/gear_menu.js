@@ -46,19 +46,6 @@ exports.initialize = function () {
         }
     });
 
-    var subs_link = $('#gear-menu a[href="#subscriptions"]');
-
-    // If the streams page is shown by clicking directly on the "Streams"
-    // link (in the gear menu), then focus the new stream textbox.
-    subs_link.on('click', function (e) {
-        $(document).one('subs_page_loaded.zulip', function (e) {
-            $('#create_or_filter_stream_row input[type="text"]').focus().select();
-        });
-    });
-
-    // Whenever the streams page comes up (from anywhere), populate it.
-    subs_link.on('shown', subs.setup_page);
-
     // The admin and settings pages are generated client-side through
     // templates.
 
@@ -71,3 +58,7 @@ exports.initialize = function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = gear_menu;
+}

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
+from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class SemaphoreHookTests(WebhookTestCase):
@@ -27,5 +27,5 @@ class SemaphoreHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data("semaphore", fixture_name, file_type="json")

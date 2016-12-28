@@ -8,7 +8,7 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
-function now () { return new XDate(); }
+function now() { return new XDate(); }
 
 // Given an XDate object 'time', return a two-element list containing
 //   - a string for the current human-formatted version
@@ -56,7 +56,7 @@ $(function () {
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---
-function maybe_add_update_list_entry (needs_update, id, time, time_above) {
+function maybe_add_update_list_entry(needs_update, id, time, time_above) {
     if (needs_update) {
         if (time_above !== undefined) {
             update_list.push([id, time, time_above]);
@@ -158,3 +158,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = timerender;
+}

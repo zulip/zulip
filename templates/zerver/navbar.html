@@ -48,63 +48,63 @@
                   view is a Bootstrap Nav tab, even though we don't show the tab
                   anymore
                   #}
-                  <li style="display:none;"><a href="#home" data-toggle="tab"></a></li>
-                  <li title="Manage Streams">
-                    <a href="#subscriptions" data-toggle="tab">
+                  <li class="invisible" style="display:none;"><a href="#home" data-toggle="tab"></a></li>
+                  <li title="{{ _('Manage Streams') }}">
+                    <a href="#subscriptions">
                       <i class="icon-vector-exchange"></i> {{ _('Manage Streams') }}
                     </a>
                   </li>
-                  <li title="Settings">
+                  <li title="{{ _('Settings') }}">
                     <a href="#settings" data-toggle="tab">
                       <i class="icon-vector-wrench"></i> {{ _('Settings') }}
                     </a>
                   </li>
-                  <li title="Keyboard shortcuts">
+                  <li title="{{ _('Keyboard shortcuts') }}">
                     <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
                       <i class="icon-vector-question-sign"></i> {{ _('Keyboard shortcuts') }}
                     </a>
                   </li>
-                  <li title="Message formatting">
+                  <li title="{{ _('Message formatting') }}">
                     <a href="#markdown-help" role="button" data-toggle="modal">
                       <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
                     </a>
                   </li>
-                  <li title="Search help">
+                  <li title="{{ _('Search help') }}">
                     <a href="#search-operators" role="button" data-toggle="modal">
                       <i class="icon-vector-search"></i> {{ _('Search help') }}
                     </a>
                   </li>
                   <li class="divider"></li>
-                  <li title="Desktop & mobile apps">
+                  <li title="{{ _('Desktop & mobile apps') }}">
                     <a href="/apps" target="_blank" role="button">
                       <i class="icon-vector-desktop"></i> {{ _('Desktop & mobile apps') }}
                     </a>
                   </li>
-                  <li title="Integrations">
+                  <li title="{{ _('Integrations') }}">
                     <a href="/integrations" target="_blank" role="button">
                       <i class="icon-vector-github"></i> {{ _('Integrations') }}
                     </a>
                   </li>
-                  <li title="API documentation">
+                  <li title="{{ _('API documentation') }}">
                     <a href="/api" target="_blank" role="button">
                       <i class="icon-vector-sitemap"></i> {{ _('API documentation') }}
                     </a>
                   </li>
                   <li class="divider"></li>
-                  <li title="Administration" class="admin-menu-item">
+                  <li title="{{ _('Administration') }}" class="admin-menu-item">
                     <a href="#administration" role="button" data-toggle="tab">
                       <i class="icon-vector-bolt"></i> {{ _('Administration') }}
                     </a>
                   </li>
                   {% if show_invites %}
-                  <li title="Invite more users to {{product_name}}">
+                  <li title="{% trans %}Invite more users to {{product_name}}.{% endtrans %}}">
                     <a href="#invite-user" role="button" data-toggle="modal">
                       <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
                     </a>
                   </li>
                   {% endif %}
                   {% if enable_feedback %}
-                  <li title="Feedback">
+                  <li title="{{ _('Feedback') }}">
                     <a href="#feedback" class="feedback">
                       <i class="icon-vector-comment"></i> {{ _('Feedback') }}
                     </a>
@@ -112,19 +112,19 @@
                   {% endif %}
                   <li class="divider"></li>
                   {% if show_webathena %}
-                  <li title="Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena" id="webathena_login_menu">
+                  <li title="{% trans %}Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login">
                       <i class="icon-vector-bolt"></i>{{ _('Link with Webathena') }}
                     </a>
                   </li>
                   {% endif %}
-                  <li title="Log out">
+                  <li title="{{ _('Log out') }}">
                     <a href="#logout" class="logout_button">
                       <i class="icon-vector-off"></i> {{ _('Log out') }}
                     </a>
                   </li>
                   {% if show_debug %}
-                  <li title="Debug">
+                  <li title="{{ _('Debug') }}">
                     <a href="#debug" data-toggle="tab">
                       <i class="icon-vector-barcode"></i> {{ _('Debug') }}
                     </a>

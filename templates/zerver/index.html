@@ -14,7 +14,7 @@ var page_params = {{ page_params }};
 {% block customhead %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
-<link rel="stylesheet" type="text/css" href="/static/third/gemoji/sprite.css" />
+<link rel="stylesheet" type="text/css" href="/static/generated/emoji/sprite.css" />
 <style type="text/css">
 
 #css-loading {
@@ -102,9 +102,6 @@ var page_params = {{ page_params }};
             </div>
                 {% include "zerver/home.html" %}
             </div>
-            <div class="tab-pane" id="subscriptions">
-                {% include "zerver/subscriptions.html" %}
-            </div>
             <div class="tab-pane new-style" id="administration">
             </div>
             <div class="tab-pane new-style" id="settings">
@@ -121,6 +118,7 @@ var page_params = {{ page_params }};
           {% include "zerver/right-sidebar.html" %}
     </div><!--/right sidebar-->
     {% include "zerver/image-overlay.html" %}
+    {% include "zerver/subscriptions.html" %}
 </div><!--/row-->
     {% include "zerver/keyboard_shortcuts.html" %}
     {% include "zerver/search_operators.html" %}

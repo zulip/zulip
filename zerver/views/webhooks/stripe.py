@@ -4,12 +4,10 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.lib.validator import check_dict, check_string
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
-from typing import Dict, Any, Iterable, Optional
+from typing import Dict, Any, Optional, Text
 
 from datetime import datetime
 
@@ -17,101 +15,149 @@ from datetime import datetime
 @has_request_variables
 def api_stripe_webhook(request, user_profile, client,
                        payload=REQ(argument_type='body'), stream=REQ(default='test'),
-                       topic=REQ(default='stripe')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type, Optional[text_type]) -> HttpResponse
-    body = ""
-    event_type = ""
+                       topic=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
+    body = None
+    event_type = payload["type"]
     try:
-        event_type = payload["type"]
-        if event_type == "charge.dispute.closed":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["charge"]
-            body_template = "A charge dispute for **" + amount_string + "** has been closed as **{object[status]}**.\n"\
-                            + "The charge in dispute was **[{object[charge]}](" + link + ")**."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "charge.dispute.created":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["charge"]
-            body_template = "A charge dispute for **" + amount_string + "** has been created.\n"\
-                            + "The charge in dispute is **[{object[charge]}](" + link + ")**."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "charge.failed":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["id"]
-            body_template = "A charge with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has failed."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "charge.succeeded":
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            link = "https://dashboard.stripe.com/payments/"+payload["data"]["object"]["id"]
-            body_template = "A charge with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has succeeded."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.created":
-            link = "https://dashboard.stripe.com/customers/"+payload["data"]["object"]["id"]
-            if payload["data"]["object"]["email"] is None:
-                body_template = "A new customer with id **[{object[id]}](" + link + ")** has been created."
-                body = body_template.format(**(payload["data"]))
-            else:
-                body_template = "A new customer with id **[{object[id]}](" + link + ")** and email **{object[email]}** has been created."
-                body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.deleted":
-            link = "https://dashboard.stripe.com/customers/"+payload["data"]["object"]["id"]
-            body_template = "A customer with id **[{object[id]}](" + link + ")** has been deleted."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.subscription.created":
-            amount_string = amount(payload["data"]["object"]["plan"]["amount"], payload["data"]["object"]["plan"]["currency"])
-            link = "https://dashboard.stripe.com/subscriptions/"+payload["data"]["object"]["id"]
-            body_template = "A new customer subscription for **" + amount_string + "** every **{plan[interval]}** has been created.\n"
-            body_template += "The subscription has id **[{id}](" + link + ")**."
-            body = body_template.format(**(payload["data"]["object"]))
-        elif event_type == "customer.subscription.deleted":
-            link = "https://dashboard.stripe.com/subscriptions/"+payload["data"]["object"]["id"]
-            body_template = "The customer subscription with id **[{object[id]}](" + link + ")** was deleted."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "customer.subscription.trial_will_end":
-            link = "https://dashboard.stripe.com/subscriptions/"+payload["data"]["object"]["id"]
-            body_template = "The customer subscription trial with id **[{object[id]}](" + link + ")** will end on "
-            body_template += datetime.fromtimestamp(payload["data"]["object"]["trial_end"]).strftime('%b %d %Y at %I:%M%p')
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "invoice.payment_failed":
-            link = "https://dashboard.stripe.com/invoices/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount_due"], payload["data"]["object"]["currency"])
-            body_template = "An invoice payment on invoice with id **[{object[id]}](" + link + ")** and with **"\
-                            + amount_string + "** due has failed."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "order.payment_failed":
-            link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "An order payment on order with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has failed."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "order.payment_succeeded":
-            link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "An order payment on order with id **[{object[id]}](" + link + ")** for **"\
-                            + amount_string + "** has succeeded."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "order.updated":
-            link = "https://dashboard.stripe.com/orders/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "The order with id **[{object[id]}](" + link + ")** for **" + amount_string + "** has been updated."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "transfer.failed":
-            link = "https://dashboard.stripe.com/transfers/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "The transfer with description **{object[description]}** and id **[{object[id]}]("\
-                            + link + ")** for amount **"\
-                            + amount_string + "** has failed."
-            body = body_template.format(**(payload["data"]))
-        elif event_type == "transfer.paid":
-            link = "https://dashboard.stripe.com/transfers/"+payload["data"]["object"]["id"]
-            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
-            body_template = "The transfer with description **{object[description]}** and id **[{object[id]}]("\
-                            + link + ")** for amount **"\
-                            + amount_string + "** has been paid."
-            body = body_template.format(**(payload["data"]))
-    except KeyError as e:
-        body = "Missing key {} in JSON".format(str(e))
+        data_object = payload["data"]["object"]
+        if event_type.startswith('charge'):
 
-    # send the message
+            charge_url = "https://dashboard.stripe.com/payments/{}"
+            amount_string = amount(payload["data"]["object"]["amount"], payload["data"]["object"]["currency"])
+
+            if event_type.startswith('charge.dispute'):
+                charge_id = data_object["charge"]
+                link = charge_url.format(charge_id)
+                body_template = "A charge dispute for **{amount}** has been {rest}.\n"\
+                                "The charge in dispute {verb} **[{charge}]({link})**."
+
+                if event_type == "charge.dispute.closed":
+                    rest = "closed as **{}**".format(data_object['status'])
+                    verb = 'was'
+                else:
+                    rest = "created"
+                    verb = 'is'
+
+                body = body_template.format(amount=amount_string, rest=rest, verb=verb, charge=charge_id, link=link)
+
+            else:
+                charge_id = data_object["id"]
+                link = charge_url.format(charge_id)
+                body_template = "A charge with id **[{charge_id}]({link})** for **{amount}** has {verb}."
+
+                if event_type == "charge.failed":
+                    verb = "failed"
+                else:
+                    verb = "succeeded"
+                body = body_template.format(charge_id=charge_id, link=link, amount=amount_string, verb=verb)
+
+            if topic is None:
+                topic = "Charge {}".format(charge_id)
+
+        elif event_type.startswith('customer'):
+            object_id = data_object["id"]
+            if event_type.startswith('customer.subscription'):
+                link = "https://dashboard.stripe.com/subscriptions/{}".format(object_id)
+
+                if event_type == "customer.subscription.created":
+                    amount_string = amount(data_object["plan"]["amount"], data_object["plan"]["currency"])
+
+                    body_template = "A new customer subscription for **{amount}** " \
+                                    "every **{interval}** has been created.\n" \
+                                    "The subscription has id **[{id}]({link})**."
+                    body = body_template.format(
+                        amount=amount_string,
+                        interval=data_object['plan']['interval'],
+                        id=object_id,
+                        link=link
+                    )
+
+                elif event_type == "customer.subscription.deleted":
+                    body_template = "The customer subscription with id **[{id}]({link})** was deleted."
+                    body = body_template.format(id=object_id, link=link)
+
+                else:
+                    end_time = datetime.fromtimestamp(data_object["trial_end"]).strftime('%b %d %Y at %I:%M%p')
+                    body_template = "The customer subscription trial with id **[{id}]({link})** will end on {time}"
+                    body = body_template.format(id=object_id, link=link, time=end_time)
+
+            else:
+                link = "https://dashboard.stripe.com/customers/{}".format(object_id)
+                body_template = "{beginning} customer with id **[{id}]({link})** {rest}."
+
+                if event_type == "customer.created":
+                    beginning = "A new"
+                    if data_object["email"] is None:
+                        rest = "has been created"
+                    else:
+                        rest = "and email **{}** has been created".format(data_object['email'])
+                else:
+                    beginning = "A"
+                    rest = "has been deleted"
+                body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
+
+            if topic is None:
+                topic = "Customer {}".format(object_id)
+
+        elif event_type == "invoice.payment_failed":
+            object_id = data_object['id']
+            link = "https://dashboard.stripe.com/invoices/{}".format(object_id)
+            amount_string = amount(data_object["amount_due"], data_object["currency"])
+            body_template = "An invoice payment on invoice with id **[{id}]({link})** and "\
+                            "with **{amount}** due has failed."
+            body = body_template.format(id=object_id, amount=amount_string, link=link)
+
+            if topic is None:
+                topic = "Invoice {}".format(object_id)
+
+        elif event_type.startswith('order'):
+            object_id = data_object['id']
+            link = "https://dashboard.stripe.com/orders/{}".format(object_id)
+            amount_string = amount(data_object["amount"], data_object["currency"])
+            body_template = "{beginning} order with id **[{id}]({link})** for **{amount}** has {end}."
+
+            if event_type == "order.payment_failed":
+                beginning = "An order payment on"
+                end = "failed"
+            elif event_type == "order.payment_succeeded":
+                beginning = "An order payment on"
+                end = "succeeded"
+            else:
+                beginning = "The"
+                end = "been updated"
+
+            body = body_template.format(beginning=beginning, id=object_id, link=link, amount=amount_string, end=end)
+
+            if topic is None:
+                topic = "Order {}".format(object_id)
+
+        elif event_type.startswith('transfer'):
+            object_id = data_object['id']
+            link = "https://dashboard.stripe.com/transfers/{}".format(object_id)
+            amount_string = amount(data_object["amount"], data_object["currency"])
+            body_template = "The transfer with description **{description}** and id **[{id}]({link})** " \
+                            "for amount **{amount}** has {end}."
+            if event_type == "transfer.failed":
+                end = 'failed'
+            else:
+                end = "been paid"
+            body = body_template.format(
+                description=data_object['description'],
+                id=object_id,
+                link=link,
+                amount=amount_string,
+                end=end
+            )
+
+            if topic is None:
+                topic = "Transfer {}".format(object_id)
+    except KeyError as e:
+        return json_error(_("Missing key {} in JSON".format(str(e))))
+
+    if body is None:
+        return json_error(_("We don't support {} event".format(event_type)))
+
     check_send_message(user_profile, client, 'stream', [stream], topic, body)
 
     return json_success()

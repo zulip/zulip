@@ -10,7 +10,10 @@ var is_composing_message = false;
    undefined: no @all/@everyone in message;
    false: user typed @all/@everyone;
    true: user clicked YES */
+
 var user_acknowledged_all_everyone;
+
+exports.all_everyone_warn_threshold = 15;
 
 var message_snapshot;
 
@@ -130,7 +133,7 @@ function clear_box() {
     $("#send-status").hide(0);
 }
 
-function clear_preview_area () {
+function clear_preview_area() {
     $("#new_message_content").show();
     $("#undo_markdown_preview").hide();
     $("#preview_message_area").hide();
@@ -174,7 +177,7 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(stream_color.get_color_class(color));
 };
 
-function update_fade () {
+function update_fade() {
     if (!is_composing_message) {
         return;
     }
@@ -281,7 +284,7 @@ exports.start = function (msg_type, opts) {
     resize.resize_bottom_whitespace();
 };
 
-function abort_xhr () {
+function abort_xhr() {
     $("#compose-send-button").removeAttr("disabled");
     var xhr = $("#compose").data("filedrop_xhr");
     if (xhr !== undefined) {
@@ -403,8 +406,6 @@ function compose_error(error_text, bad_input) {
     }
 }
 
-var send_options;
-
 function send_message_ajax(request, success, error) {
     channel.post({
         url: '/json/messages',
@@ -442,7 +443,7 @@ function report_send_time(send_time, receive_time, display_time, locally_echoed,
 }
 
 var socket;
-if (feature_flags.use_socket) {
+if (page_params.use_websockets) {
     socket = new Socket("/sockjs");
 }
 // For debugging.  The socket will eventually move out of this file anyway.
@@ -555,7 +556,7 @@ exports.send_message_success = function (local_id, message_id, start_time, local
 
 exports.transmit_message = function (request, success, error) {
     delete exports.send_times_data[request.id];
-    if (feature_flags.use_socket) {
+    if (page_params.use_websockets) {
         send_message_socket(request, success, error);
     } else {
         send_message_ajax(request, success, error);
@@ -655,7 +656,7 @@ exports.respond_to_message = function (opts) {
 exports.test_send_many_messages = function (stream, subject, count) {
     var num_sent = 0;
 
-    function do_send_one () {
+    function do_send_one() {
         var message = {};
         num_sent += 1;
 
@@ -785,14 +786,19 @@ function validate_stream_message() {
         }
     }
 
+    var current_stream = stream_data.get_sub(stream_name);
+    var stream_count = current_stream.subscribers.num_items();
+
     // check if @all or @everyone is in the message
-    if (util.is_all_or_everyone_mentioned(exports.message_content())) {
+    if (util.is_all_or_everyone_mentioned(exports.message_content()) &&
+        stream_count > compose.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
             // user has not seen a warning message yet if undefined
             show_all_everyone_warnings();
-            // user has not acknowledge the warning message yet
-            compose_error(i18n.t("Please remove @all / @everyone or acknowledge that you will be spamming everyone!"));
+
+            $("#compose-send-button").removeAttr('disabled');
+            $("#sending-indicator").hide();
             return false;
         }
     } else {
@@ -925,7 +931,6 @@ $(function () {
 
             // warn if @all or @everyone is mentioned
             if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {
-                show_all_everyone_warnings();
                 return; // don't check if @all or @everyone is subscribed to a stream
             }
 
@@ -954,7 +959,7 @@ $(function () {
         $(event.target).parents('.compose-all-everyone').remove();
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
-        $('#new_message_content').focus().select();
+        compose.finish();
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
@@ -1067,7 +1072,7 @@ $(function () {
         Dropbox.choose(options);
     });
 
-    function uploadStarted(i, file, len) {
+    function uploadStarted() {
         $("#compose-send-button").attr("disabled", "");
         $("#send-status").addClass("alert-info")
                          .show();
@@ -1109,7 +1114,7 @@ $(function () {
         $("#error-msg").text(msg);
     }
 
-    function uploadFinished(i, file, response, time) {
+    function uploadFinished(i, file, response) {
         if (response.uri === undefined) {
             return;
         }

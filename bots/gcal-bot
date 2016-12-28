@@ -34,17 +34,17 @@ parser = optparse.OptionParser(r"""
 """)
 
 parser.add_option('--calendar',
-    dest='calendar',
-    action='store',
-    help='Google Calendar XML "Private Address"',
-    metavar='URL')
+                  dest='calendar',
+                  action='store',
+                  help='Google Calendar XML "Private Address"',
+                  metavar='URL')
 parser.add_option('--interval',
-    dest='interval',
-    default=10,
-    type=int,
-    action='store',
-    help='Minutes before event for reminder [default: 10]',
-    metavar='MINUTES')
+                  dest='interval',
+                  default=10,
+                  type=int,
+                  action='store',
+                  help='Minutes before event for reminder [default: 10]',
+                  metavar='MINUTES')
 parser.add_option_group(zulip.generate_option_group(parser))
 
 (options, args) = parser.parse_args()
@@ -65,7 +65,7 @@ def get_calendar_url():
         parser.error('The --calendar URL should be the XML "Private Address" ' +
                      'from your calendar settings')
     return urllib.parse.urlunparse((parts.scheme, parts.netloc, pat[0] + '/full',
-                                   '', 'futureevents=true&orderby=startdate', ''))
+                                    '', 'futureevents=true&orderby=startdate', ''))
 
 calendar_url = get_calendar_url()
 

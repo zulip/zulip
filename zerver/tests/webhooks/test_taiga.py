@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
+from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
 class TaigaHookTests(WebhookTestCase):
@@ -9,7 +9,7 @@ class TaigaHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'taiga'
 
     def build_webhook_url(self):
-        # type: () -> text_type
+        # type: () -> Text
         api_key = self.get_api_key(self.TEST_USER_EMAIL)
         return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key, topic=self.TOPIC)
 

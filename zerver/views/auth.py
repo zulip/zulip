@@ -12,17 +12,17 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
-from six import text_type
+from typing import Text
 from six.moves import urllib
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
-from zerver.forms import OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
-from zerver.views import create_homepage_form, create_preregistration_user, \
+from zerver.views import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 from zproject.jinja2 import render_to_response
@@ -36,8 +36,8 @@ import time
 import ujson
 
 def maybe_send_to_registration(request, email, full_name=''):
-    # type: (HttpRequest, text_type, text_type) -> HttpResponse
-    form = create_homepage_form(request, user_info={'email': email})
+    # type: (HttpRequest, Text, Text) -> HttpResponse
+    form = HomepageForm({'email': email}, realm=get_realm_from_request(request))
     request.verified_email = None
     if form.is_valid():
         # Construct a PreregistrationUser object and send the user over to
@@ -75,7 +75,7 @@ def redirect_to_subdomain_login_url():
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
                                   invalid_subdomain=False):
-    # type: (HttpRequest, text_type, UserProfile, text_type, Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, Text, UserProfile, Text, Optional[bool]) -> HttpResponse
     if invalid_subdomain:
         # Show login page with an error message
         return redirect_to_subdomain_login_url()
@@ -160,13 +160,23 @@ def google_oauth2_csrf(request, value):
 
 def start_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
+    url = reverse('zerver.views.auth.send_oauth_request_to_google')
+    return redirect_to_main_site(request, url)
+
+def redirect_to_main_site(request, url):
+    # type: (HttpRequest, Text) -> HttpResponse
     main_site_uri = ''.join((
         settings.EXTERNAL_URI_SCHEME,
         settings.EXTERNAL_HOST,
-        reverse('zerver.views.auth.send_oauth_request_to_google'),
+        url,
     ))
     params = {'subdomain': get_subdomain(request)}
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
+
+def start_social_login(request, backend):
+    # type: (HttpRequest, Text) -> HttpResponse
+    backend_url = reverse('social:begin', args=[backend])
+    return redirect_to_main_site(request, backend_url)
 
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse

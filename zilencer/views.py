@@ -19,13 +19,12 @@ from .error_notify import notify_server_error, notify_browser_error
 
 import time
 
-from six import text_type
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, Text
 
 client = get_redis_client()
 
 def has_enough_time_expired_since_last_message(sender_email, min_delay):
-    # type: (text_type, float) -> bool
+    # type: (Text, float) -> bool
     # This function returns a boolean, but it also has the side effect
     # of noting that a new message was received.
     key = 'zilencer:feedback:%s' % (sender_email,)
@@ -48,7 +47,7 @@ def get_ticket_number():
 
 @has_request_variables
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, Deployment, Dict[str, text_type]) -> HttpResponse
+    # type: (HttpRequest, Deployment, Dict[str, Text]) -> HttpResponse
     domainish = message["sender_domain"]
     if get_realm_by_string_id("zulip") not in deployment.realms.all():
         domainish += u" via " + deployment.name
@@ -84,11 +83,11 @@ def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
 
 @has_request_variables
 def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, Deployment, text_type, Dict[str, Any]) -> HttpResponse
+    # type: (HttpRequest, Deployment, Text, Dict[str, Any]) -> HttpResponse
     return do_report_error(deployment.name, type, report)
 
 def do_report_error(deployment_name, type, report):
-    # type: (text_type, text_type, Dict[str, Any]) -> HttpResponse
+    # type: (Text, Text, Dict[str, Any]) -> HttpResponse
     report['deployment'] = deployment_name
     if type == 'browser':
         notify_browser_error(report)

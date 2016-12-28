@@ -115,10 +115,9 @@ Copyright: 2013 Nijiko Yonskai
 License: Apache-2.0
 Comment: The software has been modified.
 
-Files: static/third/gemoji/images/emoji/unicode/* tools/setup/emoji_dump/*.ttf
+Files: static/generated/emoji/images/emoji/unicode/* tools/setup/emoji/*.ttf
 Copyright: Google, Inc.
 License: Apache-2.0
-Comment: These are actually Noto Emoji, not gemoji.
 
 Files: static/third/html5-formdata/formdata.js
 Copyright: 2010 François de Metz
@@ -174,11 +173,6 @@ License: Expat
 Files: static/third/string-prototype-codepointat/*
 Copyright: 2014 Mathias Bynens
 License: Expat
-
-Files: static/third/sockjs/sockjs-0.3.4.js
-Copyright: 2011-2012 VMware, Inc.
- 2012 Douglas Crockford
-License: Expat and public-domain
 
 Files: static/third/sorttable/sorttable.js
 Copyright: 2007 Stuart Langridge

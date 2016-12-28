@@ -17,21 +17,21 @@ def run():
     # type: () -> None
     """Builds for production, writing the output to disk"""
     subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
-        ['--config', 'tools/webpack.production.config.js'])
+                          ['--config', 'tools/webpack.production.config.js'])
 
 def run_watch(port):
     # type: (str) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
     subprocess.Popen(['node', 'node_modules/.bin/webpack-dev-server'] +
-        ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
+                     ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--watch',
-                  action='store_true', dest='watch', default=False,
-                  help='watch for changes to source files (for development)')
+                    action='store_true', dest='watch', default=False,
+                    help='watch for changes to source files (for development)')
 parser.add_argument('--port',
-                  action='store', dest='port',
-                  default='9994', help='set the port for the webpack server to run on')
+                    action='store', dest='port',
+                    default='9994', help='set the port for the webpack server to run on')
 args = parser.parse_args()
 
 if args.watch:

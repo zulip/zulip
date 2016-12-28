@@ -90,9 +90,19 @@ class HubotLozenge(Integration):
         self.git_url = git_url
         super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
 
+class GithubIntegration(WebhookIntegration):
+    """
+    We need this class to don't creating url object for git integrations.
+    We want to have one generic url with dispatch function for github service and github webhook.
+    """
+    @property
+    def url_object(self):
+        # type: () -> None
+        return
 
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake'),
+    WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
     WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.png', display_name='Bitbucket'),
     WebhookIntegration('bitbucket', secondary_line_text='(Enterprise)'),
@@ -101,27 +111,30 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('crashlytics'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
-    WebhookIntegration(
+    GithubIntegration(
         'github',
         function='zerver.views.webhooks.github.api_github_landing',
         display_name='GitHub',
         secondary_line_text='(deprecated)'
     ),
-    WebhookIntegration(
+    GithubIntegration(
         'github_webhook',
         display_name='GitHub',
-        url='api/v1/external/webhook_github',
         logo='static/images/integrations/logos/github.png',
         secondary_line_text='(webhook)',
         function='zerver.views.webhooks.github_webhook.api_github_webhook'
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
+    WebhookIntegration('gosquared', display_name='GoSquared'),
     WebhookIntegration('helloworld', display_name='Hello World'),
+    WebhookIntegration('heroku', display_name='Heroku'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato'),
+    WebhookIntegration('mention', display_name='Mention'),
     WebhookIntegration('newrelic', display_name='New Relic'),
     WebhookIntegration('pagerduty'),
+    WebhookIntegration('papertrail'),
     WebhookIntegration('pingdom'),
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
@@ -186,7 +199,7 @@ HUBOT_LOZENGES = {
     'darksky': HubotLozenge('darksky', display_name='Dark Sky', logo_alt='Dark Sky logo'),
     'hangouts': HubotLozenge('google-hangouts', display_name="Hangouts"),
     'instagram': HubotLozenge('instagram'),
-    'mailchump': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
+    'mailchimp': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
     'translate': HubotLozenge('google-translate', display_name="Translate", logo_alt='Google Translate logo'),
     'youtube': HubotLozenge('youtube', display_name='YouTube', logo_alt='YouTube logo')
 }

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from six import text_type
+from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
 # Tests for the Desk.com webhook integration.
@@ -63,5 +63,5 @@ class DeskDotComHookTests(WebhookTestCase):
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data("deskdotcom", fixture_name, file_type="txt")

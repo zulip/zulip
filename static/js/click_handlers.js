@@ -11,6 +11,8 @@ $(function () {
     var clicking = false;
     var mouse_moved = false;
 
+    var meta = {};
+
     function mousedown() {
         mouse_moved = false;
         clicking = true;
@@ -81,6 +83,16 @@ $(function () {
         toggle_star(rows.id($(this).closest(".message_row")));
     });
 
+    $("#main_div").on("click", "a.stream", function (e) {
+        e.preventDefault();
+        var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
+        if (stream) {
+            window.location.href = '/#narrow/stream/' + hashchange.encodeHashComponent(stream.name);
+            return;
+        }
+        window.location.href = $(this).attr('href');
+    });
+
     // MESSAGE EDITING
 
     $('body').on('click', '.edit_content_button', function (e) {
@@ -125,6 +137,15 @@ $(function () {
         message_edit.end(row);
         e.stopPropagation();
         popovers.hide_all();
+    });
+    $("body").on("click", "a", function () {
+        if (document.activeElement === this) {
+            ui.blur_active_element();
+        }
+    });
+
+    $(window).on("focus", function () {
+        meta.focusing = true;
     });
 
     // RECIPIENT BARS
@@ -212,7 +233,19 @@ $(function () {
         popovers.hide_all();
     });
 
+    $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
+        if (meta.focusing) {
+            meta.focusing = false;
+            return;
+        }
 
+        if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
+            $("#subscription_overlay").fadeOut(500);
+            subs.remove_miscategorized_streams();
+
+            hashchange.exit_settings();
+        }
+    });
     // HOME
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
@@ -238,12 +271,6 @@ $(function () {
 
     // MISC
 
-    $('#streams_inline_cog').click(function (e) {
-        ui.change_tab_to('#subscriptions');
-
-        e.preventDefault();
-    });
-
     (function () {
         var sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
 
@@ -255,10 +282,10 @@ $(function () {
     popovers.register_click_handlers();
     notifications.register_click_handlers();
 
-    $('.logout_button').click(function (e) {
+    $('.logout_button').click(function () {
         $('#logout_form').submit();
     });
-    $('.restart_get_events_button').click(function (e) {
+    $('.restart_get_events_button').click(function () {
         server_events.restart_get_events({dont_block: true});
     });
 
@@ -272,10 +299,10 @@ $(function () {
     );
 
 
-    $('.compose_stream_button').click(function (e) {
+    $('.compose_stream_button').click(function () {
         compose.start('stream');
     });
-    $('.compose_private_button').click(function (e) {
+    $('.compose_private_button').click(function () {
         compose.start('private');
     });
 
@@ -308,7 +335,7 @@ $(function () {
     $("#compose_buttons").click(handle_compose_click);
     $(".compose-content").click(handle_compose_click);
 
-    $("#compose_close").click(function (e) {
+    $("#compose_close").click(function () {
         compose.cancel();
     });
 
@@ -316,7 +343,7 @@ $(function () {
 
     // Keep these 2 feedback bot triggers separate because they have to
     // propagate the event differently.
-    $('.feedback').click(function (e) {
+    $('.feedback').click(function () {
         compose.start('private', {private_message_recipient: 'feedback@zulip.com',
                                   trigger: 'feedback menu item'});
 
@@ -355,10 +382,10 @@ $(function () {
             channel.post({
                 url:      "/accounts/webathena_kerberos_login/",
                 data:     {cred: JSON.stringify(r.session)},
-                success: function (data, success) {
+                success: function () {
                     $("#zephyr-mirror-error").hide();
                 },
-                error: function (data, success) {
+                error: function () {
                     $("#zephyr-mirror-error").show();
                 }
             });
@@ -371,11 +398,11 @@ $(function () {
 
     // BANKRUPTCY
 
-    $(".bankruptcy_button").click(function (e) {
+    $(".bankruptcy_button").click(function () {
         unread.enable();
     });
 
-    $('#yes-bankrupt').click(function (e) {
+    $('#yes-bankrupt').click(function () {
         pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
@@ -415,7 +442,7 @@ $(function () {
             }
         });
 
-        $("#overlay .download").click(function (e) {
+        $("#overlay .download").click(function () {
           this.blur();
         });
     }());
@@ -456,3 +483,7 @@ $(function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = click_handlers;
+}

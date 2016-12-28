@@ -53,7 +53,7 @@ exports.initialize = function () {
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
-        beforeSubmit: function (arr, $form, options) {
+        beforeSubmit: function () {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
             // the user if they don't match certain constraints (i.e. not real email addresses,
@@ -63,7 +63,7 @@ exports.initialize = function () {
             $('#submit-invitation').button('loading');
             return true;
         },
-        success: function (resp, statusText, xhr, form) {
+        success: function () {
             $('#submit-invitation').button('reset');
             invite_status.text(i18n.t('User invited successfully.', {count: (invitee_emails.val().match(/@/g) || [] ).length}))
                           .addClass('alert-success')
@@ -77,7 +77,7 @@ exports.initialize = function () {
             }
 
         },
-        error: function (xhr, error_type, xhn) {
+        error: function (xhr) {
             $('#submit-invitation').button('reset');
             var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
@@ -87,9 +87,11 @@ exports.initialize = function () {
                               .show();
             } else {
                 // Some users were not invited.
+                var invitee_emails_errored = [];
                 var error_list = $('<ul>');
                 _.each(arr.errors, function (value) {
                     error_list.append($('<li>').text(value.join(': ')));
+                    invitee_emails_errored.push(value[0]);
                 });
 
                 invite_status.addClass('alert-warning')
@@ -98,6 +100,13 @@ exports.initialize = function () {
                               .append(error_list)
                               .show();
                 invitee_emails_group.addClass('warning');
+
+                if (arr.sent_invitations) {
+                    invitee_emails.val(invitee_emails_errored.join('\n'));
+                } else { // Invitations not sent -- keep all emails in the list
+                    var current_emails = invitee_emails.val().split(/\n|,/);
+                    invitee_emails.val(util.move_array_elements_to_front(current_emails, invitee_emails_errored).join('\n'));
+                }
 
             }
 
@@ -118,3 +127,7 @@ exports.initialize = function () {
 return exports;
 
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = invite;
+}

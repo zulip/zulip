@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Text
 
 from django.utils import translation
 from django.utils.translation import ugettext as _
@@ -19,8 +19,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
-    get_stream, UserPresence, get_recipient, name_changes_disabled, \
-    email_to_domain, email_to_username, get_realm, \
+    get_stream, UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -58,7 +57,6 @@ import calendar
 import datetime
 import simplejson
 import re
-from six import text_type
 from six.moves import urllib, zip_longest, zip, range
 import time
 import logging
@@ -66,7 +64,7 @@ import logging
 from zproject.jinja2 import render_to_response
 
 def redirect_and_log_into_subdomain(realm, full_name, email_address):
-    # type: (Realm, text_type, text_type) -> HttpResponse
+    # type: (Realm, Text, Text) -> HttpResponse
     subdomain_login_uri = ''.join([
         realm.uri,
         reverse('zerver.views.auth.log_into_subdomain')
@@ -297,47 +295,28 @@ def accounts_accept_terms(request):
          'special_message_template': special_message_template},
         request=request)
 
-def create_homepage_form(request, user_info=None):
-    # type: (HttpRequest, Optional[Dict[str, Any]]) -> HomepageForm
-    if settings.REALMS_HAVE_SUBDOMAINS:
-        string_id = get_subdomain(request)
-    else:
-        realm = get_realm(request.session.get("domain"))
-        if realm is not None:
-            string_id = realm.string_id
-        else:
-            string_id = ''
-
-    if user_info:
-        return HomepageForm(user_info, string_id = string_id)
-    # An empty fields dict is not treated the same way as not
-    # providing it.
-    return HomepageForm(string_id = string_id)
-
 def create_preregistration_user(email, request, realm_creation=False):
-    # type: (text_type, HttpRequest, bool) -> HttpResponse
-    domain = request.session.get("domain")
-    if completely_open(domain):
-        # Clear the "domain" from the session object; it's no longer needed
-        request.session["domain"] = None
-
+    # type: (Text, HttpRequest, bool) -> HttpResponse
+    realm_str = request.session.pop('realm_str', None)
+    if realm_str is not None:
+        # realm_str was set in accounts_home_with_realm_str.
         # The user is trying to sign up for a completely open realm,
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
-                                                  realm=get_realm(domain),
+                                                  realm=get_realm_by_string_id(realm_str),
                                                   realm_creation=realm_creation)
 
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
-def accounts_home_with_domain(request, domain):
+def accounts_home_with_realm_str(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
-    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(domain):
+    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm_by_string_id(realm_str)):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
         # URL. We store this information in the session rather than
         # elsewhere because we don't have control over URL or form
         # data for folks registering through OpenID.
-        request.session["domain"] = domain
+        request.session["realm_str"] = realm_str
         return accounts_home(request)
     else:
         return HttpResponseRedirect(reverse('zerver.views.accounts_home'))
@@ -361,13 +340,8 @@ def redirect_to_email_login_url(email):
     redirect_url = login_url + '?email=' + urllib.parse.quote_plus(email)
     return HttpResponseRedirect(redirect_url)
 
-"""
-When settings.OPEN_REALM_CREATION is enabled public users can create new realm. For creating the realm the user should
-not be the member of any current realm. The realm is created with domain same as the that of the user's email.
-When there is no unique_open_realm user registrations are made by visiting /register/domain_of_the_realm.
-"""
 def create_realm(request, creation_key=None):
-    # type: (HttpRequest, Optional[text_type]) -> HttpResponse
+    # type: (HttpRequest, Optional[Text]) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
         if creation_key is None:
             return render_to_response("zerver/realm_creation_failed.html",
@@ -377,8 +351,10 @@ def create_realm(request, creation_key=None):
                                       {'message': _('The organization creation link has been expired'
                                                     ' or is not valid.')})
 
+    # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
+    # subject to a few restrictions on their email address.
     if request.method == 'POST':
-        form = RealmCreationForm(request.POST, domain=request.session.get("domain"))
+        form = RealmCreationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             confirmation_key = send_registration_completion_email(email, request, realm_creation=True).confirmation_key
@@ -391,11 +367,10 @@ def create_realm(request, creation_key=None):
             email = request.POST['email']
             user_email_is_unique(email)
         except ValidationError:
-            # if the user user is already registered he can't create a new realm as a realm
-            # with the same domain as user's email already exists
+            # Maybe the user is trying to log in
             return redirect_to_email_login_url(email)
     else:
-        form = RealmCreationForm(domain=request.session.get("domain"))
+        form = RealmCreationForm()
     return render_to_response('zerver/create_realm.html',
                               {'form': form, 'current_url': request.get_full_path},
                               request=request)
@@ -404,10 +379,19 @@ def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
     return json_success(request.session.get('confirmation_key'))
 
+def get_realm_from_request(request):
+    # type: (HttpRequest) -> Realm
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        realm_str = get_subdomain(request)
+    else:
+        realm_str = request.session.get("realm_str")
+    return get_realm_by_string_id(realm_str)
+
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
+    realm = get_realm_from_request(request)
     if request.method == 'POST':
-        form = create_homepage_form(request, user_info=request.POST)
+        form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
             email = form.cleaned_data['email']
             send_registration_completion_email(email, request)
@@ -419,7 +403,7 @@ def accounts_home(request):
         except ValidationError:
             return redirect_to_email_login_url(email)
     else:
-        form = create_homepage_form(request)
+        form = HomepageForm(realm=realm)
     return render_to_response('zerver/accounts_home.html',
                               {'form': form, 'current_url': request.get_full_path},
                               request=request)
@@ -481,7 +465,7 @@ def home_real(request):
        int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version():
         return accounts_accept_terms(request)
 
-    narrow = [] # type: List[List[text_type]]
+    narrow = [] # type: List[List[Text]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
@@ -587,10 +571,12 @@ def home_real(request):
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_authentication_methods = register_ret['realm_authentication_methods'],
         realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
+        realm_add_emoji_by_admins_only = register_ret['realm_add_emoji_by_admins_only'],
         realm_allow_message_editing = register_ret['realm_allow_message_editing'],
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         realm_default_language = register_ret['realm_default_language'],
+        realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
@@ -605,6 +591,7 @@ def home_real(request):
         prompt_for_invites    = prompt_for_invites,
         notifications_stream  = notifications_stream,
         cross_realm_bots      = list(get_cross_realm_dicts()),
+        use_websockets        = settings.USE_WEBSOCKETS,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -636,6 +623,7 @@ def home_real(request):
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
         avatar_url_medium     = avatar_url(user_profile, medium=True),
+        avatar_source         = user_profile.avatar_source,
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
         presence_disabled     = user_profile.realm.presence_disabled,
@@ -706,7 +694,7 @@ def is_buggy_ua(agent):
 @has_request_variables
 def json_set_muted_topics(request, user_profile,
                           muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
-    # type: (HttpRequest, UserProfile, List[List[text_type]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[List[Text]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
 

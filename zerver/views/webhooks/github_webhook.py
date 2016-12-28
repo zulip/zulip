@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 import re
 from functools import partial
-from six import text_type
-from typing import Any, Callable
+from typing import Any, Callable, Text
 from django.http import HttpRequest, HttpResponse
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
@@ -18,7 +17,7 @@ class UnknownEventType(Exception):
     pass
 
 def get_opened_or_update_pull_request_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     pull_request = payload['pull_request']
     action = payload['action']
     if action == 'synchronized':
@@ -38,7 +37,7 @@ def get_opened_or_update_pull_request_body(payload):
     )
 
 def get_closed_pull_request_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     pull_request = payload['pull_request']
     action = 'merged' if pull_request['merged'] else 'closed without merge'
     return get_pull_request_event_message(
@@ -48,7 +47,7 @@ def get_closed_pull_request_body(payload):
     )
 
 def get_membership_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     action = payload['action']
     member = payload['member']
     scope = payload['scope']
@@ -64,7 +63,7 @@ def get_membership_body(payload):
     )
 
 def get_member_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u"{} {} [{}]({}) to [{}]({})".format(
         get_sender_name(payload),
         payload['action'],
@@ -75,7 +74,7 @@ def get_member_body(payload):
     )
 
 def get_issue_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     action = payload['action']
     issue = payload['issue']
     assignee = issue['assignee']
@@ -89,7 +88,7 @@ def get_issue_body(payload):
     )
 
 def get_issue_comment_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     action = payload['action']
     comment = payload['comment']
     issue = payload['issue']
@@ -109,7 +108,7 @@ def get_issue_comment_body(payload):
     )
 
 def get_fork_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     forkee = payload['forkee']
     return u"{} forked [{}]({})".format(
         get_sender_name(payload),
@@ -118,19 +117,19 @@ def get_fork_body(payload):
     )
 
 def get_deployment_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u'{} created new deployment'.format(
         get_sender_name(payload),
     )
 
 def get_change_deployment_status_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u'Deployment changed status to {}'.format(
         payload['deployment_status']['state'],
     )
 
 def get_create_or_delete_body(payload, action):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     ref_type = payload['ref_type']
     return u'{} {} {} {}'.format(
         get_sender_name(payload),
@@ -140,7 +139,7 @@ def get_create_or_delete_body(payload, action):
         ).rstrip()
 
 def get_commit_comment_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     comment = payload['comment']
     comment_url = comment['html_url']
     commit_url = comment_url.split('#', 1)[0]
@@ -154,7 +153,7 @@ def get_commit_comment_body(payload):
     )
 
 def get_push_tags_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return get_push_tag_event_message(
         get_sender_name(payload),
         get_tag_name_from_ref(payload['ref']),
@@ -162,7 +161,7 @@ def get_push_tags_body(payload):
     )
 
 def get_push_commits_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     commits_data = [{
         'sha': commit['id'],
         'url': commit['url'],
@@ -176,14 +175,14 @@ def get_push_commits_body(payload):
     )
 
 def get_public_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u"{} made [the repository]({}) public".format(
         get_sender_name(payload),
         payload['repository']['html_url'],
     )
 
 def get_wiki_pages_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     wiki_page_info_template = u"* {action} [{title}]({url})\n"
     wiki_info = u''
     for page in payload['pages']:
@@ -195,14 +194,14 @@ def get_wiki_pages_body(payload):
     return u"{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
 
 def get_watch_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u"{} starred [the repository]({})".format(
         get_sender_name(payload),
         payload['repository']['html_url']
     )
 
 def get_repository_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u"{} {} [the repository]({})".format(
         get_sender_name(payload),
         payload.get('action'),
@@ -210,21 +209,21 @@ def get_repository_body(payload):
     )
 
 def get_add_team_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u"[The repository]({}) was added to team {}".format(
         payload['repository']['html_url'],
         payload['team']['name']
     )
 
 def get_release_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return u"{} published [the release]({})".format(
         get_sender_name(payload),
         payload['release']['html_url'],
     )
 
 def get_page_build_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     build = payload['build']
     action = build['status']
     if action == 'null':
@@ -243,7 +242,7 @@ def get_page_build_body(payload):
     )
 
 def get_status_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     if payload['target_url']:
         status = '[{}]({})'.format(
             payload['state'],
@@ -258,7 +257,7 @@ def get_status_body(payload):
     )
 
 def get_pull_request_review_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return get_pull_request_event_message(
         get_sender_name(payload),
         'submitted',
@@ -267,7 +266,7 @@ def get_pull_request_review_body(payload):
     )
 
 def get_pull_request_review_comment_body(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     action = payload['action']
     message = None
     if action == 'created':
@@ -282,19 +281,19 @@ def get_pull_request_review_comment_body(payload):
     )
 
 def get_repository_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['repository']['name']
 
 def get_sender_name(payload):
-    # type: (Dict[str, Any]) -> text_type
+    # type: (Dict[str, Any]) -> Text
     return payload['sender']['login']
 
 def get_branch_name_from_ref(ref_string):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return re.sub(r'^refs/heads/', '', ref_string)
 
 def get_tag_name_from_ref(ref_string):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     return re.sub(r'^refs/tags/', '', ref_string)
 
 def is_commit_push_event(payload):
@@ -302,7 +301,7 @@ def is_commit_push_event(payload):
     return bool(re.match(r'^refs/heads/', payload['ref']))
 
 def get_subject_based_on_type(payload, event):
-    # type: (Dict[str, Any], text_type) -> text_type
+    # type: (Dict[str, Any], Text) -> Text
     if 'pull_request' in event:
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
@@ -368,7 +367,7 @@ EVENT_FUNCTION_MAPPER = {
 def api_github_webhook(
         request, user_profile, client,
         payload=REQ(argument_type='body'), stream=REQ(default='github')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     event = get_event(request, payload)
     subject = get_subject_based_on_type(payload, event)
     body = get_body_function_based_on_type(event)(payload)

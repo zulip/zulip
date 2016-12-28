@@ -222,6 +222,10 @@ ul.filters li.out_of_home_view {
     opacity: 0.25;
 }
 
+ul.filters li.out_of_home_view:hover {
+    opacity: 0.6;
+}
+
 ul.filters li.out_of_home_view li.muted_topic {
     /* If stream is muted, this resets opacity of muted topics in muted
        stream to 1; since opacity is multiplied down through child
@@ -235,6 +239,10 @@ ul.filters li.out_of_home_view li.muted_topic {
     padding-top: 4px;
     margin-right: 15px;
     padding-left: 33px;
+}
+
+#stream_filters .subscription_block .stream-name {
+   overflow-wrap: break-word;
 }
 
 #stream_filters .subscription_block.stream-with-count {
@@ -423,7 +431,11 @@ li.show-more-private-messages a {
     display: none;
 }
 
-.zoom-in .show-more-private-messages {
+.zoomed-in .show-more-private-messages {
+    display: none;
+}
+
+.zoomed-out .zoom-out-hide {
     display: none;
 }
 

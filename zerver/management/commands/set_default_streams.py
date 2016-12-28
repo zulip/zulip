@@ -1,11 +1,12 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any
+from argparse import ArgumentParser, RawTextHelpFormatter
+from typing import Any, Text
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.models import get_realm
+from zerver.models import get_realm_by_string_id
 from zerver.lib.actions import set_default_streams
 
 from optparse import make_option
@@ -21,17 +22,24 @@ streams.
 
 For example:
 
-./manage.py set_default_streams --domain=foo.com --streams=foo,bar,baz
-./manage.py set_default_streams --domain=foo.com --streams="foo,bar,baz with space"
-./manage.py set_default_streams --domain=foo.com --streams=
+./manage.py set_default_streams --realm=foo --streams=foo,bar,baz
+./manage.py set_default_streams --realm=foo --streams="foo,bar,baz with space"
+./manage.py set_default_streams --realm=foo --streams=
 """
 
+    # Fix support for multi-line usage
+    def create_parser(self, *args, **kwargs):
+        # type: (*Any, **Any) -> ArgumentParser
+        parser = super(Command, self).create_parser(*args, **kwargs)
+        parser.formatter_class = RawTextHelpFormatter
+        return parser
+
     def add_arguments(self, parser):
-        # type: (CommandParser) -> None
-        parser.add_argument('-d', '--domain',
-                            dest='domain',
+        # type: (ArgumentParser) -> None
+        parser.add_argument('-r', '--realm',
+                            dest='string_id',
                             type=str,
-                            help='The name of the existing realm to which to '
+                            help='The subdomain or string_id of the existing realm to which to '
                                  'attach default streams.')
 
         parser.add_argument('-s', '--streams',
@@ -41,11 +49,14 @@ For example:
 
     def handle(self, **options):
         # type: (*Any, **str) -> None
-        if options["domain"] is None or options["streams"] is None:
-            print("Please provide both a domain name and a default \
+        if options["string_id"] is None or options["streams"] is None:
+            print("Please provide both a subdomain name or string_id and a default \
 set of streams (which can be empty, with `--streams=`).", file=sys.stderr)
             exit(1)
 
-        stream_names = [stream.strip() for stream in options["streams"].split(",")]
-        realm = get_realm(options["domain"])
-        set_default_streams(realm, stream_names)
+        stream_dict = {
+            stream.strip(): {"description": stream.strip(), "invite_only": False}
+            for stream in options["streams"].split(",")
+        } # type: Dict[Text, Dict[Text, Any]]
+        realm = get_realm_by_string_id(options["string_id"])
+        set_default_streams(realm, stream_dict)

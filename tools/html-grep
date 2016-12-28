@@ -55,12 +55,12 @@ def check_our_files():
 
     parser = optparse.OptionParser(usage=USAGE)
     parser.add_option('--modified', '-m',
-        action='store_true', default=False,
-        help='Only check modified files')
+                      action='store_true', default=False,
+                      help='Only check modified files')
     parser.add_option('--no-filter', '-a',
-        dest='show_all',
-        action='store_true', default=False,
-        help='Show all HTML files (no filtering)')
+                      dest='show_all',
+                      action='store_true', default=False,
+                      help='Show all HTML files (no filtering)')
     (options, args) = parser.parse_args()
 
     if options.show_all:

@@ -59,6 +59,9 @@ participating in code review.
   and unparameterized containser should be limited to cases where a
   more precise type cannot be specified.
 
+* *Translation.* Make sure that the strings are marked for
+  [translation].
+
 * *Clear function, argument, variable, and test names.* Every new
   piece of Zulip code will be read many times by other developers, and
   future developers will grep for relevant terms when researching a
@@ -112,8 +115,19 @@ then push your branch to GitHub and mention the branch in a comment on
 the pull request. That'll save the maintainer time and get the PR
 merged quicker.
 
+## Additional Resources
+
+We also strongly recommend reviewers to go through the following resources.
+
+* [The Gentle Art of Patch Review](http://sarah.thesharps.us/2014/09/01/the-gentle-art-of-patch-review/)
+  article by Sarah Sharp
+* [Zulip & Good Code Review](https://www.harihareswara.net/sumana/2016/05/17/0)
+  article by Sumana Harihareswara
+* [Zulip Code of Conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html)
+
 [code-style]: code-style.html
 [commit-messages]: version-control.html#commit-messages
 [test-writing]: testing.html
 [mypy]: mypy.html
 [git tool]: git-guide.html#fetch-a-pull-request-and-rebase
+[translation]: translating.html

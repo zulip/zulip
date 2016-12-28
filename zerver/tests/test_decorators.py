@@ -38,6 +38,14 @@ from zerver.models import \
 import ujson
 
 class DecoratorTestCase(TestCase):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        # This method should be removed when we migrate to version 3 of Python
+        import six
+        if six.PY2:
+            self.assertRaisesRegex = self.assertRaisesRegexp
+        super(TestCase, self).__init__(*args, **kwargs)
+
     def test_get_client_name(self):
         class Request(object):
             def __init__(self, GET, POST, META):
@@ -192,7 +200,7 @@ class DecoratorTestCase(TestCase):
         request.host = settings.EXTERNAL_HOST
 
         request.POST['api_key'] = 'not_existing_api_key'
-        with self.assertRaisesRegexp(JsonableError, "Invalid API key"):
+        with self.assertRaisesRegex(JsonableError, "Invalid API key"):
             my_webhook(request)
 
         # Start a valid request here
@@ -200,8 +208,8 @@ class DecoratorTestCase(TestCase):
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not associated "
-                                                            "with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     api_result = my_webhook(request)
 
                 mock_warning.assert_called_with(
@@ -209,8 +217,8 @@ class DecoratorTestCase(TestCase):
                     "subdomain {}".format(webhook_bot_email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not associated "
-                                                            "with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     request.host = "acme." + settings.EXTERNAL_HOST
                     api_result = my_webhook(request)
 
@@ -236,7 +244,7 @@ class DecoratorTestCase(TestCase):
         # Now deactivate the user
         webhook_bot.is_active = False
         webhook_bot.save()
-        with self.assertRaisesRegexp(JsonableError, "Account not active"):
+        with self.assertRaisesRegex(JsonableError, "Account not active"):
             my_webhook(request)
 
         # Reactive the user, but deactivate their realm.
@@ -244,7 +252,7 @@ class DecoratorTestCase(TestCase):
         webhook_bot.save()
         webhook_bot.realm.deactivated = True
         webhook_bot.realm.save()
-        with self.assertRaisesRegexp(JsonableError, "Realm for account has been deactivated"):
+        with self.assertRaisesRegex(JsonableError, "Realm for account has been deactivated"):
             my_webhook(request)
 
 
@@ -681,8 +689,8 @@ class TestValidateApiKey(ZulipTestCase):
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not "
-                                             "associated with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host=settings.EXTERNAL_HOST),
                                      self.default_bot.email,
                                      self.default_bot.api_key)
@@ -692,8 +700,8 @@ class TestValidateApiKey(ZulipTestCase):
                     "subdomain {}".format(self.default_bot.email, ''))
 
             with mock.patch('logging.warning') as mock_warning:
-                with self.assertRaisesRegexp(JsonableError, "Account is not "
-                                             "associated with this subdomain"):
+                with self.assertRaisesRegex(JsonableError,
+                                            "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host='acme.' + settings.EXTERNAL_HOST),
                                      self.default_bot.email,
                                      self.default_bot.api_key)
@@ -876,6 +884,21 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             with mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
                 result = self.client_get('/accounts/accept_terms/')
                 self.assertEqual(result.status_code, 302)
+
+class TestZulipInternalDecorator(ZulipTestCase):
+    def test_zulip_internal_decorator(self):
+        user_email = 'hamlet@zulip.com'
+        self.login(user_email)
+
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = get_user_profile_by_email(user_email)
+        user_profile.is_staff = True
+        user_profile.save()
+
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 200)
 
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
