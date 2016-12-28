@@ -18,6 +18,7 @@ from typing import (
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
+from zerver.lib.attachments import user_attachments
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
@@ -53,6 +54,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     if want('alert_words'):
         state['alert_words'] = user_alert_words(user_profile)
+
+    if want('attachments'):
+        state['attachments'] = user_attachments(user_profile)
 
     if want('message'):
         # The client should use get_old_messages() to fetch messages

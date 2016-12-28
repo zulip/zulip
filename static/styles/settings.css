@@ -462,7 +462,7 @@ input[type=checkbox].inline-block {
     position: inherit;
 }
 
-#alert_words_list {
+#alert_words_list, #attachments_list {
     list-style-type: none;
     margin: auto;
 }
@@ -472,7 +472,7 @@ input[type=checkbox].inline-block {
     margin-top: 8px;
 }
 
-#alert_words_list .edit-alert-word-buttons {
+#alert_words_list .edit-alert-word-buttons, #attachments_list .edit-attachment-buttons {
     position: absolute;
     right: 20px;
     top: 5px;
