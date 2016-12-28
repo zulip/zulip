@@ -20,7 +20,7 @@ Zulip fully supports Unicode. To use Unicode in your message:
 
 ### Using emoji codes
 1. Start by composing a [new message or reply](/help/#posting-and-replying)
-2. Type in the emoji code. For example `:smile:` produces the following icon:<img src="/static/third/gemoji/images/emoji/smile.png" alt="smile" style="width: 3%;"/>.
+2. Type in the emoji code. For example `:smile:` produces the following icon:<img src="/static/generated/emoji/images/emoji/smile.png" alt="smile" style="width: 3%;"/>.
 
 **Note**: If you are unsure of the code for any particular emoji visit [Emoji Cheat Sheet](http://www.webpagefx.com/tools/emoji-cheat-sheet/) for a complete list. Furthermore, after typing `:` and any two letters an autocomplete menu will appear displaying five emoji codes. These emoji contain the letters you typed and are sorted alphabetically by code. You can also cycle through these suggestions by using the `↑` and `↓` arrow keys.
 

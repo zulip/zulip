@@ -468,9 +468,9 @@ pane shows you the email address to use for any particular stream.
    * Zulip also lets you enter emoji by name, using the format
      `:name:`. So sending `:octopus: :film_projector:
      :revolving_hearts:` will produce
-     <img alt="octopus" class="inline" src="/static/third/gemoji/images/emoji/octopus.png"/>
-     <img alt="film_projector" class="inline" src="/static/third/gemoji/images/emoji/film_projector.png"/>
-     <img alt="revolving_hearts" class="inline" src="/static/third/gemoji/images/emoji/revolving_hearts.png"/>
+     <img alt="octopus" class="inline" src="/static/generated/emoji/images/emoji/octopus.png"/>
+     <img alt="film_projector" class="inline" src="/static/generated/emoji/images/emoji/film_projector.png"/>
+     <img alt="revolving_hearts" class="inline" src="/static/generated/emoji/images/emoji/revolving_hearts.png"/>
      can find emoji that are accessible this way by typing a colon and
      two or more letters of the alphabet — a pop-up menu will appear
      showing the first five emoji-names containing the letters you

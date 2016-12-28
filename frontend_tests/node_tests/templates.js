@@ -1,6 +1,6 @@
 set_global('page_params', {realm_emoji: {
-  burrito: {display_url: '/static/third/gemoji/images/emoji/burrito.png',
-            source_url: '/static/third/gemoji/images/emoji/burrito.png'},
+  burrito: {display_url: '/static/generated/emoji/images/emoji/burrito.png',
+            source_url: '/static/generated/emoji/images/emoji/burrito.png'},
 }});
 
 add_dependencies({

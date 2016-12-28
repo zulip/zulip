@@ -17,11 +17,11 @@ var unicode_emoji_names = ["1f198", "1f3ed", "0034", "1f341", "1f3d7", "26f9", "
 emoji_names.push("zulip");
 
 _.each(emoji_names, function (value) {
-    default_emojis.push({emoji_name: value, emoji_url: "/static/third/gemoji/images/emoji/" + value + ".png"});
+    default_emojis.push({emoji_name: value, emoji_url: "/static/generated/emoji/images/emoji/" + value + ".png"});
 });
 
 _.each(unicode_emoji_names, function (value) {
-    default_unicode_emojis.push({emoji_name: value, emoji_url: "/static/third/gemoji/images/emoji/unicode/" + value + ".png"});
+    default_unicode_emojis.push({emoji_name: value, emoji_url: "/static/generated/emoji/images/emoji/unicode/" + value + ".png"});
 });
 
 exports.update_emojis = function update_emojis(realm_emojis) {
@@ -49,7 +49,7 @@ exports.initialize = function initialize() {
     // Load the sprite image in the background so that the browser
     // can cache it for later use.
     var sprite = new Image();
-    sprite.src = '/static/third/gemoji/sprite.png';
+    sprite.src = '/static/generated/emoji/sprite.png';
 };
 
 exports.update_emojis(page_params.realm_emoji);
