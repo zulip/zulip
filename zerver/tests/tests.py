@@ -1824,6 +1824,7 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         expected_keys = [
             "alert_words",
+            "attachments",
             "autoscroll_forever",
             "avatar_url",
             "avatar_url_medium",

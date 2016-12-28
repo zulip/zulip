@@ -211,6 +211,10 @@ v1_api_and_json_patterns = [
         {'PUT': 'zerver.views.reactions.add_reaction_backend',
          'DELETE': 'zerver.views.reactions.remove_reaction_backend'}),
 
+    # attachments -> zerver.views.attachments
+    url(r'^attachments$', rest_dispatch, {'GET': 'zerver.views.attachments.list_by_user'}),
+    url(r'^attachments/(?P<attachment_id>[0-9]+)$', rest_dispatch, {'DELETE': 'zerver.views.attachments.remove'}),
+
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
     url(r'^typing$', rest_dispatch,

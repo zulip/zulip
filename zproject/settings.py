@@ -823,6 +823,7 @@ JS_SPECS = {
             'js/message_flags.js',
             'js/alert_words.js',
             'js/alert_words_ui.js',
+            'js/attachments_ui.js',
             'js/message_store.js',
             'js/server_events.js',
             'js/zulip.js',

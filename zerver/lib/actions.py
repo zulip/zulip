@@ -73,6 +73,7 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
+from zerver.lib.attachments import user_attachments
 from zerver.lib.push_notifications import num_push_devices_for_user, \
      send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
@@ -3028,6 +3029,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     if want('alert_words'):
         state['alert_words'] = user_alert_words(user_profile)
+
+    if want('attachments'):
+        state['attachments'] = user_attachments(user_profile)
 
     if want('message'):
         # The client should use get_old_messages() to fetch messages

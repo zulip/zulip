@@ -1,0 +1,25 @@
+
+<li class="attachment-item" data-attachment='{{attachment.id}}'>
+    <div class="attachment-information-box list-container">
+        <div class="attachment_listing">
+            <span class="value">{{attachment.name}}</span>
+        </div>
+        <div class="edit-attachment-buttons">
+            <button type="submit"
+                class="button small btn-small btn-danger remove-attachment"
+                title="{{t 'Delete Attachment' }}" data-attachment="{{attachment.id}}">
+                <i class="icon-vector-trash"></i>
+            </button>
+        </div>
+      {{#if attachment.messages }}
+        <p>{{t 'Messages'}}:</p>
+        <ul class="attachment-messages">
+          {{#each attachment.messages}}
+          <li>
+            <a href="/#narrow/id/{{ this.id }}">{{ this.name }}</a>
+          </li>
+          {{/each}}
+        </ul>
+      {{/if}}
+    </div>
+</li>

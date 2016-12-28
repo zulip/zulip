@@ -41,6 +41,7 @@ function render(template_name, args) {
         'notification-settings',
         'bot-settings',
         'alert-word-settings',
+        'attachments-settings',
         'ui-settings',
     ]);
 }());
@@ -224,6 +225,22 @@ function render(template_name, args) {
 (function announce_stream_docs() {
     var html = render('announce_stream_docs');
     global.write_handlebars_output("announce_stream_docs", html);
+}());
+
+(function attachment_settings_item() {
+    var html = '<ul id="attachments">';
+    var attachments = [
+        {"messages": [], "id": 42, "name": "foo.txt"},
+        {"messages": [], "id": 43, "name": "bar.txt"}
+    ]
+    _.each(attachments, function (attachment) {
+        var args = {attachment: attachment};
+        html += render('attachment-item', args);
+    });
+    html += "</ul>";
+    global.write_handlebars_output("attachment-item", html);
+    var li = $(html).find("li.attachment-item:first");
+    assert.equal(li.attr('data-attachment'), 42);
 }());
 
 (function bankruptcy_modal() {

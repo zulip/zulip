@@ -627,6 +627,7 @@ def home_real(request):
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
         alert_words           = register_ret['alert_words'],
+        attachments           = register_ret['attachments'],
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],
         realm_default_streams = register_ret['realm_default_streams'],

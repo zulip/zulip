@@ -185,6 +185,7 @@ function _setup_page() {
     $("#ui-settings-status").hide();
 
     alert_words_ui.set_up_alert_words();
+    attachments_ui.set_up_attachments();
 
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
