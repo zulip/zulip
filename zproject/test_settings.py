@@ -19,14 +19,16 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
-DATABASES["default"] = {"NAME": "zulip_test",
-                        "USER": "zulip_test",
-                        "PASSWORD": LOCAL_DATABASE_PASSWORD,
-                        "HOST": "localhost",
-                        "SCHEMA": "zulip",
-                        "ENGINE": "django.db.backends.postgresql_psycopg2",
-                        "TEST_NAME": "django_zulip_tests",
-                        "OPTIONS": {"connection_factory": TimeTrackingConnection },}
+DATABASES["default"] = {
+    "NAME": "zulip_test",
+    "USER": "zulip_test",
+    "PASSWORD": LOCAL_DATABASE_PASSWORD,
+    "HOST": "localhost",
+    "SCHEMA": "zulip",
+    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "TEST_NAME": "django_zulip_tests",
+    "OPTIONS": {"connection_factory": TimeTrackingConnection},
+}
 if USING_PGROONGA:
     # We need to have "pgroonga" schema before "pg_catalog" schema in
     # the PostgreSQL search path, because "pgroonga" schema overrides
