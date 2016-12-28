@@ -30,9 +30,6 @@ EXCLUDED_FILES = [
     # newlines; there's nothing other than trailing newlines we'd be
     # checking for in these anyway.
     "static/locale",
-    # Settings files make a lot of use of * imports
-    "zproject/settings.py",
-    "zproject/test_settings.py",
 ]
 
 @contextmanager
@@ -69,6 +66,9 @@ def check_pyflakes(options, by_lang):
                       " import *' used; unable to detect undefined names" in ln) or
                      # Special dev_settings.py import
                      "from .prod_settings_template import *" in ln or
+                     ("settings.py" in ln and
+                      ("settings import *' used; unable to detect undefined names" in ln or
+                       "may be undefined, or defined from star imports" in ln)) or
                      ("zerver/tornado/ioloop_logging.py" in ln and
                       "redefinition of function 'instrument_tornado_ioloop'" in ln) or
                      ("zephyr_mirror_backend.py:" in ln and
@@ -248,6 +248,8 @@ def build_custom_checkers(by_lang):
          'exclude_line': set([
              ('zerver/views/users.py',
               "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
+             ('zproject/settings.py',
+              "'format': '%(asctime)s %(levelname)-8s %(message)s'"),
          ]),
          'description': 'Missing space around "%"'},
         # This rule is constructed with + to avoid triggering on itself
