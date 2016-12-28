@@ -36,7 +36,6 @@ api/integrations/rss/rss-bot
 api/integrations/svn/post-commit
 api/integrations/twitter/twitter-bot
 api/integrations/twitter/twitter-search-bot
-bots/jabber_mirror_backend.py
 tools/deprecated/iframe-bot/show-last-messages
 tools/deprecated/inject-messages/inject-messages
 zproject/settings.py

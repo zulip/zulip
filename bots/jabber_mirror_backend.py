@@ -47,7 +47,11 @@ from sleekxmpp import ClientXMPP, InvalidJID, JID
 from sleekxmpp.stanza import Message as JabberMessage
 from sleekxmpp.exceptions import IqError, IqTimeout
 from six.moves.configparser import SafeConfigParser
-import os, sys, zulip, getpass
+import getpass
+import os
+import sys
+import zulip
+from zulip import Client
 import re
 from typing import Any, Callable
 
@@ -90,15 +94,15 @@ class JabberToZulipBot(ClientXMPP):
         self.rooms_to_join = rooms
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
-        self.zulip = None # type: zulip.Client
+        self.zulip = None # type: Client
         self.use_ipv6 = False
 
         self.register_plugin('xep_0045') # Jabber chatrooms
         self.register_plugin('xep_0199') # XMPP Ping
 
-    def set_zulip_client(self, client):
-        # type: (zulip.Client) -> None
-        self.zulip = client
+    def set_zulip_client(self, zulipToJabberClient):
+        # type: (ZulipToJabberBot) -> None
+        self.zulipToJabber = zulipToJabberClient
 
     def session_start(self, event):
         # type: (Dict[str, Any]) -> None
@@ -168,9 +172,9 @@ class JabberToZulipBot(ClientXMPP):
             to = recipient,
             content = msg["body"],
             )
-        ret = self.zulip.client.send_message(zulip_message)
+        ret = self.zulipToJabber.client.send_message(zulip_message)
         if ret.get("result") != "success":
-            logging.error(ret)
+            logging.error(str(ret))
 
     def group(self, msg):
         # type: (JabberMessage) -> None
@@ -196,9 +200,9 @@ class JabberToZulipBot(ClientXMPP):
             to = stream,
             content = msg["body"],
             )
-        ret = self.zulip.client.send_message(zulip_message)
+        ret = self.zulipToJabber.client.send_message(zulip_message)
         if ret.get("result") != "success":
-            logging.error(ret)
+            logging.error(str(ret))
 
     def nickname_to_jid(self, room, nick):
         # type: (str, str) -> JID
@@ -210,7 +214,7 @@ class JabberToZulipBot(ClientXMPP):
 
 class ZulipToJabberBot(object):
     def __init__(self, zulip_client):
-        # type: (zulip.Client) -> None
+        # type: (Client) -> None
         self.client = zulip_client
         self.jabber = None # type: JabberToZulipBot
 
@@ -294,8 +298,8 @@ class ZulipToJabberBot(object):
             for stream in streams:
                 self.jabber.leave_muc(stream_to_room(stream))
 
-def get_rooms(zulip):
-    # type: (zulip) -> List[str]
+def get_rooms(zulipToJabber):
+    # type: (ZulipToJabberBot) -> List[str]
     def get_stream_infos(key, method):
         # type: (str, Callable) -> Any
         ret = method()
@@ -305,9 +309,9 @@ def get_rooms(zulip):
         return ret[key]
 
     if options.mode == 'public':
-        stream_infos = get_stream_infos("streams", zulip.client.get_streams)
+        stream_infos = get_stream_infos("streams", zulipToJabber.client.get_streams)
     else:
-        stream_infos = get_stream_infos("subscriptions", zulip.client.list_subscriptions)
+        stream_infos = get_stream_infos("subscriptions", zulipToJabber.client.list_subscriptions)
 
     rooms = [] # type: List[str]
     for stream_info in stream_infos:
@@ -433,9 +437,9 @@ option does not affect login credentials.'''.replace("\n", " "))
         config_error("You must specify your Jabber JID and Jabber password either "
                      + "in the Zulip configuration file or on the commandline")
 
-    zulip = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
+    zulipToJabber = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
     # This won't work for open realms that don't have a consistent domain
-    options.zulip_domain = zulip.client.email.partition('@')[-1]
+    options.zulip_domain = zulipToJabber.client.email.partition('@')[-1]
 
     try:
         jid = JID(options.jid)
@@ -445,7 +449,7 @@ option does not affect login credentials.'''.replace("\n", " "))
     if options.conference_domain is None:
         options.conference_domain = "conference.%s" % (jid.domain,)
 
-    xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulip))
+    xmpp = JabberToZulipBot(jid, options.jabber_password, get_rooms(zulipToJabber))
 
     address = None
     if options.jabber_server_address:
@@ -454,8 +458,8 @@ option does not affect login credentials.'''.replace("\n", " "))
     if not xmpp.connect(use_tls=not options.no_use_tls, address=address):
         sys.exit("Unable to connect to Jabber server")
 
-    xmpp.set_zulip_client(zulip)
-    zulip.set_jabber_client(xmpp)
+    xmpp.set_zulip_client(zulipToJabber)
+    zulipToJabber.set_jabber_client(xmpp)
 
     xmpp.process(block=False)
     if options.mode == 'public':
@@ -465,8 +469,8 @@ option does not affect login credentials.'''.replace("\n", " "))
 
     try:
         logging.info("Connecting to Zulip.")
-        zulip.client.call_on_each_event(zulip.process_event,
-                                        event_types=event_types)
+        zulipToJabber.client.call_on_each_event(zulipToJabber.process_event,
+                                                event_types=event_types)
     except BaseException as e:
         logging.exception("Exception in main loop")
         xmpp.abort()
