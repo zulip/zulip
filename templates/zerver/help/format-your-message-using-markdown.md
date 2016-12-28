@@ -74,7 +74,7 @@ A complete list of emojis can be found [here](http://www.webpagefx.com/tools/emo
 
 To call the attention of another member, you can alert them by typing `@**username**`
 
-If you type `@` and then begin typing their email address or one of their names, the system will offer you auto-completion suggestions.
+If you type `@` and then begin typing the user's email address or the user's name, the system will offer you auto-completion suggestions.
 
 ![Mentions](/static/images/help/mention-screenshot.png)
 

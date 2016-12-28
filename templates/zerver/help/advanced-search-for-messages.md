@@ -58,7 +58,7 @@ Listed below are all Zulip search operators.
 * `keyword` is an operator that consists of one word. It narrows the view to show all the messages that contain
 that one word.
 * `key phrase` is an operator that consists of multiple words. It narrows the view to show all the messages that
-contain all of the words in that phrase, no matter in what order.
+contain all of the words in that phrase, regardless of the order.
 * `"key phrase"` is an operator that consists of multiple words surrounded by quotation marks ( `"` ). It narrows
 the view to show all the messages that contain the key phrase in the exact same order.
 
