@@ -175,7 +175,6 @@ function edit_message(row, raw_content) {
          is_editable: is_editable,
          has_been_editable: (editability !== editability_types.NO),
          topic: message.subject,
-         empty_topic_placeholder: compose.empty_topic_placeholder(),
          content: raw_content,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
