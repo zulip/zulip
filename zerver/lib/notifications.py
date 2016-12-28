@@ -106,10 +106,10 @@ def build_message_list(user_profile, messages):
             r"<img src=(\S+)/user_uploads/(\S+)>", "", content)
 
         # URLs for emoji are of the form
-        # "static/third/gemoji/images/emoji/snowflake.png".
+        # "static/generated/emoji/images/emoji/snowflake.png".
         content = re.sub(
-            r"static/third/gemoji/images/emoji/",
-            settings.EXTERNAL_HOST + r"/static/third/gemoji/images/emoji/",
+            r"static/generated/emoji/images/emoji/",
+            settings.EXTERNAL_HOST + r"/static/generated/emoji/images/emoji/",
             content)
 
         return content

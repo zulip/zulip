@@ -5,7 +5,7 @@
 
 ### NOTE: You must copy the emoji along with this script if you want
 ### them to work properly
-### (to static/third/gemoji/images/)
+### (to static/generated/emoji/images/)
 
 
 from __future__ import print_function
