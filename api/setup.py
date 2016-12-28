@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-if False: from typing import Any, Generator, List, Tuple
+if False:
+    from typing import Any, Generator, List, Tuple
 
 import os
 import sys
@@ -14,7 +15,7 @@ def version():
     version_py = os.path.join(os.path.dirname(__file__), "zulip", "__init__.py")
     with open(version_py) as in_handle:
         version_line = next(itertools.dropwhile(lambda x: not x.startswith("__version__"),
-                                           in_handle))
+                                                in_handle))
     version = version_line.split('=')[-1].strip().replace('"', '')
     return version
 
@@ -54,7 +55,7 @@ package_info = dict(
                   "examples/send-message",
                   "examples/subscribe",
                   "examples/unsubscribe",
-    ])] + list(recur_expand('share/zulip', 'integrations/')),
+                  ])] + list(recur_expand('share/zulip', 'integrations/')),
     scripts=["bin/zulip-send"],
 ) # type: Dict[str, Any]
 
@@ -63,7 +64,7 @@ setuptools_info = dict(
                       'simplejson',
                       'six',
                       'typing>=3.5.2.2',
-    ],
+                      ],
 )
 
 try:
