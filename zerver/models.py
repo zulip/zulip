@@ -1140,6 +1140,19 @@ class Attachment(ModelReprMixin, models.Model):
         # type: () -> bool
         return self.messages.count() > 0
 
+    def to_dict(self):
+        # type: () -> Dict[str, Any]
+        return {
+            'id': self.id,
+            'name': self.file_name,
+            'path_id': self.path_id,
+            'messages': [{
+                'id': m.id,
+                'name': '{m.pub_date:%Y-%m-%d %H:%M} {recipient}/{m.subject}'.format(
+                    recipient=get_display_recipient(m.recipient), m=m)
+            } for m in self.messages.all()]
+        }
+
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
     # TODO: Change return type to QuerySet[Attachment]
