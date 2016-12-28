@@ -3463,7 +3463,7 @@ def user_email_is_unique(email):
 
 def do_invite_users(user_profile, invitee_emails, streams):
     # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
-    new_prereg_users = [] # type: List[PreregistrationUser]
+    validated_emails = [] # type: List[Text]
     errors = [] # type: List[Tuple[Text, str]]
     skipped = [] # type: List[Tuple[Text, str]]
 
@@ -3499,16 +3499,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
             skipped.append((email, _("Already has an account.")))
             continue
 
-        # The logged in user is the referrer.
-        prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
-
-        # We save twice because you cannot associate a ManyToMany field
-        # on an unsaved object.
-        prereg_user.save()
-        prereg_user.streams = streams
-        prereg_user.save()
-
-        new_prereg_users.append(prereg_user)
+        validated_emails.append(email)
 
     if errors:
         ret_error = _("Some emails did not validate, so we didn't send any invitations.")
@@ -3521,12 +3512,21 @@ def do_invite_users(user_profile, invitee_emails, streams):
         ret_error_data = {'errors': skipped, 'sent_invitations': False}
         return ret_error, ret_error_data
 
-    # If we encounter an exception at any point before now, there are no unwanted side-effects,
-    # since it is totally fine to have duplicate PreregistrationUsers
-    for user in new_prereg_users:
-        event = {"email": user.email, "referrer_email": user_profile.email}
+    # Now that we are past all the possible errors, we actually create
+    # the PreregistrationUser objects and trigger the email invitations.
+    for email in validated_emails:
+        # The logged in user is the referrer.
+        prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
+
+        # We save twice because you cannot associate a ManyToMany field
+        # on an unsaved object.
+        prereg_user.save()
+        prereg_user.streams = streams
+        prereg_user.save()
+
+        event = {"email": prereg_user.email, "referrer_email": user_profile.email}
         queue_json_publish("invites", event,
-                           lambda event: do_send_confirmation_email(user, user_profile))
+                           lambda event: do_send_confirmation_email(prereg_user, user_profile))
 
     if skipped:
         ret_error = _("Some of those addresses are already using Zulip, "
