@@ -76,15 +76,15 @@ var stream_color_palette = [
     ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
 ];
 
-function picker_do_change_color() {
+function picker_do_change_color(subs_set_color) {
     return function (color) {
         var stream_id = $(this).attr('stream_id');
         var hex_color = color.toHexString();
-        subs.set_color(stream_id, hex_color);
+        subs_set_color(stream_id, hex_color);
     };
 }
 
-exports.set_colorpicker_color = function (colorpicker, color) {
+exports.set_colorpicker_color = function (colorpicker, color, subs_set_color) {
     var options = {
         clickoutFiresChange: true,
         showPalette: true,
@@ -92,20 +92,24 @@ exports.set_colorpicker_color = function (colorpicker, color) {
         palette: stream_color_palette,
         color: color,
         container: "#subscription_overlay .subscription_settings.show",
-        change: picker_do_change_color(),
+        change: picker_do_change_color(subs_set_color),
     };
 
     colorpicker.spectrum(options);
 };
 
-exports.update_stream_color = function (sub, stream_name, color, opts) {
+exports.update_stream_color = function (sub, stream_name, color, subs_set_color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
     var id = parseInt(sub.stream_id, 10);
     // The swatch in the subscription row header.
     $(".stream-row[data-stream-id='" + id + "'] .icon").css('background-color', color);
     // The swatch in the color picker.
-    exports.set_colorpicker_color($("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .colorpicker"), color);
+    exports.set_colorpicker_color(
+        $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .colorpicker"),
+        color,
+        subs_set_color
+    );
     $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .large-icon").css("color", color);
 
     if (opts.update_historical) {
@@ -115,7 +119,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     tab_bar.colorize_tab_bar();
 };
 
-exports.sidebar_options = function () {
+exports.sidebar_options = function (subs_set_color) {
     return {
         clickoutFiresChange: true,
         showPaletteOnly: true,
@@ -123,11 +127,11 @@ exports.sidebar_options = function () {
         showInput: true,
         flat: true,
         palette: stream_color_palette,
-        change: picker_do_change_color(),
+        change: picker_do_change_color(subs_set_color),
     };
 };
 
-exports.sidebar_options_full = function () {
+exports.sidebar_options_full = function (subs_set_color) {
     return {
         clickoutFiresChange: true,
         showPalette: true,
@@ -136,7 +140,7 @@ exports.sidebar_options_full = function () {
         cancelText: "",
         chooseText: "choose",
         palette: stream_color_palette,
-        change: picker_do_change_color(),
+        change: picker_do_change_color(subs_set_color),
     };
 };
 
