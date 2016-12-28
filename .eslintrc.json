@@ -87,6 +87,7 @@
         "fenced_code": false,
         "echo": false,
         "localstorage": false,
+        "localStorage": false,
         "current_msg_list": true,
         "home_msg_list": false,
         "pm_list": false,
