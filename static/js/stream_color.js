@@ -113,25 +113,29 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     tab_bar.colorize_tab_bar();
 };
 
-exports.sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPaletteOnly: true,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color
+exports.sidebar_options = function () {
+    return {
+        clickoutFiresChange: true,
+        showPaletteOnly: true,
+        showPalette: true,
+        showInput: true,
+        flat: true,
+        palette: stream_color_palette,
+        change: picker_do_change_color
+    };
 };
 
-exports.sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: true,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    cancelText: "",
-    chooseText: "choose",
-    palette: stream_color_palette,
-    change: picker_do_change_color
+exports.sidebar_options_full = function () {
+    return {
+        clickoutFiresChange: true,
+        showPalette: true,
+        showInput: true,
+        flat: true,
+        cancelText: "",
+        chooseText: "choose",
+        palette: stream_color_palette,
+        change: picker_do_change_color
+    };
 };
 
 var lightness_threshold;
