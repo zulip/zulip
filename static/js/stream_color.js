@@ -76,13 +76,6 @@ var stream_color_palette = [
     ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
 ];
 
-var subscriptions_table_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPalette: true,
-    showInput: true,
-    palette: stream_color_palette
-};
-
 function picker_do_change_color(color) {
     var stream_id = $(this).attr('stream_id');
     var hex_color = color.toHexString();
@@ -90,8 +83,17 @@ function picker_do_change_color(color) {
 }
 
 exports.set_colorpicker_color = function (colorpicker, color) {
-    colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
-                         {color: color, container: "#subscription_overlay .subscription_settings.show"}));
+    var options = {
+        clickoutFiresChange: true,
+        showPalette: true,
+        showInput: true,
+        palette: stream_color_palette,
+        color: color,
+        container: "#subscription_overlay .subscription_settings.show",
+        change: picker_do_change_color,
+    };
+
+    colorpicker.spectrum(options);
 };
 
 exports.update_stream_color = function (sub, stream_name, color, opts) {
@@ -110,8 +112,6 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     update_stream_sidebar_swatch_color(id, color);
     tab_bar.colorize_tab_bar();
 };
-
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
 exports.sidebar_popover_colorpicker_options = {
     clickoutFiresChange: true,
