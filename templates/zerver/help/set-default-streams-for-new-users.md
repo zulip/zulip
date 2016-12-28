@@ -1,6 +1,6 @@
 # Set default streams for new users
 
-Default streams for an organisation are set by an administrator.
+Default streams for an organization are set by an administrator.
 
 Follow the steps given below to set the default streams for new users
 using an administrator account:

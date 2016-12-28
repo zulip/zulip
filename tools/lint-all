@@ -367,6 +367,8 @@ def build_custom_checkers(by_lang):
          'description': "javascript should be spelled JavaScript"},
         {'pattern': '[^\/\-\.\"\'\_\=\>]([gG]ithub)[^\.\-\_\"\<]', # exclude usage in hrefs/divs
          'description': "github should be spelled GitHub"},
+        {'pattern': '[oO]rganisation', # exclude usage in hrefs/divs
+         'description': "Organization is spelled with a z"},
     ] # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
