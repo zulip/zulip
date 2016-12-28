@@ -1,7 +1,7 @@
 # Change your name
 
 If for whatever reason you ever wanted to change your name in Zulip,
-this is fully are supported.  Zulip has full unicode support, so you
+this is fully supported.  Zulip has full unicode support, so you
 can spell your name exactly how you'd like it to be displayed.
 
 Visit your settings by clicking the cog widget on the top right corner

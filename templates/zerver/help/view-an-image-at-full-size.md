@@ -1,6 +1,8 @@
 # View an image at full size
 
-Zulip generates image preview in the chat itself, but if you want to see the image at full size, just click on it.
+When someone sends an image in a Zulip chat, the image preview will be
+generated in the chat itself, but if you want to see the image at
+full size, you just have to click on it.
 
 ![preview](/static/images/help/image-preview.png)
 

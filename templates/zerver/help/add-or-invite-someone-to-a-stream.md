@@ -29,10 +29,10 @@ will appear upon hovering above the cog.
 
     ![Stream membership email autocomplete](/static/images/help/stream-add-email-auto.png)
 
-8. Once the email address is entered in the **Email address**, click the blue **Add** button to add the user to the stream.
+8. Once the email address is entered in the **Email address** field, click the blue **Add** button to add the user to the stream.
 
     ![Blue add button](/static/images/help/stream-blue-add.png)
 
-9. After you have pressed the blue **Add** button, the user will now be listed in the **Stream membership** section, confirming that they have been successfully added to the stream.
+9. After you press the blue **Add** button, the user will be listed in the **Stream membership** section, confirming that they have been successfully added to the stream.
 
     ![Stream add complete](/static/images/help/stream-add-complete.png)

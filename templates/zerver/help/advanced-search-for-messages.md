@@ -1,7 +1,7 @@
 # Advanced search for messages
 
 In Zulip, you can find specific messages by using the search bar
-(highlighted in red in the previous image) at the top of your
+(highlighted in red in the image below) at the top of your
 screen. This feature allows you to narrow your view to show specific
 messages using search constraints called **operators**.
 
@@ -34,7 +34,7 @@ Listed below are all Zulip search operators.
   `foo@bar.com`.
 * `sender:foo@bar.com` - This operator narrows the view to show all
   messages sent by the user with the email address `foo@bar.com`.
-* `sender:me` -This operator narrows the view to show all messages sent by you.
+* `sender:me` - This operator narrows the view to show all messages sent by you.
 * `near:xxxxx` - This operator narrows the view to show the message
   with the ID `xxxxx` as well as a few messages sent before and after
   the message.
@@ -47,9 +47,27 @@ Listed below are all Zulip search operators.
 * `has:link` - This operator narrows the view to show all messages that contain any links.
 * `has:image` - This operator narrows the view to show all messages that contain any images.
 * `has:attachment` - This operator narrows the view to show all messages that contain any attachments or uploads.
-* `keyword` - This operator narrows the view to show all messages containing the word or phrase `keyword`.
-* `"keyword"` - This operator narrows the view to show all messages containing the exact word or phrase `keyword`.
+* `keyword` - This operator narrows the view to show all messages containing the `keyword`.
+* `key phrase` - This operator narrows the view to show all messages containing all of the words in `key phrase`.
+* `"key phrase"` - This operator narrows the view to show all messages containing the exact phrase `key phrase`.
+(The difference between `keyword`, `key phrase` and `"key phrase"` is better explained below)
 * `-topic:foobar` - This operator narrows the view to exclude messages with the topic `foobar`
+
+## Difference between `keyword`, `key phrase` and `"key phrase"`
+
+* `keyword` is an operator that consists of one word. It narrows the view to show all the messages that contain
+that one word.
+* `key phrase` is an operator that consists of multiple words. It narrows the view to show all the messages that
+contain all of the words in that phrase, regardless of the order.
+* `"key phrase"` is an operator that consists of multiple words surrounded by quotation marks ( `"` ). It narrows
+the view to show all the messages that contain the key phrase in the exact same order.
+
+### Example
+
+If we had 3 messages, "Cheese", "I like cheese" and "Like cheese I", the operator `cheese` would show all of the
+messages, the operator `I like cheese` would only show "I like cheese" and "Like cheese I" and the operator
+`"I like cheese"` would only show the message "I like cheese".
+
 
 ## Keyboard shortcuts
 

@@ -16,7 +16,7 @@ You can sign in to your Zulip organization using your email address by following
 
     If you've forgotten your password, see the [Forgot password](#forgot-password) section for instructions on how to reset your password.
 
-3. Once you have finished entering your credentials, click the blue **Login** button to finish signing in.
+3. Once you have finished entering your credentials, click the blue **Log in** button to finish signing in.
 
 ### Forgot password
 If you've forgotten your password, click the **Forgot password?** link below the **Password** field.

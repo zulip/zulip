@@ -44,14 +44,14 @@ Within the **Private messages** tab on the left of the screen, you can view and 
 
 ![Private messages sidebar](/static/images/help/pms_in_left_sidebar.png)
 
-Clicking on the **Private messages** tab shows all of your private
-messages will in the center of your screen.
+Clicking on the **Private messages** tab will show all of your private
+messages in the center of your screen.
 
 ![Private messages](/static/images/help/private-messages.png)
 
-Clicking on a message from a private group message in this view
+Clicking on a message from a private group in this view
 will bring up a messaging box with the **one or more people...** field
-filled with the users in that group message.
+filled with the users in that group.
 You can then type a message to that group in the
 **Compose your message here...** field.
 
@@ -65,7 +65,7 @@ Clicking on one of these groups will narrow to that group.
 Now, if you click the `New private message` button
 at the bottom of your screen,
 the **one or more people...** field will automatically be filled with
-the users in that private group message.
+the users in that private group.
 Alternatively, you can click on a message from a group
 to bring up a messaging box with the **one or more people...** field
 filled with the users in that private group message.  

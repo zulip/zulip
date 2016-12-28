@@ -5,9 +5,9 @@ Zulip supports both **private messaging** and group chats via conversation **str
 
 **Streams** are either:
 * **Public** - Public streams are for open discussions. All users can subscribe to public streams and discuss there. Any Zulip user can join any public stream in the realm, and can view the complete message history of any public stream without joining the stream.
-* **Private** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to them. Users who are not members of a private stream cannot subscribe to the stream or read or send messages to the stream.
+* **Private** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to them. Users who are not members of a private stream cannot subscribe to the stream or read or send messages in the stream.
 
-**Private messaging** can either be **one-on-one** or **group** conversations. They can only be seen by users participating in the message.
+**Private messaging** can either be done in a **one-on-one** or in a **group** conversation. They can only be seen by users that are in the group.
 
 ## Sending a new stream message
 Read about sending a new stream message [here](/help/send-a-stream-message).
