@@ -85,9 +85,6 @@ pbr==1.10
 # Needed to access rabbitmq
 pika==0.10.0
 
-# Wrapper for mailchimp api
-postmonkey==1.0b0
-
 # Needed to access our database
 psycopg2==2.6.2
 

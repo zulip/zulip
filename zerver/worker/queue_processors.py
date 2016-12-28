@@ -35,6 +35,7 @@ import email
 import time
 import datetime
 import logging
+import requests
 import simplejson
 from six.moves import cStringIO as StringIO
 
@@ -111,39 +112,26 @@ class QueueProcessingWorker(object):
         # type: () -> None
         self.q.stop_consuming()
 
-if settings.MAILCHIMP_API_KEY:
-    from postmonkey import PostMonkey, MailChimpException
-
 @assign_queue('signups')
 class SignupWorker(QueueProcessingWorker):
-    def __init__(self):
-        # type: () -> None
-        super(SignupWorker, self).__init__()
-        if settings.MAILCHIMP_API_KEY:
-            self.pm = PostMonkey(settings.MAILCHIMP_API_KEY, timeout=10)
-
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        merge_vars = data['merge_vars']
         # This should clear out any invitation reminder emails
-        clear_followup_emails_queue(data["EMAIL"])
+        clear_followup_emails_queue(data['email_address'])
         if settings.MAILCHIMP_API_KEY and settings.PRODUCTION:
-            try:
-                self.pm.listSubscribe(
-                        id=settings.ZULIP_FRIENDS_LIST_ID,
-                        email_address=data['EMAIL'],
-                        merge_vars=merge_vars,
-                        double_optin=False,
-                        send_welcome=False)
-            except MailChimpException as e:
-                if e.code == 214:
-                    logging.warning("Attempted to sign up already existing email to list: %s" % (data['EMAIL'],))
-                else:
-                    raise e
+            endpoint = "https://%s.api.mailchimp.com/3.0/lists/%s/members" % \
+                       (settings.MAILCHIMP_API_KEY.split('-')[1], settings.ZULIP_FRIENDS_LIST_ID)
+            params = dict(data)
+            params['list_id'] = settings.ZULIP_FRIENDS_LIST_ID
+            params['status'] = 'subscribed'
+            r = requests.post(endpoint, auth=('apikey', settings.MAILCHIMP_API_KEY), json=params, timeout=10)
+            if r.status_code == 400 and ujson.loads(r.text)['title'] == 'Member Exists':
+                logging.warning("Attempted to sign up already existing email to list: %s" %
+                                (data['email_address'],))
+            else:
+                r.raise_for_status()
 
-        email = data["EMAIL"]
-        name = merge_vars["NAME"]
-        enqueue_welcome_emails(email, name)
+        enqueue_welcome_emails(data['email_address'], data['merge_fields']['NAME'])
 
 @assign_queue('invites')
 class ConfirmationEmailWorker(QueueProcessingWorker):
