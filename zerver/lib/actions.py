@@ -3462,13 +3462,13 @@ def user_email_is_unique(email):
         pass
 
 def do_invite_users(user_profile, invitee_emails, streams):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, List[Tuple[Text, str]]]]
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
     new_prereg_users = [] # type: List[PreregistrationUser]
     errors = [] # type: List[Tuple[Text, str]]
     skipped = [] # type: List[Tuple[Text, str]]
 
     ret_error = None # type: Optional[str]
-    ret_error_data = {} # type: Dict[str, List[Tuple[Text, str]]]
+    ret_error_data = {} # type: Dict[str, Union[List[Tuple[Text, str]], bool]]
 
     for email in invitee_emails:
         if email == '':
@@ -3512,12 +3512,13 @@ def do_invite_users(user_profile, invitee_emails, streams):
 
     if errors:
         ret_error = _("Some emails did not validate, so we didn't send any invitations.")
-        ret_error_data = {'errors': errors}
+        ret_error_data = {'errors': errors+skipped, 'sent_invitations': False}
+        return ret_error, ret_error_data
 
     if skipped and len(skipped) == len(invitee_emails):
         # All e-mails were skipped, so we didn't actually invite anyone.
         ret_error = _("We weren't able to invite anyone.")
-        ret_error_data = {'errors': skipped}
+        ret_error_data = {'errors': skipped, 'sent_invitations': False}
         return ret_error, ret_error_data
 
     # If we encounter an exception at any point before now, there are no unwanted side-effects,
@@ -3531,7 +3532,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
         ret_error = _("Some of those addresses are already using Zulip, "
                       "so we didn't send them an invitation. We did send "
                       "invitations to everyone else!")
-        ret_error_data = {'errors': skipped}
+        ret_error_data = {'errors': skipped, 'sent_invitations': True}
 
     return ret_error, ret_error_data
 
