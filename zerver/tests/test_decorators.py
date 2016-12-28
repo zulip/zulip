@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import mock
 
-from django.test import TestCase
+from typing import Any, Iterable, Union
+from django.test import TestCase, Client
 from django.utils.translation import ugettext as _
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.test.client import RequestFactory
 from django.conf import settings
 
@@ -33,7 +34,7 @@ from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
 from zerver.models import \
-    get_realm_by_string_id, get_user_profile_by_email
+    get_realm_by_string_id, get_user_profile_by_email, UserProfile
 
 import ujson
 
@@ -47,8 +48,10 @@ class DecoratorTestCase(TestCase):
         super(TestCase, self).__init__(*args, **kwargs)
 
     def test_get_client_name(self):
+        # type: () -> None
         class Request(object):
             def __init__(self, GET, POST, META):
+                # type: (Dict, Dict, Dict) -> None
                 self.GET = GET
                 self.POST = POST
                 self.META = META
@@ -90,8 +93,10 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(get_client_name(req, is_json_view=False), 'fancy phone')
 
     def test_REQ_converter(self):
+        # type: () -> None
 
         def my_converter(data):
+            # type: (str) -> List[str]
             lst = ujson.loads(data)
             if not isinstance(lst, list):
                 raise ValueError('not a list')
@@ -101,6 +106,7 @@ class DecoratorTestCase(TestCase):
 
         @has_request_variables
         def get_total(request, numbers=REQ(converter=my_converter)):
+            # type: (HttpRequest, Iterable[int]) -> int
             return sum(numbers)
 
         class Request(object):
@@ -127,9 +133,11 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(result, 21)
 
     def test_REQ_validator(self):
+        # type: () -> None
 
         @has_request_variables
         def get_total(request, numbers=REQ(validator=check_list(check_int))):
+            # type: (HttpRequest, Iterable[int]) -> int
             return sum(numbers)
 
         class Request(object):
@@ -156,13 +164,14 @@ class DecoratorTestCase(TestCase):
         self.assertEqual(result, 21)
 
     def test_REQ_argument_type(self):
-
+        # type: () -> None
         @has_request_variables
         def get_payload(request, payload=REQ(argument_type='body')):
+            # type: (HttpRequest, Dict) -> Dict
             return payload
 
         class MockRequest(object):
-            body = {}
+            body = {} # type: Dict
 
         request = MockRequest()
 
@@ -178,18 +187,21 @@ class DecoratorTestCase(TestCase):
         with self.assertRaises(Exception) as cm:
             @has_request_variables
             def test(request, payload=REQ(argument_type="invalid")):
+                # type: (HttpRequest, Dict) -> None
                 pass
             test(request)
 
     def test_api_key_only_webhook_view(self):
+        # type: () -> None
         @api_key_only_webhook_view('ClientName')
         def my_webhook(request, user_profile, client):
+            # type: (HttpRequest, UserProfile, str) -> unicode
             return user_profile.email
 
         class Request(HostRequestMock):
             GET = {} # type: Dict[str, str]
             POST = {} # type: Dict[str, str]
-            COOKIES = {}
+            COOKIES = {} # type: Dict[str, str]
             META = {'PATH_INFO': ''}
 
         webhook_bot_email = 'webhook-bot@zulip.com'
@@ -258,6 +270,7 @@ class DecoratorTestCase(TestCase):
 
 class RateLimitTestCase(TestCase):
     def errors_disallowed(self):
+        # type: () -> mock
         # Due to what is probably a hack in rate_limit(),
         # some tests will give a false positive (or succeed
         # for the wrong reason), unless we complain
@@ -268,6 +281,7 @@ class RateLimitTestCase(TestCase):
         return mock.patch('logging.error', side_effect=TestLoggingErrorException)
 
     def test_internal_local_clients_skip_rate_limiting(self):
+        # type: () -> None
         class Client(object):
             name = 'internal'
 
@@ -278,6 +292,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
+            # type: () -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -290,6 +305,7 @@ class RateLimitTestCase(TestCase):
         self.assertFalse(rate_limit_mock.called)
 
     def test_debug_clients_skip_rate_limiting(self):
+        # type: () -> None
         class Client(object):
             name = 'internal'
 
@@ -300,6 +316,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
+            # type: () -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -313,6 +330,7 @@ class RateLimitTestCase(TestCase):
         self.assertFalse(rate_limit_mock.called)
 
     def test_rate_limit_setting_of_false_bypasses_rate_limiting(self):
+        # type: () -> None
         class Client(object):
             name = 'external'
 
@@ -324,6 +342,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
+            # type: () -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -336,6 +355,7 @@ class RateLimitTestCase(TestCase):
         self.assertFalse(rate_limit_mock.called)
 
     def test_rate_limiting_happens_in_normal_case(self):
+        # type: () -> None
         class Client(object):
             name = 'external'
 
@@ -347,6 +367,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
+            # type: () -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -360,28 +381,32 @@ class RateLimitTestCase(TestCase):
 
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
-        x = "hello"
+        # type: () -> None
+        x = "hello" # type: Any
         self.assertEqual(check_string('x', x), None)
 
         x = 4
         self.assertEqual(check_string('x', x), 'x is not a string')
 
     def test_check_bool(self):
-        x = True
+        # type: () -> None
+        x = True # type: Any
         self.assertEqual(check_bool('x', x), None)
 
         x = 4
         self.assertEqual(check_bool('x', x), 'x is not a boolean')
 
     def test_check_int(self):
-        x = 5
+        # type: () -> None
+        x = 5 # type: Any
         self.assertEqual(check_int('x', x), None)
 
         x = [{}]
         self.assertEqual(check_int('x', x), 'x is not an integer')
 
     def test_check_list(self):
-        x = 999
+        # type: () -> None
+        x = 999 # type: Any
         error = check_list(check_string)('x', x)
         self.assertEqual(error, 'x is not a list')
 
@@ -398,6 +423,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(error, 'x should have exactly 2 items')
 
     def test_check_dict(self):
+        # type: () -> None
         keys = [
             ('names', check_list(check_string)),
             ('city', check_string),
@@ -406,7 +432,7 @@ class ValidatorTestCase(TestCase):
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
-        }
+        } # type: Any
         error = check_dict(keys)('x', x)
         self.assertEqual(error, None)
 
@@ -432,10 +458,12 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(error, 'x["city"] is not a string')
 
     def test_encapsulation(self):
+        # type: () -> None
         # There might be situations where we want deep
         # validation, but the error message should be customized.
         # This is an example.
         def check_person(val):
+            # type: (Any) -> Union[str, None]
             error = check_dict([
                 ['name', check_string],
                 ['age', check_int],
@@ -443,7 +471,7 @@ class ValidatorTestCase(TestCase):
             if error:
                 return 'This is not a valid person'
 
-        person = {'name': 'King Lear', 'age': 42}
+        person = {'name': 'King Lear', 'age': 42} # type: Any
         self.assertEqual(check_person(person), None)
 
         person = 'misconfigured data'
@@ -451,6 +479,7 @@ class ValidatorTestCase(TestCase):
 
 class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self):
+        # type: () -> None
         """
         rest_dispatch rejects requests in a deactivated realm, both /json and api
 
@@ -485,6 +514,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         self.assert_json_error_contains(result, "has been deactivated", status_code=401)
 
     def test_fetch_api_key_deactivated_realm(self):
+        # type: () -> None
         """
         authenticated_json_view views fail in a deactivated realm
 
@@ -502,6 +532,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
 
     def test_login_deactivated_realm(self):
+        # type: () -> None
         """
         logging in fails in a deactivated realm
 
@@ -511,6 +542,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         self.assert_in_response("has been deactivated", result)
 
     def test_webhook_deactivated_realm(self):
+        # type: () -> None
         """
         Using a webhook while in a deactivated realm fails
 
@@ -526,6 +558,7 @@ class DeactivatedRealmTest(ZulipTestCase):
 
 class LoginRequiredTest(ZulipTestCase):
     def test_login_required(self):
+        # type: () -> None
         """
         Verifies the zulip_login_required decorator blocks deactivated users.
         """
@@ -561,6 +594,7 @@ class LoginRequiredTest(ZulipTestCase):
 
 class FetchAPIKeyTest(ZulipTestCase):
     def test_fetch_api_key_success(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
 
         self.login(email)
@@ -568,6 +602,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_fetch_api_key_wrong_password(self):
+        # type: () -> None
         email = "cordelia@zulip.com"
 
         self.login(email)
@@ -576,6 +611,7 @@ class FetchAPIKeyTest(ZulipTestCase):
 
 class InactiveUserTest(ZulipTestCase):
     def test_send_deactivated_user(self):
+        # type: () -> None
         """
         rest_dispatch rejects requests from deactivated users, both /json and api
 
@@ -611,6 +647,7 @@ class InactiveUserTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Account not active", status_code=401)
 
     def test_fetch_api_key_deactivated_user(self):
+        # type: () -> None
         """
         authenticated_json_view views fail with a deactivated user
 
@@ -628,6 +665,7 @@ class InactiveUserTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Account not active", status_code=400)
 
     def test_login_deactivated_user(self):
+        # type: () -> None
         """
         logging in fails with an inactive user
 
@@ -640,6 +678,7 @@ class InactiveUserTest(ZulipTestCase):
         self.assert_in_response("Please enter a correct email and password", result)
 
     def test_webhook_deactivated_user(self):
+        # type: () -> None
         """
         Deactivated users can't use webhooks
 
@@ -658,14 +697,17 @@ class InactiveUserTest(ZulipTestCase):
 
 class TestValidateApiKey(ZulipTestCase):
     def setUp(self):
+        # type: () -> None
         self.webhook_bot = get_user_profile_by_email('webhook-bot@zulip.com')
         self.default_bot = get_user_profile_by_email('default-bot@zulip.com')
 
     def test_validate_api_key_if_profile_does_not_exist(self):
+        # type: () -> None
         with self.assertRaises(JsonableError):
             validate_api_key(HostRequestMock(), 'email@doesnotexist.com', 'api_key')
 
     def test_validate_api_key_if_api_key_does_not_match_profile_api_key(self):
+        # type: () -> None
         with self.assertRaises(JsonableError):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, 'not_32_length')
 
@@ -673,20 +715,24 @@ class TestValidateApiKey(ZulipTestCase):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, self.default_bot.api_key)
 
     def test_validate_api_key_if_profile_is_not_active(self):
+        # type: () -> None
         self._change_is_active_field(self.default_bot, False)
         with self.assertRaises(JsonableError):
             validate_api_key(HostRequestMock(), self.default_bot.email, self.default_bot.api_key)
         self._change_is_active_field(self.default_bot, True)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self):
+        # type: () -> None
         with self.assertRaises(JsonableError):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, self.webhook_bot.api_key)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self):
+        # type: () -> None
         profile = validate_api_key(HostRequestMock(), self.webhook_bot.email, self.webhook_bot.api_key, is_webhook=True)
         self.assertEqual(profile.pk, self.webhook_bot.pk)
 
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self):
+        # type: () -> None
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning:
                 with self.assertRaisesRegex(JsonableError,
@@ -711,6 +757,7 @@ class TestValidateApiKey(ZulipTestCase):
                     "subdomain {}".format(self.default_bot.email, 'acme'))
 
     def _change_is_active_field(self, profile, value):
+        # type: (UserProfile, bool) -> None
         profile.is_active = value
         profile.save()
 
@@ -719,15 +766,18 @@ class TestInternalNotifyView(TestCase):
 
     class Request(object):
         def __init__(self, POST, META):
+            # type: (Dict, Dict) -> None
             self.POST = POST
             self.META = META
             self.method = 'POST'
 
     def internal_notify(self, req):
+        # type: (HttpRequest) -> HttpRequest
         boring_view = lambda req: self.BORING_RESULT
         return internal_notify_view(boring_view)(req)
 
     def test_valid_internal_requests(self):
+        # type: () -> None
         secret = 'random'
         req = self.Request(
             POST=dict(secret=secret),
@@ -741,6 +791,7 @@ class TestInternalNotifyView(TestCase):
             self.assertEqual(req._email, 'internal')
 
     def test_internal_requests_with_broken_secret(self):
+        # type: () -> None
         secret = 'random'
         req = self.Request(
             POST=dict(secret=secret),
@@ -752,6 +803,7 @@ class TestInternalNotifyView(TestCase):
             self.assertEqual(self.internal_notify(req).status_code, 403)
 
     def test_external_requests(self):
+        # type: () -> None
         secret = 'random'
         req = self.Request(
             POST=dict(secret=secret),
@@ -763,18 +815,21 @@ class TestInternalNotifyView(TestCase):
             self.assertEqual(self.internal_notify(req).status_code, 403)
 
     def test_is_local_address(self):
+        # type: () -> None
         self.assertTrue(is_local_addr('127.0.0.1'))
         self.assertTrue(is_local_addr('::1'))
         self.assertFalse(is_local_addr('42.43.44.45'))
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         self._login(user_email)
         response = self._do_test(user_email)
         self.assertEqual(response.status_code, 200)
 
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         self._login(user_email)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
@@ -797,11 +852,13 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
                     "subdomain {}".format(user_email, 'acme'))
 
     def test_authenticated_json_post_view_if_user_is_incoming_webhook(self):
+        # type: () -> None
         user_email = 'webhook-bot@zulip.com'
         self._login(user_email, password="test")  # we set a password because user is a bot
         self.assert_json_error_contains(self._do_test(user_email), "Webhook bots can only access webhooks")
 
     def test_authenticated_json_post_view_if_user_is_not_active(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         self._login(user_email, password="test")
         # Get user_profile after _login so that we have the latest data.
@@ -813,6 +870,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         do_reactivate_user(user_profile)
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         user_profile = get_user_profile_by_email(user_email)
         self._login(user_email)
@@ -823,10 +881,12 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         do_reactivate_realm(user_profile.realm)
 
     def _do_test(self, user_email):
+        # type: (str) -> HttpResponse
         data = {"status": '"started"'}
         return self.client_post(r'/json/tutorial_status', data)
 
     def _login(self, user_email, password=None):
+        # type: (str, str) -> None
         if password:
             user_profile = get_user_profile_by_email(user_email)
             user_profile.set_password(password)
@@ -835,6 +895,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
 class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
     def test_authenticated_json_view_if_subdomain_is_invalid(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         self._login(user_email)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
@@ -857,10 +918,12 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
                     "subdomain {}".format(user_email, 'acme'))
 
     def _do_test(self, user_email):
+        # type: (str) -> HttpResponse
         data = {"status": '"started"'}
         return self.client_post(r'/json/tutorial_status', data)
 
     def _login(self, user_email, password=None):
+        # type: (str, str) -> None
         if password:
             user_profile = get_user_profile_by_email(user_email)
             user_profile.set_password(password)
@@ -869,6 +932,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
     def test_zulip_login_required_if_subdomain_is_invalid(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         self.login(user_email)
 
@@ -887,6 +951,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
 
 class TestZulipInternalDecorator(ZulipTestCase):
     def test_zulip_internal_decorator(self):
+        # type: () -> None
         user_email = 'hamlet@zulip.com'
         self.login(user_email)
 
@@ -902,6 +967,7 @@ class TestZulipInternalDecorator(ZulipTestCase):
 
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_return_success_on_head_request_returns_200_if_request_method_is_head(self):
+        # type: () -> None
         class HeadRequest(object):
             method = 'HEAD'
 
@@ -909,6 +975,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
         @return_success_on_head_request
         def test_function(request):
+            # type: (HttpRequest) -> HttpResponse
             return json_response(msg=u'from_test_function')
 
         response = test_function(request)
@@ -916,6 +983,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
         self.assertNotEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
 
     def test_return_success_on_head_request_returns_normal_response_if_request_method_is_not_head(self):
+            # type: () -> None
             class HeadRequest(object):
                 method = 'POST'
 
@@ -923,6 +991,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
             @return_success_on_head_request
             def test_function(request):
+                # type: (HttpRequest) -> HttpResponse
                 return json_response(msg=u'from_test_function')
 
             response = test_function(request)
