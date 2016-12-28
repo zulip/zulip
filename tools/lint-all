@@ -26,7 +26,6 @@ puppet/apt/.forge-release
 puppet/apt/README.md
 static/locale
 static/third
-zerver/migrations
 zproject/settings.py
 zproject/test_settings.py
 """.split()
@@ -155,7 +154,7 @@ def build_custom_checkers(by_lang):
                     traceback.print_exc()
             if (max_length is not None and len(line) > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
-                    "#ignorelongline" not in line):
+                    "#ignorelongline" not in line and 'migrations' not in fn):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             lastLine = line
         if lineFlag and '\n' not in lastLine:

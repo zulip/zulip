@@ -27,7 +27,7 @@ def set_string_id_using_domain(apps, schema_editor):
                     continue
                 except IntegrityError:
                     pass
-            raise RuntimeError("Unable to find a good string_id for realm %s" % realm)
+            raise RuntimeError("Unable to find a good string_id for realm %s" % (realm,))
 
 class Migration(migrations.Migration):
 
