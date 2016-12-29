@@ -141,8 +141,8 @@ class SignupWorker(QueueProcessingWorker):
                 else:
                     raise e
 
-        email = data.get("EMAIL")
-        name = merge_vars.get("NAME")
+        email = data["EMAIL"]
+        name = merge_vars["NAME"]
         enqueue_welcome_emails(email, name)
 
 @assign_queue('invites')
