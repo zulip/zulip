@@ -11,7 +11,7 @@ our_dir = os.path.dirname(os.path.abspath(__file__))
 
 # For dev setups, we can find the API in the repo itself.
 if os.path.exists(os.path.join(our_dir, '../api/zulip')):
-    sys.path.append('../api')
+    sys.path.insert(0, '../api')
 
 from zulip import Client
 
