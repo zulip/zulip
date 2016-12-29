@@ -45,11 +45,11 @@ msgstr "%s的确认邮件"
 
 #: confirmation/models.py:151
 msgid "created"
-msgstr ""
+msgstr "完成"
 
 #: templates/zerver/accounts_accept_terms.html:15
 msgid "There is a new terms of service."
-msgstr ""
+msgstr "有新的服务条款"
 
 #: templates/zerver/accounts_accept_terms.html:16
 msgid "Accept the terms of service"
@@ -320,11 +320,11 @@ msgstr "添加附件"
 
 #: templates/zerver/compose.html:85
 msgid "Write"
-msgstr ""
+msgstr "写"
 
 #: templates/zerver/compose.html:86
 msgid "Preview"
-msgstr ""
+msgstr "看预习"
 
 #: templates/zerver/compose.html:87
 msgid "Restore draft"
@@ -340,7 +340,7 @@ msgstr "按回车键发送"
 
 #: templates/zerver/create_realm.html:25
 msgid "Create organization"
-msgstr ""
+msgstr "开始新社区"
 
 #: templates/zerver/deactivated.html:4
 msgid "Deactivated organization"
@@ -834,7 +834,7 @@ msgstr "下一步"
 
 #: templates/zerver/invalid_realm.html:4
 msgid "Organization Does Not Exist"
-msgstr ""
+msgstr "没有社区"
 
 #: templates/zerver/invalid_realm.html:7
 msgid "There is no Zulip organization hosted at this subdomain"
@@ -1195,7 +1195,7 @@ msgstr ""
 
 #: templates/zerver/portico.html:85
 msgid "Create new organization"
-msgstr ""
+msgstr "开始新社区"
 
 #: templates/zerver/realm_creation_failed.html:3
 msgid "got a bit lost there."
@@ -1219,7 +1219,7 @@ msgstr "名字"
 
 #: templates/zerver/register.html:51
 msgid "Organization name"
-msgstr ""
+msgstr "社区名"
 
 #: templates/zerver/register.html:53
 msgid "E.g. Acme"
@@ -1949,11 +1949,11 @@ msgstr "帐户已经停用"
 
 #: zerver/views/__init__.py:736
 msgid "New organization creation disabled."
-msgstr ""
+msgstr "不能开始新社区"
 
 #: zerver/views/__init__.py:739
 msgid "The organization creation link has been expired or is not valid."
-msgstr ""
+msgstr "开始社区链接太旧或者不行"
 
 #: zerver/views/__init__.py:1076
 msgid "Password auth is disabled in your team."
@@ -2016,7 +2016,7 @@ msgstr "IRC频道名称必须以#开头"
 
 #: zerver/views/messages.py:872
 msgid "Your organization has turned off message editing."
-msgstr ""
+msgstr "你的社区不让编辑消息"
 
 #: zerver/views/messages.py:877
 msgid "Unknown message id"
@@ -2036,7 +2036,7 @@ msgstr "无需修改（Nothing to change）"
 
 #: zerver/views/messages.py:912 zerver/views/webhooks/ifttt.py:23
 msgid "Content can't be empty"
-msgstr ""
+msgstr "东西不能是空的"
 
 #: zerver/views/messages.py:939
 msgid "No such message"
@@ -2066,7 +2066,7 @@ msgstr "Token不存在"
 #: zerver/views/realm.py:37 zerver/views/user_settings.py:124
 #, python-format
 msgid "Invalid language '%s'"
-msgstr ""
+msgstr "语言不行"
 
 #: zerver/views/streams.py:56 zerver/views/streams.py:312
 #, python-format
@@ -2227,7 +2227,7 @@ msgstr "错误的事件%s"
 
 #: zerver/views/webhooks/ifttt.py:21
 msgid "Subject can't be empty"
-msgstr ""
+msgstr "标题不能空的"
 
 #: zerver/views/webhooks/jira.py:180
 msgid "Unknown JIRA event type"
@@ -2277,7 +2277,7 @@ msgstr "没有找到 Kerberos凭证"
 
 #: zerver/views/zephyr.py:29
 msgid "Webathena login not enabled"
-msgstr ""
+msgstr  "Webathena 登录不允许"
 
 #: zerver/views/zephyr.py:41
 msgid "Invalid Kerberos cache"
