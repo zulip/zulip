@@ -44,6 +44,7 @@ import git_p4
 __version__ = "0.1"
 
 sys.path.insert(0, os.path.dirname(__file__))
+from typing import Any, Dict, Optional, Text
 import zulip_perforce_config as config
 
 if config.ZULIP_API_PATH is not None:
@@ -54,11 +55,11 @@ client = zulip.Client(
     email=config.ZULIP_USER,
     site=config.ZULIP_SITE,
     api_key=config.ZULIP_API_KEY,
-    client="ZulipPerforce/" + __version__)
+    client="ZulipPerforce/" + __version__)  # type: zulip.Client
 
 try:
-    changelist = int(sys.argv[1])
-    changeroot = sys.argv[2]
+    changelist = int(sys.argv[1])  # type: int
+    changeroot = sys.argv[2]  # type: str
 except IndexError:
     print("Wrong number of arguments.\n\n", end=' ', file=sys.stderr)
     print(__doc__, file=sys.stderr)
@@ -68,22 +69,23 @@ except ValueError:
     print(__doc__, file=sys.stderr)
     sys.exit(-1)
 
-metadata = git_p4.p4_describe(changelist)
+metadata = git_p4.p4_describe(changelist)  # type: Dict[str, str]
 
-destination = config.commit_notice_destination(changeroot, changelist)
+destination = config.commit_notice_destination(changeroot, changelist)  # type: Optional[Dict[str, str]]
 if destination is None:
     # Don't forward the notice anywhere
     sys.exit(0)
 
-message = """**{0}** committed revision @{1} to `{2}`.
-
-> {3}
-""".format(metadata["user"], metadata["change"], changeroot, metadata["desc"])
+message = "**{0}** committed revision @{1} to `{2}`.\n\n> {3}".format(
+    metadata["user"],
+    metadata["change"],
+    changeroot,
+    metadata["desc"])  # type: str
 
 message_data = {
     "type": "stream",
     "to": destination["stream"],
     "subject": destination["subject"],
     "content": message,
-}
+}  # type: Dict[str, Any]
 client.send_message(message_data)
