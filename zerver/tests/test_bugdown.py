@@ -427,11 +427,11 @@ class BugdownTest(TestCase):
         # type: () -> None
         msg = u'\u2615'  # ☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
 
         msg = u'\u2615\u2615'  # ☕☕
         converted = bugdown_convert(msg)
-        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/third/gemoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
+        self.assertEqual(converted, u'<p><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"><img alt="\u2615" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2615.png" title="\u2615"></p>')
 
     def test_realm_patterns(self):
         # type: () -> None

@@ -7,7 +7,7 @@ from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_vi
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from six import text_type
+from typing import Text
 from typing import Dict, Any, Optional
 
 BODY_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.'
@@ -18,7 +18,7 @@ def api_gosquared_webhook(request, user_profile, client,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='gosquared'),
                           topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Dict[str, Any]], Text, Text) -> HttpResponse
     try:
         domain_name = payload['siteDetails']['domain']
         user_num = payload['concurrents']

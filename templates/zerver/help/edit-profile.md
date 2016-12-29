@@ -3,7 +3,7 @@
 Editing your profile lets you adjust the details of your account and
 gives a better description of who you are to your team members. The
 following instructions show you how to change your name, choose an
-avatar, select a default language, and manage notifications.
+avatar and select a default language.
 
 ### Finding the settings page
 
@@ -29,3 +29,7 @@ avatar, select a default language, and manage notifications.
 2. Under the "**Your Account**" section, click the "**Customize
    avatar**" button and choose an image to upload as your avatar.
 3. Click Save Changes once you’re finished!
+
+### Changing your language
+
+See [this](/help/change-your-language) for a guide on how to change your language.

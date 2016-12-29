@@ -18,11 +18,11 @@ See **[Changing the Default Language](/help/change-your-language)** to learn mor
 
 ![Display user list on left side in narrow windows](/static/images/help/users-left.png)
 
-See **[Move the user list to the left sidebar](/help/user-list-left)** to learn more about this option.
+See **[Move the user list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)** to learn more about this option.
 
 ## Display time in 24-hour format
 ![Display time in 24-hour format option](/static/images/help/24-hour-display.png)
 
 ![Display time in 24-hour format](/static/images/help/24-hour.png)
 
-See **[Change the date and time format](/help/change-date-time)** to learn more about this option.
+See **[Change the date and time format](/help/change-the-date-and-time-format)** to learn more about this option.

@@ -31,7 +31,7 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
-    get_realm_by_string_id, get_realm, get_stream, get_user_profile_by_email,
+    get_realm_by_string_id, get_stream, get_user_profile_by_email,
     Reaction, sew_messages_and_reactions
 )
 
@@ -383,7 +383,7 @@ class StreamMessagesTest(ZulipTestCase):
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
-        realm = get_realm('zulip.com')
+        realm = get_realm_by_string_id('zulip')
         subscribers = self.users_subscribed_to_stream(stream_name, realm)
         old_subscriber_messages = []
         for subscriber in subscribers:

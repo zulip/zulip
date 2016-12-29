@@ -443,7 +443,7 @@ function report_send_time(send_time, receive_time, display_time, locally_echoed,
 }
 
 var socket;
-if (page_params.use_socket) {
+if (page_params.use_websockets) {
     socket = new Socket("/sockjs");
 }
 // For debugging.  The socket will eventually move out of this file anyway.
@@ -556,7 +556,7 @@ exports.send_message_success = function (local_id, message_id, start_time, local
 
 exports.transmit_message = function (request, success, error) {
     delete exports.send_times_data[request.id];
-    if (page_params.use_socket) {
+    if (page_params.use_websockets) {
         send_message_socket(request, success, error);
     } else {
         send_message_ajax(request, success, error);
@@ -1201,5 +1201,8 @@ $(function () {
 });
 
 return exports;
-
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = compose;
+}

@@ -32,7 +32,6 @@ from zerver.lib.test_helpers import (
 )
 
 from zerver.models import (
-    get_realm,
     get_stream,
     get_user_profile_by_email,
     get_realm_by_email_domain,
@@ -57,7 +56,7 @@ import time
 import ujson
 import unittest
 from six.moves import urllib
-from six import text_type, binary_type
+from six import binary_type
 from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
@@ -251,7 +250,7 @@ class ZulipTestCase(TestCase):
             user_profile=user_profile,
             active=True,
             recipient__type=Recipient.STREAM)
-        return [cast(text_type, get_display_recipient(sub.recipient)) for sub in subs]
+        return [cast(Text, get_display_recipient(sub.recipient)) for sub in subs]
 
     def send_message(self, sender_name, raw_recipients, message_type,
                      content=u"test content", subject=u"test", **kwargs):

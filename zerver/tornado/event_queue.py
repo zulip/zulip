@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import cast, AbstractSet, Any, Optional, Iterable, Sequence, Mapping, MutableMapping, Callable, Union
+from typing import cast, AbstractSet, Any, Optional, Iterable, Sequence, Mapping, MutableMapping, Callable, Union, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -34,7 +34,6 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
 import copy
 import six
-from six import text_type
 
 requests_client = requests.Session()
 for host in ['127.0.0.1', 'localhost']:
@@ -64,7 +63,7 @@ class ClientDescriptor(object):
     def __init__(self, user_profile_id, user_profile_email, realm_id, event_queue,
                  event_types, client_type_name, apply_markdown=True,
                  all_public_streams=False, lifespan_secs=0, narrow=[]):
-        # type: (int, text_type, int, EventQueue, Optional[Sequence[str]], text_type, bool, bool, int, Iterable[Sequence[text_type]]) -> None
+        # type: (int, Text, int, EventQueue, Optional[Sequence[str]], Text, bool, bool, int, Iterable[Sequence[Text]]) -> None
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -73,7 +72,7 @@ class ClientDescriptor(object):
         self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None # type: Optional[int]
-        self.current_client_name = None # type: Optional[text_type]
+        self.current_client_name = None # type: Optional[Text]
         self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
@@ -176,7 +175,7 @@ class ClientDescriptor(object):
                 and now - self.last_connection_time >= self.queue_timeout)
 
     def connect_handler(self, handler_id, client_name):
-        # type: (int, text_type) -> None
+        # type: (int, Text) -> None
         self.current_handler_id = handler_id
         self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
@@ -494,8 +493,8 @@ def fetch_events(query):
     last_event_id = query["last_event_id"] # type: int
     user_profile_id = query["user_profile_id"] # type: int
     new_queue_data = query.get("new_queue_data") # type: Optional[MutableMapping[str, Any]]
-    user_profile_email = query["user_profile_email"] # type: text_type
-    client_type_name = query["client_type_name"] # type: text_type
+    user_profile_email = query["user_profile_email"] # type: Text
+    client_type_name = query["client_type_name"] # type: Text
     handler_id = query["handler_id"] # type: int
 
     try:
@@ -562,7 +561,7 @@ def extract_json_response(resp):
 def request_event_queue(user_profile, user_client, apply_markdown,
                         queue_lifespan_secs, event_types=None, all_public_streams=False,
                         narrow=[]):
-    # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[text_type]]) -> Optional[str]
+    # type: (UserProfile, Client, bool, int, Optional[Iterable[str]], bool, Iterable[Sequence[Text]]) -> Optional[str]
     if settings.TORNADO_SERVER:
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
@@ -648,7 +647,7 @@ def missedmessage_hook(user_profile_id, queue, last_for_client):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
 
 def receiver_is_idle(user_profile_id, realm_presences):
-    # type: (int, Optional[Dict[int, Dict[text_type, Dict[str, Any]]]]) -> bool
+    # type: (int, Optional[Dict[int, Dict[Text, Dict[str, Any]]]]) -> bool
     # If a user has no message-receiving event queues, they've got no open zulip
     # session so we notify them
     all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
@@ -684,14 +683,14 @@ def receiver_is_idle(user_profile_id, realm_presences):
 
 def process_message_event(event_template, users):
     # type: (Mapping[str, Any], Iterable[Mapping[str, Any]]) -> None
-    realm_presences = {int(k): v for k, v in event_template['presences'].items()} # type: Dict[int, Dict[text_type, Dict[str, Any]]]
+    realm_presences = {int(k): v for k, v in event_template['presences'].items()} # type: Dict[int, Dict[Text, Dict[str, Any]]]
     sender_queue_id = event_template.get('sender_queue_id', None) # type: Optional[str]
     message_dict_markdown = event_template['message_dict_markdown'] # type: Dict[str, Any]
     message_dict_no_markdown = event_template['message_dict_no_markdown'] # type: Dict[str, Any]
     sender_id = message_dict_markdown['sender_id'] # type: int
     message_id = message_dict_markdown['id'] # type: int
     message_type = message_dict_markdown['type'] # type: str
-    sending_client = message_dict_markdown['client'] # type: text_type
+    sending_client = message_dict_markdown['client'] # type: Text
 
     # To remove duplicate clients: Maps queue ID to {'client': Client, 'flags': flags}
     send_to_clients = {} # type: Dict[str, Dict[str, Any]]

@@ -47,7 +47,7 @@ var fake_messages = [
     },
     {
         id: 3,
-        content: "<p>Looks good to me! <img alt=':+1:' class='emoji' src='/static/third/gemoji/images/emoji/+1.png' title=':+1:'></p>",
+        content: "<p>Looks good to me! <img alt=':+1:' class='emoji' src='/static/generated/emoji/images/emoji/+1.png' title=':+1:'></p>",
         is_stream: true,
         sender_full_name: "Jeff Arnold",
         sender_email: "jeff@zulip.com",
@@ -75,7 +75,7 @@ var fake_messages = [
     },
     {
         id: 5,
-        content: "<p>Yay, Twitter integration. <img alt=':heart_eyes:' class='emoji' src='/static/third/gemoji/images/emoji/heart_eyes.png' title=':heart_eyes:'></p>",
+        content: "<p>Yay, Twitter integration. <img alt=':heart_eyes:' class='emoji' src='/static/generated/emoji/images/emoji/heart_eyes.png' title=':heart_eyes:'></p>",
         is_stream: true,
         sender_full_name: "Leo Franchi",
         sender_email: "leo@zulip.com",
@@ -117,7 +117,7 @@ var fake_messages = [
     },
     {
         id: 8,
-        content: "<p><img alt=':clock1130:' class='emoji' src='/static/third/gemoji/images/emoji/clock1130.png' title=':clock1130:'> Reminder: engineering meeting in 1 hour. <img alt=':clock1130:' class='emoji' src='/static/third/gemoji/images/emoji/clock1130.png' title=':clock1130:'></p>",
+        content: "<p><img alt=':clock1130:' class='emoji' src='/static/generated/emoji/images/emoji/clock1130.png' title=':clock1130:'> Reminder: engineering meeting in 1 hour. <img alt=':clock1130:' class='emoji' src='/static/generated/emoji/images/emoji/clock1130.png' title=':clock1130:'></p>",
         is_stream: true,
         sender_full_name: "Reminder Bot",
         sender_email: "reminder-bot@zulip.com",
@@ -173,7 +173,7 @@ var fake_messages = [
     },
     {
         id: 12,
-        content: "<p>No problem, less work for me. <img alt=':smile:' class='emoji' src='/static/third/gemoji/images/emoji/smile.png' title=':smile:'></p>",
+        content: "<p>No problem, less work for me. <img alt=':smile:' class='emoji' src='/static/generated/emoji/images/emoji/smile.png' title=':smile:'></p>",
         is_stream: true,
         sender_full_name: "Abbie Patel",
         sender_email: "abbie@zulip.com",

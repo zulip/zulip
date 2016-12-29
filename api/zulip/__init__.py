@@ -38,7 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
-from typing import Any, Callable, Dict, Mapping, Optional, Tuple, Union, Iterable
+from typing import Any, Callable, Dict, Mapping, Optional, Tuple, Union, Iterable, Text
 
 __version__ = "0.2.5"
 
@@ -295,7 +295,7 @@ class Client(object):
         request = {}
 
         for (key, val) in six.iteritems(orig_request):
-            if isinstance(val, str) or isinstance(val, six.text_type):
+            if isinstance(val, str) or isinstance(val, Text):
                 request[key] = val
             else:
                 request[key] = simplejson.dumps(val)

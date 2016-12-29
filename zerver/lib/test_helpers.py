@@ -30,7 +30,6 @@ from zerver.lib.actions import (
 )
 
 from zerver.models import (
-    get_realm,
     get_stream,
     get_user_profile_by_email,
     Client,

@@ -11,14 +11,22 @@ our_dir = os.path.dirname(os.path.abspath(__file__))
 
 # For dev setups, we can find the API in the repo itself.
 if os.path.exists(os.path.join(our_dir, '../api/zulip')):
-    sys.path.append('../api')
+    sys.path.insert(0, '../api')
 
 from zulip import Client
 
 class RestrictedClient(object):
     def __init__(self, client):
         # Only expose a subset of our Client's functionality
+        user_profile = client.get_profile()
         self.send_message = client.send_message
+        try:
+            self.full_name = user_profile['full_name']
+            self.email = user_profile['email']
+        except KeyError:
+            logging.error('Cannot fetch user profile, make sure you have set'
+                          ' up the zuliprc file correctly.')
+            sys.exit(1)
 
 def get_lib_module(lib_fn):
     lib_fn = os.path.abspath(lib_fn)
@@ -60,7 +68,8 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
 
     def handle_message(message):
         logging.info('waiting for next message')
-        if message_handler.triage_message(message=message):
+        if message_handler.triage_message(message=message,
+                                          client=restricted_client):
             message_handler.handle_message(
                 message=message,
                 client=restricted_client,

@@ -5,18 +5,18 @@ Zulip supports both **private messaging** and group chats via conversation **str
 
 **Streams** are either:
 * **Public** - Public streams are for open discussions. All users can subscribe to public streams and discuss there. Any Zulip user can join any public stream in the realm, and can view the complete message history of any public stream without joining the stream.
-* **Private** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to them. Users who are not members of a private stream cannot subscribe to the stream or read or send messages to the stream.
+* **Private** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to them. Users who are not members of a private stream cannot subscribe to the stream or read or send messages in the stream.
 
-**Private messaging** can either be **one-on-one** or **group** conversations. They can only be seen by users participating in the message.
+**Private messaging** can either be done in a **one-on-one** or in a **group** conversation. They can only be seen by users that are in the group.
 
 ## Sending a new stream message
-Read about sending a new stream message [here](/help/send-stream-message).
+Read about sending a new stream message [here](/help/send-a-stream-message).
 ## Private messaging
 ![New private message](/static/images/help/private-message.png)
 
 ![New private message](/static/images/help/private-box.png)
 
-See **["Send a private message"](/help/send-private-message)** to learn more about sending a private message.
+See **["Send a private message"](/help/send-a-private-message)** to learn more about sending a private message.
 
 ## Other features
 While sending either a stream or private message, several features located below the messaging box in the bottom-left corner can aid you in composing your message.
@@ -44,10 +44,10 @@ While the file is uploading, a blue box labeled **Uploading...** will appear, an
 Clicking the **A**  (![A](/static/images/help/formatting.png)) icon will reveal a modal window with a summary of message formatting in Zulip. For more information on message formatting, see our [message formatting guide](/help/format-your-message-using-markdown).
 
 ### Restore draft
-Read about restoring the draft of a message [here](/help/restore-unsent-message).
+Read about restoring the draft of a message [here](/help/restore-the-last-unsent-message).
 
 ### Previewing your message
-Read about message previewing [here](/help/previewing-message).
+Read about message previewing [here](/help/preview-your-message-before-sending).
 
 ### Press Enter to send
-Read about pressing enter to send [here](/help/press-enter-send).
+Read about pressing enter to send [here](/help/enable-or-disable-pressing-enter-to-send).

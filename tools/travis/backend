@@ -11,6 +11,7 @@ set -x
 ./tools/test-migrations
 ./tools/test-run-dev
 ./tools/test-documentation
+./tools/test-help-documentation.py
 # Some test suites disabled in CI for being flaky
 #./tools/test-queue-worker-reload
 

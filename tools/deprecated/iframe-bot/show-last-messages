@@ -5,7 +5,7 @@
 
 ### NOTE: You must copy the emoji along with this script if you want
 ### them to work properly
-### (to static/third/gemoji/images/)
+### (to static/generated/emoji/images/)
 
 
 from __future__ import print_function
@@ -44,6 +44,11 @@ if options.streams == "":
 client.add_subscriptions([{"name": stream_name} for stream_name in
                           options.streams.split()])
 queue = client.register(event_types=['message'])
+
+
+# TODO: The following code never works.  We should probably remove
+# this deprecated script entirely, but if we need to resurrect it,
+# we need to fix the code below to work with the new API.
 client._register('get_old_messages', method='GET', url='messages')
 
 result = client.get_old_messages({'anchor': queue['max_message_id'],

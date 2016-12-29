@@ -10,7 +10,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import UserProfile, Client
 
-from typing import Text, Dict, Any
+from typing import Dict, Any, Text
 
 @api_key_only_webhook_view("AppFollow")
 @has_request_variables

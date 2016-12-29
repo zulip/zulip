@@ -11,7 +11,7 @@ class HelpHandler(object):
             your Zulip instance.
             '''
 
-    def triage_message(self, message):
+    def triage_message(self, message, client):
         # return True if we think the message may be of interest
         original_content = message['content']
 

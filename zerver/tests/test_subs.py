@@ -40,7 +40,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm_by_string_id, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
-    create_streams_if_needed, active_user_ids, get_realm
+    create_streams_if_needed, active_user_ids
 )
 
 from zerver.views.streams import (
@@ -2033,8 +2033,8 @@ class GetSubscribersTest(ZulipTestCase):
         self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
 
-    def check_well_formed_result(self, result, stream_name, realm_domain):
-        # type: (Dict[str, Any], Text, Text) -> None
+    def check_well_formed_result(self, result, stream_name, realm):
+        # type: (Dict[str, Any], Text, Realm) -> None
         """
         A successful call to get_subscribers returns the list of subscribers in
         the form:
@@ -2043,7 +2043,6 @@ class GetSubscribersTest(ZulipTestCase):
          "result": "success",
          "subscribers": ["hamlet@zulip.com", "prospero@zulip.com"]}
         """
-        realm = get_realm(realm_domain)
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
         true_subscribers = [user_profile.email for user_profile in self.users_subscribed_to_stream(
@@ -2062,7 +2061,7 @@ class GetSubscribersTest(ZulipTestCase):
         result = self.make_subscriber_request(stream_name)
         self.assert_json_success(result)
         self.check_well_formed_result(ujson.loads(result.content),
-                                      stream_name, self.user_profile.realm.domain)
+                                      stream_name, self.user_profile.realm)
 
     def test_subscriber(self):
         # type: () -> None

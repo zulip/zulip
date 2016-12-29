@@ -173,7 +173,8 @@ exports.populate_emoji = function (emoji_data) {
         emoji_table.append(templates.render('admin_emoji_list', {
             emoji: {
                 name: name, source_url: data.source_url,
-                display_url: data.display_url
+                display_url: data.display_url,
+                author: data.author
             }
         }));
     });
@@ -234,6 +235,7 @@ function _setup_page() {
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
+        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
@@ -250,6 +252,7 @@ function _setup_page() {
     $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
     $("#admin-realm-authentication-methods-status").expectOne().hide();
     $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
+    $("#admin-realm-add-emoji-by-admins-only-status").expectOne().hide();
     $("#admin-realm-message-editing-status").expectOne().hide();
     $("#admin-realm-default-language-status").expectOne().hide();
     $('#admin-realm-waiting_period_threshold_status').expectOne().hide();
@@ -496,6 +499,7 @@ function _setup_page() {
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
+        var add_emoji_by_admins_only_status = $("#admin-realm-add-emoji-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
         var waiting_period_threshold_status = $("#admin-realm-waiting_period_threshold_status").expectOne();
@@ -505,6 +509,7 @@ function _setup_page() {
         invite_by_admins_only_status.hide();
         authentication_methods_status.hide();
         create_stream_by_admins_only_status.hide();
+        add_emoji_by_admins_only_status.hide();
         message_editing_status.hide();
         default_language_status.hide();
         waiting_period_threshold_status.hide();
@@ -517,6 +522,7 @@ function _setup_page() {
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
+        var new_add_emoji_by_admins_only = $("#id_realm_add_emoji_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_default_language = $("#id_realm_default_language").val();
@@ -546,6 +552,7 @@ function _setup_page() {
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
             authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
+            add_emoji_by_admins_only: JSON.stringify(new_add_emoji_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
@@ -586,6 +593,13 @@ function _setup_page() {
                         ui.report_success(i18n.t("Only Admins may now create new streams!"), create_stream_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
+                    }
+                }
+                if (response_data.add_emoji_by_admins_only !== undefined) {
+                    if (response_data.add_emoji_by_admins_only) {
+                        ui.report_success(i18n.t("Only Admins may now add new emoji!"), add_emoji_by_admins_only_status);
+                    } else {
+                        ui.report_success(i18n.t("Any user may now add new emoji!"), add_emoji_by_admins_only_status);
                     }
                 }
                 if (response_data.authentication_methods !== undefined) {

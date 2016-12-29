@@ -14,7 +14,7 @@ from zerver.lib.actions import do_change_password, is_inactive, user_email_is_un
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    completely_open, get_realm, get_realm_by_email_domain, get_realm_by_string_id, \
+    get_realm_by_email_domain, get_realm_by_string_id, \
     get_unique_open_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
@@ -22,8 +22,7 @@ import logging
 import re
 import DNS
 
-from six import text_type
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Text
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
@@ -34,14 +33,14 @@ WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "Please contact %s with any questions!" % (settings.ZULIP_ADMINISTRATOR,)
 
 def get_registration_string(domain):
-    # type: (text_type) -> text_type
+    # type: (Text) -> Text
     register_url  = reverse('register') + domain
     register_account_string = _('The organization with the domain already exists. '
                                 'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
     return register_account_string
 
 def email_is_not_mit_mailing_list(email):
-    # type: (text_type) -> None
+    # type: (Text) -> None
     """Prevent MIT mailing lists from signing up for Zulip"""
     if "@mit.edu" in email:
         username = email.rsplit("@", 1)[0]
@@ -101,16 +100,11 @@ class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
-    # This form is important because it determines whether users can
-    # register for our product. Be careful when modifying the
-    # validators.
     email = forms.EmailField(validators=[is_inactive])
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
-        self.string_id = kwargs.get("string_id")
-        if "string_id" in kwargs:
-            del kwargs["string_id"]
+        self.realm = kwargs.pop('realm', None)
         super(HomepageForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
@@ -123,10 +117,8 @@ class HomepageForm(forms.Form):
             return email
 
         # Otherwise, the user is trying to join a specific realm.
-        realm = None
-        if self.string_id:
-            realm = get_realm_by_string_id(self.string_id)
-        elif not settings.REALMS_HAVE_SUBDOMAINS:
+        realm = self.realm
+        if realm is None and not settings.REALMS_HAVE_SUBDOMAINS:
             realm = get_realm_by_email_domain(email)
 
         if realm is None:
@@ -150,22 +142,13 @@ class HomepageForm(forms.Form):
         return email
 
 def email_is_not_disposable(email):
-    # type: (text_type) -> None
+    # type: (Text) -> None
     if is_disposable_domain(email_to_domain(email)):
         raise ValidationError(_("Please use your real email address."))
 
 class RealmCreationForm(forms.Form):
-    # This form determines whether users can
-    # create a new realm. Be careful when modifying the
-    # validators.
+    # This form determines whether users can create a new realm.
     email = forms.EmailField(validators=[user_email_is_unique, email_is_not_disposable])
-
-    def __init__(self, *args, **kwargs):
-        # type: (*Any, **Any) -> None
-        self.domain = kwargs.get("domain")
-        if "domain" in kwargs:
-            del kwargs["domain"]
-        super(RealmCreationForm, self).__init__(*args, **kwargs)
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):

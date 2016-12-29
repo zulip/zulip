@@ -17,16 +17,27 @@ def is_disposable_domain(domain):
     return domain.lower() in DISPOSABLE_DOMAINS
 
 ZULIP_RESERVED_SUBDOMAINS = frozenset([
+    # zulip terms
     'stream', 'channel', 'topic', 'thread', 'installation', 'organization', 'realm',
-    'team', 'subdomain', 'activity', 'octopus', 'acme'
+    'team', 'subdomain', 'activity', 'octopus', 'acme',
+    # machines
     'zulipdev', 'localhost', 'staging', 'prod', 'production', 'testing', 'nagios', 'nginx',
+    # website pages
     'server', 'client', 'features', 'integration', 'bot', 'blog', 'history', 'story',
     'stories', 'testimonial', 'compare',
-    'slack', 'mattermost', 'rocketchat', 'irc', 'twitter', 'zephyr',
+    # competitor pages
+    'slack', 'mattermost', 'rocketchat', 'irc', 'twitter', 'zephyr', 'flowdock', 'spark',
+    'skype', 'microsoft',
+    # zulip names
     'zulip', 'tulip', 'humbug',
+    # platforms
     'plan9', 'electron', 'linux', 'mac', 'windows', 'cli', 'ubuntu', 'android', 'ios',
+    # floss
     'contribute', 'floss', 'foss', 'free', 'opensource', 'open', 'code',
-    'intern', 'outreachy', 'gsoc', 'gci'])
+    # intership programs
+    'intern', 'outreachy', 'gsoc', 'gci', 'externship',
+    # tech blogs
+    'engineering', 'infrastructure', 'tooling', 'tools', 'javascript', 'python'])
 
 # Most of this list was curated from the following sources:
 # http://wiki.dwscoalition.org/notes/List_of_reserved_subdomains (license: CC-BY-SA 3.0)

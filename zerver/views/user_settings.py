@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from typing import Optional, Any
-from six import text_type
+from typing import Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -54,7 +54,7 @@ def json_change_settings(request, user_profile,
                          old_password=REQ(default=""),
                          new_password=REQ(default=""),
                          confirm_password=REQ(default="")):
-    # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Text, Text, Text) -> HttpResponse
     if not (full_name or new_password):
         return json_error(_("No new data supplied"))
 

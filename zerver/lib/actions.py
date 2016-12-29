@@ -531,6 +531,18 @@ def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_onl
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_add_emoji_by_admins_only(realm, add_emoji_by_admins_only):
+    # type: (Realm, bool) -> None
+    realm.add_emoji_by_admins_only = add_emoji_by_admins_only
+    realm.save(update_fields=['add_emoji_by_admins_only'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='add_emoji_by_admins_only',
+        value=add_emoji_by_admins_only,
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds):
     # type: (Realm, bool, int) -> None
     realm.allow_message_editing = allow_message_editing
@@ -3055,6 +3067,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
+        state['realm_add_emoji_by_admins_only'] = user_profile.realm.add_emoji_by_admins_only
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
         state['realm_default_language'] = user_profile.realm.default_language
@@ -3449,13 +3462,13 @@ def user_email_is_unique(email):
         pass
 
 def do_invite_users(user_profile, invitee_emails, streams):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, List[Tuple[Text, str]]]]
-    new_prereg_users = [] # type: List[PreregistrationUser]
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
+    validated_emails = [] # type: List[Text]
     errors = [] # type: List[Tuple[Text, str]]
     skipped = [] # type: List[Tuple[Text, str]]
 
     ret_error = None # type: Optional[str]
-    ret_error_data = {} # type: Dict[str, List[Tuple[Text, str]]]
+    ret_error_data = {} # type: Dict[str, Union[List[Tuple[Text, str]], bool]]
 
     for email in invitee_emails:
         if email == '':
@@ -3486,6 +3499,22 @@ def do_invite_users(user_profile, invitee_emails, streams):
             skipped.append((email, _("Already has an account.")))
             continue
 
+        validated_emails.append(email)
+
+    if errors:
+        ret_error = _("Some emails did not validate, so we didn't send any invitations.")
+        ret_error_data = {'errors': errors + skipped, 'sent_invitations': False}
+        return ret_error, ret_error_data
+
+    if skipped and len(skipped) == len(invitee_emails):
+        # All e-mails were skipped, so we didn't actually invite anyone.
+        ret_error = _("We weren't able to invite anyone.")
+        ret_error_data = {'errors': skipped, 'sent_invitations': False}
+        return ret_error, ret_error_data
+
+    # Now that we are past all the possible errors, we actually create
+    # the PreregistrationUser objects and trigger the email invitations.
+    for email in validated_emails:
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
 
@@ -3495,30 +3524,15 @@ def do_invite_users(user_profile, invitee_emails, streams):
         prereg_user.streams = streams
         prereg_user.save()
 
-        new_prereg_users.append(prereg_user)
-
-    if errors:
-        ret_error = _("Some emails did not validate, so we didn't send any invitations.")
-        ret_error_data = {'errors': errors}
-
-    if skipped and len(skipped) == len(invitee_emails):
-        # All e-mails were skipped, so we didn't actually invite anyone.
-        ret_error = _("We weren't able to invite anyone.")
-        ret_error_data = {'errors': skipped}
-        return ret_error, ret_error_data
-
-    # If we encounter an exception at any point before now, there are no unwanted side-effects,
-    # since it is totally fine to have duplicate PreregistrationUsers
-    for user in new_prereg_users:
-        event = {"email": user.email, "referrer_email": user_profile.email}
+        event = {"email": prereg_user.email, "referrer_email": user_profile.email}
         queue_json_publish("invites", event,
-                           lambda event: do_send_confirmation_email(user, user_profile))
+                           lambda event: do_send_confirmation_email(prereg_user, user_profile))
 
     if skipped:
         ret_error = _("Some of those addresses are already using Zulip, "
                       "so we didn't send them an invitation. We did send "
                       "invitations to everyone else!")
-        ret_error_data = {'errors': skipped}
+        ret_error_data = {'errors': skipped, 'sent_invitations': True}
 
     return ret_error, ret_error_data
 
@@ -3556,9 +3570,9 @@ def notify_realm_emoji(realm):
     user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
     send_event(event, user_ids)
 
-def check_add_realm_emoji(realm, name, img_url):
-    # type: (Realm, Text, Text) -> None
-    emoji = RealmEmoji(realm=realm, name=name, img_url=img_url)
+def check_add_realm_emoji(realm, name, img_url, author=None):
+    # type: (Realm, Text, Text, Optional[UserProfile]) -> None
+    emoji = RealmEmoji(realm=realm, name=name, img_url=img_url, author=author)
     emoji.full_clean()
     emoji.save()
     notify_realm_emoji(realm)
