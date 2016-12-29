@@ -863,6 +863,21 @@ class BugdownApiTests(ZulipTestCase):
         self.assertEqual(data['rendered'],
                          u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
 
+    def test_render_message_with_me(self):
+        # type: () -> None
+        content = '/me test /me'
+        user_profile = get_user_profile_by_email('othello@zulip.com')
+        result = self.client_get(
+            '/api/v1/messages/render',
+            dict(content=content),
+            **self.api_auth(user_profile.email)
+        )
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        expected = u'<p><span class="sender_name">{0}</span> test /me</p>'.format(
+            user_profile.full_name)
+        self.assertEqual(data['rendered'], expected)
+
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
         # type: () -> None
