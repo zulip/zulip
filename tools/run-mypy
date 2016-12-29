@@ -31,7 +31,6 @@ api/integrations/asana/zulip_asana_mirror
 api/integrations/basecamp/zulip_basecamp_mirror
 api/integrations/codebase/zulip_codebase_mirror
 api/integrations/git/post-receive
-api/integrations/rss/rss-bot
 api/integrations/twitter/twitter-bot
 api/integrations/twitter/twitter-search-bot
 tools/deprecated/iframe-bot/show-last-messages
