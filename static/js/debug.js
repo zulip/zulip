@@ -23,6 +23,41 @@ function print_elapsed_time(name, fun) {
     return out;
 }
 
+function check_duplicate_ids() {
+    var ids = {};
+    var collisions = [];
+    var total_collisions = 0;
+
+    Array.prototype.slice.call(document.querySelectorAll("*")).forEach(function (o) {
+        if (o.id && ids[o.id]) {
+            var el = collisions.find(function (c) {
+                return c.id === o.id;
+            });
+
+            ids[o.id] += 1;
+            total_collisions += 1;
+
+            if (!el) {
+                var tag = o.tagName.toLowerCase();
+                collisions.push({
+                    id: o.id,
+                    count: 1,
+                    node: "<" + tag + " className='" + o.className + "' id='" + o.id + "'>" +
+                          "</" + tag + ">"
+                });
+            } else {
+                el.count += 1;
+            }
+        } else if (o.id) {
+            ids[o.id] = 1;
+        }
+    });
+
+    return {
+        collisions: collisions,
+        total_collisions: total_collisions
+    };
+}
 
 /* An IterationProfiler is used for profiling parts of looping
  * constructs (like a for loop or _.each).  You mark sections of the
