@@ -129,7 +129,7 @@ def get_type(request, payload):
             action = action.group('action')
             if action in PULL_REQUEST_SUPPORTED_ACTIONS:
                 return pull_request_template.format(action)
-    raise UnknownTriggerType()
+    raise UnknownTriggerType("We don't support {} event type".format(event_key))
 
 def get_body_based_on_type(type):
     # type: (str) -> Any
