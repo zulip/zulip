@@ -365,3 +365,7 @@ $(document).on('narrow_deactivated.zulip', function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = message_edit;
+}

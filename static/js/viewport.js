@@ -342,3 +342,7 @@ $(function () {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = viewport;
+}
