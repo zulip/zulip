@@ -26,7 +26,6 @@ api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
 api/integrations/asana/zulip_asana_mirror
 api/integrations/git/post-receive
-api/integrations/rss/rss-bot
 tools/deprecated/iframe-bot/show-last-messages
 tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
