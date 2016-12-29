@@ -797,18 +797,15 @@ def url_to_a(url, text = None):
         return url
     if text is None:
         text = markdown.util.AtomicString(url)
-    a.set('href', href)
-    # Links special .md files of Zulip to the appropriate Github repository
+
+    # Unlinks special foo.md files of Zulip; render it as plain text.
     for mdLink in list_of_special_md_links():
         if re.search(url, mdLink.lower()):
-            Git_link = "http://github.com/zulip/zulip/blob/master/"
-            final_link = Git_link + str(mdLink)
-            a.set('href', final_link)
-            break
+            return url
 
+    a.set('href', href)
     a.text = text
     fixup_link(a, 'mailto:' not in href[:7])
-
     return a
 
 class VerbosePattern(markdown.inlinepatterns.Pattern):
@@ -1379,6 +1376,7 @@ def convert(content, realm_domain=None, message=None, possible_words=None):
     bugdown_stats_finish()
     return ret
 def list_of_special_md_links():
+    # type: () -> List[Text]
     # List of all the links of .md files of zulip stored in special-md-links.txt
     md_links_file = os.path.join(os.path.dirname(__file__), 'special-md-links.txt')
     md_links = [force_text(mdLink).strip() for mdLink in open(md_links_file, 'r')]
