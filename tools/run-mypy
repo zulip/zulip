@@ -26,7 +26,6 @@ api/integrations/perforce/zulip_change-commit.py
 api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
-api/integrations/trac/zulip_trac.py
 api/integrations/asana/zulip_asana_mirror
 api/integrations/basecamp/zulip_basecamp_mirror
 api/integrations/codebase/zulip_codebase_mirror
