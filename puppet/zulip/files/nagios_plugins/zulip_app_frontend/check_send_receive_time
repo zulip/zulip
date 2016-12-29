@@ -53,6 +53,11 @@ parser.add_option('--insecure',
 parser.add_option('--munin',
                   dest='munin',
                   action='store_true')
+
+parser.add_option('--websocket',
+                  dest='websocket',
+                  action='store_true')
+
 (options, args) = parser.parse_args()
 
 if not options.nagios and not options.munin:
@@ -83,6 +88,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 django.setup()
 
 from zerver.models import get_user_profile_by_email
+from zerver.tornado.websocket_client import WebsocketClient
 from django.conf import settings
 
 states = {
@@ -120,6 +126,11 @@ def get_zulips():
         last_event_id = max(last_event_id, int(event['id']))
     return [event['message'] for event in res['events']]
 
+
+def send_message_via_websocket(websocket_client, recepient_email, content):
+    # type: (WebsocketClient, str, str) -> None
+    websocket_client.send_message('website', 'private', 'no topic', "", recepient_email, content)
+
 if "staging" in options.site and settings.NAGIOS_STAGING_SEND_BOT is not None and \
         settings.NAGIOS_STAGING_RECEIVE_BOT is not None:
     sender = get_user_profile_by_email(settings.NAGIOS_STAGING_SEND_BOT)
@@ -154,12 +165,19 @@ except Exception:
 msg_to_send = str(random.getrandbits(64))
 time_start = datetime.datetime.now()
 
-send_zulip(zulip_sender, {
-    "type": 'private',
-    "content": msg_to_send,
-    "subject": "time to send",
-    "to": recipient.email,
-    })
+if options.websocket:
+    client = WebsocketClient(host_url=options.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
+                             run_on_start=send_message_via_websocket, sender_email=sender.email,
+                             recepient_email=recipient.email, content=msg_to_send,
+                             validate_ssl=not options.insecure)
+    client.run()
+else:
+    send_zulip(zulip_sender, {
+        "type": 'private',
+        "content": msg_to_send,
+        "subject": "time to send",
+        "to": recipient.email,
+        })
 
 msg_content = [] # type: List[str]
 
