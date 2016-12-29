@@ -14,10 +14,29 @@ def datetime_to_UTC(datetime_object):
         return datetime_object.astimezone(utc)
     return datetime_object.replace(tzinfo=utc)
 
+def floor_to_hour(datetime_object):
+    # type: (datetime.datetime) -> datetime.datetime
+    return datetime.datetime(*datetime_object.timetuple()[:4]) \
+                   .replace(tzinfo=datetime_object.tzinfo)
+
 def floor_to_day(datetime_object):
     # type: (datetime.datetime) -> datetime.datetime
     return datetime.datetime(*datetime_object.timetuple()[:3]) \
                    .replace(tzinfo=datetime_object.tzinfo)
+
+def ceiling_to_hour(datetime_object):
+    # type: (datetime.datetime) -> datetime.datetime
+    floor = floor_to_hour(datetime_object)
+    if floor == datetime_object:
+        return floor
+    return floor + datetime.timedelta(hours=1)
+
+def ceiling_to_day(datetime_object):
+    # type: (datetime.datetime) -> datetime.datetime
+    floor = floor_to_day(datetime_object)
+    if floor == datetime_object:
+        return floor
+    return floor + datetime.timedelta(days=1)
 
 def timestamp_to_datetime(timestamp):
     # type: (float) -> datetime.datetime

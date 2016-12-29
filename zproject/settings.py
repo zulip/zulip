@@ -848,6 +848,14 @@ JS_SPECS = {
         ),
         'output_filename': 'min/activity.js'
     },
+    'stats': {
+        'source_filenames': (
+            'node_modules/plotly.js/dist/plotly.js',
+            'node_modules/jquery/dist/jquery.js',
+            'js/stats.js'
+        ),
+        'output_filename': 'min/stats.js'
+    },
     # We also want to minify sockjs separately for the sockjs iframe transport
     'sockjs': {
         'source_filenames': ('node_modules/sockjs-client/sockjs.js',),

@@ -1,31 +1,106 @@
-from __future__ import absolute_import
-from __future__ import division
-from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union, Text
+from __future__ import absolute_import, division
 
+from django.core import urlresolvers
 from django.db import connection
 from django.db.models.query import QuerySet
-from django.template import RequestContext, loader
-from django.core import urlresolvers
 from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
+from django.template import RequestContext, loader
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
 
-from zerver.decorator import has_request_variables, REQ, zulip_internal
-from zerver.models import UserActivity, UserActivityInterval, Realm
-from zerver.lib.timestamp import timestamp_to_datetime
+from analytics.lib.counts import CountStat, process_count_stat, COUNT_STATS
+from analytics.models import RealmCount, UserCount
+
+from zerver.decorator import has_request_variables, REQ, zulip_internal, \
+    zulip_login_required, to_non_negative_int, to_utc_datetime
+from zerver.lib.request import JsonableError
+from zerver.lib.response import json_success
+from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, timestamp_to_datetime
+from zerver.models import Realm, UserProfile, UserActivity, UserActivityInterval
+from zproject.jinja2 import render_to_response
 
 from collections import defaultdict
 from datetime import datetime, timedelta
 import itertools
-import time
-import re
+import json
 import pytz
-from six.moves import filter
-from six.moves import map
-from six.moves import range
-from six.moves import zip
-eastern_tz = pytz.timezone('US/Eastern')
+import re
+import time
 
-from zproject.jinja2 import render_to_response
+from six.moves import filter, map, range, zip
+from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Union, Text
+
+@zulip_login_required
+def stats(request):
+    # type: (HttpRequest) -> HttpResponse
+    return render_to_response('analytics/stats.html')
+
+@has_request_variables
+def get_chart_data(request, user_profile, chart_name=REQ(),
+                   min_length=REQ(converter=to_non_negative_int, default=None),
+                   start=REQ(converter=to_utc_datetime, default=None),
+                   end=REQ(converter=to_utc_datetime, default=None)):
+    # type: (HttpRequest, UserProfile, Text, Optional[int], Optional[datetime], Optional[datetime]) -> HttpResponse
+    realm = user_profile.realm
+    if chart_name == 'messages_sent_to_realm':
+        data = get_messages_sent_to_realm(realm, min_length=min_length, start=start, end=end)
+    else:
+        raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
+    return json_success(data=data)
+
+def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
+    # type: (Realm, Optional[int], Optional[datetime], Optional[datetime]) -> Dict[str, Any]
+    # These are implicitly relying on realm.date_created and timezone.now being in UTC.
+    if start is None:
+        start = realm.date_created
+    if end is None:
+        end = timezone.now()
+    if start > end:
+        raise JsonableError(_("Start time is later than end time. Start: %s, End: %s") % (start, end))
+    interval = CountStat.DAY
+    end_times = time_range(start, end, interval, min_length)
+    indices = {}
+    for i, end_time in enumerate(end_times):
+        indices[end_time] = i
+
+    filter_set = RealmCount.objects.filter(
+        realm=realm, property='messages_sent:is_bot', interval=interval) \
+        .values_list('end_time', 'value')
+    humans = [0]*len(end_times)
+    for end_time, value in filter_set.filter(subgroup=False):
+        humans[indices[end_time]] = value
+    bots = [0]*len(end_times)
+    for end_time, value in filter_set.filter(subgroup=True):
+        bots[indices[end_time]] = value
+
+    return {'end_times': end_times, 'humans': humans, 'bots': bots, 'interval': interval}
+
+# If min_length is None, returns end_times from ceiling(start) to ceiling(end), inclusive.
+# If min_length is greater than 0, pads the list to the left.
+# So informally, time_range(Sep 20, Sep 22, day, None) returns [Sep 20, Sep 21, Sep 22],
+# and time_range(Sep 20, Sep 22, day, 5) returns [Sep 18, Sep 19, Sep 20, Sep 21, Sep 22]
+def time_range(start, end, interval, min_length):
+    # type: (datetime, datetime, str, Optional[int]) -> List[datetime]
+    if interval == CountStat.HOUR:
+        end = ceiling_to_hour(end)
+        step = timedelta(hours=1)
+    elif interval == CountStat.DAY:
+        end = ceiling_to_day(end)
+        step = timedelta(days=1)
+    else:
+        raise ValueError(_("Unknown interval."))
+
+    times = []
+    if min_length is not None:
+        start = min(start, end - (min_length-1)*step)
+    current = end
+    while current >= start:
+        times.append(current)
+        current -= step
+    return list(reversed(times))
+
+eastern_tz = pytz.timezone('US/Eastern')
 
 def make_table(title, cols, rows, has_row_class=False):
     # type: (str, List[str], List[Any], bool) -> str
