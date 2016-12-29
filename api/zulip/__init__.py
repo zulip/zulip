@@ -290,15 +290,25 @@ class Client(object):
                 vendor_version=vendor_version,
                 )
 
-    def do_api_query(self, orig_request, url, method="POST", longpolling=False):
-        # type: (Mapping[str, Any], str, str, bool) -> Dict[str, Any]
+    def do_api_query(self, orig_request, url, files=None, method="POST", longpolling=False):
+        # type: (Mapping[str, Any], str, List[typing.IO], str, bool) -> Dict[str, Any]
         request = {}
+        req_files = []
 
         for (key, val) in six.iteritems(orig_request):
             if isinstance(val, str) or isinstance(val, Text):
                 request[key] = val
             else:
                 request[key] = simplejson.dumps(val)
+
+        if isinstance(files, list):
+            for file in files:
+                req_files.append((file.name, file))
+        else:
+            try:
+                req_files.append((files.name, files))
+            except AttributeError:
+                raise TypeError('files must be a file list/single object')
 
         query_state = {
             'had_error_retry': False,
@@ -337,7 +347,11 @@ class Client(object):
                     kwarg = "params"
                 else:
                     kwarg = "data"
+
                 kwargs = {kwarg: query_state["request"]}
+
+                if files:
+                    kwargs['files'] = req_files
 
                 # Build a client cert object for requests
                 if self.client_cert_key is not None:
@@ -402,11 +416,11 @@ class Client(object):
             return {'msg': "Unexpected error from the server", "result": "http-error",
                     "status_code": res.status_code}
 
-    def call_endpoint(self, url=None, method="POST", request=None, longpolling=False):
-        # type: (str, str, Dict[str, Any], bool) -> Dict[str, Any]
+    def call_endpoint(self, url=None, files=None, method="POST", request=None, longpolling=False):
+        # type: (str, Tuple(typing.IO), str, Dict[str, Any], bool) -> Dict[str, Any]
         if request is None:
             request = dict()
-        return self.do_api_query(request, API_VERSTRING + url, method=method)
+        return self.do_api_query(request, API_VERSTRING + url, files, method=method)
 
     def call_on_each_event(self, callback, event_types=None, narrow=None):
         # type: (Callable, Optional[List[str]], Any) -> None
@@ -478,6 +492,13 @@ class Client(object):
         return self.call_endpoint(
             url='messages',
             request=message_data,
+        )
+
+    def upload_file(self, file):
+        # type: typing.IO -> str
+        return self.call_endpoint(
+            url='user_uploads',
+            files=file
         )
 
     def update_message(self, message_data):
