@@ -30,7 +30,7 @@ as a “**realm**”.
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
 * Change your email address (not implemented)
-* [Change your avatar](/help/edit-profile#updating-your-avatar)
+* [Change your avatar](/help/edit-settings#updating-your-avatar)
 * [Change your language](/help/change-your-language)
 * [Change the date and time format](/help/change-the-date-and-time-format)
 * [Move the users list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)
@@ -163,7 +163,7 @@ as a “**realm**”.
 # Old table of contents:
 
 - **[The Zulip browser window](#the-zulip-browser-window)**
-- **[Editing your profile](/help/edit-profile)**
+- **[Editing your profile](/help/edit-settings)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
 - **[Keyboard shortcuts](/help/keyboard-shortcuts)**
