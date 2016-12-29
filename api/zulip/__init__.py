@@ -38,7 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
-from typing import Any, Callable, Dict, Mapping, Optional, Tuple, Union, Iterable, Text
+from typing import Any, Callable, Dict, Iterable, IO, Mapping, Optional, Text, Tuple, Union
 
 __version__ = "0.2.5"
 
@@ -290,15 +290,22 @@ class Client(object):
                 vendor_version=vendor_version,
                 )
 
-    def do_api_query(self, orig_request, url, method="POST", longpolling=False):
-        # type: (Mapping[str, Any], str, str, bool) -> Dict[str, Any]
+    def do_api_query(self, orig_request, url, method="POST", longpolling=False, files=None):
+        # type: (Mapping[str, Any], str, str, bool, List[IO]) -> Dict[str, Any]
+        if files is None:
+            files = []
+
         request = {}
+        req_files = []
 
         for (key, val) in six.iteritems(orig_request):
             if isinstance(val, str) or isinstance(val, Text):
                 request[key] = val
             else:
                 request[key] = simplejson.dumps(val)
+
+        for f in files:
+            req_files.append((f.name, f))
 
         query_state = {
             'had_error_retry': False,
@@ -337,7 +344,11 @@ class Client(object):
                     kwarg = "params"
                 else:
                     kwarg = "data"
+
                 kwargs = {kwarg: query_state["request"]}
+
+                if files:
+                    kwargs['files'] = req_files
 
                 # Build a client cert object for requests
                 if self.client_cert_key is not None:
@@ -402,11 +413,11 @@ class Client(object):
             return {'msg': "Unexpected error from the server", "result": "http-error",
                     "status_code": res.status_code}
 
-    def call_endpoint(self, url=None, method="POST", request=None, longpolling=False):
-        # type: (str, str, Dict[str, Any], bool) -> Dict[str, Any]
+    def call_endpoint(self, url=None, method="POST", request=None, longpolling=False, files=None):
+        # type: (str, str, Dict[str, Any], bool, List[IO]) -> Dict[str, Any]
         if request is None:
             request = dict()
-        return self.do_api_query(request, API_VERSTRING + url, method=method)
+        return self.do_api_query(request, API_VERSTRING + url, method=method, files=files)
 
     def call_on_each_event(self, callback, event_types=None, narrow=None):
         # type: (Callable, Optional[List[str]], Any) -> None
@@ -478,6 +489,16 @@ class Client(object):
         return self.call_endpoint(
             url='messages',
             request=message_data,
+        )
+
+    def upload_file(self, file):
+        # type: (IO) -> Dict[str, Any]
+        '''
+            See api/examples/upload-file for example usage.
+        '''
+        return self.call_endpoint(
+            url='user_uploads',
+            files=[file]
         )
 
     def update_message(self, message_data):
