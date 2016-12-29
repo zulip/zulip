@@ -29,10 +29,13 @@ from __future__ import absolute_import
 
 import zulip
 from six.moves import range
+from typing import Any, Optional, Text
+from mercurial import ui, repo
 
 VERSION = "0.9"
 
 def format_summary_line(web_url, user, base, tip, branch, node):
+    # type: (str, str, int, int, str, Text) -> Text
     """
     Format the first line of the message, which contains summary
     information about the changeset and links to the changelog if a
@@ -58,6 +61,7 @@ def format_summary_line(web_url, user, base, tip, branch, node):
         node=node[:12])
 
 def format_commit_lines(web_url, repo, base, tip):
+    # type: (str, repo, int, int) -> str
     """
     Format the per-commit information for the message, including the one-line
     commit summary and a link to the diff if a web URL has been configured:
@@ -83,6 +87,7 @@ def format_commit_lines(web_url, repo, base, tip):
     return "\n".join(summary for summary in commit_summaries)
 
 def send_zulip(email, api_key, site, stream, subject, content):
+    # type: (str, str, str, str, str, Text) -> str
     """
     Send a message to Zulip using the provided credentials, which should be for
     a bot in most cases.
@@ -101,6 +106,7 @@ def send_zulip(email, api_key, site, stream, subject, content):
     client.send_message(message_data)
 
 def get_config(ui, item):
+    # type: (ui, str) -> Optional[str]
     try:
         # configlist returns everything in lists.
         return ui.configlist('zulip', item)[0]
@@ -108,6 +114,7 @@ def get_config(ui, item):
         return None
 
 def hook(ui, repo, **kwargs):
+    # type: (ui, repo, Optional[Text]) -> None
     """
     Invoked by configuring a [hook] entry in .hg/hgrc.
     """
