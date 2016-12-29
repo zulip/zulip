@@ -38,8 +38,8 @@ Do this: `./tools/provision.py`
 
 NEED_TO_UPGRADE = '''
 It looks like you checked out a branch that has added
-dependencies beyond what you last provisioned.  Your tests
-are likely to fail until you add dependencies by provisioning.
+dependencies beyond what you last provisioned. Your command
+is likely to fail until you add dependencies by provisioning.
 
 Do this: `./tools/provision.py`
 '''

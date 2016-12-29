@@ -60,7 +60,7 @@ parser.add_option('--no-clear-memcached',
 
 parser.add_option('--force', dest='force',
                   action="store_true",
-                  default=False, help='Run tests despite possible problems.')
+                  default=False, help='Run command despite possible problems.')
 
 parser.add_option('--enable-tornado-logging', dest='enable_tornado_logging',
                   action="store_true",
