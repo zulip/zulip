@@ -1,0 +1,133 @@
+.message_reactions .reaction_button {
+    border-radius: 0.5em;
+    display: none;
+    margin: 0.2em;
+    padding: 0.2em;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+    float: left;
+}
+
+.message_reactions i {
+    font-size: 1.3em;
+    float: left;
+    color: #555;
+}
+
+.reaction_button .message_reaction_count {
+    font-size: 1.1em;
+    color: #555;
+}
+
+.message_reactions:hover .reaction_button {
+    display: block;
+    background-color: #fafafa;
+    border: thin solid #bbb;
+    color: #bbb;
+}
+
+.message_reactions .reaction_button:hover {
+    border: thin solid #add8e6;
+    background-color: #eef7fa;
+}
+
+.reaction_button:hover i {
+    color: #0088CC;
+}
+
+.reaction_button:hover .message_reaction_count {
+    color: #0088CC;
+}
+
+.reaction_button:hover {
+    cursor: pointer;
+    opacity: 1.0;
+    color: #0088CC;
+}
+
+.reaction-popover {
+    display: inline-block;
+    width: 20em;
+    margin-right: 0px;
+    margin-left: -14px;
+    margin-top: -9px;
+    margin-bottom: -9px;
+}
+
+.reaction-popover-top {
+    padding: 0.8em;
+    padding-bottom: 0;
+    width: 100%;
+}
+
+.reaction-popover-top .icon-vector-search {
+    position: absolute;
+    right: 2.3em;
+    top: 1.3em;
+    color: #bbb;
+}
+
+.reaction-popover-filter {
+    width: 87%;
+    margin: auto;
+    padding-left: 3em;
+}
+
+.reaction-popover-emoji-map {
+    margin: 0;
+    padding: 0.5em;
+    padding-top: 0;
+    overflow: hidden;
+    overflow-y: scroll;
+    display: inline-block;
+    height: 16.5em;
+    width: 100%;
+}
+
+.reaction-popover-reaction {
+    float: left;
+    margin: 0.1em;
+    padding: 0.3em;
+    cursor: pointer;
+    border: thin solid white;
+    border-radius: 0.5em;
+}
+
+.reaction-popover .reacted {
+    background-color: #eef7fa;
+    border-color: #add8e6;
+}
+
+.message_reactions {
+    margin-left: -0.2em;
+    padding-left: 46px;
+    overflow: auto;
+}
+
+.message_reaction {
+    float: left;
+    margin: 0.2em;
+    padding: 0.4em;
+    padding-left: 0.3em;
+    padding-right: 0.3em;
+    cursor: pointer;
+    background-color: #eef7fa;
+    border: thin solid #add8e6;
+    border-radius: 0.5em;
+}
+
+.message_reaction .emoji {
+    float: left;
+    zoom: 0.80;
+    -moz-transform: scale(0.80);
+    -moz-transform-origin: 0 0;
+}
+
+.message_reaction_count {
+    font-weight: bold;
+    font-size: 0.8em;
+    float: left;
+    color: #0088CC;
+    margin-left: 0.1em;
+    line-height: 1em;
+}

@@ -133,6 +133,9 @@ function add_message_metadata(message) {
     }
 
     alert_words.process_message(message);
+    if (!message.reactions) {
+        message.reactions = [];
+    }
     stored_messages[message.id] = message;
     return message;
 }

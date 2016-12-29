@@ -1,0 +1,18 @@
+{{! Contents of the "reaction emoji map" popup }}
+<div class="reaction-popover">
+  <div class="reaction-popover-top">
+    <i class="icon-vector-search"></i>
+    <input class="reaction-popover-filter" type="text" autofocus placeholder={{t 'Search' }} />
+  </div>
+  <div class="reaction-popover-emoji-map" data-message-id="{{message_id}}">
+    {{#each emojis}}
+      <div class="reaction-popover-reaction {{#if this/has_reacted}} reacted {{/if}}" title={{@key}}>
+        {{#if this/is_realm_emoji}}
+          <img src="{{this/url}}" class="emoji" title= ":{{@key}}:" />
+        {{else}}
+          <div class="emoji emoji-{{#if this/has_reacted}}{{this/css_class}}{{else}}{{this}}{{/if}}" title= ":{{@key}}:" />
+        {{/if}}
+      </div>
+    {{/each}}
+  </div>
+</div>

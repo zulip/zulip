@@ -679,6 +679,7 @@ PIPELINE = {
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
+                'styles/reactions.css',
                 'styles/left-sidebar.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
@@ -698,6 +699,7 @@ PIPELINE = {
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
+                'styles/reactions.css',
                 'styles/left-sidebar.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
@@ -838,6 +840,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
+            'js/reactions.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'

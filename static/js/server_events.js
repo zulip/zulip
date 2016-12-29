@@ -45,6 +45,14 @@ function dispatch_normal_event(event) {
         reload.initiate(reload_options);
         break;
 
+    case 'reaction':
+        if (event.op === 'add') {
+            reactions.add_reaction(event);
+        } else if (event.op === 'remove') {
+            reactions.remove_reaction(event);
+        }
+        break;
+
     case 'realm':
         if (event.op === 'update' && event.property === 'name') {
             page_params.realm_name = event.value;

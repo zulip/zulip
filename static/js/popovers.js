@@ -4,6 +4,7 @@ var exports = {};
 
 var current_actions_popover_elem;
 var current_message_info_popover_elem;
+var current_message_reactions_popover_elem;
 var emoji_map_is_open = false;
 
 var userlist_placement = "right";
@@ -42,6 +43,78 @@ function show_message_info_popover(element, id) {
         current_message_info_popover_elem = elt;
     }
 }
+
+exports.toggle_reactions_popover = function (element, id) {
+    var last_popover_elem = current_message_reactions_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    current_msg_list.select_id(id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        var emojis = _.clone(emoji.emojis_name_to_css_class);
+        var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
+        var realm_emojis = emoji.realm_emojis;
+        _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+            emojis[realm_emoji_name] = {
+                name: realm_emoji_name,
+                is_realm_emoji: true,
+                url: realm_emoji.emoji_url
+            };
+        });
+        _.each(emojis_used, function (emoji_name) {
+            var is_realm_emoji = emojis[emoji_name].is_realm_emoji;
+            var url = emojis[emoji_name].url;
+            emojis[emoji_name] = {
+                name: emoji_name,
+                has_reacted: true,
+                css_class: emoji.emoji_name_to_css_class(emoji_name),
+                is_realm_emoji: is_realm_emoji,
+                url: url
+            };
+        });
+
+        var args = {
+            message_id: id,
+            emojis: emojis,
+        };
+
+        var approx_popover_height = 400;
+        var approx_popover_width = 400;
+        var distance_from_bottom = viewport.height() - elt.offset().top;
+        var distance_from_right = viewport.width() - elt.offset().left;
+        var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
+        var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
+        var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
+        var will_extend_beyond_right_of_viewport = distance_from_right < (approx_popover_width / 2);
+        var placement = 'bottom';
+        if (will_extend_beyond_bottom_of_viewport && !will_extend_beyond_top_of_viewport) {
+            placement = 'top';
+        }
+        if (will_extend_beyond_right_of_viewport && !will_extend_beyond_left_of_viewport) {
+            placement = 'left';
+        }
+        if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
+            placement = 'right';
+        }
+        elt.prop('title', '');
+        elt.popover({
+            placement: placement,
+            title:     "",
+            content:   templates.render('reaction_popover_content', args),
+            trigger:   "manual"
+        });
+        elt.popover("show");
+        elt.prop('title', 'Add reaction...');
+        $('.reaction-popover-filter').focus();
+        current_message_reactions_popover_elem = elt;
+    }
+};
 
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
@@ -85,6 +158,7 @@ exports.toggle_actions_popover = function (element, id) {
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
+            should_display_add_reaction_option: message.sent_by_me,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
             narrowed: narrow.active()
         };
@@ -170,10 +244,22 @@ function message_info_popped() {
     return current_message_info_popover_elem !== undefined;
 }
 
+function reaction_popped() {
+    return current_message_reactions_popover_elem !== undefined;
+}
+
 exports.hide_message_info_popover = function () {
     if (message_info_popped()) {
         current_message_info_popover_elem.popover("destroy");
         current_message_info_popover_elem = undefined;
+    }
+};
+
+exports.hide_reactions_popover = function () {
+    if (reaction_popped()) {
+        $('.popover').remove();
+        current_message_reactions_popover_elem.popover("destroy");
+        current_message_reactions_popover_elem = undefined;
     }
 };
 
@@ -278,6 +364,19 @@ exports.register_click_handlers = function () {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         popovers.toggle_actions_popover(this, rows.id(row));
+    });
+
+    $("#main_div").on("click", ".reaction_button", function (e) {
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        popovers.toggle_reactions_popover(this, rows.id(row));
+    });
+
+
+    $("body").on("click", ".reaction_button", function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        e.stopPropagation();
+        popovers.toggle_reactions_popover(this, msgid);
     });
 
     $("#main_div").on("click", ".sender_info_hover", function (e) {
@@ -698,12 +797,14 @@ exports.register_click_handlers = function () {
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
     return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() ||
-           topic_sidebar_popped() || message_info_popped() || emoji_map_is_open;
+        topic_sidebar_popped() || message_info_popped() || emoji_map_is_open ||
+        reaction_popped();
 };
 
 exports.hide_all = function () {
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
+    popovers.hide_reactions_popover();
     popovers.hide_stream_sidebar_popover();
     popovers.hide_topic_sidebar_popover();
     popovers.hide_user_sidebar_popover();

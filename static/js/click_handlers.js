@@ -83,6 +83,13 @@ $(function () {
         toggle_star(rows.id($(this).closest(".message_row")));
     });
 
+    $("#main_div").on("click", ".message_reaction", function (e) {
+        e.stopPropagation();
+        var emoji_name = $(this).attr('data-emoji-name');
+        var message_id = $(this).parent().attr('data-message-id');
+        reactions.message_reaction_on_click(message_id, emoji_name);
+    });
+
     $("#main_div").on("click", "a.stream", function (e) {
         e.preventDefault();
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
