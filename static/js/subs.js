@@ -1201,6 +1201,7 @@ $(function () {
         var sub = stream_data.get_sub_by_id(stream_id);
         var new_name_box = sub_settings.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());
+        $(sub_row).find(".change-stream-privacy button").attr("data-stream-name", new_name);
 
         $("#subscriptions-status").hide();
 
