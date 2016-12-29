@@ -533,7 +533,7 @@ def flexible_boolean(boolean):
         return False
 
 def to_utc_datetime(timestamp):
-    # type: (text_type) -> datetime.datetime
+    # type: (Text) -> datetime.datetime
     return timestamp_to_datetime(float(timestamp))
 
 def statsd_increment(counter, val=1):
