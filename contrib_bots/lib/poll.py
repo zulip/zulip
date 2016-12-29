@@ -1,3 +1,5 @@
+from itertools import islice
+
 class PollHandler(object):
     '''
     This plugin allows users to create polls.
@@ -38,10 +40,16 @@ class PollHandler(object):
         Returns usage for polling bot.
 
         >>> @poll init what's the best ice cream flavour: vanilla, chocolate
-        <<< Question successfully created! Answer away
+        <<< @**USER** created a poll!
+        <<< Question: what's the best ice cream flavour
+        <<< Option 1: Vanilla
+        <<< Option 2: chocolate
+        <<< You can answer this poll by writing `@poll <option>` in this stream.
         >>> @poll vanilla
         <<< vanilla has 1 vote
-        >>> @poll result what's the best ice cream flavour
+        >>> @poll close
+        <<< Poll - what's the best ice cream flavour - is now closed.
+        >>> @poll result
         <<< what's the best ice cream flavour:
         <<< vanilla: 1
         <<< chocolate: 0
@@ -62,7 +70,9 @@ class PollHandler(object):
     def handle_message(self, message, client, state_handler):
         original_content = message['content'].lower()
 
-        if original_content.startswith('@poll init'):
+        if original_content.startswith('@poll help'):
+            new_content = self.usage()
+        elif original_content.startswith('@poll init'):
             split = original_content.split(': ', 1)
             if len(split) == 2:
                 question = split[0].split(' ', 2)[-1]
@@ -73,28 +83,36 @@ class PollHandler(object):
                     self.polls[question] = dict((elem, 0) for elem in answers)
                     self.streams[message['subject']] = question
                     new_content = new_content = ("@**" + message['sender_full_name'] + "** Created a poll!" + '\n' +
-                                                "Question: " + question + "\n" +
-                                                ''.join(
-                                                    (("Option " + str(answers.index(answer) + 1) + ": " + answer + "\n")
-                                                    for answer in answers)
-                                                ) + "\n" + "You can answer this poll by writing `@answer <option>` in this stream.")
+                                                 "Question: " + question + "\n" +
+                                                 ''.join(
+                                                         (("Option " + str(answers.index(answer) + 1) + ": " + answer + "\n")
+                                                         for answer in answers)) +
+                                                 "\n" + "You can answer this poll by writing `@answer <option>` in this stream.")
             else:
                 new_content = "Question was incorrectly formatted. See @poll help for usage"
         elif original_content.startswith('@poll result'):
             split = original_content.split(' ', 2)
             if len(split) == 3:
                 question = split[-1]
-                if question == "current":
-                    question = self.streams[message['subject']]
-                if question in self.polls:
-                    new_content = question + ': \n' + ''.join(
-                        ((str(key) + ': ' + str(value) + '\n')
-                        for key, value in self.polls[question].iteritems())
-                    )
-                else:
-                    new_content = "No such poll exists. Possibly check spelling."
-        elif original_content.startswith('@poll help'):
-            new_content = self.usage()
+            elif message['subject'] in self.streams:
+                question = self.streams[message['subject']]
+
+            if question is not None and question in self.polls:
+                new_content = question + ': \n' + ''.join(
+                                                          ((str(key) + ': ' + str(value) + '\n')
+                                                          for key, value in self.polls[question].iteritems()))
+            else:
+                new_content = "No valid poll specified and no current poll was found."
+        elif original_content.startswith('@poll list'):
+            split = original_content.split(' ', 2)
+            if len(split) == 2:
+                count = 5
+            elif len(split) == 3:
+                count = int(split[-1])
+            new_content = ''.join(
+                                  (question + ":\n" ((str(key) + ': ' + str(value) + '\n')
+                                  for key, value in poll.iteritems())
+                                  for question, poll in islice_items(self.polls, 0, count)))
         elif original_content.startswith('@poll close'):
             split = original_content.split(' ', 2)
             if len(split) == 2:
