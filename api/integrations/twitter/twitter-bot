@@ -28,12 +28,14 @@ import os
 import sys
 import optparse
 import six.moves.configparser
+from six.moves.configparser import ConfigParser
 
 import zulip
 VERSION = "0.9"
 CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id, user):
+    # type: (ConfigParser, int, int) -> None
     config.set('twitter', 'since_id', since_id)
     config.set('twitter', 'user_id', user)
     with open(CONFIGFILE, 'wb') as configfile:
@@ -90,7 +92,7 @@ if not options.twitter_id:
     parser.error('You must specify --twitter-id')
 
 try:
-    config = six.moves.configparser.ConfigParser()
+    config = ConfigParser()
     config.read(CONFIGFILE)
 
     consumer_key = config.get('twitter', 'consumer_key')
