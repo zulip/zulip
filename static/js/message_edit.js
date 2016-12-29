@@ -21,9 +21,14 @@ function get_editability(message, edit_limit_seconds_buffer) {
     if (!(message && message.sent_by_me)) {
         return editability_types.NO;
     }
+    // If the server returns the message with an error (e.g. due to
+    // malformed markdown), you can edit the message regardless of the realm
+    // message editing policy, since the message hasn't actually been sent yet
     if (message.failed_request) {
         return editability_types.FULL;
     }
+    // Locally echoed messages are not editable, since the message hasn't
+    // finished being sent yet.
     if (message.local_id !== undefined) {
         return editability_types.NO;
     }
