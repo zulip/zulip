@@ -405,3 +405,7 @@ exports.fatal = function blueslip_fatal (msg, more_info) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = blueslip;
+}

@@ -718,3 +718,7 @@ exports.set_userlist_placement = function (placement) {
 
 return exports;
 }());
+
+if (typeof module !== 'undefined') {
+    module.exports = popovers;
+}
