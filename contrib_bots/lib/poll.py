@@ -1,4 +1,4 @@
-from itertools import islice
+import itertools
 
 class PollHandler(object):
     '''
@@ -110,9 +110,9 @@ class PollHandler(object):
             elif len(split) == 3:
                 count = int(split[-1])
             new_content = ''.join(
-                                  (question + ":\n" ((str(key) + ': ' + str(value) + '\n')
+                                  ''.join(question + ":\n" + ''.join(((str(key) + ': ' + str(value) + '\n'))
                                   for key, value in poll.iteritems())
-                                  for question, poll in islice_items(self.polls, 0, count)))
+                                  for question, poll in itertools.islice(self.polls.iteritems(), count)))
         elif original_content.startswith('@poll close'):
             split = original_content.split(' ', 2)
             if len(split) == 2:
