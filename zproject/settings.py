@@ -731,13 +731,13 @@ JS_SPECS = {
     },
     'signup': {
         'source_filenames': (
-            'js/signup.js',
+            'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
             ),
         'output_filename':  'min/signup.js'
     },
     'api': {
-        'source_filenames': ('js/api.js',),
+        'source_filenames': ('js/portico/api.js',),
         'output_filename':  'min/api.js'
     },
     'app_debug': {
@@ -852,7 +852,7 @@ JS_SPECS = {
         'source_filenames': (
             'node_modules/plotly.js/dist/plotly.js',
             'node_modules/jquery/dist/jquery.js',
-            'js/stats.js'
+            'js/portico/stats.js'
         ),
         'output_filename': 'min/stats.js'
     },
