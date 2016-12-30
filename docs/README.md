@@ -132,3 +132,19 @@ below.
   [the python-markdown docs on this extension](https://pythonhosted.org/Markdown/extensions/admonition.html)
   for details on how this extension works; essentially the value
   `warn` or `tip` is an extra CSS class added to the admonition.
+
+### Style guide
+
+* Names of buttons, fields, etc. should be **bolded**. No quotation marks
+should be used.
+* Specific instructions for the user should be formatted as a series of
+numbered steps.
+* Keep in mind that the UI may change. Never refer specifically to button
+colors. Only include a screenshot if it will help guide the user.
+* Never include the whole Zulip window in a screenshot. Focus on the
+relevant part of the app.
+* Use the following format to direct users to part of the **Settings**:
+
+1. Go to the [Your Account](/#settings/your-account) tab of the
+   [Settings](/help/edit-settings) page.
+
