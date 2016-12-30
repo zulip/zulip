@@ -119,7 +119,7 @@ exports.update_stream_color = function (sub, stream_name, color, subs_set_color,
         update_historical_message_color(stream_name, color);
     }
     update_stream_sidebar_swatch_color(id, color);
-    tab_bar.colorize_tab_bar();
+    tab_bar.colorize_tab_bar(exports.get_color_class, exports.color_classes);
 };
 
 exports.sidebar_options = function (subs_set_color) {

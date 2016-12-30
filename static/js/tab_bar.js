@@ -2,7 +2,6 @@ var colorspace = require('./colorspace');
 var hashchange = require('./hashchange');
 var narrow = require('./narrow');
 var people = require('./people');
-var stream_color = require('./stream_color');
 var stream_data = require('./stream_data');
 var templates = require('./templates');
 
@@ -104,7 +103,7 @@ function make_tab_data() {
     return tabs;
 }
 
-exports.colorize_tab_bar = function () {
+exports.colorize_tab_bar = function (get_color_class, color_classes) {
     var stream_tab = $('#tab_list .stream');
     if (stream_tab.length > 0) {
         var stream_name = stream_tab.data('name');
@@ -114,7 +113,7 @@ exports.colorize_tab_bar = function () {
         stream_name = stream_name.toString();
 
         var color_for_stream = stream_data.get_color(stream_name);
-        var stream_dark = stream_color.get_color_class(color_for_stream);
+        var stream_dark = get_color_class(color_for_stream);
         var stream_light = colorspace.getHexColor(
                            colorspace.getLighterColor(
                            colorspace.getDecimalColor(color_for_stream), 0.2));
@@ -136,7 +135,7 @@ exports.colorize_tab_bar = function () {
                 }
               );
             }
-            stream_tab.removeClass(stream_color.color_classes);
+            stream_tab.removeClass(color_classes);
             stream_tab.addClass(stream_dark);
         }
     }
