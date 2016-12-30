@@ -10,6 +10,7 @@ var pointer = require('./pointer');
 var stream_color = require('./stream_color');
 var stream_data = require('./stream_data');
 var stream_list = require('./stream_list');
+var tab_bar = require('./tab_bar');
 var templates = require('./templates');
 var typeahead_helper = require('./typeahead_helper');
 var ui = require('./ui');
@@ -666,7 +667,8 @@ exports.update_subscription_properties = function (stream_name, property, value)
     switch (property) {
     case 'color':
         stream_color.update_stream_color(sub, stream_name, value,
-                                         exports.set_color, {update_historical: true});
+            exports.set_color, tab_bar.colorize_tab_bar,
+            {update_historical: true});
         break;
     case 'in_home_view':
         update_in_home_view(sub, value);

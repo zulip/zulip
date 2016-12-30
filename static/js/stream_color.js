@@ -1,5 +1,4 @@
 var colorspace = require('./colorspace');
-var tab_bar = require('./tab_bar');
 
 var stream_color = (function () {
 
@@ -101,7 +100,7 @@ exports.set_colorpicker_color = function (colorpicker, color, subs_set_color) {
     colorpicker.spectrum(options);
 };
 
-exports.update_stream_color = function (sub, stream_name, color, subs_set_color, opts) {
+exports.update_stream_color = function (sub, stream_name, color, subs_set_color, colorize_tab_bar, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
     var id = parseInt(sub.stream_id, 10);
@@ -119,7 +118,7 @@ exports.update_stream_color = function (sub, stream_name, color, subs_set_color,
         update_historical_message_color(stream_name, color);
     }
     update_stream_sidebar_swatch_color(id, color);
-    tab_bar.colorize_tab_bar(exports.get_color_class, exports.color_classes);
+    colorize_tab_bar(exports.get_color_class, exports.color_classes);
 };
 
 exports.sidebar_options = function (subs_set_color) {
