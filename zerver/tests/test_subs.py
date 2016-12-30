@@ -120,7 +120,8 @@ class StreamAdminTest(ZulipTestCase):
             'stream_name': ujson.dumps('private_stream'),
             'is_private': ujson.dumps(False)
         }
-        result = self.client_patch("/json/streams/private_stream", params)
+        stream_id = Stream.objects.get(realm=user_profile.realm, name='private_stream').id
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_error(result, 'You are not invited to this stream.')
 
         self.subscribe_to_stream(email, 'private_stream')
@@ -130,7 +131,7 @@ class StreamAdminTest(ZulipTestCase):
             'stream_name': ujson.dumps('private_stream'),
             'is_private': ujson.dumps(False)
         }
-        result = self.client_patch("/json/streams/private_stream", params)
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_success(result)
 
         realm = user_profile.realm
@@ -150,7 +151,8 @@ class StreamAdminTest(ZulipTestCase):
             'stream_name': ujson.dumps('public_stream'),
             'is_private': ujson.dumps(True)
         }
-        result = self.client_patch("/json/streams/public_stream", params)
+        stream_id = Stream.objects.get(realm=user_profile.realm, name='public_stream').id
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
         self.assert_json_success(result)
         stream = Stream.objects.get(name='public_stream', realm=realm)
         self.assertTrue(stream.invite_only)
@@ -164,7 +166,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe_to_stream(user_profile.email, stream.name)
         do_change_is_admin(user_profile, True)
 
-        result = self.client_delete('/json/streams/new_stream')
+        result = self.client_delete('/json/streams/%d' % (stream.id,))
         self.assert_json_success(result)
         subscription_exists = Subscription.objects.filter(
             user_profile=user_profile,
@@ -182,8 +184,8 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream('new_stream')
         do_change_is_admin(user_profile, True)
 
-        result = self.client_delete('/json/streams/unknown_stream')
-        self.assert_json_error(result, 'No such stream name')
+        result = self.client_delete('/json/streams/999999999')
+        self.assert_json_error(result, u'Invalid stream id')
 
     def test_deactivate_stream_backend_requires_realm_admin(self):
         # type: () -> None
@@ -191,7 +193,8 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         self.subscribe_to_stream(email, 'new_stream')
 
-        result = self.client_delete('/json/streams/new_stream')
+        stream_id = Stream.objects.get(name='new_stream').id
+        result = self.client_delete('/json/streams/%d' % (stream_id,))
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_private_stream_live_updates(self):
@@ -208,7 +211,8 @@ class StreamAdminTest(ZulipTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/private_stream',
+            stream_id = Stream.objects.get(name='private_stream').id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'description': ujson.dumps('Test description')})
         self.assert_json_success(result)
 
@@ -222,7 +226,8 @@ class StreamAdminTest(ZulipTestCase):
 
         events = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/private_stream',
+            stream_id = Stream.objects.get(name='private_stream').id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps('whatever')})
         self.assert_json_success(result)
 
@@ -242,7 +247,8 @@ class StreamAdminTest(ZulipTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/stream_name1',
+            stream_id = Stream.objects.get(name='stream_name1').id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_success(result)
 
@@ -270,7 +276,8 @@ class StreamAdminTest(ZulipTestCase):
         # Test case to handle unicode stream name change
         # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/stream_name2',
+            stream_id = stream_name2_exists.id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps(u'नया नाम'.encode('utf-8'))})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
@@ -281,7 +288,8 @@ class StreamAdminTest(ZulipTestCase):
         # NOTE: Unicode string being part of URL is handled cleanly
         # by client_patch call, encoding of URL is not needed.
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/नया नाम',
+            stream_id = stream_name_uni_exists.id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps(u'नाम में क्या रक्खा हे'.encode('utf-8'))})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
@@ -292,7 +300,8 @@ class StreamAdminTest(ZulipTestCase):
 
         # Test case to change name from one language to other.
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/नाम में क्या रक्खा हे',
+            stream_id = stream_name_new_uni_exists.id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps(u'français'.encode('utf-8'))})
         self.assert_json_success(result)
         stream_name_fr_exists = get_stream(u'français', realm)
@@ -300,7 +309,8 @@ class StreamAdminTest(ZulipTestCase):
 
         # Test case to change name to mixed language name.
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/français',
+            stream_id = stream_name_fr_exists.id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps(u'français name'.encode('utf-8'))})
         self.assert_json_success(result)
         stream_name_mixed_exists = get_stream(u'français name', realm)
@@ -312,7 +322,8 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         self.make_stream('stream_name1')
 
-        result = self.client_patch('/json/streams/stream_name1',
+        stream_id = Stream.objects.get(name='stream_name1').id
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'new_name': ujson.dumps('stream_name2')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
@@ -327,7 +338,8 @@ class StreamAdminTest(ZulipTestCase):
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/streams/stream_name1',
+            stream_id = Stream.objects.get(realm=realm, name='stream_name1').id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'description': ujson.dumps('Test description')})
         self.assert_json_success(result)
 
@@ -362,7 +374,8 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe_to_stream(email, 'stream_name1')
         do_change_is_admin(user_profile, False)
 
-        result = self.client_patch('/json/streams/stream_name1',
+        stream_id = Stream.objects.get(realm=user_profile.realm, name='stream_name1').id
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be a realm administrator')
 
@@ -392,10 +405,11 @@ class StreamAdminTest(ZulipTestCase):
         """
         active_name = stream.name
         realm = stream.realm
+        stream_id = stream.id
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_delete('/json/streams/' + active_name)
+            result = self.client_delete('/json/streams/' + str(stream_id))
         self.assert_json_success(result)
 
         deletion_events = [e['event'] for e in events if e['event']['type'] == 'subscription']
@@ -467,7 +481,7 @@ class StreamAdminTest(ZulipTestCase):
         priv_stream = self.set_up_stream_for_deletion(
             "privstream", subscribed=False, invite_only=True)
 
-        result = self.client_delete('/json/streams/' + priv_stream.name)
+        result = self.client_delete('/json/streams/' + str(priv_stream.id))
         self.assert_json_error(
             result, "Cannot administer invite-only streams this way")
 
@@ -2036,7 +2050,8 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
-        result = self.client_get("/api/v1/streams/%s/members" % (stream_name,),
+        stream_id = Stream.objects.get(name=stream_name).id
+        result = self.client_get("/api/v1/streams/%d/members" % (stream_id,),
                                  **self.api_auth(email))
         self.assert_json_success(result)
         json = ujson.loads(result.content)
@@ -2068,16 +2083,17 @@ class GetSubscribersTest(ZulipTestCase):
                 stream_name, realm)]
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
-    def make_subscriber_request(self, stream_name, email=None):
-        # type: (Text, Optional[str]) -> HttpResponse
+    def make_subscriber_request(self, stream_id, email=None):
+        # type: (int, Optional[str]) -> HttpResponse
         if email is None:
             email = self.email
-        return self.client_get("/api/v1/streams/%s/members" % (stream_name,),
+        return self.client_get("/api/v1/streams/%d/members" % (stream_id,),
                                **self.api_auth(email))
 
     def make_successful_subscriber_request(self, stream_name):
         # type: (Text) -> None
-        result = self.make_subscriber_request(stream_name)
+        stream_id = Stream.objects.get(name=stream_name).id
+        result = self.make_subscriber_request(stream_id)
         self.assert_json_success(result)
         self.check_well_formed_result(ujson.loads(result.content),
                                       stream_name, self.user_profile.realm)
@@ -2216,9 +2232,9 @@ class GetSubscribersTest(ZulipTestCase):
         """
         json_get_subscribers also returns the list of subscribers for a stream.
         """
-        stream_name = "unknown_stream"
-        result = self.client_get("/json/streams/%s/members" % (stream_name,))
-        self.assert_json_error(result, "Stream does not exist: %s" % (stream_name,))
+        stream_id = 99999999
+        result = self.client_get("/json/streams/%d/members" % (stream_id,))
+        self.assert_json_error(result, u'Invalid stream id')
 
     def test_json_get_subscribers(self):
         # type: () -> None
@@ -2227,8 +2243,9 @@ class GetSubscribersTest(ZulipTestCase):
         also returns the list of subscribers for a stream.
         """
         stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
+        stream_id = Stream.objects.get(realm=self.user_profile.realm, name=stream_name).id
         expected_subscribers = gather_subscriptions(self.user_profile)[0][0]['subscribers']
-        result = self.client_get("/json/streams/%s/members" % (stream_name,))
+        result = self.client_get("/json/streams/%d/members" % (stream_id,))
         self.assert_json_success(result)
         result_dict = ujson.loads(result.content)
         self.assertIn('subscribers', result_dict)
@@ -2251,6 +2268,7 @@ class GetSubscribersTest(ZulipTestCase):
         other_email = "othello@zulip.com"
 
         # Try to fetch the subscriber list as a non-member.
-        result = self.make_subscriber_request(stream_name, email=other_email)
+        stream_id = Stream.objects.get(name=stream_name).id
+        result = self.make_subscriber_request(stream_id, email=other_email)
         self.assert_json_error(result,
                                "Unable to retrieve subscribers for invite-only stream")

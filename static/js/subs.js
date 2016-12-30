@@ -317,7 +317,7 @@ function show_subscription_settings(sub_row) {
     loading.make_indicator(indicator_elem);
 
     channel.get({
-        url: "/json/streams/" + encodeURIComponent(sub.name) + "/members",
+        url: "/json/streams/" + stream_id + "/members",
         idempotent: true,
         success: function (data) {
             loading.destroy_indicator(indicator_elem);
@@ -1196,15 +1196,13 @@ $(function () {
         e.preventDefault();
         var sub_settings = $(e.target).closest('.subscription_settings');
         var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
-        var sub = stream_data.get_sub_by_id(stream_id);
         var new_name_box = sub_settings.find('input[name="new-name"]');
         var new_name = $.trim(new_name_box.val());
 
         $("#subscriptions-status").hide();
 
         channel.patch({
-            // Stream names might contain unsafe characters so we must encode it first.
-            url: "/json/streams/" + encodeURIComponent(sub.name),
+            url: "/json/streams/" + stream_id,
             data: {new_name: JSON.stringify(new_name)},
             success: function () {
                 new_name_box.val('');
@@ -1222,13 +1220,13 @@ $(function () {
         e.preventDefault();
         var sub_settings = $(e.target).closest('.subscription_settings');
         var stream_name = get_stream_name(sub_settings);
+        var stream_id = stream_data.get_sub(stream_name).stream_id;
         var description = sub_settings.find('input[name="description"]').val();
 
         $('#subscriptions-status').hide();
 
         channel.patch({
-            // Stream names might contain unsafe characters so we must encode it first.
-            url: '/json/streams/' + encodeURIComponent(stream_name),
+            url: '/json/streams/' + stream_id,
             data: {
                 description: JSON.stringify(description)
             },
@@ -1282,7 +1280,7 @@ $(function () {
         var data = {stream_name: sub.name, is_private: is_private};
 
         channel.patch({
-            url: "/json/streams/" + encodeURIComponent(sub.name),
+            url: "/json/streams/" + stream_id,
             data: data,
             success: function () {
                 sub = stream_data.get_sub_by_id(stream_id);

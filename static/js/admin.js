@@ -778,8 +778,10 @@ function _setup_page() {
         }
         $("#deactivation_stream_modal").modal("hide");
         $(".active_stream_row button").prop("disabled", true).text("Working…");
+        var stream_name = $(".active_stream_row").find('.stream_name').text();
+        var stream_id = stream_data.get_sub(stream_name).stream_id;
         channel.del({
-            url: '/json/streams/' + encodeURIComponent($(".active_stream_row").find('.stream_name').text()),
+            url: '/json/streams/' + stream_id,
             error: function (xhr) {
                 if (xhr.status.toString().charAt(0) === "4") {
                     $(".active_stream_row button").closest("td").html(
