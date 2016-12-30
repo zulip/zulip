@@ -13,7 +13,7 @@ class GiveawayHandler(object):
     @giveaway command giveaway_name giveaway_time
 
     Possible commands:
-    init - initialise a giveaway (only one can be running at a time)
+    init - initialize a giveaway (only one can be running at a time)
     enter - enter a giveaway (a giveaway must be running to use this command)
     exit - leave a giveaway (must be partaking in an active giveaway for this
     command to work
@@ -107,7 +107,7 @@ class GiveawayHandler(object):
             @giveaway command giveaway_name giveaway_time
 
             Command:
-                - init: initialise a giveaway
+                - init: initialize a giveaway
                 - enter: enter a giveaway (only works if a
                 giveaway is already running_
                 - exit: exit
