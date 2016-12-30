@@ -3,10 +3,10 @@ Zulip Giveaway Bot - Created By Daniel O'Brien
 Overview:
 
 This bot facilitates the creation of 'Giveaways' within Zuilip. Once
-a giveaway has been initiated, it will automatically count down for
+a giveaway has been initialized, it will automatically count down for
 a set period of time and once that time has passed it will randomly
 choose a winner out of the people whom entered the giveaway in that
-time period
+time period.
 ---------------------------------------------------------------------
 Syntax:
 
@@ -14,7 +14,7 @@ Syntax:
 ---------------------------------------------------------------------
 Commands:
 
-    - init: Initialise a giveaway, [giveaway_name] and
+    - init: Initialize a giveaway, [giveaway_name] and
       [giveaway_time] must also be supplied.
 
     - enter: Enter a giveaway, requires for there to already be an
