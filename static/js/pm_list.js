@@ -1,5 +1,4 @@
 var blueslip = require('./blueslip');
-var narrow = require('./narrow');
 var people = require('./people');
 var popovers = require('./popovers');
 var resize = require('./resize');
@@ -88,7 +87,7 @@ exports.close = function () {
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation, max_private_messages, num_unread_for_person, recent_private_messages) {
+exports._build_private_messages_list = function (active_conversation, max_private_messages, num_unread_for_person, recent_private_messages, pm_with_uri) {
 
     var private_messages = recent_private_messages || [];
     var display_messages = [];
@@ -121,7 +120,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             unread: num_unread,
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(reply_to)
+            url: pm_with_uri(reply_to)
         };
         display_messages.push(display_message);
     });
@@ -158,7 +157,7 @@ exports.rebuild_recent = function (active_conversation) {
     resize.resize_stream_filters_container();
 };
 
-exports.update_private_messages = function () {
+exports.update_private_messages = function (narrow) {
     exports._build_private_messages_list();
 
     if (! narrow.active()) {
