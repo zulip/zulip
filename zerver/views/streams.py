@@ -20,7 +20,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
-from zerver.models import UserProfile, Stream, Subscription, \
+from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, bulk_get_streams, \
     bulk_get_recipients, valid_stream_name, get_active_user_dicts_in_realm
 
@@ -132,11 +132,9 @@ def principal_to_user_profile(agent, principal):
     return principal_user_profile
 
 @require_realm_admin
-def deactivate_stream_backend(request, user_profile, stream_name):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    target = get_stream(stream_name, user_profile.realm)
-    if not target:
-        return json_error(_('No such stream name'))
+def deactivate_stream_backend(request, user_profile, stream_id):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    target = get_and_validate_stream_by_id(stream_id, user_profile.realm)
 
     if target.invite_only and not subscribed_to_stream(user_profile, target):
         return json_error(_('Cannot administer invite-only streams this way'))
@@ -160,11 +158,14 @@ def remove_default_stream(request, user_profile, stream_name=REQ()):
 
 @require_realm_admin
 @has_request_variables
-def update_stream_backend(request, user_profile, stream_name,
+def update_stream_backend(request, user_profile, stream_id,
                           description=REQ(validator=check_string, default=None),
                           is_private=REQ(validator=check_bool, default=None),
                           new_name=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[bool], Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[bool], Optional[Text]) -> HttpResponse
+    stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
+    stream_name = stream.name
+
     if description is not None:
         do_change_stream_description(user_profile.realm, stream_name, description)
     if stream_name is not None and new_name is not None:
@@ -406,12 +407,10 @@ def add_subscriptions_backend(request, user_profile,
     return json_success(result)
 
 @has_request_variables
-def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    stream = get_stream(stream_name, user_profile.realm)
-    if stream is None:
-        raise JsonableError(_("Stream does not exist: %s") % (stream_name,))
-
+def get_subscribers_backend(request, user_profile,
+                            stream_id=REQ('stream', converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
     subscribers = get_subscriber_emails(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
@@ -436,11 +435,7 @@ def get_streams_backend(request, user_profile,
 def get_topics_backend(request, user_profile,
                        stream_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-
-    try:
-        stream = Stream.objects.get(pk=stream_id)
-    except Stream.DoesNotExist:
-        return json_error(_("Invalid stream id"))
+    stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
 
     if stream.realm_id != user_profile.realm_id:
         return json_error(_("Invalid stream id"))
@@ -468,13 +463,20 @@ def get_topics_backend(request, user_profile,
 def json_stream_exists(request, user_profile, stream=REQ(),
                        autosubscribe=REQ(default=False)):
     # type: (HttpRequest, UserProfile, Text, bool) -> HttpResponse
-    return stream_exists_backend(request, user_profile, stream, autosubscribe)
-
-def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
-    # type: (HttpRequest, UserProfile, Text, bool) -> HttpResponse
-    if not valid_stream_name(stream_name):
+    if not valid_stream_name(stream):
         return json_error(_("Invalid characters in stream name"))
-    stream = get_stream(stream_name, user_profile.realm)
+    try:
+        stream_id = Stream.objects.get(realm=user_profile.realm, name=stream).id
+    except Stream.DoesNotExist:
+        stream_id = None
+    return stream_exists_backend(request, user_profile, stream_id, autosubscribe)
+
+def stream_exists_backend(request, user_profile, stream_id, autosubscribe):
+    # type: (HttpRequest, UserProfile, int, bool) -> HttpResponse
+    try:
+        stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
+    except JsonableError:
+        stream = None
     result = {"exists": bool(stream)}
     if stream is not None:
         recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -486,6 +488,14 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
 
         return json_success(result) # results are ignored for HEAD requests
     return json_response(data=result, status=404)
+
+def get_and_validate_stream_by_id(stream_id, realm):
+    # type: (int, Realm) -> Stream
+    try:
+        stream = Stream.objects.get(pk=stream_id, realm_id=realm.id)
+    except Stream.DoesNotExist:
+        raise JsonableError(_("Invalid stream id"))
+    return stream
 
 @has_request_variables
 def json_get_stream_id(request, user_profile, stream=REQ()):

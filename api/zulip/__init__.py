@@ -641,13 +641,30 @@ class Client(object):
             request=request,
         )
 
+    def get_stream_id(self, stream):
+        # type: (str) -> Dict[str, Any]
+        '''
+            Example usage: client.get_stream_id('devel')
+        '''
+        stream_encoded = urllib.parse.quote(stream, safe='')
+        url = 'get_stream_id?stream=%s' % (stream_encoded,)
+        return self.call_endpoint(
+            url=url,
+            method='GET',
+            request=None,
+        )
+
     def get_subscribers(self, **request):
         # type: (**Any) -> Dict[str, Any]
         '''
             Example usage: client.get_subscribers(stream='devel')
         '''
-        stream = urllib.parse.quote(request['stream'], safe='')
-        url = 'streams/%s/members' % (stream,)
+        request_stream_id = self.get_stream_id(request['stream'])
+        try:
+            stream_id = request_stream_id['stream_id']
+        except KeyError:
+            return request_stream_id
+        url = 'streams/%d/members' % (stream_id,)
         return self.call_endpoint(
             url=url,
             method='GET',

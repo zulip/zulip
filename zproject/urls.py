@@ -293,9 +293,9 @@ v1_api_and_json_patterns = [
         {'GET': 'zerver.views.streams.json_get_stream_id'}),
 
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
-    url(r'^streams/(?P<stream_name>.*)/members$', rest_dispatch,
+    url(r'^streams/(?P<stream_id>\d+)/members$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_subscribers_backend'}),
-    url(r'^streams/(?P<stream_name>.*)$', rest_dispatch,
+    url(r'^streams/(?P<stream_id>\d+)$', rest_dispatch,
         {'HEAD': 'zerver.views.streams.stream_exists_backend',
          'GET': 'zerver.views.streams.stream_exists_backend',
          'PATCH': 'zerver.views.streams.update_stream_backend',
