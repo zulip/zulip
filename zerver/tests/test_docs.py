@@ -63,6 +63,17 @@ class DocPageTest(ZulipTestCase):
                 ''.join(str(x) for x in list(result.streaming_content))
             )
 
+            result = self.client_get('/apidocs/')
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('swagger', result['Location'])
+
+            result = self.client_get('/static/swagger/swaggerindex.html')
+            self.assertEqual(result.status_code, 200)
+            self.assertIn(
+                'Swagger UI',
+                ''.join(str(x) for x in list(result.streaming_content))
+            )
+
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self):
         # type: () -> None

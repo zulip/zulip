@@ -28,6 +28,10 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     npm_cache = os.path.join(NPM_CACHE_PATH, sha1sum.hexdigest())
     cached_node_modules = os.path.join(npm_cache, 'node_modules')
     success_stamp = os.path.join(cached_node_modules, '.success-stamp')
+    swagger_dist_path = os.path.join(cached_node_modules, 'swagger-ui-dist')
+    swagger_zulip_path = os.path.join(ZULIP_PATH, 'static', 'swagger')
+    swagger_html_path = os.path.join(ZULIP_PATH, 'static', 'html', 'swaggerindex.html')
+
     # Check if a cached version already exists
     if not os.path.exists(success_stamp):
         do_npm_install(npm_cache,
@@ -41,6 +45,8 @@ def setup_node_modules(npm_args=None, stdout=None, stderr=None, copy_modules=Fal
     cmds = [
         ['rm', '-rf', 'node_modules'],
         ["ln", "-nsf", cached_node_modules, 'node_modules'],
+        ["cp", "-r", swagger_dist_path, swagger_zulip_path],
+        ["cp", swagger_html_path, swagger_zulip_path],
     ]
     for cmd in cmds:
         run(cmd, stdout=stdout, stderr=stderr)

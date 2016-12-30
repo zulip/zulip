@@ -143,6 +143,9 @@ i18n_urls = [
     url(r'^about/$', TemplateView.as_view(template_name='zerver/about.html')),
     url(r'^apps/$', TemplateView.as_view(template_name='zerver/apps.html')),
 
+    # Swagger API doc viewer
+    url(r'^apidocs/$', RedirectView.as_view(url='/static/swagger/swaggerindex.html?url=/static/yaml/zulip.yaml')),
+
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt', permanent=True)),
 
     # Landing page, features pages, signup form, etc.

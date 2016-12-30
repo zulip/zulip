@@ -20,6 +20,7 @@ from typing import cast, Callable, Dict, Iterable, List
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests
     "tools/tests/test_template_data",
+    "static/swagger",
 ]
 
 def check_our_files(modified_only, all_dups, targets):

@@ -24,6 +24,8 @@ EXCLUDED_FILES = [
     "puppet/apt/.forge-release",
     "puppet/apt/README.md",
     "static/third",
+    "static/swagger",
+    "static/html/swaggerindex.html",
     # Transifex syncs translation.json files without trailing
     # newlines; there's nothing other than trailing newlines we'd be
     # checking for in these anyway.

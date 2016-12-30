@@ -56,6 +56,9 @@ git+https://github.com/umairwaheed/django-guardian.git@a81edc9f8ef8268f3edb73dea
 # Django extension for sending data to statsd
 django-statsd-mozilla==0.3.16
 
+# Django extension for Cross-Origin Resource Sharing (needed for Swagger integration)
+django-cors-headers==2.0.0
+
 docopt==0.6.2
 fonttools==3.10.0
 

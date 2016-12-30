@@ -332,6 +332,7 @@ MIDDLEWARE_CLASSES = (
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'zerver.middleware.SessionHostDomainMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -364,6 +365,7 @@ INSTALLED_APPS = [
     'webpack_loader',
     'zerver',
     'social_django',
+    'corsheaders',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
@@ -1292,3 +1294,11 @@ PROFILE_ALL_REQUESTS = False
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
 
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
+
+# cross-site headers for Swagger UI
+CORS_URLS_REGEX = r'^/apidocs/.*$'
+CORS_ALLOW_METHODS = (
+    'GET',
+    'OPTIONS',
+    'POST',
+)
