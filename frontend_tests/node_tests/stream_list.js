@@ -63,7 +63,7 @@ global.people.add_in_realm(bob);
         return 1;
     };
 
-    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations, unread.num_unread_for_person);
+    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations, global.unread.num_unread_for_person, global.message_store.recent_private_messages);
     global.write_test_output("test_build_private_messages_list", convos_html);
 
     var conversation = $(convos_html).find('a').text().trim();

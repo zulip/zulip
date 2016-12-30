@@ -1,5 +1,4 @@
 var blueslip = require('./blueslip');
-var message_store = require('./message_store');
 var narrow = require('./narrow');
 var people = require('./people');
 var popovers = require('./popovers');
@@ -89,9 +88,9 @@ exports.close = function () {
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation, max_private_messages, num_unread_for_person) {
+exports._build_private_messages_list = function (active_conversation, max_private_messages, num_unread_for_person, recent_private_messages) {
 
-    var private_messages = message_store.recent_private_messages || [];
+    var private_messages = recent_private_messages || [];
     var display_messages = [];
     var hiding_messages = false;
 
