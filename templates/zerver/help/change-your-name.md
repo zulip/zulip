@@ -1,19 +1,13 @@
 # Change your name
 
-If for whatever reason you ever wanted to change your name in Zulip,
-this is fully supported.  Zulip has full unicode support, so you
-can spell your name exactly how you'd like it to be displayed.
+It's easy to change how your name is shown in Zulip. With full unicode support, you
+can spell your name exactly how you'd like it to be dísplåyêd.
 
-Visit your settings by clicking the cog widget on the top right corner
-and then settings.
+1. Go to the [Your Account](/#settings/your-account) tab of the [Settings](/help/edit-settings) page.
 
-![Settings](/static/images/help/settings.png)
-
-Change your name in the **Full Name** field, and click save changes.
-
-![Change your name](/static/images/help/name_change.png)
+2. Change your name in the **Full name** field, and click **Save Changes**.
 
 Congratulations! You have updated your name.
 
-Note that you will only be able to see the changes on new messages.
-
+!!! warn ""
+	Note that your old messages will still have the previous version of your name.
