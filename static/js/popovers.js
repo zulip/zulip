@@ -590,13 +590,13 @@ exports.register_click_handlers = function () {
         var data_id = stream_data.get_sub(stream).stream_id;
         var popover = $('.streams_popover[data-id=' + data_id + ']');
         update_spectrum(popover, function (colorpicker) {
-            colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
+            colorpicker.spectrum(stream_color.sidebar_options(subs.set_color));
         });
 
         $('.streams_popover').on('click', '.custom_color', function (e) {
             update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
                 colorpicker.spectrum("destroy");
-                colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
+                colorpicker.spectrum(stream_color.sidebar_options_full(subs.set_color));
                 // In theory this should clean up the old color picker,
                 // but this seems a bit flaky -- the new colorpicker
                 // doesn't fire until you click a button, but the buttons
