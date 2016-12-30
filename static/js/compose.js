@@ -10,6 +10,7 @@ var people = require('./people');
 var reload = require('./reload');
 var resize = require('./resize');
 var server_events = require('./server_events');
+var Socket = require('./socket');
 var stream_color = require('./stream_color');
 var stream_data = require('./stream_data');
 var subs = require('./subs');
