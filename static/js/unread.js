@@ -129,8 +129,7 @@ exports.update_unread_topics = function (msg, event) {
 
 exports.process_loaded_messages = function (messages) {
     _.each(messages, function (message) {
-        var unread = exports.message_unread(message);
-        if (!unread) {
+        if (!exports.message_unread(message)) {
             return;
         }
 

@@ -187,7 +187,7 @@
         "no-iterator": 2,
         "no-mixed-requires": [0, false],
         "no-extra-parens": ["error", "functions"],
-        "no-shadow": 1,
+        "no-shadow": 2,
         "no-use-before-define": 2,
         "no-redeclare": 2,
         "no-regex-spaces": 2,

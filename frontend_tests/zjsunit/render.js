@@ -96,8 +96,8 @@ exports.template_finder = (function () {
             });
 
     self.get = function (name) {
-        var file = files.find(function (file) {
-            return file.name === name;
+        var file = files.find(function (test_file) {
+            return test_file.name === name;
         });
         assert(file);
 

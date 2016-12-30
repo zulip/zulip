@@ -32,16 +32,16 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     });
     exports.emojis_by_name = {};
     exports.emojis_name_to_css_class = {};
-    _.each(exports.emojis, function (emoji) {
-        exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
-        exports.emojis_name_to_css_class[emoji.emoji_name] = emoji.emoji_name;
-        if (emoji.emoji_name.indexOf("+") >= 0) {
-            exports.emojis_name_to_css_class[emoji.emoji_name] = emoji.emoji_name.replace("+", "");
+    _.each(exports.emojis, function (current_emoji) {
+        exports.emojis_by_name[current_emoji.emoji_name] = current_emoji.emoji_url;
+        exports.emojis_name_to_css_class[current_emoji.emoji_name] = current_emoji.emoji_name;
+        if (current_emoji.emoji_name.indexOf("+") >= 0) {
+            exports.emojis_name_to_css_class[current_emoji.emoji_name] = current_emoji.emoji_name.replace("+", "");
         }
     });
     exports.emojis_by_unicode = {};
-    _.each(default_unicode_emojis, function (emoji) {
-        exports.emojis_by_unicode[emoji.emoji_name] = emoji.emoji_url;
+    _.each(default_unicode_emojis, function (current_emoji) {
+        exports.emojis_by_unicode[current_emoji.emoji_name] = current_emoji.emoji_url;
     });
 };
 

@@ -170,8 +170,8 @@ function select_on_focus(field_id) {
             return;
         }
         in_handler = true;
-        $("#" + field_id).select().one('mouseup', function (e) {
-            e.preventDefault();
+        $("#" + field_id).select().one('mouseup', function (mouse_event) {
+            mouse_event.preventDefault();
         });
         in_handler = false;
     });

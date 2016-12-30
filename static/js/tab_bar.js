@@ -137,15 +137,15 @@ exports.colorize_tab_bar = function () {
 function build_tab_bar() {
     var tabs = make_tab_data();
 
-    var tab_bar = $("#tab_bar");
-    tab_bar.empty();
+    var tab_bar_sel = $("#tab_bar");
+    tab_bar_sel.empty();
 
     tabs[tabs.length - 1].active = "active";
     var rendered =  templates.render('tab_bar', {tabs: tabs});
 
-    tab_bar.append(rendered);
+    tab_bar_sel.append(rendered);
     exports.colorize_tab_bar();
-    tab_bar.removeClass('notdisplayed');
+    tab_bar_sel.removeClass('notdisplayed');
 }
 
 $(function () {

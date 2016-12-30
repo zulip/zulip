@@ -574,8 +574,8 @@ exports.register_click_handlers = function () {
             colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
         });
 
-        $('.streams_popover').on('click', '.custom_color', function (e) {
-            update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
+        $('.streams_popover').on('click', '.custom_color', function (click_event) {
+            update_spectrum($(click_event.target).closest('.streams_popover'), function (colorpicker) {
                 colorpicker.spectrum("destroy");
                 colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
                 // In theory this should clean up the old color picker,
@@ -584,7 +584,7 @@ exports.register_click_handlers = function () {
                 // have been hidden.  We work around this by just manually
                 // fixing it up here.
                 colorpicker.parent().find('.sp-container').removeClass('sp-buttons-disabled');
-                $(e.target).hide();
+                $(click_event.target).hide();
             });
 
             $('.streams_popover').on('click', 'a.sp-cancel', function () {

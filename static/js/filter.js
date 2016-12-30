@@ -109,7 +109,7 @@ function message_matches_search_term(message, operator, operand) {
     return true; // unknown operators return true (effectively ignored)
 }
 
-
+// eslint-disable-next-line no-shadow
 function Filter(operators) {
     if (operators === undefined) {
         this._operators = [];
@@ -216,7 +216,7 @@ Filter.parse = function (str) {
     }
     _.each(matches, function (token) {
         var parts;
-        var operator;
+        var op;
         parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
@@ -224,22 +224,22 @@ Filter.parse = function (str) {
         } else {
             // Looks like an operator.
             negated = false;
-            operator = parts.shift();
-            if (operator[0] === '-') {
+            op = parts.shift();
+            if (op[0] === '-') {
                 negated = true;
-                operator = operator.slice(1);
+                op = op.slice(1);
             }
-            operand = decodeOperand(parts.join(':'), operator);
+            operand = decodeOperand(parts.join(':'), op);
 
             // We use Filter.operator_to_prefix() checks if the
             // operator is known.  If it is not known, then we treat
             // it as a search for the given string (which may contain
             // a `:`), not as a search operator.
-            if (Filter.operator_to_prefix(operator, negated) === '') {
-                operator = 'search';
+            if (Filter.operator_to_prefix(op, negated) === '') {
+                op = 'search';
                 operand = token;
             }
-            term = {negated: negated, operator: operator, operand: operand};
+            term = {negated: negated, operator: op, operand: operand};
             operators.push(term);
         }
     });

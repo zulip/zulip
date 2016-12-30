@@ -26,10 +26,10 @@ function uncondense_row(row) {
     show_condense_link(row);
 }
 
-exports.uncollapse = function (row) {
+exports.uncollapse = function (current_row) {
     // Uncollapse a message, restoring the condensed message [More] or
     // [Condense] link if necessary.
-    var message = current_msg_list.get(rows.id(row));
+    var message = current_msg_list.get(rows.id(current_row));
     message.collapsed = false;
     message_flags.send_collapsed([message], false);
 
@@ -55,16 +55,16 @@ exports.uncollapse = function (row) {
     };
 
     // We also need to collapse this message in the home view
-    var home_row = home_msg_list.get_row(rows.id(row));
+    var home_row = home_msg_list.get_row(rows.id(current_row));
 
-    process_row(row);
+    process_row(current_row);
     process_row(home_row);
 };
 
-exports.collapse = function (row) {
+exports.collapse = function (current_row) {
     // Collapse a message, hiding the condensed message [More] or
     // [Condense] link if necessary.
-    var message = current_msg_list.get(rows.id(row));
+    var message = current_msg_list.get(rows.id(current_row));
     message.collapsed = true;
     message_flags.send_collapsed([message], true);
 
@@ -74,9 +74,9 @@ exports.collapse = function (row) {
     };
 
     // We also need to collapse this message in the home view
-    var home_row = home_msg_list.get_row(rows.id(row));
+    var home_row = home_msg_list.get_row(rows.id(current_row));
 
-    process_row(row);
+    process_row(current_row);
     process_row(home_row);
 };
 exports.clear_message_content_height_cache = function () {

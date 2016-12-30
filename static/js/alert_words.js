@@ -27,14 +27,14 @@ exports.process_message = function (message) {
         var regex = new RegExp('(' + before_punctuation + ')' +
                                '(' + clean + ')' +
                                '(' + after_punctuation + ')' , 'ig');
-        message.content = message.content.replace(regex, function (match, before, word,
+        message.content = message.content.replace(regex, function (match, before, new_word,
                                                                    after, offset, content) {
             // Don't munge URL hrefs
             var pre_match = content.substring(0, offset);
             if (find_href_backwards.exec(pre_match) || find_title_backwards.exec(pre_match)) {
-                return before + word + after;
+                return before + new_word + after;
             }
-            return before + "<span class='alert-word'>" + word + "</span>" + after;
+            return before + "<span class='alert-word'>" + new_word + "</span>" + after;
         });
     });
 };
