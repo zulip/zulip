@@ -864,6 +864,18 @@ HOST_PORT 9971
 (and halt and restart the Vagrant guest), then you would visit
 http://localhost:9971/ to connect to your development server.
 
+If you wish to set a different host IP address for Vagrant to use
+rather than localhost (127.0.0.1), you can add that to your
+'~/.zulip-vagrant-config' file as well. For example, if you set:
+
+```
+HOST_IP_ADDR 0.0.0.0
+```
+
+(and restart the Vagrant guest), your host IP would be 0.0.0.0, a
+special host IP address that would allow other computers to connect
+to your development server.
+
 [cygwin-dl]: http://cygwin.com/
 [vagrant-dl]: https://www.vagrantup.com/downloads.html
 [vagrant-dl-win]: https://releases.hashicorp.com/vagrant/1.8.6/vagrant_1.8.6.msi
