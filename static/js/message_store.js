@@ -342,7 +342,7 @@ exports.update_messages = function update_messages(events) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
-    unread.update_unread_counts();
+    unread.update_unread_counts(stream_list.update_dom_with_unread_counts);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages(narrow);
 };
@@ -351,7 +351,7 @@ exports.update_messages = function update_messages(events) {
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);
-    unread.update_unread_counts();
+    unread.update_unread_counts(stream_list.update_dom_with_unread_counts);
     resize.resize_page_components();
 };
 

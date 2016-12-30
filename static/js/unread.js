@@ -13,7 +13,6 @@ var notifications = require('./notifications');
 var people = require('./people');
 var pm_list = require('./pm_list');
 var stream_data = require('./stream_data');
-var stream_list = require('./stream_list');
 var templates = require('./templates');
 var viewport = require('./viewport');
 
@@ -260,7 +259,7 @@ exports.num_unread_for_person = function (user_ids_string) {
     return unread_privates.get(user_ids_string).num_items();
 };
 
-exports.update_unread_counts = function () {
+exports.update_unread_counts = function (stream_list_update_dom_with_unread_counts) {
     if (exports.suppress_unread_counts) {
         return;
     }
@@ -272,7 +271,7 @@ exports.update_unread_counts = function () {
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
     activity.update_dom_with_unread_counts(res);
-    stream_list.update_dom_with_unread_counts(res);
+    stream_list_update_dom_with_unread_counts(res);
     pm_list.update_dom_with_unread_counts(res);
     notifications.update_title_count(res.home_unread_messages);
     notifications.update_pm_count(res.private_message_count);
