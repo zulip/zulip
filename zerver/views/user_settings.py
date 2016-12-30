@@ -142,8 +142,7 @@ def json_change_notify_settings(request, user_profile,
                                 enable_digest_emails=REQ(validator=check_bool,
                                                          default=None),
                                 pm_content_in_desktop_notifications=REQ(validator=check_bool,
-                                                                               default=None)
-                                ):
+                                                                        default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool]) -> HttpResponse
     result = {}
 
