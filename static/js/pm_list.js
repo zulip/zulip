@@ -5,7 +5,6 @@ var people = require('./people');
 var popovers = require('./popovers');
 var resize = require('./resize');
 var templates = require('./templates');
-var unread = require('./unread');
 var unread_ui = require('./unread_ui');
 
 var pm_list = (function () {
@@ -90,7 +89,7 @@ exports.close = function () {
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation, max_private_messages) {
+exports._build_private_messages_list = function (active_conversation, max_private_messages, num_unread_for_person) {
 
     var private_messages = message_store.recent_private_messages || [];
     var display_messages = [];
@@ -106,7 +105,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         var user_ids_string = private_message_obj.user_ids_string;
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
 
-        var num_unread = unread.num_unread_for_person(user_ids_string);
+        var num_unread = num_unread_for_person(user_ids_string);
 
         var always_visible = (idx < max_private_messages) || (num_unread > 0)
             || (user_ids_string === active_conversation);

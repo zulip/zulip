@@ -9,6 +9,7 @@ add_dependencies({
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     subs: 'js/subs',
+    unread: 'js/unread',
     util: 'js/util',
     hashchange: 'js/hashchange',
 });
@@ -21,6 +22,7 @@ set_global('message_store', {
 // TODO: move pm_list-related tests to their own module
 var pm_list = require('js/pm_list.js');
 var stream_list = require('js/stream_list.js');
+var unread = require('js/unread.js');
 
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
@@ -61,7 +63,7 @@ global.people.add_in_realm(bob);
         return 1;
     };
 
-    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations);
+    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations, unread.num_unread_for_person);
     global.write_test_output("test_build_private_messages_list", convos_html);
 
     var conversation = $(convos_html).find('a').text().trim();
