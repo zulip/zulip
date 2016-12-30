@@ -601,6 +601,7 @@ def home_real(request):
         desktop_notifications_enabled = desktop_notifications_enabled,
         sounds_enabled = user_profile.enable_sounds,
         enable_offline_email_notifications = user_profile.enable_offline_email_notifications,
+        pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
         enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
         twenty_four_hour_time = register_ret['twenty_four_hour_time'],

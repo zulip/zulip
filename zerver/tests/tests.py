@@ -1902,6 +1902,7 @@ class HomeTest(ZulipTestCase):
             "notifications_stream",
             "password_auth_enabled",
             "people_list",
+            "pm_content_in_desktop_notifications",
             "poll_timeout",
             "presence_disabled",
             "product_name",

@@ -2223,6 +2223,21 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_change_pm_content_in_desktop_notifications(user_profile,
+                                                  pm_content_in_desktop_notifications, log=True):
+    # type: (UserProfile, bool, bool) -> None
+    user_profile.pm_content_in_desktop_notifications \
+        = pm_content_in_desktop_notifications
+    user_profile.save(update_fields=["pm_content_in_desktop_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'pm_content_in_desktop_notifications',
+             'setting': pm_content_in_desktop_notifications}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
+
 def do_change_enable_sounds(user_profile, enable_sounds, log=True):
     # type: (UserProfile, bool, bool) -> None
     user_profile.enable_sounds = enable_sounds

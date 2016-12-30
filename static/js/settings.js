@@ -308,6 +308,10 @@ function _setup_page() {
             page_params.enable_online_push_notifications = result.enable_online_push_notifications;
         }
 
+        if (result.pm_content_in_desktop_notifications !== undefined) {
+            page_params.pm_content_in_desktop_notifications
+                = result.pm_content_in_desktop_notifications;
+        }
         // Other notification settings.
 
         if (result.enable_digest_emails !== undefined) {
@@ -336,7 +340,7 @@ function _setup_page() {
 
         var updated_settings = {};
         _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
-                "enable_desktop_notifications", "enable_sounds",
+                "enable_desktop_notifications", "pm_content_in_desktop_notifications", "enable_sounds",
                 "enable_offline_email_notifications",
                 "enable_offline_push_notifications", "enable_online_push_notifications",
                 "enable_digest_emails"],
