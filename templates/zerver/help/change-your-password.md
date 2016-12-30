@@ -13,3 +13,11 @@
     Your password must be six characters or longer.
 
 ## If you forgot your password
+If you've forgotten your password, you can easily reset it using your e-mail.
+
+1. Go to your organization's Zulip homepage.
+2. Click the **Forgot password?** link below the **Password** field.
+3. In the new form you see, enter your email address in the **Email** field
+and click the **Reset password** button.
+
+You will receive an email with instructions on how to reset your password.
