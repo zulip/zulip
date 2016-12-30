@@ -126,6 +126,7 @@ WEBHOOK_INTEGRATIONS = [
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('gosquared', display_name='GoSquared'),
+    WebhookIntegration('hellosign', display_name='HelloSign'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('heroku', display_name='Heroku'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
