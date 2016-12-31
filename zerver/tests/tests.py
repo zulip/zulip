@@ -1726,7 +1726,7 @@ class GetProfileTest(ZulipTestCase):
     def common_update_pointer(self, email, pointer):
         # type: (Text, int) -> None
         self.login(email)
-        result = self.client_put("/json/users/me/pointer", {"pointer": pointer})
+        result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
@@ -1812,7 +1812,7 @@ class GetProfileTest(ZulipTestCase):
         json = self.common_get_profile("hamlet@zulip.com")
         self.assertEqual(json["pointer"], id2) # pointer does not move backwards
 
-        result = self.client_put("/json/users/me/pointer", {"pointer": 99999999})
+        result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})
         self.assert_json_error(result, "Invalid message ID")
 
     def test_get_all_profiles_avatar_urls(self):
