@@ -34,8 +34,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
-    realm_filters_for_domain, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, realm_filters_for_domain, get_owned_bot_dicts, \
+    realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
+    ScheduledJob, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications, \
     Reaction
 
@@ -2796,7 +2796,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         message.subject = subject
         event["stream_id"] = message.recipient.type_id
         event["subject"] = subject
-        event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
+        event['subject_links'] = bugdown.subject_links(message.sender.realm_id, subject)
         edit_history_event["prev_subject"] = orig_subject
 
         if propagate_mode in ["change_later", "change_all"]:
@@ -3095,7 +3095,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_emoji'] = user_profile.realm.get_emoji()
 
     if want('realm_filters'):
-        state['realm_filters'] = realm_filters_for_domain(user_profile.realm.domain)
+        state['realm_filters'] = realm_filters_for_realm(user_profile.realm_id)
 
     if want('realm_user'):
         state['realm_users'] = get_realm_user_dicts(user_profile)
@@ -3626,7 +3626,7 @@ def do_set_muted_topics(user_profile, muted_topics):
 
 def notify_realm_filters(realm):
     # type: (Realm) -> None
-    realm_filters = realm_filters_for_domain(realm.domain)
+    realm_filters = realm_filters_for_realm(realm.id)
     user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
     event = dict(type="realm_filters", realm_filters=realm_filters)
     send_event(event, user_ids)

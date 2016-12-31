@@ -22,14 +22,14 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.str_utils import force_str
 from zerver.models import (
-    domain_in_local_realm_filters_cache,
+    realm_in_local_realm_filters_cache,
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
     get_realm_by_string_id,
     get_user_profile_by_email,
     get_stream,
-    realm_filters_for_domain,
+    realm_filters_for_realm,
     Message,
     Stream,
     Realm,
@@ -159,7 +159,7 @@ class FencedBlockPreprocessorTest(TestCase):
 
 def bugdown_convert(text):
     # type: (Text) -> Text
-    return bugdown.convert(text, "zulip.com")
+    return bugdown.convert(text, get_realm_by_string_id('zulip').id)
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
@@ -222,9 +222,9 @@ class BugdownTest(TestCase):
                 domain='file_links_test.example.com',
                 string_id='file_links_test')
             bugdown.make_md_engine(
-                realm.domain,
+                realm.id,
                 {'realm_filters': [[], u'file_links_test.example.com'], 'realm': [u'file_links_test.example.com', 'Realm name']})
-            converted = bugdown.convert(msg, realm_domain=realm.domain)
+            converted = bugdown.convert(msg, realm_id=realm.id)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
     def test_inline_youtube(self):
@@ -410,17 +410,17 @@ class BugdownTest(TestCase):
             # type: (Text, Text) -> Text
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
-        zulip_realm = get_realm_by_string_id('zulip')
+        realm = get_realm_by_string_id('zulip')
         url = "https://zulip.com/test_realm_emoji.png"
-        check_add_realm_emoji(zulip_realm, "test", url)
+        check_add_realm_emoji(realm, "test", url)
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
-        converted = bugdown.convert(":test:", "zulip.com", msg)
+        converted = bugdown.convert(":test:", realm_id=realm.id, message=msg)
         self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', url)))
 
-        do_remove_realm_emoji(zulip_realm, 'test')
-        converted = bugdown.convert(":test:", "zulip.com", msg)
+        do_remove_realm_emoji(realm, 'test')
+        converted = bugdown.convert(":test:", realm_id=realm.id, message=msg)
         self.assertEqual(converted, '<p>:test:</p>')
 
     def test_unicode_emoji(self):
@@ -452,18 +452,18 @@ class BugdownTest(TestCase):
         flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
-        converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
-        converted_subject = bugdown.subject_links(realm.domain.lower(), msg.subject)
+        converted = bugdown.convert(content, realm_id=realm.id, message=msg)
+        converted_subject = bugdown.subject_links(realm.id, msg.subject)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
         self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
 
-        RealmFilter(realm=get_realm_by_string_id('zulip'), pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
+        RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
         msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
 
         content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
-        converted = bugdown.convert(content, realm_domain='zulip.com', message=msg)
+        converted = bugdown.convert(content, realm_id=realm.id, message=msg)
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
@@ -477,9 +477,9 @@ class BugdownTest(TestCase):
         realm_filter.save()
 
         bugdown.realm_filter_data = {}
-        bugdown.maybe_update_realm_filters(domain=None)
+        bugdown.maybe_update_realm_filters(None)
         all_filters = bugdown.realm_filter_data
-        zulip_filters = all_filters['zulip.com']
+        zulip_filters = all_filters[realm.id]
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(zulip_filters[0],
                          (u'#(?P<id>[0-9]{2,8})', u'https://trac.zulip.net/ticket/%(id)s', realm_filter.id))
@@ -509,20 +509,20 @@ class BugdownTest(TestCase):
 
         # start fresh for our domain
         flush()
-        self.assertFalse(domain_in_local_realm_filters_cache(domain=realm.domain))
+        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
 
         # call this just for side effects of populating the cache
-        realm_filters_for_domain(domain=realm.domain)
-        self.assertTrue(domain_in_local_realm_filters_cache(realm.domain))
+        realm_filters_for_realm(realm.id)
+        self.assertTrue(realm_in_local_realm_filters_cache(realm.id))
 
         # Saving a new RealmFilter should have the side effect of
         # flushing the cache.
         save_new_realm_filter()
-        self.assertFalse(domain_in_local_realm_filters_cache(realm.domain))
+        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
 
         # and flush it one more time, to make sure we don't get a KeyError
         flush()
-        self.assertFalse(domain_in_local_realm_filters_cache(realm.domain))
+        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
 
     def test_realm_patterns_negative(self):
         # type: () -> None
@@ -531,7 +531,7 @@ class BugdownTest(TestCase):
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
         boring_msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                              subject=u"no match here")
-        converted_boring_subject = bugdown.subject_links(realm.domain.lower(), boring_msg.subject)
+        converted_boring_subject = bugdown.subject_links(realm.id, boring_msg.subject)
         self.assertEqual(converted_boring_subject,  [])
 
     def test_is_status_message(self):
@@ -817,19 +817,19 @@ class BugdownTest(TestCase):
         verifies almost all inline patterns are disabled, but
         inline_interesting_links is still enabled"""
         msg = "**test**"
-        converted = bugdown.convert(msg, "zephyr_mirror")
+        converted = bugdown.convert(msg, realm_id=bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY)
         self.assertEqual(
             converted,
             "<p>**test**</p>",
             )
         msg = "* test"
-        converted = bugdown.convert(msg, "zephyr_mirror")
+        converted = bugdown.convert(msg, realm_id=bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY)
         self.assertEqual(
             converted,
             "<p>* test</p>",
             )
         msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
-        converted = bugdown.convert(msg, "zephyr_mirror")
+        converted = bugdown.convert(msg, realm_id=bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY)
         self.assertEqual(
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
@@ -868,7 +868,7 @@ class BugdownErrorTests(ZulipTestCase):
         # type: () -> None
         with self.simulated_markdown_failure():
             with self.assertRaises(bugdown.BugdownRenderingException):
-                bugdown.convert('', 'zulip.com')
+                bugdown_convert('')
 
     def test_send_message_errors(self):
         # type: () -> None
