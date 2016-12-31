@@ -131,7 +131,6 @@ class GiveawayHandler(object):
         is_giveaway = original_content.startswith('@giveaway')
         return is_giveaway
 
-
     def handle_message(self, message, client, state_handler):
 
         original_content = message['content']
@@ -209,5 +208,3 @@ class GiveawayHandler(object):
         ))
 
 handler_class = GiveawayHandler
-
-
