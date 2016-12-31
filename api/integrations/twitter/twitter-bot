@@ -27,13 +27,14 @@ from __future__ import print_function
 import os
 import sys
 import optparse
-import six.moves.configparser
+from six.moves.configparser import ConfigParser, NoSectionError, NoOptionError
 
 import zulip
 VERSION = "0.9"
 CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id, user):
+    # type: (ConfigParser, int, int) -> None
     config.set('twitter', 'since_id', since_id)
     config.set('twitter', 'user_id', user)
     with open(CONFIGFILE, 'wb') as configfile:
@@ -90,14 +91,14 @@ if not options.twitter_id:
     parser.error('You must specify --twitter-id')
 
 try:
-    config = six.moves.configparser.ConfigParser()
+    config = ConfigParser()
     config.read(CONFIGFILE)
 
     consumer_key = config.get('twitter', 'consumer_key')
     consumer_secret = config.get('twitter', 'consumer_secret')
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
-except (six.moves.configparser.NoSectionError, six.moves.configparser.NoOptionError):
+except (NoSectionError, NoOptionError):
     parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not consumer_key or not consumer_secret or not access_token_key or not access_token_secret:
@@ -122,12 +123,12 @@ if not user.id:
 
 try:
     since_id = config.getint('twitter', 'since_id')
-except six.moves.configparser.NoOptionError:
+except NoOptionError:
     since_id = -1
 
 try:
     user_id = config.get('twitter', 'user_id')
-except six.moves.configparser.NoOptionError:
+except NoOptionError:
     user_id = options.twitter_id
 
 client = zulip.Client(

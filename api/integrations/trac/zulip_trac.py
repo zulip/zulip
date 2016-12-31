@@ -42,6 +42,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 import zulip_trac_config as config
 VERSION = "0.9"
 
+if False:
+    from typing import Any
+
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
 
@@ -53,20 +56,25 @@ client = zulip.Client(
     client="ZulipTrac/" + VERSION)
 
 def markdown_ticket_url(ticket, heading="ticket"):
+    # type: (Any, str) -> str
     return "[%s #%s](%s/%s)" % (heading, ticket.id, config.TRAC_BASE_TICKET_URL, ticket.id)
 
 def markdown_block(desc):
+    # type: (str) -> str
     return "\n\n>" + "\n> ".join(desc.split("\n")) + "\n"
 
 def truncate(string, length):
+    # type: (str, int) -> str
     if len(string) <= length:
         return string
     return string[:length - 3] + "..."
 
 def trac_subject(ticket):
+    # type: (Any) -> str
     return truncate("#%s: %s" % (ticket.id, ticket.values.get("summary")), 60)
 
 def send_update(ticket, content):
+    # type: (Any, str) -> None
     client.send_message({
             "type": "stream",
             "to": config.STREAM_FOR_NOTIFICATIONS,
@@ -78,6 +86,7 @@ class ZulipPlugin(Component):
     implements(ITicketChangeListener)
 
     def ticket_created(self, ticket):
+        # type: (Any) -> None
         """Called when a ticket is created."""
         content = "%s created %s in component **%s**, priority **%s**:\n" % \
             (ticket.values.get("reporter"), markdown_ticket_url(ticket),
@@ -90,6 +99,7 @@ class ZulipPlugin(Component):
         send_update(ticket, content)
 
     def ticket_changed(self, ticket, comment, author, old_values):
+        # type: (Any, str, str, Dict[str, Any]) -> None
         """Called when a ticket is modified.
 
         `old_values` is a dictionary containing the previous values of the
@@ -121,6 +131,7 @@ class ZulipPlugin(Component):
         send_update(ticket, content)
 
     def ticket_deleted(self, ticket):
+        # type: (Any) -> None
         """Called when a ticket is deleted."""
         content = "%s was deleted." % markdown_ticket_url(ticket, heading="Ticket")
         send_update(ticket, content)

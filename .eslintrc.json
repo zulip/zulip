@@ -78,6 +78,7 @@
         "activity": false,
         "invite": false,
         "colorspace": false,
+        "reactions": false,
         "tutorial": false,
         "templates": false,
         "alert_words": false,
@@ -87,7 +88,8 @@
         "current_msg_list": true,
         "home_msg_list": false,
         "pm_list": false,
-        "unread_ui": false
+        "unread_ui": false,
+        "Plotly": false
     },
     "rules": {
         "no-restricted-syntax": 1,
@@ -179,7 +181,7 @@
         "no-loop-func": 2,
         "no-labels": 2,
         "no-unused-vars": ["error", { "vars": "local", "args": "after-used",
-                                      "varsIgnorePattern": "print_elapsed_time"
+                                      "varsIgnorePattern": "print_elapsed_time|check_duplicate_ids"
                                     }],
         "no-script-url": 2,
         "no-proto": 2,

@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.test import TestCase
 
 from mock import patch
-from fakeldap import MockLDAP
+from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation
 
@@ -92,7 +92,7 @@ class PublicURLTest(ZulipTestCase):
         # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
         # 'index.md') to `get_urls['200']` list.
         for doc in os.listdir('./templates/zerver/help'):
-            if doc not in {'main.html', 'index.md'}:
+            if doc not in {'main.html', 'index.md', 'include'}:
                 get_urls[200].append('/help/' + os.path.splitext(doc)[0]) # Strip the extension.
 
         post_urls = {200: ["/accounts/login/"],

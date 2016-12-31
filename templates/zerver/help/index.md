@@ -30,7 +30,8 @@ as a “**realm**”.
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
 * Change your email address (not implemented)
-* [Change your avatar](/help/edit-profile#updating-your-avatar)
+* [Change your settings](/help/edit-settings)
+* [Change your avatar](/help/change-your-avatar)
 * [Change your language](/help/change-your-language)
 * [Change the date and time format](/help/change-the-date-and-time-format)
 * [Move the users list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)
@@ -129,7 +130,7 @@ as a “**realm**”.
 ## Organization Settings
 * [Change your organization's name](/help/change-your-organizations-name)
 * Restrict user email addresses to certain domains
-* Allow anyone to join without an invitation
+* [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * Only allow admins to create new streams
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
@@ -163,7 +164,7 @@ as a “**realm**”.
 # Old table of contents:
 
 - **[The Zulip browser window](#the-zulip-browser-window)**
-- **[Editing your profile](/help/edit-profile)**
+- **[Editing your profile](/help/edit-settings)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
 - **[Keyboard shortcuts](/help/keyboard-shortcuts)**

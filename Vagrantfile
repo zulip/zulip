@@ -27,6 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
   http_proxy = https_proxy = no_proxy = ""
+  host_ip_addr = "127.0.0.1"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
@@ -42,11 +43,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       when "HTTPS_PROXY"; https_proxy = value
       when "NO_PROXY"; no_proxy = value
       when "HOST_PORT"; host_port = value.to_i
+      when "HOST_IP_ADDR"; host_ip_addr = value
       end
     end
   end
 
-  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
 
   if Vagrant.has_plugin?("vagrant-proxyconf")
     if http_proxy != ""

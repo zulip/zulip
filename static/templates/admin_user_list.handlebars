@@ -48,13 +48,13 @@
   <td colspan="{{#if is_bot}}4{{else}}3{{/if}}">
     <form class="form-horizontal name-setting">
       <input type="hidden" name="is_full_name" value="true" />
-      <div class="input-group" id="name_change_container">
+      <div class="input-group name_change_container">
         <label for="full_name">{{t "Full name" }}</label>
-        <input type="text" name="full_name" id="full_name" value="{{ full_name }}" />
+        <input type="text" name="full_name" value="{{ full_name }}" />
       </div>
       <div class="input-group">
-        <input type="button" class="btn btn-primary submit_name_changes" value="Save Changes" />
-        <button type="button" class="btn btn-default reset_edit_user">Cancel</button>
+        <input type="button" class="btn btn-primary submit_name_changes" value="{{t 'Save Changes' }}" />
+        <button type="button" class="btn btn-default reset_edit_user">{{t 'Cancel' }}</button>
       </div>
     </form>
   </td>

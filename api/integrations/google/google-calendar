@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import datetime
+import httplib2
+import itertools
+import logging
+import optparse
+import os
+from six.moves import urllib
+import sys
+import time
+import traceback
+from typing import List, Set, Tuple, Iterable, Optional
+
+from oauth2client import client, tools
+from oauth2client.file import Storage
+try:
+    from googleapiclient import discovery
+except ImportError:
+    logging.exception('Install google-api-python-client')
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
+import zulip
+
+SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
+CLIENT_SECRET_FILE = 'client_secret.json'
+APPLICATION_NAME = 'Zulip'
+HOME_DIR = os.path.expanduser('~')
+
+# Our cached view of the calendar, updated periodically.
+events = []  # type: List[Tuple[int, datetime.datetime, str]]
+
+# Unique keys for events we've already sent, so we don't remind twice.
+sent = set()  # type: Set[Tuple[int, datetime.datetime]]
+
+sys.path.append(os.path.dirname(__file__))
+
+parser = optparse.OptionParser(r"""
+
+%prog \
+    --user foo@zulip.com \
+    --calendar calendarID@example.calendar.google.com
+
+    This integration can be used to send yourself reminders, on Zulip, of Google Calendar Events.
+
+    Before running this integration make sure you run the get-google-credentials file to give Zulip
+    access to certain aspects of your Google Account.
+
+    This integration should be run on your local machine. Your API key and other information are
+    revealed to local users through the command line.
+
+    Depends on: google-api-python-client
+""")
+
+
+parser.add_option('--interval',
+                  dest='interval',
+                  default=30,
+                  type=int,
+                  action='store',
+                  help='Minutes before event for reminder [default: 30]',
+                  metavar='MINUTES')
+
+parser.add_option('--calendar',
+                  dest = 'calendarID',
+                  default = 'primary',
+                  type = str,
+                  action = 'store',
+                  help = 'Calendar ID for the calendar you want to receive reminders from.')
+
+parser.add_option_group(zulip.generate_option_group(parser))
+
+(options, args) = parser.parse_args()
+
+if not (options.zulip_email):
+    parser.error('You must specify --user')
+
+zulip_client = zulip.init_from_options(options)
+
+def get_credentials():
+    # type: () -> client.Credentials
+    """Gets valid user credentials from storage.
+
+    If nothing has been stored, or if the stored credentials are invalid,
+    an exception is thrown and the user is informed to run the script in this directory to get
+    credentials.
+
+    Returns:
+        Credentials, the obtained credential.
+    """
+    try:
+        credential_path = os.path.join(HOME_DIR,
+                                       'google-credentials.json')
+
+        store = Storage(credential_path)
+        credentials = store.get()
+
+        return credentials
+    except client.Error:
+        logging.exception('Error while trying to open the `google-credentials.json` file.')
+    except IOError:
+        logging.error("Run the get-google-credentials script from this directory first.")
+
+
+def get_events():
+    # type: () -> Iterable[Tuple[int, datetime.datetime, str]]
+    credentials = get_credentials()
+    creds = credentials.authorize(httplib2.Http())
+    service = discovery.build('calendar', 'v3', http=creds)
+
+    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    feed = service.events().list(calendarId=options.calendarID, timeMin=now, maxResults=5,
+                                 singleEvents=True, orderBy='startTime').execute()
+
+    for event in feed["items"]:
+        try:
+            start = event["start"]["dateTime"]
+        except KeyError:
+            start = event["start"]["date"]
+        start = start[:19]
+        # All-day events can have only a date
+        fmt = '%Y-%m-%dT%H:%M:%S' if 'T' in start else '%Y-%m-%d'
+        start = datetime.datetime.strptime(start, fmt)
+        try:
+            yield (event["id"], start, event["summary"])
+        except KeyError:
+            yield (event["id"], start, "(No Title)")
+
+
+def send_reminders():
+    # type: () -> Optional[None]
+    global sent
+
+    messages = []
+    keys = set()
+    now = datetime.datetime.now()
+
+    for id, start, summary in events:
+        dt = start - now
+        if dt.days == 0 and dt.seconds < 60 * options.interval:
+            # The unique key includes the start time, because of
+            # repeating events.
+            key = (id, start)
+            if key not in sent:
+                if start.hour == 0 and start.minute == 0:
+                    line = '%s is today.' % (summary)
+                else:
+                    line = '%s starts at %s' % (summary, start.strftime('%H:%M'))
+                print('Sending reminder:', line)
+                messages.append(line)
+                keys.add(key)
+
+    if not messages:
+        return
+
+    if len(messages) == 1:
+        message = 'Reminder: ' + messages[0]
+    else:
+        message = 'Reminder:\n\n' + '\n'.join('* ' + m for m in messages)
+
+    zulip_client.send_message(dict(
+        type    = 'private',
+        to      = options.zulip_email,
+        sender  = options.zulip_email,
+        content = message))
+
+    sent.update(keys)
+
+# Loop forever
+for i in itertools.count():
+    try:
+        # We check reminders every minute, but only
+        # download the calendar every 10 minutes.
+        if not i % 10:
+            events = list(get_events())
+        send_reminders()
+    except:
+        logging.exception("Couldn't download Google calendar and/or couldn't post to Zulip.")
+    time.sleep(60)

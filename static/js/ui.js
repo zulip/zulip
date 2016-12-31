@@ -120,13 +120,20 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
+    current_message_hover = message_row;
+
+    if (!message.sent_by_me) {
+        // The actions and reactions icon hover logic is handled entirely by CSS
+        return;
+    }
+
+    // But the message edit hover icon is determined by whether the message is still editablex
     if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
         !message.status_message) {
         message_row.find(".edit_content").html('<i class="icon-vector-pencil edit_content_button"></i>');
     } else {
         message_row.find(".edit_content").html('<i class="icon-vector-file-text-alt edit_content_button" data-msgid="' + id + '"></i>');
     }
-    current_message_hover = message_row;
 }
 
 /* Arguments used in the report_* functions are,

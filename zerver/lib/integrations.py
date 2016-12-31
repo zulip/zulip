@@ -126,6 +126,7 @@ WEBHOOK_INTEGRATIONS = [
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
     WebhookIntegration('gosquared', display_name='GoSquared'),
+    WebhookIntegration('hellosign', display_name='HelloSign'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('heroku', display_name='Heroku'),
     WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
@@ -163,6 +164,7 @@ INTEGRATIONS = {
     'codebase': Integration('codebase', 'codebase'),
     'email': Integration('email', 'email'),
     'git': Integration('git', 'git'),
+    'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
     'hubot': Integration('hubot', 'hubot'),
     'jenkins': Integration('jenkins', 'jenkins', secondary_line_text='(or Hudson)'),
     'jira-plugin': Integration(

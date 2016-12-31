@@ -105,3 +105,16 @@ HOST_PORT 9971
 
 (and halt and restart the Vagrant guest), then you would visit
 http://localhost:9971/ to connect to your development server.
+
+
+If you'd like to be able to connect to your development environment from other
+machines than the VM host, you can manually set the host IP address in the
+'~/.zulip-vagrant-config' file as well. For example, if you set:
+
+```
+HOST_IP_ADDR 0.0.0.0
+```
+
+(and restart the Vagrant guest), your host IP would be 0.0.0.0, a special value
+for the IP address that means any IP address can connect to your development server.
+

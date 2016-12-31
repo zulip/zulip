@@ -133,6 +133,9 @@ function add_message_metadata(message) {
     }
 
     alert_words.process_message(message);
+    if (!message.reactions) {
+        message.reactions = [];
+    }
     stored_messages[message.id] = message;
     return message;
 }
@@ -302,14 +305,15 @@ exports.update_messages = function update_messages(events) {
         alert_words.process_message(msg);
     });
 
-    // If a topic was edited, we re-render the whole view to get any propagated edits
-    // to be updated
+    // If a topic was edited, we re-render the whole view to get any
+    // propagated edits to be updated (since the topic edits can have
+    // changed the correct grouping of messages).
     if (topic_edited) {
-        if (!changed_narrow) {
-            home_msg_list.rerender();
-            if (current_msg_list === message_list.narrowed) {
-                message_list.narrowed.rerender();
-            }
+        home_msg_list.rerender();
+        // However, we don't need to rerender message_list.narrowed if
+        // we just changed the narrow earlier in this function.
+        if (!changed_narrow && current_msg_list === message_list.narrowed) {
+            message_list.narrowed.rerender();
         }
     } else {
         home_msg_list.view.rerender_messages(msgs_to_rerender);

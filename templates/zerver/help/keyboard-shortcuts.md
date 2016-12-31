@@ -20,6 +20,9 @@ Zulip keyboard shortcuts are divided into four categories:
 ## Composing messages
 * **Reply to message** `Enter` `r` - This shortcut allows the user to begin replying to the selected message (outlined in blue).
 * **Reply to author** `R` - This shortcut allows the user to begin writing a private message to the author of the selected message (outlined in blue).
+* **Reply to message mentioning the author** `Enter` `@` - This
+  shortcut allows the user to begin replying to the selected message
+  (outlined in blue), @-mentioning the author of the selected message.
 * **New stream message** `c` - This shortcut allows the user to begin composing a new stream message.
 * **New private message** `C` - This shortcut allows the user to begin composing a new private message.
 * **Send message** `Tab key` then `Enter` - This shortcut allows the user to send the message that they've written.

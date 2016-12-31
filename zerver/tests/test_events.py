@@ -54,6 +54,7 @@ from zerver.lib.actions import (
     do_change_enable_offline_email_notifications,
     do_change_enable_offline_push_notifications,
     do_change_enable_online_push_notifications,
+    do_change_pm_content_in_desktop_notifications,
     do_change_enable_digest_emails,
     fetch_initial_state_data,
     get_subscription
@@ -744,6 +745,20 @@ class EventsRegisterTest(ZulipTestCase):
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_online_push_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_pm_content_in_desktop_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('pm_content_in_desktop_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+            ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_pm_content_in_desktop_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

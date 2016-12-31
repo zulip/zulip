@@ -180,7 +180,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </div>
             {% endif %}
             <div class="submit-button-box float-right">
-                <input type="submit" class="button-new sea-green" value="Register" /><br />
+                <input type="submit" class="button-new sea-green"
+                       value="{{ _('Register') }}" /><br />
                 <input type="hidden" name="next" value="{{ next }}" />
             </div>
         </div>

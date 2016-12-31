@@ -335,8 +335,8 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
         queue_json_publish(
             "signups",
             {
-                'EMAIL': user_profile.email,
-                'merge_vars': {
+                'email_address': user_profile.email,
+                'merge_fields': {
                     'NAME': user_profile.full_name,
                     'REALM_ID': user_profile.realm.id,
                     'OPTIN_IP': newsletter_data["IP"],
@@ -2222,6 +2222,21 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
     if log:
         log_event(event)
     send_event(event, [user_profile.id])
+
+def do_change_pm_content_in_desktop_notifications(user_profile,
+                                                  pm_content_in_desktop_notifications, log=True):
+    # type: (UserProfile, bool, bool) -> None
+    user_profile.pm_content_in_desktop_notifications \
+        = pm_content_in_desktop_notifications
+    user_profile.save(update_fields=["pm_content_in_desktop_notifications"])
+    event = {'type': 'update_global_notifications',
+             'user': user_profile.email,
+             'notification_name': 'pm_content_in_desktop_notifications',
+             'setting': pm_content_in_desktop_notifications}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 
 def do_change_enable_sounds(user_profile, enable_sounds, log=True):
     # type: (UserProfile, bool, bool) -> None

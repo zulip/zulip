@@ -521,6 +521,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True) # type: bool
+    pm_content_in_desktop_notifications = models.BooleanField(default=True)  # type: bool
     enable_sounds = models.BooleanField(default=True) # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True) # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True) # type: bool
@@ -543,7 +544,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     default_all_public_streams = models.BooleanField(default=False) # type: bool
 
     # UI vars
-    enter_sends = models.NullBooleanField(default=True) # type: Optional[bool]
+    enter_sends = models.NullBooleanField(default=False) # type: Optional[bool]
     autoscroll_forever = models.BooleanField(default=False) # type: bool
     left_side_userlist = models.BooleanField(default=False) # type: bool
 

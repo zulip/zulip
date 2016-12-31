@@ -72,7 +72,7 @@ i18n.init({
     assert(elem_3.hasClass("notdisplayed"));
 
     subs.filter_table({input: "Den, Pol", subscribed_only: false});
-    assert(elem_1.hasClass("notdisplayed"));
+    assert(!elem_1.hasClass("notdisplayed"));
     assert(!elem_2.hasClass("notdisplayed"));
     assert(elem_3.hasClass("notdisplayed"));
 

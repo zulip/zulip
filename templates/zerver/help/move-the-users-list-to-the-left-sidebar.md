@@ -1,10 +1,11 @@
 # Move the user list to the left sidebar
 
-![Display user list on left side in narrow windows](/static/images/help/users-left.png)
+By default, the **Users** list is displayed on the right side of the Zulip window.
+On mobile devices with narrow screens, the **Users** list is hidden to save space.
+If you would like to see the **Users** list on your mobile device, you can
+choose to move it to the left side of the screen.
 
-By default, the user list is displayed on the right side of the window. However, when browsing Zulip on mobile devices with narrow screens, the user list located on the right sidebar is hidden to conserve space. If you wish to continue viewing the user list, you can choose to display the user list on the left side.
-
-You can easily change the location of the user list by following a few steps.
+You can easily change the location of the **Users** list by following a few steps.
 
 1. Click the cog (![cog](/static/images/help/cog.png)) in the upper right corner of the right sidebar.
 2. Select **Settings** from the dropdown menu that appears.
