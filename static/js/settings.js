@@ -789,7 +789,7 @@ function _setup_page() {
             }
         });
     });
-    
+
     $('#hover-message, i[data-toggle="tooltip"]').tooltip();
 }
 
