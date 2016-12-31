@@ -140,6 +140,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
     WebhookIntegration('sentry'),
+    WebhookIntegration('solano', display_name='Solano Labs'),
     WebhookIntegration('stash'),
     WebhookIntegration('stripe', display_name='Stripe'),
     WebhookIntegration('taiga'),
