@@ -129,8 +129,8 @@ class GiveawayHandler(object):
         if message['display_recipient'] == 'giveawayer':
             return False
         is_giveaway = original_content.startswith('@giveaway')
-
         return is_giveaway
+
 
     def handle_message(self, message, client, state_handler):
 
@@ -154,7 +154,7 @@ class GiveawayHandler(object):
                         else:
                             self.giveawayTime = self.giveawayTimeMins * 60
                             new_content = ("""%s has initiated a giveaway called %s for %s minutes"""
-                                          % (message['sender_full_name'], self.giveawayName, self.giveawayTimeMins))
+                                        % (message['sender_full_name'], self.giveawayName, self.giveawayTimeMins))
                             self.giveawayOn = True
                             self.giveawayStartTime = time.time()
                             self.giveawayStream = message['display_recipient']
