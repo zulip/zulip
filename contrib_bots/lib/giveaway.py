@@ -75,16 +75,16 @@ class GiveawayHandler(object):
                     subject=self.giveawaySubject,
                     content=new_content,
                 ))
-        elif time.time() > (self.giveawayStartTime+(self.giveawayTime/4)) and self.giveawayStage < 1: # 1/4 Time elapsed
-            new_content = '1/4 of giveaway time elapsed, %s minutes remaining' % (str((self.giveawayTimeMins/4)*3))
+        elif time.time() > (self.giveawayStartTime+(old_div(self.giveawayTime, 4))) and self.giveawayStage < 1:
+            new_content = '1/4 of giveaway time elapsed, %s minutes remaining' % (str((old_div(self.giveawayTimeMins, 4))*3))
             self.time_update(new_content)
             self.giveawayStage = self.giveawayStage + 1
-        elif time.time() > (self.giveawayStartTime+(self.giveawayTime/2)) and self.giveawayStage < 2:
-            new_content = '1/2 of giveaway time elapsed, %s minutes remaining' % (str(self.giveawayTimeMins/2))
+        elif time.time() > (self.giveawayStartTime+(old_div(self.giveawayTime, 2))) and self.giveawayStage < 2:
+            new_content = '1/2 of giveaway time elapsed, %s minutes remaining' % (str(old_div(self.giveawayTimeMins, 2)))
             self.time_update(new_content)
             self.giveawayStage = self.giveawayStage + 1
-        elif time.time() > (self.giveawayStartTime+((self.giveawayTime/4)*3)) and self.giveawayStage < 3:
-            new_content = '3/4 of giveaway time elapsed, %s minutes remaining' % (str((self.giveawayTimeMins/4)*1))
+        elif time.time() > (self.giveawayStartTime+((old_div(self.giveawayTime, 4))*3)) and self.giveawayStage < 3:
+            new_content = '3/4 of giveaway time elapsed, %s minutes remaining' % (str((old_div(self.giveawayTimeMins, 4))*1))
             self.time_update(new_content)
             self.giveawayStage = self.giveawayStage + 1
         elif time.time() > ((self.giveawayStartTime+self.giveawayTime)-60):
@@ -142,7 +142,6 @@ class GiveawayHandler(object):
                 try:
                     self.giveawayName = original_content.split(" ")[2]
                     self.giveawayCreator = original_sender
-                    print("Giveaway: Creator -", self.giveawayCreator)
                     try:
                         self.giveawayTimeMins = round(float(original_content.split(" ")[3]), 1)
                         if self.giveawayTimeMins > 100:
