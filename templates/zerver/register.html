@@ -33,6 +33,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
         <div class="input-group grid">
             <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+            <i class="icon-vector-question-sign" id="hover-message" data-toggle="tooltip" title="{{ 'Zulip has full unicode support, so feel free to spell your name however you\'d like it to appear.' }}"></i>
             {% if lock_name %}
                 <p class="fakecontrol">{{ full_name }}</p>
             {% else %}
@@ -198,6 +199,10 @@ if ($('#id_email:visible').length) {
 $("[name=realm_org_type]").on("change", function () {
     $(".blob").hide();
     $("#org_type_blob_" + this.value).show();
+});
+
+$(function (){
+    $("#hover-message, i[data-toggle='tooltip']").tooltip();
 });
 </script>
 
