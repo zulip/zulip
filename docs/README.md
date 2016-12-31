@@ -135,16 +135,31 @@ below.
 
 ### Style guide
 
-* Names of buttons, fields, etc. should be **bolded**. No quotation marks
+* Names of buttons, fields, etc. should be **bolded** (e.g. **Settings**
+page, **Change Password** button, **Email** field). No quotation marks
 should be used.
 * Specific instructions for the user should be formatted as a series of
-numbered steps.
-* Keep in mind that the UI may change. Never refer specifically to button
-colors. Only include a screenshot if it will help guide the user.
-* Never include the whole Zulip window in a screenshot. Focus on the
-relevant part of the app.
-* Use the following format to direct users to part of the **Settings**:
+numbered steps. E.g.:
+  ```
+  1. Do something
+  2. Do the next thing.
+  ```
 
-1. Go to the [Your Account](/#settings/your-account) tab of the
+* Keep in mind that the UI may change. E.g. never refer specifically to
+button colors.
+* Screenshot guidelines:
+  * Only include a screenshot if it will help guide the user.
+  * Never include the whole Zulip window in a screenshot. Focus on the
+    relevant part of the app.
+  * The screenshot should always come *after* the text that describes it,
+    never before. E.g.:
+
+    1. Click the **Sign in with Google** button located under the **Login**
+      button and **Forgot your password?** link.
+      ![Zulip sign in Google](/images/signin-google.png)
+* Use the following format to direct users to part of the **Settings**:
+  ```
+  1. Go to the [Your Account](/#settings/your-account) tab of the
    [Settings](/help/edit-settings) page.
+   ```
 
