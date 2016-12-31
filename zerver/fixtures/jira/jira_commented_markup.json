@@ -1,5 +1,6 @@
 {
   "webhookEvent": "jira:issue_updated",
+  "issue_event_type_name":"issue_commented",
   "user": {
     "self": "https://zulipp.atlassian.net/rest/api/2/user?username=leo",
     "name": "leo",
