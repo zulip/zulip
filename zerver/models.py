@@ -431,47 +431,46 @@ class RealmFilter(models.Model):
         # type: () -> Text
         return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
 
-def get_realm_filters_cache_key(domain):
-    # type: (Text) -> Text
-    return u'all_realm_filters:%s' % (domain,)
+def get_realm_filters_cache_key(realm_id):
+    # type: (int) -> Text
+    return u'all_realm_filters:%s' % (realm_id,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {} # type: Dict[Text, List[Tuple[Text, Text, int]]]
+per_request_realm_filters_cache = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
 
-def domain_in_local_realm_filters_cache(domain):
-    # type: (Text) -> bool
-    return domain in per_request_realm_filters_cache
+def realm_in_local_realm_filters_cache(realm_id):
+    # type: (int) -> bool
+    return realm_id in per_request_realm_filters_cache
 
-def realm_filters_for_domain(domain):
-    # type: (Text) -> List[Tuple[Text, Text, int]]
-    domain = domain.lower()
-    if not domain_in_local_realm_filters_cache(domain):
-        per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
-    return per_request_realm_filters_cache[domain]
+def realm_filters_for_realm(realm_id):
+    # type: (int) -> List[Tuple[Text, Text, int]]
+    if not realm_in_local_realm_filters_cache(realm_id):
+        per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
+    return per_request_realm_filters_cache[realm_id]
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
-def realm_filters_for_domain_remote_cache(domain):
-    # type: (Text) -> List[Tuple[Text, Text, int]]
+def realm_filters_for_realm_remote_cache(realm_id):
+    # type: (int) -> List[Tuple[Text, Text, int]]
     filters = []
-    for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
+    for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
         filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def all_realm_filters():
-    # type: () -> Dict[Text, List[Tuple[Text, Text, int]]]
-    filters = defaultdict(list) # type: Dict[Text, List[Tuple[Text, Text, int]]]
+    # type: () -> Dict[int, List[Tuple[Text, Text, int]]]
+    filters = defaultdict(list) # type: Dict[int, List[Tuple[Text, Text, int]]]
     for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+        filters[realm_filter.realm_id].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def flush_realm_filter(sender, **kwargs):
     # type: (Any, **Any) -> None
-    realm = kwargs['instance'].realm
-    cache_delete(get_realm_filters_cache_key(realm.domain))
+    realm_id = kwargs['instance'].realm.id
+    cache_delete(get_realm_filters_cache_key(realm_id))
     try:
-        per_request_realm_filters_cache.pop(realm.domain.lower())
+        per_request_realm_filters_cache.pop(realm_id)
     except KeyError:
         pass
 

@@ -1022,12 +1022,17 @@ class AtomicLinkPattern(LinkPattern):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
+# These are used as keys ("realm_ids") to md_engines and the respective
+# realm filter caches
+DEFAULT_BUGDOWN_KEY = -1
+ZEPHYR_MIRROR_BUGDOWN_KEY = -2
+
 class Bugdown(markdown.Extension):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Union[bool, None, Text]) -> None
         # define default configs
         self.config = {
-            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
+            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
             "realm": [kwargs['realm'], "Realm name"]
         }
 
@@ -1163,7 +1168,7 @@ class Bugdown(markdown.Extension):
         if settings.CAMO_URI:
             md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
 
-        if self.getConfig("realm") == "zephyr_mirror":
+        if self.getConfig("realm") == ZEPHYR_MIRROR_BUGDOWN_KEY:
             # Disable almost all inline patterns for zephyr mirror
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
@@ -1181,8 +1186,8 @@ class Bugdown(markdown.Extension):
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]
 
-md_engines = {}
-realm_filter_data = {} # type: Dict[Text, List[Tuple[Text, Text, int]]]
+md_engines = {} # type: Dict[int, markdown.Markdown]
+realm_filter_data = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
@@ -1191,7 +1196,7 @@ class EscapeHtml(markdown.Extension):
         del md.inlinePatterns['html']
 
 def make_md_engine(key, opts):
-    # type: (Text, Dict[str, Any]) -> None
+    # type: (int, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         output_format = 'html',
         extensions    = [
@@ -1206,12 +1211,12 @@ def make_md_engine(key, opts):
                          Bugdown(realm_filters=opts["realm_filters"][0],
                                  realm=opts["realm"][0])])
 
-def subject_links(domain, subject):
-    # type: (Text, Text) -> List[Text]
-    from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
+def subject_links(realm_id, subject):
+    # type: (int, Text) -> List[Text]
+    from zerver.models import get_realm, RealmFilter, realm_filters_for_realm
     matches = [] # type: List[Text]
 
-    realm_filters = realm_filters_for_domain(domain)
+    realm_filters = realm_filters_for_realm(realm_id)
 
     for realm_filter in realm_filters:
         pattern = prepare_realm_pattern(realm_filter[0])
@@ -1219,35 +1224,35 @@ def subject_links(domain, subject):
             matches += [realm_filter[1] % m.groupdict()]
     return matches
 
-def make_realm_filters(domain, filters):
-    # type: (Text, List[Tuple[Text, Text, int]]) -> None
+def make_realm_filters(realm_id, filters):
+    # type: (int, List[Tuple[Text, Text, int]]) -> None
     global md_engines, realm_filter_data
-    if domain in md_engines:
-        del md_engines[domain]
-    realm_filter_data[domain] = filters
+    if realm_id in md_engines:
+        del md_engines[realm_id]
+    realm_filter_data[realm_id] = filters
 
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
-    make_md_engine(domain, {"realm_filters": [filters, "Realm-specific filters for %s" % (domain,)],
-                            "realm": [domain, "Realm name"]})
+    make_md_engine(realm_id, {"realm_filters": [filters, "Realm-specific filters for realm_id %s" % (realm_id,)],
+                              "realm": [realm_id, "Realm name"]})
 
-def maybe_update_realm_filters(domain):
-    # type: (Optional[Text]) -> None
-    from zerver.models import realm_filters_for_domain, all_realm_filters
+def maybe_update_realm_filters(realm_id):
+    # type: (Optional[int]) -> None
+    from zerver.models import realm_filters_for_realm, all_realm_filters
 
-    # If domain is None, load all filters
-    if domain is None:
+    # If realm_id is None, load all filters
+    if realm_id is None:
         all_filters = all_realm_filters()
-        all_filters['default'] = []
-        for domain, filters in six.iteritems(all_filters):
-            make_realm_filters(domain, filters)
+        all_filters[DEFAULT_BUGDOWN_KEY] = []
+        for realm_id, filters in six.iteritems(all_filters):
+            make_realm_filters(realm_id, filters)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
-        make_realm_filters("zephyr_mirror", [])
+        make_realm_filters(ZEPHYR_MIRROR_BUGDOWN_KEY, [])
     else:
-        realm_filters = realm_filters_for_domain(domain)
-        if domain not in realm_filter_data or realm_filter_data[domain] != realm_filters:
+        realm_filters = realm_filters_for_realm(realm_id)
+        if realm_id not in realm_filter_data or realm_filter_data[realm_id] != realm_filters:
             # Data has changed, re-load filters
-            make_realm_filters(domain, realm_filters)
+            make_realm_filters(realm_id, realm_filters)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -1278,21 +1283,21 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, realm_domain=None, message=None, possible_words=None):
-    # type: (Text, Optional[Text], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
+def do_convert(content, realm_id=None, message=None, possible_words=None):
+    # type: (Text, Optional[int], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
     if message:
-        maybe_update_realm_filters(message.get_realm().domain)
+        maybe_update_realm_filters(message.get_realm().id)
 
-    if realm_domain in md_engines:
-        _md_engine = md_engines[realm_domain]
+    if realm_id in md_engines:
+        _md_engine = md_engines[realm_id]
     else:
-        if 'default' not in md_engines:
-            maybe_update_realm_filters(domain=None)
+        if DEFAULT_BUGDOWN_KEY not in md_engines:
+            maybe_update_realm_filters(realm_id=None)
 
-        _md_engine = md_engines["default"]
+        _md_engine = md_engines[DEFAULT_BUGDOWN_KEY]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
@@ -1364,9 +1369,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, realm_domain=None, message=None, possible_words=None):
-    # type: (Text, Optional[Text], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
+def convert(content, realm_id=None, message=None, possible_words=None):
+    # type: (Text, Optional[int], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
     bugdown_stats_start()
-    ret = do_convert(content, realm_domain, message, possible_words)
+    ret = do_convert(content, realm_id, message, possible_words)
     bugdown_stats_finish()
     return ret

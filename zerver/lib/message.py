@@ -18,6 +18,7 @@ from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from zerver.lib.timestamp import datetime_to_timestamp
 
 from zerver.models import (
+    get_realm,
     get_display_recipient_by_id,
     Message,
     Recipient,
@@ -189,7 +190,7 @@ class MessageDict(object):
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
-        obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
+        obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
         if last_edit_time != None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
@@ -315,12 +316,14 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     message.alert_words = set()
     message.links_for_preview = set()
 
-    if not domain:
-        domain = message.sender.realm.domain
+    if domain:
+        realm_id = get_realm(domain).id
+    else:
+        realm_id = message.sender.realm.id
     if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
         # Use slightly customized Markdown processor for content
         # delivered via zephyr_mirror
-        domain = u"zephyr_mirror"
+        realm_id = bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY
 
     possible_words = set() # type: Set[Text]
     if realm_alert_words is not None:
@@ -329,7 +332,8 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
                 possible_words.update(set(words))
 
     # DO MAIN WORK HERE -- call bugdown to convert
-    rendered_content = bugdown.convert(content, domain, message, possible_words)
+    rendered_content = bugdown.convert(content, realm_id=realm_id, message=message,
+                                       possible_words=possible_words)
 
     message.user_ids_with_alert_words = set()
 
@@ -342,4 +346,3 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     message.is_me_message = Message.is_status_message(content, rendered_content)
 
     return rendered_content
-

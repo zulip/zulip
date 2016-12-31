@@ -46,7 +46,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
         # type: (*Any, **str) -> None
         realm = get_realm_by_string_id(options["string_id"])
         if options["op"] == "show":
-            print("%s: %s" % (realm.domain, all_realm_filters().get(realm.domain, [])))
+            print("%s: %s" % (realm.string_id, all_realm_filters().get(realm.id, [])))
             sys.exit(0)
 
         pattern = options['pattern']
