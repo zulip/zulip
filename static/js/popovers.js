@@ -257,7 +257,6 @@ exports.hide_message_info_popover = function () {
 
 exports.hide_reactions_popover = function () {
     if (reaction_popped()) {
-        $('.popover').remove();
         current_message_reactions_popover_elem.popover("destroy");
         current_message_reactions_popover_elem = undefined;
     }
@@ -373,10 +372,15 @@ exports.register_click_handlers = function () {
     });
 
 
-    $("body").on("click", ".reaction_button", function (e) {
+    $("body").on("click", ".actions_popover .reaction_button", function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         e.stopPropagation();
-        popovers.toggle_reactions_popover(this, msgid);
+        // HACK: Because we need the popover to be based off an
+        // element that definitely exists in the page even if the
+        // message wasn't sent by us and thus the .reaction_hover
+        // element is not present, we use the message's .message_star
+        // element as the base for the popover.
+        popovers.toggle_reactions_popover($(".selected_message .message_star")[0], msgid);
     });
 
     $("#main_div").on("click", ".sender_info_hover", function (e) {

@@ -61,7 +61,7 @@ function reaction_popover_reaction_on_click() {
         operation = 'remove';
     }
     send_reaction_ajax(message_id, emoji_name, operation);
-    popovers.hide_all();
+    popovers.hide_reactions_popover();
 }
 
 function filter_emojis() {
