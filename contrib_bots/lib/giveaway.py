@@ -75,7 +75,7 @@ class GiveawayHandler(object):
                     subject=self.giveawaySubject,
                     content=new_content,
                 ))
-        elif time.time() > (self.giveawayStartTime+(self.giveawayTime/4)) and self.giveawayStage < 1: #1/4 Time elapsed
+        elif time.time() > (self.giveawayStartTime+(self.giveawayTime/4)) and self.giveawayStage < 1: # 1/4 Time elapsed
             new_content = '1/4 of giveaway time elapsed, %s minutes remaining' % (str((self.giveawayTimeMins/4)*3))
             self.time_update(new_content)
             self.giveawayStage = self.giveawayStage + 1
@@ -94,7 +94,7 @@ class GiveawayHandler(object):
                 self.one_minute_warning = True
 
         else:
-            threading.Timer(6.0, self.check_time).start() #More efficient to check every 6 seconds instead of 1.
+            threading.Timer(6.0, self.check_time).start() # More efficient to check every 6 seconds instead of 1.
 
     def usage(self):
         return '''
@@ -145,9 +145,9 @@ class GiveawayHandler(object):
                     try:
                         self.giveawayTimeMins = round(float(original_content.split(" ")[3]), 1)
                         if self.giveawayTimeMins > 100:
-                            #Giveaway time must be less than 100 mins to avoid stack overflow.
-                            #However, limit can be increased within python with the command
-                            #sys.setrecursionlimit(NewLimit), default is 1000
+                            # Giveaway time must be less than 100 mins to avoid stack overflow.
+                            # However, limit can be increased within python with the command
+                            # sys.setrecursionlimit(NewLimit), default is 1000
                             new_content = 'Error: Giveaway time must be less than or equal to 100 mins'
                         else:
                             self.giveawayTime = self.giveawayTimeMins * 60
