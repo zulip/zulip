@@ -468,23 +468,23 @@ class AdminCreateUserTest(ZulipTestCase):
         admin = get_user_profile_by_email(admin_email)
         do_change_is_admin(admin, True)
 
-        result = self.client_put("/json/users", dict())
+        result = self.client_post("/json/users", dict())
         self.assert_json_error(result, "Missing 'email' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             )
         )
         self.assert_json_error(result, "Missing 'password' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
             )
         )
         self.assert_json_error(result, "Missing 'full_name' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
@@ -492,7 +492,7 @@ class AdminCreateUserTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Missing 'short_name' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='broken',
             password='xxxx',
             full_name='Romeo Montague',
@@ -501,7 +501,7 @@ class AdminCreateUserTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Bad name or username")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
@@ -520,7 +520,7 @@ class AdminCreateUserTest(ZulipTestCase):
             full_name='Romeo Montague',
             short_name='Romeo',
         )
-        result = self.client_put("/json/users", valid_params)
+        result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 
         new_user = get_user_profile_by_email('romeo@zulip.net')
@@ -529,7 +529,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # One more error condition to test--we can't create
         # the same user twice.
-        result = self.client_put("/json/users", valid_params)
+        result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result,
                                "Email 'romeo@zulip.net' already in use")
 

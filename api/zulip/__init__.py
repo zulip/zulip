@@ -653,7 +653,7 @@ class Client(object):
             See api/examples/create-user for example usage.
         '''
         return self.call_endpoint(
-            method='PUT',
+            method='POST',
             url='users',
             request=request,
         )
