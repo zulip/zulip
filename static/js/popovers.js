@@ -818,6 +818,10 @@ exports.register_click_handlers = function () {
         }, true);
     });
 
+    $('.app').on('scroll', function () {
+        popovers.hide_actions_popover();
+    });
+
 };
 
 exports.any_active = function () {
