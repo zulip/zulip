@@ -1,8 +1,8 @@
 # See readme.md for instructions on running this code.
+from __future__ import print_function
 import time
 import threading
 import random
-from __future__ import print_function
 from past.utils import old_div
 
 class GiveawayHandler(object):
