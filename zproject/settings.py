@@ -684,6 +684,7 @@ PIPELINE = {
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
                 'styles/media.css',
+                'styles/typing_notifications.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
             ),
             'output_filename': 'min/app-fontcompat.css'
@@ -704,6 +705,7 @@ PIPELINE = {
                 'styles/thirdparty-fonts.css',
                 'styles/fonts.css',
                 'styles/media.css',
+                'styles/typing_notifications.css',
             ),
             'output_filename': 'min/app.css'
         },
@@ -838,6 +840,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
+            'js/typing.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
