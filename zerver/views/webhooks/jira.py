@@ -76,11 +76,11 @@ def convert_jira_markup(content, realm):
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
             if user_profile:
-                replacement = "**%s**" % (user_profile.full_name,)
+                replacement = "**{}**".format(user_profile.full_name)
             else:
-                replacement = "**%s**" % (username,)
+                replacement = "**{}**".format(username)
 
-            content = content.replace("[~%s]" % (username,), replacement)
+            content = content.replace("[~{}]".format(username,), replacement)
 
     return content
 
@@ -96,44 +96,53 @@ def get_in(payload, keys, default=''):
 def handle_issue_event(event, payload, user_profile):
     # type: (Text, Dict[str, Any], Any) -> Tuple[Text, Text]
     author = get_in(payload, ['user', 'displayName'])
-    issueId = get_in(payload, ['issue', 'key'])
+    issue_id = get_in(payload, ['issue', 'key'])
+
     # Guess the URL as it is not specified in the payload
     # We assume that there is a /browse/BUG-### page
     # from the REST url of the issue itself
-    baseUrl = re.match("(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
-    if baseUrl and len(baseUrl.groups()):
-        issue = "[%s](%s/browse/%s)" % (issueId, baseUrl.group(1), issueId)
+    base_url = re.match("(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
+    if base_url and len(base_url.groups()):
+        issue = "[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
     else:
-        issue = issueId
+        issue = issue_id
+
     title = get_in(payload, ['issue', 'fields', 'summary'])
     priority = get_in(payload, ['issue', 'fields', 'priority', 'name'])
     assignee = get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
     assignee_email = get_in(payload, ['issue', 'fields', 'assignee', 'emailAddress'], '')
     assignee_mention = ''
+
     if assignee_email != '':
         try:
             assignee_profile = get_user_profile_by_email(assignee_email)
-            assignee_mention = "**%s**" % (assignee_profile.full_name,)
+            assignee_mention = "**{}**".format(assignee_profile.full_name)
         except UserProfile.DoesNotExist:
-            assignee_mention = "**%s**" % (assignee_email,)
+            assignee_mention = "**{}**".format(assignee_email)
 
-    subject = "%s: %s" % (issueId, title)
+    subject = "{}: {}".format(issue_id, title)
 
     if event == 'jira:issue_created':
-        content = "%s **created** %s priority %s, assigned to **%s**:\n\n> %s" % \
-                  (author, issue, priority, assignee, title)
+        content = "{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
+            author,
+            issue,
+            priority,
+            assignee,
+            title
+        )
+
     elif event == 'jira:issue_deleted':
-        content = "%s **deleted** %s!" % \
-                  (author, issue)
+        content = "{} **deleted** {}!".format(author, issue)
+
     elif event == 'jira:issue_updated':
         # Reassigned, commented, reopened, and resolved events are all bundled
         # into this one 'updated' event type, so we try to extract the meaningful
         # event that happened
         if assignee_mention != '':
-            assignee_blurb = " (assigned to %s)" % (assignee_mention,)
+            assignee_blurb = " (assigned to {})".format(assignee_mention)
         else:
             assignee_blurb = ''
-        content = "%s **updated** %s%s:\n\n" % (author, issue, assignee_blurb)
+        content = "{} **updated** {}{}:\n\n".format(author, issue, assignee_blurb)
         changelog = get_in(payload, ['changelog'])
         comment = get_in(payload, ['comment', 'body'])
 
@@ -144,17 +153,18 @@ def handle_issue_event(event, payload, user_profile):
                 field = item.get('field')
 
                 # Convert a user's target to a @-mention if possible
-                targetFieldString = "**%s**" % (item.get('toString'),)
-                if field == 'assignee' and assignee_mention != '':
-                    targetFieldString = assignee_mention
+                target_field_string = "**{}**".format(item.get('toString'))
 
-                fromFieldString = item.get('fromString')
-                if targetFieldString or fromFieldString:
-                    content += "* Changed %s from **%s** to %s\n" % (field, fromFieldString, targetFieldString)
+                if field == 'assignee' and assignee_mention != '':
+                    target_field_string = assignee_mention
+
+                from_field_string = item.get('fromString')
+                if target_field_string or from_field_string:
+                    content += "* Changed {} from **{}** to {}\n".format(field, from_field_string, target_field_string)
 
         if comment != '':
             comment = convert_jira_markup(comment, user_profile.realm)
-            content += "\n%s\n" % (comment,)
+            content += "\n{}\n".format(comment)
     else:
         content = None
         subject = None
@@ -175,9 +185,9 @@ def api_jira_webhook(request, user_profile, client,
         # Unknown event type
         if not settings.TEST_SUITE:
             if event is None:
-                logging.warning("Got JIRA event with None event type: %s" % (payload,))
+                logging.warning("Got JIRA event with None event type: {}".format(payload))
             else:
-                logging.warning("Got JIRA event type we don't understand: %s" % (event,))
+                logging.warning("Got JIRA event type we don't understand: {}".format(event))
         return json_error(_("Unknown JIRA event type"))
 
     if content is None or subject is None:
