@@ -60,6 +60,21 @@ from zerver.lib.str_utils import NonBinaryStr
 
 from contextlib import contextmanager
 import six
+import fakeldap
+import ldap
+
+class MockLDAP(fakeldap.MockLDAP):
+    class LDAPError(ldap.LDAPError):
+        pass
+
+    class INVALID_CREDENTIALS(ldap.INVALID_CREDENTIALS):
+        pass
+
+    class NO_SUCH_OBJECT(ldap.NO_SUCH_OBJECT):
+        pass
+
+    class ALREADY_EXISTS(ldap.ALREADY_EXISTS):
+        pass
 
 @contextmanager
 def simulated_queue_client(client):

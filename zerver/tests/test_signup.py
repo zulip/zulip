@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.test import TestCase
 
 from mock import patch
-from fakeldap import MockLDAP
+from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation
 
