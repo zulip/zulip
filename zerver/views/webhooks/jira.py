@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-from typing import Any, Optional, Text
+from typing import Any, Optional, Text, Tuple
 
 from django.utils.translation import ugettext as _
 from django.db.models import Q
@@ -15,7 +15,6 @@ from zerver.decorator import api_key_only_webhook_view, has_request_variables, R
 import logging
 import re
 import ujson
-
 
 def guess_zulip_user_from_jira(jira_username, realm):
     # type: (str, Realm) -> Optional[UserProfile]
@@ -85,22 +84,17 @@ def convert_jira_markup(content, realm):
 
     return content
 
-@api_key_only_webhook_view("JIRA")
-@has_request_variables
-def api_jira_webhook(request, user_profile, client,
-                     payload=REQ(argument_type='body'),
-                     stream=REQ(default='jira')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
-    def get_in(payload, keys, default=''):
-        # type: (Dict[str, Any], List[str], str) -> Any
-        try:
-            for key in keys:
-                payload = payload[key]
-        except (AttributeError, KeyError, TypeError):
-            return default
-        return payload
+def get_in(payload, keys, default=''):
+    # type: (Dict[str, Any], List[str], str) -> Any
+    try:
+        for key in keys:
+            payload = payload[key]
+    except (AttributeError, KeyError, TypeError):
+        return default
+    return payload
 
-    event = payload.get('webhookEvent')
+def handle_issue_event(event, payload, user_profile):
+    # type: (Text, Dict[str, Any], Any) -> Tuple[Text, Text]
     author = get_in(payload, ['user', 'displayName'])
     issueId = get_in(payload, ['issue', 'key'])
     # Guess the URL as it is not specified in the payload
@@ -161,13 +155,22 @@ def api_jira_webhook(request, user_profile, client,
         if comment != '':
             comment = convert_jira_markup(comment, user_profile.realm)
             content += "\n%s\n" % (comment,)
-    elif event in ['jira:worklog_updated']:
-        # We ignore these event types
-        return json_success()
-    elif 'transition' in payload:
-        from_status = get_in(payload, ['transition', 'from_status'])
-        to_status = get_in(payload, ['transition', 'to_status'])
-        content = "%s **transitioned** %s from %s to %s" % (author, issue, from_status, to_status)
+    else:
+        content = None
+        subject = None
+    return content, subject
+
+
+@api_key_only_webhook_view("JIRA")
+@has_request_variables
+def api_jira_webhook(request, user_profile, client,
+                     payload=REQ(argument_type='body'),
+                     stream=REQ(default='jira')):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
+
+    event = payload.get('webhookEvent')
+    if event.startswith('jira:issue'):
+        content, subject = handle_issue_event(event, payload, user_profile)
     else:
         # Unknown event type
         if not settings.TEST_SUITE:
@@ -176,6 +179,9 @@ def api_jira_webhook(request, user_profile, client,
             else:
                 logging.warning("Got JIRA event type we don't understand: %s" % (event,))
         return json_error(_("Unknown JIRA event type"))
+
+    if content is None or subject is None:
+        return json_error(_("Event {} is not supported".format(event)))
 
     check_send_message(user_profile, client, "stream",
                        [stream], subject, content)

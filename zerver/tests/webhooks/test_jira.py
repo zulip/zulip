@@ -15,7 +15,7 @@ class JiraHookTests(WebhookTestCase):
                                   stream_name="jira",
                                   content_type="application/json")
 
-        self.assert_json_error(result, 'Unknown JIRA event type')
+        self.assert_json_error(result, 'Event jira:issue_unknown is not supported')
 
     def test_custom_stream(self):
         # type: () -> None
@@ -102,30 +102,6 @@ Re-opened yeah!
 Fixed it, finally!
 """
         self.send_and_test_stream_message('resolved', expected_subject, expected_message)
-
-    def test_workflow_postfuncion(self):
-        # type: () -> None
-        expected_subject = "TEST-5: PostTest"
-        expected_message = """Leo Franchi [Administrator] **transitioned** [TEST-5](https://lfranchi-test.atlassian.net/browse/TEST-5) from Resolved to Reopened"""
-        self.send_and_test_stream_message('postfunction_hook', expected_subject, expected_message)
-
-    def test_workflow_postfunction(self):
-        # type: () -> None
-        expected_subject = "TEST-5: PostTest"
-        expected_message = """Leo Franchi [Administrator] **transitioned** [TEST-5](https://lfranchi-test.atlassian.net/browse/TEST-5) from Resolved to Reopened"""
-        self.send_and_test_stream_message('postfunction_hook', expected_subject, expected_message)
-
-    def test_workflow_postfunction_started(self):
-        # type: () -> None
-        expected_subject = "TEST-7: Gluttony of Post Functions"
-        expected_message = """Leo Franchi [Administrator] **transitioned** [TEST-7](https://lfranchi-test.atlassian.net/browse/TEST-7) from Open to Underway"""
-        self.send_and_test_stream_message('postfunction_started', expected_subject, expected_message)
-
-    def test_workflow_postfunction_resolved(self):
-        # type: () -> None
-        expected_subject = "TEST-7: Gluttony of Post Functions"
-        expected_message = """Leo Franchi [Administrator] **transitioned** [TEST-7](https://lfranchi-test.atlassian.net/browse/TEST-7) from Open to Resolved"""
-        self.send_and_test_stream_message('postfunction_resolved', expected_subject, expected_message)
 
     def test_mention(self):
         # type: () -> None
