@@ -57,7 +57,8 @@ def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
     if end is None:
         end = timezone.now()
     if start > end:
-        raise JsonableError(_("Start time is later than end time. Start: %s, End: %s") % (start, end))
+        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
+                            {'start': start, 'end': end})
     interval = CountStat.DAY
     end_times = time_range(start, end, interval, min_length)
     indices = {}
