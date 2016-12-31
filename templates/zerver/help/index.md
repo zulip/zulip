@@ -106,7 +106,7 @@ as a “**realm**”.
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
 * Set notifications for a single stream
-* Configure desktop notifications
+* [Configure desktop notifications](/help/configure-desktop-notifications)
 * Configure audible notifications
 * Configure email notifications
 * Configure mobile push notifications
