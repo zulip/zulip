@@ -50,4 +50,3 @@ Opposite of @giveaway enter (see above).
 @giveaway cancel -
 
 This command will cancel any giveaway that is currently running. Can  only be executed by the person whom created the giveaway in the first place.
-
