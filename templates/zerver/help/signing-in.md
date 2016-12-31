@@ -9,15 +9,15 @@ You can sign in to your Zulip organization using your email address by following
 
 1. In the field labeled **Email**, enter the email address that you signed up to Zulip with. Please note that the **Email** field is case-sensitive.
 
-    If you've forgotten which email you signed up to Zulip with, try checking your email accounts for the "Welcome to Zulip" that was sent to you upon the registration of your account.
+	!!! tip ""
+    	If you've forgotten which email you signed up to Zulip with, try checking your email accounts for the "Welcome to Zulip" email that was sent to you upon the registration of your account.
 
 2. In the field labeled **Password**, enter your password. Please note that the **Password** field is case-sensitive.
 
-    If you've forgotten your password, see the [Forgot password](/help/change-your-password#forgot-password) section for instructions on how to reset your password.
+	!!! tip ""
+    	If you've forgotten your password, see the [Change your password](/help/change-your-password) page for instructions on how to reset your password.
 
-3. Once you have finished entering your credentials, click the blue **Log in** button to finish signing in.
-
-### Forgot password
+3. Once you have finished entering your credentials, click the **Log in** button to finish signing in.
 
 
 ## Signing in with your Google account
