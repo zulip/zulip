@@ -108,7 +108,6 @@ POSTGRES_VERSION_MAP = {
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
 UBUNTU_COMMON_APT_DEPENDENCIES = [
-    "closure-compiler",
     "memcached",
     "rabbitmq-server",
     "redis-server",

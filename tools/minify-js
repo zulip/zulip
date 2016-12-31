@@ -84,14 +84,6 @@ if prev_deploy:
     changed_files.add(os.path.join(STATIC_PATH, 'js/bundle.js'))
 
 JS_SPECS = settings.JS_SPECS
-CLOSURE_BINARY = '/usr/bin/closure-compiler'
-if not os.path.exists(CLOSURE_BINARY):
-    CLOSURE_BINARY = 'tools/closure-compiler/run'
-    if not os.path.exists(CLOSURE_BINARY):
-        print("closure-compiler not installed; the Vagrant tools/provision.py installs it via apt "
-              "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to "
-              "tools/closure-compiler")
-        sys.exit(1)
 
 # Where to put minified JS and source maps
 MIN_DIR = os.path.join(STATIC_PATH, 'min/')
@@ -123,11 +115,11 @@ for js_group, filespec in six.iteritems(JS_SPECS):
 
     # No previous deploy, or a source file has changed, or copying was
     # supposed to work but failed.  Thus, minify the JS anew.
-    # (N.B. we include STATIC_HEADER_FILE before the JavaScripts.
-    #  This way it doesn't throw off the source map.)
-    cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s %s' % (
-            CLOSURE_BINARY, map_file,
-            settings.STATIC_HEADER_FILE, ' '.join(in_files))
+    cmd = 'node_modules/uglify-js/bin/uglifyjs %s %s --source-map %s' % (
+          ' '.join(in_files),
+          settings.UGLIFY_ARGUMENTS,
+          map_file)
+
     js = subprocess.check_output(cmd, shell=True)
 
     # Write out the JS
