@@ -9,7 +9,7 @@
       <div class="input-group name_change_container">
           <div class="container">
             <span for="full_name">{{t "Full name" }}</span>
-            <i data-toggle="tooltip" title="{{t 'Zulip has full unicode support, so feel free to spell your name however you\'d like it to appear.' }}" class="icon-vector-question-sign"></i>
+            <i data-toggle="tooltip" title="{{t 'Zulip has full unicode support, so feel free to spell your name however you\'d like it to appear.' }}" class="icon-vector-question-sign" id="hover-message"></i>
           </div>
         <input type="text" name="full_name" value="{{ page_params.fullname }}" />
       </div>
@@ -83,8 +83,3 @@
 
   </div>
 </div>
-<script>
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-});
-</script>
