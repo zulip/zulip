@@ -57,7 +57,8 @@ class GiveawayHandler(object):
                 self.giveawayWinner = random.choice(self.giveawayArray)
                 self.winnerIndex = self.giveawayArray.index(self.giveawayWinner)
                 new_content = 'The giveaway has now ended... The winner is... %s!' % (self.giveawayWinner)
-                direct_content = """Congratulations!, you recently partook in the giveaway called %s and won! Please contact %s on details as to how to claim your prize.""" % (self.giveawayName, self.giveawayCreator,)
+                direct_content = """Congratulations!, you recently partook in the giveaway called %s and won!
+                Please contact %s on details as to how to claim your prize.""" % (self.giveawayName, self.giveawayCreator,)
                 self.giveawayClient.send_message(dict(
                     type='private',
                     to=self.winnerContactDetails[self.winnerIndex],
@@ -86,10 +87,11 @@ class GiveawayHandler(object):
             new_content = '3/4 of giveaway time elapsed, %s minutes remaining' % (str((self.giveawayTimeMins/4)*1))
             self.time_update(new_content)
             self.giveawayStage = self.giveawayStage + 1
-        elif time.time() > ((self.giveawayStartTime+self.giveawayTime)-60) and self.giveawayTimeMins > 1.9 and self.one_minute_warning == False:
-            new_content = 'Giveaway ends in 1 minute'
-            self.time_update(new_content)
-            self.one_minute_warning = True
+        elif time.time() > ((self.giveawayStartTime+self.giveawayTime)-60):
+            if self.giveawayTimeMins > 1.9 and self.one_minute_warning == False:
+                new_content = 'Giveaway ends in 1 minute'
+                self.time_update(new_content)
+                self.one_minute_warning = True
 
         else:
             threading.Timer(6.0, self.check_time).start() #More efficient to check every 6 seconds instead of 1.
@@ -108,10 +110,9 @@ class GiveawayHandler(object):
             Command:
                 - init: initialize a giveaway
                 - enter: enter a giveaway (only works if a
-                giveaway is already running_
+                giveaway is already running)
                 - exit: exit
                 - cancel
-            
 
             This plugin was created by Daniel O'Brien
             as part of Google Code-In 2016-2017
@@ -143,11 +144,15 @@ class GiveawayHandler(object):
                     print("Giveaway: Creator -", self.giveawayCreator)
                     try:
                         self.giveawayTimeMins = round(float(original_content.split(" ")[3]), 1)
-                        if self.giveawayTimeMins > 100: #Giveaway time must be less than 100 mins to avoid stack overflow. However, limit can be increased within python with the command sys.setrecursionlimit(NewLimit), default is 1000
+                        if self.giveawayTimeMins > 100:
+                            #Giveaway time must be less than 100 mins to avoid stack overflow.
+                            #However, limit can be increased within python with the command
+                            #sys.setrecursionlimit(NewLimit), default is 1000
                             new_content = 'Error: Giveaway time must be less than or equal to 100 mins'
                         else:
                             self.giveawayTime = self.giveawayTimeMins * 60
-                            new_content = '%s has initiated a giveaway called %s for %s minutes' % (message['sender_full_name'],self.giveawayName, self.giveawayTimeMins)
+                            new_content = ("""%s has initiated a giveaway called %s for %s minutes"""
+                            % (message['sender_full_name'],self.giveawayName, self.giveawayTimeMins))
                             self.giveawayOn = True
                             self.giveawayStartTime = time.time()
                             self.giveawayStream = message['display_recipient']
@@ -202,6 +207,5 @@ class GiveawayHandler(object):
         ))
 
 handler_class = GiveawayHandler
-
 
 
